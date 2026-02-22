@@ -10,7 +10,6 @@ const repoRoot = path.resolve(__dirname, '..')
 const port = Number.parseInt(process.argv[2] ?? '8080', 10)
 
 if (!Number.isFinite(port) || port <= 0) {
-  // eslint-disable-next-line no-console
   console.error('Usage: node scripts/static-server.mjs [port]')
   process.exit(1)
 }
@@ -86,7 +85,5 @@ const server = http.createServer((req, res) => {
 })
 
 server.listen(port, () => {
-  // eslint-disable-next-line no-console
   console.log(`Static server running: http://localhost:${port}/ (root: ${repoRoot})`)
 })
-
