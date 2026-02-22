@@ -12,7 +12,7 @@ Conventions:
 ---
 
 - T01 — Bootable app + load data
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T02
   - Task file: `docs/v1/tasks/T01-bootstrap.md`

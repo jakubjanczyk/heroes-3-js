@@ -2,7 +2,7 @@
 
 ## Goal (shipable milestone)
 
-The tile map renders in the viewport from `scenarios/v1.json` using the V1 isometric coordinate mapping.
+The tile map renders in the viewport from `scenarios/scenario.json` using the V1 isometric coordinate mapping.
 
 - Passable tiles are visibly distinct from blocked tiles.
 - The map is data-driven (changing scenario data changes the rendered map).
@@ -43,4 +43,4 @@ The tile map renders in the viewport from `scenarios/v1.json` using the V1 isome
 
 1. Start the server and open the app.
 2. You see a rendered isometric diamond grid in the viewport.
-3. Editing `scenarios/v1.json` terrain tile values (0/1) changes what is passable vs blocked visually after reload.
+3. Editing `scenarios/scenario.json` terrain tile values (0/1) changes what is passable vs blocked visually after reload.

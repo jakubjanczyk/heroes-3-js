@@ -16,7 +16,7 @@ When the hero finishes a move with the monster tile as the **destination**:
 
 ## Scope
 
-- Add monster placements to `scenarios/v1.json` (at least one).
+- Add monster placements to `scenarios/scenario.json` (at least one).
 - Load monster definitions from `game/data/monsters.json`.
 - Render monsters in `EntityLayer`.
 - On hero arrival, resolve monster interaction in `game/systems/interaction-system.js`.

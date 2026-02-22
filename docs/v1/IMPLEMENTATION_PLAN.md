@@ -8,7 +8,7 @@ This plan must be maintained in accordance with `PLANS.md` at repository root.
 
 After implementing this plan, a developer can start a local server, open the app in latest Chrome, and play a minimal V1 loop:
 
-- a map renders from `scenarios/v1.json`
+- a map renders from `scenarios/scenario.json`
 - a hero is visible, click-to-move works with pathfinding around blocked tiles
 - movement points are enforced (15 per turn) and reset on end turn
 - stepping onto a monster/resource/town triggers the correct interaction (remove/remove/persist) with an ephemeral notification
@@ -19,8 +19,8 @@ Milestones must be shipable slices (map renders, hero renders, hero moves, etc.)
 
 ## Progress
 
-- [ ] (2026-02-22) Create project skeleton (`index.html`, `main.js`) and serve locally.
-- [ ] Render map from `scenarios/v1.json` (binary passable/blocked terrain).
+- [x] (2026-02-22) Create project skeleton (`index.html`, `main.js`) and serve locally.
+- [ ] Render map from `scenarios/scenario.json` (binary passable/blocked terrain).
 - [ ] Add camera (follow hero + arrow keys + edge scroll).
 - [ ] Render hero from scenario placement.
 - [ ] Implement click-to-move with 8-direction BFS and no diagonal corner-cutting.
@@ -91,7 +91,7 @@ The codebase shape to converge on:
 
     index.html
     main.js
-    scenarios/v1.json
+    scenarios/scenario.json
     engine/
       bus.js
       db.js

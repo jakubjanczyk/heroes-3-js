@@ -15,7 +15,7 @@ When the hero finishes a move with the town tile as the **destination**:
 
 ## Scope
 
-- Add town placements to `scenarios/v1.json` (at least one).
+- Add town placements to `scenarios/scenario.json` (at least one).
 - Load town definitions from `game/data/towns.json`.
 - Render towns in `EntityLayer`.
 - Extend interaction system to handle town visits.

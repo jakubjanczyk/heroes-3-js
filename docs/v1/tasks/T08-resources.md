@@ -16,7 +16,7 @@ When the hero finishes a move with the resource tile as the **destination**:
 
 ## Scope
 
-- Add resource placements to `scenarios/v1.json` (at least one).
+- Add resource placements to `scenarios/scenario.json` (at least one).
 - Load resource definitions from `game/data/resources.json`.
 - Render resources in `EntityLayer`.
 - Extend interaction system to handle resource collection.

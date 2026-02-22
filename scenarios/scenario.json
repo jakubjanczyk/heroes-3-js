@@ -1,0 +1,23 @@
+{
+  "meta": { "id": "demo", "name": "Demo", "width": 12, "height": 8 },
+  "terrain": {
+    "width": 12,
+    "height": 8,
+    "tiles": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+      0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ]
+  },
+  "entities": [
+    { "id": "hero-1", "kind": "HERO", "type": "HERO", "tile": { "x": 1, "y": 1 } },
+    { "id": "monster-1", "kind": "MONSTER", "type": "SKELETON", "tile": { "x": 8, "y": 2 } },
+    { "id": "resource-1", "kind": "RESOURCE", "type": "GOLD_PILE", "tile": { "x": 3, "y": 6 } },
+    { "id": "town-1", "kind": "TOWN", "type": "CASTLE", "tile": { "x": 10, "y": 5 } }
+  ]
+}

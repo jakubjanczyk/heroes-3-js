@@ -30,7 +30,7 @@ This task is complete when the app loads without errors and logs a single “boo
 
 - `index.html`
 - `main.js`
-- `scenarios/v1.json`
+- `scenarios/scenario.json`
 - `game/load.js`
 - `game/data/hero.json`
 - `game/data/monsters.json`
