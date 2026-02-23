@@ -46,10 +46,10 @@ export function createMovementSystem({
 
     isMoving = true;
     for (const stepTile of path.slice(1)) {
+      await sleep(stepDelayMs);
       occupancy.moveEntity(hero, stepTile);
       hero.tile = stepTile;
       onStep({ hero, to: stepTile });
-      await sleep(stepDelayMs);
     }
     isMoving = false;
     return true;

@@ -200,9 +200,10 @@ describe('main boot', () => {
     expect(fakeCamera.updateCalls).toBe(1);
   });
 
-  test('bootApp routes tile click input to movement system', async () => {
+  test('first click previews path and second click confirms movement', async () => {
     const terrainLayer = createFakeElement('div');
     const entityLayer = createFakeElement('div');
+    const effectsLayer = createFakeElement('div');
     const viewport = createFakeElement('div');
     const worldEl = createFakeElement('div');
     const fakeDocument = {
@@ -212,6 +213,9 @@ describe('main boot', () => {
         }
         if (selector === '.entity-layer') {
           return entityLayer;
+        }
+        if (selector === '.effects-layer') {
+          return effectsLayer;
         }
         if (selector === '.viewport') {
           return viewport;
@@ -229,6 +233,7 @@ describe('main boot', () => {
 
     const moveCalls = [];
     let attachedInputArgs = null;
+    const previewCalls = [];
 
     await bootApp({
       fetch: async () => {
@@ -259,13 +264,185 @@ describe('main boot', () => {
           moveCalls.push(tile);
         }
       }),
+      renderPathPreviewLayer: (args) => {
+        previewCalls.push(args);
+      },
       attachCameraInput: (args) => {
         attachedInputArgs = args;
       }
     });
 
     attachedInputArgs.onTileClick({ x: 1, y: 1 });
+    expect(moveCalls).toEqual([]);
+    expect(previewCalls.at(-1)?.path?.length).toBeGreaterThan(1);
 
+    attachedInputArgs.onTileClick({ x: 1, y: 1 });
     expect(moveCalls).toEqual([{ x: 1, y: 1 }]);
+  });
+
+  test('preview path shrinks as movement steps are reached', async () => {
+    const terrainLayer = createFakeElement('div');
+    const entityLayer = createFakeElement('div');
+    const effectsLayer = createFakeElement('div');
+    const viewport = createFakeElement('div');
+    const worldEl = createFakeElement('div');
+    const fakeDocument = {
+      querySelector(selector) {
+        if (selector === '.terrain-layer') {
+          return terrainLayer;
+        }
+        if (selector === '.entity-layer') {
+          return entityLayer;
+        }
+        if (selector === '.effects-layer') {
+          return effectsLayer;
+        }
+        if (selector === '.viewport') {
+          return viewport;
+        }
+        if (selector === '.world') {
+          return worldEl;
+        }
+        return null;
+      },
+      getElementById() {
+        return null;
+      },
+      createElement: createFakeElement
+    };
+
+    const previewPathLengths = [];
+    let attachedInputArgs = null;
+
+    await bootApp({
+      fetch: async () => {
+        throw new Error('fetch should not be called in this test');
+      },
+      document: fakeDocument,
+      window: {},
+      loadGame: async () => ({
+        scenario: {
+          meta: { id: 'demo' },
+          terrain: {
+            width: 3,
+            height: 1,
+            tiles: [0, 0, 0]
+          },
+          entities: [
+            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }
+          ]
+        },
+        definitions: {}
+      }),
+      createCamera: () => ({
+        setFollowTileGetter() {},
+        update() {}
+      }),
+      createMovementSystem: ({ onStep }) => ({
+        async moveHeroTo() {
+          onStep({ to: { x: 1, y: 0 } });
+          onStep({ to: { x: 2, y: 0 } });
+          return true;
+        }
+      }),
+      renderPathPreviewLayer: ({ path }) => {
+        previewPathLengths.push(path ? path.length : 0);
+      },
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.onTileClick({ x: 2, y: 0 });
+    attachedInputArgs.onTileClick({ x: 2, y: 0 });
+
+    expect(previewPathLengths).toContain(3);
+    expect(previewPathLengths).toContain(2);
+    expect(previewPathLengths).toContain(1);
+  });
+
+  test('clicking different tile before confirm retargets preview', async () => {
+    const terrainLayer = createFakeElement('div');
+    const entityLayer = createFakeElement('div');
+    const effectsLayer = createFakeElement('div');
+    const viewport = createFakeElement('div');
+    const worldEl = createFakeElement('div');
+    const fakeDocument = {
+      querySelector(selector) {
+        if (selector === '.terrain-layer') {
+          return terrainLayer;
+        }
+        if (selector === '.entity-layer') {
+          return entityLayer;
+        }
+        if (selector === '.effects-layer') {
+          return effectsLayer;
+        }
+        if (selector === '.viewport') {
+          return viewport;
+        }
+        if (selector === '.world') {
+          return worldEl;
+        }
+        return null;
+      },
+      getElementById() {
+        return null;
+      },
+      createElement: createFakeElement
+    };
+
+    const moveCalls = [];
+    const previewTargets = [];
+    let attachedInputArgs = null;
+
+    await bootApp({
+      fetch: async () => {
+        throw new Error('fetch should not be called in this test');
+      },
+      document: fakeDocument,
+      window: {},
+      loadGame: async () => ({
+        scenario: {
+          meta: { id: 'demo' },
+          terrain: {
+            width: 3,
+            height: 2,
+            tiles: [0, 0, 0, 0, 0, 0]
+          },
+          entities: [
+            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }
+          ]
+        },
+        definitions: {}
+      }),
+      createCamera: () => ({
+        setFollowTileGetter() {},
+        update() {}
+      }),
+      createMovementSystem: () => ({
+        moveHeroTo(tile) {
+          moveCalls.push(tile);
+          return true;
+        }
+      }),
+      renderPathPreviewLayer: ({ targetTile }) => {
+        if (targetTile) {
+          previewTargets.push(targetTile);
+        }
+      },
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.onTileClick({ x: 2, y: 1 });
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+    expect(moveCalls).toEqual([]);
+
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+    expect(moveCalls).toEqual([{ x: 1, y: 0 }]);
+    expect(previewTargets).toContainEqual({ x: 2, y: 1 });
+    expect(previewTargets).toContainEqual({ x: 1, y: 0 });
   });
 });
