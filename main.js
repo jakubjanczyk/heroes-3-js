@@ -1,12 +1,16 @@
 import { loadGame } from './game/load.js';
 import { renderTerrainLayer } from './engine/layers/terrain-layer.js';
 import { createMap } from './engine/map.js';
+import { createCamera as createCameraDefault } from './engine/camera.js';
+import { attachCameraInput as attachCameraInputDefault } from './engine/input.js';
 
 export async function bootApp({
   fetch = globalThis.fetch,
   document = globalThis.document,
   window = globalThis.window,
-  loadGame: loadGameImpl = loadGame
+  loadGame: loadGameImpl = loadGame,
+  createCamera = createCameraDefault,
+  attachCameraInput = attachCameraInputDefault
 } = {}) {
   const { scenario, definitions } = await loadGameImpl({ fetch });
   const map = createMap(scenario.terrain);
@@ -15,6 +19,13 @@ export async function bootApp({
   globalThis.__WORLD__ = world;
 
   const terrainLayer = document?.querySelector('.terrain-layer');
+  const viewport = document?.querySelector('.viewport');
+  const worldElement = document?.querySelector('.world');
+  if (viewport && worldElement) {
+    const camera = createCamera({ viewport, world: worldElement, map });
+    attachCameraInput({ camera, viewport, window });
+  }
+
   if (terrainLayer) {
     const renderTerrain = () => {
       renderTerrainLayer({

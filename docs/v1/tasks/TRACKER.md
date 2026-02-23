@@ -24,7 +24,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T02-render-map.md`
 
 - T03 — Camera controls (arrow keys + edge scroll)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T04
   - Task file: `docs/v1/tasks/T03-camera.md`
