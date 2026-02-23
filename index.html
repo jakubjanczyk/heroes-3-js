@@ -8,16 +8,22 @@
   </head>
   <body>
     <div class="app">
-      <div class="viewport" aria-label="Viewport">
-        <div class="world" aria-label="World">
-          <div class="terrain-layer" aria-label="Terrain"></div>
-          <div class="entity-layer" aria-label="Entities"></div>
-          <div class="effects-layer" aria-label="Effects"></div>
+      <div class="game-shell">
+        <div class="viewport" aria-label="Viewport">
+          <div class="world" aria-label="World">
+            <div class="terrain-layer" aria-label="Terrain"></div>
+            <div class="entity-layer" aria-label="Entities"></div>
+            <div class="effects-layer" aria-label="Effects"></div>
+          </div>
         </div>
         <div class="ui-layer" aria-label="UI">
           <div class="hud">
             <div class="hud__title">Heroes 3 JS</div>
             <div class="hud__status" id="boot-status">Booting…</div>
+            <div class="hud__row">
+              <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
+              <button class="hud__button" id="end-turn-button" type="button">End turn</button>
+            </div>
           </div>
         </div>
       </div>

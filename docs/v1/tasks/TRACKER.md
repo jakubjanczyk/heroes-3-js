@@ -42,7 +42,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T05-move-hero.md`
 
 - T06 — Movement points (15) + end turn reset
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T07
   - Task file: `docs/v1/tasks/T06-movement-points-turn.md`

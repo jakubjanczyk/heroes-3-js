@@ -8,6 +8,7 @@ import { attachCameraInput as attachCameraInputDefault } from './engine/input.js
 import { createOccupancyIndex as createOccupancyIndexDefault } from './engine/occupancy.js';
 import { findPath } from './engine/pathfinding.js';
 import { createMovementSystem as createMovementSystemDefault } from './game/systems/movement-system.js';
+import { createTurnSystem as createTurnSystemDefault } from './game/systems/turn-system.js';
 
 function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
@@ -23,7 +24,8 @@ export async function bootApp({
   renderEntityLayer = renderEntityLayerDefault,
   renderPathPreviewLayer = renderPathPreviewLayerDefault,
   createOccupancyIndex = createOccupancyIndexDefault,
-  createMovementSystem = createMovementSystemDefault
+  createMovementSystem = createMovementSystemDefault,
+  createTurnSystem = createTurnSystemDefault
 } = {}) {
   const { scenario, definitions } = await loadGameImpl({ fetch });
   const map = createMap(scenario.terrain);
@@ -35,14 +37,25 @@ export async function bootApp({
   const terrainLayer = document?.querySelector('.terrain-layer');
   const entityLayer = document?.querySelector('.entity-layer');
   const effectsLayer = document?.querySelector('.effects-layer');
+  const uiLayer = document?.querySelector('.ui-layer');
   const viewport = document?.querySelector('.viewport');
   const worldElement = document?.querySelector('.world');
+  const movementPointsStatus = document?.getElementById('movement-points-status');
+  const endTurnButton = document?.getElementById('end-turn-button');
   const hero = scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+  const turnSystem = createTurnSystem({ maxMovementPoints: 15 });
   let previewPath = null;
   let previewTarget = null;
   let isMoving = false;
   let camera = null;
   let movement = null;
+
+  function updateMovementPointsUi() {
+    if (!movementPointsStatus) {
+      return;
+    }
+    movementPointsStatus.textContent = `MP: ${turnSystem.getRemainingMovementPoints()} / 15`;
+  }
 
   function paintPreview() {
     if (!effectsLayer) {
@@ -54,6 +67,7 @@ export async function bootApp({
       map,
       path: previewPath,
       targetTile: previewTarget,
+      maxAffordableSteps: isMoving ? Number.POSITIVE_INFINITY : turnSystem.getRemainingMovementPoints(),
       createElement: document.createElement?.bind(document)
     });
   }
@@ -85,6 +99,11 @@ export async function bootApp({
       map,
       occupancy,
       stepDelayMs: 220,
+      getMaxMovableSteps: () => turnSystem.getRemainingMovementPoints(),
+      spendMovementPoints: (stepCount) => {
+        turnSystem.spendMovementPoints(stepCount);
+        updateMovementPointsUi();
+      },
       onStep: ({ to }) => {
         renderEntityLayer({
           container: entityLayer,
@@ -134,7 +153,11 @@ export async function bootApp({
           Promise.resolve(movement.moveHeroTo(tile)).finally(() => {
             isMoving = false;
             camera?.unlockFollow?.();
-            clearPreview();
+            if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
+              paintPreview();
+            } else {
+              clearPreview();
+            }
             camera.update();
           });
           return;
@@ -181,6 +204,26 @@ export async function bootApp({
       createElement: document.createElement?.bind(document)
     });
   }
+
+  if (endTurnButton) {
+    endTurnButton.addEventListener('click', (event) => {
+      event?.stopPropagation?.();
+      if (isMoving) {
+        return;
+      }
+      turnSystem.endTurn();
+      updateMovementPointsUi();
+      paintPreview();
+    });
+  }
+
+  if (uiLayer) {
+    uiLayer.addEventListener('click', (event) => {
+      event?.stopPropagation?.();
+    });
+  }
+
+  updateMovementPointsUi();
 
   const bootStatus = document?.getElementById('boot-status');
   if (bootStatus) {

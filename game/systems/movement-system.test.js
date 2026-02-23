@@ -196,4 +196,37 @@ describe('movement system', () => {
     expect(moved).toBe(false);
     expect(steps).toEqual([]);
   });
+
+  test('moves as far as possible when path exceeds remaining movement points', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const entities = [hero];
+    const map = createMap({
+      width: 4,
+      height: 1,
+      tiles: [0, 0, 0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const spent = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      getMaxMovableSteps: () => 1,
+      spendMovementPoints: (stepCount) => {
+        spent.push(stepCount);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 3, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(spent).toEqual([1]);
+    expect(hero.tile).toEqual({ x: 1, y: 0 });
+    expect(occupancy.getAt({ x: 0, y: 0 })).toBe(null);
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 2, y: 0 })).toBe(null);
+    expect(occupancy.getAt({ x: 3, y: 0 })).toBe(null);
+  });
 });

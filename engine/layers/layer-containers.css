@@ -10,7 +10,14 @@
 }
 
 .ui-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  width: 240px;
+  flex: 0 0 240px;
+  pointer-events: auto;
+}
+
+@media (max-width: 1180px) {
+  .ui-layer {
+    width: min(1000px, 100%);
+    flex: 1 1 auto;
+  }
 }

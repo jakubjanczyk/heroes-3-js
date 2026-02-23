@@ -22,11 +22,18 @@ function setClass(node, className) {
   node.className = className;
 }
 
+function classWithOverLimit(baseClass, isOverLimit) {
+  if (!isOverLimit) {
+    return baseClass;
+  }
+  return `${baseClass} ${baseClass}-over-limit`;
+}
+
 const DASH_LENGTH = 30;
 
-function createDashLine(createElement, fromPoint, toPoint, centerPoint) {
+function createDashLine(createElement, fromPoint, toPoint, centerPoint, isOverLimit) {
   const dash = createSvgNode(createElement, 'line');
-  setClass(dash, 'path-preview-dash');
+  setClass(dash, classWithOverLimit('path-preview-dash', isOverLimit));
   const vx = toPoint.x - fromPoint.x;
   const vy = toPoint.y - fromPoint.y;
   const length = Math.hypot(vx, vy);
@@ -76,7 +83,7 @@ function approximateQuadraticLength(p0, p1, p2, steps = 24) {
   return length;
 }
 
-function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint) {
+function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint, isOverLimit) {
   const inDir = normalize(centerPoint.x - prevPoint.x, centerPoint.y - prevPoint.y);
   const outDir = normalize(nextPoint.x - centerPoint.x, nextPoint.y - centerPoint.y);
   if (inDir.x === outDir.x && inDir.y === outDir.y) {
@@ -91,7 +98,7 @@ function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint) {
   const cornerRadius = unitLength === 0 ? DASH_LENGTH / 2 : DASH_LENGTH / unitLength;
 
   const corner = createSvgNode(createElement, 'path');
-  setClass(corner, 'path-preview-corner');
+  setClass(corner, classWithOverLimit('path-preview-corner', isOverLimit));
   const startX = centerPoint.x - inDir.x * cornerRadius;
   const startY = centerPoint.y - inDir.y * cornerRadius;
   const endX = centerPoint.x + outDir.x * cornerRadius;
@@ -113,6 +120,7 @@ export function renderPathPreviewLayer({
   map,
   path = null,
   targetTile = null,
+  maxAffordableSteps = Number.POSITIVE_INFINITY,
   createElement
 }) {
   const makeElement = getLayerElementFactory(createElement);
@@ -120,6 +128,7 @@ export function renderPathPreviewLayer({
 
   const effectiveTarget = targetTile ?? (path && path.length > 0 ? path[path.length - 1] : null);
   const hasPath = Array.isArray(path) && path.length >= 2;
+  const isTargetOverLimit = hasPath && path.length - 1 > maxAffordableSteps;
 
   if (!hasPath && !effectiveTarget) {
     return;
@@ -137,7 +146,13 @@ export function renderPathPreviewLayer({
     const targetIndex = points.length - 1;
     const turnIndices = new Set();
     for (let i = 1; i < points.length - 1; i += 1) {
-      const corner = createCornerCurve(makeElement, points[i - 1], points[i], points[i + 1]);
+      const corner = createCornerCurve(
+        makeElement,
+        points[i - 1],
+        points[i],
+        points[i + 1],
+        i > maxAffordableSteps
+      );
       if (corner) {
         turnIndices.add(i);
         svg.appendChild(corner);
@@ -150,7 +165,13 @@ export function renderPathPreviewLayer({
       if (turnIndices.has(i)) {
         continue;
       }
-      const dash = createDashLine(makeElement, points[i - 1], points[i], points[i]);
+      const dash = createDashLine(
+        makeElement,
+        points[i - 1],
+        points[i],
+        points[i],
+        i > maxAffordableSteps
+      );
       svg.appendChild(dash);
     }
   }
@@ -161,7 +182,7 @@ export function renderPathPreviewLayer({
     setClass(target, 'path-preview-target');
 
     const slashA = createSvgNode(makeElement, 'line');
-    setClass(slashA, 'path-preview-target-line');
+    setClass(slashA, classWithOverLimit('path-preview-target-line', isTargetOverLimit));
     setAttr(slashA, 'x1', center.x - 9);
     setAttr(slashA, 'y1', center.y - 9);
     setAttr(slashA, 'x2', center.x + 9);
@@ -169,7 +190,7 @@ export function renderPathPreviewLayer({
     target.appendChild(slashA);
 
     const slashB = createSvgNode(makeElement, 'line');
-    setClass(slashB, 'path-preview-target-line');
+    setClass(slashB, classWithOverLimit('path-preview-target-line', isTargetOverLimit));
     setAttr(slashB, 'x1', center.x + 9);
     setAttr(slashB, 'y1', center.y - 9);
     setAttr(slashB, 'x2', center.x - 9);

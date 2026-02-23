@@ -15,6 +15,10 @@
   opacity: 0.96;
 }
 
+.path-preview-dash-over-limit {
+  stroke: #e56b6f;
+}
+
 .path-preview-corner {
   fill: none;
   stroke: #9de37d;
@@ -24,10 +28,18 @@
   opacity: 0.94;
 }
 
+.path-preview-corner-over-limit {
+  stroke: #e56b6f;
+}
+
 .path-preview-target-line {
   stroke: #9de37d;
   stroke-width: 5.5;
   stroke-linecap: round;
   opacity: 1;
   filter: drop-shadow(0 1px 1px rgba(10, 18, 28, 0.65));
+}
+
+.path-preview-target-line-over-limit {
+  stroke: #e56b6f;
 }

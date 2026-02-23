@@ -105,4 +105,62 @@ describe('path preview layer', () => {
     const childClasses = svg.children.map((child) => getNodeClass(child));
     expect(childClasses).toContain('path-preview-corner');
   });
+
+  test('marks path segments above movement limit as over-limit', () => {
+    const container = createFakeElement('div');
+    container.clientWidth = 1000;
+    container.clientHeight = 700;
+    const map = createMap({
+      width: 4,
+      height: 1,
+      tiles: new Array(4).fill(0)
+    });
+
+    renderPathPreviewLayer({
+      container,
+      map,
+      path: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 }
+      ],
+      maxAffordableSteps: 1,
+      createElement: createFakeElement
+    });
+
+    const svg = container.children[0];
+    const childClasses = svg.children.map((child) => getNodeClass(child));
+    expect(childClasses).toContain('path-preview-dash');
+    expect(childClasses).toContain('path-preview-dash path-preview-dash-over-limit');
+  });
+
+  test('marks target X as over-limit when destination is above movement limit', () => {
+    const container = createFakeElement('div');
+    container.clientWidth = 1000;
+    container.clientHeight = 700;
+    const map = createMap({
+      width: 4,
+      height: 1,
+      tiles: new Array(4).fill(0)
+    });
+
+    renderPathPreviewLayer({
+      container,
+      map,
+      path: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 }
+      ],
+      maxAffordableSteps: 2,
+      createElement: createFakeElement
+    });
+
+    const svg = container.children[0];
+    const targetGroup = svg.children.find((child) => getNodeClass(child) === 'path-preview-target');
+    const targetLineClasses = (targetGroup?.children ?? []).map((child) => getNodeClass(child));
+    expect(targetLineClasses).toContain('path-preview-target-line path-preview-target-line-over-limit');
+  });
 });

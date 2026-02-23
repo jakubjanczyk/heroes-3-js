@@ -12,6 +12,8 @@ export function createMovementSystem({
   occupancy,
   sleep = defaultSleep,
   stepDelayMs = 80,
+  getMaxMovableSteps = () => Number.POSITIVE_INFINITY,
+  spendMovementPoints = () => {},
   onStep = () => {}
 }) {
   let isMoving = false;
@@ -43,9 +45,18 @@ export function createMovementSystem({
     if (!path || path.length < 2) {
       return false;
     }
+    const totalStepCount = path.length - 1;
+    const cappedStepCount = Math.min(
+      totalStepCount,
+      Math.max(0, Math.floor(getMaxMovableSteps(totalStepCount)))
+    );
+    if (cappedStepCount < 1) {
+      return false;
+    }
+    spendMovementPoints(cappedStepCount);
 
     isMoving = true;
-    for (const stepTile of path.slice(1)) {
+    for (const stepTile of path.slice(1, cappedStepCount + 1)) {
       await sleep(stepDelayMs);
       occupancy.moveEntity(hero, stepTile);
       hero.tile = stepTile;

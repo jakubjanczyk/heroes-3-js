@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
 import { bootApp } from './main.js';
+import { createMovementSystem as createMovementSystemDefault } from './game/systems/movement-system.js';
 
 function createFakeElement(tagName) {
+  const listeners = {};
   return {
     tagName,
     textContent: '',
@@ -15,6 +17,23 @@ function createFakeElement(tagName) {
     },
     replaceChildren() {
       this.children = [];
+    },
+    addEventListener(type, handler) {
+      if (!listeners[type]) {
+        listeners[type] = [];
+      }
+      listeners[type].push(handler);
+    },
+    removeEventListener(type, handler) {
+      listeners[type] = (listeners[type] ?? []).filter((item) => item !== handler);
+    },
+    trigger(type, event = {}) {
+      for (const handler of listeners[type] ?? []) {
+        handler(event);
+      }
+    },
+    click() {
+      this.trigger('click', { currentTarget: this });
     }
   };
 }
@@ -29,6 +48,8 @@ function createFakeDocument({
   const viewport = createFakeElement('div');
   const worldEl = createFakeElement('div');
   const bootStatus = includeBootStatus ? createFakeElement('div') : null;
+  const movementPointsStatus = createFakeElement('div');
+  const endTurnButton = createFakeElement('button');
   const selectorMap = {
     '.terrain-layer': terrainLayer,
     '.entity-layer': entityLayer,
@@ -46,6 +67,8 @@ function createFakeDocument({
     viewport,
     worldEl,
     bootStatus,
+    movementPointsStatus,
+    endTurnButton,
     fakeDocument: {
       querySelector(selector) {
         return selectorMap[selector] ?? null;
@@ -53,6 +76,12 @@ function createFakeDocument({
       getElementById(id) {
         if (id === 'boot-status') {
           return bootStatus;
+        }
+        if (id === 'movement-points-status') {
+          return movementPointsStatus;
+        }
+        if (id === 'end-turn-button') {
+          return endTurnButton;
         }
         return null;
       },
@@ -79,6 +108,12 @@ function createLoadGame({
 
 async function fetchShouldNotBeCalled() {
   throw new Error('fetch should not be called in this test');
+}
+
+async function flushMicrotasks(times = 30) {
+  for (let i = 0; i < times; i += 1) {
+    await Promise.resolve();
+  }
 }
 
 describe('main boot', () => {
@@ -353,5 +388,139 @@ describe('main boot', () => {
       { x: 1, y: 0 },
       { x: 2, y: 1 }
     ]);
+  });
+
+  test('over-limit move travels to movement limit and keeps planned remainder', async () => {
+    const {
+      fakeDocument,
+      movementPointsStatus,
+      endTurnButton
+    } = createFakeDocument();
+
+    let attachedInputArgs = null;
+    const previewCalls = [];
+    const fakeCamera = {
+      setFollowTileGetter() {},
+      update() {},
+      clearPan() {},
+      lockFollow() {},
+      unlockFollow() {},
+      centerOnTile() {}
+    };
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      window: {},
+      loadGame: createLoadGame({
+        width: 20,
+        height: 1,
+        tiles: new Array(20).fill(0),
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }),
+      createCamera: () => fakeCamera,
+      createMovementSystem: (args) => createMovementSystemDefault({
+        ...args,
+        sleep: async () => {},
+        stepDelayMs: 0
+      }),
+      renderPathPreviewLayer: (args) => {
+        previewCalls.push(args);
+      },
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    expect(movementPointsStatus.textContent).toBe('MP: 15 / 15');
+
+    attachedInputArgs.onTileClick({ x: 16, y: 0 });
+    attachedInputArgs.onTileClick({ x: 16, y: 0 });
+    await flushMicrotasks();
+
+    const hero = globalThis.__WORLD__.scenario.entities.find((entity) => entity.kind === 'HERO');
+    expect(hero.tile).toEqual({ x: 15, y: 0 });
+    expect(movementPointsStatus.textContent).toBe('MP: 0 / 15');
+    expect(previewCalls.at(-1)?.targetTile).toEqual({ x: 16, y: 0 });
+    expect(previewCalls.at(-1)?.path?.[0]).toEqual({ x: 15, y: 0 });
+
+    attachedInputArgs.onTileClick({ x: 16, y: 0 });
+    await flushMicrotasks();
+
+    expect(hero.tile).toEqual({ x: 15, y: 0 });
+    expect(movementPointsStatus.textContent).toBe('MP: 0 / 15');
+    expect(previewCalls.at(-1)?.targetTile).toEqual({ x: 16, y: 0 });
+    expect(previewCalls.at(-1)?.path?.[0]).toEqual({ x: 15, y: 0 });
+
+    endTurnButton.click();
+
+    expect(movementPointsStatus.textContent).toBe('MP: 15 / 15');
+    expect(previewCalls.at(-1)?.targetTile).toEqual({ x: 16, y: 0 });
+    expect(previewCalls.at(-1)?.path?.[0]).toEqual({ x: 15, y: 0 });
+    expect(previewCalls.at(-1)?.maxAffordableSteps).toBe(15);
+
+    attachedInputArgs.onTileClick({ x: 14, y: 0 });
+    attachedInputArgs.onTileClick({ x: 14, y: 0 });
+    await flushMicrotasks();
+
+    expect(hero.tile).toEqual({ x: 14, y: 0 });
+    expect(movementPointsStatus.textContent).toBe('MP: 14 / 15');
+  });
+
+  test('end turn input is ignored while hero is moving', async () => {
+    const {
+      fakeDocument,
+      movementPointsStatus,
+      endTurnButton
+    } = createFakeDocument();
+
+    let attachedInputArgs = null;
+    let resolveSleep = null;
+    const fakeCamera = {
+      setFollowTileGetter() {},
+      update() {},
+      clearPan() {},
+      lockFollow() {},
+      unlockFollow() {},
+      centerOnTile() {}
+    };
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      window: {},
+      loadGame: createLoadGame({
+        width: 2,
+        height: 1,
+        tiles: [0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }),
+      createCamera: () => fakeCamera,
+      createMovementSystem: (args) => createMovementSystemDefault({
+        ...args,
+        sleep: () => new Promise((resolve) => {
+          resolveSleep = resolve;
+        }),
+        stepDelayMs: 1
+      }),
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+    await flushMicrotasks(3);
+
+    expect(movementPointsStatus.textContent).toBe('MP: 14 / 15');
+
+    endTurnButton.click();
+    expect(movementPointsStatus.textContent).toBe('MP: 14 / 15');
+
+    resolveSleep();
+    await flushMicrotasks(3);
+
+    endTurnButton.click();
+    expect(movementPointsStatus.textContent).toBe('MP: 15 / 15');
   });
 });
