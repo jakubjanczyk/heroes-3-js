@@ -78,7 +78,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T11-reset.md`
 
 - T12 — Two-click path preview UX (post-spec improvement)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: (none)
   - Task file: `docs/v1/tasks/T12-path-preview.md`
