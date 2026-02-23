@@ -19,16 +19,36 @@ function createFakeElement(tagName) {
   };
 }
 
-describe('main boot', () => {
-  test('bootApp renders scenario terrain into the terrain layer', async () => {
-    const terrainLayer = createFakeElement('div');
-    const bootStatus = createFakeElement('div');
-    const fakeDocument = {
+function createFakeDocument({
+  includeBootStatus = false,
+  includeCameraShell = true
+} = {}) {
+  const terrainLayer = createFakeElement('div');
+  const entityLayer = createFakeElement('div');
+  const effectsLayer = createFakeElement('div');
+  const viewport = createFakeElement('div');
+  const worldEl = createFakeElement('div');
+  const bootStatus = includeBootStatus ? createFakeElement('div') : null;
+  const selectorMap = {
+    '.terrain-layer': terrainLayer,
+    '.entity-layer': entityLayer,
+    '.effects-layer': effectsLayer
+  };
+  if (includeCameraShell) {
+    selectorMap['.viewport'] = viewport;
+    selectorMap['.world'] = worldEl;
+  }
+
+  return {
+    terrainLayer,
+    entityLayer,
+    effectsLayer,
+    viewport,
+    worldEl,
+    bootStatus,
+    fakeDocument: {
       querySelector(selector) {
-        if (selector === '.terrain-layer') {
-          return terrainLayer;
-        }
-        return null;
+        return selectorMap[selector] ?? null;
       },
       getElementById(id) {
         if (id === 'boot-status') {
@@ -37,25 +57,41 @@ describe('main boot', () => {
         return null;
       },
       createElement: createFakeElement
-    };
+    }
+  };
+}
+
+function createLoadGame({
+  width = 2,
+  height = 2,
+  tiles = [0, 1, 1, 0],
+  entities = []
+} = {}) {
+  return async () => ({
+    scenario: {
+      meta: { id: 'demo' },
+      terrain: { width, height, tiles },
+      entities
+    },
+    definitions: {}
+  });
+}
+
+async function fetchShouldNotBeCalled() {
+  throw new Error('fetch should not be called in this test');
+}
+
+describe('main boot', () => {
+  test('bootApp renders scenario terrain into the terrain layer', async () => {
+    const { terrainLayer, bootStatus, fakeDocument } = createFakeDocument({
+      includeBootStatus: true,
+      includeCameraShell: false
+    });
 
     await bootApp({
-      fetch: async () => {
-        throw new Error('fetch should not be called in this test');
-      },
+      fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
-      loadGame: async () => ({
-        scenario: {
-          meta: { id: 'demo' },
-          terrain: {
-            width: 2,
-            height: 2,
-            tiles: [0, 1, 1, 0]
-          },
-          entities: []
-        },
-        definitions: {}
-      })
+      loadGame: createLoadGame()
     });
 
     expect(terrainLayer.children).toHaveLength(4);
@@ -63,27 +99,7 @@ describe('main boot', () => {
   });
 
   test('bootApp wires camera and input with viewport and world elements', async () => {
-    const terrainLayer = createFakeElement('div');
-    const viewport = createFakeElement('div');
-    const worldEl = createFakeElement('div');
-    const fakeDocument = {
-      querySelector(selector) {
-        if (selector === '.terrain-layer') {
-          return terrainLayer;
-        }
-        if (selector === '.viewport') {
-          return viewport;
-        }
-        if (selector === '.world') {
-          return worldEl;
-        }
-        return null;
-      },
-      getElementById() {
-        return null;
-      },
-      createElement: createFakeElement
-    };
+    const { viewport, worldEl, fakeDocument } = createFakeDocument();
 
     const createdCameras = [];
     const attachedInputs = [];
@@ -93,23 +109,10 @@ describe('main boot', () => {
     };
 
     await bootApp({
-      fetch: async () => {
-        throw new Error('fetch should not be called in this test');
-      },
+      fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
       window: {},
-      loadGame: async () => ({
-        scenario: {
-          meta: { id: 'demo' },
-          terrain: {
-            width: 2,
-            height: 2,
-            tiles: [0, 1, 1, 0]
-          },
-          entities: []
-        },
-        definitions: {}
-      }),
+      loadGame: createLoadGame(),
       createCamera: (args) => {
         createdCameras.push(args);
         return fakeCamera;
@@ -132,31 +135,7 @@ describe('main boot', () => {
   });
 
   test('bootApp renders hero and initializes camera follow on hero tile', async () => {
-    const terrainLayer = createFakeElement('div');
-    const entityLayer = createFakeElement('div');
-    const viewport = createFakeElement('div');
-    const worldEl = createFakeElement('div');
-    const fakeDocument = {
-      querySelector(selector) {
-        if (selector === '.terrain-layer') {
-          return terrainLayer;
-        }
-        if (selector === '.entity-layer') {
-          return entityLayer;
-        }
-        if (selector === '.viewport') {
-          return viewport;
-        }
-        if (selector === '.world') {
-          return worldEl;
-        }
-        return null;
-      },
-      getElementById() {
-        return null;
-      },
-      createElement: createFakeElement
-    };
+    const { entityLayer, fakeDocument } = createFakeDocument();
 
     const fakeCamera = {
       setFollowTileGetterCalls: [],
@@ -170,24 +149,11 @@ describe('main boot', () => {
     };
 
     await bootApp({
-      fetch: async () => {
-        throw new Error('fetch should not be called in this test');
-      },
+      fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
       window: {},
-      loadGame: async () => ({
-        scenario: {
-          meta: { id: 'demo' },
-          terrain: {
-            width: 2,
-            height: 2,
-            tiles: [0, 1, 1, 0]
-          },
-          entities: [
-            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 1, y: 1 } }
-          ]
-        },
-        definitions: {}
+      loadGame: createLoadGame({
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 1, y: 1 } }]
       }),
       createCamera: () => fakeCamera,
       attachCameraInput: () => {}
@@ -201,59 +167,19 @@ describe('main boot', () => {
   });
 
   test('first click previews path and second click confirms movement', async () => {
-    const terrainLayer = createFakeElement('div');
-    const entityLayer = createFakeElement('div');
-    const effectsLayer = createFakeElement('div');
-    const viewport = createFakeElement('div');
-    const worldEl = createFakeElement('div');
-    const fakeDocument = {
-      querySelector(selector) {
-        if (selector === '.terrain-layer') {
-          return terrainLayer;
-        }
-        if (selector === '.entity-layer') {
-          return entityLayer;
-        }
-        if (selector === '.effects-layer') {
-          return effectsLayer;
-        }
-        if (selector === '.viewport') {
-          return viewport;
-        }
-        if (selector === '.world') {
-          return worldEl;
-        }
-        return null;
-      },
-      getElementById() {
-        return null;
-      },
-      createElement: createFakeElement
-    };
+    const { fakeDocument } = createFakeDocument();
 
     const moveCalls = [];
     let attachedInputArgs = null;
     const previewCalls = [];
 
     await bootApp({
-      fetch: async () => {
-        throw new Error('fetch should not be called in this test');
-      },
+      fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
       window: {},
-      loadGame: async () => ({
-        scenario: {
-          meta: { id: 'demo' },
-          terrain: {
-            width: 2,
-            height: 2,
-            tiles: [0, 0, 0, 0]
-          },
-          entities: [
-            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }
-          ]
-        },
-        definitions: {}
+      loadGame: createLoadGame({
+        tiles: [0, 0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
       }),
       createCamera: () => ({
         setFollowTileGetter() {},
@@ -281,58 +207,20 @@ describe('main boot', () => {
   });
 
   test('preview path shrinks as movement steps are reached', async () => {
-    const terrainLayer = createFakeElement('div');
-    const entityLayer = createFakeElement('div');
-    const effectsLayer = createFakeElement('div');
-    const viewport = createFakeElement('div');
-    const worldEl = createFakeElement('div');
-    const fakeDocument = {
-      querySelector(selector) {
-        if (selector === '.terrain-layer') {
-          return terrainLayer;
-        }
-        if (selector === '.entity-layer') {
-          return entityLayer;
-        }
-        if (selector === '.effects-layer') {
-          return effectsLayer;
-        }
-        if (selector === '.viewport') {
-          return viewport;
-        }
-        if (selector === '.world') {
-          return worldEl;
-        }
-        return null;
-      },
-      getElementById() {
-        return null;
-      },
-      createElement: createFakeElement
-    };
+    const { fakeDocument } = createFakeDocument();
 
     const previewPathLengths = [];
     let attachedInputArgs = null;
 
     await bootApp({
-      fetch: async () => {
-        throw new Error('fetch should not be called in this test');
-      },
+      fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
       window: {},
-      loadGame: async () => ({
-        scenario: {
-          meta: { id: 'demo' },
-          terrain: {
-            width: 3,
-            height: 1,
-            tiles: [0, 0, 0]
-          },
-          entities: [
-            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }
-          ]
-        },
-        definitions: {}
+      loadGame: createLoadGame({
+        width: 3,
+        height: 1,
+        tiles: [0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
       }),
       createCamera: () => ({
         setFollowTileGetter() {},
@@ -362,59 +250,21 @@ describe('main boot', () => {
   });
 
   test('clicking different tile before confirm retargets preview', async () => {
-    const terrainLayer = createFakeElement('div');
-    const entityLayer = createFakeElement('div');
-    const effectsLayer = createFakeElement('div');
-    const viewport = createFakeElement('div');
-    const worldEl = createFakeElement('div');
-    const fakeDocument = {
-      querySelector(selector) {
-        if (selector === '.terrain-layer') {
-          return terrainLayer;
-        }
-        if (selector === '.entity-layer') {
-          return entityLayer;
-        }
-        if (selector === '.effects-layer') {
-          return effectsLayer;
-        }
-        if (selector === '.viewport') {
-          return viewport;
-        }
-        if (selector === '.world') {
-          return worldEl;
-        }
-        return null;
-      },
-      getElementById() {
-        return null;
-      },
-      createElement: createFakeElement
-    };
+    const { fakeDocument } = createFakeDocument();
 
     const moveCalls = [];
     const previewTargets = [];
     let attachedInputArgs = null;
 
     await bootApp({
-      fetch: async () => {
-        throw new Error('fetch should not be called in this test');
-      },
+      fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
       window: {},
-      loadGame: async () => ({
-        scenario: {
-          meta: { id: 'demo' },
-          terrain: {
-            width: 3,
-            height: 2,
-            tiles: [0, 0, 0, 0, 0, 0]
-          },
-          entities: [
-            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }
-          ]
-        },
-        definitions: {}
+      loadGame: createLoadGame({
+        width: 3,
+        height: 2,
+        tiles: [0, 0, 0, 0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
       }),
       createCamera: () => ({
         setFollowTileGetter() {},
@@ -444,5 +294,64 @@ describe('main boot', () => {
     expect(moveCalls).toEqual([{ x: 1, y: 0 }]);
     expect(previewTargets).toContainEqual({ x: 2, y: 1 });
     expect(previewTargets).toContainEqual({ x: 1, y: 0 });
+  });
+
+  test('movement locks camera follow and recenters on hero until movement ends', async () => {
+    const { fakeDocument } = createFakeDocument();
+
+    let attachedInputArgs = null;
+    const cameraCalls = {
+      lockFollow: 0,
+      unlockFollow: 0,
+      centerOnTile: []
+    };
+    const fakeCamera = {
+      setFollowTileGetter() {},
+      update() {},
+      lockFollow() {
+        cameraCalls.lockFollow += 1;
+      },
+      unlockFollow() {
+        cameraCalls.unlockFollow += 1;
+      },
+      centerOnTile(tile) {
+        cameraCalls.centerOnTile.push(tile);
+      }
+    };
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      window: {},
+      loadGame: createLoadGame({
+        width: 3,
+        height: 2,
+        tiles: [0, 0, 0, 0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }),
+      createCamera: () => fakeCamera,
+      createMovementSystem: ({ onStep }) => ({
+        async moveHeroTo() {
+          onStep({ to: { x: 1, y: 0 } });
+          onStep({ to: { x: 2, y: 1 } });
+          return true;
+        }
+      }),
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.onTileClick({ x: 2, y: 1 });
+    attachedInputArgs.onTileClick({ x: 2, y: 1 });
+    await Promise.resolve();
+
+    expect(cameraCalls.lockFollow).toBe(1);
+    expect(cameraCalls.unlockFollow).toBe(1);
+    expect(cameraCalls.centerOnTile).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 1 }
+    ]);
   });
 });

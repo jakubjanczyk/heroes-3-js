@@ -6,6 +6,7 @@ export function createCamera({ viewport, world, map }) {
   let panX = 0;
   let panY = 0;
   let followTileGetter = null;
+  let followLocked = false;
 
   function applyTransform() {
     world.style.transform = `translate(${x}px, ${y}px)`;
@@ -18,6 +19,9 @@ export function createCamera({ viewport, world, map }) {
   }
 
   function moveBy(dx, dy) {
+    if (followLocked) {
+      return;
+    }
     panX += dx;
     panY += dy;
     moveTo(x + dx, y + dy);
@@ -52,6 +56,19 @@ export function createCamera({ viewport, world, map }) {
     followTileGetter = getter;
   }
 
+  function clearPan() {
+    panX = 0;
+    panY = 0;
+  }
+
+  function lockFollow() {
+    followLocked = true;
+  }
+
+  function unlockFollow() {
+    followLocked = false;
+  }
+
   function update() {
     const followTile = followTileGetter?.() ?? null;
     if (!followTile) {
@@ -67,6 +84,9 @@ export function createCamera({ viewport, world, map }) {
     moveTo,
     centerOnTile,
     setFollowTileGetter,
+    clearPan,
+    lockFollow,
+    unlockFollow,
     update,
     getOffset() {
       return { x, y };

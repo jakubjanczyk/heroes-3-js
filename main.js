@@ -103,7 +103,11 @@ export async function bootApp({
           paintPreview();
         }
 
-        camera?.update();
+        if (isMoving) {
+          camera?.centerOnTile?.(to);
+        } else {
+          camera?.update();
+        }
       }
     });
   }
@@ -124,8 +128,12 @@ export async function bootApp({
 
         if (previewTarget && sameTile(previewTarget, tile)) {
           isMoving = true;
+          camera?.clearPan?.();
+          camera?.lockFollow?.();
+          camera?.centerOnTile?.(hero.tile);
           Promise.resolve(movement.moveHeroTo(tile)).finally(() => {
             isMoving = false;
+            camera?.unlockFollow?.();
             clearPreview();
             camera.update();
           });

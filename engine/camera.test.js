@@ -84,4 +84,33 @@ describe('camera', () => {
       `translate(${450 - (originX + screen.x + map.halfTileWidth) + 20}px, ${300 - (originY + screen.y + map.halfTileHeight) - 10}px)`
     );
   });
+
+  test('lock follow ignores manual pan and clearPan removes old offsets', () => {
+    const map = createMap({
+      width: 5,
+      height: 5,
+      tiles: new Array(25).fill(0)
+    });
+    const viewport = createViewport(900, 600);
+    const world = createWorld();
+    const camera = createCamera({ viewport, world, map });
+    const followedTile = { x: 3, y: 2 };
+    const screen = map.tileToScreen(followedTile);
+    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
+    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
+    const minXOffset = (map.height - 1) * map.halfTileWidth;
+    const originX = Math.round((900 - mapPixelWidth) / 2 + minXOffset);
+    const originY = Math.round((600 - mapPixelHeight) / 2);
+
+    camera.setFollowTileGetter(() => followedTile);
+    camera.moveBy(20, -10);
+    camera.lockFollow();
+    camera.moveBy(30, 40);
+    camera.clearPan();
+    camera.update();
+
+    expect(world.style.transform).toBe(
+      `translate(${450 - (originX + screen.x + map.halfTileWidth)}px, ${300 - (originY + screen.y + map.halfTileHeight)}px)`
+    );
+  });
 });
