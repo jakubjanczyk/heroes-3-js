@@ -5,6 +5,7 @@ import { createMap } from './engine/map.js';
 import { createCamera as createCameraDefault } from './engine/camera.js';
 import { attachCameraInput as attachCameraInputDefault } from './engine/input.js';
 import { createOccupancyIndex as createOccupancyIndexDefault } from './engine/occupancy.js';
+import { createMovementSystem as createMovementSystemDefault } from './game/systems/movement-system.js';
 
 export async function bootApp({
   fetch = globalThis.fetch,
@@ -14,7 +15,8 @@ export async function bootApp({
   createCamera = createCameraDefault,
   attachCameraInput = attachCameraInputDefault,
   renderEntityLayer = renderEntityLayerDefault,
-  createOccupancyIndex = createOccupancyIndexDefault
+  createOccupancyIndex = createOccupancyIndexDefault,
+  createMovementSystem = createMovementSystemDefault
 } = {}) {
   const { scenario, definitions } = await loadGameImpl({ fetch });
   const map = createMap(scenario.terrain);
@@ -27,12 +29,42 @@ export async function bootApp({
   const entityLayer = document?.querySelector('.entity-layer');
   const viewport = document?.querySelector('.viewport');
   const worldElement = document?.querySelector('.world');
+  let camera = null;
+  let movement = null;
+  if (entityLayer) {
+    movement = createMovementSystem({
+      entities: scenario.entities,
+      map,
+      occupancy,
+      stepDelayMs: 220,
+      onStep: () => {
+        renderEntityLayer({
+          container: entityLayer,
+          map,
+          entities: scenario.entities,
+          createElement: document.createElement?.bind(document)
+        });
+        camera?.update();
+      }
+    });
+  }
+
   if (viewport && worldElement) {
-    const camera = createCamera({ viewport, world: worldElement, map });
+    camera = createCamera({ viewport, world: worldElement, map });
     const hero = scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
     camera.setFollowTileGetter(() => hero?.tile ?? null);
     camera.update();
-    attachCameraInput({ camera, viewport, window });
+    attachCameraInput({
+      camera,
+      viewport,
+      window,
+      map,
+      onTileClick: (tile) => {
+        Promise.resolve(movement?.moveHeroTo(tile)).then(() => {
+          camera.update();
+        });
+      }
+    });
   }
 
   if (terrainLayer) {

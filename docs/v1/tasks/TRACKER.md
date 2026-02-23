@@ -36,7 +36,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T04-render-hero.md`
 
 - T05 — Click-to-move hero (8-dir BFS, no corner cutting)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T06
   - Task file: `docs/v1/tasks/T05-move-hero.md`

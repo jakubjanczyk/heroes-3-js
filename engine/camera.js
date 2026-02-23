@@ -67,6 +67,9 @@ export function createCamera({ viewport, world, map }) {
     moveTo,
     centerOnTile,
     setFollowTileGetter,
-    update
+    update,
+    getOffset() {
+      return { x, y };
+    }
   };
 }

@@ -199,4 +199,73 @@ describe('main boot', () => {
     expect(fakeCamera.setFollowTileGetterCalls[0]()).toEqual({ x: 1, y: 1 });
     expect(fakeCamera.updateCalls).toBe(1);
   });
+
+  test('bootApp routes tile click input to movement system', async () => {
+    const terrainLayer = createFakeElement('div');
+    const entityLayer = createFakeElement('div');
+    const viewport = createFakeElement('div');
+    const worldEl = createFakeElement('div');
+    const fakeDocument = {
+      querySelector(selector) {
+        if (selector === '.terrain-layer') {
+          return terrainLayer;
+        }
+        if (selector === '.entity-layer') {
+          return entityLayer;
+        }
+        if (selector === '.viewport') {
+          return viewport;
+        }
+        if (selector === '.world') {
+          return worldEl;
+        }
+        return null;
+      },
+      getElementById() {
+        return null;
+      },
+      createElement: createFakeElement
+    };
+
+    const moveCalls = [];
+    let attachedInputArgs = null;
+
+    await bootApp({
+      fetch: async () => {
+        throw new Error('fetch should not be called in this test');
+      },
+      document: fakeDocument,
+      window: {},
+      loadGame: async () => ({
+        scenario: {
+          meta: { id: 'demo' },
+          terrain: {
+            width: 2,
+            height: 2,
+            tiles: [0, 0, 0, 0]
+          },
+          entities: [
+            { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }
+          ]
+        },
+        definitions: {}
+      }),
+      createCamera: () => ({
+        setFollowTileGetter() {},
+        update() {}
+      }),
+      createMovementSystem: () => ({
+        moveHeroTo(tile) {
+          moveCalls.push(tile);
+        }
+      }),
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.onTileClick({ x: 1, y: 1 });
+
+    expect(moveCalls).toEqual([{ x: 1, y: 1 }]);
+  });
 });

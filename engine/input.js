@@ -1,3 +1,5 @@
+import { getMapCenteredOrigin } from './layers/layout.js';
+
 function getArrowPanDelta(key, panStep) {
   if (key === 'ArrowLeft') {
     return [panStep, 0];
@@ -20,7 +22,9 @@ export function attachCameraInput({
   viewport,
   window = globalThis.window,
   panStep = 16,
-  edgeSize = 24
+  edgeSize = 24,
+  map = null,
+  onTileClick = null
 }) {
   let isMouseOverViewport = false;
 
@@ -67,15 +71,41 @@ export function attachCameraInput({
     isMouseOverViewport = false;
   }
 
+  function onViewportClick(event) {
+    if (!map || typeof onTileClick !== 'function') {
+      return;
+    }
+
+    const rect = viewport.getBoundingClientRect();
+    const offset = camera.getOffset?.() ?? { x: 0, y: 0 };
+    const origin = getMapCenteredOrigin({
+      width: viewport.clientWidth ?? 0,
+      height: viewport.clientHeight ?? 0,
+      map
+    });
+    const tile = map.screenToTile({
+      x: event.clientX - rect.left - offset.x - origin.x - map.halfTileWidth,
+      y: event.clientY - rect.top - offset.y - origin.y - map.halfTileHeight
+    });
+
+    if (!map.inBounds(tile)) {
+      return;
+    }
+
+    onTileClick(tile);
+  }
+
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('mousemove', onMouseMove);
   viewport.addEventListener('mouseenter', onMouseEnter);
   viewport.addEventListener('mouseleave', onMouseLeave);
+  viewport.addEventListener('click', onViewportClick);
 
   return () => {
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('mousemove', onMouseMove);
     viewport.removeEventListener('mouseenter', onMouseEnter);
     viewport.removeEventListener('mouseleave', onMouseLeave);
+    viewport.removeEventListener('click', onViewportClick);
   };
 }

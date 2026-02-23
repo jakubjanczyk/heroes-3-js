@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
 import { attachCameraInput } from './input.js';
+import { createMap } from './map.js';
+import { getMapCenteredOrigin } from './layers/layout.js';
 
 function createEventTarget() {
   const listeners = new Map();
@@ -106,5 +108,142 @@ describe('camera input', () => {
     window.emit('mousemove', { clientX: 10, clientY: 10 });
 
     expect(moves).toEqual([]);
+  });
+
+  test('invokes onTileClick for in-bounds clicked tile', () => {
+    const camera = {
+      moveBy() {},
+      getOffset() {
+        return { x: 0, y: 0 };
+      }
+    };
+    const viewport = createEventTarget();
+    viewport.getBoundingClientRect = () => ({
+      left: 100,
+      top: 50,
+      right: 600,
+      bottom: 450
+    });
+    const window = createEventTarget();
+    const clickedTiles = [];
+    const map = {
+      width: 1,
+      height: 1,
+      halfTileWidth: 52,
+      halfTileHeight: 26,
+      screenToTile() {
+        return { x: 0, y: 0 };
+      },
+      inBounds(tile) {
+        return tile.x === 0 && tile.y === 0;
+      }
+    };
+
+    attachCameraInput({
+      camera,
+      viewport,
+      window,
+      map,
+      onTileClick: (tile) => {
+        clickedTiles.push(tile);
+      }
+    });
+
+    viewport.emit('click', { clientX: 150, clientY: 100 });
+
+    expect(clickedTiles).toEqual([{ x: 0, y: 0 }]);
+  });
+
+  test('does not invoke onTileClick when clicked tile is out of bounds', () => {
+    const camera = {
+      moveBy() {},
+      getOffset() {
+        return { x: 0, y: 0 };
+      }
+    };
+    const viewport = createEventTarget();
+    viewport.getBoundingClientRect = () => ({
+      left: 100,
+      top: 50,
+      right: 600,
+      bottom: 450
+    });
+    const window = createEventTarget();
+    const clickedTiles = [];
+    const map = {
+      width: 1,
+      height: 1,
+      halfTileWidth: 52,
+      halfTileHeight: 26,
+      screenToTile() {
+        return { x: 2, y: 2 };
+      },
+      inBounds() {
+        return false;
+      }
+    };
+
+    attachCameraInput({
+      camera,
+      viewport,
+      window,
+      map,
+      onTileClick: (tile) => {
+        clickedTiles.push(tile);
+      }
+    });
+
+    viewport.emit('click', { clientX: 150, clientY: 100 });
+
+    expect(clickedTiles).toEqual([]);
+  });
+
+  test('maps click at tile center to that same tile', () => {
+    const map = createMap({
+      width: 3,
+      height: 3,
+      tiles: new Array(9).fill(0)
+    });
+    const camera = {
+      moveBy() {},
+      getOffset() {
+        return { x: 0, y: 0 };
+      }
+    };
+    const viewport = createEventTarget();
+    viewport.clientWidth = 900;
+    viewport.clientHeight = 700;
+    viewport.getBoundingClientRect = () => ({
+      left: 100,
+      top: 50,
+      right: 1000,
+      bottom: 750
+    });
+    const window = createEventTarget();
+    const clickedTiles = [];
+
+    attachCameraInput({
+      camera,
+      viewport,
+      window,
+      map,
+      onTileClick: (tile) => {
+        clickedTiles.push(tile);
+      }
+    });
+
+    const targetTile = { x: 1, y: 1 };
+    const origin = getMapCenteredOrigin({
+      width: viewport.clientWidth,
+      height: viewport.clientHeight,
+      map
+    });
+    const screen = map.tileToScreen(targetTile);
+    const clickX = 100 + origin.x + screen.x + map.halfTileWidth;
+    const clickY = 50 + origin.y + screen.y + map.halfTileHeight;
+
+    viewport.emit('click', { clientX: clickX, clientY: clickY });
+
+    expect(clickedTiles).toEqual([targetTile]);
   });
 });
