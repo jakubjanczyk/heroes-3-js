@@ -18,7 +18,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T01-bootstrap.md`
 
 - T02 — Render the map (binary passable/blocked)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T03
   - Task file: `docs/v1/tasks/T02-render-map.md`

@@ -20,7 +20,7 @@ Milestones must be shipable slices (map renders, hero renders, hero moves, etc.)
 ## Progress
 
 - [x] (2026-02-22) Create project skeleton (`index.html`, `main.js`) and serve locally.
-- [ ] Render map from `scenarios/scenario.json` (binary passable/blocked terrain).
+- [x] (2026-02-23) Render map from `scenarios/scenario.json` (binary passable/blocked terrain).
 - [ ] Add camera (follow hero + arrow keys + edge scroll).
 - [ ] Render hero from scenario placement.
 - [ ] Implement click-to-move with 8-direction BFS and no diagonal corner-cutting.

@@ -1,0 +1,23 @@
+.hud {
+  pointer-events: auto;
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(15, 21, 36, 0.75);
+  border: 1px solid rgba(232, 238, 252, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.hud__title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.hud__status {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.85;
+}

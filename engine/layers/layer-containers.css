@@ -1,0 +1,16 @@
+.terrain-layer,
+.entity-layer,
+.effects-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.terrain-layer {
+  overflow: visible;
+}
+
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

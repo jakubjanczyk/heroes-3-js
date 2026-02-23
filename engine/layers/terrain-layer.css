@@ -1,0 +1,16 @@
+.terrain-tile {
+  position: absolute;
+  width: 104px;
+  height: 52px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  border: 1px solid rgba(10, 15, 25, 0.45);
+  box-sizing: border-box;
+}
+
+.terrain-tile--passable {
+  background: #4f8a55;
+}
+
+.terrain-tile--blocked {
+  background: #59545f;
+}
