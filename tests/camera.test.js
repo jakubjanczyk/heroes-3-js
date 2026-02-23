@@ -46,11 +46,16 @@ describe('camera', () => {
 
     const tile = { x: 2, y: 1 };
     const screen = map.tileToScreen(tile);
+    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
+    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
+    const minXOffset = (map.height - 1) * map.halfTileWidth;
+    const originX = Math.round((1000 - mapPixelWidth) / 2 + minXOffset);
+    const originY = Math.round((700 - mapPixelHeight) / 2);
 
     camera.centerOnTile(tile);
 
     expect(world.style.transform).toBe(
-      `translate(${500 - screen.x}px, ${350 - screen.y}px)`
+      `translate(${500 - (originX + screen.x + map.halfTileWidth)}px, ${350 - (originY + screen.y + map.halfTileHeight)}px)`
     );
   });
 
@@ -65,13 +70,18 @@ describe('camera', () => {
     const camera = createCamera({ viewport, world, map });
     const followedTile = { x: 3, y: 2 };
     const screen = map.tileToScreen(followedTile);
+    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
+    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
+    const minXOffset = (map.height - 1) * map.halfTileWidth;
+    const originX = Math.round((900 - mapPixelWidth) / 2 + minXOffset);
+    const originY = Math.round((600 - mapPixelHeight) / 2);
 
     camera.setFollowTileGetter(() => followedTile);
     camera.moveBy(20, -10);
     camera.update();
 
     expect(world.style.transform).toBe(
-      `translate(${450 - screen.x + 20}px, ${300 - screen.y - 10}px)`
+      `translate(${450 - (originX + screen.x + map.halfTileWidth) + 20}px, ${300 - (originY + screen.y + map.halfTileHeight) - 10}px)`
     );
   });
 });

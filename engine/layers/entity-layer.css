@@ -1,0 +1,12 @@
+.entity {
+  position: absolute;
+}
+
+.entity--hero {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #6bb6ff;
+  border: 2px solid #d7eeff;
+  box-shadow: 0 2px 8px rgba(5, 12, 22, 0.65);
+}

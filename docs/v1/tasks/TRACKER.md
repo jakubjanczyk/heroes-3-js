@@ -30,7 +30,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T03-camera.md`
 
 - T04 — Render the hero + initial camera center
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T05
   - Task file: `docs/v1/tasks/T04-render-hero.md`
