@@ -81,4 +81,30 @@ describe('camera input', () => {
       [-10, -10]
     ]);
   });
+
+  test('cleanup detaches registered listeners', () => {
+    const moves = [];
+    const camera = {
+      moveBy(dx, dy) {
+        moves.push([dx, dy]);
+      }
+    };
+    const viewport = createEventTarget();
+    viewport.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      right: 500,
+      bottom: 400
+    });
+    const window = createEventTarget();
+
+    const cleanup = attachCameraInput({ camera, viewport, window, panStep: 10, edgeSize: 40 });
+    cleanup();
+
+    window.emit('keydown', { key: 'ArrowRight' });
+    viewport.emit('mouseenter', {});
+    window.emit('mousemove', { clientX: 10, clientY: 10 });
+
+    expect(moves).toEqual([]);
+  });
 });
