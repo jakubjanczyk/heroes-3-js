@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { createMap } from '../engine/map.js';
-import { createCamera } from '../engine/camera.js';
+import { createMap } from './map.js';
+import { createCamera } from './camera.js';
 
 function createViewport(width, height) {
   return {

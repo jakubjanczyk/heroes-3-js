@@ -1,3 +1,5 @@
+import { getMapCenteredOrigin, getTileCenter, getViewportCenter } from './layers/layout.js';
+
 export function createCamera({ viewport, world, map }) {
   let x = 0;
   let y = 0;
@@ -27,18 +29,22 @@ export function createCamera({ viewport, world, map }) {
   }
 
   function getCenteredTranslationForTile(tile) {
-    const screen = map.tileToScreen(tile);
-    const centerX = viewport.clientWidth / 2;
-    const centerY = viewport.clientHeight / 2;
-    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-    const minXOffset = (map.height - 1) * map.halfTileWidth;
-    const originX = Math.round((viewport.clientWidth - mapPixelWidth) / 2 + minXOffset);
-    const originY = Math.round((viewport.clientHeight - mapPixelHeight) / 2);
+    const viewportWidth = viewport.clientWidth;
+    const viewportHeight = viewport.clientHeight;
+    const origin = getMapCenteredOrigin({
+      width: viewportWidth,
+      height: viewportHeight,
+      map
+    });
+    const tileCenter = getTileCenter({ map, tile, origin });
+    const viewportCenter = getViewportCenter({
+      width: viewportWidth,
+      height: viewportHeight
+    });
 
     return {
-      x: centerX - (originX + screen.x + map.halfTileWidth),
-      y: centerY - (originY + screen.y + map.halfTileHeight)
+      x: viewportCenter.x - tileCenter.x,
+      y: viewportCenter.y - tileCenter.y
     };
   }
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { bootApp } from '../main.js';
+import { bootApp } from './main.js';
 
 function createFakeElement(tagName) {
   return {

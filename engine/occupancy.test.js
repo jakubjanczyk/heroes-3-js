@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createOccupancyIndex } from '../engine/occupancy.js';
+import { createOccupancyIndex } from './occupancy.js';
 
 describe('occupancy index', () => {
   test('returns entity at tile using stable x,y key format', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { loadGame } from '../game/load.js';
+import { loadGame } from './load.js';
 
 function createFakeFetch(urlToJson) {
   return async (url) => {

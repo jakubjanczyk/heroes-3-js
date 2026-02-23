@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createMap } from '../engine/map.js';
+import { createMap } from './map.js';
 
 describe('map', () => {
   test('inBounds and isPassable reflect terrain data', () => {

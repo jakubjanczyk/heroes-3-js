@@ -1,32 +1,14 @@
-function clearContainer(container) {
-  if (typeof container.replaceChildren === 'function') {
-    container.replaceChildren();
-    return;
-  }
-
-  if (Array.isArray(container.children)) {
-    container.children.length = 0;
-  }
-}
-
-function getCreateElement(createElement) {
-  if (typeof createElement === 'function') {
-    return createElement;
-  }
-
-  return (tagName) => document.createElement(tagName);
-}
+import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
+import { getMapCenteredOrigin, getTileCenter } from './layout.js';
 
 export function renderEntityLayer({ container, map, entities, createElement }) {
-  const makeElement = getCreateElement(createElement);
-  clearContainer(container);
-  const layerWidth = container.clientWidth ?? 0;
-  const layerHeight = container.clientHeight ?? 0;
-  const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-  const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-  const minXOffset = (map.height - 1) * map.halfTileWidth;
-  const originX = Math.round((layerWidth - mapPixelWidth) / 2 + minXOffset);
-  const originY = Math.round((layerHeight - mapPixelHeight) / 2);
+  const makeElement = getLayerElementFactory(createElement);
+  clearLayerContainer(container);
+  const origin = getMapCenteredOrigin({
+    width: container.clientWidth ?? 0,
+    height: container.clientHeight ?? 0,
+    map
+  });
   const heroSize = 24;
 
   for (const entity of entities) {
@@ -34,11 +16,11 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
       continue;
     }
 
-    const screen = map.tileToScreen(entity.tile);
+    const center = getTileCenter({ map, tile: entity.tile, origin });
     const entityEl = makeElement('div');
     entityEl.className = 'entity entity--hero';
     entityEl.dataset.entityId = entity.id;
-    entityEl.style.transform = `translate(${originX + screen.x + map.halfTileWidth - heroSize / 2}px, ${originY + screen.y + map.halfTileHeight - heroSize / 2}px)`;
+    entityEl.style.transform = `translate(${center.x - heroSize / 2}px, ${center.y - heroSize / 2}px)`;
     container.appendChild(entityEl);
   }
 }

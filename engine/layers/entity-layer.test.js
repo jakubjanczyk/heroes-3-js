@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { createMap } from '../engine/map.js';
-import { renderEntityLayer } from '../engine/layers/entity-layer.js';
+import { createMap } from '../map.js';
+import { renderEntityLayer } from './entity-layer.js';
 
 function createFakeElement(tagName) {
   return {

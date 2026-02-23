@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { attachCameraInput } from '../engine/input.js';
+import { attachCameraInput } from './input.js';
 
 function createEventTarget() {
   const listeners = new Map();

@@ -6,7 +6,7 @@
 - `docs/v1/tasks/` — Shipable milestone tasks + tracker (`docs/v1/tasks/TRACKER.md`).
 - `initial_docs/` — Reference material (do not treat as current requirements).
 - `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`).
-- `tests/` — Vitest tests (`tests/**/*.test.js`).
+- Co-located test files — Vitest tests (`**/*.test.js` next to source files).
 - Planned runtime code (per `docs/v1/IMPLEMENTATION_PLAN.md`) will live in `engine/` (infrastructure) and `game/` (experience rules). Keep the boundary strict: `engine/` must not import from `game/`.
 
 ## Build, Test, and Development Commands
@@ -35,7 +35,7 @@ Run locally:
 ## Testing Guidelines
 
 - Test runner: Vitest.
-- Test files: `tests/**/*.test.js`.
+- Test files: `**/*.test.js` (co-located with source files).
 - Keep tests deterministic (no network, no wall-clock dependencies unless mocked).
 
 ## Commit & Pull Request Guidelines
