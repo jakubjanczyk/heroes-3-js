@@ -2,11 +2,11 @@ function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
 }
 
-function tileKey(tile) {
-  return `${tile.x},${tile.y}`;
+function stateKey(tile, dirX, dirY) {
+  return `${tile.x},${tile.y}|${dirX},${dirY}`;
 }
 
-function getNeighbors(tile, toTile) {
+function getNeighbors(tile) {
   const neighbors = [];
   for (let dy = -1; dy <= 1; dy += 1) {
     for (let dx = -1; dx <= 1; dx += 1) {
@@ -16,17 +16,6 @@ function getNeighbors(tile, toTile) {
       neighbors.push({ x: tile.x + dx, y: tile.y + dy });
     }
   }
-
-  neighbors.sort((a, b) => {
-    const aDx = a.x - toTile.x;
-    const aDy = a.y - toTile.y;
-    const bDx = b.x - toTile.x;
-    const bDy = b.y - toTile.y;
-    const aDistanceSq = aDx * aDx + aDy * aDy;
-    const bDistanceSq = bDx * bDx + bDy * bDy;
-    return aDistanceSq - bDistanceSq;
-  });
-
   return neighbors;
 }
 
@@ -45,16 +34,63 @@ function allowsDiagonalStep({ from, to, map }) {
 }
 
 function reconstructPath(cameFrom, endTile) {
-  const path = [endTile];
-  let currentKey = tileKey(endTile);
+  const path = [];
+  let currentState = endTile;
 
-  while (cameFrom.has(currentKey)) {
-    const prev = cameFrom.get(currentKey);
-    path.push(prev);
-    currentKey = tileKey(prev);
+  while (currentState) {
+    path.push({ x: currentState.tile.x, y: currentState.tile.y });
+    currentState = cameFrom.get(currentState.key) ?? null;
   }
 
   return path.reverse();
+}
+
+function distanceSq(tile, toTile) {
+  const dx = tile.x - toTile.x;
+  const dy = tile.y - toTile.y;
+  return dx * dx + dy * dy;
+}
+
+function isBetterCost(a, b) {
+  if (b === null) {
+    return true;
+  }
+  if (a.steps !== b.steps) {
+    return a.steps < b.steps;
+  }
+  if (a.turns !== b.turns) {
+    return a.turns < b.turns;
+  }
+  return false;
+}
+
+function pickBestStateIndex(frontier, toTile) {
+  let bestIndex = 0;
+  for (let i = 1; i < frontier.length; i += 1) {
+    const candidate = frontier[i];
+    const best = frontier[bestIndex];
+
+    if (candidate.steps < best.steps) {
+      bestIndex = i;
+      continue;
+    }
+    if (candidate.steps > best.steps) {
+      continue;
+    }
+
+    if (candidate.turns < best.turns) {
+      bestIndex = i;
+      continue;
+    }
+    if (candidate.turns > best.turns) {
+      continue;
+    }
+
+    if (distanceSq(candidate.tile, toTile) < distanceSq(best.tile, toTile)) {
+      bestIndex = i;
+    }
+  }
+  return bestIndex;
 }
 
 export function findPath({ fromTile, toTile, map, isBlocked }) {
@@ -70,17 +106,26 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
     return null;
   }
 
-  const queue = [fromTile];
-  const seen = new Set([tileKey(fromTile)]);
+  const startState = {
+    key: stateKey(fromTile, 0, 0),
+    tile: fromTile,
+    dirX: 0,
+    dirY: 0,
+    steps: 0,
+    turns: 0
+  };
+  const frontier = [startState];
+  const bestByState = new Map([[startState.key, { steps: 0, turns: 0 }]]);
   const cameFrom = new Map();
 
-  while (queue.length > 0) {
-    const current = queue.shift();
-    if (sameTile(current, toTile)) {
+  while (frontier.length > 0) {
+    const bestIndex = pickBestStateIndex(frontier, toTile);
+    const current = frontier.splice(bestIndex, 1)[0];
+    if (sameTile(current.tile, toTile)) {
       return reconstructPath(cameFrom, current);
     }
 
-    for (const next of getNeighbors(current, toTile)) {
+    for (const next of getNeighbors(current.tile)) {
       if (!map.inBounds(next)) {
         continue;
       }
@@ -90,18 +135,28 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
       if (isBlocked(next) && !sameTile(next, toTile)) {
         continue;
       }
-      if (!allowsDiagonalStep({ from: current, to: next, map })) {
+      if (!allowsDiagonalStep({ from: current.tile, to: next, map })) {
         continue;
       }
 
-      const nextKey = tileKey(next);
-      if (seen.has(nextKey)) {
+      const dirX = next.x - current.tile.x;
+      const dirY = next.y - current.tile.y;
+      const turns = current.turns + (current.dirX === 0 && current.dirY === 0 ? 0 : current.dirX === dirX && current.dirY === dirY ? 0 : 1);
+      const nextState = {
+        key: stateKey(next, dirX, dirY),
+        tile: next,
+        dirX,
+        dirY,
+        steps: current.steps + 1,
+        turns
+      };
+      const bestKnown = bestByState.get(nextState.key) ?? null;
+      if (!isBetterCost({ steps: nextState.steps, turns: nextState.turns }, bestKnown)) {
         continue;
       }
-
-      seen.add(nextKey);
-      cameFrom.set(nextKey, current);
-      queue.push(next);
+      bestByState.set(nextState.key, { steps: nextState.steps, turns: nextState.turns });
+      cameFrom.set(nextState.key, current);
+      frontier.push(nextState);
     }
   }
 

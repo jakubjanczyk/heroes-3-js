@@ -122,6 +122,29 @@ describe('pathfinding', () => {
     ]);
   });
 
+  test('chooses shortest detour in diagonal-style route with blockers', () => {
+    const width = 6;
+    const height = 5;
+    const tiles = new Array(width * height).fill(0);
+    tiles[2 * width + 3] = 1;
+    tiles[3 * width + 2] = 1;
+    const map = createMap({ width, height, tiles });
+
+    const path = findPath({
+      fromTile: { x: 5, y: 0 },
+      toTile: { x: 1, y: 4 },
+      map,
+      isBlocked: () => false
+    });
+
+    expect(path).not.toBe(null);
+    expect(path?.[0]).toEqual({ x: 5, y: 0 });
+    expect(path?.at(-1)).toEqual({ x: 1, y: 4 });
+    expect(path?.length).toBe(7);
+    expect(path).not.toContainEqual({ x: 3, y: 2 });
+    expect(path).not.toContainEqual({ x: 2, y: 3 });
+  });
+
   test('allows occupied destination tile', () => {
     const map = createMap({
       width: 2,
