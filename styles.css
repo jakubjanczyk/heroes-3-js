@@ -1,10 +1,9 @@
 @layer base, shell, layers, ui;
 
-@import url('/styles/base.css') layer(base);
-@import url('/styles/elements/app-shell.css') layer(shell);
-@import url('/engine/layers/layer-containers.css') layer(layers);
-@import url('/engine/layers/terrain-layer.css') layer(layers);
-@import url('/engine/layers/entity-layer.css') layer(layers);
-@import url('/engine/layers/path-preview-layer.css') layer(layers);
-@import url('/game/ui/hud.css') layer(ui);
-
+@import url('./styles/base.css') layer(base);
+@import url('./styles/elements/app-shell.css') layer(shell);
+@import url('./engine/layers/layer-containers.css') layer(layers);
+@import url('./engine/layers/terrain-layer.css') layer(layers);
+@import url('./engine/layers/entity-layer.css') layer(layers);
+@import url('./engine/layers/path-preview-layer.css') layer(layers);
+@import url('./game/ui/hud.css') layer(ui);
