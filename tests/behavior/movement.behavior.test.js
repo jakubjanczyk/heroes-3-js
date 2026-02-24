@@ -70,7 +70,7 @@ function createFakeCamera() {
   };
 }
 
-async function setupMovementBehaviorApp({ loadGameOptions } = {}) {
+async function setupMovementBehaviorApp({ loadGameOptions, movementSystemOptions } = {}) {
   mountAppTemplate();
 
   const user = userEvent.setup();
@@ -85,7 +85,8 @@ async function setupMovementBehaviorApp({ loadGameOptions } = {}) {
     createMovementSystem: (args) => createMovementSystemDefault({
       ...args,
       sleep: async () => {},
-      stepDelayMs: 0
+      stepDelayMs: 0,
+      ...movementSystemOptions
     })
   });
 
@@ -127,6 +128,16 @@ async function clickTile(user, x, y) {
   const tile = getTerrainTile(x, y);
   expect(tile).toBeTruthy();
   await user.click(tile);
+}
+
+function getEndTurnButton() {
+  return document.querySelector('#end-turn-button');
+}
+
+async function clickEndTurn(user) {
+  const endTurnButton = getEndTurnButton();
+  expect(endTurnButton).toBeTruthy();
+  await user.click(endTurnButton);
 }
 
 describe('movement behavior', () => {
@@ -225,11 +236,75 @@ describe('movement behavior', () => {
     expectMovementPoints(0);
   });
 
-  test.todo('given move is in progress when player clicks End turn then End turn is ignored until movement completes');
+  test('given move is in progress when player clicks End turn then End turn is ignored until movement completes', async () => {
+    let resolveSleep = null;
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 2,
+        height: 1,
+        tiles: [0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      movementSystemOptions: {
+        sleep: () => new Promise((resolve) => {
+          resolveSleep = resolve;
+        }),
+        stepDelayMs: 1
+      }
+    });
 
-  test.todo('given movement completed when player clicks End turn then MP resets to 15');
+    await confirmMove(user, 1, 0);
+    await flushMicrotasks(3);
 
-  test.todo('given queued red remainder after End turn then affordable part becomes green based on refreshed MP');
+    expectMovementPoints(14);
+
+    await clickEndTurn(user);
+    expectMovementPoints(14);
+
+    resolveSleep?.();
+    await flushMicrotasks(3);
+
+    await clickEndTurn(user);
+    expectMovementPoints(15);
+  });
+
+  test('given movement completed when player clicks End turn then MP resets to 15', async () => {
+    const { user } = await setupMovementBehaviorApp();
+
+    await confirmMove(user, 2, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(2, 0);
+    expectMovementPoints(13);
+
+    await clickEndTurn(user);
+
+    expectMovementPoints(15);
+  });
+
+  test('given queued red remainder after End turn then affordable part becomes green based on refreshed MP', async () => {
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 20,
+        height: 1,
+        tiles: new Array(20).fill(0),
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    await confirmMove(user, 16, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(15, 0);
+    expectMovementPoints(0);
+    expectHasOverLimitTargetMarker();
+
+    await clickEndTurn(user);
+
+    expectMovementPoints(15);
+    expect(document.querySelector('.path-preview-target-line-over-limit')).toBeFalsy();
+    expect(document.querySelector('.path-preview-target-line')).toBeTruthy();
+  });
 });
 
 describe('app boot behavior', () => {
