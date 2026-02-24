@@ -58,6 +58,40 @@ async function flushMicrotasks(times = 30) {
   }
 }
 
+function createFakeCamera() {
+  return {
+    moveBy() {},
+    setFollowTileGetter() {},
+    update() {},
+    clearPan() {},
+    lockFollow() {},
+    unlockFollow() {},
+    centerOnTile() {}
+  };
+}
+
+async function setupMovementBehaviorApp({ loadGameOptions } = {}) {
+  mountAppTemplate();
+
+  const user = userEvent.setup();
+  const fakeCamera = createFakeCamera();
+
+  await bootApp({
+    fetch: fetchShouldNotBeCalled,
+    document,
+    window,
+    loadGame: createLoadGame(loadGameOptions),
+    createCamera: () => fakeCamera,
+    createMovementSystem: (args) => createMovementSystemDefault({
+      ...args,
+      sleep: async () => {},
+      stepDelayMs: 0
+    })
+  });
+
+  return { user, fakeCamera };
+}
+
 describe('movement behavior', () => {
   const originalRequestAnimationFrame = window.requestAnimationFrame;
 
@@ -81,31 +115,7 @@ describe('movement behavior', () => {
   });
 
   test('given a fresh turn when player confirms a reachable destination then hero moves and movement points decrease by path length', async () => {
-    mountAppTemplate();
-
-    const user = userEvent.setup();
-    const fakeCamera = {
-      moveBy() {},
-      setFollowTileGetter() {},
-      update() {},
-      clearPan() {},
-      lockFollow() {},
-      unlockFollow() {},
-      centerOnTile() {}
-    };
-
-    await bootApp({
-      fetch: fetchShouldNotBeCalled,
-      document,
-      window,
-      loadGame: createLoadGame(),
-      createCamera: () => fakeCamera,
-      createMovementSystem: (args) => createMovementSystemDefault({
-        ...args,
-        sleep: async () => {},
-        stepDelayMs: 0
-      })
-    });
+    const { user } = await setupMovementBehaviorApp();
 
     const getDestinationTile = () => document.querySelector('.terrain-tile[data-x="2"][data-y="0"]');
     expect(getDestinationTile()).toBeTruthy();
@@ -120,7 +130,28 @@ describe('movement behavior', () => {
     expect(screen.getByText('MP: 13 / 15')).toBeTruthy();
   });
 
-  test.todo('given path longer than remaining MP when player confirms then hero moves only up to limit and stops');
+  test('given path longer than remaining MP when player confirms then hero moves only up to limit and stops', async () => {
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 20,
+        height: 1,
+        tiles: new Array(20).fill(0),
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    const getDestinationTile = () => document.querySelector('.terrain-tile[data-x="16"][data-y="0"]');
+    expect(getDestinationTile()).toBeTruthy();
+    await user.click(getDestinationTile());
+    await user.click(getDestinationTile());
+    await flushMicrotasks();
+
+    const heroEntity = document.querySelector('.entity--hero[data-entity-id="hero-1"]');
+    expect(heroEntity).toBeTruthy();
+    expect(heroEntity?.dataset.tileX).toBe('15');
+    expect(heroEntity?.dataset.tileY).toBe('0');
+    expect(screen.getByText('MP: 0 / 15')).toBeTruthy();
+  });
   test.todo('given hero stopped at MP limit when player confirms same red target again then path remains and hero does not move');
   test.todo('given MP is zero when player confirms any move then hero does not move');
   test.todo('given move is in progress when player clicks End turn then End turn is ignored until movement completes');
