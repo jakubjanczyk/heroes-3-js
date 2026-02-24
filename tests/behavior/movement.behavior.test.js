@@ -763,9 +763,46 @@ describe('end turn behavior', () => {
 });
 
 describe('tile click behavior', () => {
-  test.todo('given user clicks rendered terrain tile by data-x/data-y then selected tile matches those coordinates');
+  test('given user clicks rendered terrain tile by data-x/data-y then selected tile matches those coordinates', async () => {
+    await setupLinearMovementApp({ width: 4 });
 
-  test.todo('given user clicks outside map bounds then no movement or preview is started');
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
 
-  test.todo('given user clicks HUD controls then tile click handling is not triggered');
+    expectPreviewTargetAt(2, 0);
+    expectPreviewDashAt(1, 0);
+    expectHeroAt(0, 0);
+  });
+
+  test('given user clicks outside map bounds then no movement or preview is started', async () => {
+    await setupLinearMovementApp({ width: 4 });
+
+    const viewport = document.querySelector('.viewport');
+    expect(viewport).toBeTruthy();
+    viewport?.dispatchEvent(new window.MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: -999,
+      clientY: -999
+    }));
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+  });
+
+  test('given user clicks HUD controls then tile click handling is not triggered', async () => {
+    const { user } = await setupLinearMovementApp({ width: 4 });
+
+    const hudTitle = document.querySelector('.hud__title');
+    expect(hudTitle).toBeTruthy();
+    await user.click(hudTitle);
+    await clickEndTurn(user);
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+  });
 });
