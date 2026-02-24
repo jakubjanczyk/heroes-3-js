@@ -43,11 +43,11 @@ describe('bootstrap', () => {
     };
 
     const fetch = createFakeFetch({
-      '/scenarios/scenario.json': scenario,
-      '/game/data/hero.json': definitions.hero,
-      '/game/data/monsters.json': definitions.monsters,
-      '/game/data/resources.json': definitions.resources,
-      '/game/data/towns.json': definitions.towns
+      './scenarios/scenario.json': scenario,
+      './game/data/hero.json': definitions.hero,
+      './game/data/monsters.json': definitions.monsters,
+      './game/data/resources.json': definitions.resources,
+      './game/data/towns.json': definitions.towns
     });
 
     const loaded = await loadGame({ fetch });
