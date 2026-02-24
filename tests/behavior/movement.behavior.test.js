@@ -87,19 +87,22 @@ async function setupMovementBehaviorApp({
   loadGameOptions,
   movementSystemOptions,
   renderPathPreviewLayer,
-  attachCameraInput
+  attachCameraInput,
+  createCamera
 } = {}) {
   mountAppTemplate();
 
   const user = userEvent.setup();
   const fakeCamera = createFakeCamera();
 
+  const camera = createCamera ? createCamera() : fakeCamera;
+
   await bootApp({
     fetch: fetchShouldNotBeCalled,
     document,
     window,
     loadGame: createLoadGame(loadGameOptions),
-    createCamera: () => fakeCamera,
+    createCamera: () => camera,
     ...(renderPathPreviewLayer ? { renderPathPreviewLayer } : {}),
     ...(attachCameraInput ? { attachCameraInput } : {}),
     createMovementSystem: (args) => createMovementSystemDefault({
@@ -110,12 +113,25 @@ async function setupMovementBehaviorApp({
     })
   });
 
-  return { user, fakeCamera };
+  return { user, fakeCamera, camera };
 }
 
 async function setupLinearMovementApp(options = {}) {
+  const {
+    width,
+    heroId,
+    heroTile,
+    movementSystemOptions,
+    renderPathPreviewLayer,
+    attachCameraInput,
+    createCamera
+  } = options;
   return setupMovementBehaviorApp({
-    loadGameOptions: createLinearScenario(options)
+    loadGameOptions: createLinearScenario({ width, heroId, heroTile }),
+    movementSystemOptions,
+    renderPathPreviewLayer,
+    attachCameraInput,
+    createCamera
   });
 }
 
@@ -186,6 +202,34 @@ function expectPreviewOverLimitTargetAt(x, y) {
 function expectNoPreview() {
   expect(document.querySelector('.path-preview-svg')).toBeFalsy();
   expect(document.querySelector('.path-preview-target')).toBeFalsy();
+}
+
+function createTrackedCamera() {
+  const centerOnTileCalls = [];
+  let lockFollowCalls = 0;
+  let unlockFollowCalls = 0;
+  return {
+    moveBy() {},
+    setFollowTileGetter() {},
+    update() {},
+    clearPan() {},
+    lockFollow() {
+      lockFollowCalls += 1;
+    },
+    unlockFollow() {
+      unlockFollowCalls += 1;
+    },
+    centerOnTile(tile) {
+      centerOnTileCalls.push(tile);
+    },
+    centerOnTileCalls,
+    get lockFollowCalls() {
+      return lockFollowCalls;
+    },
+    get unlockFollowCalls() {
+      return unlockFollowCalls;
+    }
+  };
 }
 
 async function confirmMove(user, x, y) {
@@ -519,11 +563,49 @@ describe('path preview behavior', () => {
 });
 
 describe('camera behavior during movement', () => {
-  test.todo('given movement starts when hero begins stepping then camera recenters on hero immediately');
+  test('given movement starts when hero begins stepping then camera recenters on hero immediately', async () => {
+    const trackedCamera = createTrackedCamera();
+    await setupLinearMovementApp({
+      width: 4,
+      createCamera: () => trackedCamera
+    });
 
-  test.todo('given movement is running when hero advances each step then camera follows each step');
+    confirmTileClickByDispatch(2, 0);
+    await flushMicrotasks();
 
-  test.todo('given movement finishes when hero stops then camera unlocks follow mode');
+    expect(trackedCamera.centerOnTileCalls[0]).toEqual({ x: 0, y: 0 });
+  });
+
+  test('given movement is running when hero advances each step then camera follows each step', async () => {
+    const trackedCamera = createTrackedCamera();
+    await setupLinearMovementApp({
+      width: 4,
+      createCamera: () => trackedCamera
+    });
+
+    confirmTileClickByDispatch(2, 0);
+    await flushMicrotasks();
+
+    expect(trackedCamera.centerOnTileCalls).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 }
+    ]);
+  });
+
+  test('given movement finishes when hero stops then camera unlocks follow mode', async () => {
+    const trackedCamera = createTrackedCamera();
+    await setupLinearMovementApp({
+      width: 4,
+      createCamera: () => trackedCamera
+    });
+
+    confirmTileClickByDispatch(2, 0);
+    await flushMicrotasks();
+
+    expect(trackedCamera.lockFollowCalls).toBe(1);
+    expect(trackedCamera.unlockFollowCalls).toBe(1);
+  });
 });
 
 describe('end turn behavior', () => {
