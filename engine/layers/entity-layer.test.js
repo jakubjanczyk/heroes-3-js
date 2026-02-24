@@ -38,6 +38,8 @@ describe('entity layer', () => {
     expect(container.children).toHaveLength(1);
     expect(container.children[0].className).toBe('entity entity--hero');
     expect(container.children[0].dataset.entityId).toBe('hero-1');
+    expect(container.children[0].dataset.tileX).toBe('1');
+    expect(container.children[0].dataset.tileY).toBe('1');
   });
 
   test('positions hero using the same centered map origin as terrain', () => {

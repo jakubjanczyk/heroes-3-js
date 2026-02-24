@@ -28,6 +28,23 @@ export function attachCameraInput({
 }) {
   let isMouseOverViewport = false;
 
+  function getTileFromEventTarget(target) {
+    let node = target ?? null;
+    while (node) {
+      const rawX = node?.dataset?.x;
+      const rawY = node?.dataset?.y;
+      if (rawX !== undefined && rawY !== undefined) {
+        const x = Number.parseInt(rawX, 10);
+        const y = Number.parseInt(rawY, 10);
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+          return { x, y };
+        }
+      }
+      node = node.parentElement ?? null;
+    }
+    return null;
+  }
+
   function onKeyDown(event) {
     const delta = getArrowPanDelta(event.key, panStep);
     if (!delta) {
@@ -73,6 +90,15 @@ export function attachCameraInput({
 
   function onViewportClick(event) {
     if (!map || typeof onTileClick !== 'function') {
+      return;
+    }
+
+    const targetTile = getTileFromEventTarget(event?.target);
+    if (targetTile && map.inBounds(targetTile)) {
+      onTileClick(targetTile);
+      return;
+    }
+    if (typeof event?.clientX !== 'number' || typeof event?.clientY !== 'number') {
       return;
     }
 

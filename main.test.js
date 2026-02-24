@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { bootApp } from './main.js';
+import { bootApp } from './app/boot-app.js';
 import { createMovementSystem as createMovementSystemDefault } from './game/systems/movement-system.js';
 
 function createFakeElement(tagName) {
@@ -523,4 +523,5 @@ describe('main boot', () => {
     endTurnButton.click();
     expect(movementPointsStatus.textContent).toBe('MP: 15 / 15');
   });
+
 });

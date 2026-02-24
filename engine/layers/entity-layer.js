@@ -20,6 +20,8 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     const entityEl = makeElement('div');
     entityEl.className = 'entity entity--hero';
     entityEl.dataset.entityId = entity.id;
+    entityEl.dataset.tileX = String(entity.tile.x);
+    entityEl.dataset.tileY = String(entity.tile.y);
     entityEl.style.transform = `translate(${center.x - heroSize / 2}px, ${center.y - heroSize / 2}px)`;
     container.appendChild(entityEl);
   }
