@@ -48,6 +48,19 @@ function createLoadGame({
   });
 }
 
+function createLinearScenario({
+  width = 20,
+  heroId = 'hero-1',
+  heroTile = { x: 0, y: 0 }
+} = {}) {
+  return {
+    width,
+    height: 1,
+    tiles: new Array(width).fill(0),
+    entities: [{ id: heroId, kind: 'HERO', type: 'HERO', tile: heroTile }]
+  };
+}
+
 async function fetchShouldNotBeCalled() {
   throw new Error('fetch should not be called in this test');
 }
@@ -70,7 +83,12 @@ function createFakeCamera() {
   };
 }
 
-async function setupMovementBehaviorApp({ loadGameOptions, movementSystemOptions } = {}) {
+async function setupMovementBehaviorApp({
+  loadGameOptions,
+  movementSystemOptions,
+  renderPathPreviewLayer,
+  attachCameraInput
+} = {}) {
   mountAppTemplate();
 
   const user = userEvent.setup();
@@ -82,6 +100,8 @@ async function setupMovementBehaviorApp({ loadGameOptions, movementSystemOptions
     window,
     loadGame: createLoadGame(loadGameOptions),
     createCamera: () => fakeCamera,
+    ...(renderPathPreviewLayer ? { renderPathPreviewLayer } : {}),
+    ...(attachCameraInput ? { attachCameraInput } : {}),
     createMovementSystem: (args) => createMovementSystemDefault({
       ...args,
       sleep: async () => {},
@@ -91,6 +111,12 @@ async function setupMovementBehaviorApp({ loadGameOptions, movementSystemOptions
   });
 
   return { user, fakeCamera };
+}
+
+async function setupLinearMovementApp(options = {}) {
+  return setupMovementBehaviorApp({
+    loadGameOptions: createLinearScenario(options)
+  });
 }
 
 function getTerrainTile(x, y) {
@@ -117,6 +143,31 @@ function expectHasOverLimitTargetMarker() {
   expect(document.querySelector('.path-preview-target-line-over-limit')).toBeTruthy();
 }
 
+function getPreviewSvg() {
+  return document.querySelector('.effects-layer .path-preview-svg');
+}
+
+function getPreviewDashAt(x, y) {
+  return document.querySelector(`.path-preview-dash[data-x="${x}"][data-y="${y}"]`);
+}
+
+function getPreviewTargetAt(x, y) {
+  return document.querySelector(`.path-preview-target[data-x="${x}"][data-y="${y}"]`);
+}
+
+function expectPreviewDashAt(x, y) {
+  expect(getPreviewDashAt(x, y)).toBeTruthy();
+}
+
+function expectPreviewTargetAt(x, y) {
+  expect(getPreviewTargetAt(x, y)).toBeTruthy();
+}
+
+function expectNoPreview() {
+  expect(document.querySelector('.path-preview-svg')).toBeFalsy();
+  expect(document.querySelector('.path-preview-target')).toBeFalsy();
+}
+
 async function confirmMove(user, x, y) {
   const tile = getTerrainTile(x, y);
   expect(tile).toBeTruthy();
@@ -128,6 +179,12 @@ async function clickTile(user, x, y) {
   const tile = getTerrainTile(x, y);
   expect(tile).toBeTruthy();
   await user.click(tile);
+}
+
+function dispatchTileClick(x, y) {
+  const tile = getTerrainTile(x, y);
+  expect(tile).toBeTruthy();
+  tile?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
 }
 
 function getEndTurnButton() {
@@ -173,14 +230,7 @@ describe('movement behavior', () => {
   });
 
   test('given path longer than remaining MP when player confirms then hero moves only up to limit and stops', async () => {
-    const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    });
+    const { user } = await setupLinearMovementApp();
 
     await confirmMove(user, 16, 0);
     await flushMicrotasks();
@@ -189,14 +239,7 @@ describe('movement behavior', () => {
     expectMovementPoints(0);
   });
   test('given hero stopped at MP limit when player confirms same red target again then path remains and hero does not move', async () => {
-    const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    });
+    const { user } = await setupLinearMovementApp();
 
     await confirmMove(user, 16, 0);
     await flushMicrotasks();
@@ -214,14 +257,7 @@ describe('movement behavior', () => {
   });
 
   test('given MP is zero when player confirms any move then hero does not move', async () => {
-    const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    });
+    const { user } = await setupLinearMovementApp();
 
     await confirmMove(user, 16, 0);
     await flushMicrotasks();
@@ -283,14 +319,7 @@ describe('movement behavior', () => {
   });
 
   test('given queued red remainder after End turn then affordable part becomes green based on refreshed MP', async () => {
-    const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    });
+    const { user } = await setupLinearMovementApp();
 
     await confirmMove(user, 16, 0);
     await flushMicrotasks();
@@ -353,13 +382,23 @@ describe('app boot behavior', () => {
 
     expectHeroAt(0, 0);
     expectMovementPoints(15);
-    expect(document.querySelector('.path-preview-svg')).toBeFalsy();
-    expect(document.querySelector('.path-preview-target')).toBeFalsy();
+    expectNoPreview();
   });
 });
 
 describe('path preview behavior', () => {
-  test.todo('given reachable destination when player clicks once then preview path and target X are shown');
+  test('given reachable destination when player clicks once then preview path and target X are shown', async () => {
+    await setupLinearMovementApp({ width: 4 });
+
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+    expect(getPreviewSvg()).toBeTruthy();
+    expectPreviewDashAt(1, 0);
+    expectPreviewTargetAt(2, 0);
+  });
 
   test.todo('given previewed destination when player clicks same tile second time then movement starts');
 

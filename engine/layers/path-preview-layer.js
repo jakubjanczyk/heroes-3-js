@@ -154,6 +154,8 @@ export function renderPathPreviewLayer({
         i > maxAffordableSteps
       );
       if (corner) {
+        setAttr(corner, 'data-x', path[i].x);
+        setAttr(corner, 'data-y', path[i].y);
         turnIndices.add(i);
         svg.appendChild(corner);
       }
@@ -172,6 +174,8 @@ export function renderPathPreviewLayer({
         points[i],
         i > maxAffordableSteps
       );
+      setAttr(dash, 'data-x', path[i].x);
+      setAttr(dash, 'data-y', path[i].y);
       svg.appendChild(dash);
     }
   }
@@ -180,6 +184,8 @@ export function renderPathPreviewLayer({
     const center = getTileCenter({ map, tile: effectiveTarget, origin });
     const target = createSvgNode(makeElement, 'g');
     setClass(target, 'path-preview-target');
+    setAttr(target, 'data-x', effectiveTarget.x);
+    setAttr(target, 'data-y', effectiveTarget.y);
 
     const slashA = createSvgNode(makeElement, 'line');
     setClass(slashA, classWithOverLimit('path-preview-target-line', isTargetOverLimit));
