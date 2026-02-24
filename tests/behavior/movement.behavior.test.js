@@ -155,12 +155,32 @@ function getPreviewTargetAt(x, y) {
   return document.querySelector(`.path-preview-target[data-x="${x}"][data-y="${y}"]`);
 }
 
+function getPreviewOverLimitDashAt(x, y) {
+  return document.querySelector(`.path-preview-dash-over-limit[data-x="${x}"][data-y="${y}"]`);
+}
+
+function hasOverLimitTargetLineAt(x, y) {
+  const target = getPreviewTargetAt(x, y);
+  if (!target) {
+    return false;
+  }
+  return Boolean(target.querySelector('.path-preview-target-line-over-limit'));
+}
+
 function expectPreviewDashAt(x, y) {
   expect(getPreviewDashAt(x, y)).toBeTruthy();
 }
 
 function expectPreviewTargetAt(x, y) {
   expect(getPreviewTargetAt(x, y)).toBeTruthy();
+}
+
+function expectPreviewOverLimitDashAt(x, y) {
+  expect(getPreviewOverLimitDashAt(x, y)).toBeTruthy();
+}
+
+function expectPreviewOverLimitTargetAt(x, y) {
+  expect(hasOverLimitTargetLineAt(x, y)).toBe(true);
 }
 
 function expectNoPreview() {
@@ -185,6 +205,11 @@ function dispatchTileClick(x, y) {
   const tile = getTerrainTile(x, y);
   expect(tile).toBeTruthy();
   tile?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+}
+
+function confirmTileClickByDispatch(x, y) {
+  dispatchTileClick(x, y);
+  dispatchTileClick(x, y);
 }
 
 function getEndTurnButton() {
@@ -400,15 +425,97 @@ describe('path preview behavior', () => {
     expectPreviewTargetAt(2, 0);
   });
 
-  test.todo('given previewed destination when player clicks same tile second time then movement starts');
+  test('given previewed destination when player clicks same tile second time then movement starts', async () => {
+    await setupLinearMovementApp({ width: 4 });
 
-  test.todo('given preview exists when player clicks different reachable tile then preview retargets to new tile');
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
 
-  test.todo('given preview exists when player clicks unreachable tile then preview clears');
+    expect(getPreviewSvg()).toBeTruthy();
+    expectPreviewDashAt(1, 0);
+    expectPreviewTargetAt(2, 0);
+    expectHeroAt(0, 0);
 
-  test.todo('given path exceeds remaining movement points when preview is shown then over-limit segments are red');
+    confirmTileClickByDispatch(2, 0);
+    await flushMicrotasks();
 
-  test.todo('given path exceeds remaining movement points when preview is shown then target X is red');
+    expectHeroAt(2, 0);
+    expectMovementPoints(13);
+  });
+
+  test('given preview exists when player clicks different reachable tile then preview retargets to new tile', async () => {
+    await setupLinearMovementApp({ width: 5 });
+
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(2, 0);
+    expectPreviewDashAt(1, 0);
+    expectHeroAt(0, 0);
+
+    dispatchTileClick(3, 0);
+    await flushMicrotasks();
+
+    expect(getPreviewTargetAt(2, 0)).toBeFalsy();
+    expectPreviewTargetAt(3, 0);
+    expectPreviewDashAt(1, 0);
+    expectPreviewDashAt(2, 0);
+    expectHeroAt(0, 0);
+  });
+
+  test('given preview exists when player clicks unreachable tile then preview clears', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 4,
+        height: 1,
+        tiles: [0, 0, 0, 1],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
+    expect(getPreviewSvg()).toBeTruthy();
+
+    dispatchTileClick(3, 0);
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+  });
+
+  test('given path exceeds remaining movement points when preview is shown then over-limit segments are red', async () => {
+    await setupLinearMovementApp();
+
+    confirmTileClickByDispatch(10, 0);
+    await flushMicrotasks();
+    expectHeroAt(10, 0);
+    expectMovementPoints(5);
+
+    dispatchTileClick(17, 0);
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(17, 0);
+    expectPreviewDashAt(11, 0);
+    expectPreviewDashAt(15, 0);
+    expectPreviewOverLimitDashAt(16, 0);
+    expect(getPreviewOverLimitDashAt(15, 0)).toBeFalsy();
+  });
+
+  test('given path exceeds remaining movement points when preview is shown then target X is red', async () => {
+    await setupLinearMovementApp();
+
+    confirmTileClickByDispatch(10, 0);
+    await flushMicrotasks();
+    expectHeroAt(10, 0);
+    expectMovementPoints(5);
+
+    dispatchTileClick(17, 0);
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(17, 0);
+    expectPreviewOverLimitTargetAt(17, 0);
+  });
 });
 
 describe('camera behavior during movement', () => {
