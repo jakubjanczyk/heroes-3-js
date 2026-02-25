@@ -13,7 +13,7 @@ describe('loadMusicTracks behavior', () => {
     };
 
     const tracks = await loadMusicTracks({ fetch });
-    expect(tracks).toEqual(['/assets/music/a.mp3', '/assets/music/b.mp3']);
+    expect(tracks).toEqual(['./assets/music/a.mp3', './assets/music/b.mp3']);
   });
 
   test('returns empty list when fetch fails', async () => {

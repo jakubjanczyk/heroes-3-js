@@ -33,7 +33,9 @@ export async function loadMusicTracks({
       return [];
     }
 
-    return tracks.filter((track) => typeof track === 'string' && track.length > 0);
+    return tracks
+      .filter((track) => typeof track === 'string' && track.length > 0)
+      .map((track) => normalizeStaticUrl(track));
   } catch {
     return [];
   }
