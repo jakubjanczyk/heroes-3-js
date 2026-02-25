@@ -37,6 +37,9 @@ Run locally:
 - Test runner: Vitest.
 - Test files: `**/*.test.js` (co-located with source files).
 - Keep tests deterministic (no network, no wall-clock dependencies unless mocked).
+- For new features, start by adding behavior coverage in `tests/behavior/` for that feature before implementation work.
+- If the user provides behavior scenarios/cases, implement those first and identify additional important missing cases.
+- If the user does not provide scenarios/cases, identify the expected behavior cases yourself first, then add behavior tests for them.
 
 ## Commit & Pull Request Guidelines
 
@@ -46,4 +49,3 @@ Run locally:
   - a short description of user-visible behavior
   - links to relevant docs/tasks (e.g. `docs/v1/tasks/T05-move-hero.md`)
   - screenshots or a short screencast when UI behavior changes
-
