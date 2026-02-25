@@ -5,6 +5,7 @@ import { createMovementSystem as createMovementSystemDefault } from './game/syst
 
 function createFakeElement(tagName) {
   const listeners = {};
+  const attributes = {};
   return {
     tagName,
     textContent: '',
@@ -27,13 +28,22 @@ function createFakeElement(tagName) {
     removeEventListener(type, handler) {
       listeners[type] = (listeners[type] ?? []).filter((item) => item !== handler);
     },
+    setAttribute(name, value) {
+      attributes[name] = String(value);
+    },
+    getAttribute(name) {
+      return attributes[name] ?? null;
+    },
     trigger(type, event = {}) {
       for (const handler of listeners[type] ?? []) {
         handler(event);
       }
     },
     click() {
-      this.trigger('click', { currentTarget: this });
+      this.trigger('click', {
+        currentTarget: this,
+        stopPropagation() {}
+      });
     }
   };
 }
@@ -50,6 +60,7 @@ function createFakeDocument({
   const bootStatus = includeBootStatus ? createFakeElement('div') : null;
   const movementPointsStatus = createFakeElement('div');
   const endTurnButton = createFakeElement('button');
+  const musicToggleButton = createFakeElement('button');
   const selectorMap = {
     '.terrain-layer': terrainLayer,
     '.entity-layer': entityLayer,
@@ -69,6 +80,7 @@ function createFakeDocument({
     bootStatus,
     movementPointsStatus,
     endTurnButton,
+    musicToggleButton,
     fakeDocument: {
       querySelector(selector) {
         return selectorMap[selector] ?? null;
@@ -82,6 +94,9 @@ function createFakeDocument({
         }
         if (id === 'end-turn-button') {
           return endTurnButton;
+        }
+        if (id === 'music-toggle-button') {
+          return musicToggleButton;
         }
         return null;
       },
@@ -522,6 +537,90 @@ describe('main boot', () => {
 
     endTurnButton.click();
     expect(movementPointsStatus.textContent).toBe('MP: 15 / 15');
+  });
+
+  test('music toggle updates behavior state in UI', async () => {
+    const { fakeDocument, musicToggleButton } = createFakeDocument({ includeCameraShell: false });
+
+    const calls = {
+      start: 0,
+      toggle: 0
+    };
+    let enabled = true;
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      loadGame: createLoadGame(),
+      createMusicPlayer: ({ tracks }) => {
+        expect(tracks).toEqual(['/assets/music/a.mp3', '/assets/music/b.mp3']);
+        return {
+          start() {
+            calls.start += 1;
+          },
+          toggle() {
+            calls.toggle += 1;
+            enabled = !enabled;
+            return enabled;
+          },
+          isEnabled() {
+            return enabled;
+          }
+        };
+      },
+      musicTracks: ['/assets/music/a.mp3', '/assets/music/b.mp3']
+    });
+
+    expect(calls.start).toBe(1);
+    expect(musicToggleButton.textContent).toBe('Music: On');
+    expect(musicToggleButton.getAttribute('aria-pressed')).toBe('true');
+
+    musicToggleButton.click();
+    await flushMicrotasks(2);
+
+    expect(calls.toggle).toBe(1);
+    expect(musicToggleButton.textContent).toBe('Music: Off');
+    expect(musicToggleButton.getAttribute('aria-pressed')).toBe('false');
+
+    musicToggleButton.click();
+    await flushMicrotasks(2);
+
+    expect(calls.toggle).toBe(2);
+    expect(musicToggleButton.textContent).toBe('Music: On');
+    expect(musicToggleButton.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  test('bootApp loads music tracks through loader when not provided directly', async () => {
+    const { fakeDocument } = createFakeDocument({ includeCameraShell: false });
+
+    const calls = {
+      loadMusicTracks: 0,
+      tracksSeen: null
+    };
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      loadGame: createLoadGame(),
+      loadMusicTracks: async ({ manifestUrl }) => {
+        calls.loadMusicTracks += 1;
+        expect(manifestUrl).toBe('/assets/music/tracks.json');
+        return ['/assets/music/a.mp3'];
+      },
+      createMusicPlayer: ({ tracks }) => {
+        calls.tracksSeen = tracks;
+        return {
+          start() {},
+          toggle() {},
+          isEnabled() {
+            return true;
+          }
+        };
+      }
+    });
+
+    expect(calls.loadMusicTracks).toBe(1);
+    expect(calls.tracksSeen).toEqual(['/assets/music/a.mp3']);
   });
 
 });

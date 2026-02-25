@@ -9,6 +9,8 @@ import { createOccupancyIndex as createOccupancyIndexDefault } from '../engine/o
 import { findPath } from '../engine/pathfinding.js';
 import { createMovementSystem as createMovementSystemDefault } from '../game/systems/movement-system.js';
 import { createTurnSystem as createTurnSystemDefault } from '../game/systems/turn-system.js';
+import { createMusicPlayer as createMusicPlayerDefault } from '../game/audio/music-player.js';
+import { loadMusicTracks as loadMusicTracksDefault } from '../game/audio/load-music-tracks.js';
 
 function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
@@ -25,7 +27,12 @@ export async function bootApp({
   renderPathPreviewLayer = renderPathPreviewLayerDefault,
   createOccupancyIndex = createOccupancyIndexDefault,
   createMovementSystem = createMovementSystemDefault,
-  createTurnSystem = createTurnSystemDefault
+  createTurnSystem = createTurnSystemDefault,
+  createMusicPlayer = createMusicPlayerDefault,
+  loadMusicTracks = loadMusicTracksDefault,
+  musicTracks,
+  musicManifestUrl = '/assets/music/tracks.json',
+  AudioCtor = globalThis.Audio
 } = {}) {
   const { scenario, definitions } = await loadGameImpl({ fetch });
   const map = createMap(scenario.terrain);
@@ -42,8 +49,21 @@ export async function bootApp({
   const worldElement = document?.querySelector('.world');
   const movementPointsStatus = document?.getElementById('movement-points-status');
   const endTurnButton = document?.getElementById('end-turn-button');
+  const musicToggleButton = document?.getElementById('music-toggle-button');
+  const resolvedMusicTracks = Array.isArray(musicTracks)
+    ? musicTracks
+    : await loadMusicTracks({ fetch, manifestUrl: musicManifestUrl });
   const hero = scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
   const turnSystem = createTurnSystem({ maxMovementPoints: 15 });
+  const musicPlayer = createMusicPlayer({
+    tracks: resolvedMusicTracks,
+    createAudio: (src) => {
+      if (typeof AudioCtor !== 'function') {
+        return null;
+      }
+      return new AudioCtor(src);
+    }
+  });
   let previewPath = null;
   let previewTarget = null;
   let isMoving = false;
@@ -55,6 +75,16 @@ export async function bootApp({
       return;
     }
     movementPointsStatus.textContent = `MP: ${turnSystem.getRemainingMovementPoints()} / 15`;
+  }
+
+  function updateMusicToggleUi() {
+    if (!musicToggleButton) {
+      return;
+    }
+
+    const enabled = Boolean(musicPlayer?.isEnabled?.());
+    musicToggleButton.textContent = enabled ? 'Music: On' : 'Music: Off';
+    musicToggleButton.setAttribute?.('aria-pressed', enabled ? 'true' : 'false');
   }
 
   function paintPreview() {
@@ -217,6 +247,15 @@ export async function bootApp({
     });
   }
 
+  if (musicToggleButton) {
+    musicToggleButton.addEventListener('click', (event) => {
+      event?.stopPropagation?.();
+      Promise.resolve(musicPlayer?.toggle?.()).finally(() => {
+        updateMusicToggleUi();
+      });
+    });
+  }
+
   if (uiLayer) {
     uiLayer.addEventListener('click', (event) => {
       event?.stopPropagation?.();
@@ -224,6 +263,8 @@ export async function bootApp({
   }
 
   updateMovementPointsUi();
+  await Promise.resolve(musicPlayer?.start?.());
+  updateMusicToggleUi();
 
   const bootStatus = document?.getElementById('boot-status');
   if (bootStatus) {

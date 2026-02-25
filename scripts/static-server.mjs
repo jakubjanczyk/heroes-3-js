@@ -26,6 +26,7 @@ const contentTypeByExt = new Map([
   ['.jpeg', 'image/jpeg'],
   ['.gif', 'image/gif'],
   ['.ico', 'image/x-icon'],
+  ['.mp3', 'audio/mpeg'],
   ['.txt', 'text/plain; charset=utf-8'],
 ])
 

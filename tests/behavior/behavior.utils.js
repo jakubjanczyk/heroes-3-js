@@ -24,6 +24,7 @@ export function mountAppTemplate() {
             <div class="hud__row">
               <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
               <button class="hud__button" id="end-turn-button" type="button">End turn</button>
+              <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="true">Music: On</button>
             </div>
           </div>
         </div>
@@ -139,7 +140,11 @@ export async function setupMovementBehaviorApp({
   renderPathPreviewLayer,
   attachCameraInput,
   createCamera,
-  viewportSize
+  viewportSize,
+  createMusicPlayer,
+  loadMusicTracks,
+  musicTracks,
+  AudioCtor
 } = {}) {
   mountAppTemplate();
   if (viewportSize) {
@@ -161,6 +166,10 @@ export async function setupMovementBehaviorApp({
     },
     ...(renderPathPreviewLayer ? { renderPathPreviewLayer } : {}),
     ...(attachCameraInput ? { attachCameraInput } : {}),
+    ...(createMusicPlayer ? { createMusicPlayer } : {}),
+    ...(loadMusicTracks ? { loadMusicTracks } : {}),
+    ...(musicTracks ? { musicTracks } : {}),
+    ...(AudioCtor ? { AudioCtor } : {}),
     createMovementSystem: (args) => createMovementSystemDefault({
       ...args,
       sleep: async () => {},
