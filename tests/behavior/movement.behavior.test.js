@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 
 import { bootApp } from '../../app/boot-app.js';
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
+import { createCamera as createEngineCamera } from '../../engine/camera.js';
 
 function mountAppTemplate() {
   document.body.innerHTML = `
@@ -79,8 +80,30 @@ function createFakeCamera() {
     clearPan() {},
     lockFollow() {},
     unlockFollow() {},
-    centerOnTile() {}
+    centerOnTile() {},
+    getOffset() {
+      return { x: 0, y: 0 };
+    }
   };
+}
+
+function setViewportSize(width, height) {
+  const viewport = document.querySelector('.viewport');
+  expect(viewport).toBeTruthy();
+  Object.defineProperty(viewport, 'clientWidth', {
+    value: width,
+    configurable: true
+  });
+  Object.defineProperty(viewport, 'clientHeight', {
+    value: height,
+    configurable: true
+  });
+  viewport.getBoundingClientRect = () => ({
+    left: 0,
+    top: 0,
+    right: width,
+    bottom: height
+  });
 }
 
 async function setupMovementBehaviorApp({
@@ -88,21 +111,27 @@ async function setupMovementBehaviorApp({
   movementSystemOptions,
   renderPathPreviewLayer,
   attachCameraInput,
-  createCamera
+  createCamera,
+  viewportSize
 } = {}) {
   mountAppTemplate();
+  if (viewportSize) {
+    setViewportSize(viewportSize.width, viewportSize.height);
+  }
 
   const user = userEvent.setup();
   const fakeCamera = createFakeCamera();
-
-  const camera = createCamera ? createCamera() : fakeCamera;
+  let camera = null;
 
   await bootApp({
     fetch: fetchShouldNotBeCalled,
     document,
     window,
     loadGame: createLoadGame(loadGameOptions),
-    createCamera: () => camera,
+    createCamera: (args) => {
+      camera = createCamera ? createCamera(args) : fakeCamera;
+      return camera;
+    },
     ...(renderPathPreviewLayer ? { renderPathPreviewLayer } : {}),
     ...(attachCameraInput ? { attachCameraInput } : {}),
     createMovementSystem: (args) => createMovementSystemDefault({
@@ -124,14 +153,16 @@ async function setupLinearMovementApp(options = {}) {
     movementSystemOptions,
     renderPathPreviewLayer,
     attachCameraInput,
-    createCamera
+    createCamera,
+    viewportSize
   } = options;
   return setupMovementBehaviorApp({
     loadGameOptions: createLinearScenario({ width, heroId, heroTile }),
     movementSystemOptions,
     renderPathPreviewLayer,
     attachCameraInput,
-    createCamera
+    createCamera,
+    viewportSize
   });
 }
 
@@ -167,6 +198,10 @@ function getPreviewDashAt(x, y) {
   return document.querySelector(`.path-preview-dash[data-x="${x}"][data-y="${y}"]`);
 }
 
+function getPreviewCornerAt(x, y) {
+  return document.querySelector(`.path-preview-corner[data-x="${x}"][data-y="${y}"]`);
+}
+
 function getPreviewTargetAt(x, y) {
   return document.querySelector(`.path-preview-target[data-x="${x}"][data-y="${y}"]`);
 }
@@ -187,6 +222,10 @@ function expectPreviewDashAt(x, y) {
   expect(getPreviewDashAt(x, y)).toBeTruthy();
 }
 
+function expectPreviewCornerAt(x, y) {
+  expect(getPreviewCornerAt(x, y)).toBeTruthy();
+}
+
 function expectPreviewTargetAt(x, y) {
   expect(getPreviewTargetAt(x, y)).toBeTruthy();
 }
@@ -197,6 +236,10 @@ function expectPreviewOverLimitDashAt(x, y) {
 
 function expectPreviewOverLimitTargetAt(x, y) {
   expect(hasOverLimitTargetLineAt(x, y)).toBe(true);
+}
+
+function expectPreviewNotOverLimitTargetAt(x, y) {
+  expect(hasOverLimitTargetLineAt(x, y)).toBe(false);
 }
 
 function expectNoPreview() {
@@ -341,6 +384,29 @@ describe('movement behavior', () => {
     expectMovementPoints(0);
   });
 
+  test('given a detour route around blocked terrain when player confirms then hero reaches destination via that route and MP decreases by full detour length', async () => {
+    const width = 4;
+    const height = 2;
+    const tiles = [
+      0, 1, 1, 0,
+      0, 0, 0, 0
+    ];
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width,
+        height,
+        tiles,
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    await confirmMove(user, 3, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(3, 0);
+    expectMovementPoints(10);
+  });
+
   test('given move is in progress when player clicks End turn then End turn is ignored until movement completes', async () => {
     let resolveSleep = null;
     const { user } = await setupMovementBehaviorApp({
@@ -456,6 +522,29 @@ describe('app boot behavior', () => {
 });
 
 describe('path preview behavior', () => {
+  test('given blocked terrain between hero and destination when player previews a move then preview routes around the obstacle and never crosses blocked tiles', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 4,
+        height: 2,
+        tiles: [
+          0, 1, 1, 0,
+          0, 0, 0, 0
+        ],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    dispatchTileClick(3, 0);
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(3, 0);
+    expectPreviewCornerAt(0, 1);
+    expectPreviewDashAt(2, 1);
+    expect(getPreviewDashAt(1, 0)).toBeFalsy();
+    expect(getPreviewCornerAt(1, 0)).toBeFalsy();
+  });
+
   test('given reachable destination when player clicks once then preview path and target X are shown', async () => {
     await setupLinearMovementApp({ width: 4 });
 
@@ -528,6 +617,61 @@ describe('path preview behavior', () => {
     expectHeroAt(0, 0);
   });
 
+  test('given destination is reachable only by a diagonal step when player previews then preview shows the target marker', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 2,
+        height: 2,
+        tiles: [0, 0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    dispatchTileClick(1, 1);
+    await flushMicrotasks();
+
+    expectHeroAt(0, 0);
+    expectPreviewTargetAt(1, 1);
+  });
+
+  test('given destination is reachable only by a diagonal step when player confirms then hero moves diagonally and MP decreases by 1', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 2,
+        height: 2,
+        tiles: [0, 0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    confirmTileClickByDispatch(1, 1);
+    await flushMicrotasks();
+
+    expectHeroAt(1, 1);
+    expectMovementPoints(14);
+  });
+
+  test('given diagonal corner-cut would be required when player clicks the diagonal destination then no preview is shown and hero cannot move there', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 2,
+        height: 2,
+        tiles: [
+          0, 1,
+          1, 0
+        ],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    dispatchTileClick(1, 1);
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+  });
+
   test('given path exceeds remaining movement points when preview is shown then over-limit segments are red', async () => {
     await setupLinearMovementApp();
 
@@ -559,6 +703,194 @@ describe('path preview behavior', () => {
 
     expectPreviewTargetAt(17, 0);
     expectPreviewOverLimitTargetAt(17, 0);
+  });
+
+  test('given remaining MP equals the preview path length exactly when preview is shown then nothing is marked over-limit', async () => {
+    await setupLinearMovementApp({ width: 40 });
+
+    confirmTileClickByDispatch(10, 0);
+    await flushMicrotasks();
+    expectHeroAt(10, 0);
+    expectMovementPoints(5);
+
+    dispatchTileClick(15, 0);
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(15, 0);
+    expectPreviewNotOverLimitTargetAt(15, 0);
+    expect(document.querySelector('.path-preview-dash-over-limit')).toBeFalsy();
+    expect(document.querySelector('.path-preview-target-line-over-limit')).toBeFalsy();
+  });
+
+  test('given remaining MP is zero when player previews a reachable tile then preview is shown as over-limit and confirming does not move', async () => {
+    await setupLinearMovementApp({ width: 40 });
+
+    confirmTileClickByDispatch(15, 0);
+    await flushMicrotasks();
+    expectHeroAt(15, 0);
+    expectMovementPoints(0);
+
+    dispatchTileClick(16, 0);
+    await flushMicrotasks();
+    expectPreviewTargetAt(16, 0);
+    expectPreviewOverLimitTargetAt(16, 0);
+
+    dispatchTileClick(16, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(15, 0);
+    expectMovementPoints(0);
+    expectPreviewTargetAt(16, 0);
+    expectPreviewOverLimitTargetAt(16, 0);
+  });
+
+  test('given preview exists when movement advances step-by-step then already-traversed preview segments disappear as the hero walks', async () => {
+    const sleepResolvers = [];
+    await setupLinearMovementApp({
+      width: 6,
+      movementSystemOptions: {
+        sleep: () => new Promise((resolve) => {
+          sleepResolvers.push(resolve);
+        }),
+        stepDelayMs: 1
+      }
+    });
+
+    dispatchTileClick(3, 0);
+    await flushMicrotasks();
+    expectPreviewDashAt(1, 0);
+    expectPreviewDashAt(2, 0);
+    expectPreviewTargetAt(3, 0);
+
+    dispatchTileClick(3, 0);
+    await flushMicrotasks(3);
+    expectHeroAt(0, 0);
+    expectPreviewDashAt(1, 0);
+
+    sleepResolvers.shift()?.();
+    await flushMicrotasks(3);
+
+    expectHeroAt(1, 0);
+    expect(getPreviewDashAt(1, 0)).toBeFalsy();
+    expectPreviewDashAt(2, 0);
+    expectPreviewTargetAt(3, 0);
+  });
+
+  test('given preview exists when player confirms and movement completes at the destination then the preview clears at movement end', async () => {
+    await setupLinearMovementApp({ width: 6 });
+
+    confirmTileClickByDispatch(3, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(3, 0);
+    expectNoPreview();
+  });
+
+  test('given a preview is active when user clicks outside map bounds then the preview remains unchanged', async () => {
+    await setupLinearMovementApp({ width: 6 });
+
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
+    expectPreviewTargetAt(2, 0);
+
+    const viewport = document.querySelector('.viewport');
+    expect(viewport).toBeTruthy();
+    viewport?.dispatchEvent(new window.MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: -999,
+      clientY: -999
+    }));
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(2, 0);
+  });
+});
+
+describe('camera behavior', () => {
+  test('given app boots when hero is visible then camera starts centered on the hero tile', async () => {
+    await setupMovementBehaviorApp({
+      viewportSize: { width: 1000, height: 700 },
+      createCamera: (args) => createEngineCamera(args)
+    });
+
+    const worldElement = document.querySelector('.world');
+    expect(worldElement).toBeTruthy();
+    expect(worldElement?.style?.transform).toBe('translate(78px, 39px)');
+  });
+
+  test('given player presses arrow keys when viewing the map then the camera pans and the world transform changes', async () => {
+    await setupMovementBehaviorApp({
+      viewportSize: { width: 1000, height: 700 },
+      createCamera: (args) => createEngineCamera(args)
+    });
+
+    const worldElement = document.querySelector('.world');
+    expect(worldElement).toBeTruthy();
+    const before = worldElement?.style?.transform;
+
+    window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight' }));
+
+    expect(worldElement?.style?.transform).not.toBe(before);
+  });
+
+  test('given cursor is over viewport when player moves mouse near viewport edges then edge scroll pans the camera', async () => {
+    await setupMovementBehaviorApp({
+      viewportSize: { width: 1000, height: 700 },
+      createCamera: (args) => createEngineCamera(args)
+    });
+
+    const worldElement = document.querySelector('.world');
+    const viewport = document.querySelector('.viewport');
+    expect(worldElement).toBeTruthy();
+    expect(viewport).toBeTruthy();
+    const before = worldElement?.style?.transform;
+
+    viewport?.dispatchEvent(new window.MouseEvent('mouseenter', { bubbles: true }));
+    window.dispatchEvent(new window.MouseEvent('mousemove', {
+      clientX: 10,
+      clientY: 10
+    }));
+
+    expect(worldElement?.style?.transform).not.toBe(before);
+  });
+
+  test('given cursor is not over viewport when player moves mouse near viewport edges then edge scroll does not pan the camera', async () => {
+    await setupMovementBehaviorApp({
+      viewportSize: { width: 1000, height: 700 },
+      createCamera: (args) => createEngineCamera(args)
+    });
+
+    const worldElement = document.querySelector('.world');
+    expect(worldElement).toBeTruthy();
+    const before = worldElement?.style?.transform;
+
+    window.dispatchEvent(new window.MouseEvent('mousemove', {
+      clientX: 10,
+      clientY: 10
+    }));
+
+    expect(worldElement?.style?.transform).toBe(before);
+  });
+
+  test('given hero-follow is enabled when player pans camera then pan acts as an offset and hero-follow continues to work', async () => {
+    const { camera } = await setupMovementBehaviorApp({
+      viewportSize: { width: 1000, height: 700 },
+      createCamera: (args) => createEngineCamera(args)
+    });
+
+    const world = globalThis.__WORLD__;
+    expect(world).toBeTruthy();
+    const hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+    expect(hero).toBeTruthy();
+
+    window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    hero.tile = { x: 1, y: 0 };
+    camera?.update();
+
+    const worldElement = document.querySelector('.world');
+    expect(worldElement).toBeTruthy();
+    expect(worldElement?.style?.transform).toBe('translate(10px, 13px)');
   });
 });
 
@@ -621,6 +953,23 @@ describe('end turn behavior', () => {
     await clickEndTurn(user);
 
     expectMovementPoints(15);
+  });
+
+  test('given an affordable preview is selected when player clicks End turn then the selected preview remains and remains affordable after MP resets', async () => {
+    const { user } = await setupLinearMovementApp({ width: 6 });
+
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
+
+    expectPreviewTargetAt(2, 0);
+    expectPreviewNotOverLimitTargetAt(2, 0);
+
+    await clickEndTurn(user);
+    await flushMicrotasks();
+
+    expectMovementPoints(15);
+    expectPreviewTargetAt(2, 0);
+    expectPreviewNotOverLimitTargetAt(2, 0);
   });
 
   test('given queued over-limit route exists when player clicks End turn then route remains selected', async () => {
@@ -772,6 +1121,53 @@ describe('tile click behavior', () => {
     expectPreviewTargetAt(2, 0);
     expectPreviewDashAt(1, 0);
     expectHeroAt(0, 0);
+  });
+
+  test('given no path exists around blocked tiles when player clicks destination then no preview is shown and no movement occurs', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 3,
+        height: 1,
+        tiles: [0, 1, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    dispatchTileClick(2, 0);
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+  });
+
+  test('given player clicks a blocked terrain tile when no preview exists then no preview is shown and hero does not move', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 2,
+        height: 1,
+        tiles: [0, 1],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }
+    });
+
+    dispatchTileClick(1, 0);
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+  });
+
+  test('given player clicks the hero current tile when no preview exists then no preview is shown and hero does not move', async () => {
+    await setupLinearMovementApp({ width: 4 });
+
+    dispatchTileClick(0, 0);
+    await flushMicrotasks();
+
+    expectNoPreview();
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
   });
 
   test('given user clicks outside map bounds then no movement or preview is started', async () => {
