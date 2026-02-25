@@ -38,7 +38,7 @@ describe('camera behavior', () => {
     expect(worldElement?.style?.transform).not.toBe(before);
   });
 
-  test('given cursor is over viewport when player moves mouse near viewport edges then edge scroll pans the camera', async () => {
+  test('given cursor touches viewport edge briefly when player moves away quickly then camera does not pan', async () => {
     await setupMovementBehaviorApp({
       viewportSize: { width: 1000, height: 700 },
       createCamera: (args) => createEngineCamera(args)
@@ -51,6 +51,34 @@ describe('camera behavior', () => {
     const before = worldElement?.style?.transform;
 
     viewport?.dispatchEvent(new window.MouseEvent('mouseenter', { bubbles: true }));
+    window.dispatchEvent(new window.MouseEvent('mousemove', {
+      clientX: 10,
+      clientY: 10
+    }));
+
+    expect(worldElement?.style?.transform).toBe(before);
+  });
+
+  test('given cursor stays near viewport edge past delay when player keeps moving there then edge scroll pans the camera', async () => {
+    await setupMovementBehaviorApp({
+      viewportSize: { width: 1000, height: 700 },
+      createCamera: (args) => createEngineCamera(args)
+    });
+
+    const worldElement = document.querySelector('.world');
+    const viewport = document.querySelector('.viewport');
+    expect(worldElement).toBeTruthy();
+    expect(viewport).toBeTruthy();
+    const before = worldElement?.style?.transform;
+
+    viewport?.dispatchEvent(new window.MouseEvent('mouseenter', { bubbles: true }));
+    window.dispatchEvent(new window.MouseEvent('mousemove', {
+      clientX: 10,
+      clientY: 10
+    }));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 360);
+    });
     window.dispatchEvent(new window.MouseEvent('mousemove', {
       clientX: 10,
       clientY: 10

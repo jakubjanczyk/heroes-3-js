@@ -1,4 +1,5 @@
 import { getMapCenteredOrigin } from './layers/layout.js';
+import { createEdgePanController } from './edge-pan-controller.js';
 
 function getArrowPanDelta(key, panStep) {
   if (key === 'ArrowLeft') {
@@ -23,10 +24,24 @@ export function attachCameraInput({
   window = globalThis.window,
   panStep = 16,
   edgeSize = 24,
+  edgePanDelayMs = 0,
+  edgePanSpeed = 700,
+  now = () => Date.now(),
+  requestAnimationFrame = window?.requestAnimationFrame?.bind(window),
+  cancelAnimationFrame = window?.cancelAnimationFrame?.bind(window),
   map = null,
   onTileClick = null
 }) {
-  let isMouseOverViewport = false;
+  const edgePanController = createEdgePanController({
+    camera,
+    viewport,
+    edgeSize,
+    edgePanDelayMs,
+    edgePanSpeed,
+    now,
+    requestAnimationFrame,
+    cancelAnimationFrame
+  });
 
   function getTileFromEventTarget(target) {
     let node = target ?? null;
@@ -55,37 +70,15 @@ export function attachCameraInput({
   }
 
   function onMouseMove(event) {
-    if (!isMouseOverViewport) {
-      return;
-    }
-
-    const rect = viewport.getBoundingClientRect();
-    let dx = 0;
-    let dy = 0;
-
-    if (event.clientX <= rect.left + edgeSize) {
-      dx += panStep;
-    } else if (event.clientX >= rect.right - edgeSize) {
-      dx -= panStep;
-    }
-
-    if (event.clientY <= rect.top + edgeSize) {
-      dy += panStep;
-    } else if (event.clientY >= rect.bottom - edgeSize) {
-      dy -= panStep;
-    }
-
-    if (dx !== 0 || dy !== 0) {
-      camera.moveBy(dx, dy);
-    }
+    edgePanController.onMouseMove(event);
   }
 
   function onMouseEnter() {
-    isMouseOverViewport = true;
+    edgePanController.onMouseEnter();
   }
 
   function onMouseLeave() {
-    isMouseOverViewport = false;
+    edgePanController.onMouseLeave();
   }
 
   function onViewportClick(event) {
@@ -128,6 +121,7 @@ export function attachCameraInput({
   viewport.addEventListener('click', onViewportClick);
 
   return () => {
+    edgePanController.destroy();
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('mousemove', onMouseMove);
     viewport.removeEventListener('mouseenter', onMouseEnter);

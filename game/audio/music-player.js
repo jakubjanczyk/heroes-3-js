@@ -3,7 +3,7 @@ export function createMusicPlayer({
   createAudio = (src) => new Audio(src),
   random = Math.random
 } = {}) {
-  let enabled = true;
+  let enabled = false;
   let currentAudio = null;
   let currentTrackIndex = -1;
 

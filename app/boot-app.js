@@ -169,6 +169,7 @@ export async function bootApp({
       camera,
       viewport,
       window,
+      edgePanDelayMs: 300,
       map,
       onTileClick: (tile) => {
         if (!movement || !hero || isMoving) {

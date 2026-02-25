@@ -47,7 +47,7 @@ function createAudioFactory({ rejectPlay = false } = {}) {
 }
 
 describe('music player behavior', () => {
-  test('starts random track and picks a different one after ending', async () => {
+  test('is disabled by default and does not autoplay on start', async () => {
     const { createAudio, created } = createAudioFactory();
 
     const player = createMusicPlayer({
@@ -56,7 +56,21 @@ describe('music player behavior', () => {
       random: () => 0
     });
 
-    await player.start();
+    expect(player.isEnabled()).toBe(false);
+    await expect(player.start()).resolves.toBe(false);
+    expect(created).toHaveLength(0);
+  });
+
+  test('toggle on starts random track and picks a different one after ending', async () => {
+    const { createAudio, created } = createAudioFactory();
+
+    const player = createMusicPlayer({
+      tracks: ['/assets/music/a.mp3', '/assets/music/b.mp3'],
+      createAudio,
+      random: () => 0
+    });
+
+    await player.toggle();
     expect(created).toHaveLength(1);
     expect(created[0].src).toBe('/assets/music/a.mp3');
     expect(created[0].playCalls).toBe(1);
@@ -78,7 +92,7 @@ describe('music player behavior', () => {
       random: () => 0
     });
 
-    await player.start();
+    await player.toggle();
     await player.toggle();
 
     expect(player.isEnabled()).toBe(false);
@@ -98,7 +112,7 @@ describe('music player behavior', () => {
       random: () => 0
     });
 
-    await player.start();
+    await player.toggle();
     await player.toggle();
     expect(player.isEnabled()).toBe(false);
     expect(created[0].pauseCalls).toBe(1);
@@ -118,7 +132,7 @@ describe('music player behavior', () => {
       random: () => 0
     });
 
-    await expect(player.start()).resolves.toBe(false);
+    await expect(player.toggle()).resolves.toBe(true);
     expect(player.isEnabled()).toBe(false);
   });
 });

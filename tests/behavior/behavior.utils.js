@@ -24,7 +24,7 @@ export function mountAppTemplate() {
             <div class="hud__row">
               <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
               <button class="hud__button" id="end-turn-button" type="button">End turn</button>
-              <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="true">Music: On</button>
+              <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="false">Music: Off</button>
             </div>
           </div>
         </div>

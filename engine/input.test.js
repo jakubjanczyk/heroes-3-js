@@ -30,6 +30,35 @@ function createEventTarget() {
   };
 }
 
+function createAnimationFrameController() {
+  const callbacks = new Map();
+  let nextId = 1;
+  let nowMs = 0;
+
+  return {
+    request(callback) {
+      const id = nextId;
+      nextId += 1;
+      callbacks.set(id, callback);
+      return id;
+    },
+    cancel(id) {
+      callbacks.delete(id);
+    },
+    step(nextNow = nowMs + 16) {
+      nowMs = nextNow;
+      const current = [...callbacks.entries()];
+      callbacks.clear();
+      for (const [, callback] of current) {
+        callback(nowMs);
+      }
+    },
+    getNow() {
+      return nowMs;
+    }
+  };
+}
+
 describe('camera input', () => {
   test('arrow keys pan camera by fixed step', () => {
     const moves = [];
@@ -66,22 +95,81 @@ describe('camera input', () => {
       bottom: 400
     });
     const window = createEventTarget();
+    const raf = createAnimationFrameController();
 
-    attachCameraInput({ camera, viewport, window, panStep: 10, edgeSize: 40 });
+    attachCameraInput({
+      camera,
+      viewport,
+      window,
+      panStep: 10,
+      edgeSize: 40,
+      edgePanDelayMs: 0,
+      edgePanSpeed: 1000,
+      now: () => raf.getNow(),
+      requestAnimationFrame: (callback) => raf.request(callback),
+      cancelAnimationFrame: (id) => raf.cancel(id)
+    });
 
-    window.emit('mousemove', { clientX: 10, clientY: 10 });
+    window.emit('mousemove', { clientX: 0, clientY: 0 });
     expect(moves).toEqual([]);
 
     viewport.emit('mouseenter', {});
-    window.emit('mousemove', { clientX: 10, clientY: 10 });
-    window.emit('mousemove', { clientX: 490, clientY: 390 });
+    window.emit('mousemove', { clientX: 0, clientY: 0 });
+    raf.step(0);
+    raf.step(10);
+    window.emit('mousemove', { clientX: 500, clientY: 400 });
+    raf.step(20);
+    raf.step(30);
     viewport.emit('mouseleave', {});
-    window.emit('mousemove', { clientX: 10, clientY: 10 });
+    window.emit('mousemove', { clientX: 0, clientY: 0 });
+    const moveCountAfterLeave = moves.length;
+    raf.step(40);
 
-    expect(moves).toEqual([
-      [10, 10],
-      [-10, -10]
-    ]);
+    expect(moves[0]).toEqual([10, 10]);
+    expect(moves).toContainEqual([-10, -10]);
+    expect(moves.length).toBe(moveCountAfterLeave);
+  });
+
+  test('edge scroll waits for sustained edge hover before panning', () => {
+    const moves = [];
+    const camera = {
+      moveBy(dx, dy) {
+        moves.push([dx, dy]);
+      }
+    };
+    const viewport = createEventTarget();
+    viewport.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      right: 500,
+      bottom: 400
+    });
+    const window = createEventTarget();
+    const raf = createAnimationFrameController();
+
+    attachCameraInput({
+      camera,
+      viewport,
+      window,
+      panStep: 10,
+      edgeSize: 40,
+      edgePanDelayMs: 120,
+      edgePanSpeed: 1000,
+      now: () => raf.getNow(),
+      requestAnimationFrame: (callback) => raf.request(callback),
+      cancelAnimationFrame: (id) => raf.cancel(id)
+    });
+
+    viewport.emit('mouseenter', {});
+    window.emit('mousemove', { clientX: 0, clientY: 0 });
+    raf.step(0);
+    expect(moves).toEqual([]);
+
+    raf.step(119);
+    expect(moves).toEqual([]);
+
+    raf.step(200);
+    expect(moves).toEqual([[50, 50]]);
   });
 
   test('cleanup detaches registered listeners', () => {
