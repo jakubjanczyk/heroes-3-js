@@ -5,6 +5,8 @@ This document defines the **V1** scope only.
 
 Source of truth: `initial_docs/SPEC.md`. This V1 spec intentionally **narrows** some content details (no extra features are added beyond the source), based on explicit project decisions made on **2026-02-22**.
 
+Implementation architecture reference: `docs/v1/ARCHITECTURE.md`.
+
 ---
 
 ## Purpose

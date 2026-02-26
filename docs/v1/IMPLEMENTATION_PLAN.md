@@ -166,6 +166,7 @@ V1 is accepted when all success criteria in `docs/v1/SPEC.md` are demonstrably t
 - Task tracker: `docs/v1/tasks/TRACKER.md`
 - Tasks: `docs/v1/tasks/`
 - V1 spec: `docs/v1/SPEC.md`
+- Runtime architecture: `docs/v1/ARCHITECTURE.md`
 - Source reference: `initial_docs/SPEC.md`
 - Static server: `scripts/static-server.mjs`
 
