@@ -1,27 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
 import { APP_COMMAND_MOVE_REQUESTED } from '../events.js';
+import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerMovementController } from './movement-controller.js';
-
-function createFakeBus() {
-  const listenersByType = new Map();
-  const emitted = [];
-
-  return {
-    emitted,
-    addEventListener(type, handler) {
-      const listeners = listenersByType.get(type) ?? [];
-      listeners.push(handler);
-      listenersByType.set(type, listeners);
-    },
-    emit(type, detail) {
-      emitted.push({ type, detail });
-      for (const listener of listenersByType.get(type) ?? []) {
-        listener({ type, detail });
-      }
-    }
-  };
-}
 
 describe('movement controller', () => {
   test('forwards planned path to movement system without emitting lifecycle facts', async () => {

@@ -6,17 +6,8 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED
 } from '../events.js';
+import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { createSystemContext } from './system-context.js';
-
-function createFakeBus() {
-  const emitted = [];
-  return {
-    emitted,
-    emit(type, detail) {
-      emitted.push({ type, detail });
-    }
-  };
-}
 
 describe('system context', () => {
   test('creates movement and emits movement facts through callbacks', async () => {

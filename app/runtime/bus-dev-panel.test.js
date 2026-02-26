@@ -29,7 +29,7 @@ describe('bus dev panel', () => {
     const rows = [...document.querySelectorAll('.bus-dev-panel__event')].map((item) => item.textContent);
     expect(rows).toHaveLength(2);
     expect(rows[0]).toContain('command.move.requested');
-    expect(rows[0]).toContain('subscribers: 1');
+    expect(rows[0]).toContain('subs: 1');
     expect(rows[1]).toContain('command.tile.clicked');
 
     panel.destroy();

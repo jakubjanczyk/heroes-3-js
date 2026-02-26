@@ -1,7 +1,5 @@
 import { describe, expect, test } from 'vitest';
 
-import { createMap } from '../../engine/map.js';
-import { createOccupancyIndex } from '../../engine/occupancy.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
@@ -11,42 +9,21 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
+import {
+  createFakeBus,
+  getLastEmittedByType
+} from '../../tests/test-utils/fake-bus.js';
 import { registerPreviewController } from './preview-controller.js';
-
-function createFakeBus() {
-  const listenersByType = new Map();
-  const emitted = [];
-
-  return {
-    emitted,
-    addEventListener(type, handler) {
-      const listeners = listenersByType.get(type) ?? [];
-      listeners.push(handler);
-      listenersByType.set(type, listeners);
-    },
-    emit(type, detail) {
-      emitted.push({ type, detail: structuredClone(detail) });
-      for (const listener of listenersByType.get(type) ?? []) {
-        listener({ type, detail });
-      }
-    }
-  };
-}
-
-function getLastEvent(bus, type) {
-  return [...bus.emitted].reverse().find((entry) => entry.type === type) ?? null;
-}
+import { createHeroWorld } from './runtime-test-utils.js';
 
 describe('preview controller', () => {
   test('builds preview on first click and emits move request on second click', () => {
-    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const map = createMap({
+    const { hero, map, occupancy } = createHeroWorld({
       width: 3,
       height: 1,
       tiles: [0, 0, 0]
     });
-    const occupancy = createOccupancyIndex([hero]);
-    const bus = createFakeBus();
+    const bus = createFakeBus({ snapshotDetail: true });
 
     registerPreviewController({
       bus,
@@ -58,7 +35,7 @@ describe('preview controller', () => {
 
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
 
-    const previewEvent = getLastEvent(bus, APP_UI_PREVIEW_UPDATED);
+    const previewEvent = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
     expect(previewEvent?.detail.targetTile).toEqual({ x: 2, y: 0 });
     expect(previewEvent?.detail.path).toEqual([
       { x: 0, y: 0 },
@@ -68,7 +45,7 @@ describe('preview controller', () => {
 
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
 
-    const moveRequest = getLastEvent(bus, APP_COMMAND_MOVE_REQUESTED);
+    const moveRequest = getLastEmittedByType(bus, APP_COMMAND_MOVE_REQUESTED);
     expect(moveRequest?.detail.targetTile).toEqual({ x: 2, y: 0 });
     expect(moveRequest?.detail.path).toEqual([
       { x: 0, y: 0 },
@@ -78,14 +55,12 @@ describe('preview controller', () => {
   });
 
   test('shrinks preview path as hero moves and clears after finishing at target', () => {
-    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const map = createMap({
+    const { hero, map, occupancy } = createHeroWorld({
       width: 3,
       height: 1,
       tiles: [0, 0, 0]
     });
-    const occupancy = createOccupancyIndex([hero]);
-    const bus = createFakeBus();
+    const bus = createFakeBus({ snapshotDetail: true });
 
     registerPreviewController({
       bus,
@@ -115,14 +90,12 @@ describe('preview controller', () => {
   });
 
   test('re-emits preview when movement points change for active preview', () => {
-    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const map = createMap({
+    const { hero, map, occupancy } = createHeroWorld({
       width: 2,
       height: 1,
       tiles: [0, 0]
     });
-    const occupancy = createOccupancyIndex([hero]);
-    const bus = createFakeBus();
+    const bus = createFakeBus({ snapshotDetail: true });
     let remaining = 3;
 
     registerPreviewController({
@@ -137,19 +110,17 @@ describe('preview controller', () => {
     remaining = 1;
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 1, max: 15 });
 
-    const previewEvent = getLastEvent(bus, APP_UI_PREVIEW_UPDATED);
+    const previewEvent = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
     expect(previewEvent?.detail.maxAffordableSteps).toBe(1);
   });
 
   test('does not emit move request when remaining movement points are zero', () => {
-    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const map = createMap({
+    const { hero, map, occupancy } = createHeroWorld({
       width: 2,
       height: 1,
       tiles: [0, 0]
     });
-    const occupancy = createOccupancyIndex([hero]);
-    const bus = createFakeBus();
+    const bus = createFakeBus({ snapshotDetail: true });
 
     registerPreviewController({
       bus,

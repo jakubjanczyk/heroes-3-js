@@ -6,29 +6,13 @@ import {
   APP_UI_MUSIC_STATE_CHANGED,
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
+import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import {
   registerEntityProjection,
   registerHudProjection,
   registerMusicToggleProjection,
   registerPreviewProjection
 } from './projections.js';
-
-function createFakeBus() {
-  const listenersByType = new Map();
-
-  return {
-    addEventListener(type, handler) {
-      const listeners = listenersByType.get(type) ?? [];
-      listeners.push(handler);
-      listenersByType.set(type, listeners);
-    },
-    emit(type, detail) {
-      for (const listener of listenersByType.get(type) ?? []) {
-        listener({ type, detail });
-      }
-    }
-  };
-}
 
 describe('runtime projections', () => {
   test('hud projection updates movement points text', () => {

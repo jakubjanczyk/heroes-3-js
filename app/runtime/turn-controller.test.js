@@ -7,27 +7,8 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_TURN_ENDED
 } from '../events.js';
+import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerTurnController } from './turn-controller.js';
-
-function createFakeBus() {
-  const listenersByType = new Map();
-  const emitted = [];
-
-  return {
-    emitted,
-    addEventListener(type, handler) {
-      const listeners = listenersByType.get(type) ?? [];
-      listeners.push(handler);
-      listenersByType.set(type, listeners);
-    },
-    emit(type, detail) {
-      emitted.push({ type, detail });
-      for (const listener of listenersByType.get(type) ?? []) {
-        listener({ type, detail });
-      }
-    }
-  };
-}
 
 describe('turn controller', () => {
   test('ends turn and emits facts when not moving', () => {

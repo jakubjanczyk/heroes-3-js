@@ -6,17 +6,8 @@ import {
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
   APP_COMMAND_TILE_CLICKED
 } from '../events.js';
+import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { bindUiIntentButtons, bindViewportInput } from './bindings.js';
-
-function createFakeBus() {
-  const emitted = [];
-  return {
-    emitted,
-    emit(type, detail) {
-      emitted.push({ type, detail });
-    }
-  };
-}
 
 function createFakeButton() {
   const listeners = new Map();

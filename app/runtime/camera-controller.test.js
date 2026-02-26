@@ -6,24 +6,8 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED
 } from '../events.js';
+import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerCameraController } from './camera-controller.js';
-
-function createFakeBus() {
-  const listenersByType = new Map();
-
-  return {
-    addEventListener(type, handler) {
-      const listeners = listenersByType.get(type) ?? [];
-      listeners.push(handler);
-      listenersByType.set(type, listeners);
-    },
-    emit(type, detail) {
-      for (const listener of listenersByType.get(type) ?? []) {
-        listener({ type, detail });
-      }
-    }
-  };
-}
 
 describe('camera controller', () => {
   test('handles pan command and movement lifecycle camera actions', () => {

@@ -11,6 +11,7 @@ import {
   APP_FACT_MOVE_STARTED
 } from './app/events.js';
 import { createMovementSystem as createMovementSystemDefault } from './game/systems/movement-system.js';
+import { createFakeBus } from './tests/test-utils/fake-bus.js';
 
 function createFakeElement(tagName) {
   const listeners = {};
@@ -138,26 +139,6 @@ async function flushMicrotasks(times = 30) {
   for (let i = 0; i < times; i += 1) {
     await Promise.resolve();
   }
-}
-
-function createFakeBus() {
-  const listenersByType = new Map();
-  const emitted = [];
-
-  return {
-    emitted,
-    addEventListener(type, handler) {
-      const listeners = listenersByType.get(type) ?? [];
-      listeners.push(handler);
-      listenersByType.set(type, listeners);
-    },
-    emit(type, detail) {
-      emitted.push({ type, detail });
-      for (const listener of listenersByType.get(type) ?? []) {
-        listener({ type, detail });
-      }
-    }
-  };
 }
 
 describe('main boot', () => {
