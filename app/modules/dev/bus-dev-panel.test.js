@@ -22,8 +22,18 @@ describe('bus dev panel', () => {
   test('renders dispatched event rows with subscriber counts', () => {
     const panel = createBusDevPanel({ document, maxEntries: 2 });
 
-    panel.log({ action: 'emit', type: 'command.tile.clicked', detail: { tile: { x: 1, y: 0 } }, subscribers: 3 });
-    panel.log({ action: 'emit', type: 'command.move.requested', detail: { targetTile: { x: 2, y: 0 } }, subscribers: 1 });
+    panel.log({
+      action: 'emit',
+      type: 'command.tile.clicked',
+      detail: { tile: { x: 1, y: 0 } },
+      subscribers: 3
+    });
+    panel.log({
+      action: 'emit',
+      type: 'command.move.requested',
+      detail: { targetTile: { x: 2, y: 0 } },
+      subscribers: 1
+    });
     panel.log({ action: 'subscribe', type: 'ignored', subscribers: 2 });
 
     const rows = [...document.querySelectorAll('.bus-dev-panel__event')].map((item) => item.textContent);

@@ -1,12 +1,11 @@
-import { attachCameraInput as attachCameraInputDefault } from '../engine/input.js';
-import { renderEntityLayer as renderEntityLayerDefault } from '../engine/layers/entity-layer.js';
-import { renderPathPreviewLayer as renderPathPreviewLayerDefault } from '../engine/layers/path-preview-layer.js';
-import { renderTerrainLayer } from '../engine/layers/terrain-layer.js';
-import { createDomContext } from './runtime/dom-context.js';
-import { createBusDevPanel } from './runtime/bus-dev-panel.js';
-import { createSystemContext } from './runtime/system-context.js';
-import { startRuntime } from './runtime/start-runtime.js';
-import { createWorldContext } from './runtime/world-context.js';
+import { createBus } from '../engine/bus.js';
+import {
+  APP_COMMAND_APP_START,
+  APP_FACT_WORLD_LOAD_FAILED,
+  APP_FACT_WORLD_READY
+} from './events.js';
+import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
+import { registerModules } from './modules/register-modules.js';
 
 const MAX_MOVEMENT_POINTS = 15;
 
@@ -28,97 +27,63 @@ function composeBusLoggers(...loggers) {
   };
 }
 
+function createWorldReadyPromise(bus) {
+  return new Promise((resolve, reject) => {
+    bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+      resolve(event.detail);
+    });
+
+    bus.addEventListener(APP_FACT_WORLD_LOAD_FAILED, (event) => {
+      reject(event.detail.error);
+    });
+  });
+}
+
 export async function bootApp({
   fetch = globalThis.fetch,
   document = globalThis.document,
   window = globalThis.window,
-  loadGame,
-  createMap,
-  createOccupancyIndex,
-  bus,
-  createBus,
+  AudioCtor = globalThis.Audio,
+  bus = null,
+  createBus: createBusImpl = createBus,
   busDebug = false,
   busLogger = defaultBusLogger,
-  createCamera,
-  attachCameraInput = attachCameraInputDefault,
-  renderEntityLayer = renderEntityLayerDefault,
-  renderPathPreviewLayer = renderPathPreviewLayerDefault,
-  createMovementSystem,
-  createTurnSystem,
-  createMusicPlayer,
-  loadMusicTracks,
+  config: configOverride = {},
   musicTracks,
-  musicManifestUrl = '/assets/music/tracks.json',
-  AudioCtor = globalThis.Audio
+  musicManifestUrl = '/assets/music/tracks.json'
 } = {}) {
   const busPanel = busDebug ? createBusDevPanel({ document }) : null;
   const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
+  const appBus = bus ?? createBusImpl({ debug: busDebug, log: activeBusLogger });
 
-  const { scenario, map, occupancy, bus: appBus, world } = await createWorldContext({
+  const env = {
     fetch,
-    loadGame,
-    createMap,
-    createOccupancyIndex,
-    bus,
-    createBus,
-    busDebug,
-    busLogger: activeBusLogger
-  });
+    document,
+    window,
+    AudioCtor
+  };
 
-  const dom = createDomContext(document);
-  const systems = await createSystemContext({
-    fetch,
-    scenario,
-    map,
-    occupancy,
-    bus: appBus,
-    viewport: dom.viewport,
-    worldElement: dom.worldElement,
-    entityLayer: dom.entityLayer,
+  const config = {
     maxMovementPoints: MAX_MOVEMENT_POINTS,
-    createCamera,
-    createMovementSystem,
-    createTurnSystem,
-    createMusicPlayer,
-    loadMusicTracks,
     musicTracks,
     musicManifestUrl,
-    AudioCtor
-  });
+    ...configOverride
+  };
 
-  await startRuntime({
+  const worldReadyPromise = createWorldReadyPromise(appBus);
+  registerModules({
     bus: appBus,
-    scenario,
-    map,
-    occupancy,
-    hero: systems.hero,
-    maxMovementPoints: MAX_MOVEMENT_POINTS,
-    turnSystem: systems.turnSystem,
-    movement: systems.movement,
-    musicPlayer: systems.musicPlayer,
-    camera: systems.camera,
-    attachCameraInput,
-    renderTerrainLayer,
-    renderEntityLayer,
-    renderPathPreviewLayer,
-    createElement: dom.createElement,
-    terrainLayer: dom.terrainLayer,
-    entityLayer: dom.entityLayer,
-    effectsLayer: dom.effectsLayer,
-    uiLayer: dom.uiLayer,
-    viewport: dom.viewport,
-    window,
-    movementPointsStatus: dom.movementPointsStatus,
-    endTurnButton: dom.endTurnButton,
-    musicToggleButton: dom.musicToggleButton
+    env,
+    config
   });
 
-  const bootStatus = document?.getElementById('boot-status');
-  if (bootStatus) {
-    bootStatus.textContent = `Boot ok: ${scenario.meta.id}`;
-  }
+  appBus.emit(APP_COMMAND_APP_START, {});
+  const world = await worldReadyPromise;
 
-  console.log(`boot ok: ${scenario.meta.id} (entities: ${scenario.entities.length})`);
+  console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
 
-  return world;
+  return {
+    ...world,
+    bus: appBus
+  };
 }

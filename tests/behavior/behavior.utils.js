@@ -4,7 +4,6 @@ import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
 import { bootApp } from '../../app/boot-app.js';
-import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
 
 export function mountAppTemplate() {
   document.body.innerHTML = `
@@ -39,14 +38,19 @@ export function createLoadGame({
   tiles = [0, 0, 0, 0],
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
 } = {}) {
-  return async () => ({
+  return {
     scenario: {
       meta: { id: 'demo' },
       terrain: { width, height, tiles },
       entities
     },
-    definitions: {}
-  });
+    definitions: {
+      hero: {},
+      monsters: {},
+      resources: {},
+      towns: {}
+    }
+  };
 }
 
 export function createLinearScenario({
@@ -62,56 +66,50 @@ export function createLinearScenario({
   };
 }
 
-export async function fetchShouldNotBeCalled() {
-  throw new Error('fetch should not be called in this test');
-}
-
 export async function flushMicrotasks(times = 30) {
   for (let i = 0; i < times; i += 1) {
     await Promise.resolve();
   }
 }
 
-export function createFakeCamera() {
+function createJsonResponse(value) {
   return {
-    moveBy() {},
-    setFollowTileGetter() {},
-    update() {},
-    clearPan() {},
-    lockFollow() {},
-    unlockFollow() {},
-    centerOnTile() {},
-    getOffset() {
-      return { x: 0, y: 0 };
+    ok: true,
+    status: 200,
+    async json() {
+      return value;
     }
   };
 }
 
-export function createTrackedCamera() {
-  const centerOnTileCalls = [];
-  let lockFollowCalls = 0;
-  let unlockFollowCalls = 0;
-  return {
-    moveBy() {},
-    setFollowTileGetter() {},
-    update() {},
-    clearPan() {},
-    lockFollow() {
-      lockFollowCalls += 1;
-    },
-    unlockFollow() {
-      unlockFollowCalls += 1;
-    },
-    centerOnTile(tile) {
-      centerOnTileCalls.push(tile);
-    },
-    centerOnTileCalls,
-    get lockFollowCalls() {
-      return lockFollowCalls;
-    },
-    get unlockFollowCalls() {
-      return unlockFollowCalls;
+function createGameFetch({ scenario, definitions, musicTracks = [] }) {
+  const routeMap = new Map([
+    ['./scenarios/scenario.json', scenario],
+    ['/scenarios/scenario.json', scenario],
+    ['./game/data/hero.json', definitions.hero ?? {}],
+    ['/game/data/hero.json', definitions.hero ?? {}],
+    ['./game/data/monsters.json', definitions.monsters ?? {}],
+    ['/game/data/monsters.json', definitions.monsters ?? {}],
+    ['./game/data/resources.json', definitions.resources ?? {}],
+    ['/game/data/resources.json', definitions.resources ?? {}],
+    ['./game/data/towns.json', definitions.towns ?? {}],
+    ['/game/data/towns.json', definitions.towns ?? {}],
+    ['./assets/music/tracks.json', musicTracks],
+    ['/assets/music/tracks.json', musicTracks]
+  ]);
+
+  return async (url) => {
+    if (!routeMap.has(url)) {
+      return {
+        ok: false,
+        status: 404,
+        async json() {
+          return null;
+        }
+      };
     }
+
+    return createJsonResponse(routeMap.get(url));
   };
 }
 
@@ -136,49 +134,48 @@ export function setViewportSize(width, height) {
 
 export async function setupMovementBehaviorApp({
   loadGameOptions,
-  movementSystemOptions,
-  renderPathPreviewLayer,
-  attachCameraInput,
-  createCamera,
   viewportSize,
-  createMusicPlayer,
-  loadMusicTracks,
-  musicTracks,
-  AudioCtor
+  musicTracks = [],
+  AudioCtor,
+  movementStepDelayMs = 0
 } = {}) {
   mountAppTemplate();
   if (viewportSize) {
     setViewportSize(viewportSize.width, viewportSize.height);
   }
 
-  const user = userEvent.setup();
-  const fakeCamera = createFakeCamera();
-  let camera = null;
-
-  const world = await bootApp({
-    fetch: fetchShouldNotBeCalled,
-    document,
-    window,
-    loadGame: createLoadGame(loadGameOptions),
-    createCamera: (args) => {
-      camera = createCamera ? createCamera(args) : fakeCamera;
-      return camera;
-    },
-    ...(renderPathPreviewLayer ? { renderPathPreviewLayer } : {}),
-    ...(attachCameraInput ? { attachCameraInput } : {}),
-    ...(createMusicPlayer ? { createMusicPlayer } : {}),
-    ...(loadMusicTracks ? { loadMusicTracks } : {}),
-    ...(musicTracks ? { musicTracks } : {}),
-    ...(AudioCtor ? { AudioCtor } : {}),
-    createMovementSystem: (args) => createMovementSystemDefault({
-      ...args,
-      sleep: async () => {},
-      stepDelayMs: 0,
-      ...movementSystemOptions
-    })
+  const gameData = createLoadGame(loadGameOptions);
+  const fetch = createGameFetch({
+    scenario: gameData.scenario,
+    definitions: gameData.definitions,
+    musicTracks
   });
 
-  return { user, fakeCamera, camera, world };
+  const movementSleep = (ms) => {
+    if (ms <= 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  };
+
+  const user = userEvent.setup();
+
+  const world = await bootApp({
+    fetch,
+    document,
+    window,
+    ...(AudioCtor ? { AudioCtor } : {}),
+    config: {
+      musicTracks,
+      movementStepDelayMs,
+      movementSleep
+    }
+  });
+
+  return { user, world };
 }
 
 export async function setupLinearMovementApp(options = {}) {
@@ -186,19 +183,17 @@ export async function setupLinearMovementApp(options = {}) {
     width,
     heroId,
     heroTile,
-    movementSystemOptions,
-    renderPathPreviewLayer,
-    attachCameraInput,
-    createCamera,
-    viewportSize
+    viewportSize,
+    musicTracks,
+    AudioCtor,
+    movementStepDelayMs
   } = options;
   return setupMovementBehaviorApp({
     loadGameOptions: createLinearScenario({ width, heroId, heroTile }),
-    movementSystemOptions,
-    renderPathPreviewLayer,
-    attachCameraInput,
-    createCamera,
-    viewportSize
+    viewportSize,
+    musicTracks,
+    AudioCtor,
+    movementStepDelayMs
   });
 }
 

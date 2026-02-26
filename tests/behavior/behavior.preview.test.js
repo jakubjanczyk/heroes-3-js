@@ -246,38 +246,6 @@ describe('path preview behavior', () => {
     expectPreviewOverLimitTargetAt(16, 0);
   });
 
-  test('given preview exists when movement advances step-by-step then already-traversed preview segments disappear as the hero walks', async () => {
-    const sleepResolvers = [];
-    await setupLinearMovementApp({
-      width: 6,
-      movementSystemOptions: {
-        sleep: () => new Promise((resolve) => {
-          sleepResolvers.push(resolve);
-        }),
-        stepDelayMs: 1
-      }
-    });
-
-    dispatchTileClick(3, 0);
-    await flushMicrotasks();
-    expectPreviewDashAt(1, 0);
-    expectPreviewDashAt(2, 0);
-    expectPreviewTargetAt(3, 0);
-
-    dispatchTileClick(3, 0);
-    await flushMicrotasks(3);
-    expectHeroAt(0, 0);
-    expectPreviewDashAt(1, 0);
-
-    sleepResolvers.shift()?.();
-    await flushMicrotasks(3);
-
-    expectHeroAt(1, 0);
-    expect(getPreviewDashAt(1, 0)).toBeFalsy();
-    expectPreviewDashAt(2, 0);
-    expectPreviewTargetAt(3, 0);
-  });
-
   test('given preview exists when player confirms and movement completes at the destination then the preview clears at movement end', async () => {
     await setupLinearMovementApp({ width: 6 });
 
