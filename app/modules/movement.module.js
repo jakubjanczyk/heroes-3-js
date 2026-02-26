@@ -48,11 +48,16 @@ export function registerMovementModule(
           targetTile
         });
       },
-      onMoveFinish: ({ targetTile }) => {
-        bus.emit(APP_FACT_MOVE_FINISHED, {
+      onMoveFinish: ({ targetTile, interaction }) => {
+        const detail = {
           moved: true,
           targetTile
-        });
+        };
+        if (interaction) {
+          detail.interaction = interaction;
+        }
+
+        bus.emit(APP_FACT_MOVE_FINISHED, detail);
       },
       onStep: ({ hero: steppedHero, from, to }) => {
         bus.emit(APP_FACT_HERO_MOVED, {

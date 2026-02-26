@@ -24,4 +24,15 @@ describe('occupancy index', () => {
     expect(occupancy.getAt({ x: 1, y: 1 })).toBe(null);
     expect(occupancy.getAt({ x: 2, y: 1 })?.id).toBe('hero-1');
   });
+
+  test('removes entity id index without deleting tile occupied by another entity', () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } };
+    const monster = { id: 'monster-1', kind: 'MONSTER', tile: { x: 1, y: 0 } };
+    const occupancy = createOccupancyIndex([hero, monster]);
+
+    occupancy.moveEntity(hero, { x: 1, y: 0 });
+    occupancy.removeEntity(monster);
+
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
+  });
 });

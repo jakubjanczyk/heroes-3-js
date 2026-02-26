@@ -1,5 +1,9 @@
 import { renderEntityLayer as renderEntityLayerDefault } from '../../engine/layers/entity-layer.js';
-import { APP_FACT_HERO_MOVED, APP_FACT_WORLD_READY } from '../events.js';
+import {
+  APP_FACT_HERO_MOVED,
+  APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_WORLD_READY
+} from '../events.js';
 
 export function registerEntityViewModule(
   { bus, env },
@@ -33,6 +37,10 @@ export function registerEntityViewModule(
   });
 
   bus.addEventListener(APP_FACT_HERO_MOVED, () => {
+    render();
+  });
+
+  bus.addEventListener(APP_FACT_MONSTER_DEFEATED, () => {
     render();
   });
 }

@@ -56,4 +56,24 @@ describe('bootstrap', () => {
     expect(loaded.scenario.entities).toHaveLength(4);
     expect(loaded.definitions).toEqual(definitions);
   });
+
+  test('loadGame rejects scenarios where entity is on blocked tile', async () => {
+    const scenario = {
+      meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
+      terrain: { width: 2, height: 1, tiles: [0, 1] },
+      entities: [{ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }]
+    };
+
+    const fetch = createFakeFetch({
+      './scenarios/scenario.json': scenario,
+      './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
+      './game/data/resources.json': {},
+      './game/data/towns.json': {}
+    });
+
+    await expect(loadGame({ fetch })).rejects.toThrow(
+      'Entity monster-1 (MONSTER) must be placed on a passable tile: (1, 0)'
+    );
+  });
 });

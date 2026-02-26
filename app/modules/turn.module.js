@@ -16,9 +16,14 @@ export function registerTurnModule(
   } = {}
 ) {
   const maxMovementPoints = config.maxMovementPoints;
+  const now = typeof config?.now === 'function' ? config.now : () => Date.now();
+  const moveDurationThresholdMs = config?.moveDurationThresholdMs ?? 16;
+  const endTurnPostMoveGraceMs = config?.endTurnPostMoveGraceMs ?? 32;
 
   let turnSystem = null;
   let isMoving = false;
+  let moveStartedAt = 0;
+  let suppressEndTurnUntil = 0;
 
   function emitTurnState() {
     if (!turnSystem) {
@@ -38,10 +43,14 @@ export function registerTurnModule(
 
   bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
     isMoving = true;
+    moveStartedAt = now();
   });
 
   bus.addEventListener(APP_FACT_MOVE_FINISHED, () => {
     isMoving = false;
+    const moveDurationMs = now() - moveStartedAt;
+    suppressEndTurnUntil =
+      moveDurationMs >= moveDurationThresholdMs ? now() + endTurnPostMoveGraceMs : 0;
   });
 
   bus.addEventListener(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, (event) => {
@@ -59,7 +68,7 @@ export function registerTurnModule(
   });
 
   bus.addEventListener(APP_COMMAND_END_TURN_REQUESTED, () => {
-    if (!turnSystem || isMoving) {
+    if (!turnSystem || isMoving || now() < suppressEndTurnUntil) {
       return;
     }
 

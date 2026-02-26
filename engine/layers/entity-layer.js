@@ -9,20 +9,37 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     height: container.clientHeight ?? 0,
     map
   });
-  const heroSize = 24;
+  function getEntityStyle(entity) {
+    if (entity.kind === 'HERO') {
+      return {
+        className: 'entity entity--hero',
+        size: 24
+      };
+    }
+
+    if (entity.kind === 'MONSTER') {
+      return {
+        className: 'entity entity--monster',
+        size: 22
+      };
+    }
+
+    return null;
+  }
 
   for (const entity of entities) {
-    if (entity.kind !== 'HERO') {
+    const entityStyle = getEntityStyle(entity);
+    if (!entityStyle) {
       continue;
     }
 
     const center = getTileCenter({ map, tile: entity.tile, origin });
     const entityEl = makeElement('div');
-    entityEl.className = 'entity entity--hero';
+    entityEl.className = entityStyle.className;
     entityEl.dataset.entityId = entity.id;
     entityEl.dataset.tileX = String(entity.tile.x);
     entityEl.dataset.tileY = String(entity.tile.y);
-    entityEl.style.transform = `translate(${center.x - heroSize / 2}px, ${center.y - heroSize / 2}px)`;
+    entityEl.style.transform = `translate(${center.x - entityStyle.size / 2}px, ${center.y - entityStyle.size / 2}px)`;
     container.appendChild(entityEl);
   }
 }

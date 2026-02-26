@@ -10,3 +10,20 @@
   border: 2px solid #d7eeff;
   box-shadow: 0 2px 8px rgba(5, 12, 22, 0.65);
 }
+
+.entity--monster {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #b6544a;
+  border: 2px solid #ffd7c4;
+  box-shadow: 0 2px 8px rgba(26, 6, 5, 0.7);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.entity--monster-defeating {
+  opacity: 0;
+  transform: scale(0.72);
+}

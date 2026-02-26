@@ -1,11 +1,15 @@
 import { describe, expect, test } from 'vitest';
 
-import { APP_FACT_HERO_MOVED, APP_FACT_WORLD_READY } from '../events.js';
+import {
+  APP_FACT_HERO_MOVED,
+  APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_WORLD_READY
+} from '../events.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerEntityViewModule } from './entity-view.module.js';
 
 describe('entity view module', () => {
-  test('renders entities on world-ready and after hero moved facts', () => {
+  test('renders entities on world-ready and after hero movement/interaction facts', () => {
     const bus = createFakeBus();
     const renderCalls = [];
     const entityLayer = { id: 'entity-layer' };
@@ -36,8 +40,9 @@ describe('entity view module', () => {
       scenario: { entities: [{ id: 'hero-1' }] }
     });
     bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
+    bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
 
-    expect(renderCalls).toHaveLength(2);
+    expect(renderCalls).toHaveLength(3);
     expect(renderCalls[0].entities).toEqual([{ id: 'hero-1' }]);
   });
 

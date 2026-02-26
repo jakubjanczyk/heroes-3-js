@@ -14,6 +14,9 @@ export const APP_FACT_MOVE_FINISHED = 'fact.move.finished';
 export const APP_FACT_HERO_MOVED = 'fact.hero.moved';
 export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.changed';
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
+export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated';
 export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed';
+export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened';
+export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed';

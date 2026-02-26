@@ -10,6 +10,8 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_WORLD_READY,
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
 import { createFakeBus, getLastEmittedByType } from '../../tests/test-utils/fake-bus.js';
@@ -88,5 +90,35 @@ describe('preview module', () => {
     expect(previews.at(-1)?.detail.path).toBe(null);
     expect(previews.some((entry) => entry.detail.path?.length === 3)).toBe(true);
     expect(previews.some((entry) => entry.detail.path?.length === 2)).toBe(true);
+  });
+
+  test('blocks tile-click preview while interaction modal is open and resumes after close', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
+    const occupancy = createOccupancyIndex([hero]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
+      title: 'Interaction',
+      message: 'Monster defeated'
+    });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+
+    let preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toBe(null);
+
+    bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+
+    preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path?.length).toBe(3);
   });
 });

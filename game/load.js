@@ -6,6 +6,39 @@ async function fetchJson(fetch, url) {
   return res.json();
 }
 
+function isInBounds(terrain, tile) {
+  return (
+    tile.x >= 0 &&
+    tile.y >= 0 &&
+    tile.x < terrain.width &&
+    tile.y < terrain.height
+  );
+}
+
+function isPassableTile(terrain, tile) {
+  if (!isInBounds(terrain, tile)) {
+    return false;
+  }
+
+  const index = tile.y * terrain.width + tile.x;
+  return terrain.tiles[index] === 0;
+}
+
+function assertEntitiesOnPassableTiles(scenario) {
+  const entities = scenario.entities ?? [];
+
+  for (const entity of entities) {
+    const tile = entity.tile ?? {};
+    if (isPassableTile(scenario.terrain, tile)) {
+      continue;
+    }
+
+    throw new Error(
+      `Entity ${entity.id} (${entity.kind}) must be placed on a passable tile: (${tile.x}, ${tile.y})`
+    );
+  }
+}
+
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') return url;
   if (url.startsWith('//')) return url;
@@ -33,6 +66,8 @@ export async function loadGame({
     fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
     fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`)
   ]);
+
+  assertEntitiesOnPassableTiles(scenario);
 
   return {
     scenario,

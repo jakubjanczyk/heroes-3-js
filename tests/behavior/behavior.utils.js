@@ -72,6 +72,12 @@ export async function flushMicrotasks(times = 30) {
   }
 }
 
+export async function waitMs(ms = 0) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function createJsonResponse(value) {
   return {
     ok: true,
@@ -137,7 +143,8 @@ export async function setupMovementBehaviorApp({
   viewportSize,
   musicTracks = [],
   AudioCtor,
-  movementStepDelayMs = 0
+  movementStepDelayMs = 0,
+  appConfig = {}
 } = {}) {
   mountAppTemplate();
   if (viewportSize) {
@@ -171,7 +178,8 @@ export async function setupMovementBehaviorApp({
     config: {
       musicTracks,
       movementStepDelayMs,
-      movementSleep
+      movementSleep,
+      ...appConfig
     }
   });
 
@@ -186,14 +194,16 @@ export async function setupLinearMovementApp(options = {}) {
     viewportSize,
     musicTracks,
     AudioCtor,
-    movementStepDelayMs
+    movementStepDelayMs,
+    appConfig
   } = options;
   return setupMovementBehaviorApp({
     loadGameOptions: createLinearScenario({ width, heroId, heroTile }),
     viewportSize,
     musicTracks,
     AudioCtor,
-    movementStepDelayMs
+    movementStepDelayMs,
+    appConfig
   });
 }
 
@@ -203,6 +213,10 @@ export function getTerrainTile(x, y) {
 
 export function getHeroEntity() {
   return document.querySelector('.entity--hero[data-entity-id="hero-1"]');
+}
+
+export function getMonsterEntity(entityId = 'monster-1') {
+  return document.querySelector(`.entity--monster[data-entity-id="${entityId}"]`);
 }
 
 export function expectHeroAt(x, y) {
@@ -215,6 +229,60 @@ export function expectHeroAt(x, y) {
 
 export function expectMovementPoints(current, max = 15) {
   expect(screen.getByText(`MP: ${current} / ${max}`)).toBeTruthy();
+}
+
+export function expectMonsterPresent(entityId = 'monster-1') {
+  const monsterEntity = getMonsterEntity(entityId);
+  expect(monsterEntity).toBeTruthy();
+  return monsterEntity;
+}
+
+export function expectMonsterAt(x, y, entityId = 'monster-1') {
+  const monsterEntity = expectMonsterPresent(entityId);
+  expect(monsterEntity?.dataset.tileX).toBe(String(x));
+  expect(monsterEntity?.dataset.tileY).toBe(String(y));
+  return monsterEntity;
+}
+
+export function expectMonsterNotPresent(entityId = 'monster-1') {
+  expect(getMonsterEntity(entityId)).toBeFalsy();
+}
+
+export function expectMonsterDefeating(entityId = 'monster-1') {
+  expect(getMonsterEntity(entityId)?.className).toContain('entity--monster-defeating');
+}
+
+export function getInteractionModal() {
+  return document.querySelector('.interaction-modal');
+}
+
+export function getInteractionModalMessage() {
+  return document.querySelector('.interaction-modal__message');
+}
+
+export function getInteractionModalOkButton() {
+  return document.querySelector('.interaction-modal__ok-button');
+}
+
+export function expectInteractionModalOpen(messageIncludes = null) {
+  const modal = getInteractionModal();
+  expect(modal).toBeTruthy();
+
+  if (messageIncludes !== null) {
+    expect(getInteractionModalMessage()?.textContent ?? '').toContain(messageIncludes);
+  }
+
+  return modal;
+}
+
+export function expectInteractionModalClosed() {
+  expect(getInteractionModal()).toBeFalsy();
+}
+
+export async function closeInteractionModal(user) {
+  const okButton = getInteractionModalOkButton();
+  expect(okButton).toBeTruthy();
+  await user.click(okButton);
 }
 
 export function expectHasOverLimitTargetMarker() {

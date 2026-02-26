@@ -58,6 +58,15 @@ export function createMovementSystem({
     return entities.find((entity) => entity.kind === 'HERO') ?? null;
   }
 
+  function getMonsterAt(tile, heroId) {
+    const occupant = occupancy.getAt(tile);
+    if (!occupant || occupant.id === heroId || occupant.kind !== 'MONSTER') {
+      return null;
+    }
+
+    return occupant;
+  }
+
   async function moveHeroTo(toTile, { path: plannedPath = null } = {}) {
     if (isMoving) {
       return false;
@@ -91,10 +100,16 @@ export function createMovementSystem({
     if (cappedStepCount < 1) {
       return false;
     }
+    const targetMonster = getMonsterAt(toTile, hero.id);
+    const didTriggerMonsterCombat = Boolean(targetMonster) && cappedStepCount === totalStepCount;
+    const executedStepCount = didTriggerMonsterCombat
+      ? Math.max(0, cappedStepCount - 1)
+      : cappedStepCount;
+
     spendMovementPoints(cappedStepCount);
 
     const fromTile = { x: hero.tile.x, y: hero.tile.y };
-    const reachedTile = path[cappedStepCount];
+    const reachedTile = path[executedStepCount];
     isMoving = true;
     onMoveStart({
       hero,
@@ -104,7 +119,7 @@ export function createMovementSystem({
       cappedStepCount
     });
     try {
-      for (const stepTile of path.slice(1, cappedStepCount + 1)) {
+      for (const stepTile of path.slice(1, executedStepCount + 1)) {
         const stepFromTile = { x: hero.tile.x, y: hero.tile.y };
         await sleep(stepDelayMs);
         occupancy.moveEntity(hero, stepTile);
@@ -118,7 +133,14 @@ export function createMovementSystem({
         from: fromTile,
         targetTile: toTile,
         reachedTile: { x: hero.tile.x, y: hero.tile.y },
-        cappedStepCount
+        cappedStepCount,
+        interaction: didTriggerMonsterCombat
+          ? {
+              kind: 'MONSTER_COMBAT',
+              entityId: targetMonster.id,
+              targetTile: toTile
+            }
+          : null
       });
     }
 

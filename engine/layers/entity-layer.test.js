@@ -17,7 +17,7 @@ function createFakeElement(tagName) {
 }
 
 describe('entity layer', () => {
-  test('renders only hero entities into the entity layer', () => {
+  test('renders hero and monster entities into the entity layer', () => {
     const container = createFakeElement('div');
     const map = createMap({
       width: 4,
@@ -35,11 +35,15 @@ describe('entity layer', () => {
       createElement: createFakeElement
     });
 
-    expect(container.children).toHaveLength(1);
+    expect(container.children).toHaveLength(2);
     expect(container.children[0].className).toBe('entity entity--hero');
     expect(container.children[0].dataset.entityId).toBe('hero-1');
     expect(container.children[0].dataset.tileX).toBe('1');
     expect(container.children[0].dataset.tileY).toBe('1');
+    expect(container.children[1].className).toBe('entity entity--monster');
+    expect(container.children[1].dataset.entityId).toBe('monster-1');
+    expect(container.children[1].dataset.tileX).toBe('2');
+    expect(container.children[1].dataset.tileY).toBe('2');
   });
 
   test('positions hero using the same centered map origin as terrain', () => {

@@ -230,6 +230,87 @@ describe('movement system', () => {
     expect(occupancy.getAt({ x: 3, y: 0 })).toBe(null);
   });
 
+  test('stops before adjacent monster, spends one point, and reports monster combat interaction', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const monster = { id: 'monster-1', kind: 'MONSTER', tile: { x: 1, y: 0 } };
+    const entities = [hero, monster];
+    const map = createMap({
+      width: 2,
+      height: 1,
+      tiles: [0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const spent = [];
+    const steps = [];
+    const finishes = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      spendMovementPoints: (amount) => {
+        spent.push(amount);
+      },
+      onStep: ({ to }) => {
+        steps.push(to);
+      },
+      onMoveFinish: (event) => {
+        finishes.push(event);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(spent).toEqual([1]);
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
+    expect(steps).toEqual([]);
+    expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('monster-1');
+    expect(finishes[0].interaction).toEqual({
+      kind: 'MONSTER_COMBAT',
+      entityId: 'monster-1',
+      targetTile: { x: 1, y: 0 }
+    });
+  });
+
+  test('does not trigger monster combat when move stops one step short of monster target', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const monster = { id: 'monster-1', kind: 'MONSTER', tile: { x: 2, y: 0 } };
+    const entities = [hero, monster];
+    const map = createMap({
+      width: 3,
+      height: 1,
+      tiles: [0, 0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const spent = [];
+    const finishes = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      getMaxMovableSteps: () => 1,
+      spendMovementPoints: (amount) => {
+        spent.push(amount);
+      },
+      onMoveFinish: (event) => {
+        finishes.push(event);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 2, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(spent).toEqual([1]);
+    expect(hero.tile).toEqual({ x: 1, y: 0 });
+    expect(occupancy.getAt({ x: 2, y: 0 })?.id).toBe('monster-1');
+    expect(finishes[0].interaction).toBe(null);
+  });
+
   test('emits lifecycle callbacks only when movement actually starts', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const entities = [hero];

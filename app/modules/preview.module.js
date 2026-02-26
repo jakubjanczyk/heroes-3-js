@@ -7,6 +7,8 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_WORLD_READY,
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
 import { sameTile } from './shared/tile-utils.js';
@@ -18,6 +20,7 @@ export function registerPreviewModule({ bus }) {
   let previewPath = null;
   let previewTarget = null;
   let isMoving = false;
+  let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
 
   function emitPreview() {
@@ -66,7 +69,7 @@ export function registerPreviewModule({ bus }) {
   });
 
   bus.addEventListener(APP_COMMAND_TILE_CLICKED, (event) => {
-    if (!hero || isMoving) {
+    if (!hero || isMoving || isInteractionModalOpen) {
       return;
     }
 
@@ -126,5 +129,14 @@ export function registerPreviewModule({ bus }) {
     }
 
     clearPreview();
+  });
+
+  bus.addEventListener(APP_UI_INTERACTION_MODAL_OPENED, () => {
+    isInteractionModalOpen = true;
+    clearPreview();
+  });
+
+  bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
+    isInteractionModalOpen = false;
   });
 }

@@ -23,6 +23,19 @@ export function createOccupancyIndex(entities) {
       const nextKey = tileKey(toTile);
       byTile.set(nextKey, entity);
       byEntityId.set(entity.id, nextKey);
+    },
+    removeEntity(entity) {
+      const key = byEntityId.get(entity.id);
+      if (!key) {
+        return;
+      }
+
+      const entityAtTile = byTile.get(key);
+      if (entityAtTile?.id === entity.id) {
+        byTile.delete(key);
+      }
+
+      byEntityId.delete(entity.id);
     }
   };
 }
