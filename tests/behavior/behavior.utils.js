@@ -155,7 +155,7 @@ export async function setupMovementBehaviorApp({
   const fakeCamera = createFakeCamera();
   let camera = null;
 
-  await bootApp({
+  const world = await bootApp({
     fetch: fetchShouldNotBeCalled,
     document,
     window,
@@ -178,7 +178,7 @@ export async function setupMovementBehaviorApp({
     })
   });
 
-  return { user, fakeCamera, camera };
+  return { user, fakeCamera, camera, world };
 }
 
 export async function setupLinearMovementApp(options = {}) {

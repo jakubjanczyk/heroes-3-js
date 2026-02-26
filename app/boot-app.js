@@ -1,271 +1,117 @@
-import { loadGame } from '../game/load.js';
-import { renderTerrainLayer } from '../engine/layers/terrain-layer.js';
+import { attachCameraInput as attachCameraInputDefault } from '../engine/input.js';
 import { renderEntityLayer as renderEntityLayerDefault } from '../engine/layers/entity-layer.js';
 import { renderPathPreviewLayer as renderPathPreviewLayerDefault } from '../engine/layers/path-preview-layer.js';
-import { createMap } from '../engine/map.js';
-import { createCamera as createCameraDefault } from '../engine/camera.js';
-import { attachCameraInput as attachCameraInputDefault } from '../engine/input.js';
-import { createOccupancyIndex as createOccupancyIndexDefault } from '../engine/occupancy.js';
-import { findPath } from '../engine/pathfinding.js';
-import { createMovementSystem as createMovementSystemDefault } from '../game/systems/movement-system.js';
-import { createTurnSystem as createTurnSystemDefault } from '../game/systems/turn-system.js';
-import { createMusicPlayer as createMusicPlayerDefault } from '../game/audio/music-player.js';
-import { loadMusicTracks as loadMusicTracksDefault } from '../game/audio/load-music-tracks.js';
+import { renderTerrainLayer } from '../engine/layers/terrain-layer.js';
+import { createDomContext } from './runtime/dom-context.js';
+import { createBusDevPanel } from './runtime/bus-dev-panel.js';
+import { createSystemContext } from './runtime/system-context.js';
+import { startRuntime } from './runtime/start-runtime.js';
+import { createWorldContext } from './runtime/world-context.js';
 
-function sameTile(a, b) {
-  return a.x === b.x && a.y === b.y;
+const MAX_MOVEMENT_POINTS = 15;
+
+function defaultBusLogger(entry) {
+  const { action, type = '-', subscribers = 0 } = entry;
+  console.log(`[bus] ${action} ${type} (subscribers: ${subscribers})`, entry);
+}
+
+function composeBusLoggers(...loggers) {
+  const enabled = loggers.filter((logger) => typeof logger === 'function');
+  if (enabled.length === 0) {
+    return null;
+  }
+
+  return (entry) => {
+    for (const logger of enabled) {
+      logger(entry);
+    }
+  };
 }
 
 export async function bootApp({
   fetch = globalThis.fetch,
   document = globalThis.document,
   window = globalThis.window,
-  loadGame: loadGameImpl = loadGame,
-  createCamera = createCameraDefault,
+  loadGame,
+  createMap,
+  createOccupancyIndex,
+  bus,
+  createBus,
+  busDebug = false,
+  busLogger = defaultBusLogger,
+  createCamera,
   attachCameraInput = attachCameraInputDefault,
   renderEntityLayer = renderEntityLayerDefault,
   renderPathPreviewLayer = renderPathPreviewLayerDefault,
-  createOccupancyIndex = createOccupancyIndexDefault,
-  createMovementSystem = createMovementSystemDefault,
-  createTurnSystem = createTurnSystemDefault,
-  createMusicPlayer = createMusicPlayerDefault,
-  loadMusicTracks = loadMusicTracksDefault,
+  createMovementSystem,
+  createTurnSystem,
+  createMusicPlayer,
+  loadMusicTracks,
   musicTracks,
   musicManifestUrl = '/assets/music/tracks.json',
   AudioCtor = globalThis.Audio
 } = {}) {
-  const { scenario, definitions } = await loadGameImpl({ fetch });
-  const map = createMap(scenario.terrain);
-  const occupancy = createOccupancyIndex(scenario.entities);
+  const busPanel = busDebug ? createBusDevPanel({ document }) : null;
+  const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
 
-  const world = { scenario, definitions, map, occupancy };
-  globalThis.__WORLD__ = world;
-
-  const terrainLayer = document?.querySelector('.terrain-layer');
-  const entityLayer = document?.querySelector('.entity-layer');
-  const effectsLayer = document?.querySelector('.effects-layer');
-  const uiLayer = document?.querySelector('.ui-layer');
-  const viewport = document?.querySelector('.viewport');
-  const worldElement = document?.querySelector('.world');
-  const movementPointsStatus = document?.getElementById('movement-points-status');
-  const endTurnButton = document?.getElementById('end-turn-button');
-  const musicToggleButton = document?.getElementById('music-toggle-button');
-  const resolvedMusicTracks = Array.isArray(musicTracks)
-    ? musicTracks
-    : await loadMusicTracks({ fetch, manifestUrl: musicManifestUrl });
-  const hero = scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
-  const turnSystem = createTurnSystem({ maxMovementPoints: 15 });
-  const musicPlayer = createMusicPlayer({
-    tracks: resolvedMusicTracks,
-    createAudio: (src) => {
-      if (typeof AudioCtor !== 'function') {
-        return null;
-      }
-      return new AudioCtor(src);
-    }
+  const { scenario, map, occupancy, bus: appBus, world } = await createWorldContext({
+    fetch,
+    loadGame,
+    createMap,
+    createOccupancyIndex,
+    bus,
+    createBus,
+    busDebug,
+    busLogger: activeBusLogger
   });
-  let previewPath = null;
-  let previewTarget = null;
-  let isMoving = false;
-  let camera = null;
-  let movement = null;
 
-  function updateMovementPointsUi() {
-    if (!movementPointsStatus) {
-      return;
-    }
-    movementPointsStatus.textContent = `MP: ${turnSystem.getRemainingMovementPoints()} / 15`;
-  }
+  const dom = createDomContext(document);
+  const systems = await createSystemContext({
+    fetch,
+    scenario,
+    map,
+    occupancy,
+    bus: appBus,
+    viewport: dom.viewport,
+    worldElement: dom.worldElement,
+    entityLayer: dom.entityLayer,
+    maxMovementPoints: MAX_MOVEMENT_POINTS,
+    createCamera,
+    createMovementSystem,
+    createTurnSystem,
+    createMusicPlayer,
+    loadMusicTracks,
+    musicTracks,
+    musicManifestUrl,
+    AudioCtor
+  });
 
-  function updateMusicToggleUi() {
-    if (!musicToggleButton) {
-      return;
-    }
-
-    const enabled = Boolean(musicPlayer?.isEnabled?.());
-    musicToggleButton.textContent = enabled ? 'Music: On' : 'Music: Off';
-    musicToggleButton.setAttribute?.('aria-pressed', enabled ? 'true' : 'false');
-  }
-
-  function paintPreview() {
-    if (!effectsLayer) {
-      return;
-    }
-
-    renderPathPreviewLayer({
-      container: effectsLayer,
-      map,
-      path: previewPath,
-      targetTile: previewTarget,
-      maxAffordableSteps: isMoving ? Number.POSITIVE_INFINITY : turnSystem.getRemainingMovementPoints(),
-      createElement: document.createElement?.bind(document)
-    });
-  }
-
-  function clearPreview() {
-    previewPath = null;
-    previewTarget = null;
-    paintPreview();
-  }
-
-  function buildPath(toTile) {
-    if (!hero) {
-      return null;
-    }
-
-    return findPath({
-      fromTile: hero.tile,
-      toTile,
-      map,
-      isBlocked: (tile) => {
-        const occupant = occupancy.getAt(tile);
-        return occupant !== null && occupant.id !== hero.id;
-      }
-    });
-  }
-  if (entityLayer) {
-    movement = createMovementSystem({
-      entities: scenario.entities,
-      map,
-      occupancy,
-      stepDelayMs: 220,
-      getMaxMovableSteps: () => turnSystem.getRemainingMovementPoints(),
-      spendMovementPoints: (stepCount) => {
-        turnSystem.spendMovementPoints(stepCount);
-        updateMovementPointsUi();
-      },
-      onStep: ({ to }) => {
-        renderEntityLayer({
-          container: entityLayer,
-          map,
-          entities: scenario.entities,
-          createElement: document.createElement?.bind(document)
-        });
-
-        if (previewPath && previewPath.length > 0) {
-          while (previewPath.length > 0 && !sameTile(previewPath[0], to)) {
-            previewPath.shift();
-          }
-          if (previewTarget && sameTile(previewTarget, to)) {
-            previewTarget = null;
-          }
-          paintPreview();
-        }
-
-        if (isMoving) {
-          camera?.centerOnTile?.(to);
-        } else {
-          camera?.update();
-        }
-      }
-    });
-  }
-
-  if (viewport && worldElement) {
-    camera = createCamera({ viewport, world: worldElement, map });
-    camera.setFollowTileGetter(() => hero?.tile ?? null);
-    camera.update();
-    attachCameraInput({
-      camera,
-      viewport,
-      window,
-      edgePanDelayMs: 300,
-      map,
-      onTileClick: (tile) => {
-        if (!movement || !hero || isMoving) {
-          return;
-        }
-
-        if (previewTarget && sameTile(previewTarget, tile)) {
-          isMoving = true;
-          camera?.clearPan?.();
-          camera?.lockFollow?.();
-          camera?.centerOnTile?.(hero.tile);
-          Promise.resolve(movement.moveHeroTo(tile)).finally(() => {
-            isMoving = false;
-            camera?.unlockFollow?.();
-            if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
-              paintPreview();
-            } else {
-              clearPreview();
-            }
-            camera.update();
-          });
-          return;
-        }
-
-        const path = buildPath(tile);
-        if (!path || path.length < 2) {
-          clearPreview();
-          return;
-        }
-
-        previewTarget = tile;
-        previewPath = path;
-        paintPreview();
-      }
-    });
-  }
-
-  if (terrainLayer) {
-    const renderTerrain = () => {
-      renderTerrainLayer({
-        container: terrainLayer,
-        map,
-        createElement: document.createElement?.bind(document)
-      });
-    };
-
-    renderTerrain();
-
-    if (window?.requestAnimationFrame) {
-      window.requestAnimationFrame(renderTerrain);
-    }
-
-    if (window?.addEventListener) {
-      window.addEventListener('resize', renderTerrain);
-    }
-  }
-
-  if (entityLayer) {
-    renderEntityLayer({
-      container: entityLayer,
-      map,
-      entities: scenario.entities,
-      createElement: document.createElement?.bind(document)
-    });
-  }
-
-  if (endTurnButton) {
-    endTurnButton.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-      if (isMoving) {
-        return;
-      }
-      turnSystem.endTurn();
-      updateMovementPointsUi();
-      paintPreview();
-    });
-  }
-
-  if (musicToggleButton) {
-    musicToggleButton.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-      Promise.resolve(musicPlayer?.toggle?.()).finally(() => {
-        updateMusicToggleUi();
-      });
-    });
-  }
-
-  if (uiLayer) {
-    uiLayer.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-    });
-  }
-
-  updateMovementPointsUi();
-  await Promise.resolve(musicPlayer?.start?.());
-  updateMusicToggleUi();
+  await startRuntime({
+    bus: appBus,
+    scenario,
+    map,
+    occupancy,
+    hero: systems.hero,
+    maxMovementPoints: MAX_MOVEMENT_POINTS,
+    turnSystem: systems.turnSystem,
+    movement: systems.movement,
+    musicPlayer: systems.musicPlayer,
+    camera: systems.camera,
+    attachCameraInput,
+    renderTerrainLayer,
+    renderEntityLayer,
+    renderPathPreviewLayer,
+    createElement: dom.createElement,
+    terrainLayer: dom.terrainLayer,
+    entityLayer: dom.entityLayer,
+    effectsLayer: dom.effectsLayer,
+    uiLayer: dom.uiLayer,
+    viewport: dom.viewport,
+    window,
+    movementPointsStatus: dom.movementPointsStatus,
+    endTurnButton: dom.endTurnButton,
+    musicToggleButton: dom.musicToggleButton
+  });
 
   const bootStatus = document?.getElementById('boot-status');
   if (bootStatus) {

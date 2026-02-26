@@ -6,7 +6,7 @@ The hero has movement points per turn:
 
 - Starts each turn with **15** movement points.
 - Moving consumes 1 point per step.
-- If the path would exceed remaining points, the move is rejected (**no partial move** in V1).
+- If the path would exceed remaining points, the hero moves as far as possible this turn and stops at the movement limit (partial move).
 - Clicking “End turn” resets movement points to 15.
 
 ## Depends on
@@ -35,5 +35,5 @@ The hero has movement points per turn:
 
 ## Acceptance
 
-1. Move the hero until points run out; further move attempts are rejected.
+1. Move the hero along a longer path than remaining points; the hero stops at the movement limit.
 2. Click “End turn”; points reset; movement works again.

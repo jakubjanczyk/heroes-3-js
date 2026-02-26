@@ -1,5 +1,39 @@
 import { findPath } from '../../engine/pathfinding.js';
 
+function sameTile(a, b) {
+  return a.x === b.x && a.y === b.y;
+}
+
+function isValidPlannedPath(path, fromTile, toTile, map) {
+  if (!Array.isArray(path) || path.length < 2) {
+    return false;
+  }
+
+  if (!sameTile(path[0], fromTile) || !sameTile(path[path.length - 1], toTile)) {
+    return false;
+  }
+
+  for (let index = 0; index < path.length; index += 1) {
+    const tile = path[index];
+    if (!map.inBounds(tile) || !map.isPassable(tile)) {
+      return false;
+    }
+
+    if (index === 0) {
+      continue;
+    }
+
+    const prev = path[index - 1];
+    const dx = Math.abs(tile.x - prev.x);
+    const dy = Math.abs(tile.y - prev.y);
+    if ((dx === 0 && dy === 0) || dx > 1 || dy > 1) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 async function defaultSleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -14,6 +48,8 @@ export function createMovementSystem({
   stepDelayMs = 80,
   getMaxMovableSteps = () => Number.POSITIVE_INFINITY,
   spendMovementPoints = () => {},
+  onMoveStart = () => {},
+  onMoveFinish = () => {},
   onStep = () => {}
 }) {
   let isMoving = false;
@@ -22,7 +58,7 @@ export function createMovementSystem({
     return entities.find((entity) => entity.kind === 'HERO') ?? null;
   }
 
-  async function moveHeroTo(toTile) {
+  async function moveHeroTo(toTile, { path: plannedPath = null } = {}) {
     if (isMoving) {
       return false;
     }
@@ -32,15 +68,17 @@ export function createMovementSystem({
       return false;
     }
 
-    const path = findPath({
-      fromTile: hero.tile,
-      toTile,
-      map,
-      isBlocked: (tile) => {
-        const occupant = occupancy.getAt(tile);
-        return occupant !== null && occupant.id !== hero.id;
-      }
-    });
+    const path = isValidPlannedPath(plannedPath, hero.tile, toTile, map)
+      ? plannedPath
+      : findPath({
+          fromTile: hero.tile,
+          toTile,
+          map,
+          isBlocked: (tile) => {
+            const occupant = occupancy.getAt(tile);
+            return occupant !== null && occupant.id !== hero.id;
+          }
+        });
 
     if (!path || path.length < 2) {
       return false;
@@ -55,14 +93,35 @@ export function createMovementSystem({
     }
     spendMovementPoints(cappedStepCount);
 
+    const fromTile = { x: hero.tile.x, y: hero.tile.y };
+    const reachedTile = path[cappedStepCount];
     isMoving = true;
-    for (const stepTile of path.slice(1, cappedStepCount + 1)) {
-      await sleep(stepDelayMs);
-      occupancy.moveEntity(hero, stepTile);
-      hero.tile = stepTile;
-      onStep({ hero, to: stepTile });
+    onMoveStart({
+      hero,
+      from: fromTile,
+      targetTile: toTile,
+      reachedTile,
+      cappedStepCount
+    });
+    try {
+      for (const stepTile of path.slice(1, cappedStepCount + 1)) {
+        const stepFromTile = { x: hero.tile.x, y: hero.tile.y };
+        await sleep(stepDelayMs);
+        occupancy.moveEntity(hero, stepTile);
+        hero.tile = stepTile;
+        onStep({ hero, from: stepFromTile, to: stepTile });
+      }
+    } finally {
+      isMoving = false;
+      onMoveFinish({
+        hero,
+        from: fromTile,
+        targetTile: toTile,
+        reachedTile: { x: hero.tile.x, y: hero.tile.y },
+        cappedStepCount
+      });
     }
-    isMoving = false;
+
     return true;
   }
 

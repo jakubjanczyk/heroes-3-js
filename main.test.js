@@ -1,6 +1,15 @@
 import { describe, expect, test } from 'vitest';
 
 import { bootApp } from './app/boot-app.js';
+import {
+  APP_COMMAND_CAMERA_PAN_BY,
+  APP_COMMAND_END_TURN_REQUESTED,
+  APP_COMMAND_MOVE_REQUESTED,
+  APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+  APP_COMMAND_TILE_CLICKED,
+  APP_FACT_MOVE_FINISHED,
+  APP_FACT_MOVE_STARTED
+} from './app/events.js';
 import { createMovementSystem as createMovementSystemDefault } from './game/systems/movement-system.js';
 
 function createFakeElement(tagName) {
@@ -131,6 +140,26 @@ async function flushMicrotasks(times = 30) {
   }
 }
 
+function createFakeBus() {
+  const listenersByType = new Map();
+  const emitted = [];
+
+  return {
+    emitted,
+    addEventListener(type, handler) {
+      const listeners = listenersByType.get(type) ?? [];
+      listeners.push(handler);
+      listenersByType.set(type, listeners);
+    },
+    emit(type, detail) {
+      emitted.push({ type, detail });
+      for (const listener of listenersByType.get(type) ?? []) {
+        listener({ type, detail });
+      }
+    }
+  };
+}
+
 describe('main boot', () => {
   test('bootApp renders scenario terrain into the terrain layer', async () => {
     const { terrainLayer, bootStatus, fakeDocument } = createFakeDocument({
@@ -153,7 +182,14 @@ describe('main boot', () => {
 
     const createdCameras = [];
     const attachedInputs = [];
+    const moveByCalls = [];
     const fakeCamera = {
+      moveBy(dx, dy) {
+        moveByCalls.push([dx, dy]);
+      },
+      getOffset() {
+        return { x: 0, y: 0 };
+      },
       setFollowTileGetter() {},
       update() {}
     };
@@ -179,9 +215,11 @@ describe('main boot', () => {
     });
     expect(attachedInputs).toHaveLength(1);
     expect(attachedInputs[0]).toMatchObject({
-      camera: fakeCamera,
       viewport
     });
+    expect(attachedInputs[0].camera).not.toBe(fakeCamera);
+    attachedInputs[0].camera.moveBy(6, -4);
+    expect(moveByCalls).toEqual([[6, -4]]);
   });
 
   test('bootApp renders hero and initializes camera follow on hero tile', async () => {
@@ -380,10 +418,12 @@ describe('main boot', () => {
         entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
       }),
       createCamera: () => fakeCamera,
-      createMovementSystem: ({ onStep }) => ({
-        async moveHeroTo() {
+      createMovementSystem: ({ onMoveStart, onMoveFinish, onStep }) => ({
+        async moveHeroTo(targetTile) {
+          onMoveStart({ targetTile });
           onStep({ to: { x: 1, y: 0 } });
           onStep({ to: { x: 2, y: 1 } });
+          onMoveFinish({ targetTile });
           return true;
         }
       }),
@@ -423,7 +463,7 @@ describe('main boot', () => {
       centerOnTile() {}
     };
 
-    await bootApp({
+    const world = await bootApp({
       fetch: fetchShouldNotBeCalled,
       document: fakeDocument,
       window: {},
@@ -453,7 +493,7 @@ describe('main boot', () => {
     attachedInputArgs.onTileClick({ x: 16, y: 0 });
     await flushMicrotasks();
 
-    const hero = globalThis.__WORLD__.scenario.entities.find((entity) => entity.kind === 'HERO');
+    const hero = world.scenario.entities.find((entity) => entity.kind === 'HERO');
     expect(hero.tile).toEqual({ x: 15, y: 0 });
     expect(movementPointsStatus.textContent).toBe('MP: 0 / 15');
     expect(previewCalls.at(-1)?.targetTile).toEqual({ x: 16, y: 0 });
@@ -621,6 +661,144 @@ describe('main boot', () => {
 
     expect(calls.loadMusicTracks).toBe(1);
     expect(calls.tracksSeen).toEqual(['/assets/music/a.mp3']);
+  });
+
+  test('bootApp publishes click and button intents to bus commands', async () => {
+    const { fakeDocument, endTurnButton, musicToggleButton } = createFakeDocument();
+
+    let attachedInputArgs = null;
+    const fakeBus = createFakeBus();
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      window: {},
+      bus: fakeBus,
+      loadGame: createLoadGame({
+        width: 3,
+        height: 1,
+        tiles: [0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }),
+      createCamera: () => ({
+        setFollowTileGetter() {},
+        update() {}
+      }),
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      },
+      createMovementSystem: () => ({
+        moveHeroTo() {
+          return true;
+        }
+      }),
+      createMusicPlayer: () => ({
+        start() {},
+        toggle() {
+          return true;
+        },
+        isEnabled() {
+          return false;
+        }
+      })
+    });
+
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+    endTurnButton.click();
+    musicToggleButton.click();
+
+    expect(fakeBus.emitted).toContainEqual({
+      type: APP_COMMAND_TILE_CLICKED,
+      detail: { tile: { x: 1, y: 0 } }
+    });
+    expect(fakeBus.emitted).toContainEqual({
+      type: APP_COMMAND_END_TURN_REQUESTED,
+      detail: {}
+    });
+    expect(fakeBus.emitted).toContainEqual({
+      type: APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+      detail: {}
+    });
+  });
+
+  test('camera pan from input is routed through bus command', async () => {
+    const { fakeDocument } = createFakeDocument();
+
+    let attachedInputArgs = null;
+    const fakeBus = createFakeBus();
+    const moveByCalls = [];
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      window: {},
+      bus: fakeBus,
+      loadGame: createLoadGame(),
+      createCamera: () => ({
+        moveBy(dx, dy) {
+          moveByCalls.push([dx, dy]);
+        },
+        getOffset() {
+          return { x: 0, y: 0 };
+        },
+        setFollowTileGetter() {},
+        update() {}
+      }),
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.camera.moveBy(12, -8);
+
+    expect(fakeBus.emitted).toContainEqual({
+      type: APP_COMMAND_CAMERA_PAN_BY,
+      detail: { dx: 12, dy: -8 }
+    });
+    expect(moveByCalls).toEqual([[12, -8]]);
+  });
+
+  test('zero movement points does not dispatch move lifecycle facts', async () => {
+    const { fakeDocument } = createFakeDocument();
+
+    let attachedInputArgs = null;
+    const fakeBus = createFakeBus();
+
+    await bootApp({
+      fetch: fetchShouldNotBeCalled,
+      document: fakeDocument,
+      window: {},
+      bus: fakeBus,
+      loadGame: createLoadGame({
+        width: 2,
+        height: 1,
+        tiles: [0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      }),
+      createCamera: () => ({
+        setFollowTileGetter() {},
+        update() {}
+      }),
+      createTurnSystem: () => ({
+        getRemainingMovementPoints() {
+          return 0;
+        },
+        spendMovementPoints() {},
+        endTurn() {}
+      }),
+      attachCameraInput: (args) => {
+        attachedInputArgs = args;
+      }
+    });
+
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+    attachedInputArgs.onTileClick({ x: 1, y: 0 });
+
+    const types = fakeBus.emitted.map((entry) => entry.type);
+    expect(types).toContain(APP_COMMAND_TILE_CLICKED);
+    expect(types).not.toContain(APP_COMMAND_MOVE_REQUESTED);
+    expect(types).not.toContain(APP_FACT_MOVE_STARTED);
+    expect(types).not.toContain(APP_FACT_MOVE_FINISHED);
   });
 
 });

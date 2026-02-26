@@ -106,12 +106,11 @@ describe('camera behavior', () => {
   });
 
   test('given hero-follow is enabled when player pans camera then pan acts as an offset and hero-follow continues to work', async () => {
-    const { camera } = await setupMovementBehaviorApp({
+    const { camera, world } = await setupMovementBehaviorApp({
       viewportSize: { width: 1000, height: 700 },
       createCamera: (args) => createEngineCamera(args)
     });
 
-    const world = globalThis.__WORLD__;
     expect(world).toBeTruthy();
     const hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
     expect(hero).toBeTruthy();

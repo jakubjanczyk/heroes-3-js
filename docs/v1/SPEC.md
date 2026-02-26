@@ -28,7 +28,7 @@ V1 is not a “game release”. It is an architectural proof under real conditio
 2. The player clicks a destination tile; the hero walks there step-by-step.
 3. The hero cannot move through blocked tiles and will route around them.
 4. The hero has **15 movement points** per turn.
-5. Moving consumes **1 movement point per step**. A move is only allowed if the hero has enough movement points to complete the entire path; otherwise the move is rejected (**no partial moves** in V1).
+5. Moving consumes **1 movement point per step**. If a confirmed route is longer than remaining movement points, the hero walks as far as possible this turn and stops at the movement limit (partial move).
 6. When the hero reaches:
    - a **monster**: the monster is defeated and disappears; a temporary notification appears.
    - a **resource**: the resource is collected and disappears; a temporary notification appears.
@@ -164,7 +164,7 @@ Static definitions live in separate JSON files under `game/data/`:
 - Camera pans (arrow keys + edge scroll) and can follow the hero
 - Hero click-to-move routes around blocked tiles and moves step-by-step
 - 8-direction movement works and diagonal corner-cutting is prevented
-- Movement points (15) are enforced; end turn resets them
+- Movement points (15) are enforced (including partial movement when path exceeds remaining MP); end turn resets them
 - Monsters/resources disappear after interaction; towns persist
 - Session survives page reload by replaying persisted event log (including turn + remaining movement points)
 - Reset clears the session
