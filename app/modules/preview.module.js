@@ -43,6 +43,21 @@ export function registerPreviewModule({ bus }) {
       return null;
     }
 
+    const destinationOccupant = occupancy.getAt(toTile);
+    if (destinationOccupant && destinationOccupant.id !== hero.id) {
+      if (destinationOccupant.kind === 'RESOURCE' && destinationOccupant.isCollecting) {
+        return null;
+      }
+
+      const isInteractableDestination =
+        destinationOccupant.kind === 'MONSTER' ||
+        destinationOccupant.kind === 'RESOURCE' ||
+        destinationOccupant.kind === 'TOWN';
+      if (!isInteractableDestination) {
+        return null;
+      }
+    }
+
     return findPath({
       fromTile: hero.tile,
       toTile,

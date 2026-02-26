@@ -17,7 +17,7 @@ function createFakeElement(tagName) {
 }
 
 describe('entity layer', () => {
-  test('renders hero, monster, and resource entities into the entity layer', () => {
+  test('renders hero, monster, resource, and town entities into the entity layer', () => {
     const container = createFakeElement('div');
     const map = createMap({
       width: 4,
@@ -31,12 +31,13 @@ describe('entity layer', () => {
       entities: [
         { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 1 } },
         { id: 'monster-1', kind: 'MONSTER', tile: { x: 2, y: 2 } },
-        { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 3, y: 1 } }
+        { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 3, y: 1 } },
+        { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 0, y: 2 } }
       ],
       createElement: createFakeElement
     });
 
-    expect(container.children).toHaveLength(3);
+    expect(container.children).toHaveLength(4);
     expect(container.children[0].className).toBe('entity entity--hero');
     expect(container.children[0].dataset.entityId).toBe('hero-1');
     expect(container.children[0].dataset.tileX).toBe('1');
@@ -52,6 +53,12 @@ describe('entity layer', () => {
     expect(container.children[2].dataset.resourceType).toBe('GOLD_PILE');
     expect(container.children[2].dataset.tileX).toBe('3');
     expect(container.children[2].dataset.tileY).toBe('1');
+
+    expect(container.children[3].className).toBe('entity entity--town');
+    expect(container.children[3].dataset.entityId).toBe('town-1');
+    expect(container.children[3].dataset.townType).toBe('CASTLE');
+    expect(container.children[3].dataset.tileX).toBe('0');
+    expect(container.children[3].dataset.tileY).toBe('2');
   });
 
   test('positions hero using the same centered map origin as terrain', () => {

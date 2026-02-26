@@ -382,6 +382,44 @@ describe('movement system', () => {
     expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('resource-1');
   });
 
+  test('steps onto adjacent town, spends one point, and reports town visit interaction', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const town = { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } };
+    const entities = [hero, town];
+    const map = createMap({
+      width: 2,
+      height: 1,
+      tiles: [0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const spent = [];
+    const finishes = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      spendMovementPoints: (amount) => {
+        spent.push(amount);
+      },
+      onMoveFinish: (event) => {
+        finishes.push(event);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(spent).toEqual([1]);
+    expect(hero.tile).toEqual({ x: 1, y: 0 });
+    expect(finishes[0].interaction).toEqual({
+      kind: 'TOWN_VISIT',
+      entityId: 'town-1',
+      targetTile: { x: 1, y: 0 }
+    });
+  });
+
   test('emits lifecycle callbacks only when movement actually starts', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const entities = [hero];

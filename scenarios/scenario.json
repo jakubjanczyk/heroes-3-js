@@ -28,6 +28,6 @@
     { "id": "resource-5", "kind": "RESOURCE", "type": "SULFUR_PILE", "tile": { "x": 7, "y": 10 } },
     { "id": "resource-6", "kind": "RESOURCE", "type": "CRYSTAL_PILE", "tile": { "x": 9, "y": 9 } },
     { "id": "resource-7", "kind": "RESOURCE", "type": "GEMS_PILE", "tile": { "x": 11, "y": 4 } },
-    { "id": "town-1", "kind": "TOWN", "type": "CASTLE", "tile": { "x": 10, "y": 5 } }
+    { "id": "town-1", "kind": "TOWN", "type": "CASTLE", "tile": { "x": 9, "y": 7 } }
   ]
 }

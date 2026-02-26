@@ -145,6 +145,53 @@ describe('preview module', () => {
     expect(preview?.detail.targetTile).toBe(null);
   });
 
+  test('does not preview when destination is a non-interactable town footprint blocker tile', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const townBlocker = { id: 'town-1__blocker_0', kind: 'TOWN_BLOCKER', tile: { x: 1, y: 0 } };
+    const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
+    const occupancy = createOccupancyIndex([hero, townBlocker]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
+
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toBe(null);
+    expect(preview?.detail.targetTile).toBe(null);
+  });
+
+  test('previews route when destination is a town entry tile', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const town = { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } };
+    const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
+    const occupancy = createOccupancyIndex([hero, town]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero, town] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
+
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 0 }
+    ]);
+    expect(preview?.detail.targetTile).toEqual({ x: 1, y: 0 });
+  });
+
   test('clears preview when a resource gets collected', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };

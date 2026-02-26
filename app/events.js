@@ -16,6 +16,7 @@ export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.change
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected';
+export const APP_FACT_TOWN_VISITED = 'fact.town.visited';
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated';
 export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed';

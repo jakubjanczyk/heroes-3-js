@@ -94,4 +94,40 @@ describe('interaction system', () => {
     expect(entities).toEqual([hero]);
     expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
   });
+
+  test('resolves town outcome and leaves town on map', () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } };
+    const town = { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } };
+    const entities = [hero, town];
+    const occupancy = createOccupancyIndex(entities);
+    occupancy.moveEntity(hero, hero.tile);
+
+    const interactions = createInteractionSystem({
+      entities,
+      occupancy,
+      definitions: {
+        towns: {
+          CASTLE: { name: 'Castle' }
+        }
+      }
+    });
+
+    const outcome = interactions.resolveArrivalAtDestination({
+      destinationTile: { x: 1, y: 0 }
+    });
+
+    expect(outcome).toEqual({
+      kind: 'TOWN_VISITED',
+      entityId: 'town-1',
+      entityType: 'CASTLE',
+      tile: { x: 1, y: 0 },
+      townName: 'Castle',
+      modal: {
+        title: 'Interaction',
+        message: 'Castle visited'
+      }
+    });
+    expect(entities).toEqual([hero, town]);
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
+  });
 });

@@ -3,6 +3,7 @@ import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED
@@ -137,7 +138,9 @@ export function registerInteractionModule(
 
     const interactionKind = event.detail.interaction?.kind;
     const didTriggerArrivalInteraction =
-      interactionKind === 'MONSTER_COMBAT' || interactionKind === 'RESOURCE_COLLECT';
+      interactionKind === 'MONSTER_COMBAT' ||
+      interactionKind === 'RESOURCE_COLLECT' ||
+      interactionKind === 'TOWN_VISIT';
     if (!didTriggerArrivalInteraction && !sameTile(hero.tile, destinationTile)) {
       return;
     }
@@ -188,6 +191,22 @@ export function registerInteractionModule(
           pendingResourceCollectionIds.delete(outcome.entityId);
         }
       })();
+      return;
+    }
+
+    if (outcome.kind === 'TOWN_VISITED') {
+      bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
+        interactionKind: outcome.kind,
+        entityId: outcome.entityId,
+        entityType: outcome.entityType,
+        title: outcome.modal.title,
+        message: outcome.modal.message
+      });
+      bus.emit(APP_FACT_TOWN_VISITED, {
+        entityId: outcome.entityId,
+        entityType: outcome.entityType,
+        tile: outcome.tile
+      });
     }
   });
 

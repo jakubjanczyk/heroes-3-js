@@ -226,6 +226,10 @@ export function getResourceEntity(entityId = 'resource-1') {
   return document.querySelector(`.entity--resource[data-entity-id="${entityId}"]`);
 }
 
+export function getTownEntity(entityId = 'town-1') {
+  return document.querySelector(`.entity--town[data-entity-id="${entityId}"]`);
+}
+
 export function expectHeroAt(x, y) {
   const heroEntity = getHeroEntity();
   expect(heroEntity).toBeTruthy();
@@ -278,6 +282,23 @@ export function expectResourceNotPresent(entityId = 'resource-1') {
 
 export function expectResourceCollecting(entityId = 'resource-1') {
   expect(getResourceEntity(entityId)?.className).toContain('entity--resource-collecting');
+}
+
+export function expectTownPresent(entityId = 'town-1') {
+  const townEntity = getTownEntity(entityId);
+  expect(townEntity).toBeTruthy();
+  return townEntity;
+}
+
+export function expectTownAt(x, y, entityId = 'town-1') {
+  const townEntity = expectTownPresent(entityId);
+  expect(townEntity?.dataset.tileX).toBe(String(x));
+  expect(townEntity?.dataset.tileY).toBe(String(y));
+  return townEntity;
+}
+
+export function expectTownNotPresent(entityId = 'town-1') {
+  expect(getTownEntity(entityId)).toBeFalsy();
 }
 
 export function expectResourceTotal(resourceName, amount) {

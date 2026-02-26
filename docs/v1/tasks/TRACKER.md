@@ -60,7 +60,7 @@ Conventions:
   - Task file: `docs/v1/tasks/T08-resources.md`
 
 - T09 — Render towns + visit on arrival (town persists)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T10
   - Task file: `docs/v1/tasks/T09-towns.md`

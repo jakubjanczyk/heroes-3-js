@@ -4,6 +4,7 @@ import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED
@@ -196,6 +197,65 @@ describe('interaction module', () => {
           entry.detail?.interactionKind === 'RESOURCE_COLLECTED'
       )
     ).toBeFalsy();
+  });
+
+  test('opens modal and emits town visited fact for town visit interaction', () => {
+    const bus = createFakeBus();
+
+    registerInteractionModule(
+      { bus },
+      {
+        createInteractionSystem: () => ({
+          resolveArrivalAtDestination({ destinationTile }) {
+            return {
+              kind: 'TOWN_VISITED',
+              entityId: 'town-1',
+              entityType: 'CASTLE',
+              tile: destinationTile,
+              modal: {
+                title: 'Interaction',
+                message: 'Castle visited'
+              }
+            };
+          }
+        })
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: {
+        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      occupancy: {},
+      definitions: {}
+    });
+    bus.emit(APP_FACT_MOVE_FINISHED, {
+      targetTile: { x: 1, y: 0 },
+      interaction: {
+        kind: 'TOWN_VISIT',
+        entityId: 'town-1',
+        targetTile: { x: 1, y: 0 }
+      }
+    });
+
+    expect(bus.emitted).toContainEqual({
+      type: APP_UI_INTERACTION_MODAL_OPENED,
+      detail: {
+        interactionKind: 'TOWN_VISITED',
+        entityId: 'town-1',
+        entityType: 'CASTLE',
+        title: 'Interaction',
+        message: 'Castle visited'
+      }
+    });
+    expect(bus.emitted).toContainEqual({
+      type: APP_FACT_TOWN_VISITED,
+      detail: {
+        entityId: 'town-1',
+        entityType: 'CASTLE',
+        tile: { x: 1, y: 0 }
+      }
+    });
   });
 
 });

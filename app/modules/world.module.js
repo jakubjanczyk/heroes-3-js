@@ -1,6 +1,7 @@
 import { createMap as createMapDefault } from '../../engine/map.js';
 import { createOccupancyIndex as createOccupancyIndexDefault } from '../../engine/occupancy.js';
 import { loadGame as loadGameDefault } from '../../game/load.js';
+import { createTownFootprintBlockers } from '../../game/town-footprint.js';
 import {
   APP_COMMAND_APP_START,
   APP_FACT_WORLD_LOAD_FAILED,
@@ -27,7 +28,11 @@ export function registerWorldModule(
       try {
         const { scenario, definitions } = await loadGame({ fetch: env.fetch });
         const map = createMap(scenario.terrain);
-        const occupancy = createOccupancyIndex(scenario.entities);
+        const townFootprintBlockers = createTownFootprintBlockers({
+          entities: scenario.entities,
+          map
+        });
+        const occupancy = createOccupancyIndex([...scenario.entities, ...townFootprintBlockers]);
 
         bus.emit(APP_FACT_WORLD_READY, {
           scenario,

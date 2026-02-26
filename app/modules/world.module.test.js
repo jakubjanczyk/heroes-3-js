@@ -86,4 +86,45 @@ describe('world module', () => {
       }
     });
   });
+
+  test('adds town footprint blockers to occupancy input', async () => {
+    const bus = createFakeBus();
+    let occupancyEntities = null;
+
+    registerWorldModule(
+      {
+        bus,
+        env: { fetch: async () => {} }
+      },
+      {
+        loadGame: async () => ({
+          scenario: {
+            meta: { id: 'demo' },
+            terrain: { width: 12, height: 12, tiles: new Array(144).fill(0) },
+            entities: [
+              { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } },
+              { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 6, y: 6 } }
+            ]
+          },
+          definitions: { hero: { id: 'hero' }, towns: { CASTLE: { name: 'Castle' } } }
+        }),
+        createMap: () => ({
+          inBounds: ({ x, y }) => x >= 0 && y >= 0 && x < 12 && y < 12
+        }),
+        createOccupancyIndex: (entities) => {
+          occupancyEntities = entities;
+          return { entities };
+        }
+      }
+    );
+
+    bus.emit(APP_COMMAND_APP_START, {});
+    await Promise.resolve();
+
+    expect(occupancyEntities).toBeTruthy();
+    expect(occupancyEntities).toHaveLength(10);
+
+    const townBlockers = occupancyEntities.filter((entity) => entity.kind === 'TOWN_BLOCKER');
+    expect(townBlockers).toHaveLength(8);
+  });
 });

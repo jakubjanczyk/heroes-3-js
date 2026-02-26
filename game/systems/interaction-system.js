@@ -15,6 +15,7 @@ function removeEntityById(entities, entityId) {
 export function createInteractionSystem({ entities, occupancy, definitions = {} }) {
   const monsterDefinitions = definitions.monsters ?? {};
   const resourceDefinitions = definitions.resources ?? {};
+  const townDefinitions = definitions.towns ?? {};
 
   function resolveArrivalAtDestination({ destinationTile }) {
     const interactionEntity =
@@ -53,6 +54,23 @@ export function createInteractionSystem({ entities, occupancy, definitions = {} 
         tile: destinationTile,
         amount: Number.isFinite(amount) ? amount : 0,
         resourceName
+      };
+    }
+
+    if (interactionEntity.kind === 'TOWN') {
+      const townDefinition = townDefinitions[interactionEntity.type] ?? null;
+      const townName = townDefinition?.name ?? 'Town';
+
+      return {
+        kind: 'TOWN_VISITED',
+        entityId: interactionEntity.id,
+        entityType: interactionEntity.type,
+        tile: destinationTile,
+        townName,
+        modal: {
+          title: 'Interaction',
+          message: `${townName} visited`
+        }
       };
     }
 

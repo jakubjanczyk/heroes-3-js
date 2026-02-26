@@ -21,14 +21,20 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     if (entity.kind === 'HERO') {
       return {
         className: 'entity entity--hero',
-        size: 24
+        width: 24,
+        height: 24,
+        offsetX: -12,
+        offsetY: -12
       };
     }
 
     if (entity.kind === 'MONSTER') {
       return {
         className: 'entity entity--monster',
-        size: 22
+        width: 22,
+        height: 22,
+        offsetX: -11,
+        offsetY: -11
       };
     }
 
@@ -39,7 +45,20 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
           resourceTypeClass === null
             ? 'entity entity--resource'
             : `entity entity--resource entity--resource-type-${resourceTypeClass}`,
-        size: 20
+        width: 20,
+        height: 20,
+        offsetX: -10,
+        offsetY: -10
+      };
+    }
+
+    if (entity.kind === 'TOWN') {
+      return {
+        className: 'entity entity--town',
+        width: 224,
+        height: 96,
+        offsetX: -112,
+        offsetY: -92
       };
     }
 
@@ -61,7 +80,10 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     if (entity.kind === 'RESOURCE' && typeof entity.type === 'string') {
       entityEl.dataset.resourceType = entity.type;
     }
-    entityEl.style.transform = `translate(${center.x - entityStyle.size / 2}px, ${center.y - entityStyle.size / 2}px)`;
+    if (entity.kind === 'TOWN' && typeof entity.type === 'string') {
+      entityEl.dataset.townType = entity.type;
+    }
+    entityEl.style.transform = `translate(${center.x + entityStyle.offsetX}px, ${center.y + entityStyle.offsetY}px)`;
     container.appendChild(entityEl);
   }
 }

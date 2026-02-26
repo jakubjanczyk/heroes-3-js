@@ -6,7 +6,16 @@
 }
 
 .terrain-layer {
+  z-index: var(--z-layer-terrain);
   overflow: visible;
+}
+
+.entity-layer {
+  z-index: var(--z-layer-entities);
+}
+
+.effects-layer {
+  z-index: var(--z-layer-effects);
 }
 
 .ui-layer {

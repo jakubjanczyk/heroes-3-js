@@ -68,11 +68,19 @@ export function createMovementSystem({
       return null;
     }
 
-    if (occupant.kind !== 'MONSTER' && occupant.kind !== 'RESOURCE') {
+    if (occupant.kind !== 'MONSTER' && occupant.kind !== 'RESOURCE' && occupant.kind !== 'TOWN') {
       return null;
     }
 
     return occupant;
+  }
+
+  function getPersistentOccupantAt(tile, heroId) {
+    return (
+      entities.find(
+        (entity) => entity.id !== heroId && entity.kind === 'TOWN' && sameTile(entity.tile, tile)
+      ) ?? null
+    );
   }
 
   async function moveHeroTo(toTile, { path: plannedPath = null } = {}) {
@@ -120,8 +128,11 @@ export function createMovementSystem({
     ) {
       return false;
     }
+    const interactionRequiresSteppingIntoTarget = targetArrivalInteraction?.kind === 'TOWN';
     const executedStepCount = didTriggerArrivalInteraction
-      ? Math.max(0, cappedStepCount - 1)
+      ? interactionRequiresSteppingIntoTarget
+        ? cappedStepCount
+        : Math.max(0, cappedStepCount - 1)
       : cappedStepCount;
 
     spendMovementPoints(cappedStepCount);
@@ -142,6 +153,10 @@ export function createMovementSystem({
         await sleep(stepDelayMs);
         occupancy.moveEntity(hero, stepTile);
         hero.tile = stepTile;
+        const persistentOccupant = getPersistentOccupantAt(stepFromTile, hero.id);
+        if (persistentOccupant) {
+          occupancy.moveEntity(persistentOccupant, stepFromTile);
+        }
         onStep({ hero, from: stepFromTile, to: stepTile });
       }
     } finally {
@@ -155,7 +170,11 @@ export function createMovementSystem({
         interaction: didTriggerArrivalInteraction
           ? {
               kind:
-                targetArrivalInteraction.kind === 'MONSTER' ? 'MONSTER_COMBAT' : 'RESOURCE_COLLECT',
+                targetArrivalInteraction.kind === 'MONSTER'
+                  ? 'MONSTER_COMBAT'
+                  : targetArrivalInteraction.kind === 'RESOURCE'
+                    ? 'RESOURCE_COLLECT'
+                    : 'TOWN_VISIT',
               entityId: targetArrivalInteraction.id,
               targetTile: toTile
             }

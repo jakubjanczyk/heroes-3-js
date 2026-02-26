@@ -1,6 +1,13 @@
 :root {
   color-scheme: dark;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --z-layer-terrain: 0;
+  --z-layer-entities: 10;
+  --z-entity-town: 20;
+  --z-entity-hero: 30;
+  --z-layer-effects: 40;
+  --z-ui-interaction-modal: 30;
+  --z-ui-dev-panel: 50;
 }
 
 body {
