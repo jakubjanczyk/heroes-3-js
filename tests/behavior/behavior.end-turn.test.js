@@ -88,15 +88,9 @@ describe('end turn behavior', () => {
   });
 
   test('given hero is moving when player clicks End turn then turn is not ended until movement completes', async () => {
-    let resolveSleep = null;
     const { user } = await setupLinearMovementApp({
       width: 2,
-      movementSystemOptions: {
-        sleep: () => new Promise((resolve) => {
-          resolveSleep = resolve;
-        }),
-        stepDelayMs: 1
-      }
+      movementStepDelayMs: 40
     });
 
     confirmTileClickByDispatch(1, 0);
@@ -106,22 +100,17 @@ describe('end turn behavior', () => {
     await clickEndTurn(user);
     expectMovementPoints(14);
 
-    resolveSleep?.();
-    await flushMicrotasks(3);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 60);
+    });
 
     expectMovementPoints(14);
   });
 
   test('given movement completes after ignored End turn click when player clicks End turn again then turn ends and movement points reset', async () => {
-    let resolveSleep = null;
     const { user } = await setupLinearMovementApp({
       width: 2,
-      movementSystemOptions: {
-        sleep: () => new Promise((resolve) => {
-          resolveSleep = resolve;
-        }),
-        stepDelayMs: 1
-      }
+      movementStepDelayMs: 40
     });
 
     confirmTileClickByDispatch(1, 0);
@@ -131,8 +120,9 @@ describe('end turn behavior', () => {
     await clickEndTurn(user);
     expectMovementPoints(14);
 
-    resolveSleep?.();
-    await flushMicrotasks(3);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 60);
+    });
     expectMovementPoints(14);
 
     await clickEndTurn(user);

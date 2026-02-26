@@ -112,7 +112,6 @@ describe('movement behavior', () => {
   });
 
   test('given move is in progress when player clicks End turn then End turn is ignored until movement completes', async () => {
-    let resolveSleep = null;
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: {
         width: 2,
@@ -120,24 +119,20 @@ describe('movement behavior', () => {
         tiles: [0, 0],
         entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      movementSystemOptions: {
-        sleep: () => new Promise((resolve) => {
-          resolveSleep = resolve;
-        }),
-        stepDelayMs: 1
-      }
+      movementStepDelayMs: 40
     });
 
     await confirmMove(user, 1, 0);
-    await flushMicrotasks(3);
+    await flushMicrotasks();
 
     expectMovementPoints(14);
 
     await clickEndTurn(user);
     expectMovementPoints(14);
 
-    resolveSleep?.();
-    await flushMicrotasks(3);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 60);
+    });
 
     await clickEndTurn(user);
     expectMovementPoints(15);

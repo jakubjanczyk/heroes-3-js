@@ -8,7 +8,31 @@ function getMusicToggleButton() {
 }
 
 describe('music behavior', () => {
-  test('given browser blocks autoplay at boot when tracks exist then music toggle shows off state', async () => {
+  test('given tracks exist at boot then music toggle shows off state before any user action', async () => {
+    class FakeAudio {
+      addEventListener() {}
+
+      removeEventListener() {}
+
+      play() {
+        return Promise.resolve();
+      }
+
+      pause() {}
+    }
+
+    await setupMovementBehaviorApp({
+      musicTracks: ['/assets/music/a.mp3'],
+      AudioCtor: FakeAudio
+    });
+
+    const musicToggleButton = getMusicToggleButton();
+    expect(musicToggleButton).toBeTruthy();
+    expect(musicToggleButton?.textContent).toBe('Music: Off');
+    expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  test('given playback is blocked on toggle then music stays off', async () => {
     class FakeAudio {
       addEventListener() {}
 
@@ -21,55 +45,37 @@ describe('music behavior', () => {
       pause() {}
     }
 
-    await setupMovementBehaviorApp({
-      loadMusicTracks: async () => ['/assets/music/a.mp3'],
+    const { user } = await setupMovementBehaviorApp({
+      musicTracks: ['/assets/music/a.mp3'],
       AudioCtor: FakeAudio
     });
 
     const musicToggleButton = getMusicToggleButton();
     expect(musicToggleButton).toBeTruthy();
+
+    await user.click(musicToggleButton);
+    await flushMicrotasks();
+
     expect(musicToggleButton?.textContent).toBe('Music: Off');
     expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false');
   });
 
-  test('given app boots when music is enabled then music toggle shows on state', async () => {
-    let enabled = true;
+  test('given music toggle is clicked when playback works then button text and pressed state update', async () => {
+    class FakeAudio {
+      addEventListener() {}
 
-    await setupMovementBehaviorApp({
-      createMusicPlayer: () => ({
-        start() {},
-        toggle() {
-          enabled = !enabled;
-          return enabled;
-        },
-        isEnabled() {
-          return enabled;
-        }
-      }),
-      musicTracks: ['/assets/music/a.mp3']
-    });
+      removeEventListener() {}
 
-    const musicToggleButton = getMusicToggleButton();
-    expect(musicToggleButton).toBeTruthy();
-    expect(musicToggleButton?.textContent).toBe('Music: On');
-    expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('true');
-  });
+      play() {
+        return Promise.resolve();
+      }
 
-  test('given music toggle is clicked when state changes then button text and pressed state update', async () => {
-    let enabled = true;
+      pause() {}
+    }
 
     const { user } = await setupMovementBehaviorApp({
-      createMusicPlayer: () => ({
-        start() {},
-        toggle() {
-          enabled = !enabled;
-          return enabled;
-        },
-        isEnabled() {
-          return enabled;
-        }
-      }),
-      musicTracks: ['/assets/music/a.mp3']
+      musicTracks: ['/assets/music/a.mp3'],
+      AudioCtor: FakeAudio
     });
 
     const musicToggleButton = getMusicToggleButton();
@@ -78,13 +84,13 @@ describe('music behavior', () => {
     await user.click(musicToggleButton);
     await flushMicrotasks();
 
-    expect(musicToggleButton?.textContent).toBe('Music: Off');
-    expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false');
+    expect(musicToggleButton?.textContent).toBe('Music: On');
+    expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('true');
 
     await user.click(musicToggleButton);
     await flushMicrotasks();
 
-    expect(musicToggleButton?.textContent).toBe('Music: On');
-    expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('true');
+    expect(musicToggleButton?.textContent).toBe('Music: Off');
+    expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false');
   });
 });

@@ -229,4 +229,71 @@ describe('movement system', () => {
     expect(occupancy.getAt({ x: 2, y: 0 })).toBe(null);
     expect(occupancy.getAt({ x: 3, y: 0 })).toBe(null);
   });
+
+  test('emits lifecycle callbacks only when movement actually starts', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const entities = [hero];
+    const map = createMap({
+      width: 3,
+      height: 1,
+      tiles: [0, 0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const starts = [];
+    const finishes = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      onMoveStart: (event) => {
+        starts.push(event);
+      },
+      onMoveFinish: (event) => {
+        finishes.push(event);
+      },
+      getMaxMovableSteps: () => 0
+    });
+
+    const moved = await movement.moveHeroTo({ x: 2, y: 0 });
+
+    expect(moved).toBe(false);
+    expect(starts).toEqual([]);
+    expect(finishes).toEqual([]);
+  });
+
+  test('reports lifecycle payload for successful movement', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const entities = [hero];
+    const map = createMap({
+      width: 3,
+      height: 1,
+      tiles: [0, 0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const starts = [];
+    const finishes = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      onMoveStart: (event) => {
+        starts.push(event);
+      },
+      onMoveFinish: (event) => {
+        finishes.push(event);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 2, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(starts).toHaveLength(1);
+    expect(starts[0].targetTile).toEqual({ x: 2, y: 0 });
+    expect(finishes).toHaveLength(1);
+    expect(finishes[0].reachedTile).toEqual({ x: 2, y: 0 });
+  });
 });
