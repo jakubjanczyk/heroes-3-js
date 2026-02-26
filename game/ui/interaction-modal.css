@@ -9,7 +9,7 @@
   background: rgba(7, 11, 18, 0.64);
   backdrop-filter: blur(3px);
   opacity: 0;
-  transition: opacity 180ms ease;
+  transition: opacity 260ms ease;
 }
 
 .interaction-modal--visible {
@@ -26,8 +26,8 @@
   transform: translateY(6px) scale(0.985);
   opacity: 0;
   transition:
-    transform 180ms ease,
-    opacity 180ms ease;
+    transform 260ms ease,
+    opacity 260ms ease;
 }
 
 .interaction-modal--visible .interaction-modal__dialog {

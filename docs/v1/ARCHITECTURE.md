@@ -30,15 +30,19 @@ app/
     world.module.js
     turn.module.js
     movement.module.js
+    interaction.module.js
     preview.module.js
     camera.module.js
     terrain-view.module.js
     entity-view.module.js
     preview-view.module.js
+    interaction-modal.module.js
     hud.module.js
     music.module.js
     dev/bus-dev-panel.js
     shared/tile-utils.js
+  ui/
+    interaction-modal.element.js
 ```
 
 ## 3) Top-level architecture
@@ -52,21 +56,26 @@ flowchart TD
   Registry --> World[world.module]
   Registry --> Turn[turn.module]
   Registry --> Movement[movement.module]
+  Registry --> Interaction[interaction.module]
   Registry --> Preview[preview.module]
   Registry --> Camera[camera.module]
   Registry --> TerrainView[terrain-view.module]
   Registry --> EntityView[entity-view.module]
   Registry --> PreviewView[preview-view.module]
+  Registry --> InteractionModalView[interaction-modal.module]
   Registry --> Hud[hud.module]
   Registry --> Music[music.module]
 
   World -->|fact.world.ready| Turn
   World -->|fact.world.ready| Movement
+  World -->|fact.world.ready| Interaction
   World -->|fact.world.ready| Preview
   World -->|fact.world.ready| Camera
   World -->|fact.world.ready| TerrainView
   World -->|fact.world.ready| EntityView
   World -->|fact.world.ready| PreviewView
+  Interaction -->|ui.interaction.modal.opened| InteractionModalView
+  InteractionModalView -->|ui.interaction.modal.closed| Interaction
   World -->|fact.world.ready| Hud
   World -->|fact.world.ready| Music
 ```
@@ -151,11 +160,13 @@ Quick matrix:
 | `world.module` | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted` | none |
 | `turn.module` | `fact.world.ready`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnSystem`, `isMoving` | none |
 | `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
-| `preview.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `ui.preview.updated`, `command.move.requested` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `remainingMovementPoints` | none |
+| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated` | `hero`, `interactions`, `pendingMonsterDefeat` | none |
+| `preview.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed` | `ui.preview.updated`, `command.move.requested` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
 | `camera.module` | `fact.world.ready`, `command.camera.panBy`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked` | `camera`, `hero`, `map`, `isMoving` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved` | none | `map`, `entities` | queries `.entity-layer` |
+| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated` | none | `map`, `entities` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
+| `interaction-modal.module` | `ui.interaction.modal.opened` | `ui.interaction.modal.closed` | `activeModal` | queries `.viewport`; mounts custom element |
 | `hud.module` | `fact.hero.movementPoints.changed`, `ui.music.state.changed`, `fact.world.ready` | `command.turn.end.requested`, `command.music.toggle.requested` | none | queries `.ui-layer`, `#movement-points-status`, `#end-turn-button`, `#music-toggle-button`, `#boot-status` |
 | `music.module` | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` | `musicPlayer`, `hasInitialized` | none |
 
@@ -163,10 +174,34 @@ Quick matrix:
 
 Runtime modules are intentionally split into two categories:
 
-- domain/control modules: `world`, `turn`, `movement`, `preview`, `camera`, `music`
-- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `hud`
+- domain/control modules: `world`, `turn`, `movement`, `interaction`, `preview`, `camera`, `music`
+- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `interaction-modal`, `hud`
 
 `register-modules.js` registers domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
+
+### 6.2 Reusable UI components (custom elements)
+
+For complex, reusable UI surfaces (like interaction dialogs), the runtime uses custom elements under `app/ui/`.
+
+Current example:
+
+- `app/ui/interaction-modal.element.js` defines `<interaction-modal>` and owns:
+  - internal template structure (title/message/actions)
+  - open/close transitions
+  - modal-local keyboard/click handling
+
+Why this pattern is used:
+
+- keeps bus modules orchestration-focused (event in -> event out), not template-heavy
+- centralizes modal behavior in one place for future interactions (resources/towns/multi-action dialogs)
+- makes UI behavior testable directly with component-level tests (`app/ui/*.test.js`)
+
+How to use going forward:
+
+1. create/extend component API (`open(payload)`, `close()`, custom close event).
+2. keep the module as controller (listen to bus, mount component, translate component events back to bus).
+3. avoid direct domain logic in the component; domain stays in `game/systems/*` + domain modules.
+4. keep selectors owned by component internals; callers should not depend on component internals unless tests require it.
 
 ## 7) Important end-to-end flows
 
@@ -237,6 +272,15 @@ This is the canonical behavior for long routes in the current runtime.
 - on `command.music.toggle.requested`, module toggles player and emits updated UI state.
 - `hud.module` is the single owner of music button label and `aria-pressed` rendering.
 
+### 7.6 Monster combat -> modal -> deferred removal
+
+- `movement-system` stops hero one tile before an attacked monster, spends the move cost, and marks `fact.move.finished` with `interaction.kind = MONSTER_COMBAT`.
+- `interaction.module` resolves combat from move-finished context and emits `ui.interaction.modal.opened`.
+- `interaction-modal.module` mounts `<interaction-modal>` in `.viewport`.
+- closing the modal emits `ui.interaction.modal.closed`.
+- after close, `interaction.module` runs monster fade-out and only then emits `fact.monster.defeated`.
+- `entity-view.module` rerenders from world state on `fact.monster.defeated`.
+
 ## 8) DOM ownership map
 
 Each module owns the selectors it queries and updates:
@@ -245,6 +289,7 @@ Each module owns the selectors it queries and updates:
 - `terrain-view.module`: `.terrain-layer` (terrain render)
 - `entity-view.module`: `.entity-layer` (entity render)
 - `preview-view.module`: `.effects-layer` (path preview svg render)
+- `interaction-modal.module`: `.viewport` (mount/unmount custom modal element)
 - `hud.module`:
   - `.ui-layer` (stop propagation)
   - `#movement-points-status` (MP text)
@@ -252,6 +297,8 @@ Each module owns the selectors it queries and updates:
   - `#music-toggle-button` (music command source + UI state)
   - `#boot-status` (boot status text)
 - `boot-app.js`: no feature DOM ownership; only optional bus dev panel composition
+
+`<interaction-modal>` owns its internal dialog DOM and interaction handlers; other modules interact with it through its public API and close event.
 
 ## 9) Debug observability
 
@@ -278,6 +325,16 @@ Test seams are explicit and local:
 - module-level overrides (second argument) for dependencies like `createMovementSystem`, `createCamera`, `loadMusicTracks`
 - fake bus (`tests/test-utils/fake-bus.js`) to assert emitted events and listener behavior
 
+### 10.3 UI component tests
+
+Reusable custom elements are tested directly under `app/ui/*.test.js`.
+
+For `interaction-modal` this includes:
+
+- payload rendering (`title`, `message`)
+- close mechanics (OK click, Escape, transition delay)
+- event emission contract (`interaction-modal-closed`)
+
 ### 10.2 Behavior tests
 
 End-to-end behavior scenarios live in `tests/behavior/*` and boot the real module graph.
@@ -294,9 +351,12 @@ These allow movement timing to be deterministic without reintroducing boot-level
 1. define new events in `app/events.js` using the `command.*` / `fact.*` / `ui.*` naming scheme.
 2. implement feature logic in a single module (or a small set of modules) under `app/modules/`.
 3. keep communication bus-first; do not call another module directly.
-4. if DOM is involved, query and own selectors inside the responsible module.
-5. register module from `app/modules/register-modules.js`.
-6. add/expand module unit tests first, then behavior tests.
+4. if DOM is involved, decide between:
+   - module-owned direct DOM (simple projections), or
+   - custom element under `app/ui/` (reusable/interactive UI).
+5. if using a custom element, keep module as bus/controller layer and component as UI implementation.
+6. register module from `app/modules/register-modules.js`.
+7. add/expand module and component tests first, then behavior tests.
 
 ## 12) Invariants to keep
 

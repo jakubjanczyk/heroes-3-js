@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -7,61 +8,16 @@ import {
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerInteractionModalModule } from './interaction-modal.module.js';
 
-function createFakeElement(tagName) {
-  const listeners = new Map();
-
-  return {
-    tagName,
-    className: '',
-    textContent: '',
-    children: [],
-    attributes: {},
-    parentElement: null,
-    appendChild(child) {
-      child.parentElement = this;
-      this.children.push(child);
-    },
-    removeChild(child) {
-      this.children = this.children.filter((entry) => entry !== child);
-      child.parentElement = null;
-    },
-    addEventListener(type, handler) {
-      listeners.set(type, handler);
-    },
-    setAttribute(name, value) {
-      this.attributes[name] = String(value);
-    },
-    trigger(type, event = {}) {
-      const payload = {
-        stopPropagation() {},
-        preventDefault() {},
-        ...event
-      };
-      listeners.get(type)?.(payload);
-    }
-  };
-}
-
 describe('interaction modal module', () => {
-  test('opens modal and closes it on OK button click', () => {
+  test('opens modal and closes it on OK button click', async () => {
     const bus = createFakeBus();
-    const viewport = createFakeElement('div');
+    document.body.innerHTML = '<div class="viewport"></div>';
 
     registerInteractionModalModule({
       bus,
       env: {
-        document: {
-          querySelector(selector) {
-            return selector === '.viewport' ? viewport : null;
-          },
-          createElement(tagName) {
-            return createFakeElement(tagName);
-          }
-        },
-        window: {
-          addEventListener() {},
-          removeEventListener() {}
-        }
+        document,
+        window
       },
       config: {
         interactionModalTransitionMs: 0
@@ -73,48 +29,31 @@ describe('interaction modal module', () => {
       message: 'Monster defeated'
     });
 
-    expect(viewport.children).toHaveLength(1);
-    const root = viewport.children[0];
-    const dialog = root.children[0];
-    const message = dialog.children[1];
-    const okButton = dialog.children[2].children[0];
+    const modal = document.querySelector('interaction-modal.interaction-modal--visible');
+    expect(modal).toBeTruthy();
+    expect(modal?.querySelector('.interaction-modal__message')?.textContent).toBe('Monster defeated');
 
-    expect(root.className).toBe('interaction-modal interaction-modal--visible');
-    expect(message.textContent).toBe('Monster defeated');
+    modal?.querySelector('.interaction-modal__ok-button')?.dispatchEvent(
+      new window.MouseEvent('click', { bubbles: true, cancelable: true })
+    );
+    await Promise.resolve();
 
-    okButton.trigger('click');
-
-    expect(viewport.children).toHaveLength(0);
+    expect(document.querySelector('interaction-modal')).toBeFalsy();
     expect(bus.emitted).toContainEqual({
       type: APP_UI_INTERACTION_MODAL_CLOSED,
       detail: {}
     });
   });
 
-  test('closes currently opened modal when Escape is pressed', () => {
+  test('closes currently opened modal when Escape is pressed', async () => {
     const bus = createFakeBus();
-    const viewport = createFakeElement('div');
-    const windowListeners = new Map();
+    document.body.innerHTML = '<div class="viewport"></div>';
 
     registerInteractionModalModule({
       bus,
       env: {
-        document: {
-          querySelector(selector) {
-            return selector === '.viewport' ? viewport : null;
-          },
-          createElement(tagName) {
-            return createFakeElement(tagName);
-          }
-        },
-        window: {
-          addEventListener(type, handler) {
-            windowListeners.set(type, handler);
-          },
-          removeEventListener(type) {
-            windowListeners.delete(type);
-          }
-        }
+        document,
+        window
       },
       config: {
         interactionModalTransitionMs: 0
@@ -125,15 +64,14 @@ describe('interaction modal module', () => {
       title: 'Interaction',
       message: 'Monster defeated'
     });
-    expect(viewport.children).toHaveLength(1);
+    expect(document.querySelector('interaction-modal')).toBeTruthy();
 
-    windowListeners.get('keydown')?.({
-      key: 'Escape',
-      stopPropagation() {},
-      preventDefault() {}
-    });
+    window.dispatchEvent(
+      new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    );
+    await Promise.resolve();
 
-    expect(viewport.children).toHaveLength(0);
+    expect(document.querySelector('interaction-modal')).toBeFalsy();
     expect(bus.emitted).toContainEqual({
       type: APP_UI_INTERACTION_MODAL_CLOSED,
       detail: {}

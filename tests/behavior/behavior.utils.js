@@ -253,15 +253,15 @@ export function expectMonsterDefeating(entityId = 'monster-1') {
 }
 
 export function getInteractionModal() {
-  return document.querySelector('.interaction-modal');
+  return document.querySelector('interaction-modal, .interaction-modal');
 }
 
 export function getInteractionModalMessage() {
-  return document.querySelector('.interaction-modal__message');
+  return getInteractionModal()?.querySelector('.interaction-modal__message') ?? null;
 }
 
 export function getInteractionModalOkButton() {
-  return document.querySelector('.interaction-modal__ok-button');
+  return getInteractionModal()?.querySelector('.interaction-modal__ok-button') ?? null;
 }
 
 export function expectInteractionModalOpen(messageIncludes = null) {

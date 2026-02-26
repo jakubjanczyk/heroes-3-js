@@ -2,152 +2,47 @@ import {
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED
 } from '../events.js';
+import {
+  ensureInteractionModalElement,
+  INTERACTION_MODAL_CLOSED_EVENT,
+  INTERACTION_MODAL_TAG_NAME
+} from '../ui/interaction-modal.element.js';
 
 export function registerInteractionModalModule({ bus, env, config }) {
   const viewport = env.document?.querySelector('.viewport');
-  const createElement = env.document?.createElement?.bind(env.document);
-  const modalTransitionMs = config?.interactionModalTransitionMs ?? 180;
+  const modalTransitionMs = config?.interactionModalTransitionMs ?? 260;
+  let activeModal = null;
 
-  let modalRoot = null;
-  let escapeKeyHandler = null;
-  let closeTimerId = null;
-
-  function setModalVisibility(root, isVisible) {
-    if (!root) {
+  function openModal(payload) {
+    if (!viewport || !env.document) {
       return;
     }
 
-    root.className = isVisible ? 'interaction-modal interaction-modal--visible' : 'interaction-modal';
-  }
-
-  function clearCloseTimer() {
-    if (closeTimerId === null) {
+    if (!ensureInteractionModalElement(env.window)) {
       return;
     }
 
-    clearTimeout(closeTimerId);
-    closeTimerId = null;
-  }
-
-  function removeModalNow({ emitClosed = true } = {}) {
-    if (!modalRoot) {
-      return;
+    if (activeModal) {
+      activeModal.remove();
+      activeModal = null;
     }
 
-    const root = modalRoot;
-
-    if (typeof root.remove === 'function') {
-      root.remove();
-    } else {
-      viewport?.removeChild?.(root);
-    }
-    modalRoot = null;
-
-    if (escapeKeyHandler) {
-      env.window?.removeEventListener?.('keydown', escapeKeyHandler);
-      escapeKeyHandler = null;
-    }
-
-    if (emitClosed) {
-      bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
-    }
-  }
-
-  function closeModal({ emitClosed = true } = {}) {
-    if (!modalRoot) {
-      return;
-    }
-
-    clearCloseTimer();
-
-    if (modalTransitionMs <= 0) {
-      removeModalNow({ emitClosed });
-      return;
-    }
-
-    setModalVisibility(modalRoot, false);
-    closeTimerId = setTimeout(() => {
-      closeTimerId = null;
-      removeModalNow({ emitClosed });
-    }, modalTransitionMs);
-  }
-
-  function stopEvent(event) {
-    event?.stopPropagation?.();
-  }
-
-  function openModal({ title, message }) {
-    if (!viewport || !createElement) {
-      return;
-    }
-
-    clearCloseTimer();
-    removeModalNow({ emitClosed: false });
-
-    const root = createElement('div');
-    root.className = 'interaction-modal';
-
-    const dialog = createElement('div');
-    dialog.className = 'interaction-modal__dialog';
-    dialog.setAttribute?.('role', 'dialog');
-    dialog.setAttribute?.('aria-modal', 'true');
-
-    const titleEl = createElement('h3');
-    titleEl.className = 'interaction-modal__title';
-    titleEl.textContent = title ?? 'Interaction';
-
-    const messageEl = createElement('p');
-    messageEl.className = 'interaction-modal__message';
-    messageEl.textContent = message ?? '';
-
-    const actions = createElement('div');
-    actions.className = 'interaction-modal__actions';
-
-    const okButton = createElement('button');
-    okButton.className = 'interaction-modal__ok-button';
-    okButton.type = 'button';
-    okButton.textContent = 'OK';
-    okButton.addEventListener?.('click', (event) => {
-      stopEvent(event);
-      closeModal();
-    });
-
-    actions.appendChild(okButton);
-    dialog.appendChild(titleEl);
-    dialog.appendChild(messageEl);
-    dialog.appendChild(actions);
-    root.appendChild(dialog);
-
-    root.addEventListener?.('click', stopEvent);
-    dialog.addEventListener?.('click', stopEvent);
-
-    viewport.appendChild(root);
-    modalRoot = root;
-
-    if (modalTransitionMs <= 0) {
-      setModalVisibility(root, true);
-    } else {
-      const schedule = env.window?.requestAnimationFrame ?? ((handler) => setTimeout(handler, 0));
-      schedule(() => {
-        if (modalRoot !== root) {
-          return;
+    const modalElement = env.document.createElement(INTERACTION_MODAL_TAG_NAME);
+    modalElement.transitionMs = modalTransitionMs;
+    modalElement.addEventListener(
+      INTERACTION_MODAL_CLOSED_EVENT,
+      () => {
+        if (activeModal === modalElement) {
+          activeModal = null;
         }
-        setModalVisibility(root, true);
-      });
-    }
+        bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
+      },
+      { once: true }
+    );
 
-    if (!escapeKeyHandler) {
-      escapeKeyHandler = (event) => {
-        if (event.key !== 'Escape' || !modalRoot) {
-          return;
-        }
-
-        event.preventDefault?.();
-        stopEvent(event);
-        closeModal();
-      };
-      env.window?.addEventListener?.('keydown', escapeKeyHandler);
-    }
+    viewport.appendChild(modalElement);
+    modalElement.open?.(payload);
+    activeModal = modalElement;
   }
 
   bus.addEventListener(APP_UI_INTERACTION_MODAL_OPENED, (event) => {
