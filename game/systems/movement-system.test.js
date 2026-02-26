@@ -311,6 +311,77 @@ describe('movement system', () => {
     expect(finishes[0].interaction).toBe(null);
   });
 
+  test('stops before adjacent resource, spends one point, and reports resource collect interaction', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const resource = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
+    const entities = [hero, resource];
+    const map = createMap({
+      width: 2,
+      height: 1,
+      tiles: [0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const spent = [];
+    const finishes = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      spendMovementPoints: (amount) => {
+        spent.push(amount);
+      },
+      onMoveFinish: (event) => {
+        finishes.push(event);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(spent).toEqual([1]);
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
+    expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('resource-1');
+    expect(finishes[0].interaction).toEqual({
+      kind: 'RESOURCE_COLLECT',
+      entityId: 'resource-1',
+      targetTile: { x: 1, y: 0 }
+    });
+  });
+
+  test('does not move onto a collecting resource destination tile', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const resource = {
+      id: 'resource-1',
+      kind: 'RESOURCE',
+      tile: { x: 1, y: 0 },
+      isCollecting: true
+    };
+    const entities = [hero, resource];
+    const map = createMap({
+      width: 2,
+      height: 1,
+      tiles: [0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {}
+    });
+
+    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+
+    expect(moved).toBe(false);
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
+    expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('resource-1');
+  });
+
   test('emits lifecycle callbacks only when movement actually starts', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const entities = [hero];

@@ -9,6 +9,7 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
@@ -120,5 +121,78 @@ describe('preview module', () => {
 
     preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
     expect(preview?.detail.path?.length).toBe(3);
+  });
+
+  test('does not preview a route that would pass through a resource tile', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const resource = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
+    const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
+    const occupancy = createOccupancyIndex([hero, resource]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero, resource] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toBe(null);
+    expect(preview?.detail.targetTile).toBe(null);
+  });
+
+  test('clears preview when a resource gets collected', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
+    const occupancy = createOccupancyIndex([hero]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
+
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toBe(null);
+    expect(preview?.detail.targetTile).toBe(null);
+  });
+
+  test('clears preview immediately when movement finishes with resource collect interaction', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
+    const occupancy = createOccupancyIndex([hero]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    bus.emit(APP_FACT_MOVE_FINISHED, {
+      targetTile: { x: 2, y: 0 },
+      interaction: {
+        kind: 'RESOURCE_COLLECT',
+        entityId: 'resource-1',
+        targetTile: { x: 2, y: 0 }
+      }
+    });
+
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toBe(null);
+    expect(preview?.detail.targetTile).toBe(null);
   });
 });

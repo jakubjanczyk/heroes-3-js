@@ -4,6 +4,7 @@ import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED
 } from '../events.js';
@@ -35,6 +36,7 @@ describe('hud module', () => {
     const nodes = {
       '.ui-layer': createFakeNode(),
       'movement-points-status': createFakeNode(),
+      'resource-totals-status': createFakeNode(),
       'end-turn-button': createFakeNode(),
       'music-toggle-button': createFakeNode(),
       'boot-status': createFakeNode()
@@ -58,7 +60,21 @@ describe('hud module', () => {
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 11, max: 15 });
     bus.emit(APP_UI_MUSIC_STATE_CHANGED, { enabled: true });
     bus.emit(APP_FACT_WORLD_READY, {
-      scenario: { meta: { id: 'demo' } }
+      scenario: { meta: { id: 'demo' } },
+      definitions: {
+        resources: {
+          GOLD_PILE: { name: 'Gold pile' },
+          WOOD_PILE: { name: 'Wood pile' }
+        }
+      }
+    });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, {
+      entityType: 'GOLD_PILE',
+      amount: 100
+    });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, {
+      entityType: 'WOOD_PILE',
+      amount: 5
     });
 
     expect(bus.emitted).toContainEqual({
@@ -73,6 +89,7 @@ describe('hud module', () => {
     expect(nodes['music-toggle-button'].textContent).toBe('Music: On');
     expect(nodes['music-toggle-button'].attributes['aria-pressed']).toBe('true');
     expect(nodes['boot-status'].textContent).toBe('Boot ok: demo');
+    expect(nodes['resource-totals-status'].textContent).toBe('Resources: Gold pile: 100 | Wood pile: 5');
   });
 
   test('is safe when optional HUD nodes are missing', () => {
@@ -94,11 +111,13 @@ describe('hud module', () => {
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 5, max: 15 });
     bus.emit(APP_UI_MUSIC_STATE_CHANGED, { enabled: false });
     bus.emit(APP_FACT_WORLD_READY, { scenario: { meta: { id: 'demo' } } });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityType: 'GOLD_PILE', amount: 100 });
 
     expect(bus.emitted).toEqual([
       { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 5, max: 15 } },
       { type: APP_UI_MUSIC_STATE_CHANGED, detail: { enabled: false } },
-      { type: APP_FACT_WORLD_READY, detail: { scenario: { meta: { id: 'demo' } } } }
+      { type: APP_FACT_WORLD_READY, detail: { scenario: { meta: { id: 'demo' } } } },
+      { type: APP_FACT_RESOURCE_COLLECTED, detail: { entityType: 'GOLD_PILE', amount: 100 } }
     ]);
   });
 });

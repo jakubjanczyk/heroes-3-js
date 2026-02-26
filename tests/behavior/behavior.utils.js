@@ -22,6 +22,7 @@ export function mountAppTemplate() {
             <div class="hud__status" id="boot-status">Booting…</div>
             <div class="hud__row">
               <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
+              <div class="hud__resources" id="resource-totals-status">Resources: none</div>
               <button class="hud__button" id="end-turn-button" type="button">End turn</button>
               <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="false">Music: Off</button>
             </div>
@@ -36,7 +37,8 @@ export function createLoadGame({
   width = 4,
   height = 1,
   tiles = [0, 0, 0, 0],
-  entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+  entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
+  definitions = {}
 } = {}) {
   return {
     scenario: {
@@ -48,7 +50,8 @@ export function createLoadGame({
       hero: {},
       monsters: {},
       resources: {},
-      towns: {}
+      towns: {},
+      ...definitions
     }
   };
 }
@@ -219,6 +222,10 @@ export function getMonsterEntity(entityId = 'monster-1') {
   return document.querySelector(`.entity--monster[data-entity-id="${entityId}"]`);
 }
 
+export function getResourceEntity(entityId = 'resource-1') {
+  return document.querySelector(`.entity--resource[data-entity-id="${entityId}"]`);
+}
+
 export function expectHeroAt(x, y) {
   const heroEntity = getHeroEntity();
   expect(heroEntity).toBeTruthy();
@@ -250,6 +257,32 @@ export function expectMonsterNotPresent(entityId = 'monster-1') {
 
 export function expectMonsterDefeating(entityId = 'monster-1') {
   expect(getMonsterEntity(entityId)?.className).toContain('entity--monster-defeating');
+}
+
+export function expectResourcePresent(entityId = 'resource-1') {
+  const resourceEntity = getResourceEntity(entityId);
+  expect(resourceEntity).toBeTruthy();
+  return resourceEntity;
+}
+
+export function expectResourceAt(x, y, entityId = 'resource-1') {
+  const resourceEntity = expectResourcePresent(entityId);
+  expect(resourceEntity?.dataset.tileX).toBe(String(x));
+  expect(resourceEntity?.dataset.tileY).toBe(String(y));
+  return resourceEntity;
+}
+
+export function expectResourceNotPresent(entityId = 'resource-1') {
+  expect(getResourceEntity(entityId)).toBeFalsy();
+}
+
+export function expectResourceCollecting(entityId = 'resource-1') {
+  expect(getResourceEntity(entityId)?.className).toContain('entity--resource-collecting');
+}
+
+export function expectResourceTotal(resourceName, amount) {
+  const totalsText = document.getElementById('resource-totals-status')?.textContent ?? '';
+  expect(totalsText).toContain(`${resourceName}: ${amount}`);
 }
 
 export function getInteractionModal() {

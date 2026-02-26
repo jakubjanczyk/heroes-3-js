@@ -6,6 +6,7 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
@@ -121,7 +122,13 @@ export function registerPreviewModule({ bus }) {
     emitPreview();
   });
 
-  bus.addEventListener(APP_FACT_MOVE_FINISHED, () => {
+  bus.addEventListener(APP_FACT_MOVE_FINISHED, (event) => {
+    if (event.detail.interaction?.kind === 'RESOURCE_COLLECT') {
+      isMoving = false;
+      clearPreview();
+      return;
+    }
+
     isMoving = false;
     if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
       emitPreview();
@@ -138,5 +145,9 @@ export function registerPreviewModule({ bus }) {
 
   bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
     isInteractionModalOpen = false;
+  });
+
+  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, () => {
+    clearPreview();
   });
 }

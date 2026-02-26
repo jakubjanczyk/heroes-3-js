@@ -2,6 +2,29 @@
   "GOLD_PILE": {
     "name": "Gold pile",
     "amount": 100
+  },
+  "WOOD_PILE": {
+    "name": "Wood pile",
+    "amount": 5
+  },
+  "ORE_PILE": {
+    "name": "Ore pile",
+    "amount": 5
+  },
+  "MERCURY_PILE": {
+    "name": "Mercury pile",
+    "amount": 3
+  },
+  "SULFUR_PILE": {
+    "name": "Sulfur pile",
+    "amount": 3
+  },
+  "CRYSTAL_PILE": {
+    "name": "Crystal pile",
+    "amount": 3
+  },
+  "GEMS_PILE": {
+    "name": "Gems pile",
+    "amount": 3
   }
 }
-

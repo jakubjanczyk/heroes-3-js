@@ -58,4 +58,40 @@ describe('interaction system', () => {
     expect(outcome).toBe(null);
     expect(entities).toEqual([hero]);
   });
+
+  test('resolves resource outcome and removes resource immediately when finalized', () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } };
+    const resource = { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } };
+    const entities = [hero, resource];
+    const occupancy = createOccupancyIndex(entities);
+    occupancy.moveEntity(hero, hero.tile);
+
+    const interactions = createInteractionSystem({
+      entities,
+      occupancy,
+      definitions: {
+        resources: {
+          GOLD_PILE: { name: 'Gold pile', amount: 100 }
+        }
+      }
+    });
+
+    const outcome = interactions.resolveArrivalAtDestination({
+      destinationTile: { x: 1, y: 0 }
+    });
+
+    expect(outcome).toEqual({
+      kind: 'RESOURCE_COLLECTED',
+      entityId: 'resource-1',
+      entityType: 'GOLD_PILE',
+      tile: { x: 1, y: 0 },
+      amount: 100,
+      resourceName: 'Gold pile'
+    });
+
+    const finalized = interactions.finalizeResourceCollection({ entityId: 'resource-1' });
+    expect(finalized).toBe(true);
+    expect(entities).toEqual([hero]);
+    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
+  });
 });

@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
@@ -41,8 +42,9 @@ describe('entity view module', () => {
     });
     bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
     bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
 
-    expect(renderCalls).toHaveLength(3);
+    expect(renderCalls).toHaveLength(4);
     expect(renderCalls[0].entities).toEqual([{ id: 'hero-1' }]);
   });
 

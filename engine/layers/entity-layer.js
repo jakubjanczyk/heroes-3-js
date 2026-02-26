@@ -1,6 +1,14 @@
 import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
 import { getMapCenteredOrigin, getTileCenter } from './layout.js';
 
+function resourceTypeToClass(resourceType) {
+  if (typeof resourceType !== 'string' || resourceType.length === 0) {
+    return null;
+  }
+
+  return resourceType.toLowerCase().replaceAll('_', '-');
+}
+
 export function renderEntityLayer({ container, map, entities, createElement }) {
   const makeElement = getLayerElementFactory(createElement);
   clearLayerContainer(container);
@@ -24,6 +32,17 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
       };
     }
 
+    if (entity.kind === 'RESOURCE') {
+      const resourceTypeClass = resourceTypeToClass(entity.type);
+      return {
+        className:
+          resourceTypeClass === null
+            ? 'entity entity--resource'
+            : `entity entity--resource entity--resource-type-${resourceTypeClass}`,
+        size: 20
+      };
+    }
+
     return null;
   }
 
@@ -39,6 +58,9 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     entityEl.dataset.entityId = entity.id;
     entityEl.dataset.tileX = String(entity.tile.x);
     entityEl.dataset.tileY = String(entity.tile.y);
+    if (entity.kind === 'RESOURCE' && typeof entity.type === 'string') {
+      entityEl.dataset.resourceType = entity.type;
+    }
     entityEl.style.transform = `translate(${center.x - entityStyle.size / 2}px, ${center.y - entityStyle.size / 2}px)`;
     container.appendChild(entityEl);
   }

@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED
@@ -124,4 +125,77 @@ describe('interaction module', () => {
       bus.emitted.find((entry) => entry.type === APP_UI_INTERACTION_MODAL_OPENED)
     ).toBeFalsy();
   });
+
+  test('fades and finalizes resource collection without opening modal', async () => {
+    const bus = createFakeBus();
+    const resolveCalls = [];
+    const finalizeCalls = [];
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+
+    registerInteractionModule(
+      {
+        bus,
+        config: {
+          resourceCollectFadeOutMs: 0,
+          interactionSleep: async () => {}
+        }
+      },
+      {
+        createInteractionSystem: () => ({
+          resolveArrivalAtDestination({ destinationTile }) {
+            resolveCalls.push(destinationTile);
+            return {
+              kind: 'RESOURCE_COLLECTED',
+              entityId: 'resource-1',
+              entityType: 'GOLD_PILE',
+              amount: 100,
+              tile: destinationTile,
+              resourceName: 'Gold pile'
+            };
+          },
+          finalizeResourceCollection({ entityId }) {
+            finalizeCalls.push(entityId);
+            return true;
+          }
+        })
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: {
+        entities: [hero]
+      },
+      occupancy: {},
+      definitions: {}
+    });
+    bus.emit(APP_FACT_MOVE_FINISHED, {
+      targetTile: { x: 1, y: 0 },
+      interaction: {
+        kind: 'RESOURCE_COLLECT',
+        entityId: 'resource-1',
+        targetTile: { x: 1, y: 0 }
+      }
+    });
+    await Promise.resolve();
+
+    expect(resolveCalls).toEqual([{ x: 1, y: 0 }]);
+    expect(finalizeCalls).toEqual(['resource-1']);
+    expect(bus.emitted).toContainEqual({
+      type: APP_FACT_RESOURCE_COLLECTED,
+      detail: {
+        entityId: 'resource-1',
+        entityType: 'GOLD_PILE',
+        amount: 100,
+        tile: { x: 1, y: 0 }
+      }
+    });
+    expect(
+      bus.emitted.find(
+        (entry) =>
+          entry.type === APP_UI_INTERACTION_MODAL_OPENED &&
+          entry.detail?.interactionKind === 'RESOURCE_COLLECTED'
+      )
+    ).toBeFalsy();
+  });
+
 });

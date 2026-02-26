@@ -14,29 +14,49 @@ function removeEntityById(entities, entityId) {
 
 export function createInteractionSystem({ entities, occupancy, definitions = {} }) {
   const monsterDefinitions = definitions.monsters ?? {};
+  const resourceDefinitions = definitions.resources ?? {};
 
   function resolveArrivalAtDestination({ destinationTile }) {
-    const monster =
-      entities.find((entity) => entity.kind === 'MONSTER' && sameTile(entity.tile, destinationTile)) ??
-      null;
-
-    if (!monster) {
+    const interactionEntity =
+      entities.find(
+        (entity) => entity.kind !== 'HERO' && sameTile(entity.tile, destinationTile)
+      ) ?? null;
+    if (!interactionEntity) {
       return null;
     }
 
-    const monsterDefinition = monsterDefinitions[monster.type] ?? null;
-    const monsterName = monsterDefinition?.name ?? 'Monster';
+    if (interactionEntity.kind === 'MONSTER') {
+      const monsterDefinition = monsterDefinitions[interactionEntity.type] ?? null;
+      const monsterName = monsterDefinition?.name ?? 'Monster';
 
-    return {
-      kind: 'MONSTER_DEFEATED',
-      entityId: monster.id,
-      entityType: monster.type,
-      tile: destinationTile,
-      modal: {
-        title: 'Interaction',
-        message: `${monsterName} defeated`
-      }
-    };
+      return {
+        kind: 'MONSTER_DEFEATED',
+        entityId: interactionEntity.id,
+        entityType: interactionEntity.type,
+        tile: destinationTile,
+        modal: {
+          title: 'Interaction',
+          message: `${monsterName} defeated`
+        }
+      };
+    }
+
+    if (interactionEntity.kind === 'RESOURCE') {
+      const resourceDefinition = resourceDefinitions[interactionEntity.type] ?? null;
+      const resourceName = resourceDefinition?.name ?? 'Resource';
+      const amount = Number(resourceDefinition?.amount);
+
+      return {
+        kind: 'RESOURCE_COLLECTED',
+        entityId: interactionEntity.id,
+        entityType: interactionEntity.type,
+        tile: destinationTile,
+        amount: Number.isFinite(amount) ? amount : 0,
+        resourceName
+      };
+    }
+
+    return null;
   }
 
   function finalizeMonsterDefeat({ entityId }) {
@@ -49,8 +69,19 @@ export function createInteractionSystem({ entities, occupancy, definitions = {} 
     return removeEntityById(entities, entityId);
   }
 
+  function finalizeResourceCollection({ entityId }) {
+    const resource = entities.find((entity) => entity.id === entityId) ?? null;
+    if (!resource) {
+      return false;
+    }
+
+    occupancy.removeEntity?.(resource);
+    return removeEntityById(entities, entityId);
+  }
+
   return {
     resolveArrivalAtDestination,
-    finalizeMonsterDefeat
+    finalizeMonsterDefeat,
+    finalizeResourceCollection
   };
 }

@@ -48,13 +48,13 @@ Conventions:
   - Task file: `docs/v1/tasks/T06-movement-points-turn.md`
 
 - T07 — Render monsters + defeat on arrival
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T08
   - Task file: `docs/v1/tasks/T07-monsters.md`
 
 - T08 — Render resources + collect on arrival
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T09
   - Task file: `docs/v1/tasks/T08-resources.md`

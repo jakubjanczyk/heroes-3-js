@@ -58,9 +58,17 @@ export function createMovementSystem({
     return entities.find((entity) => entity.kind === 'HERO') ?? null;
   }
 
-  function getMonsterAt(tile, heroId) {
+  function getArrivalInteractionTargetAt(tile, heroId) {
     const occupant = occupancy.getAt(tile);
-    if (!occupant || occupant.id === heroId || occupant.kind !== 'MONSTER') {
+    if (!occupant || occupant.id === heroId) {
+      return null;
+    }
+
+    if (occupant.kind === 'RESOURCE' && occupant.isCollecting) {
+      return null;
+    }
+
+    if (occupant.kind !== 'MONSTER' && occupant.kind !== 'RESOURCE') {
       return null;
     }
 
@@ -100,9 +108,19 @@ export function createMovementSystem({
     if (cappedStepCount < 1) {
       return false;
     }
-    const targetMonster = getMonsterAt(toTile, hero.id);
-    const didTriggerMonsterCombat = Boolean(targetMonster) && cappedStepCount === totalStepCount;
-    const executedStepCount = didTriggerMonsterCombat
+    const targetArrivalInteraction = getArrivalInteractionTargetAt(toTile, hero.id);
+    const didTriggerArrivalInteraction =
+      Boolean(targetArrivalInteraction) && cappedStepCount === totalStepCount;
+    const destinationOccupant = occupancy.getAt(toTile);
+    if (
+      destinationOccupant &&
+      destinationOccupant.id !== hero.id &&
+      !didTriggerArrivalInteraction &&
+      cappedStepCount === totalStepCount
+    ) {
+      return false;
+    }
+    const executedStepCount = didTriggerArrivalInteraction
       ? Math.max(0, cappedStepCount - 1)
       : cappedStepCount;
 
@@ -134,10 +152,11 @@ export function createMovementSystem({
         targetTile: toTile,
         reachedTile: { x: hero.tile.x, y: hero.tile.y },
         cappedStepCount,
-        interaction: didTriggerMonsterCombat
+        interaction: didTriggerArrivalInteraction
           ? {
-              kind: 'MONSTER_COMBAT',
-              entityId: targetMonster.id,
+              kind:
+                targetArrivalInteraction.kind === 'MONSTER' ? 'MONSTER_COMBAT' : 'RESOURCE_COLLECT',
+              entityId: targetArrivalInteraction.id,
               targetTile: toTile
             }
           : null

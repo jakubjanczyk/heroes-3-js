@@ -17,7 +17,7 @@ function createFakeElement(tagName) {
 }
 
 describe('entity layer', () => {
-  test('renders hero and monster entities into the entity layer', () => {
+  test('renders hero, monster, and resource entities into the entity layer', () => {
     const container = createFakeElement('div');
     const map = createMap({
       width: 4,
@@ -30,12 +30,13 @@ describe('entity layer', () => {
       map,
       entities: [
         { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 1 } },
-        { id: 'monster-1', kind: 'MONSTER', tile: { x: 2, y: 2 } }
+        { id: 'monster-1', kind: 'MONSTER', tile: { x: 2, y: 2 } },
+        { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 3, y: 1 } }
       ],
       createElement: createFakeElement
     });
 
-    expect(container.children).toHaveLength(2);
+    expect(container.children).toHaveLength(3);
     expect(container.children[0].className).toBe('entity entity--hero');
     expect(container.children[0].dataset.entityId).toBe('hero-1');
     expect(container.children[0].dataset.tileX).toBe('1');
@@ -44,6 +45,13 @@ describe('entity layer', () => {
     expect(container.children[1].dataset.entityId).toBe('monster-1');
     expect(container.children[1].dataset.tileX).toBe('2');
     expect(container.children[1].dataset.tileY).toBe('2');
+    expect(container.children[2].className).toBe(
+      'entity entity--resource entity--resource-type-gold-pile'
+    );
+    expect(container.children[2].dataset.entityId).toBe('resource-1');
+    expect(container.children[2].dataset.resourceType).toBe('GOLD_PILE');
+    expect(container.children[2].dataset.tileX).toBe('3');
+    expect(container.children[2].dataset.tileY).toBe('1');
   });
 
   test('positions hero using the same centered map origin as terrain', () => {
@@ -73,5 +81,44 @@ describe('entity layer', () => {
     expect(container.children[0].style.transform).toBe(
       `translate(${originX + screen.x + map.halfTileWidth - 12}px, ${originY + screen.y + map.halfTileHeight - 12}px)`
     );
+  });
+
+  test('maps each homm3 resource type to a specific class', () => {
+    const container = createFakeElement('div');
+    const map = createMap({
+      width: 7,
+      height: 1,
+      tiles: new Array(7).fill(0)
+    });
+
+    const resources = [
+      ['resource-gold', 'GOLD_PILE'],
+      ['resource-wood', 'WOOD_PILE'],
+      ['resource-ore', 'ORE_PILE'],
+      ['resource-mercury', 'MERCURY_PILE'],
+      ['resource-sulfur', 'SULFUR_PILE'],
+      ['resource-crystal', 'CRYSTAL_PILE'],
+      ['resource-gems', 'GEMS_PILE']
+    ];
+
+    renderEntityLayer({
+      container,
+      map,
+      entities: resources.map(([id, type], index) => ({
+        id,
+        kind: 'RESOURCE',
+        type,
+        tile: { x: index, y: 0 }
+      })),
+      createElement: createFakeElement
+    });
+
+    expect(container.children).toHaveLength(7);
+
+    resources.forEach(([, type], index) => {
+      const expectedClass = `entity--resource-type-${type.toLowerCase().replaceAll('_', '-')}`;
+      expect(container.children[index].className).toContain(expectedClass);
+      expect(container.children[index].dataset.resourceType).toBe(type);
+    });
   });
 });

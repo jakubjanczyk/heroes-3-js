@@ -2,6 +2,7 @@ import { renderEntityLayer as renderEntityLayerDefault } from '../../engine/laye
 import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 
@@ -41,6 +42,10 @@ export function registerEntityViewModule(
   });
 
   bus.addEventListener(APP_FACT_MONSTER_DEFEATED, () => {
+    render();
+  });
+
+  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, () => {
     render();
   });
 }

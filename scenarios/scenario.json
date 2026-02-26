@@ -22,6 +22,12 @@
     { "id": "hero-1", "kind": "HERO", "type": "HERO", "tile": { "x": 1, "y": 1 } },
     { "id": "monster-1", "kind": "MONSTER", "type": "SKELETON", "tile": { "x": 10, "y": 2 } },
     { "id": "resource-1", "kind": "RESOURCE", "type": "GOLD_PILE", "tile": { "x": 3, "y": 6 } },
+    { "id": "resource-2", "kind": "RESOURCE", "type": "WOOD_PILE", "tile": { "x": 5, "y": 10 } },
+    { "id": "resource-3", "kind": "RESOURCE", "type": "ORE_PILE", "tile": { "x": 2, "y": 6 } },
+    { "id": "resource-4", "kind": "RESOURCE", "type": "MERCURY_PILE", "tile": { "x": 4, "y": 7 } },
+    { "id": "resource-5", "kind": "RESOURCE", "type": "SULFUR_PILE", "tile": { "x": 7, "y": 10 } },
+    { "id": "resource-6", "kind": "RESOURCE", "type": "CRYSTAL_PILE", "tile": { "x": 9, "y": 9 } },
+    { "id": "resource-7", "kind": "RESOURCE", "type": "GEMS_PILE", "tile": { "x": 11, "y": 4 } },
     { "id": "town-1", "kind": "TOWN", "type": "CASTLE", "tile": { "x": 10, "y": 5 } }
   ]
 }
