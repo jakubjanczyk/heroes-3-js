@@ -11,7 +11,7 @@ After implementing this plan, a developer can start a local server, open the app
 - a map renders from `scenarios/scenario.json`
 - a hero is visible, click-to-move works with pathfinding around blocked tiles
 - movement points are enforced (15 per turn) and reset on end turn
-- stepping onto a monster/resource/town triggers the correct interaction (remove/remove/persist) with an ephemeral notification
+- stepping onto a monster/resource/town triggers the correct interaction (remove/remove/persist) with an ephemeral notification/modal; resource collection also updates HUD totals
 - the session persists across reloads by replaying an IndexedDB-backed event log (silent replay; notifications do not replay)
 - reset clears the persisted session
 
@@ -151,7 +151,7 @@ V1 is accepted when all success criteria in `docs/v1/SPEC.md` are demonstrably t
 - map renders from file
 - hero click-to-move works with 8-dir pathfinding and no corner-cutting
 - movement points (15) enforced + end turn resets
-- interactions work (monster/resource removed, town persists) with ephemeral notifications
+- interactions work (monster/resource removed, town persists) with ephemeral notifications/modals, and resource collection updates HUD totals
 - reload persists state via event log replay (silent replay)
 - reset clears the session
 

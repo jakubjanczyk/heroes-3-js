@@ -5,6 +5,7 @@
 After moving the hero and interacting with entities:
 
 - reloading the page restores the same final state (hero position, removed monsters/resources, town still present)
+- reloading also restores correct HUD resource totals
 - replay is silent: notifications do not replay
 
 ## Depends on
@@ -43,5 +44,5 @@ After moving the hero and interacting with entities:
 ## Acceptance
 
 1. Load app, move hero, defeat a monster, collect a resource.
-2. Reload page: hero remains at last location; defeated/collected entities remain gone.
+2. Reload page: hero remains at last location; defeated/collected entities remain gone; HUD resource totals match pre-reload values.
 3. No notification spam occurs during reload.

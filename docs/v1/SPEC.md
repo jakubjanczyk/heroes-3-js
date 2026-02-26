@@ -33,12 +33,14 @@ V1 is not a “game release”. It is an architectural proof under real conditio
 5. Moving consumes **1 movement point per step**. If a confirmed route is longer than remaining movement points, the hero walks as far as possible this turn and stops at the movement limit (partial move).
 6. When the hero reaches:
    - a **monster**: the monster is defeated and disappears; a temporary notification appears.
-   - a **resource**: the resource is collected and disappears; a temporary notification appears.
+   - a **resource**: the resource is collected and disappears; a temporary notification appears; the corresponding HUD resource total increases.
    - a **town**: a temporary notification appears; the town remains.
 7. The session survives a page reload (state is reconstructed from the event log).
 8. The player can reset to clear the session.
 
 Notifications are **ephemeral UI only** (not persisted and not replayed).
+
+Resource totals are visible in HUD and update from collected resources.
 
 ---
 
@@ -168,6 +170,7 @@ Static definitions live in separate JSON files under `game/data/`:
 - 8-direction movement works and diagonal corner-cutting is prevented
 - Movement points (15) are enforced (including partial movement when path exceeds remaining MP); end turn resets them
 - Monsters/resources disappear after interaction; towns persist
+- HUD shows current collected resource totals and updates correctly per resource kind
 - Session survives page reload by replaying persisted event log (including turn + remaining movement points)
 - Reset clears the session
 - `engine/` contains no imports from `game/`
