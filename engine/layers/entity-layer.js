@@ -1,5 +1,6 @@
 import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
 import { getMapCenteredOrigin, getTileCenter } from './layout.js';
+import { getResourceSpriteStyle } from './resource-sprites.js';
 
 function resourceTypeToClass(resourceType) {
   if (typeof resourceType !== 'string' || resourceType.length === 0) {
@@ -39,16 +40,18 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     }
 
     if (entity.kind === 'RESOURCE') {
+      const resourceSpriteStyle = getResourceSpriteStyle(entity.type);
       const resourceTypeClass = resourceTypeToClass(entity.type);
       return {
         className:
           resourceTypeClass === null
             ? 'entity entity--resource'
             : `entity entity--resource entity--resource-type-${resourceTypeClass}`,
-        width: 20,
-        height: 20,
-        offsetX: -10,
-        offsetY: -10
+        width: resourceSpriteStyle.width,
+        height: resourceSpriteStyle.height,
+        offsetX: -Math.round(resourceSpriteStyle.width / 2),
+        offsetY: -Math.round(resourceSpriteStyle.height / 2),
+        backgroundImage: resourceSpriteStyle.backgroundImage
       };
     }
 
@@ -77,6 +80,11 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     entityEl.dataset.entityId = entity.id;
     entityEl.dataset.tileX = String(entity.tile.x);
     entityEl.dataset.tileY = String(entity.tile.y);
+    entityEl.style.width = `${entityStyle.width}px`;
+    entityEl.style.height = `${entityStyle.height}px`;
+    if (entityStyle.backgroundImage) {
+      entityEl.style.backgroundImage = `url('${entityStyle.backgroundImage}')`;
+    }
     if (entity.kind === 'RESOURCE' && typeof entity.type === 'string') {
       entityEl.dataset.resourceType = entity.type;
     }
