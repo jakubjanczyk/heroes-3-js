@@ -10,7 +10,8 @@ import {
   expectMovementPoints,
   flushMicrotasks,
   setupLinearMovementApp,
-  setupMovementBehaviorApp
+  setupMovementBehaviorApp,
+  waitMs
 } from './behavior.utils.js';
 
 describe('movement behavior', () => {
@@ -40,6 +41,33 @@ describe('movement behavior', () => {
 
     await confirmMove(user, 2, 0);
     await flushMicrotasks();
+
+    expectHeroAt(2, 0);
+    expectMovementPoints(13);
+  });
+
+  test('given a multi-step move when movement is in progress then movement points decrease one-by-one per traversed tile', async () => {
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 3,
+        height: 1,
+        tiles: [0, 0, 0],
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      movementStepDelayMs: 100
+    });
+
+    await confirmMove(user, 2, 0);
+
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+
+    await waitMs(120);
+
+    expectHeroAt(1, 0);
+    expectMovementPoints(14);
+
+    await waitMs(120);
 
     expectHeroAt(2, 0);
     expectMovementPoints(13);
@@ -114,25 +142,24 @@ describe('movement behavior', () => {
   test('given move is in progress when player clicks End turn then End turn is ignored until movement completes', async () => {
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: {
-        width: 2,
+        width: 3,
         height: 1,
-        tiles: [0, 0],
+        tiles: [0, 0, 0],
         entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      movementStepDelayMs: 40
+      movementStepDelayMs: 200
     });
 
-    await confirmMove(user, 1, 0);
-    await flushMicrotasks();
-
-    expectMovementPoints(14);
+    await confirmMove(user, 2, 0);
+    await flushMicrotasks(3);
 
     await clickEndTurn(user);
-    expectMovementPoints(14);
+    expectMovementPoints(15);
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 60);
-    });
+    await waitMs(460);
+
+    expectHeroAt(2, 0);
+    expectMovementPoints(13);
 
     await clickEndTurn(user);
     expectMovementPoints(15);

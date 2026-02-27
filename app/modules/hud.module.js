@@ -1,6 +1,7 @@
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+  APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
@@ -12,6 +13,7 @@ export function registerHudModule({ bus, env }) {
   const movementPointsStatus = env.document?.getElementById('movement-points-status');
   const resourceTotalsStatus = env.document?.getElementById('resource-totals-status');
   const endTurnButton = env.document?.getElementById('end-turn-button');
+  const resetSessionButton = env.document?.getElementById('reset-session-button');
   const musicToggleButton = env.document?.getElementById('music-toggle-button');
   const bootStatus = env.document?.getElementById('boot-status');
   let resourceTypeOrder = [];
@@ -46,6 +48,13 @@ export function registerHudModule({ bus, env }) {
     musicToggleButton.addEventListener('click', (event) => {
       event?.stopPropagation?.();
       bus.emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
+    });
+  }
+
+  if (resetSessionButton) {
+    resetSessionButton.addEventListener('click', (event) => {
+      event?.stopPropagation?.();
+      bus.emit(APP_COMMAND_RESET_SESSION_REQUESTED, {});
     });
   }
 

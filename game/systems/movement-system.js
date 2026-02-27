@@ -135,8 +135,6 @@ export function createMovementSystem({
         : Math.max(0, cappedStepCount - 1)
       : cappedStepCount;
 
-    spendMovementPoints(cappedStepCount);
-
     const fromTile = { x: hero.tile.x, y: hero.tile.y };
     const reachedTile = path[executedStepCount];
     isMoving = true;
@@ -158,6 +156,11 @@ export function createMovementSystem({
           occupancy.moveEntity(persistentOccupant, stepFromTile);
         }
         onStep({ hero, from: stepFromTile, to: stepTile });
+        spendMovementPoints(1);
+      }
+
+      if (didTriggerArrivalInteraction && !interactionRequiresSteppingIntoTarget) {
+        spendMovementPoints(1);
       }
     } finally {
       isMoving = false;

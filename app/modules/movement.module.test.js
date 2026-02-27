@@ -147,4 +147,46 @@ describe('movement module', () => {
     resolveMove(true);
     await Promise.resolve();
   });
+
+  test('does not emit hero moved fact when step hero id is missing', async () => {
+    const bus = createFakeBus();
+
+    registerMovementModule(
+      {
+        bus,
+        config: {
+          movementStepDelayMs: 0
+        }
+      },
+      {
+        createMovementSystem: (config) => ({
+          async moveHeroTo(targetTile) {
+            config.onMoveStart({ targetTile });
+            config.onStep({
+              hero: {},
+              from: { x: 0, y: 0 },
+              to: { x: 1, y: 0 }
+            });
+            config.onMoveFinish({ targetTile });
+            return true;
+          }
+        })
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: {
+        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      map: {},
+      occupancy: {}
+    });
+    bus.emit(APP_COMMAND_MOVE_REQUESTED, {
+      targetTile: { x: 1, y: 0 },
+      path: null
+    });
+    await Promise.resolve();
+
+    expect(bus.emitted.some((entry) => entry.type === APP_FACT_HERO_MOVED)).toBe(false);
+  });
 });

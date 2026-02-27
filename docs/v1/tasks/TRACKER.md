@@ -66,13 +66,13 @@ Conventions:
   - Task file: `docs/v1/tasks/T09-towns.md`
 
 - T10 — Persist session across reload (IndexedDB event log, silent replay)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: T11
   - Task file: `docs/v1/tasks/T10-persistence.md`
 
 - T11 — Reset session (clear event log + reload)
-  - Done: [ ]
+  - Done: [x]
   - In progress: [ ]
   - Blocks: (none)
   - Task file: `docs/v1/tasks/T11-reset.md`

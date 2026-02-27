@@ -2,6 +2,8 @@ import { findPath } from '../../engine/pathfinding.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
+  APP_FACT_PREVIEW_CLEARED,
+  APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
@@ -32,10 +34,34 @@ export function registerPreviewModule({ bus }) {
     });
   }
 
-  function clearPreview() {
+  function clearPreview({ log = true, emitFact = true } = {}) {
+    const hadPreview = Boolean(previewPath || previewTarget);
     previewPath = null;
     previewTarget = null;
     emitPreview();
+
+    if (emitFact && hadPreview) {
+      bus.emit(APP_FACT_PREVIEW_CLEARED, {}, { log });
+    }
+  }
+
+  function setPreview({ targetTile, path, log = true, emitFact = true }) {
+    const hadPreview = Boolean(previewPath || previewTarget);
+    const hadSameTarget = Boolean(previewTarget && targetTile && sameTile(previewTarget, targetTile));
+
+    previewTarget = targetTile;
+    previewPath = path;
+    emitPreview();
+
+    if (emitFact && targetTile && (!hadPreview || !hadSameTarget)) {
+      bus.emit(
+        APP_FACT_PREVIEW_TARGET_SELECTED,
+        {
+          tile: targetTile
+        },
+        { log }
+      );
+    }
   }
 
   function buildPath(toTile) {
@@ -74,7 +100,7 @@ export function registerPreviewModule({ bus }) {
     map = world.map;
     occupancy = world.occupancy;
     hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
-    clearPreview();
+    clearPreview({ log: false, emitFact: false });
   });
 
   bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
@@ -108,9 +134,7 @@ export function registerPreviewModule({ bus }) {
       return;
     }
 
-    previewTarget = tile;
-    previewPath = path;
-    emitPreview();
+    setPreview({ targetTile: tile, path });
   });
 
   bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
@@ -160,6 +184,42 @@ export function registerPreviewModule({ bus }) {
 
   bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
     isInteractionModalOpen = false;
+  });
+
+  bus.addEventListener(APP_FACT_PREVIEW_TARGET_SELECTED, (event) => {
+    if (!hero || isMoving || isInteractionModalOpen) {
+      return;
+    }
+
+    const tile = event.detail?.tile;
+    if (!tile) {
+      return;
+    }
+
+    if (previewTarget && sameTile(previewTarget, tile) && previewPath?.length) {
+      return;
+    }
+
+    const path = buildPath(tile);
+    if (!path || path.length < 2) {
+      clearPreview({ log: false, emitFact: false });
+      return;
+    }
+
+    setPreview({
+      targetTile: tile,
+      path,
+      log: false,
+      emitFact: false
+    });
+  });
+
+  bus.addEventListener(APP_FACT_PREVIEW_CLEARED, () => {
+    if (!previewPath && !previewTarget) {
+      return;
+    }
+
+    clearPreview({ log: false, emitFact: false });
   });
 
   bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, () => {

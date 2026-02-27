@@ -60,8 +60,13 @@ export function registerMovementModule(
         bus.emit(APP_FACT_MOVE_FINISHED, detail);
       },
       onStep: ({ hero: steppedHero, from, to }) => {
+        const heroId = steppedHero?.id;
+        if (typeof heroId !== 'string' || heroId.length === 0) {
+          return;
+        }
+
         bus.emit(APP_FACT_HERO_MOVED, {
-          heroId: steppedHero?.id ?? null,
+          heroId,
           from,
           to
         });

@@ -30,4 +30,41 @@ describe('turn system', () => {
 
     expect(turn.getRemainingMovementPoints()).toBe(20);
   });
+
+  test('supports restoring remaining movement points and turn number', () => {
+    const turn = createTurnSystem({
+      maxMovementPoints: 15,
+      remainingMovementPoints: 11,
+      turnNumber: 4
+    });
+
+    expect(turn.getRemainingMovementPoints()).toBe(11);
+    expect(turn.getTurnNumber()).toBe(4);
+
+    turn.endTurn();
+
+    expect(turn.getTurnNumber()).toBe(5);
+    expect(turn.getRemainingMovementPoints()).toBe(15);
+  });
+
+  test('restores zero remaining movement points without resetting to max', () => {
+    const turn = createTurnSystem({
+      maxMovementPoints: 15,
+      remainingMovementPoints: 0,
+      turnNumber: 3
+    });
+
+    expect(turn.getTurnNumber()).toBe(3);
+    expect(turn.getRemainingMovementPoints()).toBe(0);
+  });
+
+  test('supports explicit synchronization of replayed turn state', () => {
+    const turn = createTurnSystem({ maxMovementPoints: 15 });
+
+    turn.setTurnNumber(6);
+    turn.setRemainingMovementPoints(4);
+
+    expect(turn.getTurnNumber()).toBe(6);
+    expect(turn.getRemainingMovementPoints()).toBe(4);
+  });
 });

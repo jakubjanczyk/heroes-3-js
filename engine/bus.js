@@ -1,6 +1,13 @@
-export function createBus({ debug = false, log = null } = {}) {
+export function createBus({
+  debug = false,
+  log = null,
+  eventLog = null,
+  shouldLogEvent = () => false
+} = {}) {
   const listenersByType = new Map();
   const writeLog = typeof log === 'function' ? log : () => {};
+  const recordEvent = typeof eventLog?.record === 'function' ? eventLog.record.bind(eventLog) : null;
+  let isSilent = false;
 
   function debugLog(entry) {
     if (!debug) {
@@ -71,7 +78,21 @@ export function createBus({ debug = false, log = null } = {}) {
     });
   }
 
-  function emit(type, detail) {
+  function emit(type, detail, options = {}) {
+    const shouldRecord = options.log !== false && shouldLogEvent(type, detail);
+    if (shouldRecord && recordEvent) {
+      void recordEvent({ type, detail }).catch((error) => {
+        debugLog({
+          action: 'log-error',
+          type,
+          detail: {
+            message: error instanceof Error ? error.message : String(error)
+          },
+          subscribers: getListenerCount(type)
+        });
+      });
+    }
+
     const event = { type, detail };
     const listeners = [...(listenersByType.get(type) ?? [])];
 
@@ -81,6 +102,10 @@ export function createBus({ debug = false, log = null } = {}) {
       detail,
       subscribers: listeners.length
     });
+
+    if (isSilent) {
+      return;
+    }
 
     for (const handler of listeners) {
       handler(event);
@@ -92,6 +117,12 @@ export function createBus({ debug = false, log = null } = {}) {
     removeEventListener,
     removeAllEventListeners,
     getListenerCount,
-    emit
+    emit,
+    get silent() {
+      return isSilent;
+    },
+    set silent(value) {
+      isSilent = Boolean(value);
+    }
   };
 }

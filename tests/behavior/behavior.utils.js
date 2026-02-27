@@ -24,6 +24,7 @@ export function mountAppTemplate() {
               <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
               <div class="hud__resources" id="resource-totals-status">Resources: none</div>
               <button class="hud__button" id="end-turn-button" type="button">End turn</button>
+              <button class="hud__button" id="reset-session-button" type="button">Reset</button>
               <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="false">Music: Off</button>
             </div>
           </div>
@@ -40,11 +41,19 @@ export function createLoadGame({
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
+  const terrainTiles = Array.isArray(tiles) ? [...tiles] : [];
+  const scenarioEntities = Array.isArray(entities)
+    ? entities.map((entity) => ({
+        ...entity,
+        tile: entity?.tile ? { ...entity.tile } : entity.tile
+      }))
+    : [];
+
   return {
     scenario: {
       meta: { id: 'demo' },
-      terrain: { width, height, tiles },
-      entities
+      terrain: { width, height, tiles: terrainTiles },
+      entities: scenarioEntities
     },
     definitions: {
       hero: {},
@@ -147,7 +156,9 @@ export async function setupMovementBehaviorApp({
   musicTracks = [],
   AudioCtor,
   movementStepDelayMs = 0,
-  appConfig = {}
+  appConfig = {},
+  eventLog,
+  envWindow
 } = {}) {
   mountAppTemplate();
   if (viewportSize) {
@@ -176,8 +187,9 @@ export async function setupMovementBehaviorApp({
   const world = await bootApp({
     fetch,
     document,
-    window,
+    window: envWindow ?? window,
     ...(AudioCtor ? { AudioCtor } : {}),
+    ...(eventLog ? { eventLog } : {}),
     config: {
       musicTracks,
       movementStepDelayMs,
@@ -432,4 +444,14 @@ export async function clickEndTurn(user) {
   const endTurnButton = getEndTurnButton();
   expect(endTurnButton).toBeTruthy();
   await user.click(endTurnButton);
+}
+
+export function getResetSessionButton() {
+  return document.querySelector('#reset-session-button');
+}
+
+export async function clickResetSession(user) {
+  const resetButton = getResetSessionButton();
+  expect(resetButton).toBeTruthy();
+  await user.click(resetButton);
 }

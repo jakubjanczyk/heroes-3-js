@@ -14,7 +14,8 @@ import {
   flushMicrotasks,
   getPreviewOverLimitDashAt,
   getPreviewTargetAt,
-  setupLinearMovementApp
+  setupLinearMovementApp,
+  waitMs
 } from './behavior.utils.js';
 
 describe('end turn behavior', () => {
@@ -89,41 +90,35 @@ describe('end turn behavior', () => {
 
   test('given hero is moving when player clicks End turn then turn is not ended until movement completes', async () => {
     const { user } = await setupLinearMovementApp({
-      width: 2,
-      movementStepDelayMs: 40
+      width: 3,
+      movementStepDelayMs: 200
     });
 
-    confirmTileClickByDispatch(1, 0);
+    confirmTileClickByDispatch(2, 0);
     await flushMicrotasks(3);
-    expectMovementPoints(14);
 
     await clickEndTurn(user);
-    expectMovementPoints(14);
+    expectMovementPoints(15);
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 60);
-    });
+    await waitMs(460);
 
-    expectMovementPoints(14);
+    expectMovementPoints(13);
   });
 
   test('given movement completes after ignored End turn click when player clicks End turn again then turn ends and movement points reset', async () => {
     const { user } = await setupLinearMovementApp({
-      width: 2,
-      movementStepDelayMs: 40
+      width: 3,
+      movementStepDelayMs: 200
     });
 
-    confirmTileClickByDispatch(1, 0);
+    confirmTileClickByDispatch(2, 0);
     await flushMicrotasks(3);
-    expectMovementPoints(14);
 
     await clickEndTurn(user);
-    expectMovementPoints(14);
+    expectMovementPoints(15);
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 60);
-    });
-    expectMovementPoints(14);
+    await waitMs(460);
+    expectMovementPoints(13);
 
     await clickEndTurn(user);
     expectMovementPoints(15);

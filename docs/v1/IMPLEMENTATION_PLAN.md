@@ -25,11 +25,11 @@ Milestones must be shipable slices (map renders, hero renders, hero moves, etc.)
 - [x] (2026-02-23) Render hero from scenario placement.
 - [x] (2026-02-23) Implement click-to-move with 8-direction BFS and no diagonal corner-cutting.
 - [x] (2026-02-23) Enforce movement points (15), end turn resets points.
-- [ ] Add monsters/resources/towns rendering.
-- [ ] Add interactions + ephemeral notifications (not logged).
-- [ ] Add event log persistence in IndexedDB + silent replay on reload.
-- [ ] Add reset (clear log + reload).
-- [ ] Validate “engine has no imports from game”.
+- [x] (2026-02-23) Add monsters/resources/towns rendering.
+- [x] (2026-02-23) Add interactions + ephemeral notifications (not logged).
+- [x] (2026-02-27) Add event log persistence in IndexedDB + silent replay on reload.
+- [x] (2026-02-27) Add reset (clear log + reload).
+- [x] (2026-02-27) Validate “engine has no imports from game”.
 
 ## Surprises & Discoveries
 

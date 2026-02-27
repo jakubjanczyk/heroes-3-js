@@ -25,7 +25,7 @@ export function registerTurnModule(
   let moveStartedAt = 0;
   let suppressEndTurnUntil = 0;
 
-  function emitTurnState() {
+  function emitTurnState({ log = true } = {}) {
     if (!turnSystem) {
       return;
     }
@@ -33,12 +33,32 @@ export function registerTurnModule(
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, {
       value: turnSystem.getRemainingMovementPoints(),
       max: maxMovementPoints
+    }, {
+      log
     });
   }
 
-  bus.addEventListener(APP_FACT_WORLD_READY, () => {
-    turnSystem = createTurnSystem({ maxMovementPoints });
-    emitTurnState();
+  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+    turnSystem = createTurnSystem({
+      maxMovementPoints
+    });
+    emitTurnState({ log: false });
+  });
+
+  bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
+    if (!turnSystem) {
+      return;
+    }
+
+    turnSystem.setRemainingMovementPoints?.(event.detail.value);
+  });
+
+  bus.addEventListener(APP_FACT_TURN_ENDED, (event) => {
+    if (!turnSystem) {
+      return;
+    }
+
+    turnSystem.setTurnNumber?.(event.detail.turnNumber);
   });
 
   bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
@@ -63,7 +83,11 @@ export function registerTurnModule(
       return;
     }
 
-    turnSystem.spendMovementPoints(amount);
+    const didSpendMovementPoints = turnSystem.spendMovementPoints(amount);
+    if (!didSpendMovementPoints) {
+      return;
+    }
+
     emitTurnState();
   });
 
@@ -73,7 +97,9 @@ export function registerTurnModule(
     }
 
     turnSystem.endTurn();
-    bus.emit(APP_FACT_TURN_ENDED, {});
+    bus.emit(APP_FACT_TURN_ENDED, {
+      turnNumber: turnSystem.getTurnNumber()
+    });
     emitTurnState();
   });
 }

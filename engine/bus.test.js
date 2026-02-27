@@ -103,4 +103,73 @@ describe('event bus', () => {
       subscribers: 2
     });
   });
+
+  test('records persisted events when predicate allows it', async () => {
+    const recorded = [];
+    const bus = createBus({
+      eventLog: {
+        record: async (entry) => {
+          recorded.push(entry);
+        }
+      },
+      shouldLogEvent: (type) => type.startsWith('fact.')
+    });
+
+    bus.emit('command.move.requested', { tile: { x: 1, y: 0 } });
+    bus.emit('fact.hero.moved', { from: { x: 0, y: 0 }, to: { x: 1, y: 0 } });
+    await Promise.resolve();
+
+    expect(recorded).toEqual([
+      {
+        type: 'fact.hero.moved',
+        detail: { from: { x: 0, y: 0 }, to: { x: 1, y: 0 } }
+      }
+    ]);
+  });
+
+  test('allows suppressing persistence per event emit call', async () => {
+    const recorded = [];
+    const bus = createBus({
+      eventLog: {
+        record: async (entry) => {
+          recorded.push(entry);
+        }
+      },
+      shouldLogEvent: (type) => type.startsWith('fact.')
+    });
+
+    bus.emit('fact.hero.moved', { to: { x: 1, y: 0 } }, { log: false });
+    await Promise.resolve();
+
+    expect(recorded).toEqual([]);
+  });
+
+  test('silent mode suppresses listeners but still records fact events', async () => {
+    const recorded = [];
+    const received = [];
+    const bus = createBus({
+      eventLog: {
+        record: async (entry) => {
+          recorded.push(entry);
+        }
+      },
+      shouldLogEvent: (type) => type.startsWith('fact.')
+    });
+
+    bus.addEventListener('fact.hero.moved', (event) => {
+      received.push(event.detail);
+    });
+
+    bus.silent = true;
+    bus.emit('fact.hero.moved', { to: { x: 1, y: 0 } });
+    await Promise.resolve();
+
+    expect(received).toEqual([]);
+    expect(recorded).toEqual([
+      {
+        type: 'fact.hero.moved',
+        detail: { to: { x: 1, y: 0 } }
+      }
+    ]);
+  });
 });

@@ -44,5 +44,5 @@ It is intentionally documented outside `docs/v1/SPEC.md` as a post-spec enhancem
 ## Non-Goals
 
 - No change to movement points/end-turn behavior.
-- No persistence of preview visuals.
+- No full visual snapshot persistence (only selected preview target restore is supported).
 - No combat/resource/town interaction changes.

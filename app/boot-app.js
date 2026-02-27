@@ -1,8 +1,11 @@
 import { createBus } from '../engine/bus.js';
+import { createEventLog } from '../engine/eventlog.js';
 import {
   APP_COMMAND_APP_START,
+  APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_WORLD_LOAD_FAILED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  shouldPersistFactEvent
 } from './events.js';
 import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
 import { registerModules } from './modules/register-modules.js';
@@ -39,12 +42,40 @@ function createWorldReadyPromise(bus) {
   });
 }
 
+function getPersistedFacts(eventLog) {
+  const entries = eventLog?.getAll?.();
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return [];
+  }
+
+  return [...entries].sort((a, b) => Number(a?.id ?? 0) - Number(b?.id ?? 0));
+}
+
+function setViewportVisibility(document, isVisible) {
+  const viewport = document?.querySelector?.('.viewport');
+  if (!viewport) {
+    return;
+  }
+
+  viewport.style.visibility = isVisible ? '' : 'hidden';
+}
+
+async function replayPersistedFacts({ bus, facts }) {
+  for (const fact of facts) {
+    bus.emit(fact.type, fact.detail ?? {}, { log: false });
+  }
+
+  await Promise.resolve();
+}
+
 export async function bootApp({
   fetch = globalThis.fetch,
   document = globalThis.document,
   window = globalThis.window,
   AudioCtor = globalThis.Audio,
+  eventLog = null,
   bus = null,
+  createEventLog: createEventLogImpl = createEventLog,
   createBus: createBusImpl = createBus,
   busDebug = false,
   busLogger = defaultBusLogger,
@@ -52,15 +83,32 @@ export async function bootApp({
   musicTracks,
   musicManifestUrl = '/assets/music/tracks.json'
 } = {}) {
+  const appEventLog = eventLog ?? createEventLogImpl();
+  await appEventLog.init?.();
+  const persistedFacts = getPersistedFacts(appEventLog);
+  const hasPersistedSession = persistedFacts.length > 0;
+
+  if (hasPersistedSession) {
+    setViewportVisibility(document, false);
+  }
+
   const busPanel = busDebug ? createBusDevPanel({ document }) : null;
   const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
-  const appBus = bus ?? createBusImpl({ debug: busDebug, log: activeBusLogger });
+  const appBus =
+    bus ??
+    createBusImpl({
+      debug: busDebug,
+      log: activeBusLogger,
+      eventLog: appEventLog,
+      shouldLogEvent: shouldPersistFactEvent
+    });
 
   const env = {
     fetch,
     document,
     window,
-    AudioCtor
+    AudioCtor,
+    eventLog: appEventLog
   };
 
   const config = {
@@ -71,19 +119,44 @@ export async function bootApp({
   };
 
   const worldReadyPromise = createWorldReadyPromise(appBus);
+
+  appBus.addEventListener(APP_COMMAND_RESET_SESSION_REQUESTED, () => {
+    void (async () => {
+      try {
+        await appEventLog.reset?.();
+      } finally {
+        window?.location?.reload?.();
+      }
+    })();
+  });
+
   registerModules({
     bus: appBus,
     env,
     config
   });
 
-  appBus.emit(APP_COMMAND_APP_START, {});
-  const world = await worldReadyPromise;
+  try {
+    appBus.emit(APP_COMMAND_APP_START, {});
+    const world = await worldReadyPromise;
 
-  console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
+    if (hasPersistedSession) {
+      await replayPersistedFacts({
+        bus: appBus,
+        facts: persistedFacts
+      });
+    }
 
-  return {
-    ...world,
-    bus: appBus
-  };
+    console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
+
+    return {
+      ...world,
+      bus: appBus,
+      eventLog: appEventLog
+    };
+  } finally {
+    if (hasPersistedSession) {
+      setViewportVisibility(document, true);
+    }
+  }
 }

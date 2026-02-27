@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+  APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
@@ -38,6 +39,7 @@ describe('hud module', () => {
       'movement-points-status': createFakeNode(),
       'resource-totals-status': createFakeNode(),
       'end-turn-button': createFakeNode(),
+      'reset-session-button': createFakeNode(),
       'music-toggle-button': createFakeNode(),
       'boot-status': createFakeNode()
     };
@@ -56,6 +58,7 @@ describe('hud module', () => {
     });
 
     nodes['end-turn-button'].click();
+    nodes['reset-session-button'].click();
     nodes['music-toggle-button'].click();
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 11, max: 15 });
     bus.emit(APP_UI_MUSIC_STATE_CHANGED, { enabled: true });
@@ -83,6 +86,10 @@ describe('hud module', () => {
     });
     expect(bus.emitted).toContainEqual({
       type: APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+      detail: {}
+    });
+    expect(bus.emitted).toContainEqual({
+      type: APP_COMMAND_RESET_SESSION_REQUESTED,
       detail: {}
     });
     expect(nodes['movement-points-status'].textContent).toBe('MP: 11 / 15');
@@ -119,5 +126,45 @@ describe('hud module', () => {
       { type: APP_FACT_WORLD_READY, detail: { scenario: { meta: { id: 'demo' } } } },
       { type: APP_FACT_RESOURCE_COLLECTED, detail: { entityType: 'GOLD_PILE', amount: 100 } }
     ]);
+  });
+
+  test('builds resource totals from replayed resource facts', () => {
+    const bus = createFakeBus();
+    const nodes = {
+      '.ui-layer': createFakeNode(),
+      'resource-totals-status': createFakeNode()
+    };
+    const document = {
+      querySelector(selector) {
+        return nodes[selector] ?? null;
+      },
+      getElementById(id) {
+        return nodes[id] ?? null;
+      }
+    };
+
+    registerHudModule({
+      bus,
+      env: { document }
+    });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { meta: { id: 'demo' } },
+      definitions: {
+        resources: {
+          GOLD_PILE: { name: 'Gold pile' },
+          WOOD_PILE: { name: 'Wood pile' }
+        }
+      }
+    });
+
+    expect(nodes['resource-totals-status'].textContent).toBe('Resources: Gold pile: 0 | Wood pile: 0');
+
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, {
+      entityType: 'GOLD_PILE',
+      amount: 100
+    });
+
+    expect(nodes['resource-totals-status'].textContent).toBe('Resources: Gold pile: 100 | Wood pile: 0');
   });
 });

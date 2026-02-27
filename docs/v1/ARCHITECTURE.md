@@ -90,7 +90,9 @@ The bus exposes:
 - `removeEventListener(type, handler)`
 - `removeAllEventListeners(type?)`
 - `getListenerCount(type?)`
-- `emit(type, detail)`
+- `emit(type, detail, options?)`
+  - `options.log` defaults to `true` and controls event-log persistence
+- `silent` mode flag (`bus.silent = true`) that suppresses listener dispatch while still allowing logging
 
 Debug mode (`createBus({ debug: true, log })`) reports structured entries for:
 
@@ -123,13 +125,15 @@ Every runtime module follows this shape:
 High-level steps:
 
 1. build optional bus dev panel when `busDebug` is enabled.
-2. create bus (`createBus`) unless one is injected.
-3. compose `env` (`fetch`, `document`, `window`, `AudioCtor`).
-4. compose `config` (defaults + overrides).
-5. register all modules through `registerModules`.
-6. emit `command.app.start`.
-7. await either:
-   - `fact.world.ready` -> resolve boot and return `{ scenario, definitions, map, occupancy, bus }`
+2. initialize `EventLog` (IndexedDB-backed with in-memory fallback).
+3. create bus (`createBus`) unless one is injected.
+4. compose `env` (`fetch`, `document`, `window`, `AudioCtor`, `eventLog`).
+5. compose `config` (defaults + overrides).
+6. register all modules through `registerModules`.
+7. wire reset command handling (`command.session.reset.requested` -> `eventLog.reset()` + `location.reload()`).
+8. emit `command.app.start`.
+9. await either:
+   - `fact.world.ready` -> resolve boot and return `{ scenario, definitions, map, occupancy, bus, eventLog }`
    - `fact.world.load.failed` -> reject boot
 
 ```mermaid
@@ -167,7 +171,7 @@ Quick matrix:
 | `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated` | none | `map`, `entities` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
 | `interaction-modal.module` | `ui.interaction.modal.opened` | `ui.interaction.modal.closed` | `activeModal` | queries `.viewport`; mounts custom element |
-| `hud.module` | `fact.hero.movementPoints.changed`, `ui.music.state.changed`, `fact.world.ready` | `command.turn.end.requested`, `command.music.toggle.requested` | none | queries `.ui-layer`, `#movement-points-status`, `#end-turn-button`, `#music-toggle-button`, `#boot-status` |
+| `hud.module` | `fact.hero.movementPoints.changed`, `ui.music.state.changed`, `fact.world.ready` | `command.turn.end.requested`, `command.music.toggle.requested`, `command.session.reset.requested` | none | queries `.ui-layer`, `#movement-points-status`, `#resource-totals-status`, `#end-turn-button`, `#reset-session-button`, `#music-toggle-button`, `#boot-status` |
 | `music.module` | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` | `musicPlayer`, `hasInitialized` | none |
 
 ### 6.1 Domain-first vs view modules
@@ -293,7 +297,9 @@ Each module owns the selectors it queries and updates:
 - `hud.module`:
   - `.ui-layer` (stop propagation)
   - `#movement-points-status` (MP text)
+  - `#resource-totals-status` (resource totals text)
   - `#end-turn-button` (end-turn command source)
+  - `#reset-session-button` (reset command source)
   - `#music-toggle-button` (music command source + UI state)
   - `#boot-status` (boot status text)
 - `boot-app.js`: no feature DOM ownership; only optional bus dev panel composition

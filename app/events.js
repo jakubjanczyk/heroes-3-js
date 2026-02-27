@@ -4,6 +4,7 @@ export const APP_COMMAND_MOVE_REQUESTED = 'command.move.requested';
 export const APP_COMMAND_END_TURN_REQUESTED = 'command.turn.end.requested';
 export const APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED =
   'command.turn.spendMovementPoints.requested';
+export const APP_COMMAND_RESET_SESSION_REQUESTED = 'command.session.reset.requested';
 export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requested';
 export const APP_COMMAND_CAMERA_PAN_BY = 'command.camera.panBy';
 
@@ -17,8 +18,25 @@ export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected';
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited';
+export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected';
+export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared';
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated';
 export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed';
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened';
 export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed';
+
+const APP_PERSISTED_FACT_TYPES = new Set([
+  APP_FACT_HERO_MOVED,
+  APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_TURN_ENDED,
+  APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED,
+  APP_FACT_PREVIEW_TARGET_SELECTED,
+  APP_FACT_PREVIEW_CLEARED
+]);
+
+export function shouldPersistFactEvent(type) {
+  return APP_PERSISTED_FACT_TYPES.has(type);
+}
