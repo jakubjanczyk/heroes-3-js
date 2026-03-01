@@ -1,12 +1,14 @@
 import { createCamera as createCameraDefault } from '../../engine/camera.js';
 import { attachCameraInput as attachCameraInputDefault } from '../../engine/input.js';
 import {
+  APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_CAMERA_UPDATED
 } from '../events.js';
 
 export function registerCameraModule(
@@ -22,6 +24,25 @@ export function registerCameraModule(
   let hero = null;
   let map = null;
   let isMoving = false;
+
+  function emitCameraUpdated() {
+    if (!camera) {
+      return;
+    }
+
+    const offset = camera.getOffset?.();
+    if (!offset) {
+      return;
+    }
+
+    bus.emit(APP_UI_CAMERA_UPDATED, {
+      offset,
+      viewportSize: {
+        width: viewport?.clientWidth ?? 0,
+        height: viewport?.clientHeight ?? 0
+      }
+    });
+  }
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
@@ -40,6 +61,7 @@ export function registerCameraModule(
 
     camera.setFollowTileGetter(() => hero?.tile ?? null);
     camera.update();
+    emitCameraUpdated();
 
     const inputCamera = {
       moveBy(dx, dy) {
@@ -67,6 +89,25 @@ export function registerCameraModule(
 
     const { dx = 0, dy = 0 } = event.detail;
     camera.moveBy(dx, dy);
+    emitCameraUpdated();
+  });
+
+  bus.addEventListener(APP_COMMAND_CAMERA_CENTER_ON_TILE, (event) => {
+    if (!camera || !map) {
+      return;
+    }
+
+    const tile = event.detail?.tile;
+    if (!tile) {
+      return;
+    }
+
+    if (typeof map.inBounds === 'function' && !map.inBounds(tile)) {
+      return;
+    }
+
+    camera.centerOnTile?.(tile);
+    emitCameraUpdated();
   });
 
   bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
@@ -79,6 +120,7 @@ export function registerCameraModule(
     camera.lockFollow?.();
     if (hero?.tile) {
       camera.centerOnTile?.(hero.tile);
+      emitCameraUpdated();
     }
   });
 
@@ -90,10 +132,12 @@ export function registerCameraModule(
     const { to } = event.detail;
     if (isMoving) {
       camera.centerOnTile?.(to);
+      emitCameraUpdated();
       return;
     }
 
     camera.update?.();
+    emitCameraUpdated();
   });
 
   bus.addEventListener(APP_FACT_MOVE_FINISHED, () => {
@@ -104,5 +148,6 @@ export function registerCameraModule(
     isMoving = false;
     camera.unlockFollow?.();
     camera.update?.();
+    emitCameraUpdated();
   });
 }

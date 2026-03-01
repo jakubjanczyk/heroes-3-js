@@ -7,5 +7,6 @@
 @import url('./engine/layers/entity-layer.css') layer(layers);
 @import url('./engine/layers/path-preview-layer.css') layer(layers);
 @import url('./game/ui/hud.css') layer(ui);
+@import url('./game/ui/minimap.css') layer(ui);
 @import url('./game/ui/interaction-modal.css') layer(ui);
 @import url('./game/ui/bus-dev-panel.css') layer(ui);

@@ -3,6 +3,7 @@ import { registerEntityViewModule } from './entity-view.module.js';
 import { registerHudModule } from './hud.module.js';
 import { registerInteractionModalModule } from './interaction-modal.module.js';
 import { registerInteractionModule } from './interaction.module.js';
+import { registerMinimapViewModule } from './minimap-view.module.js';
 import { registerMovementModule } from './movement.module.js';
 import { registerMusicModule } from './music.module.js';
 import { registerPreviewModule } from './preview.module.js';
@@ -22,6 +23,7 @@ export function registerModules({ bus, env, config }) {
   registerTerrainViewModule({ bus, env, config });
   registerEntityViewModule({ bus, env, config });
   registerPreviewViewModule({ bus, env, config });
+  registerMinimapViewModule({ bus, env, config });
   registerInteractionModalModule({ bus, env, config });
   registerHudModule({ bus, env, config });
   registerMusicModule({ bus, env, config });

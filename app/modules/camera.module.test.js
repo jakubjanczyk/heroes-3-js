@@ -1,12 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_CAMERA_UPDATED
 } from '../events.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerCameraModule } from './camera.module.js';
@@ -22,7 +24,7 @@ function createFakeDocument(nodes) {
 describe('camera module', () => {
   test('creates camera on world-ready and routes input intents through bus', () => {
     const bus = createFakeBus();
-    const viewport = { id: 'viewport' };
+    const viewport = { id: 'viewport', clientWidth: 1000, clientHeight: 700 };
     const worldElement = { id: 'world' };
     const createCameraCalls = [];
     const moveByCalls = [];
@@ -45,6 +47,7 @@ describe('camera module', () => {
           return {
             setFollowTileGetter() {},
             update() {},
+            centerOnTile() {},
             moveBy(dx, dy) {
               moveByCalls.push([dx, dy]);
             },
@@ -86,6 +89,13 @@ describe('camera module', () => {
       detail: { dx: 6, dy: -4 }
     });
     expect(moveByCalls).toContainEqual([6, -4]);
+    expect(bus.emitted).toContainEqual({
+      type: APP_UI_CAMERA_UPDATED,
+      detail: {
+        offset: { x: 0, y: 0 },
+        viewportSize: { width: 1000, height: 700 }
+      }
+    });
   });
 
   test('applies movement lifecycle camera behavior', () => {
@@ -150,5 +160,60 @@ describe('camera module', () => {
       'unlockFollow',
       'update'
     ]);
+  });
+
+  test('centers camera on minimap command and emits camera update', () => {
+    const bus = createFakeBus();
+    const centeredOnTiles = [];
+
+    registerCameraModule(
+      {
+        bus,
+        env: {
+          document: createFakeDocument({
+            '.viewport': { clientWidth: 900, clientHeight: 600 },
+            '.world': {}
+          }),
+          window: {}
+        }
+      },
+      {
+        createCamera: () => ({
+          setFollowTileGetter() {},
+          update() {},
+          moveBy() {},
+          centerOnTile(tile) {
+            centeredOnTiles.push(tile);
+          },
+          clearPan() {},
+          lockFollow() {},
+          unlockFollow() {},
+          getOffset() {
+            return { x: -120, y: -80 };
+          }
+        }),
+        attachCameraInput() {}
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: {
+        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      map: { id: 'map' }
+    });
+
+    bus.emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, {
+      tile: { x: 12, y: 9 }
+    });
+
+    expect(centeredOnTiles).toEqual([{ x: 12, y: 9 }]);
+    expect(bus.emitted).toContainEqual({
+      type: APP_UI_CAMERA_UPDATED,
+      detail: {
+        offset: { x: -120, y: -80 },
+        viewportSize: { width: 900, height: 600 }
+      }
+    });
   });
 });

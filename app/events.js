@@ -7,6 +7,7 @@ export const APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED =
 export const APP_COMMAND_RESET_SESSION_REQUESTED = 'command.session.reset.requested';
 export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requested';
 export const APP_COMMAND_CAMERA_PAN_BY = 'command.camera.panBy';
+export const APP_COMMAND_CAMERA_CENTER_ON_TILE = 'command.camera.centerOnTile';
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready';
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed';
@@ -25,6 +26,7 @@ export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated';
 export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed';
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened';
 export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed';
+export const APP_UI_CAMERA_UPDATED = 'ui.camera.updated';
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,

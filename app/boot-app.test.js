@@ -16,6 +16,14 @@ function mountAppTemplate() {
           </div>
         </div>
         <div class="ui-layer" aria-label="UI">
+          <div class="minimap" aria-label="Minimap">
+            <div class="minimap__title">Minimap</div>
+            <div class="minimap__map" id="minimap-map">
+              <div class="minimap__terrain" id="minimap-terrain"></div>
+              <div class="minimap__towns" id="minimap-towns"></div>
+              <div class="minimap__viewport" id="minimap-viewport"></div>
+            </div>
+          </div>
           <div class="hud">
             <div class="hud__title">Heroes 3 JS</div>
             <div class="hud__status" id="boot-status">Booting...</div>

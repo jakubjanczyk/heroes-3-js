@@ -1,0 +1,86 @@
+.minimap {
+  --minimap-terrain-passable: #5f9356;
+  --minimap-town-size: 8px;
+
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(15, 21, 36, 0.75);
+  border: 1px solid rgba(232, 238, 252, 0.12);
+
+  & .minimap__title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  & .minimap__map {
+    position: relative;
+    width: 100%;
+    margin: 8px auto 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(232, 238, 252, 0.2);
+    background: #111a2b;
+    cursor: pointer;
+    aspect-ratio: 1 / 1;
+  }
+
+  & .minimap__terrain,
+  & .minimap__towns,
+  & .minimap__viewport {
+    position: absolute;
+    inset: 0;
+  }
+
+  & .minimap__terrain {
+    background: var(--minimap-terrain-passable);
+  }
+
+  & .minimap__towns,
+  & .minimap__viewport {
+    pointer-events: none;
+  }
+
+  & .minimap__viewport {
+    border: 1px dashed rgba(255, 162, 162, 0.96);
+    background: rgba(255, 162, 162, 0.04);
+    box-sizing: border-box;
+  }
+
+  & .minimap-tile {
+    position: absolute;
+    box-sizing: border-box;
+  }
+
+  & .minimap-tile--passable {
+    background: var(--minimap-terrain-passable);
+  }
+
+  & .minimap-tile--blocked {
+    background: #45414a;
+  }
+
+  & .minimap-town-marker {
+    position: absolute;
+    width: var(--minimap-town-size);
+    height: var(--minimap-town-size);
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    background: #f2d16b;
+    border: 1px solid #3d2a00;
+    box-shadow: 0 1px 3px rgba(6, 8, 14, 0.8);
+  }
+}
+
+@media (max-width: 1180px) {
+  .minimap {
+    margin-bottom: 10px;
+
+    & .minimap__map {
+      max-width: 220px;
+    }
+  }
+}
