@@ -1,8 +1,7 @@
 export function getMapCenteredOrigin({ width, height, map }) {
-  const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-  const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-  const minXOffset = (map.height - 1) * map.halfTileWidth;
-  const x = Math.round((width - mapPixelWidth) / 2 + minXOffset);
+  const mapPixelWidth = map.width * map.tileWidth;
+  const mapPixelHeight = map.height * map.tileHeight;
+  const x = Math.round((width - mapPixelWidth) / 2);
   const y = Math.round((height - mapPixelHeight) / 2);
 
   return { x, y };

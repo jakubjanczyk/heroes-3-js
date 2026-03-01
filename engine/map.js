@@ -1,7 +1,7 @@
 export function createMap(terrain) {
   const { width, height, tiles } = terrain;
-  const tileWidth = 104;
-  const tileHeight = 52;
+  const tileWidth = 32;
+  const tileHeight = 32;
   const halfTileWidth = tileWidth / 2;
   const halfTileHeight = tileHeight / 2;
 
@@ -20,18 +20,14 @@ export function createMap(terrain) {
 
   function tileToScreen(tile) {
     return {
-      x: (tile.x - tile.y) * halfTileWidth,
-      y: (tile.x + tile.y) * halfTileHeight
+      x: tile.x * tileWidth,
+      y: tile.y * tileHeight
     };
   }
 
   function screenToTile(screenPoint) {
-    const x = Math.round(
-      (screenPoint.x / halfTileWidth + screenPoint.y / halfTileHeight) / 2
-    );
-    const y = Math.round(
-      (screenPoint.y / halfTileHeight - screenPoint.x / halfTileWidth) / 2
-    );
+    const x = Math.floor(screenPoint.x / tileWidth);
+    const y = Math.floor(screenPoint.y / tileHeight);
 
     return { x, y };
   }

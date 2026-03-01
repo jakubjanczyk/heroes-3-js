@@ -56,12 +56,14 @@ export function renderEntityLayer({ container, map, entities, createElement }) {
     }
 
     if (entity.kind === 'TOWN') {
+      const townTileWidth = Math.round(map.tileWidth * 4.5);
+      const townTileHeight = Math.round(map.tileHeight * 2.25);
       return {
         className: 'entity entity--town',
-        width: 224,
-        height: 96,
-        offsetX: -112,
-        offsetY: -92
+        width: townTileWidth,
+        height: townTileHeight,
+        offsetX: -Math.round(townTileWidth / 2),
+        offsetY: -Math.round(map.tileHeight * 1.875)
       };
     }
 

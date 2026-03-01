@@ -103,8 +103,8 @@ export function attachCameraInput({
       map
     });
     const tile = map.screenToTile({
-      x: event.clientX - rect.left - offset.x - origin.x - map.halfTileWidth,
-      y: event.clientY - rect.top - offset.y - origin.y - map.halfTileHeight
+      x: event.clientX - rect.left - offset.x - origin.x,
+      y: event.clientY - rect.top - offset.y - origin.y
     });
 
     if (!map.inBounds(tile)) {

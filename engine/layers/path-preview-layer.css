@@ -10,7 +10,7 @@
 .path-preview-dash {
   fill: none;
   stroke: #9de37d;
-  stroke-width: 10;
+  stroke-width: 6;
   stroke-linecap: round;
   opacity: 0.96;
 }
@@ -22,7 +22,7 @@
 .path-preview-corner {
   fill: none;
   stroke: #9de37d;
-  stroke-width: 10;
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.94;
@@ -34,7 +34,7 @@
 
 .path-preview-target-line {
   stroke: #9de37d;
-  stroke-width: 5.5;
+  stroke-width: 4;
   stroke-linecap: round;
   opacity: 1;
   filter: drop-shadow(0 1px 1px rgba(10, 18, 28, 0.65));

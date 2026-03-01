@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest';
 
+import { createMap } from '../../engine/map.js';
+import { getMapCenteredOrigin } from '../../engine/layers/layout.js';
+
 import {
   confirmTileClickByDispatch,
   flushMicrotasks,
@@ -15,7 +18,21 @@ describe('camera behavior', () => {
 
     const worldElement = document.querySelector('.world');
     expect(worldElement).toBeTruthy();
-    expect(worldElement?.style?.transform).toBe('translate(78px, 39px)');
+
+    const map = createMap({
+      width: 4,
+      height: 1,
+      tiles: [0, 0, 0, 0]
+    });
+    const origin = getMapCenteredOrigin({ width: 1000, height: 700, map });
+    const heroCenter = {
+      x: origin.x + map.halfTileWidth,
+      y: origin.y + map.halfTileHeight
+    };
+
+    expect(worldElement?.style?.transform).toBe(
+      `translate(${500 - heroCenter.x}px, ${350 - heroCenter.y}px)`
+    );
   });
 
   test('given player presses arrow keys when viewing the map then the camera pans and the world transform changes', async () => {

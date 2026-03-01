@@ -131,10 +131,10 @@ describe('world module', () => {
     await flushMicrotasks();
 
     expect(occupancyEntities).toBeTruthy();
-    expect(occupancyEntities).toHaveLength(10);
+    expect(occupancyEntities).toHaveLength(14);
 
     const townBlockers = occupancyEntities.filter((entity) => entity.kind === 'TOWN_BLOCKER');
-    expect(townBlockers).toHaveLength(8);
+    expect(townBlockers).toHaveLength(12);
   });
 
   test('emits pristine world-ready snapshot without replay-derived fields', async () => {

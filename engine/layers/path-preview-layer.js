@@ -29,25 +29,33 @@ function classWithOverLimit(baseClass, isOverLimit) {
   return `${baseClass} ${baseClass}-over-limit`;
 }
 
-const DASH_LENGTH = 30;
+function getDashLength(map) {
+  const tileSize = Math.min(map?.tileWidth ?? 32, map?.tileHeight ?? 32);
+  return Math.max(10, Math.round(tileSize * 0.65));
+}
 
-function createDashLine(createElement, fromPoint, toPoint, centerPoint, isOverLimit) {
+function getTargetHalfSize(map) {
+  const tileSize = Math.min(map?.tileWidth ?? 32, map?.tileHeight ?? 32);
+  return Math.max(5, Math.round(tileSize * 0.22));
+}
+
+function createDashLine(createElement, fromPoint, toPoint, centerPoint, isOverLimit, dashLength) {
   const dash = createSvgNode(createElement, 'line');
   setClass(dash, classWithOverLimit('path-preview-dash', isOverLimit));
   const vx = toPoint.x - fromPoint.x;
   const vy = toPoint.y - fromPoint.y;
   const length = Math.hypot(vx, vy);
   if (length === 0) {
-    setAttr(dash, 'x1', centerPoint.x - DASH_LENGTH / 2);
+    setAttr(dash, 'x1', centerPoint.x - dashLength / 2);
     setAttr(dash, 'y1', centerPoint.y);
-    setAttr(dash, 'x2', centerPoint.x + DASH_LENGTH / 2);
+    setAttr(dash, 'x2', centerPoint.x + dashLength / 2);
     setAttr(dash, 'y2', centerPoint.y);
     return dash;
   }
 
   const ux = vx / length;
   const uy = vy / length;
-  const dashHalf = DASH_LENGTH / 2;
+  const dashHalf = dashLength / 2;
   setAttr(dash, 'x1', centerPoint.x - ux * dashHalf);
   setAttr(dash, 'y1', centerPoint.y - uy * dashHalf);
   setAttr(dash, 'x2', centerPoint.x + ux * dashHalf);
@@ -83,7 +91,7 @@ function approximateQuadraticLength(p0, p1, p2, steps = 24) {
   return length;
 }
 
-function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint, isOverLimit) {
+function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint, isOverLimit, dashLength) {
   const inDir = normalize(centerPoint.x - prevPoint.x, centerPoint.y - prevPoint.y);
   const outDir = normalize(nextPoint.x - centerPoint.x, nextPoint.y - centerPoint.y);
   if (inDir.x === outDir.x && inDir.y === outDir.y) {
@@ -95,7 +103,7 @@ function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint, isO
   const unitControl = { x: 0, y: 0 };
   const unitEnd = { x: outDir.x, y: outDir.y };
   const unitLength = approximateQuadraticLength(unitStart, unitControl, unitEnd);
-  const cornerRadius = unitLength === 0 ? DASH_LENGTH / 2 : DASH_LENGTH / unitLength;
+  const cornerRadius = unitLength === 0 ? dashLength / 2 : dashLength / unitLength;
 
   const corner = createSvgNode(createElement, 'path');
   setClass(corner, classWithOverLimit('path-preview-corner', isOverLimit));
@@ -137,6 +145,8 @@ export function renderPathPreviewLayer({
   const width = container.clientWidth ?? 0;
   const height = container.clientHeight ?? 0;
   const origin = getMapCenteredOrigin({ width, height, map });
+  const dashLength = getDashLength(map);
+  const targetHalfSize = getTargetHalfSize(map);
   const svg = createSvgNode(makeElement, 'svg');
   setClass(svg, 'path-preview-svg');
   setAttr(svg, 'viewBox', `0 0 ${width} ${height}`);
@@ -151,7 +161,8 @@ export function renderPathPreviewLayer({
         points[i - 1],
         points[i],
         points[i + 1],
-        i > maxAffordableSteps
+        i > maxAffordableSteps,
+        dashLength
       );
       if (corner) {
         setAttr(corner, 'data-x', path[i].x);
@@ -172,7 +183,8 @@ export function renderPathPreviewLayer({
         points[i - 1],
         points[i],
         points[i],
-        i > maxAffordableSteps
+        i > maxAffordableSteps,
+        dashLength
       );
       setAttr(dash, 'data-x', path[i].x);
       setAttr(dash, 'data-y', path[i].y);
@@ -189,18 +201,18 @@ export function renderPathPreviewLayer({
 
     const slashA = createSvgNode(makeElement, 'line');
     setClass(slashA, classWithOverLimit('path-preview-target-line', isTargetOverLimit));
-    setAttr(slashA, 'x1', center.x - 9);
-    setAttr(slashA, 'y1', center.y - 9);
-    setAttr(slashA, 'x2', center.x + 9);
-    setAttr(slashA, 'y2', center.y + 9);
+    setAttr(slashA, 'x1', center.x - targetHalfSize);
+    setAttr(slashA, 'y1', center.y - targetHalfSize);
+    setAttr(slashA, 'x2', center.x + targetHalfSize);
+    setAttr(slashA, 'y2', center.y + targetHalfSize);
     target.appendChild(slashA);
 
     const slashB = createSvgNode(makeElement, 'line');
     setClass(slashB, classWithOverLimit('path-preview-target-line', isTargetOverLimit));
-    setAttr(slashB, 'x1', center.x + 9);
-    setAttr(slashB, 'y1', center.y - 9);
-    setAttr(slashB, 'x2', center.x - 9);
-    setAttr(slashB, 'y2', center.y + 9);
+    setAttr(slashB, 'x1', center.x + targetHalfSize);
+    setAttr(slashB, 'y1', center.y - targetHalfSize);
+    setAttr(slashB, 'x2', center.x - targetHalfSize);
+    setAttr(slashB, 'y2', center.y + targetHalfSize);
     target.appendChild(slashB);
 
     svg.appendChild(target);

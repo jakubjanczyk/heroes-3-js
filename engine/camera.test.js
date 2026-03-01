@@ -46,10 +46,9 @@ describe('camera', () => {
 
     const tile = { x: 2, y: 1 };
     const screen = map.tileToScreen(tile);
-    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-    const minXOffset = (map.height - 1) * map.halfTileWidth;
-    const originX = Math.round((1000 - mapPixelWidth) / 2 + minXOffset);
+    const mapPixelWidth = map.width * map.tileWidth;
+    const mapPixelHeight = map.height * map.tileHeight;
+    const originX = Math.round((1000 - mapPixelWidth) / 2);
     const originY = Math.round((700 - mapPixelHeight) / 2);
 
     camera.centerOnTile(tile);
@@ -70,10 +69,9 @@ describe('camera', () => {
     const camera = createCamera({ viewport, world, map });
     const followedTile = { x: 3, y: 2 };
     const screen = map.tileToScreen(followedTile);
-    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-    const minXOffset = (map.height - 1) * map.halfTileWidth;
-    const originX = Math.round((900 - mapPixelWidth) / 2 + minXOffset);
+    const mapPixelWidth = map.width * map.tileWidth;
+    const mapPixelHeight = map.height * map.tileHeight;
+    const originX = Math.round((900 - mapPixelWidth) / 2);
     const originY = Math.round((600 - mapPixelHeight) / 2);
 
     camera.setFollowTileGetter(() => followedTile);
@@ -96,10 +94,9 @@ describe('camera', () => {
     const camera = createCamera({ viewport, world, map });
     const followedTile = { x: 3, y: 2 };
     const screen = map.tileToScreen(followedTile);
-    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-    const minXOffset = (map.height - 1) * map.halfTileWidth;
-    const originX = Math.round((900 - mapPixelWidth) / 2 + minXOffset);
+    const mapPixelWidth = map.width * map.tileWidth;
+    const mapPixelHeight = map.height * map.tileHeight;
+    const originX = Math.round((900 - mapPixelWidth) / 2);
     const originY = Math.round((600 - mapPixelHeight) / 2);
 
     camera.setFollowTileGetter(() => followedTile);

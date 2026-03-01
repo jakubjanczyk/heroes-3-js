@@ -57,14 +57,18 @@ describe('town interaction behavior', () => {
     });
 
     const blockedTiles = [
+      [2, 2],
+      [2, 3],
       [3, 1],
       [4, 1],
-      [2, 2],
+      [5, 1],
       [3, 2],
       [4, 2],
       [5, 2],
-      [2, 3],
-      [3, 3]
+      [3, 3],
+      [5, 3],
+      [6, 2],
+      [6, 3]
     ];
 
     for (const [x, y] of blockedTiles) {
@@ -94,10 +98,10 @@ describe('town interaction behavior', () => {
 
     const reachableTiles = [
       [6, 4],
-      [5, 1],
-      [5, 3],
-      [6, 2],
-      [6, 3]
+      [7, 3],
+      [7, 2],
+      [1, 3],
+      [4, 0]
     ];
 
     for (const [x, y] of reachableTiles) {

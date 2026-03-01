@@ -22,12 +22,11 @@ describe('layer layout helpers', () => {
       map
     });
 
-    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-    const minXOffset = (map.height - 1) * map.halfTileWidth;
+    const mapPixelWidth = map.width * map.tileWidth;
+    const mapPixelHeight = map.height * map.tileHeight;
 
     expect(origin).toEqual({
-      x: Math.round((1000 - mapPixelWidth) / 2 + minXOffset),
+      x: Math.round((1000 - mapPixelWidth) / 2),
       y: Math.round((700 - mapPixelHeight) / 2)
     });
   });

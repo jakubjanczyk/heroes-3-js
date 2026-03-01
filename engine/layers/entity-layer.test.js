@@ -72,10 +72,9 @@ describe('entity layer', () => {
     });
     const heroTile = { x: 1, y: 2 };
     const screen = map.tileToScreen(heroTile);
-    const mapPixelWidth = (map.width + map.height) * map.halfTileWidth;
-    const mapPixelHeight = (map.width + map.height) * map.halfTileHeight;
-    const minXOffset = (map.height - 1) * map.halfTileWidth;
-    const originX = Math.round((1000 - mapPixelWidth) / 2 + minXOffset);
+    const mapPixelWidth = map.width * map.tileWidth;
+    const mapPixelHeight = map.height * map.tileHeight;
+    const originX = Math.round((1000 - mapPixelWidth) / 2);
     const originY = Math.round((700 - mapPixelHeight) / 2);
 
     renderEntityLayer({

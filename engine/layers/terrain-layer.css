@@ -1,8 +1,7 @@
 .terrain-tile {
   position: absolute;
-  width: 104px;
-  height: 52px;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  width: 32px;
+  height: 32px;
   border: 1px solid rgba(10, 15, 25, 0.45);
   box-sizing: border-box;
 }

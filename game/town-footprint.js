@@ -3,12 +3,16 @@ export const TOWN_BLOCKER_KIND = 'TOWN_BLOCKER';
 export const TOWN_BLOCKED_OFFSETS = Object.freeze([
   Object.freeze({ x: -1, y: -2 }),
   Object.freeze({ x: 0, y: -2 }),
+  Object.freeze({ x: 1, y: -2 }),
   Object.freeze({ x: -2, y: -1 }),
   Object.freeze({ x: -1, y: -1 }),
   Object.freeze({ x: 0, y: -1 }),
   Object.freeze({ x: 1, y: -1 }),
+  Object.freeze({ x: 2, y: -1 }),
   Object.freeze({ x: -2, y: 0 }),
-  Object.freeze({ x: -1, y: 0 })
+  Object.freeze({ x: -1, y: 0 }),
+  Object.freeze({ x: 1, y: 0 }),
+  Object.freeze({ x: 2, y: 0 })
 ]);
 
 function tileKey(tile) {
