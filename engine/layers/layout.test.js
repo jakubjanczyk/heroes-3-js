@@ -9,7 +9,7 @@ import {
 } from './layout.js';
 
 describe('layer layout helpers', () => {
-  test('computes centered map origin', () => {
+  test('anchors map origin to top-left corner', () => {
     const map = createMap({
       width: 4,
       height: 3,
@@ -22,12 +22,9 @@ describe('layer layout helpers', () => {
       map
     });
 
-    const mapPixelWidth = map.width * map.tileWidth;
-    const mapPixelHeight = map.height * map.tileHeight;
-
     expect(origin).toEqual({
-      x: Math.round((1000 - mapPixelWidth) / 2),
-      y: Math.round((700 - mapPixelHeight) / 2)
+      x: 0,
+      y: 0
     });
   });
 

@@ -1,5 +1,15 @@
 import { getMapCenteredOrigin, getTileCenter, getViewportCenter } from './layers/layout.js';
 
+function clamp(value, min, max) {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
+
 export function createCamera({ viewport, world, map }) {
   let x = 0;
   let y = 0;
@@ -12,19 +22,54 @@ export function createCamera({ viewport, world, map }) {
     world.style.transform = `translate(${x}px, ${y}px)`;
   }
 
+  function getAxisBounds(viewportSize, mapSize, originOffset) {
+    const anchor = -originOffset;
+    if (mapSize <= viewportSize) {
+      return { min: anchor, max: anchor };
+    }
+
+    return {
+      min: viewportSize - originOffset - mapSize,
+      max: anchor
+    };
+  }
+
+  function getClampedTranslation(nextX, nextY) {
+    const viewportWidth = viewport.clientWidth ?? 0;
+    const viewportHeight = viewport.clientHeight ?? 0;
+    const origin = getMapCenteredOrigin({
+      width: viewportWidth,
+      height: viewportHeight,
+      map
+    });
+    const mapPixelWidth = map.width * map.tileWidth;
+    const mapPixelHeight = map.height * map.tileHeight;
+    const xBounds = getAxisBounds(viewportWidth, mapPixelWidth, origin.x);
+    const yBounds = getAxisBounds(viewportHeight, mapPixelHeight, origin.y);
+
+    return {
+      x: clamp(nextX, xBounds.min, xBounds.max),
+      y: clamp(nextY, yBounds.min, yBounds.max)
+    };
+  }
+
   function moveTo(nextX, nextY) {
-    x = nextX;
-    y = nextY;
+    const clamped = getClampedTranslation(nextX, nextY);
+    x = clamped.x;
+    y = clamped.y;
     applyTransform();
+    return { x, y };
   }
 
   function moveBy(dx, dy) {
     if (followLocked) {
       return;
     }
-    panX += dx;
-    panY += dy;
-    moveTo(x + dx, y + dy);
+    const previousX = x;
+    const previousY = y;
+    const moved = moveTo(x + dx, y + dy);
+    panX += moved.x - previousX;
+    panY += moved.y - previousY;
   }
 
   function centerOnTile(tile) {
@@ -76,7 +121,9 @@ export function createCamera({ viewport, world, map }) {
     }
 
     const centered = getCenteredTranslationForTile(followTile);
-    moveTo(centered.x + panX, centered.y + panY);
+    const moved = moveTo(centered.x + panX, centered.y + panY);
+    panX = moved.x - centered.x;
+    panY = moved.y - centered.y;
   }
 
   return {

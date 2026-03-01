@@ -1,10 +1,5 @@
 export function getMapCenteredOrigin({ width, height, map }) {
-  const mapPixelWidth = map.width * map.tileWidth;
-  const mapPixelHeight = map.height * map.tileHeight;
-  const x = Math.round((width - mapPixelWidth) / 2);
-  const y = Math.round((height - mapPixelHeight) / 2);
-
-  return { x, y };
+  return { x: 0, y: 0 };
 }
 
 export function getTileTopLeft({ map, tile, origin }) {

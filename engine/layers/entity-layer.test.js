@@ -72,10 +72,6 @@ describe('entity layer', () => {
     });
     const heroTile = { x: 1, y: 2 };
     const screen = map.tileToScreen(heroTile);
-    const mapPixelWidth = map.width * map.tileWidth;
-    const mapPixelHeight = map.height * map.tileHeight;
-    const originX = Math.round((1000 - mapPixelWidth) / 2);
-    const originY = Math.round((700 - mapPixelHeight) / 2);
 
     renderEntityLayer({
       container,
@@ -85,7 +81,7 @@ describe('entity layer', () => {
     });
 
     expect(container.children[0].style.transform).toBe(
-      `translate(${originX + screen.x + map.halfTileWidth - 12}px, ${originY + screen.y + map.halfTileHeight - 12}px)`
+      `translate(${screen.x + map.halfTileWidth - 12}px, ${screen.y + map.halfTileHeight - 12}px)`
     );
   });
 
