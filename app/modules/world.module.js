@@ -8,9 +8,7 @@ import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_LOAD_FAILED,
-  APP_FACT_WORLD_READY,
-  APP_UI_CAMERA_UPDATED,
-  APP_UI_WORLD_MOTION_UPDATED
+  APP_FACT_WORLD_READY
 } from '../events.js';
 
 function removeEntityById(entities, entityId) {
@@ -33,7 +31,6 @@ export function registerWorldModule(
 ) {
   let hasStarted = false;
   let worldState = null;
-  const worldElement = env.document?.querySelector?.('.world');
 
   function getEntityById(entityId) {
     if (!worldState || typeof entityId !== 'string' || entityId.length === 0) {
@@ -58,6 +55,7 @@ export function registerWorldModule(
 
   bus.addEventListener(APP_FACT_HERO_MOVED, (event) => {
     const movedEntity = getEntityById(event.detail?.heroId);
+    const fromTile = event.detail?.from;
     const toTile = event.detail?.to;
     if (!movedEntity || !toTile) {
       return;
@@ -74,8 +72,40 @@ export function registerWorldModule(
       y: Math.floor(y)
     };
 
+    const previousTile = {
+      x: Number(movedEntity.tile?.x),
+      y: Number(movedEntity.tile?.y)
+    };
+
     worldState?.occupancy.moveEntity?.(movedEntity, nextTile);
     movedEntity.tile = nextTile;
+
+    const fromX = Number(fromTile?.x);
+    const fromY = Number(fromTile?.y);
+    const restoreTile =
+      Number.isFinite(fromX) && Number.isFinite(fromY)
+        ? { x: Math.floor(fromX), y: Math.floor(fromY) }
+        : previousTile;
+    const shouldRestoreTile =
+      Number.isFinite(restoreTile.x) &&
+      Number.isFinite(restoreTile.y) &&
+      (restoreTile.x !== nextTile.x || restoreTile.y !== nextTile.y);
+
+    if (!shouldRestoreTile) {
+      return;
+    }
+
+    const persistentTown = worldState?.scenario?.entities?.find?.(
+      (entity) =>
+        entity.kind === 'TOWN' &&
+        entity.tile?.x === restoreTile.x &&
+        entity.tile?.y === restoreTile.y
+    );
+    if (!persistentTown) {
+      return;
+    }
+
+    worldState?.occupancy.moveEntity?.(persistentTown, restoreTile);
   });
 
   bus.addEventListener(APP_FACT_MONSTER_DEFEATED, (event) => {
@@ -84,41 +114,6 @@ export function registerWorldModule(
 
   bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
     removeEntityFromWorld(event.detail?.entityId);
-  });
-
-  bus.addEventListener(APP_UI_WORLD_MOTION_UPDATED, (event) => {
-    if (!worldElement) {
-      return;
-    }
-
-    const followHero = event.detail?.followHero;
-    if (typeof followHero === 'boolean') {
-      if (followHero) {
-        worldElement.classList?.add?.('world--following-hero');
-      } else {
-        worldElement.classList?.remove?.('world--following-hero');
-      }
-    }
-
-    const cameraStepDurationMs = Number(event.detail?.cameraStepDurationMs);
-    if (Number.isFinite(cameraStepDurationMs)) {
-      const clampedDurationMs = Math.max(0, cameraStepDurationMs);
-      worldElement.style?.setProperty?.('--camera-step-duration', `${clampedDurationMs}ms`);
-    }
-  });
-
-  bus.addEventListener(APP_UI_CAMERA_UPDATED, (event) => {
-    if (!worldElement) {
-      return;
-    }
-
-    const x = Number(event.detail?.offset?.x);
-    const y = Number(event.detail?.offset?.y);
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      return;
-    }
-
-    worldElement.style.transform = `translate(${x}px, ${y}px)`;
   });
 
   bus.addEventListener(APP_COMMAND_APP_START, () => {

@@ -81,7 +81,18 @@ export function createBus({
   function emit(type, detail, options = {}) {
     const shouldRecord = options.log !== false && shouldLogEvent(type, detail);
     if (shouldRecord && recordEvent) {
-      void recordEvent({ type, detail }).catch((error) => {
+      const logDetail =
+        typeof structuredClone === 'function'
+          ? (() => {
+              try {
+                return structuredClone(detail);
+              } catch {
+                return detail;
+              }
+            })()
+          : detail;
+
+      void recordEvent({ type, detail: logDetail }).catch((error) => {
         debugLog({
           action: 'log-error',
           type,

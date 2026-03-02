@@ -4,6 +4,7 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_UI_ENTITY_FADE_OUT_REQUESTED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 
@@ -73,6 +74,27 @@ export function registerEntityViewModule(
     });
   }
 
+  function applyEntityFadeOut({ entityId, entityKind }) {
+    if (!entityLayer || typeof entityId !== 'string' || entityId.length === 0) {
+      return;
+    }
+
+    if (entityKind === 'MONSTER') {
+      const monsterEntity = entityLayer.querySelector?.(
+        `.entity--monster[data-entity-id="${entityId}"]`
+      );
+      monsterEntity?.classList?.add?.('entity--monster-defeating');
+      return;
+    }
+
+    if (entityKind === 'RESOURCE') {
+      const resourceEntity = entityLayer.querySelector?.(
+        `.entity--resource[data-entity-id="${entityId}"]`
+      );
+      resourceEntity?.classList?.add?.('entity--resource-collecting');
+    }
+  }
+
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     map = event.detail.map;
     entities = event.detail.scenario.entities;
@@ -88,6 +110,13 @@ export function registerEntityViewModule(
     }
 
     render();
+  });
+
+  bus.addEventListener(APP_UI_ENTITY_FADE_OUT_REQUESTED, (event) => {
+    applyEntityFadeOut({
+      entityId: event.detail?.entityId,
+      entityKind: event.detail?.entityKind
+    });
   });
 
   bus.addEventListener(APP_FACT_MONSTER_DEFEATED, () => {

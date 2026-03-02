@@ -29,7 +29,7 @@ describe('movement system', () => {
     const moved = await movement.moveHeroTo({ x: 1, y: 0 });
 
     expect(moved).toBe(true);
-    expect(hero.tile).toEqual({ x: 1, y: 0 });
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
     expect(steps).toEqual([{ x: 1, y: 0 }]);
   });
 
@@ -56,7 +56,7 @@ describe('movement system', () => {
     expect(hero.tile).toEqual({ x: 0, y: 0 });
   });
 
-  test('updates occupancy index as hero steps to a new tile', async () => {
+  test('does not mutate occupancy index directly while stepping', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const entities = [hero];
     const map = createMap({
@@ -75,8 +75,8 @@ describe('movement system', () => {
 
     await movement.moveHeroTo({ x: 1, y: 0 });
 
-    expect(occupancy.getAt({ x: 0, y: 0 })).toBe(null);
-    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 1, y: 0 })).toBe(null);
   });
 
   test('ignores new move requests while hero is already moving', async () => {
@@ -145,7 +145,7 @@ describe('movement system', () => {
     const moved = await movement.moveHeroTo({ x: 2, y: 0 });
 
     expect(moved).toBe(true);
-    expect(hero.tile).toEqual({ x: 2, y: 0 });
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
     expect(steps.length).toBeGreaterThan(2);
   });
 
@@ -223,9 +223,9 @@ describe('movement system', () => {
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
-    expect(hero.tile).toEqual({ x: 1, y: 0 });
-    expect(occupancy.getAt({ x: 0, y: 0 })).toBe(null);
-    expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('hero-1');
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
+    expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
+    expect(occupancy.getAt({ x: 1, y: 0 })).toBe(null);
     expect(occupancy.getAt({ x: 2, y: 0 })).toBe(null);
     expect(occupancy.getAt({ x: 3, y: 0 })).toBe(null);
   });
@@ -306,7 +306,7 @@ describe('movement system', () => {
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
-    expect(hero.tile).toEqual({ x: 1, y: 0 });
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
     expect(occupancy.getAt({ x: 2, y: 0 })?.id).toBe('monster-1');
     expect(finishes[0].interaction).toBe(null);
   });
@@ -351,14 +351,9 @@ describe('movement system', () => {
     });
   });
 
-  test('does not move onto a collecting resource destination tile', async () => {
+  test('does not move onto a resource destination tile blocked by interaction guard', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const resource = {
-      id: 'resource-1',
-      kind: 'RESOURCE',
-      tile: { x: 1, y: 0 },
-      isCollecting: true
-    };
+    const resource = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
     const entities = [hero, resource];
     const map = createMap({
       width: 2,
@@ -371,6 +366,7 @@ describe('movement system', () => {
       entities,
       map,
       occupancy,
+      isInteractionBlocked: (entity) => entity.id === 'resource-1',
       sleep: async () => {}
     });
 
@@ -412,7 +408,7 @@ describe('movement system', () => {
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
-    expect(hero.tile).toEqual({ x: 1, y: 0 });
+    expect(hero.tile).toEqual({ x: 0, y: 0 });
     expect(finishes[0].interaction).toEqual({
       kind: 'TOWN_VISIT',
       entityId: 'town-1',

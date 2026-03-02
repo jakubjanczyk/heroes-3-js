@@ -6,6 +6,8 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_UI_RESOURCE_COLLECTION_STARTED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 
@@ -21,10 +23,12 @@ export function registerMovementModule(
   let movement = null;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
+  const collectingResourceEntityIds = new Set();
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const { scenario, map, occupancy } = event.detail;
     const hero = scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+    collectingResourceEntityIds.clear();
 
     if (!hero) {
       movement = null;
@@ -38,6 +42,8 @@ export function registerMovementModule(
       ...(movementSleep ? { sleep: movementSleep } : {}),
       stepDelayMs,
       getMaxMovableSteps: () => remainingMovementPoints,
+      isInteractionBlocked: (entity) =>
+        entity?.kind === 'RESOURCE' && collectingResourceEntityIds.has(entity.id),
       spendMovementPoints: (amount) => {
         bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
           amount
@@ -77,6 +83,24 @@ export function registerMovementModule(
   bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
     const value = Number(event.detail.value);
     remainingMovementPoints = Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+  });
+
+  bus.addEventListener(APP_UI_RESOURCE_COLLECTION_STARTED, (event) => {
+    const entityId = event.detail?.entityId;
+    if (typeof entityId !== 'string' || entityId.length === 0) {
+      return;
+    }
+
+    collectingResourceEntityIds.add(entityId);
+  });
+
+  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
+    const entityId = event.detail?.entityId;
+    if (typeof entityId !== 'string' || entityId.length === 0) {
+      return;
+    }
+
+    collectingResourceEntityIds.delete(entityId);
   });
 
   bus.addEventListener(APP_COMMAND_MOVE_REQUESTED, (event) => {

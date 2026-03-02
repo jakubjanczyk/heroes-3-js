@@ -5,23 +5,18 @@ import {
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
+  APP_UI_ENTITY_FADE_OUT_REQUESTED,
   APP_UI_INTERACTION_MODAL_CLOSED,
-  APP_UI_INTERACTION_MODAL_OPENED
+  APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_RESOURCE_COLLECTION_STARTED
 } from '../events.js';
 
 function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
 }
 
-function addEntityStateClass(entityEl, className) {
-  entityEl.classList?.add?.(className);
-  if (typeof entityEl.className === 'string' && !entityEl.className.includes(className)) {
-    entityEl.className = `${entityEl.className} ${className}`;
-  }
-}
-
 export function registerInteractionModule(
-  { bus, env, config },
+  { bus, config },
   {
     createInteractionSystem = createInteractionSystemDefault
   } = {}
@@ -42,77 +37,17 @@ export function registerInteractionModule(
   let pendingMonsterDefeat = null;
   const pendingResourceCollectionIds = new Set();
 
-  function forceReflow(element) {
-    void element?.offsetWidth;
-  }
-
-  async function waitForFadeCompletion(entityEl, durationMs) {
-    if (!entityEl || durationMs <= 0) {
+  async function requestEntityFadeOut({ entityId, entityKind, durationMs }) {
+    if (durationMs <= 0) {
       return;
     }
 
-    await new Promise((resolve) => {
-      let didFinish = false;
-
-      const finish = () => {
-        if (didFinish) {
-          return;
-        }
-
-        didFinish = true;
-        entityEl.removeEventListener?.('transitionend', onTransitionEnd);
-        entityEl.removeEventListener?.('animationend', onTransitionEnd);
-        resolve();
-      };
-
-      const onTransitionEnd = (event) => {
-        if (event?.target && event.target !== entityEl) {
-          return;
-        }
-
-        finish();
-      };
-
-      entityEl.addEventListener?.('transitionend', onTransitionEnd);
-      entityEl.addEventListener?.('animationend', onTransitionEnd);
-
-      void (async () => {
-        await sleep(durationMs);
-        finish();
-      })();
+    bus.emit(APP_UI_ENTITY_FADE_OUT_REQUESTED, {
+      entityId,
+      entityKind,
+      durationMs
     });
-  }
-
-  async function fadeOutMonsterEntity(entityId) {
-    if (monsterDefeatFadeOutMs <= 0) {
-      return;
-    }
-
-    const monsterEl = env?.document?.querySelector?.(`.entity--monster[data-entity-id="${entityId}"]`);
-    if (!monsterEl) {
-      return;
-    }
-
-    forceReflow(monsterEl);
-    addEntityStateClass(monsterEl, 'entity--monster-defeating');
-    await waitForFadeCompletion(monsterEl, monsterDefeatFadeOutMs);
-  }
-
-  async function fadeOutResourceEntity(entityId) {
-    if (resourceCollectFadeOutMs <= 0) {
-      return;
-    }
-
-    const resourceEl = env?.document?.querySelector?.(
-      `.entity--resource[data-entity-id="${entityId}"]`
-    );
-    if (!resourceEl) {
-      return;
-    }
-
-    forceReflow(resourceEl);
-    addEntityStateClass(resourceEl, 'entity--resource-collecting');
-    await waitForFadeCompletion(resourceEl, resourceCollectFadeOutMs);
+    await sleep(durationMs);
   }
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
@@ -121,7 +56,6 @@ export function registerInteractionModule(
     hero = entities.find((entity) => entity.kind === 'HERO') ?? null;
     interactions = createInteractionSystem({
       entities,
-      occupancy: world.occupancy,
       definitions: world.definitions
     });
   });
@@ -166,15 +100,22 @@ export function registerInteractionModule(
       if (pendingResourceCollectionIds.has(outcome.entityId)) {
         return;
       }
+
       pendingResourceCollectionIds.add(outcome.entityId);
-      const resourceEntity = entities?.find?.((entity) => entity.id === outcome.entityId) ?? null;
-      if (resourceEntity) {
-        resourceEntity.isCollecting = true;
-      }
+      bus.emit(APP_UI_RESOURCE_COLLECTION_STARTED, {
+        entityId: outcome.entityId,
+        entityType: outcome.entityType,
+        tile: outcome.tile
+      });
 
       void (async () => {
         try {
-          await fadeOutResourceEntity(outcome.entityId);
+          await requestEntityFadeOut({
+            entityId: outcome.entityId,
+            entityKind: 'RESOURCE',
+            durationMs: resourceCollectFadeOutMs
+          });
+
           const didFinalize =
             interactions.finalizeResourceCollection?.({ entityId: outcome.entityId }) ?? false;
           if (!didFinalize) {
@@ -220,8 +161,17 @@ export function registerInteractionModule(
 
     void (async () => {
       if (outcome.kind === 'MONSTER_DEFEATED') {
-        await fadeOutMonsterEntity(outcome.entityId);
-        interactions.finalizeMonsterDefeat({ entityId: outcome.entityId });
+        await requestEntityFadeOut({
+          entityId: outcome.entityId,
+          entityKind: 'MONSTER',
+          durationMs: monsterDefeatFadeOutMs
+        });
+
+        const didFinalize = interactions.finalizeMonsterDefeat({ entityId: outcome.entityId });
+        if (!didFinalize) {
+          return;
+        }
+
         bus.emit(APP_FACT_MONSTER_DEFEATED, {
           entityId: outcome.entityId,
           entityType: outcome.entityType,

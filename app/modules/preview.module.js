@@ -10,6 +10,7 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
+  APP_UI_RESOURCE_COLLECTION_STARTED,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED
@@ -25,6 +26,7 @@ export function registerPreviewModule({ bus }) {
   let isMoving = false;
   let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
+  const collectingResourceEntityIds = new Set();
 
   function emitPreview() {
     bus.emit(APP_UI_PREVIEW_UPDATED, {
@@ -71,7 +73,10 @@ export function registerPreviewModule({ bus }) {
 
     const destinationOccupant = occupancy.getAt(toTile);
     if (destinationOccupant && destinationOccupant.id !== hero.id) {
-      if (destinationOccupant.kind === 'RESOURCE' && destinationOccupant.isCollecting) {
+      if (
+        destinationOccupant.kind === 'RESOURCE' &&
+        collectingResourceEntityIds.has(destinationOccupant.id)
+      ) {
         return null;
       }
 
@@ -100,7 +105,18 @@ export function registerPreviewModule({ bus }) {
     map = world.map;
     occupancy = world.occupancy;
     hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+    collectingResourceEntityIds.clear();
     clearPreview({ log: false, emitFact: false });
+  });
+
+  bus.addEventListener(APP_UI_RESOURCE_COLLECTION_STARTED, (event) => {
+    const entityId = event.detail?.entityId;
+    if (typeof entityId !== 'string' || entityId.length === 0) {
+      return;
+    }
+
+    collectingResourceEntityIds.add(entityId);
+    clearPreview();
   });
 
   bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
@@ -222,7 +238,11 @@ export function registerPreviewModule({ bus }) {
     clearPreview({ log: false, emitFact: false });
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, () => {
+  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
+    const entityId = event.detail?.entityId;
+    if (typeof entityId === 'string' && entityId.length > 0) {
+      collectingResourceEntityIds.delete(entityId);
+    }
     clearPreview();
   });
 }

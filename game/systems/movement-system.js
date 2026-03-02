@@ -47,6 +47,7 @@ export function createMovementSystem({
   sleep = defaultSleep,
   stepDelayMs = 80,
   getMaxMovableSteps = () => Number.POSITIVE_INFINITY,
+  isInteractionBlocked = () => false,
   spendMovementPoints = () => {},
   onMoveStart = () => {},
   onMoveFinish = () => {},
@@ -64,7 +65,7 @@ export function createMovementSystem({
       return null;
     }
 
-    if (occupant.kind === 'RESOURCE' && occupant.isCollecting) {
+    if (isInteractionBlocked(occupant)) {
       return null;
     }
 
@@ -73,14 +74,6 @@ export function createMovementSystem({
     }
 
     return occupant;
-  }
-
-  function getPersistentOccupantAt(tile, heroId) {
-    return (
-      entities.find(
-        (entity) => entity.id !== heroId && entity.kind === 'TOWN' && sameTile(entity.tile, tile)
-      ) ?? null
-    );
   }
 
   async function moveHeroTo(toTile, { path: plannedPath = null } = {}) {
@@ -136,6 +129,7 @@ export function createMovementSystem({
       : cappedStepCount;
 
     const fromTile = { x: hero.tile.x, y: hero.tile.y };
+    let currentTile = { x: hero.tile.x, y: hero.tile.y };
     const reachedTile = path[executedStepCount];
     isMoving = true;
     onMoveStart({
@@ -147,14 +141,9 @@ export function createMovementSystem({
     });
     try {
       for (const stepTile of path.slice(1, executedStepCount + 1)) {
-        const stepFromTile = { x: hero.tile.x, y: hero.tile.y };
+        const stepFromTile = { x: currentTile.x, y: currentTile.y };
         await sleep(stepDelayMs);
-        occupancy.moveEntity(hero, stepTile);
-        hero.tile = stepTile;
-        const persistentOccupant = getPersistentOccupantAt(stepFromTile, hero.id);
-        if (persistentOccupant) {
-          occupancy.moveEntity(persistentOccupant, stepFromTile);
-        }
+        currentTile = { x: stepTile.x, y: stepTile.y };
         onStep({ hero, from: stepFromTile, to: stepTile });
         spendMovementPoints(1);
       }
@@ -168,7 +157,7 @@ export function createMovementSystem({
         hero,
         from: fromTile,
         targetTile: toTile,
-        reachedTile: { x: hero.tile.x, y: hero.tile.y },
+        reachedTile: currentTile,
         cappedStepCount,
         interaction: didTriggerArrivalInteraction
           ? {

@@ -2,17 +2,7 @@ function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
 }
 
-function removeEntityById(entities, entityId) {
-  const index = entities.findIndex((entity) => entity.id === entityId);
-  if (index < 0) {
-    return false;
-  }
-
-  entities.splice(index, 1);
-  return true;
-}
-
-export function createInteractionSystem({ entities, occupancy, definitions = {} }) {
+export function createInteractionSystem({ entities, definitions = {} }) {
   const monsterDefinitions = definitions.monsters ?? {};
   const resourceDefinitions = definitions.resources ?? {};
   const townDefinitions = definitions.towns ?? {};
@@ -79,22 +69,12 @@ export function createInteractionSystem({ entities, occupancy, definitions = {} 
 
   function finalizeMonsterDefeat({ entityId }) {
     const monster = entities.find((entity) => entity.id === entityId) ?? null;
-    if (!monster) {
-      return false;
-    }
-
-    occupancy.removeEntity?.(monster);
-    return removeEntityById(entities, entityId);
+    return Boolean(monster && monster.kind === 'MONSTER');
   }
 
   function finalizeResourceCollection({ entityId }) {
     const resource = entities.find((entity) => entity.id === entityId) ?? null;
-    if (!resource) {
-      return false;
-    }
-
-    occupancy.removeEntity?.(resource);
-    return removeEntityById(entities, entityId);
+    return Boolean(resource && resource.kind === 'RESOURCE');
   }
 
   return {

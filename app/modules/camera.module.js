@@ -28,6 +28,7 @@ export function registerCameraModule(
   let hero = null;
   let map = null;
   let isMoving = false;
+  let detachCameraInput = null;
 
   function emitCameraUpdated() {
     if (!camera) {
@@ -94,16 +95,18 @@ export function registerCameraModule(
       getOffset: camera.getOffset?.bind(camera)
     };
 
-    attachCameraInput({
-      camera: inputCamera,
-      viewport,
-      window: env.window,
-      edgePanDelayMs: 300,
-      map,
-      onTileClick: (tile) => {
-        bus.emit(APP_COMMAND_TILE_CLICKED, { tile });
-      }
-    });
+    detachCameraInput?.();
+    detachCameraInput =
+      attachCameraInput({
+        camera: inputCamera,
+        viewport,
+        window: env.window,
+        edgePanDelayMs: 300,
+        map,
+        onTileClick: (tile) => {
+          bus.emit(APP_COMMAND_TILE_CLICKED, { tile });
+        }
+      }) ?? null;
   });
 
   bus.addEventListener(APP_COMMAND_CAMERA_PAN_BY, (event) => {

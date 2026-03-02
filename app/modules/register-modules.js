@@ -11,6 +11,7 @@ import { registerPreviewViewModule } from './preview-view.module.js';
 import { registerTerrainViewModule } from './terrain-view.module.js';
 import { registerTurnModule } from './turn.module.js';
 import { registerWorldModule } from './world.module.js';
+import { registerWorldViewModule } from './world-view.module.js';
 
 export function registerModules({ bus, env, config }) {
   registerWorldModule({ bus, env, config });
@@ -23,6 +24,7 @@ export function registerModules({ bus, env, config }) {
   registerTerrainViewModule({ bus, env, config });
   registerEntityViewModule({ bus, env, config });
   registerPreviewViewModule({ bus, env, config });
+  registerWorldViewModule({ bus, env, config });
   registerMinimapViewModule({ bus, env, config });
   registerInteractionModalModule({ bus, env, config });
   registerHudModule({ bus, env, config });

@@ -28,6 +28,8 @@ export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened';
 export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed';
 export const APP_UI_CAMERA_UPDATED = 'ui.camera.updated';
 export const APP_UI_WORLD_MOTION_UPDATED = 'ui.world.motion.updated';
+export const APP_UI_ENTITY_FADE_OUT_REQUESTED = 'ui.entity.fadeOut.requested';
+export const APP_UI_RESOURCE_COLLECTION_STARTED = 'ui.resource.collection.started';
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
