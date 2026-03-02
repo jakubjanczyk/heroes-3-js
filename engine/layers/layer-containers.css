@@ -19,8 +19,8 @@
 }
 
 .ui-layer {
-  width: 240px;
-  flex: 0 0 240px;
+  width: clamp(260px, 22vw, 340px);
+  flex: 0 0 clamp(260px, 22vw, 340px);
   pointer-events: auto;
 }
 

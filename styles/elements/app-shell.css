@@ -2,21 +2,24 @@
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 24px;
+  align-items: stretch;
+  padding: 30px;
   box-sizing: border-box;
 }
 
 .game-shell {
-  width: min(1260px, 100%);
+  width: 100%;
+  height: calc(100vh - 60px);
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: stretch;
+  gap: 20px;
+  min-width: 0;
 }
 
 .viewport {
-  width: min(1000px, 100%);
   flex: 1 1 auto;
-  height: min(700px, 90vh);
+  min-width: 0;
+  height: 100%;
   background: #0f1524;
   border: 1px solid rgba(232, 238, 252, 0.15);
   border-radius: 12px;
@@ -45,6 +48,11 @@
 
 @media (max-width: 1180px) {
   .game-shell {
+    height: auto;
     flex-direction: column;
+  }
+
+  .viewport {
+    height: min(70vh, 720px);
   }
 }
