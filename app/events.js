@@ -27,6 +27,7 @@ export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed';
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened';
 export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed';
 export const APP_UI_CAMERA_UPDATED = 'ui.camera.updated';
+export const APP_UI_WORLD_MOTION_UPDATED = 'ui.world.motion.updated';
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,

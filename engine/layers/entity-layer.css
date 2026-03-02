@@ -10,6 +10,7 @@
   background: #6bb6ff;
   border: 2px solid #d7eeff;
   box-shadow: 0 2px 8px rgba(5, 12, 22, 0.65);
+  transition: transform var(--hero-step-duration, 180ms) linear;
 }
 
 .entity--monster {

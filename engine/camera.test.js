@@ -11,12 +11,6 @@ function createViewport(width, height) {
   };
 }
 
-function createWorld() {
-  return {
-    style: {}
-  };
-}
-
 function clamp(value, min, max) {
   if (value < min) {
     return min;
@@ -75,26 +69,21 @@ function getCenteredTranslation({ map, viewport, tile }) {
   };
 }
 
-function toTranslate({ x, y }) {
-  return `translate(${x}px, ${y}px)`;
-}
-
 describe('camera', () => {
-  test('moveBy and moveTo update world transform within map bounds', () => {
+  test('moveBy and moveTo update camera offset within map bounds', () => {
     const map = createMap({
       width: 60,
       height: 40,
       tiles: new Array(2400).fill(0)
     });
     const viewport = createViewport(800, 600);
-    const world = createWorld();
-    const camera = createCamera({ viewport, world, map });
+    const camera = createCamera({ viewport, map });
 
     camera.moveBy(-12, -8);
-    expect(world.style.transform).toBe('translate(-12px, -8px)');
+    expect(camera.getOffset()).toEqual({ x: -12, y: -8 });
 
     camera.moveTo(-40, -24);
-    expect(world.style.transform).toBe('translate(-40px, -24px)');
+    expect(camera.getOffset()).toEqual({ x: -40, y: -24 });
   });
 
   test('clamps movement to map boundaries', () => {
@@ -104,18 +93,17 @@ describe('camera', () => {
       tiles: new Array(2400).fill(0)
     });
     const viewport = createViewport(800, 600);
-    const world = createWorld();
-    const camera = createCamera({ viewport, world, map });
+    const camera = createCamera({ viewport, map });
     const bounds = getBounds({ viewport, map });
 
     camera.moveBy(50, 50);
-    expect(world.style.transform).toBe(toTranslate({ x: bounds.x.max, y: bounds.y.max }));
+    expect(camera.getOffset()).toEqual({ x: bounds.x.max, y: bounds.y.max });
 
     camera.moveTo(-9999, -9999);
-    expect(world.style.transform).toBe(toTranslate({ x: bounds.x.min, y: bounds.y.min }));
+    expect(camera.getOffset()).toEqual({ x: bounds.x.min, y: bounds.y.min });
 
     camera.moveBy(-100, -100);
-    expect(world.style.transform).toBe(toTranslate({ x: bounds.x.min, y: bounds.y.min }));
+    expect(camera.getOffset()).toEqual({ x: bounds.x.min, y: bounds.y.min });
   });
 
   test('centerOnTile uses clamped centered translation', () => {
@@ -125,15 +113,14 @@ describe('camera', () => {
       tiles: new Array(1200).fill(0)
     });
     const viewport = createViewport(1000, 700);
-    const world = createWorld();
-    const camera = createCamera({ viewport, world, map });
+    const camera = createCamera({ viewport, map });
     const tile = { x: 20, y: 15 };
     const centered = getCenteredTranslation({ map, viewport, tile });
     const clamped = clampTranslation({ map, viewport, x: centered.x, y: centered.y });
 
     camera.centerOnTile(tile);
 
-    expect(world.style.transform).toBe(toTranslate(clamped));
+    expect(camera.getOffset()).toEqual(clamped);
   });
 
   test('follow tile and pan offset combine into final camera position', () => {
@@ -143,8 +130,7 @@ describe('camera', () => {
       tiles: new Array(2000).fill(0)
     });
     const viewport = createViewport(900, 600);
-    const world = createWorld();
-    const camera = createCamera({ viewport, world, map });
+    const camera = createCamera({ viewport, map });
     const followedTile = { x: 20, y: 15 };
     const centered = getCenteredTranslation({ map, viewport, tile: followedTile });
     const expected = clampTranslation({
@@ -158,7 +144,7 @@ describe('camera', () => {
     camera.moveBy(-40, -20);
     camera.update();
 
-    expect(world.style.transform).toBe(toTranslate(expected));
+    expect(camera.getOffset()).toEqual(expected);
   });
 
   test('lock follow ignores manual pan and clearPan removes old offsets', () => {
@@ -168,8 +154,7 @@ describe('camera', () => {
       tiles: new Array(2000).fill(0)
     });
     const viewport = createViewport(900, 600);
-    const world = createWorld();
-    const camera = createCamera({ viewport, world, map });
+    const camera = createCamera({ viewport, map });
     const followedTile = { x: 20, y: 15 };
     const centered = getCenteredTranslation({ map, viewport, tile: followedTile });
     const expected = clampTranslation({ map, viewport, x: centered.x, y: centered.y });
@@ -181,6 +166,6 @@ describe('camera', () => {
     camera.clearPan();
     camera.update();
 
-    expect(world.style.transform).toBe(toTranslate(expected));
+    expect(camera.getOffset()).toEqual(expected);
   });
 });

@@ -30,7 +30,7 @@ export function registerPreviewModule({ bus }) {
     bus.emit(APP_UI_PREVIEW_UPDATED, {
       path: previewPath,
       targetTile: previewTarget,
-      maxAffordableSteps: isMoving ? Number.POSITIVE_INFINITY : remainingMovementPoints
+      maxAffordableSteps: remainingMovementPoints
     });
   }
 

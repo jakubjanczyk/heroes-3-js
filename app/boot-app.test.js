@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { bootApp } from './boot-app.js';
-import { APP_FACT_PREVIEW_TARGET_SELECTED } from './events.js';
+import { APP_FACT_HERO_MOVED, APP_FACT_PREVIEW_TARGET_SELECTED } from './events.js';
 
 function mountAppTemplate() {
   document.body.innerHTML = `
@@ -63,7 +63,7 @@ function createFakeFetch(routeMap) {
   };
 }
 
-function createSpyBus(onEmit) {
+function createSpyBus(onEmit, onEmitAfter) {
   const listenersByType = new Map();
   const emitted = [];
 
@@ -81,6 +81,8 @@ function createSpyBus(onEmit) {
       for (const listener of listenersByType.get(type) ?? []) {
         listener({ type, detail });
       }
+
+      onEmitAfter?.({ type, detail, options });
     }
   };
 }
@@ -90,6 +92,7 @@ describe('boot app replay', () => {
     mountAppTemplate();
 
     const replayVisibilitySnapshots = [];
+    const replayRestoringClassSnapshots = [];
     const bus = createSpyBus(({ type, options }) => {
       if (type !== APP_FACT_PREVIEW_TARGET_SELECTED || options?.log !== false) {
         return;
@@ -97,6 +100,7 @@ describe('boot app replay', () => {
 
       const viewport = document.querySelector('.viewport');
       replayVisibilitySnapshots.push(viewport?.style.visibility ?? '');
+      replayRestoringClassSnapshots.push(viewport?.classList?.contains('viewport--restoring') ?? false);
     });
 
     const eventLog = {
@@ -150,6 +154,84 @@ describe('boot app replay', () => {
 
     expect(replayedFacts).toHaveLength(1);
     expect(replayVisibilitySnapshots).toEqual(['hidden']);
+    expect(replayRestoringClassSnapshots).toEqual([true]);
     expect(document.querySelector('.viewport')?.style.visibility).toBe('');
+    expect(document.querySelector('.viewport')?.classList.contains('viewport--restoring')).toBe(false);
+  });
+
+  test('replays hero position while restoring mode is active', async () => {
+    mountAppTemplate();
+
+    const replaySnapshots = [];
+    const bus = createSpyBus(
+      null,
+      ({ type, options }) => {
+        if (type !== APP_FACT_HERO_MOVED || options?.log !== false) {
+          return;
+        }
+
+        const viewport = document.querySelector('.viewport');
+        const hero = document.querySelector('.entity--hero[data-entity-id="hero-1"]');
+        replaySnapshots.push({
+          restoring: viewport?.classList?.contains('viewport--restoring') ?? false,
+          heroTileX: hero?.dataset?.tileX ?? null,
+          heroTileY: hero?.dataset?.tileY ?? null
+        });
+      }
+    );
+
+    const eventLog = {
+      async init() {},
+      getAll() {
+        return [
+          {
+            id: 1,
+            type: APP_FACT_HERO_MOVED,
+            detail: {
+              heroId: 'hero-1',
+              to: { x: 2, y: 0 }
+            }
+          }
+        ];
+      },
+      async record() {},
+      async reset() {},
+      hasExistingSession() {
+        return true;
+      }
+    };
+
+    const fetch = createFakeFetch({
+      './scenarios/scenario.json': {
+        meta: { id: 'demo' },
+        terrain: { width: 3, height: 1, tiles: [0, 0, 0] },
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      './game/data/hero.json': {},
+      './game/data/monsters.json': {},
+      './game/data/resources.json': {},
+      './game/data/towns.json': {},
+      './assets/music/tracks.json': []
+    });
+
+    await bootApp({
+      fetch,
+      document,
+      window,
+      bus,
+      eventLog,
+      config: {
+        movementStepDelayMs: 0,
+        movementSleep: () => Promise.resolve()
+      }
+    });
+
+    expect(replaySnapshots).toEqual([
+      {
+        restoring: true,
+        heroTileX: '2',
+        heroTileY: '0'
+      }
+    ]);
   });
 });

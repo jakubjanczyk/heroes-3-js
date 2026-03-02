@@ -6,7 +6,9 @@ import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_LOAD_FAILED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_CAMERA_UPDATED,
+  APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 import { registerWorldModule } from './world.module.js';
 import { createFakeBus, getLastEmittedByType } from '../../tests/test-utils/fake-bus.js';
@@ -310,5 +312,63 @@ describe('world module', () => {
     expect(occupancyState.byEntityId.get('hero-1')).toBe('3,0');
     expect(occupancyState.byEntityId.has('resource-1')).toBe(false);
     expect(occupancyState.byEntityId.has('monster-1')).toBe(false);
+  });
+
+  test('applies world motion updates from UI event', () => {
+    const bus = createFakeBus();
+    const classListCalls = [];
+    const styleCalls = [];
+    const worldElement = {
+      classList: {
+        add(className) {
+          classListCalls.push(['add', className]);
+        },
+        remove(className) {
+          classListCalls.push(['remove', className]);
+        }
+      },
+      style: {
+        transform: '',
+        setProperty(name, value) {
+          styleCalls.push([name, value]);
+        }
+      }
+    };
+
+    registerWorldModule(
+      {
+        bus,
+        env: {
+          fetch: async () => {},
+          document: {
+            querySelector(selector) {
+              if (selector !== '.world') {
+                return null;
+              }
+
+              return worldElement;
+            }
+          }
+        }
+      }
+    );
+
+    bus.emit(APP_UI_WORLD_MOTION_UPDATED, {
+      followHero: true,
+      cameraStepDurationMs: 240
+    });
+    bus.emit(APP_UI_WORLD_MOTION_UPDATED, {
+      followHero: false
+    });
+    bus.emit(APP_UI_CAMERA_UPDATED, {
+      offset: { x: -120, y: -80 }
+    });
+
+    expect(styleCalls).toEqual([['--camera-step-duration', '240ms']]);
+    expect(classListCalls).toEqual([
+      ['add', 'world--following-hero'],
+      ['remove', 'world--following-hero']
+    ]);
+    expect(worldElement.style.transform).toBe('translate(-120px, -80px)');
   });
 });

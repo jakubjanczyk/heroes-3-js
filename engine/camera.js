@@ -10,17 +10,13 @@ function clamp(value, min, max) {
   return value;
 }
 
-export function createCamera({ viewport, world, map }) {
+export function createCamera({ viewport, map }) {
   let x = 0;
   let y = 0;
   let panX = 0;
   let panY = 0;
   let followTileGetter = null;
   let followLocked = false;
-
-  function applyTransform() {
-    world.style.transform = `translate(${x}px, ${y}px)`;
-  }
 
   function getAxisBounds(viewportSize, mapSize, originOffset) {
     const anchor = -originOffset;
@@ -57,7 +53,6 @@ export function createCamera({ viewport, world, map }) {
     const clamped = getClampedTranslation(nextX, nextY);
     x = clamped.x;
     y = clamped.y;
-    applyTransform();
     return { x, y };
   }
 

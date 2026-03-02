@@ -1,6 +1,7 @@
 import { createBus } from '../engine/bus.js';
 import { createEventLog } from '../engine/eventlog.js';
 import {
+  APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_APP_START,
   APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_WORLD_LOAD_FAILED,
@@ -60,12 +61,37 @@ function setViewportVisibility(document, isVisible) {
   viewport.style.visibility = isVisible ? '' : 'hidden';
 }
 
+function setViewportRestoring(document, isRestoring) {
+  const viewport = document?.querySelector?.('.viewport');
+  if (!viewport) {
+    return;
+  }
+
+  if (isRestoring) {
+    viewport.classList?.add?.('viewport--restoring');
+    return;
+  }
+
+  viewport.classList?.remove?.('viewport--restoring');
+}
+
 async function replayPersistedFacts({ bus, facts }) {
   for (const fact of facts) {
     bus.emit(fact.type, fact.detail ?? {}, { log: false });
   }
 
   await Promise.resolve();
+}
+
+function centerCameraOnHero({ bus, world }) {
+  const hero = world?.scenario?.entities?.find?.((entity) => entity.kind === 'HERO') ?? null;
+  if (!hero?.tile) {
+    return;
+  }
+
+  bus.emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, {
+    tile: hero.tile
+  });
 }
 
 export async function bootApp({
@@ -89,6 +115,7 @@ export async function bootApp({
   const hasPersistedSession = persistedFacts.length > 0;
 
   if (hasPersistedSession) {
+    setViewportRestoring(document, true);
     setViewportVisibility(document, false);
   }
 
@@ -145,6 +172,10 @@ export async function bootApp({
         bus: appBus,
         facts: persistedFacts
       });
+      centerCameraOnHero({
+        bus: appBus,
+        world
+      });
     }
 
     console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
@@ -157,6 +188,7 @@ export async function bootApp({
   } finally {
     if (hasPersistedSession) {
       setViewportVisibility(document, true);
+      setViewportRestoring(document, false);
     }
   }
 }

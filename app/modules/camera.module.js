@@ -8,18 +8,22 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_WORLD_READY,
-  APP_UI_CAMERA_UPDATED
+  APP_UI_CAMERA_UPDATED,
+  APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 
 export function registerCameraModule(
-  { bus, env },
+  { bus, env, config },
   {
     createCamera = createCameraDefault,
     attachCameraInput = attachCameraInputDefault
   } = {}
 ) {
   const viewport = env.document?.querySelector('.viewport');
-  const worldElement = env.document?.querySelector('.world');
+  const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
+  const cameraStepDurationMs = Number.isFinite(configuredStepDurationMs)
+    ? Math.max(0, configuredStepDurationMs)
+    : 220;
   let camera = null;
   let hero = null;
   let map = null;
@@ -44,19 +48,39 @@ export function registerCameraModule(
     });
   }
 
+  function emitWorldMotionUpdated({ followHero = undefined, stepDurationMs = undefined } = {}) {
+    const detail = {};
+    if (typeof followHero === 'boolean') {
+      detail.followHero = followHero;
+    }
+    if (Number.isFinite(stepDurationMs)) {
+      detail.cameraStepDurationMs = stepDurationMs;
+    }
+
+    if (Object.keys(detail).length < 1) {
+      return;
+    }
+
+    bus.emit(APP_UI_WORLD_MOTION_UPDATED, detail);
+  }
+
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
     hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
     map = world.map;
 
-    if (!viewport || !worldElement || !map) {
+    if (!viewport || !map) {
       return;
     }
 
     camera = createCamera({
       viewport,
-      world: worldElement,
       map
+    });
+
+    emitWorldMotionUpdated({
+      followHero: false,
+      stepDurationMs: cameraStepDurationMs
     });
 
     camera.setFollowTileGetter(() => hero?.tile ?? null);
@@ -116,6 +140,7 @@ export function registerCameraModule(
     }
 
     isMoving = true;
+    emitWorldMotionUpdated({ followHero: true });
     camera.clearPan?.();
     camera.lockFollow?.();
     if (hero?.tile) {
@@ -146,6 +171,7 @@ export function registerCameraModule(
     }
 
     isMoving = false;
+    emitWorldMotionUpdated({ followHero: false });
     camera.unlockFollow?.();
     camera.update?.();
     emitCameraUpdated();

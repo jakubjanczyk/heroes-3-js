@@ -8,7 +8,8 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_WORLD_READY,
-  APP_UI_CAMERA_UPDATED
+  APP_UI_CAMERA_UPDATED,
+  APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerCameraModule } from './camera.module.js';
@@ -72,7 +73,6 @@ describe('camera module', () => {
     expect(createCameraCalls).toEqual([
       {
         viewport,
-        world: worldElement,
         map: { id: 'map' }
       }
     ]);
@@ -101,6 +101,7 @@ describe('camera module', () => {
   test('applies movement lifecycle camera behavior', () => {
     const bus = createFakeBus();
     const calls = [];
+    const worldMotionEvents = [];
 
     registerCameraModule(
       {
@@ -111,6 +112,9 @@ describe('camera module', () => {
             '.world': {}
           }),
           window: {}
+        },
+        config: {
+          movementStepDelayMs: 240
         }
       },
       {
@@ -150,6 +154,18 @@ describe('camera module', () => {
     bus.emit(APP_FACT_MOVE_STARTED, {});
     bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
     bus.emit(APP_FACT_MOVE_FINISHED, {});
+
+    for (const emitted of bus.emitted) {
+      if (emitted.type === APP_UI_WORLD_MOTION_UPDATED) {
+        worldMotionEvents.push(emitted.detail);
+      }
+    }
+
+    expect(worldMotionEvents).toEqual([
+      { followHero: false, cameraStepDurationMs: 240 },
+      { followHero: true },
+      { followHero: false }
+    ]);
 
     expect(calls).toEqual([
       'update',

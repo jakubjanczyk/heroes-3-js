@@ -95,6 +95,40 @@ describe('preview module', () => {
     expect(previews.some((entry) => entry.detail.path?.length === 2)).toBe(true);
   });
 
+  test('keeps over-limit preview coloring thresholds while moving', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const map = createMap({ width: 6, height: 1, tiles: [0, 0, 0, 0, 0, 0] });
+    const occupancy = createOccupancyIndex([hero]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 2, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 5, y: 0 } });
+    bus.emit(APP_FACT_MOVE_STARTED, { targetTile: { x: 5, y: 0 } });
+
+    let preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.maxAffordableSteps).toBe(2);
+
+    bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 1, max: 15 });
+
+    preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.maxAffordableSteps).toBe(1);
+    expect(preview?.detail.path).toEqual([
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+      { x: 4, y: 0 },
+      { x: 5, y: 0 }
+    ]);
+  });
+
   test('blocks tile-click preview while interaction modal is open and resumes after close', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };

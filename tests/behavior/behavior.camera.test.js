@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
   confirmTileClickByDispatch,
+  expectHeroAt,
   flushMicrotasks,
   setupMovementBehaviorApp
 } from './behavior.utils.js';
@@ -17,6 +18,32 @@ function createPanScenario({
     height,
     tiles: new Array(width * height).fill(0),
     entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: heroTile }]
+  };
+}
+
+function createMemoryEventLog() {
+  const entries = [];
+
+  return {
+    async init() {},
+    async record(event) {
+      entries.push({
+        id: entries.length + 1,
+        v: 1,
+        type: event.type,
+        detail: event.detail,
+        at: Date.now()
+      });
+    },
+    getAll() {
+      return [...entries];
+    },
+    async reset() {
+      entries.length = 0;
+    },
+    hasExistingSession() {
+      return entries.length > 0;
+    }
   };
 }
 
@@ -132,5 +159,27 @@ describe('camera behavior', () => {
     expect(hero?.tile).toEqual({ x: 22, y: 15 });
 
     expect(worldElement?.style?.transform).not.toBe(before);
+  });
+
+  test('given session is restored on refresh when hero has moved then camera centers on restored hero tile', async () => {
+    const eventLog = createMemoryEventLog();
+    const sharedAppOptions = {
+      eventLog,
+      loadGameOptions: createPanScenario(),
+      viewportSize: { width: 1000, height: 700 }
+    };
+
+    await setupMovementBehaviorApp(sharedAppOptions);
+    confirmTileClickByDispatch(22, 15);
+    await flushMicrotasks();
+    expectHeroAt(22, 15);
+
+    await setupMovementBehaviorApp(sharedAppOptions);
+    await flushMicrotasks();
+
+    const worldElement = document.querySelector('.world');
+    expect(worldElement).toBeTruthy();
+    expectHeroAt(22, 15);
+    expect(worldElement?.style?.transform).toBe('translate(-220px, -146px)');
   });
 });

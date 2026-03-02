@@ -29,6 +29,20 @@
   inset: 0;
 }
 
+.world--following-hero {
+  transition: transform var(--camera-step-duration, 220ms) linear;
+  will-change: transform;
+}
+
+.viewport--restoring .entity--hero {
+  transition: none !important;
+}
+
+.viewport--restoring .world,
+.viewport--restoring .world--following-hero {
+  transition: none !important;
+}
+
 @media (max-width: 1180px) {
   .game-shell {
     flex-direction: column;
