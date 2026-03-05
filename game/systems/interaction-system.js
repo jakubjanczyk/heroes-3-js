@@ -1,3 +1,5 @@
+import { resolveArrivalOutcome } from '../domain/entity-behaviors.js';
+
 function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
 }
@@ -6,6 +8,11 @@ export function createInteractionSystem({ entities, definitions = {} }) {
   const monsterDefinitions = definitions.monsters ?? {};
   const resourceDefinitions = definitions.resources ?? {};
   const townDefinitions = definitions.towns ?? {};
+  const interactionDefinitions = {
+    monsters: monsterDefinitions,
+    resources: resourceDefinitions,
+    towns: townDefinitions
+  };
 
   function resolveArrivalAtDestination({ destinationTile }) {
     const interactionEntity =
@@ -16,55 +23,11 @@ export function createInteractionSystem({ entities, definitions = {} }) {
       return null;
     }
 
-    if (interactionEntity.kind === 'MONSTER') {
-      const monsterDefinition = monsterDefinitions[interactionEntity.type] ?? null;
-      const monsterName = monsterDefinition?.name ?? 'Monster';
-
-      return {
-        kind: 'MONSTER_DEFEATED',
-        entityId: interactionEntity.id,
-        entityType: interactionEntity.type,
-        tile: destinationTile,
-        modal: {
-          title: 'Interaction',
-          message: `${monsterName} defeated`
-        }
-      };
-    }
-
-    if (interactionEntity.kind === 'RESOURCE') {
-      const resourceDefinition = resourceDefinitions[interactionEntity.type] ?? null;
-      const resourceName = resourceDefinition?.name ?? 'Resource';
-      const amount = Number(resourceDefinition?.amount);
-
-      return {
-        kind: 'RESOURCE_COLLECTED',
-        entityId: interactionEntity.id,
-        entityType: interactionEntity.type,
-        tile: destinationTile,
-        amount: Number.isFinite(amount) ? amount : 0,
-        resourceName
-      };
-    }
-
-    if (interactionEntity.kind === 'TOWN') {
-      const townDefinition = townDefinitions[interactionEntity.type] ?? null;
-      const townName = townDefinition?.name ?? 'Town';
-
-      return {
-        kind: 'TOWN_VISITED',
-        entityId: interactionEntity.id,
-        entityType: interactionEntity.type,
-        tile: destinationTile,
-        townName,
-        modal: {
-          title: 'Interaction',
-          message: `${townName} visited`
-        }
-      };
-    }
-
-    return null;
+    return resolveArrivalOutcome({
+      entity: interactionEntity,
+      definitions: interactionDefinitions,
+      tile: destinationTile
+    });
   }
 
   function finalizeMonsterDefeat({ entityId }) {
