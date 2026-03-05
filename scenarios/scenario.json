@@ -4782,6 +4782,69 @@
         "x": 40,
         "y": 19
       }
+    },
+    {
+      "id": "mine-1",
+      "kind": "MINE",
+      "type": "GOLD_MINE",
+      "tile": {
+        "x": 14,
+        "y": 15
+      }
+    },
+    {
+      "id": "mine-2",
+      "kind": "MINE",
+      "type": "SAWMILL",
+      "tile": {
+        "x": 22,
+        "y": 9
+      }
+    },
+    {
+      "id": "mine-3",
+      "kind": "MINE",
+      "type": "ORE_PIT",
+      "tile": {
+        "x": 31,
+        "y": 16
+      }
+    },
+    {
+      "id": "mine-4",
+      "kind": "MINE",
+      "type": "ALCHEMIST_LAB",
+      "tile": {
+        "x": 43,
+        "y": 14
+      }
+    },
+    {
+      "id": "mine-5",
+      "kind": "MINE",
+      "type": "SULFUR_DUNE",
+      "tile": {
+        "x": 50,
+        "y": 18
+      }
+    },
+    {
+      "id": "mine-6",
+      "kind": "MINE",
+      "type": "CRYSTAL_CAVERN",
+      "tile": {
+        "x": 17,
+        "y": 26
+      }
+    },
+    {
+      "id": "mine-7",
+      "kind": "MINE",
+      "type": "GEM_POND",
+      "tile": {
+        "x": 36,
+        "y": 28
+      }
     }
   ]
 }

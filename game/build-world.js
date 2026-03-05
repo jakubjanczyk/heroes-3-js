@@ -1,6 +1,7 @@
 import { createMap as createMapDefault } from '../engine/map.js';
 import { createOccupancyIndex as createOccupancyIndexDefault } from '../engine/occupancy.js';
 import { createWorldState as createWorldStateDefault } from './domain/world-state.js';
+import { createMineFootprintBlockers } from './mine-footprint.js';
 import { createTownFootprintBlockers } from './town-footprint.js';
 
 export function buildWorld(
@@ -18,7 +19,19 @@ export function buildWorld(
     entities: scenario.entities,
     map
   });
-  const occupancy = createOccupancyIndex([...scenario.entities, ...townFootprintBlockers]);
+  const occupiedTiles = new Set(
+    [...scenario.entities, ...townFootprintBlockers].map((entity) => `${entity.tile.x},${entity.tile.y}`)
+  );
+  const mineFootprintBlockers = createMineFootprintBlockers({
+    entities: scenario.entities,
+    map,
+    occupiedTiles
+  });
+  const occupancy = createOccupancyIndex([
+    ...scenario.entities,
+    ...townFootprintBlockers,
+    ...mineFootprintBlockers
+  ]);
   const worldState = createWorldState({
     scenario,
     occupancy

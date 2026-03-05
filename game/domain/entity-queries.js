@@ -18,6 +18,10 @@ export function isTown(entity) {
   return isEntityKind(entity, 'TOWN');
 }
 
+export function isMine(entity) {
+  return isEntityKind(entity, 'MINE');
+}
+
 export function findHero(entities) {
   if (!Array.isArray(entities)) {
     return null;

@@ -6,6 +6,14 @@ async function fetchJson(fetch, url) {
   return res.json();
 }
 
+async function fetchJsonOrEmpty(fetch, url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    return {};
+  }
+  return res.json();
+}
+
 function isInBounds(terrain, tile) {
   return (
     tile.x >= 0 &&
@@ -59,12 +67,13 @@ export async function loadGame({
   const normalizedScenarioUrl = normalizeStaticUrl(scenarioUrl);
   const normalizedDataBaseUrl = normalizeStaticUrl(dataBaseUrl);
 
-  const [scenario, hero, monsters, resources, towns] = await Promise.all([
+  const [scenario, hero, monsters, resources, towns, mines] = await Promise.all([
     fetchJson(fetch, normalizedScenarioUrl),
     fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
     fetchJson(fetch, `${normalizedDataBaseUrl}/monsters.json`),
     fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
-    fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`)
+    fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`)
   ]);
 
   assertEntitiesOnPassableTiles(scenario);
@@ -75,7 +84,8 @@ export async function loadGame({
       hero,
       monsters,
       resources,
-      towns
+      towns,
+      mines
     }
   };
 }

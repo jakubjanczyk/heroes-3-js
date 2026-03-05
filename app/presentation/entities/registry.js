@@ -1,10 +1,12 @@
 import * as hero from './hero.js';
+import * as mine from './mine.js';
 import * as monster from './monster.js';
 import * as resource from './resource.js';
 import * as town from './town.js';
 
 const presentationByKind = Object.freeze({
   HERO: hero,
+  MINE: mine,
   MONSTER: monster,
   RESOURCE: resource,
   TOWN: town

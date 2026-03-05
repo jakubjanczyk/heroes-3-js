@@ -119,4 +119,33 @@ describe('interaction system', () => {
     });
     expect(entities).toEqual([hero, town]);
   });
+
+  test('resolves mine outcome and leaves mine on map', () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 2, y: 0 } };
+    const mine = { id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 2, y: 0 } };
+    const entities = [hero, mine];
+
+    const interactions = createInteractionSystem({
+      entities,
+      definitions: {
+        mines: {
+          GOLD_MINE: { name: 'Gold mine' }
+        }
+      }
+    });
+
+    const outcome = interactions.resolveArrivalAtDestination({
+      destinationTile: { x: 2, y: 0 },
+      arrivingEntityId: 'hero-1'
+    });
+
+    expect(outcome).toEqual({
+      kind: 'MINE_ENTERED',
+      entityId: 'mine-1',
+      entityType: 'GOLD_MINE',
+      tile: { x: 2, y: 0 },
+      mineName: 'Gold mine'
+    });
+    expect(entities).toEqual([hero, mine]);
+  });
 });

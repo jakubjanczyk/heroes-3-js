@@ -39,7 +39,8 @@ describe('bootstrap', () => {
       hero: { id: 'HERO', name: 'Hero' },
       monsters: { SKELETON: { name: 'Skeleton' } },
       resources: { GOLD_PILE: { name: 'Gold Pile', amount: 100 } },
-      towns: { CASTLE: { name: 'Castle' } }
+      towns: { CASTLE: { name: 'Castle' } },
+      mines: { GOLD_MINE: { name: 'Gold mine' } }
     };
 
     const fetch = createFakeFetch({
@@ -47,7 +48,8 @@ describe('bootstrap', () => {
       './game/data/hero.json': definitions.hero,
       './game/data/monsters.json': definitions.monsters,
       './game/data/resources.json': definitions.resources,
-      './game/data/towns.json': definitions.towns
+      './game/data/towns.json': definitions.towns,
+      './game/data/mines.json': definitions.mines
     });
 
     const loaded = await loadGame({ fetch });

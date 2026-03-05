@@ -46,4 +46,34 @@ describe('entity layer style resolver', () => {
     expect(style?.className).toBe('entity entity--town');
     expect(style?.dataset?.townType).toBe('CASTLE');
   });
+
+  test('maps each mine type to a specific class and dataset', () => {
+    const map = createMap({
+      width: 7,
+      height: 1,
+      tiles: new Array(7).fill(0)
+    });
+
+    const mineTypes = [
+      'GOLD_MINE',
+      'SAWMILL',
+      'ORE_PIT',
+      'ALCHEMIST_LAB',
+      'SULFUR_DUNE',
+      'CRYSTAL_CAVERN',
+      'GEM_POND'
+    ];
+
+    mineTypes.forEach((type) => {
+      const style = getDefaultEntityLayerStyle({
+        entity: { id: 'mine-1', kind: 'MINE', type, tile: { x: 0, y: 0 } },
+        map
+      });
+      const expectedClass = `entity--mine-type-${type.toLowerCase().replaceAll('_', '-')}`;
+      expect(style?.className).toContain(expectedClass);
+      expect(style?.dataset?.mineType).toBe(type);
+      expect(style?.width).toBe(96);
+      expect(style?.height).toBe(64);
+    });
+  });
 });

@@ -9,6 +9,7 @@ import {
 
 describe('entity behaviors', () => {
   test('identifies arrival interaction entity kinds', () => {
+    expect(isArrivalInteractionEntity({ kind: 'MINE' })).toBe(true);
     expect(isArrivalInteractionEntity({ kind: 'MONSTER' })).toBe(true);
     expect(isArrivalInteractionEntity({ kind: 'RESOURCE' })).toBe(true);
     expect(isArrivalInteractionEntity({ kind: 'TOWN' })).toBe(true);
@@ -17,6 +18,7 @@ describe('entity behaviors', () => {
   });
 
   test('maps entity kinds to movement interaction kind', () => {
+    expect(toMovementInteractionKind({ kind: 'MINE' })).toBe('MINE_ENTER');
     expect(toMovementInteractionKind({ kind: 'MONSTER' })).toBe('MONSTER_COMBAT');
     expect(toMovementInteractionKind({ kind: 'RESOURCE' })).toBe('RESOURCE_COLLECT');
     expect(toMovementInteractionKind({ kind: 'TOWN' })).toBe('TOWN_VISIT');
@@ -24,6 +26,7 @@ describe('entity behaviors', () => {
   });
 
   test('returns whether interaction requires stepping onto target tile', () => {
+    expect(requiresSteppingIntoTarget({ kind: 'MINE' })).toBe(true);
     expect(requiresSteppingIntoTarget({ kind: 'MONSTER' })).toBe(false);
     expect(requiresSteppingIntoTarget({ kind: 'RESOURCE' })).toBe(false);
     expect(requiresSteppingIntoTarget({ kind: 'TOWN' })).toBe(true);
@@ -59,6 +62,26 @@ describe('entity behaviors', () => {
     });
 
     expect(fallback?.modal?.message).toBe('Monster defeated');
+  });
+
+  test('resolves mine outcome without modal', () => {
+    const outcome = resolveArrivalOutcome({
+      entity: { id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE' },
+      definitions: {
+        mines: {
+          GOLD_MINE: { name: 'Gold mine' }
+        }
+      },
+      tile: { x: 9, y: 2 }
+    });
+
+    expect(outcome).toEqual({
+      kind: 'MINE_ENTERED',
+      entityId: 'mine-1',
+      entityType: 'GOLD_MINE',
+      tile: { x: 9, y: 2 },
+      mineName: 'Gold mine'
+    });
   });
 
   test('resolves resource outcome with finite amount fallback', () => {

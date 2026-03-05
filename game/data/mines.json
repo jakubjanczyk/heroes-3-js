@@ -1,0 +1,23 @@
+{
+  "GOLD_MINE": {
+    "name": "Gold mine"
+  },
+  "SAWMILL": {
+    "name": "Sawmill"
+  },
+  "ORE_PIT": {
+    "name": "Ore pit"
+  },
+  "ALCHEMIST_LAB": {
+    "name": "Alchemist lab"
+  },
+  "SULFUR_DUNE": {
+    "name": "Sulfur dune"
+  },
+  "CRYSTAL_CAVERN": {
+    "name": "Crystal cavern"
+  },
+  "GEM_POND": {
+    "name": "Gem pond"
+  }
+}

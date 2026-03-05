@@ -1,8 +1,10 @@
+import { mineBehavior } from './mine.js';
 import { monsterBehavior } from './monster.js';
 import { resourceBehavior } from './resource.js';
 import { townBehavior } from './town.js';
 
 const behaviorByKind = Object.freeze({
+  [mineBehavior.kind]: mineBehavior,
   [monsterBehavior.kind]: monsterBehavior,
   [resourceBehavior.kind]: resourceBehavior,
   [townBehavior.kind]: townBehavior

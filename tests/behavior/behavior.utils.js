@@ -68,6 +68,7 @@ export function createLoadGame({
       monsters: {},
       resources: {},
       towns: {},
+      mines: {},
       ...definitions
     }
   };
@@ -120,6 +121,8 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
     ['/game/data/resources.json', definitions.resources ?? {}],
     ['./game/data/towns.json', definitions.towns ?? {}],
     ['/game/data/towns.json', definitions.towns ?? {}],
+    ['./game/data/mines.json', definitions.mines ?? {}],
+    ['/game/data/mines.json', definitions.mines ?? {}],
     ['./assets/music/tracks.json', musicTracks],
     ['/assets/music/tracks.json', musicTracks]
   ]);
@@ -250,6 +253,10 @@ export function getTownEntity(entityId = 'town-1') {
   return document.querySelector(`.entity--town[data-entity-id="${entityId}"]`);
 }
 
+export function getMineEntity(entityId = 'mine-1') {
+  return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`);
+}
+
 export function expectHeroAt(x, y) {
   const heroEntity = getHeroEntity();
   expect(heroEntity).toBeTruthy();
@@ -319,6 +326,23 @@ export function expectTownAt(x, y, entityId = 'town-1') {
 
 export function expectTownNotPresent(entityId = 'town-1') {
   expect(getTownEntity(entityId)).toBeFalsy();
+}
+
+export function expectMinePresent(entityId = 'mine-1') {
+  const mineEntity = getMineEntity(entityId);
+  expect(mineEntity).toBeTruthy();
+  return mineEntity;
+}
+
+export function expectMineAt(x, y, entityId = 'mine-1') {
+  const mineEntity = expectMinePresent(entityId);
+  expect(mineEntity?.dataset.tileX).toBe(String(x));
+  expect(mineEntity?.dataset.tileY).toBe(String(y));
+  return mineEntity;
+}
+
+export function expectMineNotPresent(entityId = 'mine-1') {
+  expect(getMineEntity(entityId)).toBeFalsy();
 }
 
 export function expectResourceTotal(resourceName, amount) {

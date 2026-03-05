@@ -83,6 +83,55 @@
   transform: scale(0.72);
 }
 
+.entity--mine {
+  width: 96px;
+  height: 64px;
+  z-index: 19;
+  pointer-events: none;
+  border-radius: 8px;
+  border: 2px solid #d7c79b;
+  box-shadow:
+    0 6px 10px rgba(12, 11, 9, 0.55),
+    inset 0 -8px 0 rgba(47, 35, 24, 0.35);
+  background:
+    linear-gradient(180deg, rgba(205, 188, 146, 0.95) 0%, rgba(127, 103, 67, 0.95) 100%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.08) 0,
+      rgba(255, 255, 255, 0.08) 8px,
+      rgba(0, 0, 0, 0.05) 8px,
+      rgba(0, 0, 0, 0.05) 16px
+    );
+}
+
+.entity--mine-type-gold-mine {
+  filter: hue-rotate(16deg) saturate(1.1);
+}
+
+.entity--mine-type-sawmill {
+  filter: hue-rotate(-20deg) saturate(0.95);
+}
+
+.entity--mine-type-ore-pit {
+  filter: hue-rotate(-8deg) saturate(1.05);
+}
+
+.entity--mine-type-alchemist-lab {
+  filter: hue-rotate(58deg) saturate(1.2);
+}
+
+.entity--mine-type-sulfur-dune {
+  filter: hue-rotate(86deg) saturate(1.25);
+}
+
+.entity--mine-type-crystal-cavern {
+  filter: hue-rotate(132deg) saturate(1.35);
+}
+
+.entity--mine-type-gem-pond {
+  filter: hue-rotate(176deg) saturate(1.35);
+}
+
 .entity--town {
   width: 144px;
   height: 72px;
