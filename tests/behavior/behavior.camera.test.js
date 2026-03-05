@@ -7,6 +7,7 @@ import {
   flushMicrotasks,
   setupMovementBehaviorApp
 } from './behavior.utils.js';
+import { findHero } from '../../game/domain/entity-queries.js';
 
 function createPanScenario({
   width = 60,
@@ -155,7 +156,7 @@ describe('camera behavior', () => {
     confirmTileClickByDispatch(22, 15);
     await flushMicrotasks();
 
-    const hero = world.scenario.entities.find((entity) => entity.kind === 'HERO');
+    const hero = findHero(world.scenario.entities);
     expect(hero?.tile).toEqual({ x: 22, y: 15 });
 
     expect(worldElement?.style?.transform).not.toBe(before);

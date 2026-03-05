@@ -3,6 +3,7 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED
 } from '../events.js';
+import { isTown } from '../../game/domain/entity-queries.js';
 
 function clamp(value, min, max) {
   if (value < min) {
@@ -138,7 +139,7 @@ export function registerMinimapViewModule({ bus, env }) {
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     map = event.detail.map;
-    towns = (event.detail.scenario?.entities ?? []).filter((entity) => entity.kind === 'TOWN');
+    towns = (event.detail.scenario?.entities ?? []).filter(isTown);
 
     if (minimapMap && map?.width > 0 && map?.height > 0) {
       minimapMap.style.aspectRatio = `${map.width} / ${map.height}`;

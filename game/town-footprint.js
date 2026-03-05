@@ -1,3 +1,5 @@
+import { isTown } from './domain/entity-queries.js';
+
 export const TOWN_BLOCKER_KIND = 'TOWN_BLOCKER';
 
 export const TOWN_BLOCKED_OFFSETS = Object.freeze([
@@ -32,7 +34,7 @@ export function createTownFootprintBlockers({ entities, map }) {
   const occupiedTiles = new Set((entities ?? []).map((entity) => tileKey(entity.tile)));
 
   for (const entity of entities ?? []) {
-    if (entity.kind !== 'TOWN') {
+    if (!isTown(entity)) {
       continue;
     }
 

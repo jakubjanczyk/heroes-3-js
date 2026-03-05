@@ -10,6 +10,7 @@ import {
 } from './events.js';
 import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
 import { registerModules } from './modules/register-modules.js';
+import { findHero } from '../game/domain/entity-queries.js';
 
 const MAX_MOVEMENT_POINTS = 15;
 
@@ -84,7 +85,7 @@ async function replayPersistedFacts({ bus, facts }) {
 }
 
 function centerCameraOnHero({ bus, world }) {
-  const hero = world?.scenario?.entities?.find?.((entity) => entity.kind === 'HERO') ?? null;
+  const hero = findHero(world?.scenario?.entities);
   if (!hero?.tile) {
     return;
   }

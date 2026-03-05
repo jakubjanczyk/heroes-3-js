@@ -1,6 +1,4 @@
-function sameTile(a, b) {
-  return a.x === b.x && a.y === b.y;
-}
+import { sameTile } from './tile-utils.js';
 
 function stateKey(tile, dirX, dirY) {
   return `${tile.x},${tile.y}|${dirX},${dirY}`;

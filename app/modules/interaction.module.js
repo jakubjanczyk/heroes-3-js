@@ -1,19 +1,13 @@
 import { createInteractionSystem as createInteractionSystemDefault } from '../../game/systems/interaction-system.js';
+import { findHero } from '../../game/domain/entity-queries.js';
+import { sameTile } from './shared/tile-utils.js';
+import { getInteractionOutcomeHandler } from './shared/interaction-outcomes.js';
 import {
-  APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
-  APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_ENTITY_FADE_OUT_REQUESTED,
-  APP_UI_INTERACTION_MODAL_CLOSED,
-  APP_UI_INTERACTION_MODAL_OPENED,
-  APP_UI_RESOURCE_COLLECTION_STARTED
+  APP_UI_INTERACTION_MODAL_CLOSED
 } from '../events.js';
-
-function sameTile(a, b) {
-  return a.x === b.x && a.y === b.y;
-}
 
 export function registerInteractionModule(
   { bus, config },
@@ -34,8 +28,8 @@ export function registerInteractionModule(
   let hero = null;
   let entities = null;
   let interactions = null;
-  let pendingMonsterDefeat = null;
-  const pendingResourceCollectionIds = new Set();
+  let pendingModalOutcome = null;
+  const pendingOutcomeEntityIds = new Set();
 
   async function requestEntityFadeOut({ entityId, entityKind, durationMs }) {
     if (durationMs <= 0) {
@@ -53,7 +47,7 @@ export function registerInteractionModule(
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
     entities = world.scenario.entities;
-    hero = entities.find((entity) => entity.kind === 'HERO') ?? null;
+    hero = findHero(entities);
     interactions = createInteractionSystem({
       entities,
       definitions: world.definitions
@@ -71,113 +65,102 @@ export function registerInteractionModule(
     }
 
     const interactionKind = event.detail.interaction?.kind;
-    const didTriggerArrivalInteraction =
-      interactionKind === 'MONSTER_COMBAT' ||
-      interactionKind === 'RESOURCE_COLLECT' ||
-      interactionKind === 'TOWN_VISIT';
+    const didTriggerArrivalInteraction = typeof interactionKind === 'string' && interactionKind.length > 0;
     if (!didTriggerArrivalInteraction && !sameTile(hero.tile, destinationTile)) {
       return;
     }
 
-    const outcome = interactions.resolveArrivalAtDestination({ destinationTile });
+    const outcome = interactions.resolveArrivalAtDestination({
+      destinationTile,
+      arrivingEntityId: hero.id
+    });
     if (!outcome) {
       return;
     }
 
-    if (outcome.kind === 'MONSTER_DEFEATED') {
-      pendingMonsterDefeat = outcome;
-      bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
-        interactionKind: outcome.kind,
-        entityId: outcome.entityId,
-        entityType: outcome.entityType,
-        title: outcome.modal.title,
-        message: outcome.modal.message
-      });
+    if (typeof outcome.entityId === 'string' && pendingOutcomeEntityIds.has(outcome.entityId)) {
       return;
     }
 
-    if (outcome.kind === 'RESOURCE_COLLECTED') {
-      if (pendingResourceCollectionIds.has(outcome.entityId)) {
-        return;
+    const handler = getInteractionOutcomeHandler(outcome.kind);
+    if (!handler) {
+      return;
+    }
+
+    if (typeof outcome.entityId === 'string') {
+      pendingOutcomeEntityIds.add(outcome.entityId);
+    }
+
+    const handlerConfig = {
+      monsterDefeatFadeOutMs,
+      resourceCollectFadeOutMs
+    };
+
+    const handlerResult = handler.onOutcome({
+      bus,
+      interactions,
+      outcome,
+      requestEntityFadeOut,
+      config: handlerConfig
+    });
+
+    const isPromiseLike =
+      Boolean(handlerResult) &&
+      (typeof handlerResult === 'object' || typeof handlerResult === 'function') &&
+      typeof handlerResult.then === 'function';
+
+    if (!isPromiseLike) {
+      if (handlerResult?.pendingModalOutcome) {
+        pendingModalOutcome = handlerResult.pendingModalOutcome;
       }
-
-      pendingResourceCollectionIds.add(outcome.entityId);
-      bus.emit(APP_UI_RESOURCE_COLLECTION_STARTED, {
-        entityId: outcome.entityId,
-        entityType: outcome.entityType,
-        tile: outcome.tile
-      });
-
-      void (async () => {
-        try {
-          await requestEntityFadeOut({
-            entityId: outcome.entityId,
-            entityKind: 'RESOURCE',
-            durationMs: resourceCollectFadeOutMs
-          });
-
-          const didFinalize =
-            interactions.finalizeResourceCollection?.({ entityId: outcome.entityId }) ?? false;
-          if (!didFinalize) {
-            return;
-          }
-
-          bus.emit(APP_FACT_RESOURCE_COLLECTED, {
-            entityId: outcome.entityId,
-            entityType: outcome.entityType,
-            amount: outcome.amount,
-            tile: outcome.tile
-          });
-        } finally {
-          pendingResourceCollectionIds.delete(outcome.entityId);
-        }
-      })();
+      if (!handler.opensModal && typeof outcome.entityId === 'string') {
+        pendingOutcomeEntityIds.delete(outcome.entityId);
+      }
       return;
     }
 
-    if (outcome.kind === 'TOWN_VISITED') {
-      bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
-        interactionKind: outcome.kind,
-        entityId: outcome.entityId,
-        entityType: outcome.entityType,
-        title: outcome.modal.title,
-        message: outcome.modal.message
-      });
-      bus.emit(APP_FACT_TOWN_VISITED, {
-        entityId: outcome.entityId,
-        entityType: outcome.entityType,
-        tile: outcome.tile
-      });
-    }
+    void (async () => {
+      try {
+        const result = await handlerResult;
+        if (result?.pendingModalOutcome) {
+          pendingModalOutcome = result.pendingModalOutcome;
+        }
+      } finally {
+        if (!handler.opensModal && typeof outcome.entityId === 'string') {
+          pendingOutcomeEntityIds.delete(outcome.entityId);
+        }
+      }
+    })();
   });
 
   bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
-    if (!interactions || !pendingMonsterDefeat) {
+    if (!interactions || !pendingModalOutcome) {
       return;
     }
 
-    const outcome = pendingMonsterDefeat;
-    pendingMonsterDefeat = null;
+    const outcome = pendingModalOutcome;
+    pendingModalOutcome = null;
+
+    if (typeof outcome.entityId === 'string') {
+      pendingOutcomeEntityIds.delete(outcome.entityId);
+    }
+
+    const handler = getInteractionOutcomeHandler(outcome.kind);
+    if (!handler?.onModalClosed) {
+      return;
+    }
 
     void (async () => {
-      if (outcome.kind === 'MONSTER_DEFEATED') {
-        await requestEntityFadeOut({
-          entityId: outcome.entityId,
-          entityKind: 'MONSTER',
-          durationMs: monsterDefeatFadeOutMs
-        });
-
-        const didFinalize = interactions.finalizeMonsterDefeat({ entityId: outcome.entityId });
-        if (!didFinalize) {
-          return;
+      await handler.onModalClosed({
+        bus,
+        interactions,
+        outcome,
+        requestEntityFadeOut,
+        config: {
+          monsterDefeatFadeOutMs,
+          resourceCollectFadeOutMs
         }
-
-        bus.emit(APP_FACT_MONSTER_DEFEATED, {
-          entityId: outcome.entityId,
-          entityType: outcome.entityType,
-          tile: outcome.tile
-        });
-      }
+      });
     })();
   });
 }

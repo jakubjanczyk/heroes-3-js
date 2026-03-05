@@ -1,5 +1,7 @@
 import { renderEntityLayer as renderEntityLayerDefault } from '../../engine/layers/entity-layer.js';
 import { getMapCenteredOrigin, getTileCenter } from '../../engine/layers/layout.js';
+import { getDefaultEntityLayerStyle as getDefaultEntityStyle } from '../presentation/entity-style.js';
+import { getEntityFadeOutSpec } from '../presentation/entities/registry.js';
 import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
@@ -17,7 +19,8 @@ function isFiniteTileCoordinate(value) {
 export function registerEntityViewModule(
   { bus, env, config },
   {
-    renderEntityLayer = renderEntityLayerDefault
+    renderEntityLayer = renderEntityLayerDefault,
+    getEntityStyle = getDefaultEntityStyle
   } = {}
 ) {
   const entityLayer = env.document?.querySelector('.entity-layer');
@@ -70,7 +73,8 @@ export function registerEntityViewModule(
       container: entityLayer,
       map,
       entities,
-      createElement
+      createElement,
+      getEntityStyle
     });
   }
 
@@ -79,20 +83,13 @@ export function registerEntityViewModule(
       return;
     }
 
-    if (entityKind === 'MONSTER') {
-      const monsterEntity = entityLayer.querySelector?.(
-        `.entity--monster[data-entity-id="${entityId}"]`
-      );
-      monsterEntity?.classList?.add?.('entity--monster-defeating');
+    const fadeOutSpec = getEntityFadeOutSpec({ entityKind });
+    if (!fadeOutSpec) {
       return;
     }
 
-    if (entityKind === 'RESOURCE') {
-      const resourceEntity = entityLayer.querySelector?.(
-        `.entity--resource[data-entity-id="${entityId}"]`
-      );
-      resourceEntity?.classList?.add?.('entity--resource-collecting');
-    }
+    const el = entityLayer.querySelector?.(`${fadeOutSpec.selector}[data-entity-id="${entityId}"]`);
+    el?.classList?.add?.(fadeOutSpec.className);
   }
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {

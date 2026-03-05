@@ -1,5 +1,6 @@
 import { createCamera as createCameraDefault } from '../../engine/camera.js';
 import { attachCameraInput as attachCameraInputDefault } from '../../engine/input.js';
+import { findHero } from '../../game/domain/entity-queries.js';
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -67,7 +68,7 @@ export function registerCameraModule(
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
-    hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+    hero = findHero(world.scenario.entities);
     map = world.map;
 
     if (!viewport || !map) {

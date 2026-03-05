@@ -8,6 +8,7 @@ import {
   APP_FACT_WORLD_LOAD_FAILED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { findHero } from '../../game/domain/entity-queries.js';
 import { registerWorldModule } from './world.module.js';
 import { createFakeBus, getLastEmittedByType } from '../../tests/test-utils/fake-bus.js';
 
@@ -22,8 +23,7 @@ describe('world module', () => {
     const bus = createFakeBus();
     const calls = {
       loadGame: 0,
-      createMap: 0,
-      createOccupancyIndex: 0
+      buildWorld: 0
     };
 
     registerWorldModule(
@@ -43,13 +43,17 @@ describe('world module', () => {
             definitions: { hero: { id: 'hero' } }
           };
         },
-        createMap: (terrain) => {
-          calls.createMap += 1;
-          return { terrain };
-        },
-        createOccupancyIndex: (entities) => {
-          calls.createOccupancyIndex += 1;
-          return { entities };
+        buildWorld: ({ scenario }) => {
+          calls.buildWorld += 1;
+          return {
+            map: { terrain: scenario.terrain },
+            occupancy: { entities: scenario.entities },
+            worldState: {
+              getEntityById() {
+                return null;
+              }
+            }
+          };
         }
       }
     );
@@ -60,8 +64,7 @@ describe('world module', () => {
 
     expect(calls).toEqual({
       loadGame: 1,
-      createMap: 1,
-      createOccupancyIndex: 1
+      buildWorld: 1
     });
 
     const worldReady = getLastEmittedByType(bus, APP_FACT_WORLD_READY);
@@ -98,7 +101,7 @@ describe('world module', () => {
 
   test('adds town footprint blockers to occupancy input', async () => {
     const bus = createFakeBus();
-    let occupancyEntities = null;
+    let builtScenario = null;
 
     registerWorldModule(
       {
@@ -117,12 +120,17 @@ describe('world module', () => {
           },
           definitions: { hero: { id: 'hero' }, towns: { CASTLE: { name: 'Castle' } } }
         }),
-        createMap: () => ({
-          inBounds: ({ x, y }) => x >= 0 && y >= 0 && x < 12 && y < 12
-        }),
-        createOccupancyIndex: (entities) => {
-          occupancyEntities = entities;
-          return { entities };
+        buildWorld: ({ scenario }) => {
+          builtScenario = scenario;
+          return {
+            map: { inBounds: () => true },
+            occupancy: { entities: scenario.entities },
+            worldState: {
+              getEntityById() {
+                return null;
+              }
+            }
+          };
         }
       }
     );
@@ -130,11 +138,7 @@ describe('world module', () => {
     bus.emit(APP_COMMAND_APP_START, {});
     await flushMicrotasks();
 
-    expect(occupancyEntities).toBeTruthy();
-    expect(occupancyEntities).toHaveLength(14);
-
-    const townBlockers = occupancyEntities.filter((entity) => entity.kind === 'TOWN_BLOCKER');
-    expect(townBlockers).toHaveLength(12);
+    expect(builtScenario?.entities).toHaveLength(2);
   });
 
   test('emits pristine world-ready snapshot without replay-derived fields', async () => {
@@ -254,10 +258,8 @@ describe('world module', () => {
           },
           definitions: {}
         }),
-        createMap: () => ({
-          inBounds: ({ x, y }) => x >= 0 && y >= 0 && x < 4 && y < 1
-        }),
-        createOccupancyIndex: (entities) => {
+        buildWorld: ({ scenario }) => {
+          const entities = scenario.entities;
           occupancyState.byEntityId.clear();
           occupancyState.byTile.clear();
           for (const entity of entities) {
@@ -265,7 +267,7 @@ describe('world module', () => {
             occupancyState.byTile.set(tileKey(entity.tile), entity.id);
           }
 
-          return {
+          const occupancy = {
             moveEntity(entity, toTile) {
               const previousKey = occupancyState.byEntityId.get(entity.id);
               if (previousKey) {
@@ -288,6 +290,39 @@ describe('world module', () => {
               occupancyState.byEntityId.delete(entity.id);
             }
           };
+
+          return {
+            map: {
+              inBounds: ({ x, y }) => x >= 0 && y >= 0 && x < 4 && y < 1
+            },
+            occupancy,
+            worldState: {
+              getEntityById(entityId) {
+                return entities.find((entity) => entity.id === entityId) ?? null;
+              },
+              removeEntityById(entityId) {
+                const index = entities.findIndex((entity) => entity.id === entityId);
+                if (index < 0) {
+                  return null;
+                }
+                const [removed] = entities.splice(index, 1);
+                occupancy.removeEntity(removed);
+                return removed;
+              },
+              moveEntity({ entityId, toTile }) {
+                const entity = entities.find((candidate) => candidate.id === entityId) ?? null;
+                if (!entity) {
+                  return null;
+                }
+                occupancy.moveEntity(entity, toTile);
+                entity.tile = toTile;
+                return entity;
+              },
+              getPersistentTownAt() {
+                return null;
+              }
+            }
+          };
         }
       }
     );
@@ -300,7 +335,7 @@ describe('world module', () => {
     bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
 
     const worldReady = getLastEmittedByType(bus, APP_FACT_WORLD_READY);
-    const hero = worldReady?.detail.scenario.entities.find((entity) => entity.kind === 'HERO');
+    const hero = findHero(worldReady?.detail.scenario.entities ?? []);
     const resource = worldReady?.detail.scenario.entities.find((entity) => entity.id === 'resource-1');
     const monster = worldReady?.detail.scenario.entities.find((entity) => entity.id === 'monster-1');
 

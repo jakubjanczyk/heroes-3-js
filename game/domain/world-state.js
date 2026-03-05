@@ -1,3 +1,5 @@
+import { isTown } from './entity-queries.js';
+
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.length > 0;
 }
@@ -69,7 +71,7 @@ export function createWorldState({ scenario, occupancy }) {
     return (
       entities.find(
         (entity) =>
-          entity.kind === 'TOWN' &&
+          isTown(entity) &&
           entity.tile?.x === normalizedTile.x &&
           entity.tile?.y === normalizedTile.y
       ) ?? null

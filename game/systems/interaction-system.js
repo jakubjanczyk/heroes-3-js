@@ -1,43 +1,50 @@
-import { resolveArrivalOutcome } from '../domain/entity-behaviors.js';
-
-function sameTile(a, b) {
-  return a.x === b.x && a.y === b.y;
-}
+import { getArrivalInteraction } from '../domain/entity-behaviors/registry.js';
+import { sameTile } from '../../engine/tile-utils.js';
 
 export function createInteractionSystem({ entities, definitions = {} }) {
-  const monsterDefinitions = definitions.monsters ?? {};
-  const resourceDefinitions = definitions.resources ?? {};
-  const townDefinitions = definitions.towns ?? {};
-  const interactionDefinitions = {
-    monsters: monsterDefinitions,
-    resources: resourceDefinitions,
-    towns: townDefinitions
-  };
-
-  function resolveArrivalAtDestination({ destinationTile }) {
+  function resolveArrivalAtDestination({ destinationTile, arrivingEntityId }) {
     const interactionEntity =
       entities.find(
-        (entity) => entity.kind !== 'HERO' && sameTile(entity.tile, destinationTile)
+        (entity) => entity.id !== arrivingEntityId && sameTile(entity.tile, destinationTile)
       ) ?? null;
     if (!interactionEntity) {
       return null;
     }
 
-    return resolveArrivalOutcome({
+    const arrivalInteraction = getArrivalInteraction(interactionEntity);
+    if (!arrivalInteraction) {
+      return null;
+    }
+
+    return arrivalInteraction.resolveArrivalOutcome({
       entity: interactionEntity,
-      definitions: interactionDefinitions,
+      definitions,
       tile: destinationTile
     });
   }
 
+  function finalizeInteraction({ entityId, expectedMovementInteractionKind }) {
+    const entity = entities.find((candidate) => candidate.id === entityId) ?? null;
+    const arrivalInteraction = getArrivalInteraction(entity);
+    if (!arrivalInteraction) {
+      return false;
+    }
+
+    return arrivalInteraction.movementInteractionKind === expectedMovementInteractionKind;
+  }
+
   function finalizeMonsterDefeat({ entityId }) {
-    const monster = entities.find((entity) => entity.id === entityId) ?? null;
-    return Boolean(monster && monster.kind === 'MONSTER');
+    return finalizeInteraction({
+      entityId,
+      expectedMovementInteractionKind: 'MONSTER_COMBAT'
+    });
   }
 
   function finalizeResourceCollection({ entityId }) {
-    const resource = entities.find((entity) => entity.id === entityId) ?? null;
-    return Boolean(resource && resource.kind === 'RESOURCE');
+    return finalizeInteraction({
+      entityId,
+      expectedMovementInteractionKind: 'RESOURCE_COLLECT'
+    });
   }
 
   return {

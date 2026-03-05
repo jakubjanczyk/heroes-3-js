@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest';
 import { createMap } from '../engine/map.js';
 import { findPath } from '../engine/pathfinding.js';
 import { createTownFootprintBlockers } from './town-footprint.js';
+import { findHero, isTown } from './domain/entity-queries.js';
 
 function createOpenMap(width, height) {
   return createMap({
@@ -74,8 +75,8 @@ describe('town footprint blockers', () => {
       readFileSync(new URL('../scenarios/scenario.json', import.meta.url), 'utf8')
     );
     const map = createMap(scenario.terrain);
-    const towns = scenario.entities.filter((entity) => entity.kind === 'TOWN');
-    const hero = scenario.entities.find((entity) => entity.kind === 'HERO');
+    const towns = scenario.entities.filter(isTown);
+    const hero = findHero(scenario.entities);
 
     expect(towns.length).toBeGreaterThanOrEqual(1);
     expect(hero).toBeTruthy();

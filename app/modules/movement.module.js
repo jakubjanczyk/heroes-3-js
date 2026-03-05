@@ -1,4 +1,5 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
+import { findHero } from '../../game/domain/entity-queries.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
@@ -27,7 +28,7 @@ export function registerMovementModule(
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const { scenario, map, occupancy } = event.detail;
-    const hero = scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+    const hero = findHero(scenario.entities);
     collectingResourceEntityIds.clear();
 
     if (!hero) {
@@ -43,7 +44,7 @@ export function registerMovementModule(
       stepDelayMs,
       getMaxMovableSteps: () => remainingMovementPoints,
       isInteractionBlocked: (entity) =>
-        entity?.kind === 'RESOURCE' && collectingResourceEntityIds.has(entity.id),
+        Boolean(entity && collectingResourceEntityIds.has(entity.id)),
       spendMovementPoints: (amount) => {
         bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
           amount

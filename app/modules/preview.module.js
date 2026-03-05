@@ -1,5 +1,6 @@
 import { findPath } from '../../engine/pathfinding.js';
 import { isArrivalInteractionEntity } from '../../game/domain/entity-behaviors.js';
+import { findHero } from '../../game/domain/entity-queries.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
@@ -74,10 +75,7 @@ export function registerPreviewModule({ bus }) {
 
     const destinationOccupant = occupancy.getAt(toTile);
     if (destinationOccupant && destinationOccupant.id !== hero.id) {
-      if (
-        destinationOccupant.kind === 'RESOURCE' &&
-        collectingResourceEntityIds.has(destinationOccupant.id)
-      ) {
+      if (collectingResourceEntityIds.has(destinationOccupant.id)) {
         return null;
       }
 
@@ -101,7 +99,7 @@ export function registerPreviewModule({ bus }) {
     const world = event.detail;
     map = world.map;
     occupancy = world.occupancy;
-    hero = world.scenario.entities.find((entity) => entity.kind === 'HERO') ?? null;
+    hero = findHero(world.scenario.entities);
     collectingResourceEntityIds.clear();
     clearPreview({ log: false, emitFact: false });
   });
@@ -175,13 +173,11 @@ export function registerPreviewModule({ bus }) {
   });
 
   bus.addEventListener(APP_FACT_MOVE_FINISHED, (event) => {
-    if (event.detail.interaction?.kind === 'RESOURCE_COLLECT') {
-      isMoving = false;
+    isMoving = false;
+    if (event.detail.interaction?.kind) {
       clearPreview();
       return;
     }
-
-    isMoving = false;
     if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
       emitPreview();
       return;

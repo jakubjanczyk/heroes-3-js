@@ -1,13 +1,7 @@
 import { findPath } from '../../engine/pathfinding.js';
-import {
-  isArrivalInteractionEntity,
-  requiresSteppingIntoTarget,
-  toMovementInteractionKind
-} from '../domain/entity-behaviors.js';
-
-function sameTile(a, b) {
-  return a.x === b.x && a.y === b.y;
-}
+import { sameTile } from '../../engine/tile-utils.js';
+import { getArrivalInteraction } from '../domain/entity-behaviors/registry.js';
+import { findHero } from '../domain/entity-queries.js';
 
 function isValidPlannedPath(path, fromTile, toTile, map) {
   if (!Array.isArray(path) || path.length < 2) {
@@ -61,7 +55,7 @@ export function createMovementSystem({
   let isMoving = false;
 
   function getHero() {
-    return entities.find((entity) => entity.kind === 'HERO') ?? null;
+    return findHero(entities);
   }
 
   function getArrivalInteractionTargetAt(tile, heroId) {
@@ -74,7 +68,7 @@ export function createMovementSystem({
       return null;
     }
 
-    if (!isArrivalInteractionEntity(occupant)) {
+    if (!getArrivalInteraction(occupant)) {
       return null;
     }
 
@@ -115,8 +109,11 @@ export function createMovementSystem({
       return false;
     }
     const targetArrivalInteraction = getArrivalInteractionTargetAt(toTile, hero.id);
+    const arrivalInteractionBehavior = targetArrivalInteraction
+      ? getArrivalInteraction(targetArrivalInteraction)
+      : null;
     const didTriggerArrivalInteraction =
-      Boolean(targetArrivalInteraction) && cappedStepCount === totalStepCount;
+      Boolean(arrivalInteractionBehavior) && cappedStepCount === totalStepCount;
     const destinationOccupant = occupancy.getAt(toTile);
     if (
       destinationOccupant &&
@@ -126,7 +123,8 @@ export function createMovementSystem({
     ) {
       return false;
     }
-    const interactionRequiresSteppingIntoTarget = requiresSteppingIntoTarget(targetArrivalInteraction);
+    const interactionRequiresSteppingIntoTarget =
+      arrivalInteractionBehavior?.requiresSteppingIntoTarget ?? false;
     const executedStepCount = didTriggerArrivalInteraction
       ? interactionRequiresSteppingIntoTarget
         ? cappedStepCount
@@ -134,7 +132,7 @@ export function createMovementSystem({
       : cappedStepCount;
 
     const movementInteractionKind = didTriggerArrivalInteraction
-      ? toMovementInteractionKind(targetArrivalInteraction)
+      ? arrivalInteractionBehavior?.movementInteractionKind ?? null
       : null;
 
     const fromTile = { x: hero.tile.x, y: hero.tile.y };

@@ -18,7 +18,8 @@ describe('interaction system', () => {
     });
 
     const outcome = interactions.resolveArrivalAtDestination({
-      destinationTile: { x: 1, y: 0 }
+      destinationTile: { x: 1, y: 0 },
+      arrivingEntityId: 'hero-1'
     });
 
     expect(outcome).toEqual({
@@ -45,7 +46,8 @@ describe('interaction system', () => {
     const interactions = createInteractionSystem({ entities });
 
     const outcome = interactions.resolveArrivalAtDestination({
-      destinationTile: { x: 0, y: 0 }
+      destinationTile: { x: 0, y: 0 },
+      arrivingEntityId: 'hero-1'
     });
 
     expect(outcome).toBe(null);
@@ -67,7 +69,8 @@ describe('interaction system', () => {
     });
 
     const outcome = interactions.resolveArrivalAtDestination({
-      destinationTile: { x: 1, y: 0 }
+      destinationTile: { x: 1, y: 0 },
+      arrivingEntityId: 'hero-1'
     });
 
     expect(outcome).toEqual({
@@ -99,7 +102,8 @@ describe('interaction system', () => {
     });
 
     const outcome = interactions.resolveArrivalAtDestination({
-      destinationTile: { x: 1, y: 0 }
+      destinationTile: { x: 1, y: 0 },
+      arrivingEntityId: 'hero-1'
     });
 
     expect(outcome).toEqual({
