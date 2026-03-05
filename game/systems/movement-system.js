@@ -1,4 +1,9 @@
 import { findPath } from '../../engine/pathfinding.js';
+import {
+  isArrivalInteractionEntity,
+  requiresSteppingIntoTarget,
+  toMovementInteractionKind
+} from '../domain/entity-behaviors.js';
 
 function sameTile(a, b) {
   return a.x === b.x && a.y === b.y;
@@ -69,7 +74,7 @@ export function createMovementSystem({
       return null;
     }
 
-    if (occupant.kind !== 'MONSTER' && occupant.kind !== 'RESOURCE' && occupant.kind !== 'TOWN') {
+    if (!isArrivalInteractionEntity(occupant)) {
       return null;
     }
 
@@ -121,12 +126,16 @@ export function createMovementSystem({
     ) {
       return false;
     }
-    const interactionRequiresSteppingIntoTarget = targetArrivalInteraction?.kind === 'TOWN';
+    const interactionRequiresSteppingIntoTarget = requiresSteppingIntoTarget(targetArrivalInteraction);
     const executedStepCount = didTriggerArrivalInteraction
       ? interactionRequiresSteppingIntoTarget
         ? cappedStepCount
         : Math.max(0, cappedStepCount - 1)
       : cappedStepCount;
+
+    const movementInteractionKind = didTriggerArrivalInteraction
+      ? toMovementInteractionKind(targetArrivalInteraction)
+      : null;
 
     const fromTile = { x: hero.tile.x, y: hero.tile.y };
     let currentTile = { x: hero.tile.x, y: hero.tile.y };
@@ -159,14 +168,9 @@ export function createMovementSystem({
         targetTile: toTile,
         reachedTile: currentTile,
         cappedStepCount,
-        interaction: didTriggerArrivalInteraction
+        interaction: movementInteractionKind
           ? {
-              kind:
-                targetArrivalInteraction.kind === 'MONSTER'
-                  ? 'MONSTER_COMBAT'
-                  : targetArrivalInteraction.kind === 'RESOURCE'
-                    ? 'RESOURCE_COLLECT'
-                    : 'TOWN_VISIT',
+              kind: movementInteractionKind,
               entityId: targetArrivalInteraction.id,
               targetTile: toTile
             }

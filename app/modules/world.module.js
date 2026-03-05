@@ -1,5 +1,6 @@
 import { createMap as createMapDefault } from '../../engine/map.js';
 import { createOccupancyIndex as createOccupancyIndexDefault } from '../../engine/occupancy.js';
+import { createWorldState as createWorldStateDefault } from '../../game/domain/world-state.js';
 import { loadGame as loadGameDefault } from '../../game/load.js';
 import { createTownFootprintBlockers } from '../../game/town-footprint.js';
 import {
@@ -11,46 +12,24 @@ import {
   APP_FACT_WORLD_READY
 } from '../events.js';
 
-function removeEntityById(entities, entityId) {
-  const index = entities.findIndex((entity) => entity.id === entityId);
-  if (index < 0) {
-    return null;
-  }
-
-  const [removed] = entities.splice(index, 1);
-  return removed ?? null;
-}
-
 export function registerWorldModule(
   { bus, env },
   {
     loadGame = loadGameDefault,
     createMap = createMapDefault,
-    createOccupancyIndex = createOccupancyIndexDefault
+    createOccupancyIndex = createOccupancyIndexDefault,
+    createWorldState = createWorldStateDefault
   } = {}
 ) {
   let hasStarted = false;
   let worldState = null;
 
   function getEntityById(entityId) {
-    if (!worldState || typeof entityId !== 'string' || entityId.length === 0) {
-      return null;
-    }
-
-    return worldState.scenario.entities.find((entity) => entity.id === entityId) ?? null;
+    return worldState?.getEntityById?.(entityId) ?? null;
   }
 
   function removeEntityFromWorld(entityId) {
-    if (!worldState || typeof entityId !== 'string' || entityId.length === 0) {
-      return;
-    }
-
-    const removedEntity = removeEntityById(worldState.scenario.entities, entityId);
-    if (!removedEntity) {
-      return;
-    }
-
-    worldState.occupancy.removeEntity?.(removedEntity);
+    worldState?.removeEntityById?.(entityId);
   }
 
   bus.addEventListener(APP_FACT_HERO_MOVED, (event) => {
@@ -61,24 +40,26 @@ export function registerWorldModule(
       return;
     }
 
-    const x = Number(toTile.x);
-    const y = Number(toTile.y);
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    const nextTile = {
+      x: Number(toTile.x),
+      y: Number(toTile.y)
+    };
+    if (!Number.isFinite(nextTile.x) || !Number.isFinite(nextTile.y)) {
       return;
     }
-
-    const nextTile = {
-      x: Math.floor(x),
-      y: Math.floor(y)
-    };
 
     const previousTile = {
       x: Number(movedEntity.tile?.x),
       y: Number(movedEntity.tile?.y)
     };
 
-    worldState?.occupancy.moveEntity?.(movedEntity, nextTile);
-    movedEntity.tile = nextTile;
+    const didMove = worldState?.moveEntity?.({
+      entityId: movedEntity.id,
+      toTile: nextTile
+    });
+    if (!didMove) {
+      return;
+    }
 
     const fromX = Number(fromTile?.x);
     const fromY = Number(fromTile?.y);
@@ -95,17 +76,15 @@ export function registerWorldModule(
       return;
     }
 
-    const persistentTown = worldState?.scenario?.entities?.find?.(
-      (entity) =>
-        entity.kind === 'TOWN' &&
-        entity.tile?.x === restoreTile.x &&
-        entity.tile?.y === restoreTile.y
-    );
+    const persistentTown = worldState?.getPersistentTownAt?.(restoreTile);
     if (!persistentTown) {
       return;
     }
 
-    worldState?.occupancy.moveEntity?.(persistentTown, restoreTile);
+    worldState?.moveEntity?.({
+      entityId: persistentTown.id,
+      toTile: restoreTile
+    });
   });
 
   bus.addEventListener(APP_FACT_MONSTER_DEFEATED, (event) => {
@@ -132,10 +111,10 @@ export function registerWorldModule(
         });
         const occupancy = createOccupancyIndex([...scenario.entities, ...townFootprintBlockers]);
 
-        worldState = {
+        worldState = createWorldState({
           scenario,
           occupancy
-        };
+        });
 
         bus.emit(APP_FACT_WORLD_READY, {
           scenario,

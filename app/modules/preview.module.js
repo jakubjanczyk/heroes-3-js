@@ -1,4 +1,5 @@
 import { findPath } from '../../engine/pathfinding.js';
+import { isArrivalInteractionEntity } from '../../game/domain/entity-behaviors.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
@@ -80,11 +81,7 @@ export function registerPreviewModule({ bus }) {
         return null;
       }
 
-      const isInteractableDestination =
-        destinationOccupant.kind === 'MONSTER' ||
-        destinationOccupant.kind === 'RESOURCE' ||
-        destinationOccupant.kind === 'TOWN';
-      if (!isInteractableDestination) {
+      if (!isArrivalInteractionEntity(destinationOccupant)) {
         return null;
       }
     }
