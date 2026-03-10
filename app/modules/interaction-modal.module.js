@@ -3,9 +3,8 @@ import {
   APP_UI_INTERACTION_MODAL_OPENED
 } from '../events.js';
 import {
-  ensureInteractionModalElement,
+  createInteractionModalElement,
   INTERACTION_MODAL_CLOSED_EVENT,
-  INTERACTION_MODAL_TAG_NAME
 } from '../ui/interaction-modal.element.js';
 
 export function registerInteractionModalModule({ bus, env, config }) {
@@ -18,17 +17,19 @@ export function registerInteractionModalModule({ bus, env, config }) {
       return;
     }
 
-    if (!ensureInteractionModalElement(env.window)) {
-      return;
-    }
-
     if (activeModal) {
       activeModal.remove();
       activeModal = null;
     }
 
-    const modalElement = env.document.createElement(INTERACTION_MODAL_TAG_NAME);
-    modalElement.transitionMs = modalTransitionMs;
+    const modalElement = createInteractionModalElement({
+      document: env.document,
+      transitionMs: modalTransitionMs
+    });
+    if (!modalElement) {
+      return;
+    }
+
     modalElement.addEventListener(
       INTERACTION_MODAL_CLOSED_EVENT,
       () => {
@@ -41,7 +42,7 @@ export function registerInteractionModalModule({ bus, env, config }) {
     );
 
     viewport.appendChild(modalElement);
-    modalElement.open?.(payload);
+    modalElement.showInteraction?.(payload);
     activeModal = modalElement;
   }
 

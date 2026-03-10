@@ -279,6 +279,28 @@ describe('preview module', () => {
     expect(preview?.detail.targetTile).toBe(null);
   });
 
+  test('clears preview as soon as hero steps onto the preview target tile', () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
+    const occupancy = createOccupancyIndex([hero]);
+
+    registerPreviewModule({ bus });
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: { entities: [hero] },
+      map,
+      occupancy
+    });
+    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
+    bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
+
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.path).toBe(null);
+    expect(preview?.detail.targetTile).toBe(null);
+  });
+
   test('emits persisted preview facts when selecting and clearing preview target', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };

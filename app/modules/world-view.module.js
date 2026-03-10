@@ -1,5 +1,9 @@
 import { APP_UI_CAMERA_UPDATED, APP_UI_WORLD_MOTION_UPDATED } from '../events.js';
 
+function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
+}
+
 export function registerWorldViewModule({ bus, env }) {
   const worldElement = env.document?.querySelector?.('.world');
 
@@ -10,17 +14,13 @@ export function registerWorldViewModule({ bus, env }) {
 
     const followHero = event.detail?.followHero;
     if (typeof followHero === 'boolean') {
-      if (followHero) {
-        worldElement.classList?.add?.('world--following-hero');
-      } else {
-        worldElement.classList?.remove?.('world--following-hero');
-      }
+      worldElement.dataset.followHero = String(followHero);
     }
 
     const cameraStepDurationMs = Number(event.detail?.cameraStepDurationMs);
     if (Number.isFinite(cameraStepDurationMs)) {
       const clampedDurationMs = Math.max(0, cameraStepDurationMs);
-      worldElement.style?.setProperty?.('--camera-step-duration', `${clampedDurationMs}ms`);
+      setStyleVar(worldElement, '--camera-step-duration', `${clampedDurationMs}ms`);
     }
   });
 

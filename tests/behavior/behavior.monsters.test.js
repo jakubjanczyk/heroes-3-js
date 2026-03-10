@@ -141,4 +141,67 @@ describe('monster interaction behavior', () => {
 
     expectMonsterNotPresent('monster-1');
   });
+
+  test('given final step before monster resolves when movement is still animating then modal waits until hero fully reaches the last tile', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 4,
+        height: 1,
+        tiles: [0, 0, 0, 0],
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 2, y: 0 } }
+        ]
+      },
+      movementStepDelayMs: 20,
+      appConfig: {
+        interactionModalTransitionMs: 0,
+        monsterDefeatFadeOutMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(2, 0);
+    await waitMs(25);
+    await flushMicrotasks();
+
+    expectHeroAt(1, 0);
+    expectInteractionModalClosed();
+    expectMonsterPresent('monster-1');
+
+    await waitMs(25);
+    await flushMicrotasks();
+
+    expectInteractionModalOpen('Monster defeated');
+  });
+
+  test('given default-speed movement when hero is still visually arriving before a monster then modal stays closed', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 4,
+        height: 1,
+        tiles: [0, 0, 0, 0],
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 2, y: 0 } }
+        ]
+      },
+      movementStepDelayMs: 220,
+      appConfig: {
+        interactionModalTransitionMs: 0,
+        monsterDefeatFadeOutMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(2, 0);
+    await waitMs(250);
+    await flushMicrotasks();
+
+    expectInteractionModalClosed();
+    expectMonsterPresent('monster-1');
+
+    await waitMs(220);
+    await flushMicrotasks();
+
+    expectInteractionModalOpen('Monster defeated');
+  });
 });

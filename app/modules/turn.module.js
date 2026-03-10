@@ -19,6 +19,7 @@ export function registerTurnModule(
   const now = typeof config?.now === 'function' ? config.now : () => Date.now();
   const moveDurationThresholdMs = config?.moveDurationThresholdMs ?? 16;
   const endTurnPostMoveGraceMs = config?.endTurnPostMoveGraceMs ?? 32;
+  const shouldApplyPostMoveGrace = Number(config?.movementStepDelayMs ?? 220) > 0;
 
   let turnSystem = null;
   let isMoving = false;
@@ -68,6 +69,11 @@ export function registerTurnModule(
 
   bus.addEventListener(APP_FACT_MOVE_FINISHED, () => {
     isMoving = false;
+    if (!shouldApplyPostMoveGrace) {
+      suppressEndTurnUntil = 0;
+      return;
+    }
+
     const moveDurationMs = now() - moveStartedAt;
     suppressEndTurnUntil =
       moveDurationMs >= moveDurationThresholdMs ? now() + endTurnPostMoveGraceMs : 0;

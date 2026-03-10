@@ -15,13 +15,22 @@ describe('entity view module', () => {
     const bus = createFakeBus();
     const renderCalls = [];
     const heroElement = {
-      style: {},
+      style: {
+        setProperty(name, value) {
+          this[name] = value;
+        }
+      },
       dataset: {}
     };
     const entityLayer = {
       id: 'entity-layer',
       clientWidth: 640,
       clientHeight: 480,
+      style: {
+        setProperty(name, value) {
+          this[name] = value;
+        }
+      },
       querySelector(selector) {
         if (selector === '.entity--hero[data-entity-id="hero-1"]') {
           return heroElement;
@@ -47,6 +56,9 @@ describe('entity view module', () => {
               return { tag };
             }
           }
+        },
+        config: {
+          movementStepDelayMs: 240
         }
       },
       {
@@ -66,6 +78,7 @@ describe('entity view module', () => {
 
     expect(renderCalls).toHaveLength(3);
     expect(renderCalls[0].entities).toEqual([{ id: 'hero-1' }]);
+    expect(entityLayer.style['--hero-step-duration']).toBe('240ms');
     expect(heroElement.dataset.tileX).toBe('1');
     expect(heroElement.dataset.tileY).toBe('0');
     expect(heroElement.style.transform).toBe('translate(36px, 4px)');
@@ -114,6 +127,98 @@ describe('entity view module', () => {
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
 
     expect(renderCalls).toHaveLength(2);
+  });
+
+  test('keeps hero transitions disabled while viewport is restoring', () => {
+    const bus = createFakeBus();
+    const heroElements = [
+      {
+        style: {
+          setProperty(name, value) {
+            this[name] = value;
+          }
+        },
+        dataset: {}
+      }
+    ];
+    const viewport = {
+      dataset: {
+        restoring: 'true'
+      }
+    };
+    const entityLayer = {
+      id: 'entity-layer',
+      clientWidth: 640,
+      clientHeight: 480,
+      style: {
+        setProperty(name, value) {
+          this[name] = value;
+        }
+      },
+      querySelector(selector) {
+        if (selector === '.entity--hero[data-entity-id="hero-1"]') {
+          return heroElements[0] ?? null;
+        }
+        return null;
+      },
+      querySelectorAll(selector) {
+        if (selector === '.entity--hero') {
+          return heroElements;
+        }
+        return [];
+      }
+    };
+    const map = createMap({
+      width: 4,
+      height: 1,
+      tiles: [0, 0, 0, 0]
+    });
+
+    registerEntityViewModule(
+      {
+        bus,
+        env: {
+          document: {
+            querySelector(selector) {
+              if (selector === '.entity-layer') {
+                return entityLayer;
+              }
+              if (selector === '.viewport') {
+                return viewport;
+              }
+              return null;
+            },
+            createElement(tag) {
+              return { tag };
+            }
+          }
+        }
+      },
+      {
+        renderEntityLayer: () => {
+          heroElements[0] = {
+            style: {
+              setProperty(name, value) {
+                this[name] = value;
+              }
+            },
+            dataset: {}
+          };
+        }
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      map,
+      scenario: { entities: [{ id: 'hero-1' }] }
+    });
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
+
+    expect(heroElements[0].style.transition).toBe('none');
+
+    bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
+
+    expect(heroElements[0].style.transition).toBe('none');
   });
 
   test('does not render when entity layer is missing', () => {

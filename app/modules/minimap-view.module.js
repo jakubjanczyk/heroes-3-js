@@ -23,6 +23,10 @@ function clearNode(node) {
   node.replaceChildren?.();
 }
 
+function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
+}
+
 export function registerMinimapViewModule({ bus, env }) {
   const minimapMap = env.document?.getElementById('minimap-map');
   const minimapTerrain = env.document?.getElementById('minimap-terrain');
@@ -41,9 +45,6 @@ export function registerMinimapViewModule({ bus, env }) {
 
     clearNode(minimapTerrain);
 
-    const tileWidthPercent = 100 / map.width;
-    const tileHeightPercent = 100 / map.height;
-
     for (let y = 0; y < map.height; y += 1) {
       for (let x = 0; x < map.width; x += 1) {
         const tile = createElement('div');
@@ -52,10 +53,6 @@ export function registerMinimapViewModule({ bus, env }) {
           : 'minimap-tile minimap-tile--blocked';
         tile.dataset.x = String(x);
         tile.dataset.y = String(y);
-        tile.style.left = `${x * tileWidthPercent}%`;
-        tile.style.top = `${y * tileHeightPercent}%`;
-        tile.style.width = `calc(${tileWidthPercent}% + 0.5px)`;
-        tile.style.height = `calc(${tileHeightPercent}% + 0.5px)`;
         minimapTerrain.appendChild(tile);
       }
     }
@@ -74,8 +71,8 @@ export function registerMinimapViewModule({ bus, env }) {
       marker.dataset.entityId = town.id;
       marker.dataset.tileX = String(town.tile.x);
       marker.dataset.tileY = String(town.tile.y);
-      marker.style.left = `${((town.tile.x + 0.5) / map.width) * 100}%`;
-      marker.style.top = `${((town.tile.y + 0.5) / map.height) * 100}%`;
+      setStyleVar(marker, '--minimap-marker-x', `${((town.tile.x + 0.5) / map.width) * 100}%`);
+      setStyleVar(marker, '--minimap-marker-y', `${((town.tile.y + 0.5) / map.height) * 100}%`);
       minimapTowns.appendChild(marker);
     }
   }
@@ -93,8 +90,8 @@ export function registerMinimapViewModule({ bus, env }) {
     const mapPixelHeight = map.height * map.tileHeight;
 
     if (mapPixelWidth <= 0 || mapPixelHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
-      minimapViewport.style.width = '0%';
-      minimapViewport.style.height = '0%';
+      setStyleVar(minimapViewport, '--minimap-viewport-width', '0%');
+      setStyleVar(minimapViewport, '--minimap-viewport-height', '0%');
       return;
     }
 
@@ -103,10 +100,10 @@ export function registerMinimapViewModule({ bus, env }) {
     const visibleStartX = clamp(-offsetX, 0, maxVisibleX);
     const visibleStartY = clamp(-offsetY, 0, maxVisibleY);
 
-    minimapViewport.style.left = `${(visibleStartX / mapPixelWidth) * 100}%`;
-    minimapViewport.style.top = `${(visibleStartY / mapPixelHeight) * 100}%`;
-    minimapViewport.style.width = `${clamp((viewportWidth / mapPixelWidth) * 100, 0, 100)}%`;
-    minimapViewport.style.height = `${clamp((viewportHeight / mapPixelHeight) * 100, 0, 100)}%`;
+    setStyleVar(minimapViewport, '--minimap-viewport-left', `${(visibleStartX / mapPixelWidth) * 100}%`);
+    setStyleVar(minimapViewport, '--minimap-viewport-top', `${(visibleStartY / mapPixelHeight) * 100}%`);
+    setStyleVar(minimapViewport, '--minimap-viewport-width', `${clamp((viewportWidth / mapPixelWidth) * 100, 0, 100)}%`);
+    setStyleVar(minimapViewport, '--minimap-viewport-height', `${clamp((viewportHeight / mapPixelHeight) * 100, 0, 100)}%`);
   }
 
   if (minimapMap) {
@@ -142,7 +139,10 @@ export function registerMinimapViewModule({ bus, env }) {
     towns = (event.detail.scenario?.entities ?? []).filter(isTown);
 
     if (minimapMap && map?.width > 0 && map?.height > 0) {
-      minimapMap.style.aspectRatio = `${map.width} / ${map.height}`;
+      setStyleVar(minimapMap, '--minimap-columns', String(map.width));
+      setStyleVar(minimapMap, '--minimap-rows', String(map.height));
+      setStyleVar(minimapMap, '--minimap-map-width', String(map.width));
+      setStyleVar(minimapMap, '--minimap-map-height', String(map.height));
     }
 
     renderTerrain();

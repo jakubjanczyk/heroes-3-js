@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
   closeInteractionModal,
@@ -13,7 +13,9 @@ import {
   expectTownAt,
   expectTownPresent,
   flushMicrotasks,
-  setupMovementBehaviorApp
+  getPreviewTargetAt,
+  setupMovementBehaviorApp,
+  waitMs
 } from './behavior.utils.js';
 
 describe('town interaction behavior', () => {
@@ -143,5 +145,109 @@ describe('town interaction behavior', () => {
     await flushMicrotasks();
 
     expectTownPresent('town-1');
+  });
+
+  test('given hero leaves and re-enters the same town in one session then the town modal opens again', async () => {
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 8,
+        height: 7,
+        tiles: new Array(56).fill(0),
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
+          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
+        ],
+        definitions: {
+          towns: {
+            CASTLE: { name: 'Castle' }
+          }
+        }
+      },
+      appConfig: {
+        interactionModalTransitionMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(4, 3);
+    await flushMicrotasks();
+    expectInteractionModalOpen('Castle visited');
+
+    await closeInteractionModal(user);
+    await flushMicrotasks();
+
+    confirmTileClickByDispatch(4, 4);
+    await flushMicrotasks();
+    expectHeroAt(4, 4);
+
+    confirmTileClickByDispatch(4, 3);
+    await flushMicrotasks();
+
+    expectHeroAt(4, 3);
+    expectInteractionModalOpen('Castle visited');
+  });
+
+  test('given hero steps onto a town tile when modal has not opened yet then the preview target is already cleared', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 8,
+        height: 7,
+        tiles: new Array(56).fill(0),
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
+          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
+        ],
+        definitions: {
+          towns: {
+            CASTLE: { name: 'Castle' }
+          }
+        }
+      },
+      movementStepDelayMs: 20,
+      appConfig: {
+        interactionModalTransitionMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(4, 3);
+    await waitMs(55);
+    await flushMicrotasks();
+
+    expectHeroAt(4, 3);
+    expect(getPreviewTargetAt(4, 3)).toBeFalsy();
+  });
+
+  test('given default-speed movement when hero is still visually arriving on a town tile then modal stays closed', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 8,
+        height: 7,
+        tiles: new Array(56).fill(0),
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 4 } },
+          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
+        ],
+        definitions: {
+          towns: {
+            CASTLE: { name: 'Castle' }
+          }
+        }
+      },
+      movementStepDelayMs: 220,
+      appConfig: {
+        interactionModalTransitionMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(4, 3);
+    await waitMs(250);
+    await flushMicrotasks();
+
+    expectHeroAt(4, 3);
+    expect(getPreviewTargetAt(4, 3)).toBeFalsy();
+
+    await waitMs(220);
+    await flushMicrotasks();
+
+    expectInteractionModalOpen('Castle visited');
   });
 });

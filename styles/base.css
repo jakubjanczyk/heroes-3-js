@@ -1,8 +1,93 @@
+@property --world-offset-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --world-offset-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --entity-center-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --entity-center-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --entity-offset-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --entity-offset-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 :root {
   color-scheme: dark;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: 'Trebuchet MS', 'Gill Sans', 'Segoe UI Variable Text', sans-serif;
+
+  --font-ui: 'Trebuchet MS', 'Gill Sans', 'Segoe UI Variable Text', sans-serif;
+  --font-mono: 'Cascadia Mono', 'SFMono-Regular', 'Liberation Mono', monospace;
+
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --shell-padding: clamp(1rem, 2.2vw, 1.875rem);
+  --panel-gap: clamp(0.875rem, 1.8vw, 1.25rem);
+
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.5rem;
+  --radius-round: 999px;
+
+  --font-size-2xs: 0.6875rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.9375rem;
+  --font-size-lg: 1.0625rem;
+
+  --duration-fast: 180ms;
+  --duration-medium: 240ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.18, 0.9, 0.28, 1);
+
+  --color-ink-strong: oklch(0.95 0.03 245);
+  --color-ink: oklch(0.9 0.025 245);
+  --color-ink-soft: oklch(0.76 0.02 245);
+  --color-accent: oklch(0.76 0.12 225);
+  --color-accent-warm: oklch(0.79 0.11 75);
+  --color-success: oklch(0.78 0.15 145);
+  --color-danger: oklch(0.7 0.16 25);
+
+  --color-bg: oklch(0.18 0.025 250);
+  --color-bg-deep: oklch(0.12 0.02 250);
+  --color-bg-elevated: color-mix(in oklab, oklch(0.26 0.025 245) 82%, transparent);
+  --color-panel: color-mix(in oklab, oklch(0.24 0.028 245) 78%, transparent);
+  --color-panel-strong: color-mix(in oklab, oklch(0.28 0.03 245) 88%, transparent);
+  --color-border: color-mix(in oklab, var(--color-ink) 16%, transparent);
+  --color-border-strong: color-mix(in oklab, var(--color-accent) 20%, var(--color-ink) 12%, transparent);
+  --color-shadow: color-mix(in oklab, black 68%, transparent);
+
   --z-layer-terrain: 0;
   --z-layer-entities: 10;
+  --z-entity-mine: 18;
   --z-entity-town: 20;
   --z-entity-hero: 30;
   --z-layer-effects: 40;
@@ -10,8 +95,32 @@
   --z-ui-dev-panel: 50;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  block-size: 100%;
+}
+
 body {
+  min-block-size: 100%;
   margin: 0;
-  background: #0b0f18;
-  color: #e8eefc;
+  font-family: var(--font-ui);
+  color: var(--color-ink);
+  background: var(--color-bg-deep);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-accent) 55%, transparent);
+  color: white;
 }

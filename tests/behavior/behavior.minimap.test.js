@@ -102,11 +102,11 @@ describe('minimap behavior', () => {
     await setupLargeMapMinimapApp();
 
     const viewportBox = getElementOrFail('#minimap-viewport');
-    const before = viewportBox.style.left;
+    const before = viewportBox.style.getPropertyValue('--minimap-viewport-left');
 
     window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight' }));
 
-    expect(viewportBox.style.left).not.toBe(before);
+    expect(viewportBox.style.getPropertyValue('--minimap-viewport-left')).not.toBe(before);
   });
 
   test('given player clicks minimap when click hits a valid map region then camera recenters to clicked area', async () => {

@@ -1,107 +1,55 @@
 .entity {
   position: absolute;
+  inline-size: var(--entity-width, auto);
+  block-size: var(--entity-height, auto);
+  background-image: var(--entity-background-image, none);
 }
 
 .entity--hero {
-  width: 24px;
-  height: 24px;
   z-index: var(--z-entity-hero);
   border-radius: 50%;
-  background: #6bb6ff;
-  border: 2px solid #d7eeff;
-  box-shadow: 0 2px 8px rgba(5, 12, 22, 0.65);
-  transition: transform var(--hero-step-duration, 180ms) linear;
+  background: color-mix(in oklab, var(--color-accent) 78%, white 10%);
+  border: 2px solid color-mix(in oklab, white 72%, var(--color-accent));
+  box-shadow:
+    0 0.2rem 0.7rem color-mix(in oklab, var(--color-shadow) 92%, transparent),
+    0 0 0 1px color-mix(in oklab, white 12%, transparent);
+  transition: transform var(--hero-step-duration, var(--duration-fast)) linear;
 }
 
 .entity--monster {
-  width: 22px;
-  height: 22px;
   border-radius: 6px;
-  background: #b6544a;
-  border: 2px solid #ffd7c4;
-  box-shadow: 0 2px 8px rgba(26, 6, 5, 0.7);
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease;
+  background: color-mix(in oklab, oklch(0.56 0.14 28) 88%, black 10%);
+  border: 2px solid color-mix(in oklab, white 72%, oklch(0.76 0.08 55));
+  box-shadow: 0 0.2rem 0.7rem color-mix(in oklab, oklch(0.18 0.03 20) 92%, transparent);
+  transition: opacity 220ms ease;
 }
 
 .entity--monster-defeating {
   opacity: 0;
-  transform: scale(0.72);
 }
 
 .entity--resource {
-  width: 30px;
-  height: 25px;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  filter: drop-shadow(0 2px 2px rgba(9, 10, 14, 0.72));
+  filter: drop-shadow(0 0.15rem 0.15rem color-mix(in oklab, black 70%, transparent));
   image-rendering: pixelated;
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease;
-}
-
-.entity--resource-type-gold-pile {
-  width: 30px;
-  height: 21px;
-}
-
-.entity--resource-type-wood-pile {
-  width: 28px;
-  height: 22px;
-}
-
-.entity--resource-type-ore-pile {
-  width: 27px;
-  height: 18px;
-}
-
-.entity--resource-type-mercury-pile {
-  width: 28px;
-  height: 25px;
-}
-
-.entity--resource-type-sulfur-pile {
-  width: 28px;
-  height: 20px;
-}
-
-.entity--resource-type-crystal-pile {
-  width: 26px;
-  height: 25px;
-}
-
-.entity--resource-type-gems-pile {
-  width: 30px;
-  height: 24px;
+  transition: opacity 220ms ease;
 }
 
 .entity--resource-collecting {
   opacity: 0;
-  transform: scale(0.72);
 }
 
 .entity--mine {
-  width: 96px;
-  height: 64px;
-  z-index: 19;
+  z-index: var(--z-entity-mine);
   pointer-events: none;
   border-radius: 8px;
-  border: 2px solid #d7c79b;
+  border: 2px solid color-mix(in oklab, white 62%, oklch(0.74 0.05 78));
   box-shadow:
-    0 6px 10px rgba(12, 11, 9, 0.55),
-    inset 0 -8px 0 rgba(47, 35, 24, 0.35);
-  background:
-    linear-gradient(180deg, rgba(205, 188, 146, 0.95) 0%, rgba(127, 103, 67, 0.95) 100%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.08) 0,
-      rgba(255, 255, 255, 0.08) 8px,
-      rgba(0, 0, 0, 0.05) 8px,
-      rgba(0, 0, 0, 0.05) 16px
-    );
+    0 0.4rem 0.9rem color-mix(in oklab, black 56%, transparent),
+    inset 0 -0.5rem 0 color-mix(in oklab, oklch(0.28 0.03 60) 48%, transparent);
+  background: color-mix(in oklab, oklch(0.6 0.05 78) 84%, black 12%);
 }
 
 .entity--mine-type-gold-mine {
@@ -133,24 +81,14 @@
 }
 
 .entity--town {
-  width: 144px;
-  height: 72px;
   z-index: var(--z-entity-town);
   pointer-events: none;
   border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(196, 218, 235, 0.92) 0%, rgba(138, 166, 192, 0.9) 36%, rgba(89, 114, 136, 0.94) 100%),
-    repeating-linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 9px,
-      rgba(0, 0, 0, 0.03) 9px,
-      rgba(0, 0, 0, 0.03) 18px
-    );
-  border: 2px solid #d8e4f4;
+  background: color-mix(in oklab, oklch(0.66 0.04 240) 92%, black 8%);
+  border: 2px solid color-mix(in oklab, white 68%, oklch(0.8 0.03 240));
   box-shadow:
-    0 9px 18px rgba(12, 18, 28, 0.72),
-    inset 0 -12px 0 rgba(26, 34, 46, 0.28);
+    0 0.6rem 1.2rem color-mix(in oklab, black 72%, transparent),
+    inset 0 -0.75rem 0 color-mix(in oklab, black 18%, transparent);
   image-rendering: pixelated;
 }
 
@@ -161,10 +99,10 @@
   right: 22%;
   top: -16px;
   height: 30px;
-  border: 2px solid #f7d59b;
+  border: 2px solid color-mix(in oklab, white 55%, oklch(0.84 0.08 82));
   border-bottom: 0;
   clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-  background: linear-gradient(180deg, #c14f45 0, #7f2822 100%);
+  background: color-mix(in oklab, oklch(0.55 0.16 28) 92%, black 6%);
 }
 
 .entity--town::after {
@@ -174,7 +112,7 @@
   height: 22px;
   left: calc(50% - 13px);
   bottom: 10px;
-  border: 2px solid #f7dda7;
-  background: linear-gradient(180deg, #684832 0, #442a1c 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15);
+  border: 2px solid color-mix(in oklab, white 52%, oklch(0.83 0.05 82));
+  background: color-mix(in oklab, oklch(0.35 0.04 45) 90%, black 8%);
+  box-shadow: inset 0 2px 0 color-mix(in oklab, white 14%, transparent);
 }

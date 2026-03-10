@@ -143,4 +143,77 @@ describe('resource interaction behavior', () => {
     expectResourceTotal('Wood pile', 5);
     expectInteractionModalClosed();
   });
+
+  test('given final step before resource resolves when movement is still animating then collection waits until hero fully reaches the last tile', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 4,
+        height: 1,
+        tiles: [0, 0, 0, 0],
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 2, y: 0 } }
+        ],
+        definitions: {
+          resources: {
+            GOLD_PILE: { name: 'Gold pile', amount: 100 }
+          }
+        }
+      },
+      movementStepDelayMs: 20,
+      appConfig: {
+        resourceCollectFadeOutMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(2, 0);
+    await waitMs(25);
+    await flushMicrotasks();
+
+    expectHeroAt(1, 0);
+    expectResourcePresent('resource-1');
+    expectInteractionModalClosed();
+
+    await waitMs(25);
+    await flushMicrotasks();
+
+    expectResourceNotPresent('resource-1');
+    expectResourceTotal('Gold pile', 100);
+  });
+
+  test('given default-speed movement when hero is still visually arriving at a resource then collection has not started yet', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: {
+        width: 4,
+        height: 1,
+        tiles: [0, 0, 0, 0],
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 2, y: 0 } }
+        ],
+        definitions: {
+          resources: {
+            GOLD_PILE: { name: 'Gold pile', amount: 100 }
+          }
+        }
+      },
+      movementStepDelayMs: 220,
+      appConfig: {
+        resourceCollectFadeOutMs: 0
+      }
+    });
+
+    confirmTileClickByDispatch(2, 0);
+    await waitMs(250);
+    await flushMicrotasks();
+
+    expectResourcePresent('resource-1');
+    expectInteractionModalClosed();
+
+    await waitMs(220);
+    await flushMicrotasks();
+
+    expectResourceNotPresent('resource-1');
+    expectResourceTotal('Gold pile', 100);
+  });
 });

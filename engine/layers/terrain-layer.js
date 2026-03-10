@@ -1,6 +1,10 @@
 import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
 import { getMapCenteredOrigin, getTileTopLeft } from './layout.js';
 
+function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
+}
+
 export function renderTerrainLayer({ container, map, createElement }) {
   const makeElement = getLayerElementFactory(createElement);
   clearLayerContainer(container);

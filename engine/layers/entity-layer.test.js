@@ -7,7 +7,17 @@ function createFakeElement(tagName) {
   return {
     tagName,
     className: '',
-    style: {},
+    style: {
+      setProperty(name, value) {
+        this[name] = value;
+      },
+      getPropertyValue(name) {
+        return this[name] ?? '';
+      },
+      removeProperty(name) {
+        delete this[name];
+      }
+    },
     dataset: {},
     children: [],
     appendChild(child) {
@@ -69,7 +79,7 @@ describe('entity layer', () => {
     expect(container.children[2].dataset.entityType).toBe('GOLD_PILE');
     expect(container.children[2].dataset.tileX).toBe('3');
     expect(container.children[2].dataset.tileY).toBe('1');
-    expect(container.children[2].style.backgroundImage).toBe("url('/sprite.png')");
+    expect(container.children[2].style.getPropertyValue('--entity-background-image')).toBe("url('/sprite.png')");
 
     expect(container.children[3].className).toBe('entity entity--town');
     expect(container.children[3].dataset.entityId).toBe('town-1');
@@ -111,5 +121,7 @@ describe('entity layer', () => {
     expect(container.children[0].style.transform).toBe(
       `translate(${screen.x + map.halfTileWidth - 12}px, ${screen.y + map.halfTileHeight - 12}px)`
     );
+    expect(container.children[0].style.getPropertyValue('--entity-offset-x')).toBe('-12px');
+    expect(container.children[0].style.getPropertyValue('--entity-offset-y')).toBe('-12px');
   });
 });

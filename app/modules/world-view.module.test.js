@@ -7,21 +7,13 @@ import { registerWorldViewModule } from './world-view.module.js';
 describe('world view module', () => {
   test('applies world transform and world motion classes from UI events', () => {
     const bus = createFakeBus();
-    const classListCalls = [];
     const styleCalls = [];
     const worldElement = {
-      classList: {
-        add(className) {
-          classListCalls.push(['add', className]);
-        },
-        remove(className) {
-          classListCalls.push(['remove', className]);
-        }
-      },
+      dataset: {},
       style: {
-        transform: '',
         setProperty(name, value) {
           styleCalls.push([name, value]);
+          this[name] = value;
         }
       }
     };
@@ -53,10 +45,7 @@ describe('world view module', () => {
     });
 
     expect(styleCalls).toEqual([['--camera-step-duration', '240ms']]);
-    expect(classListCalls).toEqual([
-      ['add', 'world--following-hero'],
-      ['remove', 'world--following-hero']
-    ]);
+    expect(worldElement.dataset.followHero).toBe('false');
     expect(worldElement.style.transform).toBe('translate(-120px, -80px)');
   });
 });

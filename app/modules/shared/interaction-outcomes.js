@@ -122,7 +122,9 @@ const handlersByKind = Object.freeze({
         entityType: outcome.entityType,
         tile: outcome.tile
       });
-      return null;
+      return {
+        pendingModalOutcome: outcome
+      };
     }
   })
 });

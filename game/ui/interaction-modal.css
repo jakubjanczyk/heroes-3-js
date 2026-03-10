@@ -1,66 +1,111 @@
 .interaction-modal {
-  position: absolute;
-  inset: 0;
   z-index: var(--z-ui-interaction-modal);
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  box-sizing: border-box;
-  background: rgba(7, 11, 18, 0.64);
-  backdrop-filter: blur(3px);
-  opacity: 0;
-  transition: opacity 260ms ease;
-}
-
-.interaction-modal--visible {
-  opacity: 1;
-}
-
-.interaction-modal__dialog {
-  width: min(420px, 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(232, 238, 252, 0.16);
-  background: linear-gradient(180deg, rgba(23, 32, 52, 0.98), rgba(17, 24, 40, 0.98));
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.42);
-  padding: 16px;
-  transform: translateY(6px) scale(0.985);
+  inline-size: min(28rem, calc(100% - (2 * var(--space-lg))));
+  max-inline-size: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
   opacity: 0;
   transition:
-    transform 260ms ease,
-    opacity 260ms ease;
+    opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard),
+    display var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete,
+    overlay var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete;
+
+  &::backdrop {
+    background: color-mix(in oklab, var(--color-bg-deep) 72%, transparent);
+    backdrop-filter: blur(8px) saturate(1.1);
+    opacity: 0;
+    transition: opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard);
+  }
+
+  &[open] {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+
+    &::backdrop {
+      opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
+    }
+  }
+
+  &[data-state='closing'] {
+    opacity: 0;
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
 }
 
-.interaction-modal--visible .interaction-modal__dialog {
-  transform: translateY(0) scale(1);
+.interaction-modal__surface {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-strong);
+  background: color-mix(in oklab, var(--color-panel-strong) 94%, var(--color-bg));
+  box-shadow:
+    0 1.5rem 3rem color-mix(in oklab, var(--color-shadow) 90%, transparent),
+    inset 0 1px 0 color-mix(in oklab, white 8%, transparent);
+  padding: var(--space-lg);
+  translate: 0 0;
   opacity: 1;
+  transition:
+    translate var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-emphasized),
+    opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard);
+
+  .interaction-modal[open] & {
+    @starting-style {
+      translate: 0 0.75rem;
+      opacity: 0;
+    }
+  }
+
+  .interaction-modal[data-state='closing'] & {
+    translate: 0 0.75rem;
+    opacity: 0;
+  }
 }
 
 .interaction-modal__title {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   line-height: 1.2;
+  text-wrap: balance;
 }
 
 .interaction-modal__message {
-  margin: 10px 0 0;
-  font-size: 14px;
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-size-md);
   line-height: 1.45;
+  color: var(--color-ink-soft);
 }
 
 .interaction-modal__actions {
-  margin-top: 14px;
+  margin-top: var(--space-md);
   display: flex;
   justify-content: flex-end;
 }
 
 .interaction-modal__ok-button {
-  border: 1px solid rgba(232, 238, 252, 0.24);
-  background: rgba(54, 80, 125, 0.84);
-  color: inherit;
-  font: inherit;
-  font-size: 13px;
+  appearance: none;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 30%, var(--color-border));
+  background: color-mix(in oklab, var(--color-panel-strong) 94%, transparent);
+  color: var(--color-ink-strong);
+  font-size: var(--font-size-sm);
   line-height: 1;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 0.6rem 0.95rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-accent) 72%, white 10%);
+    outline-offset: 2px;
+  }
 }

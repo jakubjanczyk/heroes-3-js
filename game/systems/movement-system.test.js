@@ -416,6 +416,33 @@ describe('movement system', () => {
     });
   });
 
+  test('waits a full final step delay before reporting a non-adjacent interaction', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const monster = { id: 'monster-1', kind: 'MONSTER', tile: { x: 2, y: 0 } };
+    const entities = [hero, monster];
+    const map = createMap({
+      width: 3,
+      height: 1,
+      tiles: [0, 0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const sleepCalls = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      stepDelayMs: 220,
+      sleep: async (ms) => {
+        sleepCalls.push(ms);
+      }
+    });
+
+    await movement.moveHeroTo({ x: 2, y: 0 });
+
+    expect(sleepCalls).toEqual([220, 220]);
+  });
+
   test('emits lifecycle callbacks only when movement actually starts', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const entities = [hero];

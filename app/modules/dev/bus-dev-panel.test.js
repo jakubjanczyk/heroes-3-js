@@ -9,12 +9,13 @@ describe('bus dev panel', () => {
 
     const toggle = document.querySelector('.bus-dev-panel__toggle');
     const body = document.querySelector('.bus-dev-panel__body');
+    const root = document.querySelector('.bus-dev-panel');
     expect(toggle).toBeTruthy();
-    expect(body?.hidden).toBe(true);
+    expect(body).toBeTruthy();
+    expect(root?.open).toBe(false);
 
     toggle?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-    expect(body?.hidden).toBe(false);
-    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
+    expect(root?.open).toBe(true);
 
     panel.destroy();
   });

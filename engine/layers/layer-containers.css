@@ -19,14 +19,11 @@
 }
 
 .ui-layer {
-  width: clamp(260px, 22vw, 340px);
-  flex: 0 0 clamp(260px, 22vw, 340px);
+  inline-size: clamp(18rem, 24vw, 22rem);
+  min-inline-size: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--panel-gap);
   pointer-events: auto;
-}
-
-@media (max-width: 1180px) {
-  .ui-layer {
-    width: min(1000px, 100%);
-    flex: 1 1 auto;
-  }
+  container: sidebar / inline-size;
 }

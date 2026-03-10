@@ -99,8 +99,8 @@ describe('boot app replay', () => {
       }
 
       const viewport = document.querySelector('.viewport');
-      replayVisibilitySnapshots.push(viewport?.style.visibility ?? '');
-      replayRestoringClassSnapshots.push(viewport?.classList?.contains('viewport--restoring') ?? false);
+        replayVisibilitySnapshots.push(viewport?.dataset.viewportVisibility ?? '');
+        replayRestoringClassSnapshots.push(viewport?.dataset.restoring === 'true');
     });
 
     const eventLog = {
@@ -155,8 +155,8 @@ describe('boot app replay', () => {
     expect(replayedFacts).toHaveLength(1);
     expect(replayVisibilitySnapshots).toEqual(['hidden']);
     expect(replayRestoringClassSnapshots).toEqual([true]);
-    expect(document.querySelector('.viewport')?.style.visibility).toBe('');
-    expect(document.querySelector('.viewport')?.classList.contains('viewport--restoring')).toBe(false);
+    expect(document.querySelector('.viewport')?.dataset.viewportVisibility).toBe('visible');
+    expect(document.querySelector('.viewport')?.dataset.restoring).toBeUndefined();
   });
 
   test('replays hero position while restoring mode is active', async () => {
@@ -172,10 +172,13 @@ describe('boot app replay', () => {
 
         const viewport = document.querySelector('.viewport');
         const hero = document.querySelector('.entity--hero[data-entity-id="hero-1"]');
+        const world = document.querySelector('.world');
         replaySnapshots.push({
-          restoring: viewport?.classList?.contains('viewport--restoring') ?? false,
+          restoring: viewport?.dataset.restoring === 'true',
           heroTileX: hero?.dataset?.tileX ?? null,
-          heroTileY: hero?.dataset?.tileY ?? null
+          heroTileY: hero?.dataset?.tileY ?? null,
+          heroTransition: hero?.style?.transition ?? null,
+          worldTransition: world?.style?.transition ?? null
         });
       }
     );
@@ -230,8 +233,101 @@ describe('boot app replay', () => {
       {
         restoring: true,
         heroTileX: '2',
-        heroTileY: '0'
+        heroTileY: '0',
+        heroTransition: 'none',
+        worldTransition: 'none'
       }
     ]);
+  });
+
+  test('keeps restoring mode enabled through the first visible paint after replay', async () => {
+    mountAppTemplate();
+
+    const pendingPaints = [];
+    const fakeWindow = Object.create(window);
+    fakeWindow.requestAnimationFrame = (callback) => {
+      pendingPaints.push(callback);
+      return pendingPaints.length;
+    };
+    fakeWindow.setTimeout = window.setTimeout.bind(window);
+
+    const eventLog = {
+      async init() {},
+      getAll() {
+        return [
+          {
+            id: 1,
+            type: APP_FACT_HERO_MOVED,
+            detail: {
+              heroId: 'hero-1',
+              to: { x: 2, y: 0 }
+            }
+          }
+        ];
+      },
+      async record() {},
+      async reset() {},
+      hasExistingSession() {
+        return true;
+      }
+    };
+
+    const fetch = createFakeFetch({
+      './scenarios/scenario.json': {
+        meta: { id: 'demo' },
+        terrain: { width: 3, height: 1, tiles: [0, 0, 0] },
+        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+      },
+      './game/data/hero.json': {},
+      './game/data/monsters.json': {},
+      './game/data/resources.json': {},
+      './game/data/towns.json': {},
+      './assets/music/tracks.json': []
+    });
+
+    let didResolve = false;
+    const bootPromise = bootApp({
+      fetch,
+      document,
+      window: fakeWindow,
+      eventLog,
+      config: {
+        movementStepDelayMs: 0,
+        movementSleep: () => Promise.resolve()
+      }
+    }).then(() => {
+      didResolve = true;
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    const viewport = document.querySelector('.viewport');
+    expect(pendingPaints.length).toBeGreaterThanOrEqual(2);
+    expect(viewport?.dataset.viewportVisibility).toBe('visible');
+    expect(viewport?.dataset.restoring).toBe('true');
+    expect(didResolve).toBe(false);
+
+    pendingPaints.shift()?.(0);
+    await Promise.resolve();
+
+    expect(document.querySelector('.viewport')?.dataset.restoring).toBe('true');
+    expect(didResolve).toBe(false);
+
+    pendingPaints.shift()?.(16);
+    await Promise.resolve();
+
+    expect(document.querySelector('.viewport')?.dataset.restoring).toBe('true');
+    expect(didResolve).toBe(false);
+    expect(pendingPaints.length).toBeGreaterThanOrEqual(1);
+
+    pendingPaints.shift()?.(32);
+    await bootPromise;
+
+    expect(document.querySelector('.viewport')?.dataset.restoring).toBeUndefined();
   });
 });

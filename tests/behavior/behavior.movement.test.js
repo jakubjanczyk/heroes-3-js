@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import {
   clickEndTurn,
   clickTile,
+  confirmTileClickByDispatch,
   confirmMove,
   expectHasOverLimitTargetMarker,
   expectHeroAt,
@@ -150,13 +151,13 @@ describe('movement behavior', () => {
       movementStepDelayMs: 200
     });
 
-    await confirmMove(user, 2, 0);
+    confirmTileClickByDispatch(2, 0);
     await flushMicrotasks(3);
 
     await clickEndTurn(user);
     expectMovementPoints(15);
 
-    await waitMs(460);
+    await waitMs(660);
 
     expectHeroAt(2, 0);
     expectMovementPoints(13);

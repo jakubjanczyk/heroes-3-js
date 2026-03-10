@@ -1,58 +1,63 @@
 .app {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  padding: 30px;
-  box-sizing: border-box;
+  min-block-size: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--shell-padding);
 }
 
 .game-shell {
-  width: 100%;
-  height: calc(100vh - 60px);
-  display: flex;
+  inline-size: min(100%, 112rem);
+  block-size: calc(100dvh - (2 * var(--shell-padding)));
+  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(18rem, 24vw, 22rem);
+  gap: var(--panel-gap);
   align-items: stretch;
-  gap: 20px;
-  min-width: 0;
+  container: shell / inline-size;
 }
 
 .viewport {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 100%;
-  background: #0f1524;
-  border: 1px solid rgba(232, 238, 252, 0.15);
-  border-radius: 12px;
-  overflow: hidden;
   position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: clip;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xl);
+  background: color-mix(in oklab, var(--color-bg-deep) 92%, black 6%);
+  box-shadow:
+    0 1.25rem 2.5rem color-mix(in oklab, var(--color-shadow) 88%, transparent),
+    inset 0 1px 0 color-mix(in oklab, white 8%, transparent);
+  isolation: isolate;
+
+  &[data-viewport-visibility='hidden'] {
+    visibility: hidden;
+  }
+
+  &[data-restoring='true'] {
+    & .entity--hero,
+    & .world {
+      transition: none;
+    }
+  }
 }
 
 .world {
   position: absolute;
   inset: 0;
+
+  &[data-follow-hero='true'] {
+    transition: transform var(--camera-step-duration, var(--duration-medium)) linear;
+    will-change: transform;
+  }
 }
 
-.world--following-hero {
-  transition: transform var(--camera-step-duration, 220ms) linear;
-  will-change: transform;
-}
-
-.viewport--restoring .entity--hero {
-  transition: none !important;
-}
-
-.viewport--restoring .world,
-.viewport--restoring .world--following-hero {
-  transition: none !important;
-}
-
-@media (max-width: 1180px) {
+@container shell (width < 74rem) {
   .game-shell {
-    height: auto;
-    flex-direction: column;
+    block-size: auto;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .viewport {
-    height: min(70vh, 720px);
+    min-block-size: min(70dvh, 45rem);
   }
 }

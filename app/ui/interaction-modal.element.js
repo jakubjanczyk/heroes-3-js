@@ -1,132 +1,152 @@
-export const INTERACTION_MODAL_TAG_NAME = 'interaction-modal';
-const INTERACTION_MODAL_CLOSED_EVENT = 'interaction-modal-closed';
+export const INTERACTION_MODAL_CLOSED_EVENT = 'interaction-modal-closed';
 
-function createTemplate(document) {
-  const template = document.createElement('template');
-  template.innerHTML = `
-    <div class="interaction-modal__dialog" role="dialog" aria-modal="true">
-      <h3 class="interaction-modal__title">Interaction</h3>
-      <p class="interaction-modal__message"></p>
-      <div class="interaction-modal__actions">
-        <button class="interaction-modal__ok-button" type="button">OK</button>
-      </div>
-    </div>
-  `;
-  return template;
+const INTERACTION_MODAL_TAG = 'interaction-modal';
+
+function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
 }
 
-function defineInteractionModalClass(windowLike) {
-  const BaseElement = windowLike.HTMLElement;
+function showDialog(dialog) {
+  if (typeof dialog?.showModal === 'function') {
+    try {
+      dialog.showModal();
+      return;
+    } catch {}
+  }
 
-  return class InteractionModalElement extends BaseElement {
+  dialog?.setAttribute?.('open', '');
+}
+
+function closeDialog(dialog) {
+  if (typeof dialog?.close === 'function') {
+    try {
+      dialog.close();
+      return;
+    } catch {}
+  }
+
+  dialog?.removeAttribute?.('open');
+}
+
+function clampTransitionMs(value) {
+  return Math.max(0, Number(value) || 0);
+}
+
+function ensureModalContent(host) {
+  if (host._dialog) {
+    return;
+  }
+
+  host.innerHTML = `
+    <dialog class="interaction-modal" closedby="none">
+      <article class="interaction-modal__surface">
+        <h3 class="interaction-modal__title">Interaction</h3>
+        <p class="interaction-modal__message"></p>
+        <div class="interaction-modal__actions">
+          <button class="interaction-modal__ok-button" type="button">OK</button>
+        </div>
+      </article>
+    </dialog>
+  `;
+
+  host._dialog = host.querySelector('dialog.interaction-modal');
+  host._titleEl = host.querySelector('.interaction-modal__title');
+  host._messageEl = host.querySelector('.interaction-modal__message');
+  host._surfaceEl = host.querySelector('.interaction-modal__surface');
+  host._okButtonEl = host.querySelector('.interaction-modal__ok-button');
+
+  host.addEventListener('click', (event) => {
+    event.stopPropagation();
+  });
+
+  host.addEventListener('cancel', (event) => {
+    event.preventDefault();
+  });
+
+  host._dialog?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+  });
+
+  host._dialog?.addEventListener('close', () => {
+    if (host._isFinalizingClose || !host.isConnected) {
+      return;
+    }
+
+    host._finalizeClose({ closeDialogElement: false });
+  });
+
+  host._dialog?.addEventListener('click', (event) => {
+    event.stopPropagation();
+  });
+
+  host._dialog?.addEventListener('transitionend', (event) => {
+    if (!host._isClosing) {
+      return;
+    }
+
+    if (event.target !== host._dialog && event.target !== host._surfaceEl) {
+      return;
+    }
+
+    host._finalizeClose();
+  });
+
+  host._okButtonEl?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    host.closeInteraction();
+  });
+}
+
+function applyTransitionMs(host) {
+  setStyleVar(
+    host._dialog,
+    '--interaction-modal-transition-duration',
+    `${host._transitionMs}ms`
+  );
+}
+
+function configureModalHost(host, { transitionMs = 260 } = {}) {
+  ensureModalContent(host);
+  host._transitionMs = clampTransitionMs(transitionMs);
+  applyTransitionMs(host);
+}
+
+function defineInteractionModalElement(window) {
+  const customElementsRegistry = window?.customElements;
+  const HTMLElementCtor = window?.HTMLElement;
+  if (!customElementsRegistry || !HTMLElementCtor) {
+    return null;
+  }
+
+  const existingCtor = customElementsRegistry.get(INTERACTION_MODAL_TAG);
+  if (existingCtor) {
+    return existingCtor;
+  }
+
+  class InteractionModalElement extends HTMLElementCtor {
     constructor() {
       super();
-      this.transitionMs = 260;
       this._closeTimer = null;
-      this._isOpen = false;
-      this._isInitialized = false;
-
-      this._onRootClick = (event) => {
-        event.stopPropagation();
-      };
-      this._onDialogClick = (event) => {
-        event.stopPropagation();
-      };
-      this._onOkButtonClick = (event) => {
-        event.stopPropagation();
-        this.close();
-      };
-      this._onWindowKeyDown = (event) => {
-        if (event.key !== 'Escape' || !this._isOpen) {
-          return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        this.close();
-      };
+      this._dialog = null;
+      this._titleEl = null;
+      this._messageEl = null;
+      this._surfaceEl = null;
+      this._okButtonEl = null;
+      this._isClosing = false;
+      this._isFinalizingClose = false;
+      this._transitionMs = 260;
     }
 
     connectedCallback() {
-      this._ensureInitialized();
-      this.className = 'interaction-modal';
-      this.ownerDocument.defaultView?.addEventListener('keydown', this._onWindowKeyDown);
+      configureModalHost(this, { transitionMs: this._transitionMs });
     }
 
     disconnectedCallback() {
-      this.ownerDocument.defaultView?.removeEventListener('keydown', this._onWindowKeyDown);
       this._clearCloseTimer();
     }
 
-    open({ title = 'Interaction', message = '' } = {}) {
-      this._ensureInitialized();
-
-      this._isOpen = true;
-      this._clearCloseTimer();
-
-      this.className = 'interaction-modal';
-      if (this._titleEl) {
-        this._titleEl.textContent = title;
-      }
-      if (this._messageEl) {
-        this._messageEl.textContent = message;
-      }
-
-      if (this.transitionMs <= 0) {
-        this.className = 'interaction-modal interaction-modal--visible';
-        return;
-      }
-
-      const schedule =
-        this.ownerDocument.defaultView?.requestAnimationFrame ?? ((handler) => setTimeout(handler, 0));
-      schedule(() => {
-        if (!this._isOpen || !this.isConnected) {
-          return;
-        }
-
-        this.className = 'interaction-modal interaction-modal--visible';
-      });
-    }
-
-    close() {
-      if (!this._isOpen) {
-        return;
-      }
-
-      this._isOpen = false;
-      this._clearCloseTimer();
-
-      if (this.transitionMs <= 0) {
-        this._finalizeClose();
-        return;
-      }
-
-      this.className = 'interaction-modal';
-      this._closeTimer = setTimeout(() => {
-        this._closeTimer = null;
-        this._finalizeClose();
-      }, this.transitionMs);
-    }
-
-    _ensureInitialized() {
-      if (this._isInitialized) {
-        return;
-      }
-
-      const template = createTemplate(this.ownerDocument);
-      const content = this.ownerDocument.importNode(template.content, true);
-      this.replaceChildren(content);
-
-      this._titleEl = this.querySelector('.interaction-modal__title');
-      this._messageEl = this.querySelector('.interaction-modal__message');
-      this._dialogEl = this.querySelector('.interaction-modal__dialog');
-      this._okButtonEl = this.querySelector('.interaction-modal__ok-button');
-
-      this.addEventListener('click', this._onRootClick);
-      this._dialogEl?.addEventListener('click', this._onDialogClick);
-      this._okButtonEl?.addEventListener('click', this._onOkButtonClick);
-
-      this._isInitialized = true;
+    initialize({ transitionMs = 260 } = {}) {
+      configureModalHost(this, { transitionMs });
     }
 
     _clearCloseTimer() {
@@ -138,29 +158,88 @@ function defineInteractionModalClass(windowLike) {
       this._closeTimer = null;
     }
 
-    _finalizeClose() {
-      this.dispatchEvent(
-        new this.ownerDocument.defaultView.CustomEvent(INTERACTION_MODAL_CLOSED_EVENT, {
-          bubbles: true
-        })
-      );
-      this.remove();
+    _finalizeClose({ closeDialogElement = true } = {}) {
+      if (this._isFinalizingClose) {
+        return;
+      }
+
+      this._isFinalizingClose = true;
+
+      try {
+        this._clearCloseTimer();
+        this._isClosing = false;
+        this.dataset.state = 'closed';
+        if (this._dialog) {
+          this._dialog.dataset.state = 'closed';
+        }
+        if (closeDialogElement) {
+          closeDialog(this._dialog);
+        }
+        this.dispatchEvent(
+          new this.ownerDocument.defaultView.CustomEvent(INTERACTION_MODAL_CLOSED_EVENT, {
+            bubbles: true
+          })
+        );
+        this.remove();
+      } finally {
+        this._isFinalizingClose = false;
+      }
     }
-  };
-}
 
-export function ensureInteractionModalElement(windowLike) {
-  const registry = windowLike?.customElements;
-  if (!registry) {
-    return false;
+    closeInteraction() {
+      if (!this._dialog?.hasAttribute('open') || this._isClosing) {
+        return;
+      }
+
+      if (this._transitionMs <= 0) {
+        this._finalizeClose();
+        return;
+      }
+
+      this._isClosing = true;
+      this.dataset.state = 'closing';
+      this._dialog.dataset.state = 'closing';
+      this._closeTimer = setTimeout(() => {
+        this._finalizeClose();
+      }, this._transitionMs);
+    }
+
+    showInteraction({ title = 'Interaction', message = '' } = {}) {
+      configureModalHost(this, { transitionMs: this._transitionMs });
+      this._clearCloseTimer();
+      this._isClosing = false;
+      this.dataset.state = 'open';
+      this._dialog.dataset.state = 'open';
+
+      if (this._titleEl) {
+        this._titleEl.textContent = title;
+      }
+
+      if (this._messageEl) {
+        this._messageEl.textContent = message;
+      }
+
+      showDialog(this._dialog);
+    }
   }
 
-  if (!registry.get(INTERACTION_MODAL_TAG_NAME)) {
-    const InteractionModalElement = defineInteractionModalClass(windowLike);
-    registry.define(INTERACTION_MODAL_TAG_NAME, InteractionModalElement);
-  }
-
-  return true;
+  customElementsRegistry.define(INTERACTION_MODAL_TAG, InteractionModalElement);
+  return InteractionModalElement;
 }
 
-export { INTERACTION_MODAL_CLOSED_EVENT };
+export function createInteractionModalElement({ document, transitionMs = 260 } = {}) {
+  const window = document?.defaultView ?? globalThis.window;
+  const InteractionModalElement = defineInteractionModalElement(window);
+  const modal = document?.createElement?.(INTERACTION_MODAL_TAG);
+  if (!modal) {
+    return null;
+  }
+
+  if (typeof modal.initialize === 'function') {
+    modal.initialize({ transitionMs });
+    return modal;
+  }
+
+  configureModalHost(modal, { transitionMs });
+  return modal;
+}

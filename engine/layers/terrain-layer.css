@@ -1,15 +1,15 @@
 .terrain-tile {
   position: absolute;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(10, 15, 25, 0.45);
-  box-sizing: border-box;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 1px solid color-mix(in oklab, var(--color-bg-deep) 62%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 6%, transparent);
 }
 
 .terrain-tile--passable {
-  background: #4f8a55;
+  background: color-mix(in oklab, var(--color-success) 60%, black 28%);
 }
 
 .terrain-tile--blocked {
-  background: #59545f;
+  background: color-mix(in oklab, oklch(0.38 0.014 290) 88%, black 16%);
 }

@@ -1,6 +1,10 @@
 import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
 import { getMapCenteredOrigin, getTileCenter } from './layout.js';
 
+function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
+}
+
 export function renderEntityLayer({
   container,
   map,
@@ -38,10 +42,16 @@ export function renderEntityLayer({
         }
       }
     }
-    entityEl.style.width = `${entityStyle.width}px`;
-    entityEl.style.height = `${entityStyle.height}px`;
+    setStyleVar(entityEl, '--entity-width', `${entityStyle.width}px`);
+    setStyleVar(entityEl, '--entity-height', `${entityStyle.height}px`);
+    setStyleVar(entityEl, '--entity-center-x', `${center.x}px`);
+    setStyleVar(entityEl, '--entity-center-y', `${center.y}px`);
+    setStyleVar(entityEl, '--entity-offset-x', `${entityStyle.offsetX}px`);
+    setStyleVar(entityEl, '--entity-offset-y', `${entityStyle.offsetY}px`);
     if (entityStyle.backgroundImage) {
-      entityEl.style.backgroundImage = `url('${entityStyle.backgroundImage}')`;
+      setStyleVar(entityEl, '--entity-background-image', `url('${entityStyle.backgroundImage}')`);
+    } else {
+      entityEl.style?.removeProperty?.('--entity-background-image');
     }
     entityEl.style.transform = `translate(${center.x + entityStyle.offsetX}px, ${center.y + entityStyle.offsetY}px)`;
     container.appendChild(entityEl);

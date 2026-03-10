@@ -205,6 +205,7 @@ export async function setupMovementBehaviorApp({
       musicTracks,
       movementStepDelayMs,
       movementSleep,
+      interactionModalTransitionMs: 0,
       ...appConfig
     }
   });

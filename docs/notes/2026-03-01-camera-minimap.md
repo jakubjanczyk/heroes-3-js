@@ -1,3 +1,4 @@
+
 # Camera and Minimap Update (2026-03-01)
 
 This note documents the post-V1 navigation updates focused on camera behavior and map orientation.

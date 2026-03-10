@@ -2,15 +2,12 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
-  ensureInteractionModalElement,
+  createInteractionModalElement,
   INTERACTION_MODAL_CLOSED_EVENT,
-  INTERACTION_MODAL_TAG_NAME
 } from './interaction-modal.element.js';
 
 function createModalElement({ transitionMs = 0 } = {}) {
-  ensureInteractionModalElement(window);
-  const modal = document.createElement(INTERACTION_MODAL_TAG_NAME);
-  modal.transitionMs = transitionMs;
+  const modal = createInteractionModalElement({ document, transitionMs });
   document.body.appendChild(modal);
   return modal;
 }
@@ -27,12 +24,13 @@ describe('interaction modal element', () => {
   test('opens with title and message content', () => {
     const modal = createModalElement();
 
-    modal.open({
+    modal.showInteraction({
       title: 'Battle',
       message: 'Monster defeated'
     });
 
-    expect(modal.className).toBe('interaction-modal interaction-modal--visible');
+    expect(modal.tagName.toLowerCase()).toBe('interaction-modal');
+    expect(modal.querySelector('dialog.interaction-modal[open]')).toBeTruthy();
     expect(modal.querySelector('.interaction-modal__title')?.textContent).toBe('Battle');
     expect(modal.querySelector('.interaction-modal__message')?.textContent).toBe('Monster defeated');
     expect(modal.querySelector('.interaction-modal__ok-button')).toBeTruthy();
@@ -46,11 +44,11 @@ describe('interaction modal element', () => {
       closedEvents.push(event.type);
     });
 
-    modal.open({ title: 'Battle', message: 'Monster defeated' });
-    modal.close();
+    modal.showInteraction({ title: 'Battle', message: 'Monster defeated' });
+    modal.closeInteraction();
 
     expect(closedEvents).toEqual([INTERACTION_MODAL_CLOSED_EVENT]);
-    expect(document.querySelector(INTERACTION_MODAL_TAG_NAME)).toBeFalsy();
+    expect(document.querySelector('interaction-modal')).toBeFalsy();
   });
 
   test('waits for close transition before removal', () => {
@@ -62,28 +60,69 @@ describe('interaction modal element', () => {
       closedEvents.push(event.type);
     });
 
-    modal.open({ title: 'Battle', message: 'Monster defeated' });
-    modal.close();
+    modal.showInteraction({ title: 'Battle', message: 'Monster defeated' });
+    modal.closeInteraction();
 
-    expect(document.querySelector(INTERACTION_MODAL_TAG_NAME)).toBeTruthy();
-    expect(modal.className).toBe('interaction-modal');
+    expect(document.querySelector('interaction-modal')).toBeTruthy();
+    expect(modal.querySelector('dialog.interaction-modal')?.dataset.state).toBe('closing');
     expect(closedEvents).toHaveLength(0);
 
     vi.advanceTimersByTime(60);
 
-    expect(document.querySelector(INTERACTION_MODAL_TAG_NAME)).toBeFalsy();
+    expect(document.querySelector('interaction-modal')).toBeFalsy();
     expect(closedEvents).toEqual([INTERACTION_MODAL_CLOSED_EVENT]);
   });
 
-  test('closes on Escape key when open', () => {
+  test('stays open on cancel when open', () => {
     const modal = createModalElement();
 
-    modal.open({ title: 'Battle', message: 'Monster defeated' });
-    window.dispatchEvent(
-      new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    modal.showInteraction({ title: 'Battle', message: 'Monster defeated' });
+    modal.dispatchEvent(new window.Event('cancel', { bubbles: false, cancelable: true }));
+
+    expect(document.querySelector('interaction-modal')).toBeTruthy();
+    expect(modal.querySelector('dialog.interaction-modal[open]')).toBeTruthy();
+  });
+
+  test('renders a native dialog inside the custom element host', () => {
+    const modal = createModalElement();
+
+    expect(modal.tagName.toLowerCase()).toBe('interaction-modal');
+    expect(modal.querySelector('dialog.interaction-modal')).toBeTruthy();
+  });
+
+  test('disables native Escape close requests on the dialog', () => {
+    const modal = createModalElement();
+
+    expect(modal.querySelector('dialog.interaction-modal')?.getAttribute('closedby')).toBe('none');
+  });
+
+  test('removes itself if the native dialog closes unexpectedly', () => {
+    const modal = createModalElement();
+    const closedEvents = [];
+
+    modal.addEventListener(INTERACTION_MODAL_CLOSED_EVENT, (event) => {
+      closedEvents.push(event.type);
+    });
+
+    modal.showInteraction({ title: 'Battle', message: 'Monster defeated' });
+    const dialog = modal.querySelector('dialog.interaction-modal');
+    dialog?.removeAttribute('open');
+    dialog?.dispatchEvent(new window.Event('close'));
+
+    expect(document.querySelector('interaction-modal')).toBeFalsy();
+    expect(closedEvents).toEqual([INTERACTION_MODAL_CLOSED_EVENT]);
+  });
+
+  test('stays open when clicking the dialog backdrop', () => {
+    const modal = createModalElement();
+
+    modal.showInteraction({ title: 'Battle', message: 'Monster defeated' });
+    modal.querySelector('dialog.interaction-modal')?.dispatchEvent(
+      new window.MouseEvent('click', { bubbles: true, cancelable: true })
     );
 
-    expect(document.querySelector(INTERACTION_MODAL_TAG_NAME)).toBeFalsy();
+    expect(document.querySelector('interaction-modal')).toBeTruthy();
+    expect(modal.querySelector('dialog.interaction-modal[open]')).toBeTruthy();
   });
 
   test('blocks click propagation from modal root', () => {
@@ -97,7 +136,7 @@ describe('interaction modal element', () => {
     const modal = createModalElement();
     parent.appendChild(modal);
 
-    modal.open({ title: 'Battle', message: 'Monster defeated' });
+    modal.showInteraction({ title: 'Battle', message: 'Monster defeated' });
     modal.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
 
     expect(clickEvents).toHaveLength(0);

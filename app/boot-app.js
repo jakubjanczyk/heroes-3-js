@@ -59,7 +59,7 @@ function setViewportVisibility(document, isVisible) {
     return;
   }
 
-  viewport.style.visibility = isVisible ? '' : 'hidden';
+  viewport.dataset.viewportVisibility = isVisible ? 'visible' : 'hidden';
 }
 
 function setViewportRestoring(document, isRestoring) {
@@ -69,11 +69,46 @@ function setViewportRestoring(document, isRestoring) {
   }
 
   if (isRestoring) {
-    viewport.classList?.add?.('viewport--restoring');
+    viewport.dataset.restoring = 'true';
     return;
   }
 
-  viewport.classList?.remove?.('viewport--restoring');
+  delete viewport.dataset.restoring;
+}
+
+function setRestoreMotionDisabled(document, isDisabled) {
+  const transitionValue = isDisabled ? 'none' : '';
+  const world = document?.querySelector?.('.world');
+  if (world?.style) {
+    world.style.transition = transitionValue;
+  }
+
+  const heroEntities = document?.querySelectorAll?.('.entity--hero') ?? [];
+  for (const heroEntity of heroEntities) {
+    if (!heroEntity?.style) {
+      continue;
+    }
+
+    heroEntity.style.transition = transitionValue;
+  }
+}
+
+function waitForNextPaint(window) {
+  return new Promise((resolve) => {
+    if (typeof window?.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => {
+        resolve();
+      });
+      return;
+    }
+
+    if (typeof window?.setTimeout === 'function') {
+      window.setTimeout(resolve, 0);
+      return;
+    }
+
+    setTimeout(resolve, 0);
+  });
 }
 
 async function replayPersistedFacts({ bus, facts }) {
@@ -118,6 +153,7 @@ export async function bootApp({
   if (hasPersistedSession) {
     setViewportRestoring(document, true);
     setViewportVisibility(document, false);
+    setRestoreMotionDisabled(document, true);
   }
 
   const busPanel = busDebug ? createBusDevPanel({ document }) : null;
@@ -169,6 +205,7 @@ export async function bootApp({
     const world = await worldReadyPromise;
 
     if (hasPersistedSession) {
+      setRestoreMotionDisabled(document, true);
       await replayPersistedFacts({
         bus: appBus,
         facts: persistedFacts
@@ -189,6 +226,9 @@ export async function bootApp({
   } finally {
     if (hasPersistedSession) {
       setViewportVisibility(document, true);
+      await waitForNextPaint(window);
+      await waitForNextPaint(window);
+      setRestoreMotionDisabled(document, false);
       setViewportRestoring(document, false);
     }
   }

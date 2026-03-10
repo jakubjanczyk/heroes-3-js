@@ -100,7 +100,7 @@ describe('end turn behavior', () => {
     await clickEndTurn(user);
     expectMovementPoints(15);
 
-    await waitMs(460);
+    await waitMs(660);
 
     expectMovementPoints(13);
   });
@@ -117,7 +117,7 @@ describe('end turn behavior', () => {
     await clickEndTurn(user);
     expectMovementPoints(15);
 
-    await waitMs(460);
+    await waitMs(660);
     expectMovementPoints(13);
 
     await clickEndTurn(user);

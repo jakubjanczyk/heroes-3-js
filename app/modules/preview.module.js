@@ -166,7 +166,8 @@ export function registerPreviewModule({ bus }) {
     }
 
     if (previewTarget && sameTile(previewTarget, to)) {
-      previewTarget = null;
+      clearPreview({ emitFact: false });
+      return;
     }
 
     emitPreview();

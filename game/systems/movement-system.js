@@ -39,6 +39,11 @@ async function defaultSleep(ms) {
   });
 }
 
+function getFinalSettleDelayMs(stepDelayMs) {
+  const clampedStepDelayMs = Number.isFinite(stepDelayMs) ? Math.max(0, stepDelayMs) : 0;
+  return clampedStepDelayMs;
+}
+
 export function createMovementSystem({
   entities,
   map,
@@ -153,6 +158,10 @@ export function createMovementSystem({
         currentTile = { x: stepTile.x, y: stepTile.y };
         onStep({ hero, from: stepFromTile, to: stepTile });
         spendMovementPoints(1);
+      }
+
+      if (executedStepCount > 0) {
+        await sleep(getFinalSettleDelayMs(stepDelayMs));
       }
 
       if (didTriggerArrivalInteraction && !interactionRequiresSteppingIntoTarget) {

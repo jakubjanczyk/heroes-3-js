@@ -10,10 +10,12 @@ import {
   APP_FACT_WORLD_READY
 } from '../events.js';
 
-const HERO_HALF_SIZE = 12;
-
 function isFiniteTileCoordinate(value) {
   return Number.isFinite(value);
+}
+
+function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
 }
 
 export function registerEntityViewModule(
@@ -24,6 +26,7 @@ export function registerEntityViewModule(
   } = {}
 ) {
   const entityLayer = env.document?.querySelector('.entity-layer');
+  const viewport = env.document?.querySelector('.viewport');
   const createElement = env.document?.createElement?.bind(env.document);
   const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
   const heroStepDurationMs = Number.isFinite(configuredStepDurationMs)
@@ -32,6 +35,25 @@ export function registerEntityViewModule(
 
   let map = null;
   let entities = null;
+
+  function isViewportRestoring() {
+    return viewport?.dataset?.restoring === 'true';
+  }
+
+  function applyHeroRestoreMotionOverride() {
+    if (!entityLayer || !isViewportRestoring()) {
+      return;
+    }
+
+    const heroEntities = entityLayer.querySelectorAll?.('.entity--hero') ?? [];
+    for (const heroEntity of heroEntities) {
+      if (!heroEntity?.style) {
+        continue;
+      }
+
+      heroEntity.style.transition = 'none';
+    }
+  }
 
   function updateHeroPosition({ heroId, tile }) {
     if (!entityLayer || !map || typeof heroId !== 'string' || !tile) {
@@ -60,7 +82,10 @@ export function registerEntityViewModule(
 
     heroEntity.dataset.tileX = String(tile.x);
     heroEntity.dataset.tileY = String(tile.y);
-    heroEntity.style.transform = `translate(${center.x - HERO_HALF_SIZE}px, ${center.y - HERO_HALF_SIZE}px)`;
+    if (isViewportRestoring()) {
+      heroEntity.style.transition = 'none';
+    }
+    heroEntity.style.transform = `translate(${center.x - 12}px, ${center.y - 12}px)`;
     return true;
   }
 
@@ -76,6 +101,7 @@ export function registerEntityViewModule(
       createElement,
       getEntityStyle
     });
+    applyHeroRestoreMotionOverride();
   }
 
   function applyEntityFadeOut({ entityId, entityKind }) {
@@ -95,7 +121,7 @@ export function registerEntityViewModule(
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     map = event.detail.map;
     entities = event.detail.scenario.entities;
-    entityLayer?.style?.setProperty?.('--hero-step-duration', `${heroStepDurationMs}ms`);
+    setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
     render();
   });
 

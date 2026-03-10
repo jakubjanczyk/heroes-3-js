@@ -85,10 +85,10 @@ describe('minimap view module', () => {
     });
 
     const viewportBox = document.querySelector('#minimap-viewport');
-    expect(viewportBox?.style.left).toBe('25%');
-    expect(viewportBox?.style.top).toBe('16.666666666666664%');
-    expect(viewportBox?.style.width).toBe('37.5%');
-    expect(viewportBox?.style.height).toBe('33.33333333333333%');
+    expect(viewportBox?.style.getPropertyValue('--minimap-viewport-left')).toBe('25%');
+    expect(viewportBox?.style.getPropertyValue('--minimap-viewport-top')).toBe('16.666666666666664%');
+    expect(viewportBox?.style.getPropertyValue('--minimap-viewport-width')).toBe('37.5%');
+    expect(viewportBox?.style.getPropertyValue('--minimap-viewport-height')).toBe('33.33333333333333%');
   });
 
   test('emits center-on-tile command when user clicks the minimap', () => {

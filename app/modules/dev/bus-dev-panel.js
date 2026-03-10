@@ -42,18 +42,15 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
   const existing = document.querySelector('.bus-dev-panel');
   existing?.remove?.();
 
-  const root = document.createElement('section');
+  const root = document.createElement('details');
   root.className = 'bus-dev-panel';
   root.setAttribute('aria-label', 'Event bus debug panel');
 
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
+  const toggle = document.createElement('summary');
   toggle.className = 'bus-dev-panel__toggle';
-  toggle.setAttribute('aria-expanded', 'false');
 
   const body = document.createElement('div');
   body.className = 'bus-dev-panel__body';
-  body.hidden = true;
 
   const header = document.createElement('div');
   header.className = 'bus-dev-panel__header';
@@ -74,7 +71,6 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
   const list = document.createElement('ol');
   list.className = 'bus-dev-panel__list';
 
-  let isOpen = false;
   let totalEvents = 0;
 
   function updateCounter() {
@@ -82,14 +78,11 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
   }
 
   function updateToggleText() {
-    const label = isOpen ? 'Hide bus events' : 'Show bus events';
+    const label = root.open ? 'Hide bus events' : 'Show bus events';
     toggle.textContent = `${label} (${totalEvents})`;
   }
 
-  toggle.addEventListener('click', () => {
-    isOpen = !isOpen;
-    body.hidden = !isOpen;
-    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  root.addEventListener('toggle', () => {
     updateToggleText();
   });
 
