@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
+  INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
+  INTERACTION_OUTCOME_KIND_TOWN_VISITED,
+  MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+  MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
+} from '../../game/domain/interaction-kinds.js';
+import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -31,7 +39,7 @@ describe('interaction module', () => {
           resolveArrivalAtDestination({ destinationTile }) {
             resolveCalls.push(destinationTile);
             return {
-              kind: 'MONSTER_DEFEATED',
+              kind: INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
               entityId: 'monster-1',
               entityType: 'SKELETON',
               tile: destinationTile,
@@ -59,7 +67,7 @@ describe('interaction module', () => {
     bus.emit(APP_FACT_MOVE_FINISHED, {
       targetTile: { x: 1, y: 0 },
       interaction: {
-        kind: 'MONSTER_COMBAT',
+        kind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
         entityId: 'monster-1',
         targetTile: { x: 1, y: 0 }
       }
@@ -69,7 +77,7 @@ describe('interaction module', () => {
     expect(bus.emitted).toContainEqual({
       type: APP_UI_INTERACTION_MODAL_OPENED,
       detail: {
-        interactionKind: 'MONSTER_DEFEATED',
+        interactionKind: INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
         entityId: 'monster-1',
         entityType: 'SKELETON',
         title: 'Interaction',
@@ -146,7 +154,7 @@ describe('interaction module', () => {
           resolveArrivalAtDestination({ destinationTile }) {
             resolveCalls.push(destinationTile);
             return {
-              kind: 'RESOURCE_COLLECTED',
+              kind: INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
               entityId: 'resource-1',
               entityType: 'GOLD_PILE',
               amount: 100,
@@ -172,7 +180,7 @@ describe('interaction module', () => {
     bus.emit(APP_FACT_MOVE_FINISHED, {
       targetTile: { x: 1, y: 0 },
       interaction: {
-        kind: 'RESOURCE_COLLECT',
+        kind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
         entityId: 'resource-1',
         targetTile: { x: 1, y: 0 }
       }
@@ -194,7 +202,7 @@ describe('interaction module', () => {
       bus.emitted.find(
         (entry) =>
           entry.type === APP_UI_INTERACTION_MODAL_OPENED &&
-          entry.detail?.interactionKind === 'RESOURCE_COLLECTED'
+          entry.detail?.interactionKind === INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED
       )
     ).toBeFalsy();
   });
@@ -208,7 +216,7 @@ describe('interaction module', () => {
         createInteractionSystem: () => ({
           resolveArrivalAtDestination({ destinationTile }) {
             return {
-              kind: 'TOWN_VISITED',
+              kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
               entityId: 'town-1',
               entityType: 'CASTLE',
               tile: destinationTile,
@@ -232,7 +240,7 @@ describe('interaction module', () => {
     bus.emit(APP_FACT_MOVE_FINISHED, {
       targetTile: { x: 1, y: 0 },
       interaction: {
-        kind: 'TOWN_VISIT',
+        kind: MOVEMENT_INTERACTION_KIND_TOWN_VISIT,
         entityId: 'town-1',
         targetTile: { x: 1, y: 0 }
       }
@@ -241,7 +249,7 @@ describe('interaction module', () => {
     expect(bus.emitted).toContainEqual({
       type: APP_UI_INTERACTION_MODAL_OPENED,
       detail: {
-        interactionKind: 'TOWN_VISITED',
+        interactionKind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
         entityId: 'town-1',
         entityType: 'CASTLE',
         title: 'Interaction',

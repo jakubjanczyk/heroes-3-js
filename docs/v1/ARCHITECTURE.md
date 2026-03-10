@@ -31,6 +31,7 @@ app/
     turn.module.js
     movement.module.js
     interaction.module.js
+    resource-collection-blocking.module.js
     preview.module.js
     camera.module.js
     terrain-view.module.js
@@ -40,7 +41,6 @@ app/
     hud.module.js
     music.module.js
     dev/bus-dev-panel.js
-    shared/tile-utils.js
   ui/
     interaction-modal.element.js
 ```
@@ -318,7 +318,7 @@ With `bootApp({ busDebug: true })`:
   - per-entry kind badge (`command`, `fact`, `ui`, `other`)
   - subscriber count (`subs: N`) for each emitted event
 
-Panel styles are in `game/ui/bus-dev-panel.css`.
+Panel styles are in `app/modules/dev/bus-dev-panel.css`.
 
 ## 10) Testing strategy and seams
 

@@ -1,5 +1,9 @@
 import { getArrivalInteraction } from '../domain/entity-behaviors/registry.js';
 import { sameTile } from '../../engine/tile-utils.js';
+import {
+  MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+  MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
+} from '../domain/interaction-kinds.js';
 
 export function createInteractionSystem({ entities, definitions = {} }) {
   function resolveArrivalAtDestination({ destinationTile, arrivingEntityId }) {
@@ -36,14 +40,14 @@ export function createInteractionSystem({ entities, definitions = {} }) {
   function finalizeMonsterDefeat({ entityId }) {
     return finalizeInteraction({
       entityId,
-      expectedMovementInteractionKind: 'MONSTER_COMBAT'
+      expectedMovementInteractionKind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT
     });
   }
 
   function finalizeResourceCollection({ entityId }) {
     return finalizeInteraction({
       entityId,
-      expectedMovementInteractionKind: 'RESOURCE_COLLECT'
+      expectedMovementInteractionKind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
     });
   }
 

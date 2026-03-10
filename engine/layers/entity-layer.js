@@ -1,9 +1,5 @@
-import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
+import { clearLayerContainer, getLayerElementFactory, setStyleVar } from './dom-layer-utils.js';
 import { getMapCenteredOrigin, getTileCenter } from './layout.js';
-
-function setStyleVar(element, name, value) {
-  element?.style?.setProperty?.(name, value);
-}
 
 export function renderEntityLayer({
   container,

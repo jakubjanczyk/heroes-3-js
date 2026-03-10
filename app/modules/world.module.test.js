@@ -8,6 +8,7 @@ import {
   APP_FACT_WORLD_LOAD_FAILED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { tileKey } from '../../engine/tile-utils.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 import { registerWorldModule } from './world.module.js';
 import { createFakeBus, getLastEmittedByType } from '../../tests/test-utils/fake-bus.js';
@@ -227,16 +228,74 @@ describe('world module', () => {
     expect(hero?.tile).toEqual({ x: 0, y: 0 });
   });
 
+  test('restores persistent entities at hero previous tile after movement', async () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+    const restoreCalls = [];
+
+    registerWorldModule(
+      {
+        bus,
+        env: {
+          fetch: async () => {}
+        }
+      },
+      {
+        loadGame: async () => ({
+          scenario: {
+            meta: { id: 'demo' },
+            terrain: { width: 4, height: 1, tiles: [0, 0, 0, 0] },
+            entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } }]
+          },
+          definitions: {}
+        }),
+        buildWorld: ({ scenario }) => {
+          const entities = scenario.entities;
+          return {
+            map: {
+              inBounds: ({ x, y }) => x >= 0 && y >= 0 && x < 4 && y < 1
+            },
+            occupancy: {},
+            worldState: {
+              getEntityById(entityId) {
+                return entities.find((entity) => entity.id === entityId) ?? null;
+              },
+              moveEntity({ entityId, toTile }) {
+                const entity = entities.find((candidate) => candidate.id === entityId) ?? null;
+                if (!entity) {
+                  return null;
+                }
+
+                entity.tile = toTile;
+                return entity;
+              },
+              restorePersistentEntitiesAt(tile) {
+                restoreCalls.push(tile);
+                return false;
+              }
+            }
+          };
+        }
+      }
+    );
+
+    bus.emit(APP_COMMAND_APP_START, {});
+    await flushMicrotasks();
+
+    bus.emit(APP_FACT_HERO_MOVED, {
+      heroId: 'hero-1',
+      from: { x: 1, y: 0 },
+      to: { x: 2, y: 0 }
+    });
+
+    expect(restoreCalls).toEqual([{ x: 1, y: 0 }]);
+  });
+
   test('keeps world state in sync when replayed world facts are re-emitted', async () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const occupancyState = {
       byEntityId: new Map(),
       byTile: new Map()
     };
-
-    function tileKey(tile) {
-      return `${tile.x},${tile.y}`;
-    }
 
     registerWorldModule(
       {
@@ -318,8 +377,8 @@ describe('world module', () => {
                 entity.tile = toTile;
                 return entity;
               },
-              getPersistentTownAt() {
-                return null;
+              restorePersistentEntitiesAt() {
+                return false;
               }
             }
           };

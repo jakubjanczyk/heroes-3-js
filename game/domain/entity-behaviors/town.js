@@ -1,10 +1,14 @@
 import { getEntityName } from './shared.js';
+import {
+  INTERACTION_OUTCOME_KIND_TOWN_VISITED,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
+} from '../interaction-kinds.js';
 
 export const townBehavior = Object.freeze({
   kind: 'TOWN',
   arrivalInteraction: Object.freeze({
-    movementInteractionKind: 'TOWN_VISIT',
-    outcomeKind: 'TOWN_VISITED',
+    movementInteractionKind: MOVEMENT_INTERACTION_KIND_TOWN_VISIT,
+    outcomeKind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
     requiresSteppingIntoTarget: true,
     definitionsKey: 'towns',
     defaultName: 'Town',
@@ -18,7 +22,7 @@ export const townBehavior = Object.freeze({
       });
 
       return {
-        kind: 'TOWN_VISITED',
+        kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
         entityId: entity.id,
         entityType: entity.type,
         tile,

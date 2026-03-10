@@ -1,14 +1,18 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
+import { sameTile } from '../../engine/tile-utils.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 import {
+  APP_COMMAND_TILE_CLICKED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
+  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_RESOURCE_COLLECTED,
-  APP_UI_RESOURCE_COLLECTION_STARTED,
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_PREVIEW_UPDATED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 
@@ -24,12 +28,18 @@ export function registerMovementModule(
   let movement = null;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
-  const collectingResourceEntityIds = new Set();
+  const blockedResourceEntityIds = new Set();
+  let previewTargetTile = null;
+  let previewPath = null;
+  let isInteractionModalOpen = false;
 
   bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
     const { scenario, map, occupancy } = event.detail;
     const hero = findHero(scenario.entities);
-    collectingResourceEntityIds.clear();
+    blockedResourceEntityIds.clear();
+    previewTargetTile = null;
+    previewPath = null;
+    isInteractionModalOpen = false;
 
     if (!hero) {
       movement = null;
@@ -44,7 +54,7 @@ export function registerMovementModule(
       stepDelayMs,
       getMaxMovableSteps: () => remainingMovementPoints,
       isInteractionBlocked: (entity) =>
-        Boolean(entity && collectingResourceEntityIds.has(entity.id)),
+        Boolean(entity && blockedResourceEntityIds.has(entity.id)),
       spendMovementPoints: (amount) => {
         bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
           amount
@@ -86,22 +96,50 @@ export function registerMovementModule(
     remainingMovementPoints = Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
   });
 
-  bus.addEventListener(APP_UI_RESOURCE_COLLECTION_STARTED, (event) => {
-    const entityId = event.detail?.entityId;
-    if (typeof entityId !== 'string' || entityId.length === 0) {
-      return;
+  bus.addEventListener(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
+    blockedResourceEntityIds.clear();
+    for (const entityId of event.detail?.entityIds ?? []) {
+      if (typeof entityId === 'string' && entityId.length > 0) {
+        blockedResourceEntityIds.add(entityId);
+      }
     }
-
-    collectingResourceEntityIds.add(entityId);
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
-    const entityId = event.detail?.entityId;
-    if (typeof entityId !== 'string' || entityId.length === 0) {
+  bus.addEventListener(APP_UI_PREVIEW_UPDATED, (event) => {
+    previewTargetTile = event.detail?.targetTile ?? null;
+    previewPath = event.detail?.path ?? null;
+  });
+
+  bus.addEventListener(APP_UI_INTERACTION_MODAL_OPENED, () => {
+    isInteractionModalOpen = true;
+  });
+
+  bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
+    isInteractionModalOpen = false;
+  });
+
+  bus.addEventListener(APP_COMMAND_TILE_CLICKED, (event) => {
+    if (!movement || isMoveCommandInProgress || isInteractionModalOpen) {
       return;
     }
 
-    collectingResourceEntityIds.delete(entityId);
+    if (!previewTargetTile || !Array.isArray(previewPath) || previewPath.length < 2) {
+      return;
+    }
+
+    if (remainingMovementPoints < 1) {
+      return;
+    }
+
+    const tile = event.detail?.tile;
+    if (!tile || !sameTile(previewTargetTile, tile)) {
+      return;
+    }
+
+    bus.emit(APP_COMMAND_MOVE_REQUESTED, {
+      targetTile: tile,
+      path: previewPath
+    });
   });
 
   bus.addEventListener(APP_COMMAND_MOVE_REQUESTED, (event) => {

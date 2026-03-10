@@ -62,33 +62,77 @@ function isBetterCost(a, b) {
   return false;
 }
 
-function pickBestStateIndex(frontier, toTile) {
-  let bestIndex = 0;
-  for (let i = 1; i < frontier.length; i += 1) {
-    const candidate = frontier[i];
-    const best = frontier[bestIndex];
-
-    if (candidate.steps < best.steps) {
-      bestIndex = i;
-      continue;
-    }
-    if (candidate.steps > best.steps) {
-      continue;
-    }
-
-    if (candidate.turns < best.turns) {
-      bestIndex = i;
-      continue;
-    }
-    if (candidate.turns > best.turns) {
-      continue;
-    }
-
-    if (distanceSq(candidate.tile, toTile) < distanceSq(best.tile, toTile)) {
-      bestIndex = i;
-    }
+function compareStates(a, b, toTile) {
+  if (a.steps !== b.steps) {
+    return a.steps - b.steps;
   }
-  return bestIndex;
+  if (a.turns !== b.turns) {
+    return a.turns - b.turns;
+  }
+
+  const distanceDifference = distanceSq(a.tile, toTile) - distanceSq(b.tile, toTile);
+  if (distanceDifference !== 0) {
+    return distanceDifference;
+  }
+
+  return a.order - b.order;
+}
+
+function heapPush(heap, state, toTile) {
+  heap.push(state);
+  let index = heap.length - 1;
+
+  while (index > 0) {
+    const parentIndex = Math.floor((index - 1) / 2);
+    if (compareStates(heap[index], heap[parentIndex], toTile) >= 0) {
+      break;
+    }
+
+    [heap[index], heap[parentIndex]] = [heap[parentIndex], heap[index]];
+    index = parentIndex;
+  }
+}
+
+function heapPop(heap, toTile) {
+  if (heap.length === 0) {
+    return null;
+  }
+
+  const root = heap[0];
+  const last = heap.pop();
+  if (heap.length === 0) {
+    return root;
+  }
+
+  heap[0] = last;
+  let index = 0;
+
+  while (true) {
+    const leftIndex = 2 * index + 1;
+    const rightIndex = leftIndex + 1;
+    let smallestIndex = index;
+
+    if (
+      leftIndex < heap.length &&
+      compareStates(heap[leftIndex], heap[smallestIndex], toTile) < 0
+    ) {
+      smallestIndex = leftIndex;
+    }
+
+    if (
+      rightIndex < heap.length &&
+      compareStates(heap[rightIndex], heap[smallestIndex], toTile) < 0
+    ) {
+      smallestIndex = rightIndex;
+    }
+
+    if (smallestIndex === index) {
+      return root;
+    }
+
+    [heap[index], heap[smallestIndex]] = [heap[smallestIndex], heap[index]];
+    index = smallestIndex;
+  }
 }
 
 export function findPath({ fromTile, toTile, map, isBlocked }) {
@@ -110,15 +154,20 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
     dirX: 0,
     dirY: 0,
     steps: 0,
-    turns: 0
+    turns: 0,
+    order: 0
   };
   const frontier = [startState];
+  let nextStateOrder = 1;
   const bestByState = new Map([[startState.key, { steps: 0, turns: 0 }]]);
   const cameFrom = new Map();
 
   while (frontier.length > 0) {
-    const bestIndex = pickBestStateIndex(frontier, toTile);
-    const current = frontier.splice(bestIndex, 1)[0];
+    const current = heapPop(frontier, toTile);
+    if (!current) {
+      break;
+    }
+
     if (sameTile(current.tile, toTile)) {
       return reconstructPath(cameFrom, current);
     }
@@ -146,15 +195,17 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
         dirX,
         dirY,
         steps: current.steps + 1,
-        turns
+        turns,
+        order: nextStateOrder
       };
+      nextStateOrder += 1;
       const bestKnown = bestByState.get(nextState.key) ?? null;
       if (!isBetterCost({ steps: nextState.steps, turns: nextState.turns }, bestKnown)) {
         continue;
       }
       bestByState.set(nextState.key, { steps: nextState.steps, turns: nextState.turns });
       cameFrom.set(nextState.key, current);
-      frontier.push(nextState);
+      heapPush(frontier, nextState, toTile);
     }
   }
 

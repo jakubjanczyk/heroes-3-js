@@ -1,6 +1,6 @@
 import { createInteractionSystem as createInteractionSystemDefault } from '../../game/systems/interaction-system.js';
 import { findHero } from '../../game/domain/entity-queries.js';
-import { sameTile } from './shared/tile-utils.js';
+import { sameTile } from '../../engine/tile-utils.js';
 import { getInteractionOutcomeHandler } from './shared/interaction-outcomes.js';
 import {
   APP_FACT_MOVE_FINISHED,

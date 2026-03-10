@@ -1,13 +1,7 @@
-function mineTypeToClass(mineType) {
-  if (typeof mineType !== 'string' || mineType.length === 0) {
-    return null;
-  }
-
-  return mineType.toLowerCase().replaceAll('_', '-');
-}
+import { typeToClass } from './shared.js';
 
 export function getEntityLayerStyle({ entity, map }) {
-  const mineTypeClass = mineTypeToClass(entity.type);
+  const mineTypeClass = typeToClass(entity.type);
   const dataset = {};
   if (typeof entity.type === 'string') {
     dataset.mineType = entity.type;

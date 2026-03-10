@@ -1,14 +1,5 @@
 import { getMapCenteredOrigin, getTileCenter, getViewportCenter } from './layers/layout.js';
-
-function clamp(value, min, max) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}
+import { clamp } from './math-utils.js';
 
 export function createCamera({ viewport, map }) {
   let x = 0;

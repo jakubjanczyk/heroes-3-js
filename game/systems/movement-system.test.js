@@ -2,6 +2,11 @@ import { describe, expect, test } from 'vitest';
 
 import { createMap } from '../../engine/map.js';
 import { createOccupancyIndex } from '../../engine/occupancy.js';
+import {
+  MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+  MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
+} from '../domain/interaction-kinds.js';
 import { createMovementSystem } from './movement-system.js';
 
 describe('movement system', () => {
@@ -31,6 +36,33 @@ describe('movement system', () => {
     expect(moved).toBe(true);
     expect(hero.tile).toEqual({ x: 0, y: 0 });
     expect(steps).toEqual([{ x: 1, y: 0 }]);
+  });
+
+  test('spends movement points once per traversed step', async () => {
+    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+    const entities = [hero];
+    const map = createMap({
+      width: 3,
+      height: 1,
+      tiles: [0, 0, 0]
+    });
+    const occupancy = createOccupancyIndex(entities);
+    const spent = [];
+
+    const movement = createMovementSystem({
+      entities,
+      map,
+      occupancy,
+      sleep: async () => {},
+      spendMovementPoints: (amount) => {
+        spent.push(amount);
+      }
+    });
+
+    const moved = await movement.moveHeroTo({ x: 2, y: 0 });
+
+    expect(moved).toBe(true);
+    expect(spent).toEqual([1, 1]);
   });
 
   test('does not move hero to blocked destination', async () => {
@@ -269,7 +301,7 @@ describe('movement system', () => {
     expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
     expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('monster-1');
     expect(finishes[0].interaction).toEqual({
-      kind: 'MONSTER_COMBAT',
+      kind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
       entityId: 'monster-1',
       targetTile: { x: 1, y: 0 }
     });
@@ -345,7 +377,7 @@ describe('movement system', () => {
     expect(occupancy.getAt({ x: 0, y: 0 })?.id).toBe('hero-1');
     expect(occupancy.getAt({ x: 1, y: 0 })?.id).toBe('resource-1');
     expect(finishes[0].interaction).toEqual({
-      kind: 'RESOURCE_COLLECT',
+      kind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
       entityId: 'resource-1',
       targetTile: { x: 1, y: 0 }
     });
@@ -410,7 +442,7 @@ describe('movement system', () => {
     expect(spent).toEqual([1]);
     expect(hero.tile).toEqual({ x: 0, y: 0 });
     expect(finishes[0].interaction).toEqual({
-      kind: 'TOWN_VISIT',
+      kind: MOVEMENT_INTERACTION_KIND_TOWN_VISIT,
       entityId: 'town-1',
       targetTile: { x: 1, y: 0 }
     });

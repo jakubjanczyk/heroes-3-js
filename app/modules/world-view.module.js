@@ -1,8 +1,5 @@
 import { APP_UI_CAMERA_UPDATED, APP_UI_WORLD_MOTION_UPDATED } from '../events.js';
-
-function setStyleVar(element, name, value) {
-  element?.style?.setProperty?.(name, value);
-}
+import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
 
 export function registerWorldViewModule({ bus, env }) {
   const worldElement = env.document?.querySelector?.('.world');

@@ -5,10 +5,9 @@ import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerTerrainViewModule } from './terrain-view.module.js';
 
 describe('terrain view module', () => {
-  test('renders on world-ready and on resize/rAF updates', () => {
+  test('renders once on world-ready in requestAnimationFrame', () => {
     const bus = createFakeBus();
     const renderCalls = [];
-    const listeners = new Map();
     const terrainLayer = { id: 'terrain' };
     const document = {
       querySelector(selector) {
@@ -21,9 +20,6 @@ describe('terrain view module', () => {
     const window = {
       requestAnimationFrame(handler) {
         handler();
-      },
-      addEventListener(type, handler) {
-        listeners.set(type, handler);
       }
     };
 
@@ -40,9 +36,8 @@ describe('terrain view module', () => {
     );
 
     bus.emit(APP_FACT_WORLD_READY, { map: { id: 'map' } });
-    listeners.get('resize')?.();
 
-    expect(renderCalls).toHaveLength(3);
+    expect(renderCalls).toHaveLength(1);
     expect(renderCalls[0].container).toBe(terrainLayer);
     expect(renderCalls[0].map).toEqual({ id: 'map' });
   });

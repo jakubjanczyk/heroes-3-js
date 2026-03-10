@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
+import {
+  INTERACTION_OUTCOME_KIND_MINE_ENTERED,
+  INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
+  INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
+  INTERACTION_OUTCOME_KIND_TOWN_VISITED
+} from '../domain/interaction-kinds.js';
 import { createInteractionSystem } from './interaction-system.js';
 
 describe('interaction system', () => {
@@ -23,7 +29,7 @@ describe('interaction system', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'MONSTER_DEFEATED',
+      kind: INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
       entityId: 'monster-1',
       entityType: 'SKELETON',
       tile: { x: 1, y: 0 },
@@ -74,7 +80,7 @@ describe('interaction system', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'RESOURCE_COLLECTED',
+      kind: INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
       entityId: 'resource-1',
       entityType: 'GOLD_PILE',
       tile: { x: 1, y: 0 },
@@ -107,7 +113,7 @@ describe('interaction system', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'TOWN_VISITED',
+      kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
       entityId: 'town-1',
       entityType: 'CASTLE',
       tile: { x: 1, y: 0 },
@@ -140,7 +146,7 @@ describe('interaction system', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'MINE_ENTERED',
+      kind: INTERACTION_OUTCOME_KIND_MINE_ENTERED,
       entityId: 'mine-1',
       entityType: 'GOLD_MINE',
       tile: { x: 2, y: 0 },

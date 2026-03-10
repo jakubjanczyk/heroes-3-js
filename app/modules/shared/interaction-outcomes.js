@@ -5,10 +5,12 @@ import {
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_RESOURCE_COLLECTION_STARTED
 } from '../../events.js';
-
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.length > 0;
-}
+import {
+  INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
+  INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
+  INTERACTION_OUTCOME_KIND_TOWN_VISITED
+} from '../../../game/domain/interaction-kinds.js';
+import { isNonEmptyString } from '../../../game/domain/string-utils.js';
 
 async function finalizeMonsterDefeat({
   interactions,
@@ -79,8 +81,8 @@ function openModal({ bus, outcome }) {
 }
 
 const handlersByKind = Object.freeze({
-  MONSTER_DEFEATED: Object.freeze({
-    kind: 'MONSTER_DEFEATED',
+  [INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED]: Object.freeze({
+    kind: INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
     opensModal: true,
     onOutcome({ bus, outcome }) {
       openModal({ bus, outcome });
@@ -98,8 +100,8 @@ const handlersByKind = Object.freeze({
       });
     }
   }),
-  RESOURCE_COLLECTED: Object.freeze({
-    kind: 'RESOURCE_COLLECTED',
+  [INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED]: Object.freeze({
+    kind: INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
     opensModal: false,
     async onOutcome({ bus, interactions, outcome, requestEntityFadeOut, config }) {
       await finalizeResourceCollection({
@@ -112,8 +114,8 @@ const handlersByKind = Object.freeze({
       return null;
     }
   }),
-  TOWN_VISITED: Object.freeze({
-    kind: 'TOWN_VISITED',
+  [INTERACTION_OUTCOME_KIND_TOWN_VISITED]: Object.freeze({
+    kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
     opensModal: true,
     onOutcome({ bus, outcome }) {
       openModal({ bus, outcome });

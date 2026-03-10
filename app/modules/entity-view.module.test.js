@@ -84,6 +84,85 @@ describe('entity view module', () => {
     expect(heroElement.style.transform).toBe('translate(36px, 4px)');
   });
 
+  test('uses hero presentation offsets when updating position in place', () => {
+    const bus = createFakeBus();
+    const heroElement = {
+      style: {
+        setProperty(name, value) {
+          this[name] = value;
+        }
+      },
+      dataset: {}
+    };
+    const entityLayer = {
+      id: 'entity-layer',
+      clientWidth: 640,
+      clientHeight: 480,
+      style: {
+        setProperty(name, value) {
+          this[name] = value;
+        }
+      },
+      querySelector(selector) {
+        if (selector === '.entity--hero[data-entity-id="hero-1"]') {
+          return heroElement;
+        }
+        return null;
+      }
+    };
+    const map = createMap({
+      width: 4,
+      height: 1,
+      tiles: [0, 0, 0, 0]
+    });
+
+    registerEntityViewModule(
+      {
+        bus,
+        env: {
+          document: {
+            querySelector(selector) {
+              return selector === '.entity-layer' ? entityLayer : null;
+            },
+            createElement(tag) {
+              return { tag };
+            }
+          }
+        }
+      },
+      {
+        renderEntityLayer: () => {},
+        getEntityStyle: ({ entity }) => {
+          if (entity.id === 'hero-1') {
+            return {
+              className: 'entity entity--hero',
+              width: 30,
+              height: 30,
+              offsetX: -20,
+              offsetY: -18
+            };
+          }
+
+          return {
+            className: 'entity',
+            width: 10,
+            height: 10,
+            offsetX: -5,
+            offsetY: -5
+          };
+        }
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      map,
+      scenario: { entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO' }] }
+    });
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
+
+    expect(heroElement.style.transform).toBe('translate(28px, -2px)');
+  });
+
   test('falls back to rerender when hero element is missing', () => {
     const bus = createFakeBus();
     const renderCalls = [];

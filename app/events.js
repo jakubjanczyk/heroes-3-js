@@ -18,6 +18,8 @@ export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.change
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected';
+export const APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED =
+  'fact.resource.collection.blocking.changed';
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited';
 export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected';
 export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared';

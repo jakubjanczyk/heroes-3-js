@@ -91,6 +91,27 @@ function approximateQuadraticLength(p0, p1, p2, steps = 24) {
   return length;
 }
 
+const quadraticUnitLengthByDirectionPair = new Map();
+
+function toDirectionKey(direction) {
+  return `${direction.x.toFixed(6)},${direction.y.toFixed(6)}`;
+}
+
+function getQuadraticUnitLength(inDir, outDir) {
+  const key = `${toDirectionKey(inDir)}|${toDirectionKey(outDir)}`;
+  const cached = quadraticUnitLengthByDirectionPair.get(key);
+  if (typeof cached === 'number') {
+    return cached;
+  }
+
+  const unitStart = { x: -inDir.x, y: -inDir.y };
+  const unitControl = { x: 0, y: 0 };
+  const unitEnd = { x: outDir.x, y: outDir.y };
+  const unitLength = approximateQuadraticLength(unitStart, unitControl, unitEnd);
+  quadraticUnitLengthByDirectionPair.set(key, unitLength);
+  return unitLength;
+}
+
 function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint, isOverLimit, dashLength) {
   const inDir = normalize(centerPoint.x - prevPoint.x, centerPoint.y - prevPoint.y);
   const outDir = normalize(nextPoint.x - centerPoint.x, nextPoint.y - centerPoint.y);
@@ -99,10 +120,7 @@ function createCornerCurve(createElement, prevPoint, centerPoint, nextPoint, isO
   }
 
   // Scale turn geometry so curved segment length matches straight dash length.
-  const unitStart = { x: -inDir.x, y: -inDir.y };
-  const unitControl = { x: 0, y: 0 };
-  const unitEnd = { x: outDir.x, y: outDir.y };
-  const unitLength = approximateQuadraticLength(unitStart, unitControl, unitEnd);
+  const unitLength = getQuadraticUnitLength(inDir, outDir);
   const cornerRadius = unitLength === 0 ? dashLength / 2 : dashLength / unitLength;
 
   const corner = createSvgNode(createElement, 'path');

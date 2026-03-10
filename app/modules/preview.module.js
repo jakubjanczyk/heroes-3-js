@@ -2,7 +2,6 @@ import { findPath } from '../../engine/pathfinding.js';
 import { isArrivalInteractionEntity } from '../../game/domain/entity-behaviors.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 import {
-  APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
@@ -10,14 +9,13 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_READY,
-  APP_UI_RESOURCE_COLLECTION_STARTED,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
-import { sameTile } from './shared/tile-utils.js';
+import { sameTile } from '../../engine/tile-utils.js';
 
 export function registerPreviewModule({ bus }) {
   let map = null;
@@ -28,7 +26,7 @@ export function registerPreviewModule({ bus }) {
   let isMoving = false;
   let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
-  const collectingResourceEntityIds = new Set();
+  const blockedResourceEntityIds = new Set();
 
   function emitPreview() {
     bus.emit(APP_UI_PREVIEW_UPDATED, {
@@ -75,7 +73,7 @@ export function registerPreviewModule({ bus }) {
 
     const destinationOccupant = occupancy.getAt(toTile);
     if (destinationOccupant && destinationOccupant.id !== hero.id) {
-      if (collectingResourceEntityIds.has(destinationOccupant.id)) {
+      if (blockedResourceEntityIds.has(destinationOccupant.id)) {
         return null;
       }
 
@@ -100,17 +98,18 @@ export function registerPreviewModule({ bus }) {
     map = world.map;
     occupancy = world.occupancy;
     hero = findHero(world.scenario.entities);
-    collectingResourceEntityIds.clear();
+    blockedResourceEntityIds.clear();
     clearPreview({ log: false, emitFact: false });
   });
 
-  bus.addEventListener(APP_UI_RESOURCE_COLLECTION_STARTED, (event) => {
-    const entityId = event.detail?.entityId;
-    if (typeof entityId !== 'string' || entityId.length === 0) {
-      return;
+  bus.addEventListener(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
+    blockedResourceEntityIds.clear();
+    for (const entityId of event.detail?.entityIds ?? []) {
+      if (typeof entityId === 'string' && entityId.length > 0) {
+        blockedResourceEntityIds.add(entityId);
+      }
     }
 
-    collectingResourceEntityIds.add(entityId);
     clearPreview();
   });
 
@@ -128,14 +127,6 @@ export function registerPreviewModule({ bus }) {
 
     const { tile } = event.detail;
     if (previewTarget && sameTile(previewTarget, tile)) {
-      if (remainingMovementPoints < 1) {
-        return;
-      }
-
-      bus.emit(APP_COMMAND_MOVE_REQUESTED, {
-        targetTile: tile,
-        path: previewPath
-      });
       return;
     }
 
@@ -232,11 +223,4 @@ export function registerPreviewModule({ bus }) {
     clearPreview({ log: false, emitFact: false });
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
-    const entityId = event.detail?.entityId;
-    if (typeof entityId === 'string' && entityId.length > 0) {
-      collectingResourceEntityIds.delete(entityId);
-    }
-    clearPreview();
-  });
 }

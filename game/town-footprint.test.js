@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest';
 
 import { createMap } from '../engine/map.js';
 import { findPath } from '../engine/pathfinding.js';
+import { tileKey } from '../engine/tile-utils.js';
 import { createTownFootprintBlockers } from './town-footprint.js';
 import { findHero, isTown } from './domain/entity-queries.js';
 
@@ -19,10 +20,6 @@ function toSortedTileKeys(blockers) {
   return blockers
     .map((blocker) => `${blocker.tile.x},${blocker.tile.y}`)
     .sort((a, b) => a.localeCompare(b));
-}
-
-function tileKey(tile) {
-  return `${tile.x},${tile.y}`;
 }
 
 describe('town footprint blockers', () => {

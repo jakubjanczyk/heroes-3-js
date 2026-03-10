@@ -47,6 +47,38 @@ describe('interaction modal module', () => {
     });
   });
 
+  test('emits close before replacing an already open modal', async () => {
+    const bus = createFakeBus();
+    document.body.innerHTML = '<div class="viewport"></div>';
+
+    registerInteractionModalModule({
+      bus,
+      env: {
+        document,
+        window
+      },
+      config: {
+        interactionModalTransitionMs: 0
+      }
+    });
+
+    bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
+      title: 'Interaction',
+      message: 'First'
+    });
+    bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
+      title: 'Interaction',
+      message: 'Second'
+    });
+    await Promise.resolve();
+
+    expect(document.querySelectorAll('interaction-modal')).toHaveLength(1);
+    expect(document.querySelector('.interaction-modal__message')?.textContent).toBe('Second');
+    expect(
+      bus.emitted.filter((entry) => entry.type === APP_UI_INTERACTION_MODAL_CLOSED)
+    ).toHaveLength(1);
+  });
+
   test('keeps currently opened modal open when Escape is pressed', async () => {
     const bus = createFakeBus();
     document.body.innerHTML = '<div class="viewport"></div>';

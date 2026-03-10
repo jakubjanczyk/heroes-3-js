@@ -1,8 +1,5 @@
 import { isTown } from './entity-queries.js';
-
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.length > 0;
-}
+import { isNonEmptyString } from './string-utils.js';
 
 function normalizeTile(tile) {
   const x = Number(tile?.x);
@@ -78,10 +75,29 @@ export function createWorldState({ scenario, occupancy }) {
     );
   }
 
+  function restorePersistentEntitiesAt(tile) {
+    const persistentTown = getPersistentTownAt(tile);
+    if (!persistentTown) {
+      return false;
+    }
+
+    const normalizedTile = normalizeTile(tile);
+    if (!normalizedTile) {
+      return false;
+    }
+
+    moveEntity({
+      entityId: persistentTown.id,
+      toTile: normalizedTile
+    });
+
+    return true;
+  }
+
   return {
     getEntityById,
     removeEntityById,
     moveEntity,
-    getPersistentTownAt
+    restorePersistentEntitiesAt
   };
 }

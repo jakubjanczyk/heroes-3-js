@@ -78,15 +78,26 @@ describe('world state', () => {
     expect(removeCalls).toEqual([resource]);
   });
 
-  test('finds persistent town at tile', () => {
+  test('restores persistent town occupancy at tile', () => {
     const town = { id: 'town-1', kind: 'TOWN', tile: { x: 4, y: 5 } };
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 4, y: 5 } };
+    const moveCalls = [];
     const state = createWorldState({
       scenario: { entities: [hero, town] },
-      occupancy: {}
+      occupancy: {
+        moveEntity(entity, toTile) {
+          moveCalls.push({ entity, toTile });
+        }
+      }
     });
 
-    expect(state.getPersistentTownAt({ x: 4, y: 5 })).toBe(town);
-    expect(state.getPersistentTownAt({ x: 0, y: 0 })).toBe(null);
+    expect(state.restorePersistentEntitiesAt({ x: 4, y: 5 })).toBe(true);
+    expect(state.restorePersistentEntitiesAt({ x: 0, y: 0 })).toBe(false);
+    expect(moveCalls).toEqual([
+      {
+        entity: town,
+        toTile: { x: 4, y: 5 }
+      }
+    ]);
   });
 });

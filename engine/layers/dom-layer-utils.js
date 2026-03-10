@@ -16,3 +16,7 @@ export function getLayerElementFactory(createElement) {
 
   return (tagName) => document.createElement(tagName);
 }
+
+export function setStyleVar(element, name, value) {
+  element?.style?.setProperty?.(name, value);
+}

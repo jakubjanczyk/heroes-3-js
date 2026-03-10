@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { createMap } from '../engine/map.js';
+import { tileKey } from '../engine/tile-utils.js';
 import { createMineFootprintBlockers } from './mine-footprint.js';
 
 function createOpenMap(width, height) {
@@ -13,7 +14,7 @@ function createOpenMap(width, height) {
 
 function toSortedTileKeys(blockers) {
   return blockers
-    .map((blocker) => `${blocker.tile.x},${blocker.tile.y}`)
+    .map((blocker) => tileKey(blocker.tile))
     .sort((a, b) => a.localeCompare(b));
 }
 

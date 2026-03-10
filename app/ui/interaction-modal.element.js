@@ -1,10 +1,8 @@
+import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
+
 export const INTERACTION_MODAL_CLOSED_EVENT = 'interaction-modal-closed';
 
 const INTERACTION_MODAL_TAG = 'interaction-modal';
-
-function setStyleVar(element, name, value) {
-  element?.style?.setProperty?.(name, value);
-}
 
 function showDialog(dialog) {
   if (typeof dialog?.showModal === 'function') {

@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 
 import { createMap } from '../../engine/map.js';
 import { createOccupancyIndex } from '../../engine/occupancy.js';
+import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../game/domain/interaction-kinds.js';
 import {
-  APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
@@ -11,7 +11,7 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
-  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
@@ -21,7 +21,7 @@ import { createFakeBus, getLastEmittedByType } from '../../tests/test-utils/fake
 import { registerPreviewModule } from './preview.module.js';
 
 describe('preview module', () => {
-  test('emits preview updates and move request on second click', () => {
+  test('emits preview updates and keeps selected preview on second click', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
@@ -42,11 +42,12 @@ describe('preview module', () => {
     expect(preview?.detail.path?.length).toBe(3);
 
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
-    const moveRequest = getLastEmittedByType(bus, APP_COMMAND_MOVE_REQUESTED);
-    expect(moveRequest?.detail.targetTile).toEqual({ x: 2, y: 0 });
+    const updatedPreview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(updatedPreview?.detail.targetTile).toEqual({ x: 2, y: 0 });
+    expect(updatedPreview?.detail.path?.length).toBe(3);
   });
 
-  test('does not emit move request when movement points are zero', () => {
+  test('keeps selected preview on second click when movement points are zero', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
@@ -63,8 +64,8 @@ describe('preview module', () => {
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
 
-    const moveRequests = bus.emitted.filter((entry) => entry.type === APP_COMMAND_MOVE_REQUESTED);
-    expect(moveRequests).toEqual([]);
+    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
+    expect(preview?.detail.targetTile).toEqual({ x: 1, y: 0 });
   });
 
   test('shrinks preview as hero moves and clears when movement reaches destination', () => {
@@ -228,7 +229,7 @@ describe('preview module', () => {
     expect(preview?.detail.targetTile).toEqual({ x: 1, y: 0 });
   });
 
-  test('clears preview when a resource gets collected', () => {
+  test('clears preview when resource collection blockers update', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
@@ -243,7 +244,7 @@ describe('preview module', () => {
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
-    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
+    bus.emit(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, { entityIds: ['resource-1'] });
 
     const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
     expect(preview?.detail.path).toBe(null);
@@ -268,7 +269,7 @@ describe('preview module', () => {
     bus.emit(APP_FACT_MOVE_FINISHED, {
       targetTile: { x: 2, y: 0 },
       interaction: {
-        kind: 'RESOURCE_COLLECT',
+        kind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
         entityId: 'resource-1',
         targetTile: { x: 2, y: 0 }
       }

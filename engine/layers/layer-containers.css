@@ -17,13 +17,3 @@
 .effects-layer {
   z-index: var(--z-layer-effects);
 }
-
-.ui-layer {
-  inline-size: clamp(18rem, 24vw, 22rem);
-  min-inline-size: 0;
-  display: grid;
-  align-content: start;
-  gap: var(--panel-gap);
-  pointer-events: auto;
-  container: sidebar / inline-size;
-}

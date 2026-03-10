@@ -71,15 +71,7 @@ export function registerWorldModule(
       return;
     }
 
-    const persistentTown = worldState?.getPersistentTownAt?.(restoreTile);
-    if (!persistentTown) {
-      return;
-    }
-
-    worldState?.moveEntity?.({
-      entityId: persistentTown.id,
-      toTile: restoreTile
-    });
+    worldState?.restorePersistentEntitiesAt?.(restoreTile);
   });
 
   bus.addEventListener(APP_FACT_MONSTER_DEFEATED, (event) => {

@@ -18,6 +18,7 @@ export function registerInteractionModalModule({ bus, env, config }) {
     }
 
     if (activeModal) {
+      bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
       activeModal.remove();
       activeModal = null;
     }

@@ -1,6 +1,4 @@
-function tileKey(tile) {
-  return `${tile.x},${tile.y}`;
-}
+import { tileKey } from './tile-utils.js';
 
 export function createOccupancyIndex(entities) {
   const byTile = new Map();

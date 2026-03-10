@@ -1,4 +1,5 @@
 import { renderEntityLayer as renderEntityLayerDefault } from '../../engine/layers/entity-layer.js';
+import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
 import { getMapCenteredOrigin, getTileCenter } from '../../engine/layers/layout.js';
 import { getDefaultEntityLayerStyle as getDefaultEntityStyle } from '../presentation/entity-style.js';
 import { getEntityFadeOutSpec } from '../presentation/entities/registry.js';
@@ -12,10 +13,6 @@ import {
 
 function isFiniteTileCoordinate(value) {
   return Number.isFinite(value);
-}
-
-function setStyleVar(element, name, value) {
-  element?.style?.setProperty?.(name, value);
 }
 
 export function registerEntityViewModule(
@@ -85,7 +82,14 @@ export function registerEntityViewModule(
     if (isViewportRestoring()) {
       heroEntity.style.transition = 'none';
     }
-    heroEntity.style.transform = `translate(${center.x - 12}px, ${center.y - 12}px)`;
+    const hero = entities?.find((entity) => entity.id === heroId) ?? null;
+    const heroStyle = hero ? getEntityStyle({ entity: hero, map }) : null;
+    const offsetX = Number(heroStyle?.offsetX);
+    const offsetY = Number(heroStyle?.offsetY);
+    const resolvedOffsetX = Number.isFinite(offsetX) ? offsetX : -12;
+    const resolvedOffsetY = Number.isFinite(offsetY) ? offsetY : -12;
+
+    heroEntity.style.transform = `translate(${center.x + resolvedOffsetX}px, ${center.y + resolvedOffsetY}px)`;
     return true;
   }
 

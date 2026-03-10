@@ -1,10 +1,14 @@
 import { getEntityName } from './shared.js';
+import {
+  INTERACTION_OUTCOME_KIND_MINE_ENTERED,
+  MOVEMENT_INTERACTION_KIND_MINE_ENTER
+} from '../interaction-kinds.js';
 
 export const mineBehavior = Object.freeze({
   kind: 'MINE',
   arrivalInteraction: Object.freeze({
-    movementInteractionKind: 'MINE_ENTER',
-    outcomeKind: 'MINE_ENTERED',
+    movementInteractionKind: MOVEMENT_INTERACTION_KIND_MINE_ENTER,
+    outcomeKind: INTERACTION_OUTCOME_KIND_MINE_ENTERED,
     requiresSteppingIntoTarget: true,
     definitionsKey: 'mines',
     defaultName: 'Mine',
@@ -17,7 +21,7 @@ export const mineBehavior = Object.freeze({
       });
 
       return {
-        kind: 'MINE_ENTERED',
+        kind: INTERACTION_OUTCOME_KIND_MINE_ENTERED,
         entityId: entity.id,
         entityType: entity.type,
         tile,

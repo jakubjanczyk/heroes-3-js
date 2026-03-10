@@ -1,6 +1,16 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  INTERACTION_OUTCOME_KIND_MINE_ENTERED,
+  INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
+  INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
+  INTERACTION_OUTCOME_KIND_TOWN_VISITED,
+  MOVEMENT_INTERACTION_KIND_MINE_ENTER,
+  MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+  MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
+} from './interaction-kinds.js';
+import {
   isArrivalInteractionEntity,
   requiresSteppingIntoTarget,
   resolveArrivalOutcome,
@@ -18,10 +28,14 @@ describe('entity behaviors', () => {
   });
 
   test('maps entity kinds to movement interaction kind', () => {
-    expect(toMovementInteractionKind({ kind: 'MINE' })).toBe('MINE_ENTER');
-    expect(toMovementInteractionKind({ kind: 'MONSTER' })).toBe('MONSTER_COMBAT');
-    expect(toMovementInteractionKind({ kind: 'RESOURCE' })).toBe('RESOURCE_COLLECT');
-    expect(toMovementInteractionKind({ kind: 'TOWN' })).toBe('TOWN_VISIT');
+    expect(toMovementInteractionKind({ kind: 'MINE' })).toBe(MOVEMENT_INTERACTION_KIND_MINE_ENTER);
+    expect(toMovementInteractionKind({ kind: 'MONSTER' })).toBe(
+      MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT
+    );
+    expect(toMovementInteractionKind({ kind: 'RESOURCE' })).toBe(
+      MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
+    );
+    expect(toMovementInteractionKind({ kind: 'TOWN' })).toBe(MOVEMENT_INTERACTION_KIND_TOWN_VISIT);
     expect(toMovementInteractionKind({ kind: 'HERO' })).toBe(null);
   });
 
@@ -45,7 +59,7 @@ describe('entity behaviors', () => {
     });
 
     expect(withDefinition).toEqual({
-      kind: 'MONSTER_DEFEATED',
+      kind: INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
       entityId: 'monster-1',
       entityType: 'SKELETON',
       tile: { x: 2, y: 3 },
@@ -76,7 +90,7 @@ describe('entity behaviors', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'MINE_ENTERED',
+      kind: INTERACTION_OUTCOME_KIND_MINE_ENTERED,
       entityId: 'mine-1',
       entityType: 'GOLD_MINE',
       tile: { x: 9, y: 2 },
@@ -96,7 +110,7 @@ describe('entity behaviors', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'RESOURCE_COLLECTED',
+      kind: INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
       entityId: 'resource-1',
       entityType: 'GOLD_PILE',
       tile: { x: 1, y: 1 },
@@ -129,7 +143,7 @@ describe('entity behaviors', () => {
     });
 
     expect(outcome).toEqual({
-      kind: 'TOWN_VISITED',
+      kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
       entityId: 'town-1',
       entityType: 'CASTLE',
       tile: { x: 3, y: 4 },

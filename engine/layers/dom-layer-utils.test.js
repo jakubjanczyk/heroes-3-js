@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { clearLayerContainer, getLayerElementFactory } from './dom-layer-utils.js';
+import { clearLayerContainer, getLayerElementFactory, setStyleVar } from './dom-layer-utils.js';
 
 describe('dom layer utils', () => {
   test('clears children using children-array fallback', () => {
@@ -35,5 +35,18 @@ describe('dom layer utils', () => {
 
     expect(factory).toBe(createElement);
     expect(factory('div')).toEqual({ tagName: 'div', via: 'custom' });
+  });
+
+  test('sets style property when element style is available', () => {
+    const style = {
+      setProperty(name, value) {
+        this[name] = value;
+      }
+    };
+    const element = { style };
+
+    setStyleVar(element, '--foo', 'bar');
+
+    expect(style['--foo']).toBe('bar');
   });
 });

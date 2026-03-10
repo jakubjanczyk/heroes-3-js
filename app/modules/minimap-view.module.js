@@ -4,16 +4,8 @@ import {
   APP_UI_CAMERA_UPDATED
 } from '../events.js';
 import { isTown } from '../../game/domain/entity-queries.js';
-
-function clamp(value, min, max) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}
+import { clamp } from '../../engine/math-utils.js';
+import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
 
 function clearNode(node) {
   if (!node) {
@@ -21,10 +13,6 @@ function clearNode(node) {
   }
 
   node.replaceChildren?.();
-}
-
-function setStyleVar(element, name, value) {
-  element?.style?.setProperty?.(name, value);
 }
 
 export function registerMinimapViewModule({ bus, env }) {
