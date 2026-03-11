@@ -1,4 +1,4 @@
-export function getMapCenteredOrigin({ width, height, map }) {
+export function getMapCenteredOrigin() {
   return { x: 0, y: 0 };
 }
 

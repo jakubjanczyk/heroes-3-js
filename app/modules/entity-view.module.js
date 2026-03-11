@@ -1,22 +1,18 @@
-import { renderEntityLayer as renderEntityLayerDefault } from '../../engine/layers/entity-layer.js';
-import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
-import { getMapCenteredOrigin, getTileCenter } from '../../engine/layers/layout.js';
-import { getDefaultEntityLayerStyle as getDefaultEntityStyle } from '../presentation/entity-style.js';
-import { getEntityFadeOutSpec } from '../presentation/entities/registry.js';
+import {renderEntityLayer as renderEntityLayerDefault} from '../../engine/layers/entity-layer.js';
+import {setStyleVar} from '../../engine/layers/dom-layer-utils.js';
+import {getMapCenteredOrigin, getTileCenter} from '../../engine/layers/layout.js';
+import {getDefaultEntityLayerStyle as getDefaultEntityStyle} from '../presentation/entity-style.js';
+import {getEntityFadeOutSpec} from '../presentation/entities/registry.js';
 import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
-  APP_UI_RESTORE_COMPLETED,
-  APP_UI_RESTORE_STARTED,
+  APP_FACT_WORLD_READY,
   APP_UI_ENTITY_FADE_OUT_REQUESTED,
-  APP_FACT_WORLD_READY
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED
 } from '../events.js';
-import { defineModule } from './shared/module-runtime.js';
-
-function isFiniteTileCoordinate(value) {
-  return Number.isFinite(value);
-}
+import {defineModule} from './shared/module-runtime.js';
 
 export const registerEntityViewModule = defineModule((
   { env, config },
@@ -42,21 +38,13 @@ export const registerEntityViewModule = defineModule((
     }
 
     const heroEntities = entityLayer.querySelectorAll?.('.entity--hero') ?? [];
-    for (const heroEntity of heroEntities) {
-      if (!heroEntity?.style) {
-        continue;
-      }
-
+    heroEntities.forEach((heroEntity) => {
       heroEntity.style.transition = 'none';
-    }
+    });
   }
 
   function updateHeroPosition({ heroId, tile }) {
-    if (!entityLayer || !map || typeof heroId !== 'string' || !tile) {
-      return false;
-    }
-
-    if (!isFiniteTileCoordinate(tile.x) || !isFiniteTileCoordinate(tile.y)) {
+    if (!entityLayer || !map || !tile) {
       return false;
     }
 
@@ -65,11 +53,7 @@ export const registerEntityViewModule = defineModule((
       return false;
     }
 
-    const origin = getMapCenteredOrigin({
-      width: entityLayer.clientWidth ?? 0,
-      height: entityLayer.clientHeight ?? 0,
-      map
-    });
+    const origin = getMapCenteredOrigin();
     const center = getTileCenter({
       map,
       tile,
@@ -181,13 +165,9 @@ export const registerEntityViewModule = defineModule((
           }
 
           const heroEntities = entityLayer.querySelectorAll?.('.entity--hero') ?? [];
-          for (const heroEntity of heroEntities) {
-            if (!heroEntity?.style) {
-              continue;
-            }
-
+          heroEntities.forEach((heroEntity) => {
             heroEntity.style.transition = '';
-          }
+          });
         }
       }
     ]

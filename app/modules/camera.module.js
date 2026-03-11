@@ -40,9 +40,6 @@ export const registerCameraModule = defineModule((
     }
 
     const offset = camera.getOffset?.();
-    if (!offset) {
-      return;
-    }
 
     emit(APP_UI_CAMERA_UPDATED, {
       offset,
@@ -54,15 +51,12 @@ export const registerCameraModule = defineModule((
   }
 
   function emitWorldMotionUpdated({ followHero = undefined, stepDurationMs = undefined } = {}) {
-    const detail = {};
-    if (typeof followHero === 'boolean') {
-      detail.followHero = followHero;
-    }
-    if (Number.isFinite(stepDurationMs)) {
-      detail.cameraStepDurationMs = stepDurationMs;
-    }
+    const detail = {
+      followHero,
+      cameraStepDurationMs: stepDurationMs
+    };
 
-    if (Object.keys(detail).length < 1) {
+    if (Object.values(detail).every((v) => v === undefined)) {
       return;
     }
 
@@ -120,10 +114,6 @@ export const registerCameraModule = defineModule((
       {
         type: APP_UI_RESTORE_STARTED,
         handler: () => {
-          if (!viewport) {
-            return;
-          }
-
           viewport.dataset.viewportVisibility = 'hidden';
           viewport.dataset.restoring = 'true';
         }
@@ -131,10 +121,6 @@ export const registerCameraModule = defineModule((
       {
         type: APP_UI_RESTORE_COMPLETED,
         handler: () => {
-          if (!viewport) {
-            return;
-          }
-
           if (camera && hero?.tile) {
             camera.centerOnTile?.(hero.tile);
             emitCameraUpdated();
@@ -147,10 +133,6 @@ export const registerCameraModule = defineModule((
       {
         type: APP_COMMAND_CAMERA_PAN_BY,
         handler: (event) => {
-          if (!camera) {
-            return;
-          }
-
           const { dx = 0, dy = 0 } = event.detail;
           camera.moveBy(dx, dy);
           emitCameraUpdated();
@@ -168,12 +150,10 @@ export const registerCameraModule = defineModule((
             return;
           }
 
-          if (typeof map.inBounds === 'function' && !map.inBounds(tile)) {
-            return;
+          if (map.inBounds?.(tile)) {
+            camera.centerOnTile?.(tile);
+            emitCameraUpdated();
           }
-
-          camera.centerOnTile?.(tile);
-          emitCameraUpdated();
         }
       },
       {
