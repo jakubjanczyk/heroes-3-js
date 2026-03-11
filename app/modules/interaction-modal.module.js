@@ -58,4 +58,13 @@ export const registerInteractionModalModule = defineModule(({ emit, env, config 
       }
     ]
   };
+}, {
+  id: 'interaction-modal',
+  phase: 'view',
+  consumes: [
+    APP_UI_INTERACTION_MODAL_OPENED
+  ],
+  produces: [
+    APP_UI_INTERACTION_MODAL_CLOSED
+  ]
 });

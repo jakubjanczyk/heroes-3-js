@@ -128,4 +128,20 @@ export const registerTurnModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'turn',
+  phase: 'domain',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_FACT_MOVEMENT_POINTS_CHANGED,
+    APP_FACT_TURN_ENDED,
+    APP_FACT_MOVE_STARTED,
+    APP_FACT_MOVE_FINISHED,
+    APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
+    APP_COMMAND_END_TURN_REQUESTED
+  ],
+  produces: [
+    APP_FACT_MOVEMENT_POINTS_CHANGED,
+    APP_FACT_TURN_ENDED
+  ]
 });

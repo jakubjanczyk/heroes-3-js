@@ -41,4 +41,12 @@ export const registerPreviewViewModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'preview-view',
+  phase: 'view',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_UI_PREVIEW_UPDATED
+  ],
+  produces: []
 });

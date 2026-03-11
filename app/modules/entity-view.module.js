@@ -192,4 +192,17 @@ export const registerEntityViewModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'entity-view',
+  phase: 'view',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_FACT_HERO_MOVED,
+    APP_UI_ENTITY_FADE_OUT_REQUESTED,
+    APP_FACT_MONSTER_DEFEATED,
+    APP_FACT_RESOURCE_COLLECTED,
+    APP_UI_RESTORE_STARTED,
+    APP_UI_RESTORE_COMPLETED
+  ],
+  produces: []
 });

@@ -230,4 +230,23 @@ export const registerCameraModule = defineModule((
       detachCameraInput?.();
     }
   };
+}, {
+  id: 'camera',
+  phase: 'domain',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_UI_RESTORE_STARTED,
+    APP_UI_RESTORE_COMPLETED,
+    APP_COMMAND_CAMERA_PAN_BY,
+    APP_COMMAND_CAMERA_CENTER_ON_TILE,
+    APP_FACT_MOVE_STARTED,
+    APP_FACT_HERO_MOVED,
+    APP_FACT_MOVE_FINISHED
+  ],
+  produces: [
+    APP_COMMAND_CAMERA_PAN_BY,
+    APP_COMMAND_TILE_CLICKED,
+    APP_UI_CAMERA_UPDATED,
+    APP_UI_WORLD_MOTION_UPDATED
+  ]
 });

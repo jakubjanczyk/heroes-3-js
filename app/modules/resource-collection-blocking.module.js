@@ -54,4 +54,15 @@ export const registerResourceCollectionBlockingModule = defineModule(({ emit }) 
       }
     ]
   };
+}, {
+  id: 'resource-collection-blocking',
+  phase: 'domain',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_UI_RESOURCE_COLLECTION_STARTED,
+    APP_FACT_RESOURCE_COLLECTED
+  ],
+  produces: [
+    APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED
+  ]
 });

@@ -117,6 +117,25 @@ describe('module runtime', () => {
     expect(target.removeEventListener).toHaveBeenCalledWith('click', handler, undefined);
   });
 
+  test('exposes normalized module metadata', () => {
+    const registerModule = defineModule(
+      () => ({}),
+      {
+        id: 'demo',
+        phase: 'domain',
+        consumes: ['fact.one', 'fact.one', '', 42],
+        produces: ['fact.two', undefined]
+      }
+    );
+
+    expect(registerModule.meta).toEqual({
+      id: 'demo',
+      phase: 'domain',
+      consumes: ['fact.one'],
+      produces: ['fact.two']
+    });
+  });
+
   test('is safe when removeEventListener is unavailable', () => {
     const bus = {
       addEventListener() {},

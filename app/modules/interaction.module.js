@@ -3,10 +3,15 @@ import { findHero } from '../../game/domain/entity-queries.js';
 import { sameTile } from '../../engine/tile-utils.js';
 import { getInteractionOutcomeHandler } from './shared/interaction-outcomes.js';
 import {
+  APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_ENTITY_FADE_OUT_REQUESTED,
-  APP_UI_INTERACTION_MODAL_CLOSED
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_RESOURCE_COLLECTION_STARTED
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
@@ -176,4 +181,20 @@ export const registerInteractionModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'interaction',
+  phase: 'domain',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_FACT_MOVE_FINISHED,
+    APP_UI_INTERACTION_MODAL_CLOSED
+  ],
+  produces: [
+    APP_UI_ENTITY_FADE_OUT_REQUESTED,
+    APP_UI_INTERACTION_MODAL_OPENED,
+    APP_UI_RESOURCE_COLLECTION_STARTED,
+    APP_FACT_MONSTER_DEFEATED,
+    APP_FACT_RESOURCE_COLLECTED,
+    APP_FACT_TOWN_VISITED
+  ]
 });

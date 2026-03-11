@@ -35,4 +35,11 @@ export const registerTerrainViewModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'terrain-view',
+  phase: 'view',
+  consumes: [
+    APP_FACT_WORLD_READY
+  ],
+  produces: []
 });

@@ -35,9 +35,17 @@ const VIEW_MODULES = [
   registerMusicModule
 ];
 
+const ALL_MODULES = [...DOMAIN_MODULES, ...VIEW_MODULES];
+
+export function listModuleMetadata() {
+  return ALL_MODULES
+    .map((registerModule) => registerModule.meta)
+    .filter((meta) => Boolean(meta?.id));
+}
+
 export function registerModules({ bus, env, config }) {
   const runtime = { bus, env, config };
-  const disposers = [...DOMAIN_MODULES, ...VIEW_MODULES]
+  const disposers = ALL_MODULES
     .map((registerModule) => registerModule(runtime))
     .filter((dispose) => typeof dispose === 'function');
 

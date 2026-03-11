@@ -155,4 +155,14 @@ export const registerMinimapViewModule = defineModule(({ emit, env }) => {
       }
     ]
   };
+}, {
+  id: 'minimap-view',
+  phase: 'view',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_UI_CAMERA_UPDATED
+  ],
+  produces: [
+    APP_COMMAND_CAMERA_CENTER_ON_TILE
+  ]
 });

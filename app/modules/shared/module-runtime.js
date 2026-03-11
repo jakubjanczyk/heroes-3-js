@@ -20,6 +20,39 @@ function resolveTarget(target, runtime) {
   return target;
 }
 
+function toEventTypeList(value) {
+  const values = toList(value);
+  const seen = new Set();
+  const types = [];
+
+  for (const candidate of values) {
+    if (typeof candidate !== 'string' || candidate.length < 1) {
+      continue;
+    }
+
+    if (seen.has(candidate)) {
+      continue;
+    }
+
+    seen.add(candidate);
+    types.push(candidate);
+  }
+
+  return Object.freeze(types);
+}
+
+function normalizeModuleMeta(meta) {
+  const id = typeof meta?.id === 'string' && meta.id.length > 0 ? meta.id : null;
+  const phase = meta?.phase === 'view' ? 'view' : meta?.phase === 'domain' ? 'domain' : null;
+
+  return Object.freeze({
+    id,
+    phase,
+    consumes: toEventTypeList(meta?.consumes),
+    produces: toEventTypeList(meta?.produces)
+  });
+}
+
 export function createModuleRuntime({ bus, env, config }) {
   const disposers = [];
 
@@ -81,8 +114,10 @@ export function createModuleRuntime({ bus, env, config }) {
   };
 }
 
-export function defineModule(setup) {
-  return (runtime, overrides) => {
+export function defineModule(setup, meta = {}) {
+  const moduleMeta = normalizeModuleMeta(meta);
+
+  const registerModule = (runtime, overrides) => {
     const moduleRuntime = createModuleRuntime(runtime);
     const moduleDefinition = setup(moduleRuntime, overrides);
 
@@ -121,4 +156,7 @@ export function defineModule(setup) {
       moduleRuntime.dispose();
     };
   };
+
+  registerModule.meta = moduleMeta;
+  return registerModule;
 }

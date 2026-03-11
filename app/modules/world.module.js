@@ -122,4 +122,17 @@ export const registerWorldModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'world',
+  phase: 'domain',
+  consumes: [
+    APP_COMMAND_APP_START,
+    APP_FACT_HERO_MOVED,
+    APP_FACT_MONSTER_DEFEATED,
+    APP_FACT_RESOURCE_COLLECTED
+  ],
+  produces: [
+    APP_FACT_WORLD_READY,
+    APP_FACT_WORLD_LOAD_FAILED
+  ]
 });

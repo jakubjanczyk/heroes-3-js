@@ -143,4 +143,18 @@ export const registerHudModule = defineModule(({ emit, env }) => {
       }
     ]
   };
+}, {
+  id: 'hud',
+  phase: 'view',
+  consumes: [
+    APP_FACT_MOVEMENT_POINTS_CHANGED,
+    APP_UI_MUSIC_STATE_CHANGED,
+    APP_FACT_WORLD_READY,
+    APP_FACT_RESOURCE_COLLECTED
+  ],
+  produces: [
+    APP_COMMAND_END_TURN_REQUESTED,
+    APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+    APP_COMMAND_RESET_SESSION_REQUESTED
+  ]
 });

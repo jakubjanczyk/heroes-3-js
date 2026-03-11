@@ -69,4 +69,14 @@ export const registerWorldViewModule = defineModule(({ env }) => {
       }
     ]
   };
+}, {
+  id: 'world-view',
+  phase: 'view',
+  consumes: [
+    APP_UI_RESTORE_STARTED,
+    APP_UI_RESTORE_COMPLETED,
+    APP_UI_WORLD_MOTION_UPDATED,
+    APP_UI_CAMERA_UPDATED
+  ],
+  produces: []
 });

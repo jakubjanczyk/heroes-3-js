@@ -69,4 +69,14 @@ export const registerMusicModule = defineModule((
       }
     ]
   };
+}, {
+  id: 'music',
+  phase: 'view',
+  consumes: [
+    APP_FACT_WORLD_READY,
+    APP_COMMAND_MUSIC_TOGGLE_REQUESTED
+  ],
+  produces: [
+    APP_UI_MUSIC_STATE_CHANGED
+  ]
 });
