@@ -8,14 +8,15 @@ import {
   APP_FACT_WORLD_LOAD_FAILED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerWorldModule(
-  { bus, env },
+export const registerWorldModule = defineModule((
+  { on, emit, env },
   {
     loadGame = loadGameDefault,
     buildWorld = buildWorldDefault
   } = {}
-) {
+) => {
   let hasStarted = false;
   let worldState = null;
 
@@ -27,7 +28,7 @@ export function registerWorldModule(
     worldState?.removeEntityById?.(entityId);
   }
 
-  bus.addEventListener(APP_FACT_HERO_MOVED, (event) => {
+  on(APP_FACT_HERO_MOVED, (event) => {
     const movedEntity = getEntityById(event.detail?.heroId);
     const fromTile = event.detail?.from;
     const toTile = event.detail?.to;
@@ -74,15 +75,15 @@ export function registerWorldModule(
     worldState?.restorePersistentEntitiesAt?.(restoreTile);
   });
 
-  bus.addEventListener(APP_FACT_MONSTER_DEFEATED, (event) => {
+  on(APP_FACT_MONSTER_DEFEATED, (event) => {
     removeEntityFromWorld(event.detail?.entityId);
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
+  on(APP_FACT_RESOURCE_COLLECTED, (event) => {
     removeEntityFromWorld(event.detail?.entityId);
   });
 
-  bus.addEventListener(APP_COMMAND_APP_START, () => {
+  on(APP_COMMAND_APP_START, () => {
     if (hasStarted) {
       return;
     }
@@ -95,17 +96,17 @@ export function registerWorldModule(
         const { map, occupancy, worldState: nextWorldState } = built;
         worldState = nextWorldState;
 
-        bus.emit(APP_FACT_WORLD_READY, {
+        emit(APP_FACT_WORLD_READY, {
           scenario,
           definitions,
           map,
           occupancy
         });
       } catch (error) {
-        bus.emit(APP_FACT_WORLD_LOAD_FAILED, {
+        emit(APP_FACT_WORLD_LOAD_FAILED, {
           error
         });
       }
     })();
   });
-}
+});

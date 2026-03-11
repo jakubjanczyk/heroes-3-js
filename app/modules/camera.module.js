@@ -14,14 +14,15 @@ import {
   APP_UI_RESTORE_STARTED,
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerCameraModule(
-  { bus, env, config },
+export const registerCameraModule = defineModule((
+  { on, emit, registerDisposer, env, config },
   {
     createCamera = createCameraDefault,
     attachCameraInput = attachCameraInputDefault
   } = {}
-) {
+) => {
   const viewport = env.document?.querySelector('.viewport');
   const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
   const cameraStepDurationMs = Number.isFinite(configuredStepDurationMs)
@@ -43,7 +44,7 @@ export function registerCameraModule(
       return;
     }
 
-    bus.emit(APP_UI_CAMERA_UPDATED, {
+    emit(APP_UI_CAMERA_UPDATED, {
       offset,
       viewportSize: {
         width: viewport?.clientWidth ?? 0,
@@ -65,10 +66,10 @@ export function registerCameraModule(
       return;
     }
 
-    bus.emit(APP_UI_WORLD_MOTION_UPDATED, detail);
+    emit(APP_UI_WORLD_MOTION_UPDATED, detail);
   }
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
     hero = findHero(world.scenario.entities);
     map = world.map;
@@ -93,7 +94,7 @@ export function registerCameraModule(
 
     const inputCamera = {
       moveBy(dx, dy) {
-        bus.emit(APP_COMMAND_CAMERA_PAN_BY, { dx, dy });
+        emit(APP_COMMAND_CAMERA_PAN_BY, { dx, dy });
       },
       getOffset: camera.getOffset?.bind(camera)
     };
@@ -107,12 +108,12 @@ export function registerCameraModule(
         edgePanDelayMs: 300,
         map,
         onTileClick: (tile) => {
-          bus.emit(APP_COMMAND_TILE_CLICKED, { tile });
+          emit(APP_COMMAND_TILE_CLICKED, { tile });
         }
       }) ?? null;
   });
 
-  bus.addEventListener(APP_UI_RESTORE_STARTED, () => {
+  on(APP_UI_RESTORE_STARTED, () => {
     if (!viewport) {
       return;
     }
@@ -121,7 +122,7 @@ export function registerCameraModule(
     viewport.dataset.restoring = 'true';
   });
 
-  bus.addEventListener(APP_UI_RESTORE_COMPLETED, () => {
+  on(APP_UI_RESTORE_COMPLETED, () => {
     if (!viewport) {
       return;
     }
@@ -135,7 +136,7 @@ export function registerCameraModule(
     delete viewport.dataset.restoring;
   });
 
-  bus.addEventListener(APP_COMMAND_CAMERA_PAN_BY, (event) => {
+  on(APP_COMMAND_CAMERA_PAN_BY, (event) => {
     if (!camera) {
       return;
     }
@@ -145,7 +146,7 @@ export function registerCameraModule(
     emitCameraUpdated();
   });
 
-  bus.addEventListener(APP_COMMAND_CAMERA_CENTER_ON_TILE, (event) => {
+  on(APP_COMMAND_CAMERA_CENTER_ON_TILE, (event) => {
     if (!camera || !map) {
       return;
     }
@@ -163,7 +164,7 @@ export function registerCameraModule(
     emitCameraUpdated();
   });
 
-  bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
+  on(APP_FACT_MOVE_STARTED, () => {
     if (!camera) {
       return;
     }
@@ -178,7 +179,7 @@ export function registerCameraModule(
     }
   });
 
-  bus.addEventListener(APP_FACT_HERO_MOVED, (event) => {
+  on(APP_FACT_HERO_MOVED, (event) => {
     if (!camera) {
       return;
     }
@@ -194,7 +195,7 @@ export function registerCameraModule(
     emitCameraUpdated();
   });
 
-  bus.addEventListener(APP_FACT_MOVE_FINISHED, () => {
+  on(APP_FACT_MOVE_FINISHED, () => {
     if (!camera) {
       return;
     }
@@ -205,4 +206,8 @@ export function registerCameraModule(
     camera.update?.();
     emitCameraUpdated();
   });
-}
+
+  registerDisposer(() => {
+    detachCameraInput?.();
+  });
+});

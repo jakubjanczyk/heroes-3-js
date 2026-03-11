@@ -5,18 +5,19 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerMusicModule(
-  { bus, env, config },
+export const registerMusicModule = defineModule((
+  { on, emit, env, config },
   {
     loadMusicTracks = loadMusicTracksDefault,
     createMusicPlayer = createMusicPlayerDefault
   } = {}
-) {
+) => {
   let musicPlayer = null;
   let hasInitialized = false;
 
-  bus.addEventListener(APP_FACT_WORLD_READY, () => {
+  on(APP_FACT_WORLD_READY, () => {
     if (hasInitialized) {
       return;
     }
@@ -42,21 +43,21 @@ export function registerMusicModule(
       });
 
       await Promise.resolve(musicPlayer?.start?.());
-      bus.emit(APP_UI_MUSIC_STATE_CHANGED, {
+      emit(APP_UI_MUSIC_STATE_CHANGED, {
         enabled: Boolean(musicPlayer?.isEnabled?.())
       });
     })();
   });
 
-  bus.addEventListener(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, () => {
+  on(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, () => {
     if (!musicPlayer) {
       return;
     }
 
     Promise.resolve(musicPlayer.toggle()).finally(() => {
-      bus.emit(APP_UI_MUSIC_STATE_CHANGED, {
+      emit(APP_UI_MUSIC_STATE_CHANGED, {
         enabled: Boolean(musicPlayer?.isEnabled?.())
       });
     });
   });
-}
+});

@@ -16,8 +16,9 @@ import {
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
 import { sameTile } from '../../engine/tile-utils.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerPreviewModule({ bus }) {
+export const registerPreviewModule = defineModule(({ on, emit }) => {
   let map = null;
   let occupancy = null;
   let hero = null;
@@ -29,7 +30,7 @@ export function registerPreviewModule({ bus }) {
   const blockedResourceEntityIds = new Set();
 
   function emitPreview() {
-    bus.emit(APP_UI_PREVIEW_UPDATED, {
+    emit(APP_UI_PREVIEW_UPDATED, {
       path: previewPath,
       targetTile: previewTarget,
       maxAffordableSteps: remainingMovementPoints
@@ -43,7 +44,7 @@ export function registerPreviewModule({ bus }) {
     emitPreview();
 
     if (emitFact && hadPreview) {
-      bus.emit(APP_FACT_PREVIEW_CLEARED, {}, { log });
+      emit(APP_FACT_PREVIEW_CLEARED, {}, { log });
     }
   }
 
@@ -56,7 +57,7 @@ export function registerPreviewModule({ bus }) {
     emitPreview();
 
     if (emitFact && targetTile && (!hadPreview || !hadSameTarget)) {
-      bus.emit(
+      emit(
         APP_FACT_PREVIEW_TARGET_SELECTED,
         {
           tile: targetTile
@@ -93,7 +94,7 @@ export function registerPreviewModule({ bus }) {
     });
   }
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
     map = world.map;
     occupancy = world.occupancy;
@@ -102,7 +103,7 @@ export function registerPreviewModule({ bus }) {
     clearPreview({ log: false, emitFact: false });
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
+  on(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
     blockedResourceEntityIds.clear();
     for (const entityId of event.detail?.entityIds ?? []) {
       if (typeof entityId === 'string' && entityId.length > 0) {
@@ -113,14 +114,14 @@ export function registerPreviewModule({ bus }) {
     clearPreview();
   });
 
-  bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
+  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
     remainingMovementPoints = Number(event.detail.value);
     if (previewPath || previewTarget) {
       emitPreview();
     }
   });
 
-  bus.addEventListener(APP_COMMAND_TILE_CLICKED, (event) => {
+  on(APP_COMMAND_TILE_CLICKED, (event) => {
     if (!hero || isMoving || isInteractionModalOpen) {
       return;
     }
@@ -139,14 +140,14 @@ export function registerPreviewModule({ bus }) {
     setPreview({ targetTile: tile, path });
   });
 
-  bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
+  on(APP_FACT_MOVE_STARTED, () => {
     isMoving = true;
     if (previewPath || previewTarget) {
       emitPreview();
     }
   });
 
-  bus.addEventListener(APP_FACT_HERO_MOVED, (event) => {
+  on(APP_FACT_HERO_MOVED, (event) => {
     const to = event.detail.to;
     if (!previewPath || previewPath.length === 0) {
       return;
@@ -164,7 +165,7 @@ export function registerPreviewModule({ bus }) {
     emitPreview();
   });
 
-  bus.addEventListener(APP_FACT_MOVE_FINISHED, (event) => {
+  on(APP_FACT_MOVE_FINISHED, (event) => {
     isMoving = false;
     if (event.detail.interaction?.kind) {
       clearPreview();
@@ -178,16 +179,16 @@ export function registerPreviewModule({ bus }) {
     clearPreview();
   });
 
-  bus.addEventListener(APP_UI_INTERACTION_MODAL_OPENED, () => {
+  on(APP_UI_INTERACTION_MODAL_OPENED, () => {
     isInteractionModalOpen = true;
     clearPreview();
   });
 
-  bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
+  on(APP_UI_INTERACTION_MODAL_CLOSED, () => {
     isInteractionModalOpen = false;
   });
 
-  bus.addEventListener(APP_FACT_PREVIEW_TARGET_SELECTED, (event) => {
+  on(APP_FACT_PREVIEW_TARGET_SELECTED, (event) => {
     if (!hero || isMoving || isInteractionModalOpen) {
       return;
     }
@@ -215,7 +216,7 @@ export function registerPreviewModule({ bus }) {
     });
   });
 
-  bus.addEventListener(APP_FACT_PREVIEW_CLEARED, () => {
+  on(APP_FACT_PREVIEW_CLEARED, () => {
     if (!previewPath && !previewTarget) {
       return;
     }
@@ -223,4 +224,4 @@ export function registerPreviewModule({ bus }) {
     clearPreview({ log: false, emitFact: false });
   });
 
-}
+});

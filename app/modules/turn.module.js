@@ -8,13 +8,14 @@ import {
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerTurnModule(
-  { bus, config },
+export const registerTurnModule = defineModule((
+  { on, emit, config },
   {
     createTurnSystem = createTurnSystemDefault
   } = {}
-) {
+) => {
   const maxMovementPoints = config.maxMovementPoints;
   const now = typeof config?.now === 'function' ? config.now : () => Date.now();
   const moveDurationThresholdMs = config?.moveDurationThresholdMs ?? 16;
@@ -31,7 +32,7 @@ export function registerTurnModule(
       return;
     }
 
-    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, {
+    emit(APP_FACT_MOVEMENT_POINTS_CHANGED, {
       value: turnSystem.getRemainingMovementPoints(),
       max: maxMovementPoints
     }, {
@@ -39,14 +40,14 @@ export function registerTurnModule(
     });
   }
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     turnSystem = createTurnSystem({
       maxMovementPoints
     });
     emitTurnState({ log: false });
   });
 
-  bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
+  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
     if (!turnSystem) {
       return;
     }
@@ -54,7 +55,7 @@ export function registerTurnModule(
     turnSystem.setRemainingMovementPoints?.(event.detail.value);
   });
 
-  bus.addEventListener(APP_FACT_TURN_ENDED, (event) => {
+  on(APP_FACT_TURN_ENDED, (event) => {
     if (!turnSystem) {
       return;
     }
@@ -62,12 +63,12 @@ export function registerTurnModule(
     turnSystem.setTurnNumber?.(event.detail.turnNumber);
   });
 
-  bus.addEventListener(APP_FACT_MOVE_STARTED, () => {
+  on(APP_FACT_MOVE_STARTED, () => {
     isMoving = true;
     moveStartedAt = now();
   });
 
-  bus.addEventListener(APP_FACT_MOVE_FINISHED, () => {
+  on(APP_FACT_MOVE_FINISHED, () => {
     isMoving = false;
     if (!shouldApplyPostMoveGrace) {
       suppressEndTurnUntil = 0;
@@ -79,7 +80,7 @@ export function registerTurnModule(
       moveDurationMs >= moveDurationThresholdMs ? now() + endTurnPostMoveGraceMs : 0;
   });
 
-  bus.addEventListener(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, (event) => {
+  on(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, (event) => {
     if (!turnSystem) {
       return;
     }
@@ -97,15 +98,15 @@ export function registerTurnModule(
     emitTurnState();
   });
 
-  bus.addEventListener(APP_COMMAND_END_TURN_REQUESTED, () => {
+  on(APP_COMMAND_END_TURN_REQUESTED, () => {
     if (!turnSystem || isMoving || now() < suppressEndTurnUntil) {
       return;
     }
 
     turnSystem.endTurn();
-    bus.emit(APP_FACT_TURN_ENDED, {
+    emit(APP_FACT_TURN_ENDED, {
       turnNumber: turnSystem.getTurnNumber()
     });
     emitTurnState();
   });
-}
+});

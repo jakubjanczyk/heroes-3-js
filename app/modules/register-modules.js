@@ -14,21 +14,36 @@ import { registerTurnModule } from './turn.module.js';
 import { registerWorldModule } from './world.module.js';
 import { registerWorldViewModule } from './world-view.module.js';
 
-export function registerModules({ bus, env, config }) {
-  registerWorldModule({ bus, env, config });
-  registerTurnModule({ bus, env, config });
-  registerMovementModule({ bus, env, config });
-  registerInteractionModule({ bus, env, config });
-  registerResourceCollectionBlockingModule({ bus, env, config });
-  registerPreviewModule({ bus, env, config });
-  registerCameraModule({ bus, env, config });
+const DOMAIN_MODULES = [
+  registerWorldModule,
+  registerTurnModule,
+  registerMovementModule,
+  registerInteractionModule,
+  registerResourceCollectionBlockingModule,
+  registerPreviewModule,
+  registerCameraModule
+];
 
-  registerTerrainViewModule({ bus, env, config });
-  registerEntityViewModule({ bus, env, config });
-  registerPreviewViewModule({ bus, env, config });
-  registerWorldViewModule({ bus, env, config });
-  registerMinimapViewModule({ bus, env, config });
-  registerInteractionModalModule({ bus, env, config });
-  registerHudModule({ bus, env, config });
-  registerMusicModule({ bus, env, config });
+const VIEW_MODULES = [
+  registerTerrainViewModule,
+  registerEntityViewModule,
+  registerPreviewViewModule,
+  registerWorldViewModule,
+  registerMinimapViewModule,
+  registerInteractionModalModule,
+  registerHudModule,
+  registerMusicModule
+];
+
+export function registerModules({ bus, env, config }) {
+  const runtime = { bus, env, config };
+  const disposers = [...DOMAIN_MODULES, ...VIEW_MODULES]
+    .map((registerModule) => registerModule(runtime))
+    .filter((dispose) => typeof dispose === 'function');
+
+  return () => {
+    for (let index = disposers.length - 1; index >= 0; index -= 1) {
+      disposers[index]();
+    }
+  };
 }

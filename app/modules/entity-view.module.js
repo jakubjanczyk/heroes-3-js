@@ -12,18 +12,19 @@ import {
   APP_UI_ENTITY_FADE_OUT_REQUESTED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
 function isFiniteTileCoordinate(value) {
   return Number.isFinite(value);
 }
 
-export function registerEntityViewModule(
-  { bus, env, config },
+export const registerEntityViewModule = defineModule((
+  { on, env, config },
   {
     renderEntityLayer = renderEntityLayerDefault,
     getEntityStyle = getDefaultEntityStyle
   } = {}
-) {
+) => {
   const entityLayer = env.document?.querySelector('.entity-layer');
   const createElement = env.document?.createElement?.bind(env.document);
   const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
@@ -120,14 +121,14 @@ export function registerEntityViewModule(
     el?.classList?.add?.(fadeOutSpec.className);
   }
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     map = event.detail.map;
     entities = event.detail.scenario.entities;
     setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
     render();
   });
 
-  bus.addEventListener(APP_FACT_HERO_MOVED, (event) => {
+  on(APP_FACT_HERO_MOVED, (event) => {
     const heroId = event.detail?.heroId;
     const toTile = event.detail?.to;
     if (updateHeroPosition({ heroId, tile: toTile })) {
@@ -137,27 +138,27 @@ export function registerEntityViewModule(
     render();
   });
 
-  bus.addEventListener(APP_UI_ENTITY_FADE_OUT_REQUESTED, (event) => {
+  on(APP_UI_ENTITY_FADE_OUT_REQUESTED, (event) => {
     applyEntityFadeOut({
       entityId: event.detail?.entityId,
       entityKind: event.detail?.entityKind
     });
   });
 
-  bus.addEventListener(APP_FACT_MONSTER_DEFEATED, () => {
+  on(APP_FACT_MONSTER_DEFEATED, () => {
     render();
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, () => {
+  on(APP_FACT_RESOURCE_COLLECTED, () => {
     render();
   });
 
-  bus.addEventListener(APP_UI_RESTORE_STARTED, () => {
+  on(APP_UI_RESTORE_STARTED, () => {
     isRestoring = true;
     applyHeroRestoreMotionOverride();
   });
 
-  bus.addEventListener(APP_UI_RESTORE_COMPLETED, () => {
+  on(APP_UI_RESTORE_COMPLETED, () => {
     isRestoring = false;
     if (!entityLayer) {
       return;
@@ -172,4 +173,4 @@ export function registerEntityViewModule(
       heroEntity.style.transition = '';
     }
   });
-}
+});

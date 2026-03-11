@@ -6,8 +6,9 @@ import {
   createInteractionModalElement,
   INTERACTION_MODAL_CLOSED_EVENT,
 } from '../ui/interaction-modal.element.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerInteractionModalModule({ bus, env, config }) {
+export const registerInteractionModalModule = defineModule(({ on, emit, env, config }) => {
   const viewport = env.document?.querySelector('.viewport');
   const modalTransitionMs = config?.interactionModalTransitionMs ?? 260;
   let activeModal = null;
@@ -18,7 +19,7 @@ export function registerInteractionModalModule({ bus, env, config }) {
     }
 
     if (activeModal) {
-      bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
+      emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
       activeModal.remove();
       activeModal = null;
     }
@@ -37,7 +38,7 @@ export function registerInteractionModalModule({ bus, env, config }) {
         if (activeModal === modalElement) {
           activeModal = null;
         }
-        bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
+        emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
       },
       { once: true }
     );
@@ -47,7 +48,7 @@ export function registerInteractionModalModule({ bus, env, config }) {
     activeModal = modalElement;
   }
 
-  bus.addEventListener(APP_UI_INTERACTION_MODAL_OPENED, (event) => {
+  on(APP_UI_INTERACTION_MODAL_OPENED, (event) => {
     openModal(event.detail);
   });
-}
+});

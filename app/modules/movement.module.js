@@ -15,13 +15,14 @@ import {
   APP_UI_PREVIEW_UPDATED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerMovementModule(
-  { bus, config },
+export const registerMovementModule = defineModule((
+  { on, emit, config },
   {
     createMovementSystem = createMovementSystemDefault
   } = {}
-) {
+) => {
   const stepDelayMs = config?.movementStepDelayMs ?? 220;
   const movementSleep = typeof config?.movementSleep === 'function' ? config.movementSleep : undefined;
 
@@ -33,7 +34,7 @@ export function registerMovementModule(
   let previewPath = null;
   let isInteractionModalOpen = false;
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     const { scenario, map, occupancy } = event.detail;
     const hero = findHero(scenario.entities);
     blockedResourceEntityIds.clear();
@@ -56,12 +57,12 @@ export function registerMovementModule(
       isInteractionBlocked: (entity) =>
         Boolean(entity && blockedResourceEntityIds.has(entity.id)),
       spendMovementPoints: (amount) => {
-        bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
+        emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
           amount
         });
       },
       onMoveStart: ({ targetTile }) => {
-        bus.emit(APP_FACT_MOVE_STARTED, {
+        emit(APP_FACT_MOVE_STARTED, {
           targetTile
         });
       },
@@ -74,7 +75,7 @@ export function registerMovementModule(
           detail.interaction = interaction;
         }
 
-        bus.emit(APP_FACT_MOVE_FINISHED, detail);
+        emit(APP_FACT_MOVE_FINISHED, detail);
       },
       onStep: ({ hero: steppedHero, from, to }) => {
         const heroId = steppedHero?.id;
@@ -82,7 +83,7 @@ export function registerMovementModule(
           return;
         }
 
-        bus.emit(APP_FACT_HERO_MOVED, {
+        emit(APP_FACT_HERO_MOVED, {
           heroId,
           from,
           to
@@ -91,12 +92,12 @@ export function registerMovementModule(
     });
   });
 
-  bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
+  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
     const value = Number(event.detail.value);
     remainingMovementPoints = Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
+  on(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
     blockedResourceEntityIds.clear();
     for (const entityId of event.detail?.entityIds ?? []) {
       if (typeof entityId === 'string' && entityId.length > 0) {
@@ -105,20 +106,20 @@ export function registerMovementModule(
     }
   });
 
-  bus.addEventListener(APP_UI_PREVIEW_UPDATED, (event) => {
+  on(APP_UI_PREVIEW_UPDATED, (event) => {
     previewTargetTile = event.detail?.targetTile ?? null;
     previewPath = event.detail?.path ?? null;
   });
 
-  bus.addEventListener(APP_UI_INTERACTION_MODAL_OPENED, () => {
+  on(APP_UI_INTERACTION_MODAL_OPENED, () => {
     isInteractionModalOpen = true;
   });
 
-  bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
+  on(APP_UI_INTERACTION_MODAL_CLOSED, () => {
     isInteractionModalOpen = false;
   });
 
-  bus.addEventListener(APP_COMMAND_TILE_CLICKED, (event) => {
+  on(APP_COMMAND_TILE_CLICKED, (event) => {
     if (!movement || isMoveCommandInProgress || isInteractionModalOpen) {
       return;
     }
@@ -136,13 +137,13 @@ export function registerMovementModule(
       return;
     }
 
-    bus.emit(APP_COMMAND_MOVE_REQUESTED, {
+    emit(APP_COMMAND_MOVE_REQUESTED, {
       targetTile: tile,
       path: previewPath
     });
   });
 
-  bus.addEventListener(APP_COMMAND_MOVE_REQUESTED, (event) => {
+  on(APP_COMMAND_MOVE_REQUESTED, (event) => {
     if (!movement || isMoveCommandInProgress) {
       return;
     }
@@ -158,4 +159,4 @@ export function registerMovementModule(
       }
     })();
   });
-}
+});

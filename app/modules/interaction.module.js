@@ -8,13 +8,14 @@ import {
   APP_UI_ENTITY_FADE_OUT_REQUESTED,
   APP_UI_INTERACTION_MODAL_CLOSED
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerInteractionModule(
-  { bus, config },
+export const registerInteractionModule = defineModule((
+  { on, emit, bus, config },
   {
     createInteractionSystem = createInteractionSystemDefault
   } = {}
-) {
+) => {
   const sleep =
     typeof config?.interactionSleep === 'function'
       ? config.interactionSleep
@@ -36,7 +37,7 @@ export function registerInteractionModule(
       return;
     }
 
-    bus.emit(APP_UI_ENTITY_FADE_OUT_REQUESTED, {
+    emit(APP_UI_ENTITY_FADE_OUT_REQUESTED, {
       entityId,
       entityKind,
       durationMs
@@ -44,7 +45,7 @@ export function registerInteractionModule(
     await sleep(durationMs);
   }
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     const world = event.detail;
     entities = world.scenario.entities;
     hero = findHero(entities);
@@ -54,7 +55,7 @@ export function registerInteractionModule(
     });
   });
 
-  bus.addEventListener(APP_FACT_MOVE_FINISHED, (event) => {
+  on(APP_FACT_MOVE_FINISHED, (event) => {
     if (!interactions || !hero) {
       return;
     }
@@ -133,7 +134,7 @@ export function registerInteractionModule(
     })();
   });
 
-  bus.addEventListener(APP_UI_INTERACTION_MODAL_CLOSED, () => {
+  on(APP_UI_INTERACTION_MODAL_CLOSED, () => {
     if (!interactions || !pendingModalOutcome) {
       return;
     }
@@ -163,4 +164,4 @@ export function registerInteractionModule(
       });
     })();
   });
-}
+});

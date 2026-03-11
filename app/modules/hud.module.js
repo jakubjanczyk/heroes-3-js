@@ -7,8 +7,9 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED
 } from '../events.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerHudModule({ bus, env }) {
+export const registerHudModule = defineModule(({ on, onDom, emit, env }) => {
   const uiLayer = env.document?.querySelector('.ui-layer');
   const movementPointsStatus = env.document?.getElementById('movement-points-status');
   const resourceTotalsStatus = env.document?.getElementById('resource-totals-status');
@@ -37,34 +38,26 @@ export function registerHudModule({ bus, env }) {
     resourceTotalsStatus.textContent = `Resources: ${parts.join(' | ')}`;
   }
 
-  if (endTurnButton) {
-    endTurnButton.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-      bus.emit(APP_COMMAND_END_TURN_REQUESTED, {});
-    });
-  }
+  onDom(endTurnButton, 'click', (event) => {
+    event?.stopPropagation?.();
+    emit(APP_COMMAND_END_TURN_REQUESTED, {});
+  });
 
-  if (musicToggleButton) {
-    musicToggleButton.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-      bus.emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
-    });
-  }
+  onDom(musicToggleButton, 'click', (event) => {
+    event?.stopPropagation?.();
+    emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
+  });
 
-  if (resetSessionButton) {
-    resetSessionButton.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-      bus.emit(APP_COMMAND_RESET_SESSION_REQUESTED, {});
-    });
-  }
+  onDom(resetSessionButton, 'click', (event) => {
+    event?.stopPropagation?.();
+    emit(APP_COMMAND_RESET_SESSION_REQUESTED, {});
+  });
 
-  if (uiLayer) {
-    uiLayer.addEventListener('click', (event) => {
-      event?.stopPropagation?.();
-    });
-  }
+  onDom(uiLayer, 'click', (event) => {
+    event?.stopPropagation?.();
+  });
 
-  bus.addEventListener(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
+  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
     if (!movementPointsStatus) {
       return;
     }
@@ -73,7 +66,7 @@ export function registerHudModule({ bus, env }) {
     movementPointsStatus.textContent = `MP: ${value} / ${max}`;
   });
 
-  bus.addEventListener(APP_UI_MUSIC_STATE_CHANGED, (event) => {
+  on(APP_UI_MUSIC_STATE_CHANGED, (event) => {
     if (!musicToggleButton) {
       return;
     }
@@ -83,7 +76,7 @@ export function registerHudModule({ bus, env }) {
     musicToggleButton.setAttribute?.('aria-pressed', enabled ? 'true' : 'false');
   });
 
-  bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
+  on(APP_FACT_WORLD_READY, (event) => {
     const definitions = event.detail.definitions?.resources ?? {};
     resourceTypeOrder = Object.keys(definitions);
     resourceNamesByType = {};
@@ -103,7 +96,7 @@ export function registerHudModule({ bus, env }) {
     bootStatus.textContent = `Boot ok: ${event.detail.scenario.meta.id}`;
   });
 
-  bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, (event) => {
+  on(APP_FACT_RESOURCE_COLLECTED, (event) => {
     const resourceType = event.detail.entityType;
     if (!resourceType) {
       return;
@@ -122,4 +115,4 @@ export function registerHudModule({ bus, env }) {
     resourceTotalsByType[resourceType] = (resourceTotalsByType[resourceType] ?? 0) + collectedAmount;
     renderResourceTotals();
   });
-}
+});

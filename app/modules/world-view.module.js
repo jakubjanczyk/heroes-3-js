@@ -5,11 +5,12 @@ import {
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
+import { defineModule } from './shared/module-runtime.js';
 
-export function registerWorldViewModule({ bus, env }) {
+export const registerWorldViewModule = defineModule(({ on, env }) => {
   const worldElement = env.document?.querySelector?.('.world');
 
-  bus.addEventListener(APP_UI_RESTORE_STARTED, () => {
+  on(APP_UI_RESTORE_STARTED, () => {
     if (!worldElement?.style) {
       return;
     }
@@ -17,7 +18,7 @@ export function registerWorldViewModule({ bus, env }) {
     worldElement.style.transition = 'none';
   });
 
-  bus.addEventListener(APP_UI_RESTORE_COMPLETED, () => {
+  on(APP_UI_RESTORE_COMPLETED, () => {
     if (!worldElement?.style) {
       return;
     }
@@ -25,7 +26,7 @@ export function registerWorldViewModule({ bus, env }) {
     worldElement.style.transition = '';
   });
 
-  bus.addEventListener(APP_UI_WORLD_MOTION_UPDATED, (event) => {
+  on(APP_UI_WORLD_MOTION_UPDATED, (event) => {
     if (!worldElement) {
       return;
     }
@@ -42,7 +43,7 @@ export function registerWorldViewModule({ bus, env }) {
     }
   });
 
-  bus.addEventListener(APP_UI_CAMERA_UPDATED, (event) => {
+  on(APP_UI_CAMERA_UPDATED, (event) => {
     if (!worldElement) {
       return;
     }
@@ -55,4 +56,4 @@ export function registerWorldViewModule({ bus, env }) {
 
     worldElement.style.transform = `translate(${x}px, ${y}px)`;
   });
-}
+});
