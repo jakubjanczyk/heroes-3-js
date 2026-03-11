@@ -17,4 +17,14 @@ describe('register-modules metadata', () => {
       expect(Array.isArray(entry.produces)).toBe(true);
     }
   });
+
+  test('orders metadata by phase with domain before view', () => {
+    const metadata = listModuleMetadata();
+    const phaseSequence = metadata.map((entry) => entry.phase);
+    const firstViewIndex = phaseSequence.indexOf('view');
+
+    expect(firstViewIndex).toBeGreaterThan(-1);
+    expect(phaseSequence.slice(0, firstViewIndex).every((phase) => phase === 'domain')).toBe(true);
+    expect(phaseSequence.slice(firstViewIndex).every((phase) => phase === 'view')).toBe(true);
+  });
 });

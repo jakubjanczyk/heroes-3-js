@@ -14,17 +14,19 @@ import { registerTurnModule } from './turn.module.js';
 import { registerWorldModule } from './world.module.js';
 import { registerWorldViewModule } from './world-view.module.js';
 
-const DOMAIN_MODULES = [
+const PHASE_ORDER = Object.freeze({
+  domain: 0,
+  view: 1
+});
+
+const MODULES = [
   registerWorldModule,
   registerTurnModule,
   registerMovementModule,
   registerInteractionModule,
   registerResourceCollectionBlockingModule,
   registerPreviewModule,
-  registerCameraModule
-];
-
-const VIEW_MODULES = [
+  registerCameraModule,
   registerTerrainViewModule,
   registerEntityViewModule,
   registerPreviewViewModule,
@@ -35,17 +37,74 @@ const VIEW_MODULES = [
   registerMusicModule
 ];
 
-const ALL_MODULES = [...DOMAIN_MODULES, ...VIEW_MODULES];
+function getModuleId(meta, index) {
+  if (typeof meta?.id === 'string' && meta.id.length > 0) {
+    return meta.id;
+  }
+
+  throw new Error(`Invalid module metadata: missing id at index ${index}`);
+}
+
+function getModulePhase(meta, id) {
+  const phase = meta?.phase;
+  if (phase === 'domain' || phase === 'view') {
+    return phase;
+  }
+
+  throw new Error(`Invalid module metadata: module "${id}" has unsupported phase "${phase}"`);
+}
+
+function assertModuleMetadata(modules) {
+  const seenIds = new Set();
+
+  for (let index = 0; index < modules.length; index += 1) {
+    const registerModule = modules[index];
+    const meta = registerModule?.meta;
+    const id = getModuleId(meta, index);
+    getModulePhase(meta, id);
+
+    if (seenIds.has(id)) {
+      throw new Error(`Invalid module metadata: duplicate id "${id}"`);
+    }
+
+    seenIds.add(id);
+
+    if (!Array.isArray(meta?.consumes) || !Array.isArray(meta?.produces)) {
+      throw new Error(
+        `Invalid module metadata: module "${id}" must define consumes and produces arrays`
+      );
+    }
+  }
+}
+
+function orderModulesByPhase(modules) {
+  return modules
+    .map((registerModule, index) => ({
+      registerModule,
+      index,
+      phase: getModulePhase(registerModule?.meta, getModuleId(registerModule?.meta, index))
+    }))
+    .sort((left, right) => {
+      const phaseDiff = PHASE_ORDER[left.phase] - PHASE_ORDER[right.phase];
+      if (phaseDiff !== 0) {
+        return phaseDiff;
+      }
+
+      return left.index - right.index;
+    })
+    .map((entry) => entry.registerModule);
+}
+
+assertModuleMetadata(MODULES);
+const ORDERED_MODULES = orderModulesByPhase(MODULES);
 
 export function listModuleMetadata() {
-  return ALL_MODULES
-    .map((registerModule) => registerModule.meta)
-    .filter((meta) => Boolean(meta?.id));
+  return ORDERED_MODULES.map((registerModule) => registerModule.meta);
 }
 
 export function registerModules({ bus, env, config }) {
   const runtime = { bus, env, config };
-  const disposers = ALL_MODULES
+  const disposers = ORDERED_MODULES
     .map((registerModule) => registerModule(runtime))
     .filter((dispose) => typeof dispose === 'function');
 
