@@ -7,6 +7,8 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED,
   APP_UI_ENTITY_FADE_OUT_REQUESTED,
   APP_FACT_WORLD_READY
 } from '../events.js';
@@ -23,7 +25,6 @@ export function registerEntityViewModule(
   } = {}
 ) {
   const entityLayer = env.document?.querySelector('.entity-layer');
-  const viewport = env.document?.querySelector('.viewport');
   const createElement = env.document?.createElement?.bind(env.document);
   const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
   const heroStepDurationMs = Number.isFinite(configuredStepDurationMs)
@@ -32,13 +33,10 @@ export function registerEntityViewModule(
 
   let map = null;
   let entities = null;
-
-  function isViewportRestoring() {
-    return viewport?.dataset?.restoring === 'true';
-  }
+  let isRestoring = false;
 
   function applyHeroRestoreMotionOverride() {
-    if (!entityLayer || !isViewportRestoring()) {
+    if (!entityLayer || !isRestoring) {
       return;
     }
 
@@ -79,7 +77,7 @@ export function registerEntityViewModule(
 
     heroEntity.dataset.tileX = String(tile.x);
     heroEntity.dataset.tileY = String(tile.y);
-    if (isViewportRestoring()) {
+    if (isRestoring) {
       heroEntity.style.transition = 'none';
     }
     const hero = entities?.find((entity) => entity.id === heroId) ?? null;
@@ -152,5 +150,26 @@ export function registerEntityViewModule(
 
   bus.addEventListener(APP_FACT_RESOURCE_COLLECTED, () => {
     render();
+  });
+
+  bus.addEventListener(APP_UI_RESTORE_STARTED, () => {
+    isRestoring = true;
+    applyHeroRestoreMotionOverride();
+  });
+
+  bus.addEventListener(APP_UI_RESTORE_COMPLETED, () => {
+    isRestoring = false;
+    if (!entityLayer) {
+      return;
+    }
+
+    const heroEntities = entityLayer.querySelectorAll?.('.entity--hero') ?? [];
+    for (const heroEntity of heroEntities) {
+      if (!heroEntity?.style) {
+        continue;
+      }
+
+      heroEntity.style.transition = '';
+    }
   });
 }

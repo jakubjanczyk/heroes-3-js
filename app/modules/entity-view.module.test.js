@@ -4,7 +4,9 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED
 } from '../events.js';
 import { createMap } from '../../engine/map.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
@@ -208,7 +210,7 @@ describe('entity view module', () => {
     expect(renderCalls).toHaveLength(2);
   });
 
-  test('keeps hero transitions disabled while viewport is restoring', () => {
+  test('keeps hero transitions disabled while restore is active', () => {
     const bus = createFakeBus();
     const heroElements = [
       {
@@ -220,11 +222,6 @@ describe('entity view module', () => {
         dataset: {}
       }
     ];
-    const viewport = {
-      dataset: {
-        restoring: 'true'
-      }
-    };
     const entityLayer = {
       id: 'entity-layer',
       clientWidth: 640,
@@ -262,9 +259,6 @@ describe('entity view module', () => {
               if (selector === '.entity-layer') {
                 return entityLayer;
               }
-              if (selector === '.viewport') {
-                return viewport;
-              }
               return null;
             },
             createElement(tag) {
@@ -291,6 +285,7 @@ describe('entity view module', () => {
       map,
       scenario: { entities: [{ id: 'hero-1' }] }
     });
+    bus.emit(APP_UI_RESTORE_STARTED, {});
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
 
     expect(heroElements[0].style.transition).toBe('none');
@@ -298,6 +293,10 @@ describe('entity view module', () => {
     bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
 
     expect(heroElements[0].style.transition).toBe('none');
+
+    bus.emit(APP_UI_RESTORE_COMPLETED, {});
+
+    expect(heroElements[0].style.transition).toBe('');
   });
 
   test('does not render when entity layer is missing', () => {

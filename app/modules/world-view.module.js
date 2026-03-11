@@ -1,8 +1,29 @@
-import { APP_UI_CAMERA_UPDATED, APP_UI_WORLD_MOTION_UPDATED } from '../events.js';
+import {
+  APP_UI_CAMERA_UPDATED,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED,
+  APP_UI_WORLD_MOTION_UPDATED
+} from '../events.js';
 import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
 
 export function registerWorldViewModule({ bus, env }) {
   const worldElement = env.document?.querySelector?.('.world');
+
+  bus.addEventListener(APP_UI_RESTORE_STARTED, () => {
+    if (!worldElement?.style) {
+      return;
+    }
+
+    worldElement.style.transition = 'none';
+  });
+
+  bus.addEventListener(APP_UI_RESTORE_COMPLETED, () => {
+    if (!worldElement?.style) {
+      return;
+    }
+
+    worldElement.style.transition = '';
+  });
 
   bus.addEventListener(APP_UI_WORLD_MOTION_UPDATED, (event) => {
     if (!worldElement) {

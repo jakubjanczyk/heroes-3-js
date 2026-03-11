@@ -17,18 +17,6 @@ export function createBus({
     writeLog(entry);
   }
 
-  function getListenerCount(type) {
-    if (typeof type === 'string') {
-      return listenersByType.get(type)?.size ?? 0;
-    }
-
-    let total = 0;
-    for (const listeners of listenersByType.values()) {
-      total += listeners.size;
-    }
-    return total;
-  }
-
   function addEventListener(type, handler) {
     const listeners = listenersByType.get(type) ?? new Set();
     listeners.add(handler);
@@ -37,7 +25,7 @@ export function createBus({
     debugLog({
       action: 'subscribe',
       type,
-      subscribers: getListenerCount(type)
+      subscribers: listeners.size
     });
   }
 
@@ -55,7 +43,7 @@ export function createBus({
     debugLog({
       action: 'unsubscribe',
       type,
-      subscribers: getListenerCount(type)
+      subscribers: listenersByType.get(type)?.size ?? 0
     });
   }
 
@@ -99,7 +87,7 @@ export function createBus({
           detail: {
             message: error instanceof Error ? error.message : String(error)
           },
-          subscribers: getListenerCount(type)
+          subscribers: listenersByType.get(type)?.size ?? 0
         });
       });
     }
@@ -127,7 +115,6 @@ export function createBus({
     addEventListener,
     removeEventListener,
     removeAllEventListeners,
-    getListenerCount,
     emit,
     get silent() {
       return isSilent;

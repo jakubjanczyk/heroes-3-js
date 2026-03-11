@@ -9,6 +9,8 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED,
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
@@ -176,6 +178,61 @@ describe('camera module', () => {
       'unlockFollow',
       'update'
     ]);
+  });
+
+  test('toggles restore attributes and recenters hero on restore complete', () => {
+    const bus = createFakeBus();
+    const centeredOnTiles = [];
+    const viewport = {
+      dataset: {},
+      clientWidth: 1000,
+      clientHeight: 700
+    };
+
+    registerCameraModule(
+      {
+        bus,
+        env: {
+          document: createFakeDocument({
+            '.viewport': viewport,
+            '.world': {}
+          }),
+          window: {}
+        }
+      },
+      {
+        createCamera: () => ({
+          setFollowTileGetter() {},
+          update() {},
+          centerOnTile(tile) {
+            centeredOnTiles.push(tile);
+          },
+          moveBy() {},
+          getOffset() {
+            return { x: 0, y: 0 };
+          }
+        }),
+        attachCameraInput() {}
+      }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, {
+      scenario: {
+        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 2, y: 1 } }]
+      },
+      map: { id: 'map' }
+    });
+
+    bus.emit(APP_UI_RESTORE_STARTED, {});
+
+    expect(viewport.dataset.viewportVisibility).toBe('hidden');
+    expect(viewport.dataset.restoring).toBe('true');
+
+    bus.emit(APP_UI_RESTORE_COMPLETED, {});
+
+    expect(centeredOnTiles).toContainEqual({ x: 2, y: 1 });
+    expect(viewport.dataset.viewportVisibility).toBe('visible');
+    expect(viewport.dataset.restoring).toBeUndefined();
   });
 
   test('centers camera on minimap command and emits camera update', () => {

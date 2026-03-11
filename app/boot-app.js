@@ -1,16 +1,15 @@
-import { createBus } from '../engine/bus.js';
-import { createEventLog } from '../engine/eventlog.js';
+import {createBus} from '../engine/bus.js';
+import {createEventLog} from '../engine/eventlog.js';
 import {
-  APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_APP_START,
   APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_WORLD_LOAD_FAILED,
   APP_FACT_WORLD_READY,
   shouldPersistFactEvent
 } from './events.js';
-import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
-import { registerModules } from './modules/register-modules.js';
-import { findHero } from '../game/domain/entity-queries.js';
+import {createBusDevPanel} from './modules/dev/bus-dev-panel.js';
+import {registerModules} from './modules/register-modules.js';
+import {restoreSession} from './restore-session.js';
 
 const MAX_MOVEMENT_POINTS = 15;
 
@@ -32,7 +31,7 @@ function composeBusLoggers(...loggers) {
   };
 }
 
-function createWorldReadyPromise(bus) {
+function createWorld(bus) {
   return new Promise((resolve, reject) => {
     bus.addEventListener(APP_FACT_WORLD_READY, (event) => {
       resolve(event.detail);
@@ -44,146 +43,7 @@ function createWorldReadyPromise(bus) {
   });
 }
 
-function getPersistedFacts(eventLog) {
-  const entries = eventLog?.getAll?.();
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return [];
-  }
-
-  return [...entries].sort((a, b) => Number(a?.id ?? 0) - Number(b?.id ?? 0));
-}
-
-function setViewportVisibility(document, isVisible) {
-  const viewport = document?.querySelector?.('.viewport');
-  if (!viewport) {
-    return;
-  }
-
-  viewport.dataset.viewportVisibility = isVisible ? 'visible' : 'hidden';
-}
-
-function setViewportRestoring(document, isRestoring) {
-  const viewport = document?.querySelector?.('.viewport');
-  if (!viewport) {
-    return;
-  }
-
-  if (isRestoring) {
-    viewport.dataset.restoring = 'true';
-    return;
-  }
-
-  delete viewport.dataset.restoring;
-}
-
-function setRestoreMotionDisabled(document, isDisabled) {
-  const transitionValue = isDisabled ? 'none' : '';
-  const world = document?.querySelector?.('.world');
-  if (world?.style) {
-    world.style.transition = transitionValue;
-  }
-
-  const heroEntities = document?.querySelectorAll?.('.entity--hero') ?? [];
-  for (const heroEntity of heroEntities) {
-    if (!heroEntity?.style) {
-      continue;
-    }
-
-    heroEntity.style.transition = transitionValue;
-  }
-}
-
-function waitForNextPaint(window) {
-  return new Promise((resolve) => {
-    if (typeof window?.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => {
-        resolve();
-      });
-      return;
-    }
-
-    if (typeof window?.setTimeout === 'function') {
-      window.setTimeout(resolve, 0);
-      return;
-    }
-
-    setTimeout(resolve, 0);
-  });
-}
-
-async function replayPersistedFacts({ bus, facts }) {
-  for (const fact of facts) {
-    bus.emit(fact.type, fact.detail ?? {}, { log: false });
-  }
-
-  await Promise.resolve();
-}
-
-function centerCameraOnHero({ bus, world }) {
-  const hero = findHero(world?.scenario?.entities);
-  if (!hero?.tile) {
-    return;
-  }
-
-  bus.emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, {
-    tile: hero.tile
-  });
-}
-
-export async function bootApp({
-  fetch = globalThis.fetch,
-  document = globalThis.document,
-  window = globalThis.window,
-  AudioCtor = globalThis.Audio,
-  eventLog = null,
-  bus = null,
-  createEventLog: createEventLogImpl = createEventLog,
-  createBus: createBusImpl = createBus,
-  busDebug = false,
-  busLogger = defaultBusLogger,
-  config: configOverride = {},
-  musicTracks,
-  musicManifestUrl = '/assets/music/tracks.json'
-} = {}) {
-  const appEventLog = eventLog ?? createEventLogImpl();
-  await appEventLog.init?.();
-  const persistedFacts = getPersistedFacts(appEventLog);
-  const hasPersistedSession = persistedFacts.length > 0;
-
-  if (hasPersistedSession) {
-    setViewportRestoring(document, true);
-    setViewportVisibility(document, false);
-    setRestoreMotionDisabled(document, true);
-  }
-
-  const busPanel = busDebug ? createBusDevPanel({ document }) : null;
-  const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
-  const appBus =
-    bus ??
-    createBusImpl({
-      debug: busDebug,
-      log: activeBusLogger,
-      eventLog: appEventLog,
-      shouldLogEvent: shouldPersistFactEvent
-    });
-
-  const env = {
-    fetch,
-    document,
-    window,
-    AudioCtor,
-    eventLog: appEventLog
-  };
-
-  const config = {
-    maxMovementPoints: MAX_MOVEMENT_POINTS,
-    musicTracks,
-    musicManifestUrl,
-    ...configOverride
-  };
-
-  const worldReadyPromise = createWorldReadyPromise(appBus);
-
+function setupResetListener(appBus, appEventLog, window) {
   appBus.addEventListener(APP_COMMAND_RESET_SESSION_REQUESTED, () => {
     void (async () => {
       try {
@@ -193,6 +53,51 @@ export async function bootApp({
       }
     })();
   });
+}
+
+function setupAppBus(busDebug, document, busLogger, appEventLog) {
+  const busPanel = busDebug ? createBusDevPanel({document}) : null;
+  const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
+  return createBus({
+    debug: busDebug,
+    log: activeBusLogger,
+    eventLog: appEventLog,
+    shouldLogEvent: shouldPersistFactEvent
+  });
+}
+
+export async function bootApp({
+  fetch = globalThis.fetch,
+  document = globalThis.document,
+  window = globalThis.window,
+  AudioCtor = globalThis.Audio,
+  eventLog = null,
+  busDebug = false,
+  busLogger = defaultBusLogger,
+  config: configOverride = {},
+  musicTracks,
+  musicManifestUrl = '/assets/music/tracks.json'
+} = {}) {
+  const appEventLog = eventLog ?? createEventLog();
+  await appEventLog.init?.();
+
+  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog);
+
+  const env = {
+    fetch,
+    document,
+    window,
+    AudioCtor
+  };
+
+  const config = {
+    maxMovementPoints: MAX_MOVEMENT_POINTS,
+    musicTracks,
+    musicManifestUrl,
+    ...configOverride
+  };
+
+  setupResetListener(appBus, appEventLog, window);
 
   registerModules({
     bus: appBus,
@@ -200,36 +105,19 @@ export async function bootApp({
     config
   });
 
-  try {
-    appBus.emit(APP_COMMAND_APP_START, {});
-    const world = await worldReadyPromise;
+  appBus.emit(APP_COMMAND_APP_START, {});
 
-    if (hasPersistedSession) {
-      setRestoreMotionDisabled(document, true);
-      await replayPersistedFacts({
-        bus: appBus,
-        facts: persistedFacts
-      });
-      centerCameraOnHero({
-        bus: appBus,
-        world
-      });
-    }
+  const world = await createWorld(appBus);
+  await restoreSession({
+    persistedFacts: appEventLog?.getAll?.(),
+    appBus
+  });
 
-    console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
+  console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
 
-    return {
-      ...world,
-      bus: appBus,
-      eventLog: appEventLog
-    };
-  } finally {
-    if (hasPersistedSession) {
-      setViewportVisibility(document, true);
-      await waitForNextPaint(window);
-      await waitForNextPaint(window);
-      setRestoreMotionDisabled(document, false);
-      setViewportRestoring(document, false);
-    }
-  }
+  return {
+    ...world,
+    bus: appBus,
+    eventLog: appEventLog
+  };
 }

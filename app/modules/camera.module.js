@@ -10,6 +10,8 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED,
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 
@@ -108,6 +110,29 @@ export function registerCameraModule(
           bus.emit(APP_COMMAND_TILE_CLICKED, { tile });
         }
       }) ?? null;
+  });
+
+  bus.addEventListener(APP_UI_RESTORE_STARTED, () => {
+    if (!viewport) {
+      return;
+    }
+
+    viewport.dataset.viewportVisibility = 'hidden';
+    viewport.dataset.restoring = 'true';
+  });
+
+  bus.addEventListener(APP_UI_RESTORE_COMPLETED, () => {
+    if (!viewport) {
+      return;
+    }
+
+    if (camera && hero?.tile) {
+      camera.centerOnTile?.(hero.tile);
+      emitCameraUpdated();
+    }
+
+    viewport.dataset.viewportVisibility = 'visible';
+    delete viewport.dataset.restoring;
   });
 
   bus.addEventListener(APP_COMMAND_CAMERA_PAN_BY, (event) => {

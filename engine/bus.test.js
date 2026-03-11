@@ -69,20 +69,6 @@ describe('event bus', () => {
     expect(received).toEqual([]);
   });
 
-  test('exposes listener counts per type and total', () => {
-    const bus = createBus();
-    const handlerA = () => {};
-    const handlerB = () => {};
-
-    bus.addEventListener('event-a', handlerA);
-    bus.addEventListener('event-a', handlerB);
-    bus.addEventListener('event-b', handlerA);
-
-    expect(bus.getListenerCount('event-a')).toBe(2);
-    expect(bus.getListenerCount('event-b')).toBe(1);
-    expect(bus.getListenerCount()).toBe(3);
-  });
-
   test('logs emitted events with subscriber count when debug is enabled', () => {
     const logs = [];
     const bus = createBus({
