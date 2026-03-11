@@ -3,7 +3,7 @@ import { APP_FACT_WORLD_READY, APP_UI_PREVIEW_UPDATED } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerPreviewViewModule = defineModule((
-  { on, env },
+  { env },
   {
     renderPathPreviewLayer = renderPathPreviewLayerDefault
   } = {}
@@ -13,23 +13,32 @@ export const registerPreviewViewModule = defineModule((
 
   let map = null;
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    map = event.detail.map;
-  });
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          map = event.detail.map;
+        }
+      },
+      {
+        type: APP_UI_PREVIEW_UPDATED,
+        handler: (event) => {
+          if (!effectsLayer || !map) {
+            return;
+          }
 
-  on(APP_UI_PREVIEW_UPDATED, (event) => {
-    if (!effectsLayer || !map) {
-      return;
-    }
-
-    const { path, targetTile, maxAffordableSteps } = event.detail;
-    renderPathPreviewLayer({
-      container: effectsLayer,
-      map,
-      path,
-      targetTile,
-      maxAffordableSteps,
-      createElement
-    });
-  });
+          const { path, targetTile, maxAffordableSteps } = event.detail;
+          renderPathPreviewLayer({
+            container: effectsLayer,
+            map,
+            path,
+            targetTile,
+            maxAffordableSteps,
+            createElement
+          });
+        }
+      }
+    ]
+  };
 });

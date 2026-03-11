@@ -11,7 +11,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerInteractionModule = defineModule((
-  { on, emit, bus, config },
+  { emit, bus, config },
   {
     createInteractionSystem = createInteractionSystemDefault
   } = {}
@@ -45,123 +45,135 @@ export const registerInteractionModule = defineModule((
     await sleep(durationMs);
   }
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    const world = event.detail;
-    entities = world.scenario.entities;
-    hero = findHero(entities);
-    interactions = createInteractionSystem({
-      entities,
-      definitions: world.definitions
-    });
-  });
-
-  on(APP_FACT_MOVE_FINISHED, (event) => {
-    if (!interactions || !hero) {
-      return;
-    }
-
-    const destinationTile = event.detail.targetTile;
-    if (!destinationTile) {
-      return;
-    }
-
-    const interactionKind = event.detail.interaction?.kind;
-    const didTriggerArrivalInteraction = typeof interactionKind === 'string' && interactionKind.length > 0;
-    if (!didTriggerArrivalInteraction && !sameTile(hero.tile, destinationTile)) {
-      return;
-    }
-
-    const outcome = interactions.resolveArrivalAtDestination({
-      destinationTile,
-      arrivingEntityId: hero.id
-    });
-    if (!outcome) {
-      return;
-    }
-
-    if (typeof outcome.entityId === 'string' && pendingOutcomeEntityIds.has(outcome.entityId)) {
-      return;
-    }
-
-    const handler = getInteractionOutcomeHandler(outcome.kind);
-    if (!handler) {
-      return;
-    }
-
-    if (typeof outcome.entityId === 'string') {
-      pendingOutcomeEntityIds.add(outcome.entityId);
-    }
-
-    const handlerConfig = {
-      monsterDefeatFadeOutMs,
-      resourceCollectFadeOutMs
-    };
-
-    const handlerResult = handler.onOutcome({
-      bus,
-      interactions,
-      outcome,
-      requestEntityFadeOut,
-      config: handlerConfig
-    });
-
-    const isPromiseLike =
-      Boolean(handlerResult) &&
-      (typeof handlerResult === 'object' || typeof handlerResult === 'function') &&
-      typeof handlerResult.then === 'function';
-
-    if (!isPromiseLike) {
-      if (handlerResult?.pendingModalOutcome) {
-        pendingModalOutcome = handlerResult.pendingModalOutcome;
-      }
-      if (!handler.opensModal && typeof outcome.entityId === 'string') {
-        pendingOutcomeEntityIds.delete(outcome.entityId);
-      }
-      return;
-    }
-
-    void (async () => {
-      try {
-        const result = await handlerResult;
-        if (result?.pendingModalOutcome) {
-          pendingModalOutcome = result.pendingModalOutcome;
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          const world = event.detail;
+          entities = world.scenario.entities;
+          hero = findHero(entities);
+          interactions = createInteractionSystem({
+            entities,
+            definitions: world.definitions
+          });
         }
-      } finally {
-        if (!handler.opensModal && typeof outcome.entityId === 'string') {
-          pendingOutcomeEntityIds.delete(outcome.entityId);
+      },
+      {
+        type: APP_FACT_MOVE_FINISHED,
+        handler: (event) => {
+          if (!interactions || !hero) {
+            return;
+          }
+
+          const destinationTile = event.detail.targetTile;
+          if (!destinationTile) {
+            return;
+          }
+
+          const interactionKind = event.detail.interaction?.kind;
+          const didTriggerArrivalInteraction =
+            typeof interactionKind === 'string' && interactionKind.length > 0;
+          if (!didTriggerArrivalInteraction && !sameTile(hero.tile, destinationTile)) {
+            return;
+          }
+
+          const outcome = interactions.resolveArrivalAtDestination({
+            destinationTile,
+            arrivingEntityId: hero.id
+          });
+          if (!outcome) {
+            return;
+          }
+
+          if (typeof outcome.entityId === 'string' && pendingOutcomeEntityIds.has(outcome.entityId)) {
+            return;
+          }
+
+          const handler = getInteractionOutcomeHandler(outcome.kind);
+          if (!handler) {
+            return;
+          }
+
+          if (typeof outcome.entityId === 'string') {
+            pendingOutcomeEntityIds.add(outcome.entityId);
+          }
+
+          const handlerConfig = {
+            monsterDefeatFadeOutMs,
+            resourceCollectFadeOutMs
+          };
+
+          const handlerResult = handler.onOutcome({
+            bus,
+            interactions,
+            outcome,
+            requestEntityFadeOut,
+            config: handlerConfig
+          });
+
+          const isPromiseLike =
+            Boolean(handlerResult) &&
+            (typeof handlerResult === 'object' || typeof handlerResult === 'function') &&
+            typeof handlerResult.then === 'function';
+
+          if (!isPromiseLike) {
+            if (handlerResult?.pendingModalOutcome) {
+              pendingModalOutcome = handlerResult.pendingModalOutcome;
+            }
+            if (!handler.opensModal && typeof outcome.entityId === 'string') {
+              pendingOutcomeEntityIds.delete(outcome.entityId);
+            }
+            return;
+          }
+
+          void (async () => {
+            try {
+              const result = await handlerResult;
+              if (result?.pendingModalOutcome) {
+                pendingModalOutcome = result.pendingModalOutcome;
+              }
+            } finally {
+              if (!handler.opensModal && typeof outcome.entityId === 'string') {
+                pendingOutcomeEntityIds.delete(outcome.entityId);
+              }
+            }
+          })();
+        }
+      },
+      {
+        type: APP_UI_INTERACTION_MODAL_CLOSED,
+        handler: () => {
+          if (!interactions || !pendingModalOutcome) {
+            return;
+          }
+
+          const outcome = pendingModalOutcome;
+          pendingModalOutcome = null;
+
+          if (typeof outcome.entityId === 'string') {
+            pendingOutcomeEntityIds.delete(outcome.entityId);
+          }
+
+          const handler = getInteractionOutcomeHandler(outcome.kind);
+          if (!handler?.onModalClosed) {
+            return;
+          }
+
+          void (async () => {
+            await handler.onModalClosed({
+              bus,
+              interactions,
+              outcome,
+              requestEntityFadeOut,
+              config: {
+                monsterDefeatFadeOutMs,
+                resourceCollectFadeOutMs
+              }
+            });
+          })();
         }
       }
-    })();
-  });
-
-  on(APP_UI_INTERACTION_MODAL_CLOSED, () => {
-    if (!interactions || !pendingModalOutcome) {
-      return;
-    }
-
-    const outcome = pendingModalOutcome;
-    pendingModalOutcome = null;
-
-    if (typeof outcome.entityId === 'string') {
-      pendingOutcomeEntityIds.delete(outcome.entityId);
-    }
-
-    const handler = getInteractionOutcomeHandler(outcome.kind);
-    if (!handler?.onModalClosed) {
-      return;
-    }
-
-    void (async () => {
-      await handler.onModalClosed({
-        bus,
-        interactions,
-        outcome,
-        requestEntityFadeOut,
-        config: {
-          monsterDefeatFadeOutMs,
-          resourceCollectFadeOutMs
-        }
-      });
-    })();
-  });
+    ]
+  };
 });

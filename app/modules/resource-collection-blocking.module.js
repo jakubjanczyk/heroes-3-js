@@ -10,7 +10,7 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.length > 0;
 }
 
-export const registerResourceCollectionBlockingModule = defineModule(({ on, emit }) => {
+export const registerResourceCollectionBlockingModule = defineModule(({ emit }) => {
   const blockedEntityIds = new Set();
 
   function emitBlockedEntityIds() {
@@ -19,28 +19,39 @@ export const registerResourceCollectionBlockingModule = defineModule(({ on, emit
     });
   }
 
-  on(APP_FACT_WORLD_READY, () => {
-    blockedEntityIds.clear();
-    emitBlockedEntityIds();
-  });
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: () => {
+          blockedEntityIds.clear();
+          emitBlockedEntityIds();
+        }
+      },
+      {
+        type: APP_UI_RESOURCE_COLLECTION_STARTED,
+        handler: (event) => {
+          const entityId = event.detail?.entityId;
+          if (!isNonEmptyString(entityId) || blockedEntityIds.has(entityId)) {
+            return;
+          }
 
-  on(APP_UI_RESOURCE_COLLECTION_STARTED, (event) => {
-    const entityId = event.detail?.entityId;
-    if (!isNonEmptyString(entityId) || blockedEntityIds.has(entityId)) {
-      return;
-    }
+          blockedEntityIds.add(entityId);
+          emitBlockedEntityIds();
+        }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTED,
+        handler: (event) => {
+          const entityId = event.detail?.entityId;
+          if (!isNonEmptyString(entityId) || !blockedEntityIds.has(entityId)) {
+            return;
+          }
 
-    blockedEntityIds.add(entityId);
-    emitBlockedEntityIds();
-  });
-
-  on(APP_FACT_RESOURCE_COLLECTED, (event) => {
-    const entityId = event.detail?.entityId;
-    if (!isNonEmptyString(entityId) || !blockedEntityIds.has(entityId)) {
-      return;
-    }
-
-    blockedEntityIds.delete(entityId);
-    emitBlockedEntityIds();
-  });
+          blockedEntityIds.delete(entityId);
+          emitBlockedEntityIds();
+        }
+      }
+    ]
+  };
 });

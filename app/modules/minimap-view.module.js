@@ -16,7 +16,7 @@ function clearNode(node) {
   node.replaceChildren?.();
 }
 
-export const registerMinimapViewModule = defineModule(({ on, onDom, emit, env }) => {
+export const registerMinimapViewModule = defineModule(({ emit, env }) => {
   const minimapMap = env.document?.getElementById('minimap-map');
   const minimapTerrain = env.document?.getElementById('minimap-terrain');
   const minimapTowns = env.document?.getElementById('minimap-towns');
@@ -95,50 +95,64 @@ export const registerMinimapViewModule = defineModule(({ on, onDom, emit, env })
     setStyleVar(minimapViewport, '--minimap-viewport-height', `${clamp((viewportHeight / mapPixelHeight) * 100, 0, 100)}%`);
   }
 
-  onDom(minimapMap, 'click', (event) => {
-    if (!map) {
-      return;
-    }
+  return {
+    domSubscriptions: [
+      {
+        target: minimapMap,
+        type: 'click',
+        handler: (event) => {
+          if (!map) {
+            return;
+          }
 
-    const rect = minimapMap.getBoundingClientRect?.();
-    const width = Number(rect?.width ?? 0);
-    const height = Number(rect?.height ?? 0);
-    if (width <= 0 || height <= 0) {
-      return;
-    }
+          const rect = minimapMap.getBoundingClientRect?.();
+          const width = Number(rect?.width ?? 0);
+          const height = Number(rect?.height ?? 0);
+          if (width <= 0 || height <= 0) {
+            return;
+          }
 
-    const localX = clamp(Number(event.clientX) - rect.left, 0, Math.max(0, width - 1));
-    const localY = clamp(Number(event.clientY) - rect.top, 0, Math.max(0, height - 1));
-    const tileX = Math.min(map.width - 1, Math.floor((localX / width) * map.width));
-    const tileY = Math.min(map.height - 1, Math.floor((localY / height) * map.height));
-    const tile = { x: tileX, y: tileY };
+          const localX = clamp(Number(event.clientX) - rect.left, 0, Math.max(0, width - 1));
+          const localY = clamp(Number(event.clientY) - rect.top, 0, Math.max(0, height - 1));
+          const tileX = Math.min(map.width - 1, Math.floor((localX / width) * map.width));
+          const tileY = Math.min(map.height - 1, Math.floor((localY / height) * map.height));
+          const tile = { x: tileX, y: tileY };
 
-    if (!map.inBounds(tile)) {
-      return;
-    }
+          if (!map.inBounds(tile)) {
+            return;
+          }
 
-    event.stopPropagation?.();
-    emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile });
-  });
+          event.stopPropagation?.();
+          emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile });
+        }
+      }
+    ],
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          map = event.detail.map;
+          towns = (event.detail.scenario?.entities ?? []).filter(isTown);
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    map = event.detail.map;
-    towns = (event.detail.scenario?.entities ?? []).filter(isTown);
+          if (minimapMap && map?.width > 0 && map?.height > 0) {
+            setStyleVar(minimapMap, '--minimap-columns', String(map.width));
+            setStyleVar(minimapMap, '--minimap-rows', String(map.height));
+            setStyleVar(minimapMap, '--minimap-map-width', String(map.width));
+            setStyleVar(minimapMap, '--minimap-map-height', String(map.height));
+          }
 
-    if (minimapMap && map?.width > 0 && map?.height > 0) {
-      setStyleVar(minimapMap, '--minimap-columns', String(map.width));
-      setStyleVar(minimapMap, '--minimap-rows', String(map.height));
-      setStyleVar(minimapMap, '--minimap-map-width', String(map.width));
-      setStyleVar(minimapMap, '--minimap-map-height', String(map.height));
-    }
-
-    renderTerrain();
-    renderTowns();
-    updateViewportBox(lastCameraUpdate);
-  });
-
-  on(APP_UI_CAMERA_UPDATED, (event) => {
-    lastCameraUpdate = event.detail;
-    updateViewportBox(lastCameraUpdate);
-  });
+          renderTerrain();
+          renderTowns();
+          updateViewportBox(lastCameraUpdate);
+        }
+      },
+      {
+        type: APP_UI_CAMERA_UPDATED,
+        handler: (event) => {
+          lastCameraUpdate = event.detail;
+          updateViewportBox(lastCameraUpdate);
+        }
+      }
+    ]
+  };
 });

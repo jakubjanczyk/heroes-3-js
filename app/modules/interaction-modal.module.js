@@ -8,7 +8,7 @@ import {
 } from '../ui/interaction-modal.element.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerInteractionModalModule = defineModule(({ on, emit, env, config }) => {
+export const registerInteractionModalModule = defineModule(({ emit, env, config }) => {
   const viewport = env.document?.querySelector('.viewport');
   const modalTransitionMs = config?.interactionModalTransitionMs ?? 260;
   let activeModal = null;
@@ -48,7 +48,14 @@ export const registerInteractionModalModule = defineModule(({ on, emit, env, con
     activeModal = modalElement;
   }
 
-  on(APP_UI_INTERACTION_MODAL_OPENED, (event) => {
-    openModal(event.detail);
-  });
+  return {
+    subscriptions: [
+      {
+        type: APP_UI_INTERACTION_MODAL_OPENED,
+        handler: (event) => {
+          openModal(event.detail);
+        }
+      }
+    ]
+  };
 });

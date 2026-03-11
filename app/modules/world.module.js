@@ -11,7 +11,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerWorldModule = defineModule((
-  { on, emit, env },
+  { emit, env },
   {
     loadGame = loadGameDefault,
     buildWorld = buildWorldDefault
@@ -28,85 +28,98 @@ export const registerWorldModule = defineModule((
     worldState?.removeEntityById?.(entityId);
   }
 
-  on(APP_FACT_HERO_MOVED, (event) => {
-    const movedEntity = getEntityById(event.detail?.heroId);
-    const fromTile = event.detail?.from;
-    const toTile = event.detail?.to;
-    if (!movedEntity || !toTile) {
-      return;
-    }
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_HERO_MOVED,
+        handler: (event) => {
+          const movedEntity = getEntityById(event.detail?.heroId);
+          const fromTile = event.detail?.from;
+          const toTile = event.detail?.to;
+          if (!movedEntity || !toTile) {
+            return;
+          }
 
-    const nextTile = {
-      x: Number(toTile.x),
-      y: Number(toTile.y)
-    };
-    if (!Number.isFinite(nextTile.x) || !Number.isFinite(nextTile.y)) {
-      return;
-    }
+          const nextTile = {
+            x: Number(toTile.x),
+            y: Number(toTile.y)
+          };
+          if (!Number.isFinite(nextTile.x) || !Number.isFinite(nextTile.y)) {
+            return;
+          }
 
-    const previousTile = {
-      x: Number(movedEntity.tile?.x),
-      y: Number(movedEntity.tile?.y)
-    };
+          const previousTile = {
+            x: Number(movedEntity.tile?.x),
+            y: Number(movedEntity.tile?.y)
+          };
 
-    const didMove = worldState?.moveEntity?.({
-      entityId: movedEntity.id,
-      toTile: nextTile
-    });
-    if (!didMove) {
-      return;
-    }
+          const didMove = worldState?.moveEntity?.({
+            entityId: movedEntity.id,
+            toTile: nextTile
+          });
+          if (!didMove) {
+            return;
+          }
 
-    const fromX = Number(fromTile?.x);
-    const fromY = Number(fromTile?.y);
-    const restoreTile =
-      Number.isFinite(fromX) && Number.isFinite(fromY)
-        ? { x: Math.floor(fromX), y: Math.floor(fromY) }
-        : previousTile;
-    const shouldRestoreTile =
-      Number.isFinite(restoreTile.x) &&
-      Number.isFinite(restoreTile.y) &&
-      (restoreTile.x !== nextTile.x || restoreTile.y !== nextTile.y);
+          const fromX = Number(fromTile?.x);
+          const fromY = Number(fromTile?.y);
+          const restoreTile =
+            Number.isFinite(fromX) && Number.isFinite(fromY)
+              ? { x: Math.floor(fromX), y: Math.floor(fromY) }
+              : previousTile;
+          const shouldRestoreTile =
+            Number.isFinite(restoreTile.x) &&
+            Number.isFinite(restoreTile.y) &&
+            (restoreTile.x !== nextTile.x || restoreTile.y !== nextTile.y);
 
-    if (!shouldRestoreTile) {
-      return;
-    }
+          if (!shouldRestoreTile) {
+            return;
+          }
 
-    worldState?.restorePersistentEntitiesAt?.(restoreTile);
-  });
+          worldState?.restorePersistentEntitiesAt?.(restoreTile);
+        }
+      },
+      {
+        type: APP_FACT_MONSTER_DEFEATED,
+        handler: (event) => {
+          removeEntityFromWorld(event.detail?.entityId);
+        }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTED,
+        handler: (event) => {
+          removeEntityFromWorld(event.detail?.entityId);
+        }
+      },
+      {
+        type: APP_COMMAND_APP_START,
+        handler: () => {
+          if (hasStarted) {
+            return;
+          }
 
-  on(APP_FACT_MONSTER_DEFEATED, (event) => {
-    removeEntityFromWorld(event.detail?.entityId);
-  });
+          hasStarted = true;
+          void (async () => {
+            try {
+              const { scenario, definitions } = await loadGame({ fetch: env.fetch });
+              const built = buildWorld({ scenario });
+              const { map, occupancy, worldState: nextWorldState } = built;
+              worldState = nextWorldState;
 
-  on(APP_FACT_RESOURCE_COLLECTED, (event) => {
-    removeEntityFromWorld(event.detail?.entityId);
-  });
-
-  on(APP_COMMAND_APP_START, () => {
-    if (hasStarted) {
-      return;
-    }
-
-    hasStarted = true;
-    void (async () => {
-      try {
-        const { scenario, definitions } = await loadGame({ fetch: env.fetch });
-        const built = buildWorld({ scenario });
-        const { map, occupancy, worldState: nextWorldState } = built;
-        worldState = nextWorldState;
-
-        emit(APP_FACT_WORLD_READY, {
-          scenario,
-          definitions,
-          map,
-          occupancy
-        });
-      } catch (error) {
-        emit(APP_FACT_WORLD_LOAD_FAILED, {
-          error
-        });
+              emit(APP_FACT_WORLD_READY, {
+                scenario,
+                definitions,
+                map,
+                occupancy
+              });
+            } catch (error) {
+              emit(APP_FACT_WORLD_LOAD_FAILED, {
+                error
+              });
+            }
+          })();
+        }
       }
-    })();
-  });
+    ]
+  };
 });

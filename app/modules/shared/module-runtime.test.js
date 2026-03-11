@@ -77,6 +77,46 @@ describe('module runtime', () => {
     expect(cleanup).toHaveBeenCalledTimes(1);
   });
 
+  test('supports declarative bus subscriptions via defineModule', () => {
+    const bus = createBus();
+    const listener = vi.fn();
+    const registerModule = defineModule(() => ({
+      subscriptions: [{ type: 'fact.ready', handler: listener }]
+    }));
+
+    const dispose = registerModule({ bus, env: {}, config: {} });
+    bus.emit('fact.ready', { ok: true });
+    dispose();
+    bus.emit('fact.ready', { ok: false });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith({ type: 'fact.ready', detail: { ok: true } });
+  });
+
+  test('supports declarative DOM subscriptions via defineModule', () => {
+    const bus = createBus();
+    const handler = vi.fn();
+    const target = {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn()
+    };
+    const registerModule = defineModule(() => ({
+      domSubscriptions: [
+        {
+          target,
+          type: 'click',
+          handler
+        }
+      ]
+    }));
+
+    const dispose = registerModule({ bus, env: {}, config: {} });
+    dispose();
+
+    expect(target.addEventListener).toHaveBeenCalledWith('click', handler, undefined);
+    expect(target.removeEventListener).toHaveBeenCalledWith('click', handler, undefined);
+  });
+
   test('is safe when removeEventListener is unavailable', () => {
     const bus = {
       addEventListener() {},

@@ -9,7 +9,7 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerHudModule = defineModule(({ on, onDom, emit, env }) => {
+export const registerHudModule = defineModule(({ emit, env }) => {
   const uiLayer = env.document?.querySelector('.ui-layer');
   const movementPointsStatus = env.document?.getElementById('movement-points-status');
   const resourceTotalsStatus = env.document?.getElementById('resource-totals-status');
@@ -38,81 +38,109 @@ export const registerHudModule = defineModule(({ on, onDom, emit, env }) => {
     resourceTotalsStatus.textContent = `Resources: ${parts.join(' | ')}`;
   }
 
-  onDom(endTurnButton, 'click', (event) => {
-    event?.stopPropagation?.();
-    emit(APP_COMMAND_END_TURN_REQUESTED, {});
-  });
+  return {
+    domSubscriptions: [
+      {
+        target: endTurnButton,
+        type: 'click',
+        handler: (event) => {
+          event?.stopPropagation?.();
+          emit(APP_COMMAND_END_TURN_REQUESTED, {});
+        }
+      },
+      {
+        target: musicToggleButton,
+        type: 'click',
+        handler: (event) => {
+          event?.stopPropagation?.();
+          emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
+        }
+      },
+      {
+        target: resetSessionButton,
+        type: 'click',
+        handler: (event) => {
+          event?.stopPropagation?.();
+          emit(APP_COMMAND_RESET_SESSION_REQUESTED, {});
+        }
+      },
+      {
+        target: uiLayer,
+        type: 'click',
+        handler: (event) => {
+          event?.stopPropagation?.();
+        }
+      }
+    ],
+    subscriptions: [
+      {
+        type: APP_FACT_MOVEMENT_POINTS_CHANGED,
+        handler: (event) => {
+          if (!movementPointsStatus) {
+            return;
+          }
 
-  onDom(musicToggleButton, 'click', (event) => {
-    event?.stopPropagation?.();
-    emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
-  });
+          const { value, max } = event.detail;
+          movementPointsStatus.textContent = `MP: ${value} / ${max}`;
+        }
+      },
+      {
+        type: APP_UI_MUSIC_STATE_CHANGED,
+        handler: (event) => {
+          if (!musicToggleButton) {
+            return;
+          }
 
-  onDom(resetSessionButton, 'click', (event) => {
-    event?.stopPropagation?.();
-    emit(APP_COMMAND_RESET_SESSION_REQUESTED, {});
-  });
+          const enabled = Boolean(event.detail.enabled);
+          musicToggleButton.textContent = enabled ? 'Music: On' : 'Music: Off';
+          musicToggleButton.setAttribute?.('aria-pressed', enabled ? 'true' : 'false');
+        }
+      },
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          const definitions = event.detail.definitions?.resources ?? {};
+          resourceTypeOrder = Object.keys(definitions);
+          resourceNamesByType = {};
+          resourceTotalsByType = {};
 
-  onDom(uiLayer, 'click', (event) => {
-    event?.stopPropagation?.();
-  });
+          for (const resourceType of resourceTypeOrder) {
+            resourceNamesByType[resourceType] = definitions[resourceType]?.name ?? resourceType;
+            resourceTotalsByType[resourceType] = 0;
+          }
 
-  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
-    if (!movementPointsStatus) {
-      return;
-    }
+          renderResourceTotals();
 
-    const { value, max } = event.detail;
-    movementPointsStatus.textContent = `MP: ${value} / ${max}`;
-  });
+          if (!bootStatus) {
+            return;
+          }
 
-  on(APP_UI_MUSIC_STATE_CHANGED, (event) => {
-    if (!musicToggleButton) {
-      return;
-    }
+          bootStatus.textContent = `Boot ok: ${event.detail.scenario.meta.id}`;
+        }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTED,
+        handler: (event) => {
+          const resourceType = event.detail.entityType;
+          if (!resourceType) {
+            return;
+          }
 
-    const enabled = Boolean(event.detail.enabled);
-    musicToggleButton.textContent = enabled ? 'Music: On' : 'Music: Off';
-    musicToggleButton.setAttribute?.('aria-pressed', enabled ? 'true' : 'false');
-  });
+          if (!resourceTypeOrder.includes(resourceType)) {
+            resourceTypeOrder.push(resourceType);
+          }
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    const definitions = event.detail.definitions?.resources ?? {};
-    resourceTypeOrder = Object.keys(definitions);
-    resourceNamesByType = {};
-    resourceTotalsByType = {};
+          if (!(resourceType in resourceNamesByType)) {
+            resourceNamesByType[resourceType] = resourceType;
+          }
 
-    for (const resourceType of resourceTypeOrder) {
-      resourceNamesByType[resourceType] = definitions[resourceType]?.name ?? resourceType;
-      resourceTotalsByType[resourceType] = 0;
-    }
-
-    renderResourceTotals();
-
-    if (!bootStatus) {
-      return;
-    }
-
-    bootStatus.textContent = `Boot ok: ${event.detail.scenario.meta.id}`;
-  });
-
-  on(APP_FACT_RESOURCE_COLLECTED, (event) => {
-    const resourceType = event.detail.entityType;
-    if (!resourceType) {
-      return;
-    }
-
-    if (!resourceTypeOrder.includes(resourceType)) {
-      resourceTypeOrder.push(resourceType);
-    }
-
-    if (!(resourceType in resourceNamesByType)) {
-      resourceNamesByType[resourceType] = resourceType;
-    }
-
-    const amount = Number(event.detail.amount);
-    const collectedAmount = Number.isFinite(amount) ? amount : 0;
-    resourceTotalsByType[resourceType] = (resourceTotalsByType[resourceType] ?? 0) + collectedAmount;
-    renderResourceTotals();
-  });
+          const amount = Number(event.detail.amount);
+          const collectedAmount = Number.isFinite(amount) ? amount : 0;
+          resourceTotalsByType[resourceType] =
+            (resourceTotalsByType[resourceType] ?? 0) + collectedAmount;
+          renderResourceTotals();
+        }
+      }
+    ]
+  };
 });

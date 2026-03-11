@@ -11,7 +11,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerTurnModule = defineModule((
-  { on, emit, config },
+  { emit, config },
   {
     createTurnSystem = createTurnSystemDefault
   } = {}
@@ -40,73 +40,92 @@ export const registerTurnModule = defineModule((
     });
   }
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    turnSystem = createTurnSystem({
-      maxMovementPoints
-    });
-    emitTurnState({ log: false });
-  });
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: () => {
+          turnSystem = createTurnSystem({
+            maxMovementPoints
+          });
+          emitTurnState({ log: false });
+        }
+      },
+      {
+        type: APP_FACT_MOVEMENT_POINTS_CHANGED,
+        handler: (event) => {
+          if (!turnSystem) {
+            return;
+          }
 
-  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
-    if (!turnSystem) {
-      return;
-    }
+          turnSystem.setRemainingMovementPoints?.(event.detail.value);
+        }
+      },
+      {
+        type: APP_FACT_TURN_ENDED,
+        handler: (event) => {
+          if (!turnSystem) {
+            return;
+          }
 
-    turnSystem.setRemainingMovementPoints?.(event.detail.value);
-  });
+          turnSystem.setTurnNumber?.(event.detail.turnNumber);
+        }
+      },
+      {
+        type: APP_FACT_MOVE_STARTED,
+        handler: () => {
+          isMoving = true;
+          moveStartedAt = now();
+        }
+      },
+      {
+        type: APP_FACT_MOVE_FINISHED,
+        handler: () => {
+          isMoving = false;
+          if (!shouldApplyPostMoveGrace) {
+            suppressEndTurnUntil = 0;
+            return;
+          }
 
-  on(APP_FACT_TURN_ENDED, (event) => {
-    if (!turnSystem) {
-      return;
-    }
+          const moveDurationMs = now() - moveStartedAt;
+          suppressEndTurnUntil =
+            moveDurationMs >= moveDurationThresholdMs ? now() + endTurnPostMoveGraceMs : 0;
+        }
+      },
+      {
+        type: APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
+        handler: (event) => {
+          if (!turnSystem) {
+            return;
+          }
 
-    turnSystem.setTurnNumber?.(event.detail.turnNumber);
-  });
+          const amount = Math.max(0, Math.floor(event.detail.amount ?? 0));
+          if (amount < 1) {
+            return;
+          }
 
-  on(APP_FACT_MOVE_STARTED, () => {
-    isMoving = true;
-    moveStartedAt = now();
-  });
+          const didSpendMovementPoints = turnSystem.spendMovementPoints(amount);
+          if (!didSpendMovementPoints) {
+            return;
+          }
 
-  on(APP_FACT_MOVE_FINISHED, () => {
-    isMoving = false;
-    if (!shouldApplyPostMoveGrace) {
-      suppressEndTurnUntil = 0;
-      return;
-    }
+          emitTurnState();
+        }
+      },
+      {
+        type: APP_COMMAND_END_TURN_REQUESTED,
+        handler: () => {
+          if (!turnSystem || isMoving || now() < suppressEndTurnUntil) {
+            return;
+          }
 
-    const moveDurationMs = now() - moveStartedAt;
-    suppressEndTurnUntil =
-      moveDurationMs >= moveDurationThresholdMs ? now() + endTurnPostMoveGraceMs : 0;
-  });
-
-  on(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, (event) => {
-    if (!turnSystem) {
-      return;
-    }
-
-    const amount = Math.max(0, Math.floor(event.detail.amount ?? 0));
-    if (amount < 1) {
-      return;
-    }
-
-    const didSpendMovementPoints = turnSystem.spendMovementPoints(amount);
-    if (!didSpendMovementPoints) {
-      return;
-    }
-
-    emitTurnState();
-  });
-
-  on(APP_COMMAND_END_TURN_REQUESTED, () => {
-    if (!turnSystem || isMoving || now() < suppressEndTurnUntil) {
-      return;
-    }
-
-    turnSystem.endTurn();
-    emit(APP_FACT_TURN_ENDED, {
-      turnNumber: turnSystem.getTurnNumber()
-    });
-    emitTurnState();
-  });
+          turnSystem.endTurn();
+          emit(APP_FACT_TURN_ENDED, {
+            turnNumber: turnSystem.getTurnNumber()
+          });
+          emitTurnState();
+        }
+      }
+    ]
+  };
 });

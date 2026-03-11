@@ -19,7 +19,7 @@ function isFiniteTileCoordinate(value) {
 }
 
 export const registerEntityViewModule = defineModule((
-  { on, env, config },
+  { env, config },
   {
     renderEntityLayer = renderEntityLayerDefault,
     getEntityStyle = getDefaultEntityStyle
@@ -121,56 +121,75 @@ export const registerEntityViewModule = defineModule((
     el?.classList?.add?.(fadeOutSpec.className);
   }
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    map = event.detail.map;
-    entities = event.detail.scenario.entities;
-    setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
-    render();
-  });
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          map = event.detail.map;
+          entities = event.detail.scenario.entities;
+          setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
+          render();
+        }
+      },
+      {
+        type: APP_FACT_HERO_MOVED,
+        handler: (event) => {
+          const heroId = event.detail?.heroId;
+          const toTile = event.detail?.to;
+          if (updateHeroPosition({ heroId, tile: toTile })) {
+            return;
+          }
 
-  on(APP_FACT_HERO_MOVED, (event) => {
-    const heroId = event.detail?.heroId;
-    const toTile = event.detail?.to;
-    if (updateHeroPosition({ heroId, tile: toTile })) {
-      return;
-    }
+          render();
+        }
+      },
+      {
+        type: APP_UI_ENTITY_FADE_OUT_REQUESTED,
+        handler: (event) => {
+          applyEntityFadeOut({
+            entityId: event.detail?.entityId,
+            entityKind: event.detail?.entityKind
+          });
+        }
+      },
+      {
+        type: APP_FACT_MONSTER_DEFEATED,
+        handler: () => {
+          render();
+        }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTED,
+        handler: () => {
+          render();
+        }
+      },
+      {
+        type: APP_UI_RESTORE_STARTED,
+        handler: () => {
+          isRestoring = true;
+          applyHeroRestoreMotionOverride();
+        }
+      },
+      {
+        type: APP_UI_RESTORE_COMPLETED,
+        handler: () => {
+          isRestoring = false;
+          if (!entityLayer) {
+            return;
+          }
 
-    render();
-  });
+          const heroEntities = entityLayer.querySelectorAll?.('.entity--hero') ?? [];
+          for (const heroEntity of heroEntities) {
+            if (!heroEntity?.style) {
+              continue;
+            }
 
-  on(APP_UI_ENTITY_FADE_OUT_REQUESTED, (event) => {
-    applyEntityFadeOut({
-      entityId: event.detail?.entityId,
-      entityKind: event.detail?.entityKind
-    });
-  });
-
-  on(APP_FACT_MONSTER_DEFEATED, () => {
-    render();
-  });
-
-  on(APP_FACT_RESOURCE_COLLECTED, () => {
-    render();
-  });
-
-  on(APP_UI_RESTORE_STARTED, () => {
-    isRestoring = true;
-    applyHeroRestoreMotionOverride();
-  });
-
-  on(APP_UI_RESTORE_COMPLETED, () => {
-    isRestoring = false;
-    if (!entityLayer) {
-      return;
-    }
-
-    const heroEntities = entityLayer.querySelectorAll?.('.entity--hero') ?? [];
-    for (const heroEntity of heroEntities) {
-      if (!heroEntity?.style) {
-        continue;
+            heroEntity.style.transition = '';
+          }
+        }
       }
-
-      heroEntity.style.transition = '';
-    }
-  });
+    ]
+  };
 });

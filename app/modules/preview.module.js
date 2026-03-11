@@ -18,7 +18,7 @@ import {
 import { sameTile } from '../../engine/tile-utils.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerPreviewModule = defineModule(({ on, emit }) => {
+export const registerPreviewModule = defineModule(({ emit }) => {
   let map = null;
   let occupancy = null;
   let hero = null;
@@ -94,134 +94,161 @@ export const registerPreviewModule = defineModule(({ on, emit }) => {
     });
   }
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    const world = event.detail;
-    map = world.map;
-    occupancy = world.occupancy;
-    hero = findHero(world.scenario.entities);
-    blockedResourceEntityIds.clear();
-    clearPreview({ log: false, emitFact: false });
-  });
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          const world = event.detail;
+          map = world.map;
+          occupancy = world.occupancy;
+          hero = findHero(world.scenario.entities);
+          blockedResourceEntityIds.clear();
+          clearPreview({ log: false, emitFact: false });
+        }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
+        handler: (event) => {
+          blockedResourceEntityIds.clear();
+          for (const entityId of event.detail?.entityIds ?? []) {
+            if (typeof entityId === 'string' && entityId.length > 0) {
+              blockedResourceEntityIds.add(entityId);
+            }
+          }
 
-  on(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, (event) => {
-    blockedResourceEntityIds.clear();
-    for (const entityId of event.detail?.entityIds ?? []) {
-      if (typeof entityId === 'string' && entityId.length > 0) {
-        blockedResourceEntityIds.add(entityId);
+          clearPreview();
+        }
+      },
+      {
+        type: APP_FACT_MOVEMENT_POINTS_CHANGED,
+        handler: (event) => {
+          remainingMovementPoints = Number(event.detail.value);
+          if (previewPath || previewTarget) {
+            emitPreview();
+          }
+        }
+      },
+      {
+        type: APP_COMMAND_TILE_CLICKED,
+        handler: (event) => {
+          if (!hero || isMoving || isInteractionModalOpen) {
+            return;
+          }
+
+          const { tile } = event.detail;
+          if (previewTarget && sameTile(previewTarget, tile)) {
+            return;
+          }
+
+          const path = buildPath(tile);
+          if (!path || path.length < 2) {
+            clearPreview();
+            return;
+          }
+
+          setPreview({ targetTile: tile, path });
+        }
+      },
+      {
+        type: APP_FACT_MOVE_STARTED,
+        handler: () => {
+          isMoving = true;
+          if (previewPath || previewTarget) {
+            emitPreview();
+          }
+        }
+      },
+      {
+        type: APP_FACT_HERO_MOVED,
+        handler: (event) => {
+          const to = event.detail.to;
+          if (!previewPath || previewPath.length === 0) {
+            return;
+          }
+
+          while (previewPath.length > 0 && !sameTile(previewPath[0], to)) {
+            previewPath.shift();
+          }
+
+          if (previewTarget && sameTile(previewTarget, to)) {
+            clearPreview({ emitFact: false });
+            return;
+          }
+
+          emitPreview();
+        }
+      },
+      {
+        type: APP_FACT_MOVE_FINISHED,
+        handler: (event) => {
+          isMoving = false;
+          if (event.detail.interaction?.kind) {
+            clearPreview();
+            return;
+          }
+          if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
+            emitPreview();
+            return;
+          }
+
+          clearPreview();
+        }
+      },
+      {
+        type: APP_UI_INTERACTION_MODAL_OPENED,
+        handler: () => {
+          isInteractionModalOpen = true;
+          clearPreview();
+        }
+      },
+      {
+        type: APP_UI_INTERACTION_MODAL_CLOSED,
+        handler: () => {
+          isInteractionModalOpen = false;
+        }
+      },
+      {
+        type: APP_FACT_PREVIEW_TARGET_SELECTED,
+        handler: (event) => {
+          if (!hero || isMoving || isInteractionModalOpen) {
+            return;
+          }
+
+          const tile = event.detail?.tile;
+          if (!tile) {
+            return;
+          }
+
+          if (previewTarget && sameTile(previewTarget, tile) && previewPath?.length) {
+            return;
+          }
+
+          const path = buildPath(tile);
+          if (!path || path.length < 2) {
+            clearPreview({ log: false, emitFact: false });
+            return;
+          }
+
+          setPreview({
+            targetTile: tile,
+            path,
+            log: false,
+            emitFact: false
+          });
+        }
+      },
+      {
+        type: APP_FACT_PREVIEW_CLEARED,
+        handler: () => {
+          if (!previewPath && !previewTarget) {
+            return;
+          }
+
+          clearPreview({ log: false, emitFact: false });
+        }
       }
-    }
-
-    clearPreview();
-  });
-
-  on(APP_FACT_MOVEMENT_POINTS_CHANGED, (event) => {
-    remainingMovementPoints = Number(event.detail.value);
-    if (previewPath || previewTarget) {
-      emitPreview();
-    }
-  });
-
-  on(APP_COMMAND_TILE_CLICKED, (event) => {
-    if (!hero || isMoving || isInteractionModalOpen) {
-      return;
-    }
-
-    const { tile } = event.detail;
-    if (previewTarget && sameTile(previewTarget, tile)) {
-      return;
-    }
-
-    const path = buildPath(tile);
-    if (!path || path.length < 2) {
-      clearPreview();
-      return;
-    }
-
-    setPreview({ targetTile: tile, path });
-  });
-
-  on(APP_FACT_MOVE_STARTED, () => {
-    isMoving = true;
-    if (previewPath || previewTarget) {
-      emitPreview();
-    }
-  });
-
-  on(APP_FACT_HERO_MOVED, (event) => {
-    const to = event.detail.to;
-    if (!previewPath || previewPath.length === 0) {
-      return;
-    }
-
-    while (previewPath.length > 0 && !sameTile(previewPath[0], to)) {
-      previewPath.shift();
-    }
-
-    if (previewTarget && sameTile(previewTarget, to)) {
-      clearPreview({ emitFact: false });
-      return;
-    }
-
-    emitPreview();
-  });
-
-  on(APP_FACT_MOVE_FINISHED, (event) => {
-    isMoving = false;
-    if (event.detail.interaction?.kind) {
-      clearPreview();
-      return;
-    }
-    if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
-      emitPreview();
-      return;
-    }
-
-    clearPreview();
-  });
-
-  on(APP_UI_INTERACTION_MODAL_OPENED, () => {
-    isInteractionModalOpen = true;
-    clearPreview();
-  });
-
-  on(APP_UI_INTERACTION_MODAL_CLOSED, () => {
-    isInteractionModalOpen = false;
-  });
-
-  on(APP_FACT_PREVIEW_TARGET_SELECTED, (event) => {
-    if (!hero || isMoving || isInteractionModalOpen) {
-      return;
-    }
-
-    const tile = event.detail?.tile;
-    if (!tile) {
-      return;
-    }
-
-    if (previewTarget && sameTile(previewTarget, tile) && previewPath?.length) {
-      return;
-    }
-
-    const path = buildPath(tile);
-    if (!path || path.length < 2) {
-      clearPreview({ log: false, emitFact: false });
-      return;
-    }
-
-    setPreview({
-      targetTile: tile,
-      path,
-      log: false,
-      emitFact: false
-    });
-  });
-
-  on(APP_FACT_PREVIEW_CLEARED, () => {
-    if (!previewPath && !previewTarget) {
-      return;
-    }
-
-    clearPreview({ log: false, emitFact: false });
-  });
+    ]
+  };
 
 });

@@ -17,7 +17,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerCameraModule = defineModule((
-  { on, emit, registerDisposer, env, config },
+  { emit, env, config },
   {
     createCamera = createCameraDefault,
     attachCameraInput = attachCameraInputDefault
@@ -69,145 +69,165 @@ export const registerCameraModule = defineModule((
     emit(APP_UI_WORLD_MOTION_UPDATED, detail);
   }
 
-  on(APP_FACT_WORLD_READY, (event) => {
-    const world = event.detail;
-    hero = findHero(world.scenario.entities);
-    map = world.map;
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: (event) => {
+          const world = event.detail;
+          hero = findHero(world.scenario.entities);
+          map = world.map;
 
-    if (!viewport || !map) {
-      return;
-    }
+          if (!viewport || !map) {
+            return;
+          }
 
-    camera = createCamera({
-      viewport,
-      map
-    });
+          camera = createCamera({
+            viewport,
+            map
+          });
 
-    emitWorldMotionUpdated({
-      followHero: false,
-      stepDurationMs: cameraStepDurationMs
-    });
+          emitWorldMotionUpdated({
+            followHero: false,
+            stepDurationMs: cameraStepDurationMs
+          });
 
-    camera.setFollowTileGetter(() => hero?.tile ?? null);
-    camera.update();
-    emitCameraUpdated();
+          camera.setFollowTileGetter(() => hero?.tile ?? null);
+          camera.update();
+          emitCameraUpdated();
 
-    const inputCamera = {
-      moveBy(dx, dy) {
-        emit(APP_COMMAND_CAMERA_PAN_BY, { dx, dy });
-      },
-      getOffset: camera.getOffset?.bind(camera)
-    };
+          const inputCamera = {
+            moveBy(dx, dy) {
+              emit(APP_COMMAND_CAMERA_PAN_BY, { dx, dy });
+            },
+            getOffset: camera.getOffset?.bind(camera)
+          };
 
-    detachCameraInput?.();
-    detachCameraInput =
-      attachCameraInput({
-        camera: inputCamera,
-        viewport,
-        window: env.window,
-        edgePanDelayMs: 300,
-        map,
-        onTileClick: (tile) => {
-          emit(APP_COMMAND_TILE_CLICKED, { tile });
+          detachCameraInput?.();
+          detachCameraInput =
+            attachCameraInput({
+              camera: inputCamera,
+              viewport,
+              window: env.window,
+              edgePanDelayMs: 300,
+              map,
+              onTileClick: (tile) => {
+                emit(APP_COMMAND_TILE_CLICKED, { tile });
+              }
+            }) ?? null;
         }
-      }) ?? null;
-  });
+      },
+      {
+        type: APP_UI_RESTORE_STARTED,
+        handler: () => {
+          if (!viewport) {
+            return;
+          }
 
-  on(APP_UI_RESTORE_STARTED, () => {
-    if (!viewport) {
-      return;
+          viewport.dataset.viewportVisibility = 'hidden';
+          viewport.dataset.restoring = 'true';
+        }
+      },
+      {
+        type: APP_UI_RESTORE_COMPLETED,
+        handler: () => {
+          if (!viewport) {
+            return;
+          }
+
+          if (camera && hero?.tile) {
+            camera.centerOnTile?.(hero.tile);
+            emitCameraUpdated();
+          }
+
+          viewport.dataset.viewportVisibility = 'visible';
+          delete viewport.dataset.restoring;
+        }
+      },
+      {
+        type: APP_COMMAND_CAMERA_PAN_BY,
+        handler: (event) => {
+          if (!camera) {
+            return;
+          }
+
+          const { dx = 0, dy = 0 } = event.detail;
+          camera.moveBy(dx, dy);
+          emitCameraUpdated();
+        }
+      },
+      {
+        type: APP_COMMAND_CAMERA_CENTER_ON_TILE,
+        handler: (event) => {
+          if (!camera || !map) {
+            return;
+          }
+
+          const tile = event.detail?.tile;
+          if (!tile) {
+            return;
+          }
+
+          if (typeof map.inBounds === 'function' && !map.inBounds(tile)) {
+            return;
+          }
+
+          camera.centerOnTile?.(tile);
+          emitCameraUpdated();
+        }
+      },
+      {
+        type: APP_FACT_MOVE_STARTED,
+        handler: () => {
+          if (!camera) {
+            return;
+          }
+
+          isMoving = true;
+          emitWorldMotionUpdated({ followHero: true });
+          camera.clearPan?.();
+          camera.lockFollow?.();
+          if (hero?.tile) {
+            camera.centerOnTile?.(hero.tile);
+            emitCameraUpdated();
+          }
+        }
+      },
+      {
+        type: APP_FACT_HERO_MOVED,
+        handler: (event) => {
+          if (!camera) {
+            return;
+          }
+
+          const { to } = event.detail;
+          if (isMoving) {
+            camera.centerOnTile?.(to);
+            emitCameraUpdated();
+            return;
+          }
+
+          camera.update?.();
+          emitCameraUpdated();
+        }
+      },
+      {
+        type: APP_FACT_MOVE_FINISHED,
+        handler: () => {
+          if (!camera) {
+            return;
+          }
+
+          isMoving = false;
+          emitWorldMotionUpdated({ followHero: false });
+          camera.unlockFollow?.();
+          camera.update?.();
+          emitCameraUpdated();
+        }
+      }
+    ],
+    dispose: () => {
+      detachCameraInput?.();
     }
-
-    viewport.dataset.viewportVisibility = 'hidden';
-    viewport.dataset.restoring = 'true';
-  });
-
-  on(APP_UI_RESTORE_COMPLETED, () => {
-    if (!viewport) {
-      return;
-    }
-
-    if (camera && hero?.tile) {
-      camera.centerOnTile?.(hero.tile);
-      emitCameraUpdated();
-    }
-
-    viewport.dataset.viewportVisibility = 'visible';
-    delete viewport.dataset.restoring;
-  });
-
-  on(APP_COMMAND_CAMERA_PAN_BY, (event) => {
-    if (!camera) {
-      return;
-    }
-
-    const { dx = 0, dy = 0 } = event.detail;
-    camera.moveBy(dx, dy);
-    emitCameraUpdated();
-  });
-
-  on(APP_COMMAND_CAMERA_CENTER_ON_TILE, (event) => {
-    if (!camera || !map) {
-      return;
-    }
-
-    const tile = event.detail?.tile;
-    if (!tile) {
-      return;
-    }
-
-    if (typeof map.inBounds === 'function' && !map.inBounds(tile)) {
-      return;
-    }
-
-    camera.centerOnTile?.(tile);
-    emitCameraUpdated();
-  });
-
-  on(APP_FACT_MOVE_STARTED, () => {
-    if (!camera) {
-      return;
-    }
-
-    isMoving = true;
-    emitWorldMotionUpdated({ followHero: true });
-    camera.clearPan?.();
-    camera.lockFollow?.();
-    if (hero?.tile) {
-      camera.centerOnTile?.(hero.tile);
-      emitCameraUpdated();
-    }
-  });
-
-  on(APP_FACT_HERO_MOVED, (event) => {
-    if (!camera) {
-      return;
-    }
-
-    const { to } = event.detail;
-    if (isMoving) {
-      camera.centerOnTile?.(to);
-      emitCameraUpdated();
-      return;
-    }
-
-    camera.update?.();
-    emitCameraUpdated();
-  });
-
-  on(APP_FACT_MOVE_FINISHED, () => {
-    if (!camera) {
-      return;
-    }
-
-    isMoving = false;
-    emitWorldMotionUpdated({ followHero: false });
-    camera.unlockFollow?.();
-    camera.update?.();
-    emitCameraUpdated();
-  });
-
-  registerDisposer(() => {
-    detachCameraInput?.();
-  });
+  };
 });

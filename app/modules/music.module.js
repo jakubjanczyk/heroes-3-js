@@ -8,7 +8,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerMusicModule = defineModule((
-  { on, emit, env, config },
+  { emit, env, config },
   {
     loadMusicTracks = loadMusicTracksDefault,
     createMusicPlayer = createMusicPlayerDefault
@@ -17,47 +17,56 @@ export const registerMusicModule = defineModule((
   let musicPlayer = null;
   let hasInitialized = false;
 
-  on(APP_FACT_WORLD_READY, () => {
-    if (hasInitialized) {
-      return;
-    }
-
-    hasInitialized = true;
-    void (async () => {
-      const tracks = Array.isArray(config.musicTracks)
-        ? config.musicTracks
-        : await loadMusicTracks({
-            fetch: env.fetch,
-            manifestUrl: config.musicManifestUrl
-          });
-
-      musicPlayer = createMusicPlayer({
-        tracks,
-        createAudio: (src) => {
-          if (typeof env.AudioCtor !== 'function') {
-            return null;
+  return {
+    subscriptions: [
+      {
+        type: APP_FACT_WORLD_READY,
+        handler: () => {
+          if (hasInitialized) {
+            return;
           }
 
-          return new env.AudioCtor(src);
+          hasInitialized = true;
+          void (async () => {
+            const tracks = Array.isArray(config.musicTracks)
+              ? config.musicTracks
+              : await loadMusicTracks({
+                  fetch: env.fetch,
+                  manifestUrl: config.musicManifestUrl
+                });
+
+            musicPlayer = createMusicPlayer({
+              tracks,
+              createAudio: (src) => {
+                if (typeof env.AudioCtor !== 'function') {
+                  return null;
+                }
+
+                return new env.AudioCtor(src);
+              }
+            });
+
+            await Promise.resolve(musicPlayer?.start?.());
+            emit(APP_UI_MUSIC_STATE_CHANGED, {
+              enabled: Boolean(musicPlayer?.isEnabled?.())
+            });
+          })();
         }
-      });
+      },
+      {
+        type: APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+        handler: () => {
+          if (!musicPlayer) {
+            return;
+          }
 
-      await Promise.resolve(musicPlayer?.start?.());
-      emit(APP_UI_MUSIC_STATE_CHANGED, {
-        enabled: Boolean(musicPlayer?.isEnabled?.())
-      });
-    })();
-  });
-
-  on(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, () => {
-    if (!musicPlayer) {
-      return;
-    }
-
-    Promise.resolve(musicPlayer.toggle()).finally(() => {
-      emit(APP_UI_MUSIC_STATE_CHANGED, {
-        enabled: Boolean(musicPlayer?.isEnabled?.())
-      });
-    });
-  });
+          Promise.resolve(musicPlayer.toggle()).finally(() => {
+            emit(APP_UI_MUSIC_STATE_CHANGED, {
+              enabled: Boolean(musicPlayer?.isEnabled?.())
+            });
+          });
+        }
+      }
+    ]
+  };
 });

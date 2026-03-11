@@ -4,6 +4,22 @@ function isFunction(value) {
   return typeof value === 'function';
 }
 
+function isObject(value) {
+  return value !== null && typeof value === 'object';
+}
+
+function toList(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function resolveTarget(target, runtime) {
+  if (isFunction(target)) {
+    return target(runtime);
+  }
+
+  return target;
+}
+
 export function createModuleRuntime({ bus, env, config }) {
   const disposers = [];
 
@@ -68,8 +84,38 @@ export function createModuleRuntime({ bus, env, config }) {
 export function defineModule(setup) {
   return (runtime, overrides) => {
     const moduleRuntime = createModuleRuntime(runtime);
-    const setupCleanup = setup(moduleRuntime, overrides);
-    moduleRuntime.registerDisposer(setupCleanup);
+    const moduleDefinition = setup(moduleRuntime, overrides);
+
+    if (isFunction(moduleDefinition)) {
+      moduleRuntime.registerDisposer(moduleDefinition);
+    }
+
+    if (isObject(moduleDefinition)) {
+      for (const entry of toList(moduleDefinition.subscriptions)) {
+        const type = entry?.type;
+        const handler = entry?.handler;
+        const options = entry?.options;
+        if (typeof type !== 'string' || !isFunction(handler)) {
+          continue;
+        }
+
+        moduleRuntime.on(type, handler, options);
+      }
+
+      for (const entry of toList(moduleDefinition.domSubscriptions)) {
+        const type = entry?.type;
+        const handler = entry?.handler;
+        const options = entry?.options;
+        if (typeof type !== 'string' || !isFunction(handler)) {
+          continue;
+        }
+
+        const target = resolveTarget(entry?.target, moduleRuntime);
+        moduleRuntime.onDom(target, type, handler, options);
+      }
+
+      moduleRuntime.registerDisposer(moduleDefinition.dispose);
+    }
 
     return () => {
       moduleRuntime.dispose();
