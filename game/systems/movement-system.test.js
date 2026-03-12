@@ -197,7 +197,16 @@ describe('movement system', () => {
       sleep: async () => {}
     });
 
-    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+    const moved = await movement.moveHeroTo(
+      { x: 1, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'monster-1',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+          stopBeforeTarget: true
+        }
+      }
+    );
 
     expect(moved).toBe(false);
   });
@@ -292,7 +301,16 @@ describe('movement system', () => {
       }
     });
 
-    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+    const moved = await movement.moveHeroTo(
+      { x: 1, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'monster-1',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+          stopBeforeTarget: true
+        }
+      }
+    );
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
@@ -334,7 +352,16 @@ describe('movement system', () => {
       }
     });
 
-    const moved = await movement.moveHeroTo({ x: 2, y: 0 });
+    const moved = await movement.moveHeroTo(
+      { x: 2, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'monster-1',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+          stopBeforeTarget: true
+        }
+      }
+    );
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
@@ -369,7 +396,16 @@ describe('movement system', () => {
       }
     });
 
-    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+    const moved = await movement.moveHeroTo(
+      { x: 1, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'resource-1',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+          stopBeforeTarget: true
+        }
+      }
+    );
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
@@ -383,7 +419,7 @@ describe('movement system', () => {
     });
   });
 
-  test('does not move onto a resource destination tile blocked by interaction guard', async () => {
+  test('does not move onto occupied destination tile without matching arrival plan', async () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const resource = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
     const entities = [hero, resource];
@@ -398,11 +434,19 @@ describe('movement system', () => {
       entities,
       map,
       occupancy,
-      isInteractionBlocked: (entity) => entity.id === 'resource-1',
       sleep: async () => {}
     });
 
-    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+    const moved = await movement.moveHeroTo(
+      { x: 1, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'resource-2',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+          stopBeforeTarget: true
+        }
+      }
+    );
 
     expect(moved).toBe(false);
     expect(hero.tile).toEqual({ x: 0, y: 0 });
@@ -436,7 +480,16 @@ describe('movement system', () => {
       }
     });
 
-    const moved = await movement.moveHeroTo({ x: 1, y: 0 });
+    const moved = await movement.moveHeroTo(
+      { x: 1, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'town-1',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_TOWN_VISIT,
+          stopBeforeTarget: false
+        }
+      }
+    );
 
     expect(moved).toBe(true);
     expect(spent).toEqual([1]);
@@ -470,7 +523,16 @@ describe('movement system', () => {
       }
     });
 
-    await movement.moveHeroTo({ x: 2, y: 0 });
+    await movement.moveHeroTo(
+      { x: 2, y: 0 },
+      {
+        arrivalPlan: {
+          entityId: 'monster-1',
+          movementInteractionKind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+          stopBeforeTarget: true
+        }
+      }
+    );
 
     expect(sleepCalls).toEqual([220, 220]);
   });

@@ -78,6 +78,44 @@ describe('world state', () => {
     expect(removeCalls).toEqual([resource]);
   });
 
+  test('tracks blocked entity ids for resource collection lifecycle', () => {
+    const resourceA = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
+    const resourceB = { id: 'resource-2', kind: 'RESOURCE', tile: { x: 2, y: 0 } };
+    const state = createWorldState({
+      scenario: { entities: [resourceA, resourceB] },
+      occupancy: {}
+    });
+
+    expect(state.listBlockedEntityIds()).toEqual([]);
+    expect(state.blockEntityById('missing')).toBe(false);
+
+    expect(state.blockEntityById('resource-1')).toBe(true);
+    expect(state.blockEntityById('resource-1')).toBe(false);
+    expect(state.isEntityBlocked('resource-1')).toBe(true);
+    expect(state.listBlockedEntityIds()).toEqual(['resource-1']);
+
+    expect(state.unblockEntityById('resource-1')).toBe(true);
+    expect(state.unblockEntityById('resource-1')).toBe(false);
+    expect(state.listBlockedEntityIds()).toEqual([]);
+  });
+
+  test('unblocks entity when it is removed from world state', () => {
+    const resource = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
+    const state = createWorldState({
+      scenario: { entities: [resource] },
+      occupancy: {}
+    });
+
+    expect(state.blockEntityById('resource-1')).toBe(true);
+    expect(state.isEntityBlocked('resource-1')).toBe(true);
+
+    const removed = state.removeEntityById('resource-1');
+
+    expect(removed).toBe(resource);
+    expect(state.isEntityBlocked('resource-1')).toBe(false);
+    expect(state.listBlockedEntityIds()).toEqual([]);
+  });
+
   test('restores persistent town occupancy at tile', () => {
     const town = { id: 'town-1', kind: 'TOWN', tile: { x: 4, y: 5 } };
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 4, y: 5 } };

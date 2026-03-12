@@ -1,6 +1,8 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
 import { sameTile } from '../../engine/tile-utils.js';
+import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
 import { findHero } from '../../game/domain/entity-queries.js';
+import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
 import {
   APP_COMMAND_TILE_CLICKED,
   APP_COMMAND_MOVE_REQUESTED,
@@ -27,6 +29,8 @@ export const registerMovementModule = defineModule((
   const movementSleep = typeof config?.movementSleep === 'function' ? config.movementSleep : undefined;
 
   let movement = null;
+  let occupancy = null;
+  let heroId = null;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
   const blockedResourceEntityIds = new Set();
@@ -39,8 +43,10 @@ export const registerMovementModule = defineModule((
       {
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
-          const { scenario, map, occupancy } = event.detail;
+          const { scenario, map, occupancy: worldOccupancy } = event.detail;
           const hero = findHero(scenario.entities);
+          heroId = hero?.id ?? null;
+          occupancy = worldOccupancy ?? null;
           blockedResourceEntityIds.clear();
           previewTargetTile = null;
           previewPath = null;
@@ -54,12 +60,10 @@ export const registerMovementModule = defineModule((
           movement = createMovementSystem({
             entities: scenario.entities,
             map,
-            occupancy,
+            occupancy: worldOccupancy,
             ...(movementSleep ? { sleep: movementSleep } : {}),
             stepDelayMs,
             getMaxMovableSteps: () => remainingMovementPoints,
-            isInteractionBlocked: (entity) =>
-              Boolean(entity && blockedResourceEntityIds.has(entity.id)),
             spendMovementPoints: (amount) => {
               emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
                 amount
@@ -99,8 +103,11 @@ export const registerMovementModule = defineModule((
       {
         type: APP_FACT_MOVEMENT_POINTS_CHANGED,
         handler: (event) => {
-          const value = Number(event.detail.value);
-          remainingMovementPoints = Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+          remainingMovementPoints =
+            normalizeMovementPoints(event.detail?.value, {
+              min: 0,
+              fallback: Number.POSITIVE_INFINITY
+            }) ?? Number.POSITIVE_INFINITY;
         }
       },
       {
@@ -167,11 +174,19 @@ export const registerMovementModule = defineModule((
           }
 
           const { targetTile, path } = event.detail;
+          const arrivalPlan = buildArrivalPlan({
+            occupancy,
+            targetTile,
+            movingEntityId: heroId,
+            isInteractionBlocked: (entity) =>
+              Boolean(entity && blockedResourceEntityIds.has(entity.id))
+          });
+
           isMoveCommandInProgress = true;
 
           void (async () => {
             try {
-              await movement.moveHeroTo(targetTile, { path });
+              await movement.moveHeroTo(targetTile, { path, arrivalPlan });
             } finally {
               isMoveCommandInProgress = false;
             }

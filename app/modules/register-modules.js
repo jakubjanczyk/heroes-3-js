@@ -8,7 +8,6 @@ import { registerMovementModule } from './movement.module.js';
 import { registerMusicModule } from './music.module.js';
 import { registerPreviewModule } from './preview.module.js';
 import { registerPreviewViewModule } from './preview-view.module.js';
-import { registerResourceCollectionBlockingModule } from './resource-collection-blocking.module.js';
 import { registerTerrainViewModule } from './terrain-view.module.js';
 import { registerTurnModule } from './turn.module.js';
 import { registerWorldModule } from './world.module.js';
@@ -24,7 +23,6 @@ const MODULES = [
   registerTurnModule,
   registerMovementModule,
   registerInteractionModule,
-  registerResourceCollectionBlockingModule,
   registerPreviewModule,
   registerCameraModule,
   registerTerrainViewModule,

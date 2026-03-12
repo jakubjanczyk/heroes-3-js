@@ -31,12 +31,13 @@ app/
     turn.module.js
     movement.module.js
     interaction.module.js
-    resource-collection-blocking.module.js
     preview.module.js
     camera.module.js
     terrain-view.module.js
     entity-view.module.js
     preview-view.module.js
+    world-view.module.js
+    minimap-view.module.js
     interaction-modal.module.js
     hud.module.js
     music.module.js
@@ -62,6 +63,8 @@ flowchart TD
   Registry --> TerrainView[terrain-view.module]
   Registry --> EntityView[entity-view.module]
   Registry --> PreviewView[preview-view.module]
+  Registry --> WorldView[world-view.module]
+  Registry --> MinimapView[minimap-view.module]
   Registry --> InteractionModalView[interaction-modal.module]
   Registry --> Hud[hud.module]
   Registry --> Music[music.module]
@@ -74,6 +77,9 @@ flowchart TD
   World -->|fact.world.ready| TerrainView
   World -->|fact.world.ready| EntityView
   World -->|fact.world.ready| PreviewView
+  World -->|fact.world.ready| WorldView
+  World -->|fact.world.ready| MinimapView
+  MinimapView -->|command.camera.centerOnTile| Camera
   Interaction -->|ui.interaction.modal.opened| InteractionModalView
   InteractionModalView -->|ui.interaction.modal.closed| Interaction
   World -->|fact.world.ready| Hud
@@ -161,15 +167,17 @@ Quick matrix:
 
 | Module | Subscribes | Emits | Owns mutable state | Owns DOM |
 |---|---|---|---|---|
-| `world.module` | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted` | none |
+| `world.module` | `command.app.start`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.resource.collection.started` | `fact.world.ready`, `fact.world.load.failed`, `fact.resource.collection.blocking.changed` | `hasStarted`, `worldState` | none |
 | `turn.module` | `fact.world.ready`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnSystem`, `isMoving` | none |
-| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
-| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated` | `hero`, `interactions`, `pendingMonsterDefeat` | none |
-| `preview.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed` | `ui.preview.updated`, `command.move.requested` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
-| `camera.module` | `fact.world.ready`, `command.camera.panBy`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked` | `camera`, `hero`, `map`, `isMoving` | queries `.viewport`, `.world` |
+| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.resource.collection.blocking.changed`, `ui.preview.updated`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `command.tile.clicked`, `command.move.requested` | `command.move.requested`, `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `blockedResourceEntityIds`, `preview*`, `isMoveCommandInProgress`, `isInteractionModalOpen` | none |
+| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.entity.fadeOut.requested`, `ui.interaction.modal.opened`, `ui.resource.collection.started`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | `hero`, `interactions`, `pendingModalOutcome`, `pendingOutcomeEntityIds` | none |
+| `preview.module` | `fact.world.ready`, `fact.resource.collection.blocking.changed`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints`, `blockedResourceEntityIds` | none |
+| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `hero`, `map`, `isMoving` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated` | none | `map`, `entities` | queries `.entity-layer` |
+| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.entity.fadeOut.requested` | none | `map`, `entities`, `fadeOutState` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
+| `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
+| `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
 | `interaction-modal.module` | `ui.interaction.modal.opened` | `ui.interaction.modal.closed` | `activeModal` | queries `.viewport`; mounts custom element |
 | `hud.module` | `fact.hero.movementPoints.changed`, `ui.music.state.changed`, `fact.world.ready` | `command.turn.end.requested`, `command.music.toggle.requested`, `command.session.reset.requested` | none | queries `.ui-layer`, `#movement-points-status`, `#resource-totals-status`, `#end-turn-button`, `#reset-session-button`, `#music-toggle-button`, `#boot-status` |
 | `music.module` | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` | `musicPlayer`, `hasInitialized` | none |
@@ -179,7 +187,7 @@ Quick matrix:
 Runtime modules are intentionally split into two categories:
 
 - domain/control modules: `world`, `turn`, `movement`, `interaction`, `preview`, `camera`, `music`
-- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `interaction-modal`, `hud`
+- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `world-view`, `minimap-view`, `interaction-modal`, `hud`
 
 `register-modules.js` registers domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
 
@@ -230,13 +238,20 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
+  participant Input as camera input binding
+  participant Bus as event bus
   participant Preview as preview.module
   participant Movement as movement.module
+  participant MovementSystem as movement-system
   participant Turn as turn.module
   participant Camera as camera.module
   participant EntityView as entity-view.module
 
-  Preview->>Movement: command.move.requested(targetTile, plannedPath)
+  Input->>Bus: emit(command.tile.clicked)
+  Bus->>Preview: command.tile.clicked (first click selects/updates preview)
+  Bus->>Movement: command.tile.clicked (second click confirms selected target)
+  Movement->>Movement: buildArrivalPlan(occupancy + behaviors + blocking snapshot)
+  Movement->>MovementSystem: moveHeroTo(targetTile, { plannedPath, arrivalPlan })
   Movement->>Turn: command.turn.spendMovementPoints.requested(amount)
   Turn-->>all: fact.hero.movementPoints.changed
   Movement-->>all: fact.move.started
@@ -278,12 +293,20 @@ This is the canonical behavior for long routes in the current runtime.
 
 ### 7.6 Monster combat -> modal -> deferred removal
 
-- `movement-system` stops hero one tile before an attacked monster, spends the move cost, and marks `fact.move.finished` with `interaction.kind = MONSTER_COMBAT`.
+- `movement.module` computes an `arrivalPlan` before executing movement (using destination occupant behavior + blocking snapshot).
+- `movement-system` executes the provided plan (stop-before vs step-into), spends movement cost, and reports `fact.move.finished` with `interaction.kind`.
 - `interaction.module` resolves combat from move-finished context and emits `ui.interaction.modal.opened`.
 - `interaction-modal.module` mounts `<interaction-modal>` in `.viewport`.
 - closing the modal emits `ui.interaction.modal.closed`.
 - after close, `interaction.module` runs monster fade-out and only then emits `fact.monster.defeated`.
 - `entity-view.module` rerenders from world state on `fact.monster.defeated`.
+
+### 7.7 Resource collection blocking ownership
+
+- `interaction.module` emits `ui.resource.collection.started` as soon as resource interaction begins.
+- `world.module` owns the blocking set inside `worldState` (`blockEntityById` / `unblockEntityById`).
+- `world.module` emits `fact.resource.collection.blocking.changed` snapshots after block/unblock transitions.
+- `preview.module` and `movement.module` consume that snapshot to prevent selecting/confirming blocked resource interactions.
 
 ## 8) DOM ownership map
 

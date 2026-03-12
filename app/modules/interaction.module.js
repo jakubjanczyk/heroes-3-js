@@ -16,7 +16,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerInteractionModule = defineModule((
-  { emit, bus, config },
+  { emit, config },
   {
     createInteractionSystem = createInteractionSystemDefault
   } = {}
@@ -30,6 +30,10 @@ export const registerInteractionModule = defineModule((
           });
   const monsterDefeatFadeOutMs = config?.monsterDefeatFadeOutMs ?? 220;
   const resourceCollectFadeOutMs = config?.resourceCollectFadeOutMs ?? 220;
+  const handlerConfig = Object.freeze({
+    monsterDefeatFadeOutMs,
+    resourceCollectFadeOutMs
+  });
 
   let hero = null;
   let entities = null;
@@ -48,6 +52,41 @@ export const registerInteractionModule = defineModule((
       durationMs
     });
     await sleep(durationMs);
+  }
+
+  function emitEvents(events) {
+    for (const event of events ?? []) {
+      if (!event || typeof event.type !== 'string') {
+        continue;
+      }
+
+      emit(event.type, event.detail ?? {});
+    }
+  }
+
+  async function applyOutcomeEffects({ effects, outcome }) {
+    if (!effects) {
+      return;
+    }
+
+    emitEvents(effects.preEvents);
+
+    if (effects.fadeOut) {
+      await requestEntityFadeOut(effects.fadeOut);
+    }
+
+    let didFinalize = true;
+    if (typeof effects.finalizeMethod === 'string') {
+      const finalizeMethod = interactions?.[effects.finalizeMethod];
+      didFinalize =
+        typeof finalizeMethod === 'function'
+          ? Boolean(finalizeMethod({ entityId: outcome?.entityId }))
+          : false;
+    }
+
+    if (didFinalize) {
+      emitEvents(effects.postEvents);
+    }
   }
 
   return {
@@ -104,40 +143,17 @@ export const registerInteractionModule = defineModule((
             pendingOutcomeEntityIds.add(outcome.entityId);
           }
 
-          const handlerConfig = {
-            monsterDefeatFadeOutMs,
-            resourceCollectFadeOutMs
-          };
-
-          const handlerResult = handler.onOutcome({
-            bus,
-            interactions,
+          const effects = handler.onOutcome({
             outcome,
-            requestEntityFadeOut,
             config: handlerConfig
           });
-
-          const isPromiseLike =
-            Boolean(handlerResult) &&
-            (typeof handlerResult === 'object' || typeof handlerResult === 'function') &&
-            typeof handlerResult.then === 'function';
-
-          if (!isPromiseLike) {
-            if (handlerResult?.pendingModalOutcome) {
-              pendingModalOutcome = handlerResult.pendingModalOutcome;
-            }
-            if (!handler.opensModal && typeof outcome.entityId === 'string') {
-              pendingOutcomeEntityIds.delete(outcome.entityId);
-            }
-            return;
+          if (effects?.pendingModalOutcome) {
+            pendingModalOutcome = effects.pendingModalOutcome;
           }
 
           void (async () => {
             try {
-              const result = await handlerResult;
-              if (result?.pendingModalOutcome) {
-                pendingModalOutcome = result.pendingModalOutcome;
-              }
+              await applyOutcomeEffects({ effects, outcome });
             } finally {
               if (!handler.opensModal && typeof outcome.entityId === 'string') {
                 pendingOutcomeEntityIds.delete(outcome.entityId);
@@ -165,17 +181,13 @@ export const registerInteractionModule = defineModule((
             return;
           }
 
+          const effects = handler.onModalClosed({
+            outcome,
+            config: handlerConfig
+          });
+
           void (async () => {
-            await handler.onModalClosed({
-              bus,
-              interactions,
-              outcome,
-              requestEntityFadeOut,
-              config: {
-                monsterDefeatFadeOutMs,
-                resourceCollectFadeOutMs
-              }
-            });
+            await applyOutcomeEffects({ effects, outcome });
           })();
         }
       }

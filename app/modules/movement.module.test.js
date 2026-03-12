@@ -64,7 +64,8 @@ describe('movement module', () => {
       {
         targetTile: { x: 2, y: 0 },
         options: {
-          path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
+          path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }],
+          arrivalPlan: null
         }
       }
     ]);
@@ -274,9 +275,9 @@ describe('movement module', () => {
     expect(moveRequests).toEqual([]);
   });
 
-  test('uses resource collection blocking snapshot to guard interactions', async () => {
+  test('passes arrival plan built from resource blocking snapshot', async () => {
     const bus = createFakeBus();
-    const isBlockedChecks = [];
+    const arrivalPlans = [];
 
     registerMovementModule(
       {
@@ -286,12 +287,9 @@ describe('movement module', () => {
         }
       },
       {
-        createMovementSystem: (config) => ({
-          async moveHeroTo() {
-            isBlockedChecks.push(
-              config.isInteractionBlocked({ id: 'resource-1' }),
-              config.isInteractionBlocked({ id: 'resource-2' })
-            );
+        createMovementSystem: () => ({
+          async moveHeroTo(_targetTile, options) {
+            arrivalPlans.push(options.arrivalPlan);
             return true;
           }
         })
@@ -300,10 +298,21 @@ describe('movement module', () => {
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: {
-        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
+        entities: [
+          { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } }
+        ]
       },
       map: {},
-      occupancy: {}
+      occupancy: {
+        getAt(tile) {
+          if (tile.x === 1 && tile.y === 0) {
+            return { id: 'resource-1', kind: 'RESOURCE', tile };
+          }
+
+          return null;
+        }
+      }
     });
     bus.emit(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, {
       entityIds: ['resource-1']
@@ -314,6 +323,6 @@ describe('movement module', () => {
     });
     await Promise.resolve();
 
-    expect(isBlockedChecks).toEqual([true, false]);
+    expect(arrivalPlans).toEqual([null]);
   });
 });

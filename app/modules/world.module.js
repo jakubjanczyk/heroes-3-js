@@ -5,9 +5,12 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_LOAD_FAILED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_RESOURCE_COLLECTION_STARTED
 } from '../events.js';
+import { normalizeTile } from '../../game/domain/value-objects/tile.js';
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerWorldModule = defineModule((
@@ -28,49 +31,37 @@ export const registerWorldModule = defineModule((
     worldState?.removeEntityById?.(entityId);
   }
 
+  function emitResourceCollectionBlockingChanged() {
+    emit(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, {
+      entityIds: worldState?.listBlockedEntityIds?.() ?? []
+    });
+  }
+
   return {
     subscriptions: [
       {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
           const movedEntity = getEntityById(event.detail?.heroId);
-          const fromTile = event.detail?.from;
-          const toTile = event.detail?.to;
+          const fromTile = normalizeTile(event.detail?.from);
+          const toTile = normalizeTile(event.detail?.to);
           if (!movedEntity || !toTile) {
             return;
           }
 
-          const nextTile = {
-            x: Number(toTile.x),
-            y: Number(toTile.y)
-          };
-          if (!Number.isFinite(nextTile.x) || !Number.isFinite(nextTile.y)) {
-            return;
-          }
-
-          const previousTile = {
-            x: Number(movedEntity.tile?.x),
-            y: Number(movedEntity.tile?.y)
-          };
+          const previousTile = normalizeTile(movedEntity.tile);
 
           const didMove = worldState?.moveEntity?.({
             entityId: movedEntity.id,
-            toTile: nextTile
+            toTile
           });
           if (!didMove) {
             return;
           }
 
-          const fromX = Number(fromTile?.x);
-          const fromY = Number(fromTile?.y);
-          const restoreTile =
-            Number.isFinite(fromX) && Number.isFinite(fromY)
-              ? { x: Math.floor(fromX), y: Math.floor(fromY) }
-              : previousTile;
+          const restoreTile = fromTile ?? previousTile;
           const shouldRestoreTile =
-            Number.isFinite(restoreTile.x) &&
-            Number.isFinite(restoreTile.y) &&
-            (restoreTile.x !== nextTile.x || restoreTile.y !== nextTile.y);
+            restoreTile && (restoreTile.x !== toTile.x || restoreTile.y !== toTile.y);
 
           if (!shouldRestoreTile) {
             return;
@@ -88,7 +79,25 @@ export const registerWorldModule = defineModule((
       {
         type: APP_FACT_RESOURCE_COLLECTED,
         handler: (event) => {
-          removeEntityFromWorld(event.detail?.entityId);
+          const entityId = event.detail?.entityId;
+          const didUnblock = worldState?.unblockEntityById?.(entityId) ?? false;
+          removeEntityFromWorld(entityId);
+          if (!didUnblock) {
+            return;
+          }
+
+          emitResourceCollectionBlockingChanged();
+        }
+      },
+      {
+        type: APP_UI_RESOURCE_COLLECTION_STARTED,
+        handler: (event) => {
+          const didBlock = worldState?.blockEntityById?.(event.detail?.entityId) ?? false;
+          if (!didBlock) {
+            return;
+          }
+
+          emitResourceCollectionBlockingChanged();
         }
       },
       {
@@ -112,6 +121,8 @@ export const registerWorldModule = defineModule((
                 map,
                 occupancy
               });
+
+              emitResourceCollectionBlockingChanged();
             } catch (error) {
               emit(APP_FACT_WORLD_LOAD_FAILED, {
                 error
@@ -129,10 +140,12 @@ export const registerWorldModule = defineModule((
     APP_COMMAND_APP_START,
     APP_FACT_HERO_MOVED,
     APP_FACT_MONSTER_DEFEATED,
-    APP_FACT_RESOURCE_COLLECTED
+    APP_FACT_RESOURCE_COLLECTED,
+    APP_UI_RESOURCE_COLLECTION_STARTED
   ],
   produces: [
     APP_FACT_WORLD_READY,
-    APP_FACT_WORLD_LOAD_FAILED
+    APP_FACT_WORLD_LOAD_FAILED,
+    APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED
   ]
 });

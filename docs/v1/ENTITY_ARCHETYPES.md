@@ -57,6 +57,9 @@ Key entry points:
 - `game/domain/entity-behaviors/*.js`
   - one module per archetype (e.g. monster/resource/town).
 
+Core value objects used by domain services live in `game/domain/value-objects/*`
+(`tile`, `entity-id`, `movement-points`) so validation/normalization rules stay centralized.
+
 Arrival interaction contract (shape):
 
 - `movementInteractionKind` (string): what movement should report when it triggers this interaction
@@ -70,9 +73,13 @@ Why this is important:
 
 ### Movement and interactions
 
+- `game/domain/movement/arrival-plan.js`
+  - inspects destination occupancy + archetype behavior (`getArrivalInteraction`) and returns
+    a movement `arrivalPlan` (`entityId`, `movementInteractionKind`, `stopBeforeTarget`).
 - `game/systems/movement-system.js`
-  - detects an arrival interaction by asking `getArrivalInteraction(occupant)`.
-  - emits `fact.move.finished` with `interaction.kind = movementInteractionKind` when triggered.
+  - executes steps only; it does not query archetype behavior directly.
+  - consumes the precomputed `arrivalPlan` and emits `fact.move.finished` with
+    `interaction.kind = movementInteractionKind` when triggered.
 - `game/systems/interaction-system.js`
   - resolves an arrival outcome for a destination tile.
   - takes `arrivingEntityId` so it can ignore the moving entity (no special-case "HERO" checks).
@@ -82,10 +89,13 @@ Why this is important:
 The app runtime should not need to know about every archetype in-line.
 
 - `app/modules/interaction.module.js` listens for `fact.move.finished`, asks the domain interaction
-  system for an `outcome`, then delegates to a handler registry.
-- `app/modules/shared/interaction-outcomes.js` maps `outcome.kind` to a handler:
-  - non-modal outcomes can finalize immediately (optionally with fade-out)
-  - modal outcomes can store `pendingModalOutcome` and finalize on `ui.interaction.modal.closed`
+  system for an `outcome`, then delegates to a handler registry and owns all event emission.
+- `app/modules/shared/interaction-outcomes.js` maps `outcome.kind` to declarative effect plans:
+  - pre-events to emit immediately
+  - optional fade-out request
+  - finalize method name for the domain interaction system
+  - post-events emitted only when finalization succeeds
+  - optional `pendingModalOutcome` for modal close flows
 
 Fade-outs are requested by `ui.entity.fadeOut.requested`, and applied by views based on presentation
 metadata rather than `if (kind === ...)`.
@@ -133,7 +143,8 @@ Rule of thumb:
    - register it in `app/presentation/entities/registry.js`
 5. Add/extend outcome handling:
    - add a handler entry in `app/modules/shared/interaction-outcomes.js` for the new `outcome.kind`
-   - decide: modal vs non-modal flow
+   - return an effect plan (pre-events / optional fade-out / finalize method / post-events)
+   - decide: modal vs non-modal flow (`pendingModalOutcome` for modal close finalization)
 6. Add tests:
    - unit tests for behavior outcome shape (`game/domain/entity-behaviors.test.js` patterns)
    - unit tests for module behavior if new bus flow is introduced

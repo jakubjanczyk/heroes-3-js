@@ -1,41 +1,75 @@
 import { isTown } from './entity-queries.js';
-import { isNonEmptyString } from './string-utils.js';
-
-function normalizeTile(tile) {
-  const x = Number(tile?.x);
-  const y = Number(tile?.y);
-  if (!Number.isFinite(x) || !Number.isFinite(y)) {
-    return null;
-  }
-
-  return {
-    x: Math.floor(x),
-    y: Math.floor(y)
-  };
-}
+import { toEntityIdOrNull } from './value-objects/entity-id.js';
+import { normalizeTile } from './value-objects/tile.js';
 
 export function createWorldState({ scenario, occupancy }) {
   const entities = scenario?.entities ?? [];
+  const blockedEntityIds = new Set();
 
   function getEntityById(entityId) {
-    if (!isNonEmptyString(entityId)) {
+    const normalizedEntityId = toEntityIdOrNull(entityId);
+    if (!normalizedEntityId) {
       return null;
     }
 
-    return entities.find((entity) => entity.id === entityId) ?? null;
+    return entities.find((entity) => entity.id === normalizedEntityId) ?? null;
+  }
+
+  function listBlockedEntityIds() {
+    return [...blockedEntityIds];
+  }
+
+  function isEntityBlocked(entityId) {
+    const normalizedEntityId = toEntityIdOrNull(entityId);
+    if (!normalizedEntityId) {
+      return false;
+    }
+
+    return blockedEntityIds.has(normalizedEntityId);
+  }
+
+  function blockEntityById(entityId) {
+    const normalizedEntityId = toEntityIdOrNull(entityId);
+    if (!normalizedEntityId) {
+      return false;
+    }
+
+    if (!getEntityById(normalizedEntityId)) {
+      return false;
+    }
+
+    if (blockedEntityIds.has(normalizedEntityId)) {
+      return false;
+    }
+
+    blockedEntityIds.add(normalizedEntityId);
+    return true;
+  }
+
+  function unblockEntityById(entityId) {
+    const normalizedEntityId = toEntityIdOrNull(entityId);
+    if (!normalizedEntityId) {
+      return false;
+    }
+
+    return blockedEntityIds.delete(normalizedEntityId);
   }
 
   function removeEntityById(entityId) {
-    if (!isNonEmptyString(entityId)) {
+    const normalizedEntityId = toEntityIdOrNull(entityId);
+    if (!normalizedEntityId) {
       return null;
     }
 
-    const index = entities.findIndex((entity) => entity.id === entityId);
+    const index = entities.findIndex((entity) => entity.id === normalizedEntityId);
     if (index < 0) {
       return null;
     }
 
     const [removedEntity] = entities.splice(index, 1);
+    if (removedEntity) {
+      blockedEntityIds.delete(removedEntity.id);
+    }
     if (removedEntity) {
       occupancy?.removeEntity?.(removedEntity);
     }
@@ -96,6 +130,10 @@ export function createWorldState({ scenario, occupancy }) {
 
   return {
     getEntityById,
+    listBlockedEntityIds,
+    isEntityBlocked,
+    blockEntityById,
+    unblockEntityById,
     removeEntityById,
     moveEntity,
     restorePersistentEntitiesAt

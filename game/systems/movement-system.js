@@ -1,7 +1,7 @@
 import { findPath } from '../../engine/pathfinding.js';
 import { sameTile } from '../../engine/tile-utils.js';
-import { getArrivalInteraction } from '../domain/entity-behaviors/registry.js';
 import { findHero } from '../domain/entity-queries.js';
+import { toEntityIdOrNull } from '../domain/value-objects/entity-id.js';
 
 function isValidPlannedPath(path, fromTile, toTile, map) {
   if (!Array.isArray(path) || path.length < 2) {
@@ -51,7 +51,6 @@ export function createMovementSystem({
   sleep = defaultSleep,
   stepDelayMs = 80,
   getMaxMovableSteps = () => Number.POSITIVE_INFINITY,
-  isInteractionBlocked = () => false,
   spendMovementPoints = () => {},
   onMoveStart = () => {},
   onMoveFinish = () => {},
@@ -63,24 +62,7 @@ export function createMovementSystem({
     return findHero(entities);
   }
 
-  function getArrivalInteractionTargetAt(tile, heroId) {
-    const occupant = occupancy.getAt(tile);
-    if (!occupant || occupant.id === heroId) {
-      return null;
-    }
-
-    if (isInteractionBlocked(occupant)) {
-      return null;
-    }
-
-    if (!getArrivalInteraction(occupant)) {
-      return null;
-    }
-
-    return occupant;
-  }
-
-  async function moveHeroTo(toTile, { path: plannedPath = null } = {}) {
+  async function moveHeroTo(toTile, { path: plannedPath = null, arrivalPlan = null } = {}) {
     if (isMoving) {
       return false;
     }
@@ -113,13 +95,23 @@ export function createMovementSystem({
     if (cappedStepCount < 1) {
       return false;
     }
-    const targetArrivalInteraction = getArrivalInteractionTargetAt(toTile, hero.id);
-    const arrivalInteractionBehavior = targetArrivalInteraction
-      ? getArrivalInteraction(targetArrivalInteraction)
-      : null;
-    const didTriggerArrivalInteraction =
-      Boolean(arrivalInteractionBehavior) && cappedStepCount === totalStepCount;
+
     const destinationOccupant = occupancy.getAt(toTile);
+    const normalizedArrivalPlan =
+      destinationOccupant &&
+      destinationOccupant.id !== hero.id &&
+      destinationOccupant.id === toEntityIdOrNull(arrivalPlan?.entityId) &&
+      typeof arrivalPlan?.movementInteractionKind === 'string' &&
+      arrivalPlan.movementInteractionKind.length > 0
+        ? {
+            entityId: destinationOccupant.id,
+            movementInteractionKind: arrivalPlan.movementInteractionKind,
+            stopBeforeTarget: Boolean(arrivalPlan.stopBeforeTarget)
+          }
+        : null;
+
+    const didTriggerArrivalInteraction =
+      Boolean(normalizedArrivalPlan) && cappedStepCount === totalStepCount;
     if (
       destinationOccupant &&
       destinationOccupant.id !== hero.id &&
@@ -128,16 +120,15 @@ export function createMovementSystem({
     ) {
       return false;
     }
-    const interactionRequiresSteppingIntoTarget =
-      arrivalInteractionBehavior?.requiresSteppingIntoTarget ?? false;
+
     const executedStepCount = didTriggerArrivalInteraction
-      ? interactionRequiresSteppingIntoTarget
-        ? cappedStepCount
-        : Math.max(0, cappedStepCount - 1)
+      ? normalizedArrivalPlan.stopBeforeTarget
+        ? Math.max(0, cappedStepCount - 1)
+        : cappedStepCount
       : cappedStepCount;
 
     const movementInteractionKind = didTriggerArrivalInteraction
-      ? arrivalInteractionBehavior?.movementInteractionKind ?? null
+      ? normalizedArrivalPlan.movementInteractionKind
       : null;
 
     const fromTile = { x: hero.tile.x, y: hero.tile.y };
@@ -164,7 +155,7 @@ export function createMovementSystem({
         await sleep(getFinalSettleDelayMs(stepDelayMs));
       }
 
-      if (didTriggerArrivalInteraction && !interactionRequiresSteppingIntoTarget) {
+      if (didTriggerArrivalInteraction && normalizedArrivalPlan.stopBeforeTarget) {
         spendMovementPoints(1);
       }
     } finally {
@@ -178,7 +169,7 @@ export function createMovementSystem({
         interaction: movementInteractionKind
           ? {
               kind: movementInteractionKind,
-              entityId: targetArrivalInteraction.id,
+              entityId: normalizedArrivalPlan.entityId,
               targetTile: toTile
             }
           : null

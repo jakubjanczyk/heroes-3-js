@@ -5,8 +5,10 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_LOAD_FAILED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_RESOURCE_COLLECTION_STARTED
 } from '../events.js';
 import { tileKey } from '../../engine/tile-utils.js';
 import { findHero } from '../../game/domain/entity-queries.js';
@@ -404,6 +406,57 @@ describe('world module', () => {
     expect(occupancyState.byEntityId.get('hero-1')).toBe('3,0');
     expect(occupancyState.byEntityId.has('resource-1')).toBe(false);
     expect(occupancyState.byEntityId.has('monster-1')).toBe(false);
+  });
+
+  test('emits resource blocking snapshots from world state', async () => {
+    const bus = createFakeBus({ snapshotDetail: true });
+
+    registerWorldModule(
+      {
+        bus,
+        env: {
+          fetch: async () => {}
+        }
+      },
+      {
+        loadGame: async () => ({
+          scenario: {
+            meta: { id: 'demo' },
+            terrain: { width: 3, height: 1, tiles: [0, 0, 0] },
+            entities: [
+              { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } },
+              { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } }
+            ]
+          },
+          definitions: {}
+        })
+      }
+    );
+
+    bus.emit(APP_COMMAND_APP_START, {});
+    await flushMicrotasks();
+
+    bus.emit(APP_UI_RESOURCE_COLLECTION_STARTED, { entityId: 'resource-1' });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
+
+    const blockingFacts = bus.emitted.filter(
+      (entry) => entry.type === APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED
+    );
+
+    expect(blockingFacts).toEqual([
+      {
+        type: APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
+        detail: { entityIds: [] }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
+        detail: { entityIds: ['resource-1'] }
+      },
+      {
+        type: APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
+        detail: { entityIds: [] }
+      }
+    ]);
   });
 
 });
