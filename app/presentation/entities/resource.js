@@ -2,7 +2,6 @@ import { getResourceSpriteStyle } from '../../../engine/layers/resource-sprites.
 import { typeToClass } from './shared.js';
 
 export const fadeOut = Object.freeze({
-  selector: '.entity--resource',
   className: 'entity--resource-collecting'
 });
 

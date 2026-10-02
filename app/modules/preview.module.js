@@ -9,7 +9,6 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
@@ -27,7 +26,6 @@ export const registerPreviewModule = defineModule(({ emit }) => {
   let isMoving = false;
   let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
-  const blockedResourceEntityIds = new Set();
 
   function emitPreview() {
     emit(APP_UI_PREVIEW_UPDATED, {
@@ -73,14 +71,12 @@ export const registerPreviewModule = defineModule(({ emit }) => {
     }
 
     const destinationOccupant = occupancy.getAt(toTile);
-    if (destinationOccupant && destinationOccupant.id !== hero.id) {
-      if (blockedResourceEntityIds.has(destinationOccupant.id)) {
-        return null;
-      }
-
-      if (!isArrivalInteractionEntity(destinationOccupant)) {
-        return null;
-      }
+    if (
+      destinationOccupant &&
+      destinationOccupant.id !== hero.id &&
+      !isArrivalInteractionEntity(destinationOccupant)
+    ) {
+      return null;
     }
 
     return findPath({
@@ -103,21 +99,7 @@ export const registerPreviewModule = defineModule(({ emit }) => {
           map = world.map;
           occupancy = world.occupancy;
           hero = findHero(world.scenario.entities);
-          blockedResourceEntityIds.clear();
           clearPreview({ log: false, emitFact: false });
-        }
-      },
-      {
-        type: APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
-        handler: (event) => {
-          blockedResourceEntityIds.clear();
-          for (const entityId of event.detail?.entityIds ?? []) {
-            if (typeof entityId === 'string' && entityId.length > 0) {
-              blockedResourceEntityIds.add(entityId);
-            }
-          }
-
-          clearPreview();
         }
       },
       {
@@ -256,7 +238,6 @@ export const registerPreviewModule = defineModule(({ emit }) => {
   phase: 'domain',
   consumes: [
     APP_FACT_WORLD_READY,
-    APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
     APP_COMMAND_TILE_CLICKED,
     APP_FACT_MOVE_STARTED,

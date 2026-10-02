@@ -9,7 +9,7 @@ import {
 import { createInteractionSystem } from './interaction-system.js';
 
 describe('interaction system', () => {
-  test('resolves monster outcome, then removes monster only when finalized', () => {
+  test('resolves monster outcome without mutating entities', () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } };
     const monster = { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } };
     const entities = [hero, monster];
@@ -40,10 +40,6 @@ describe('interaction system', () => {
     });
 
     expect(entities).toEqual([hero, monster]);
-
-    const finalized = interactions.finalizeMonsterDefeat({ entityId: 'monster-1' });
-    expect(finalized).toBe(true);
-    expect(entities).toEqual([hero, monster]);
   });
 
   test('returns null when destination has no monster', () => {
@@ -60,7 +56,7 @@ describe('interaction system', () => {
     expect(entities).toEqual([hero]);
   });
 
-  test('resolves resource outcome and removes resource immediately when finalized', () => {
+  test('resolves resource outcome without mutating entities', () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } };
     const resource = { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } };
     const entities = [hero, resource];
@@ -88,8 +84,6 @@ describe('interaction system', () => {
       resourceName: 'Gold pile'
     });
 
-    const finalized = interactions.finalizeResourceCollection({ entityId: 'resource-1' });
-    expect(finalized).toBe(true);
     expect(entities).toEqual([hero, resource]);
   });
 

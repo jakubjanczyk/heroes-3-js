@@ -11,7 +11,6 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
-  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
@@ -229,27 +228,6 @@ describe('preview module', () => {
     expect(preview?.detail.targetTile).toEqual({ x: 1, y: 0 });
   });
 
-  test('clears preview when resource collection blockers update', () => {
-    const bus = createFakeBus({ snapshotDetail: true });
-    const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
-
-    registerPreviewModule({ bus });
-
-    bus.emit(APP_FACT_WORLD_READY, {
-      scenario: { entities: [hero] },
-      map,
-      occupancy
-    });
-    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
-    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
-    bus.emit(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, { entityIds: ['resource-1'] });
-
-    const preview = getLastEmittedByType(bus, APP_UI_PREVIEW_UPDATED);
-    expect(preview?.detail.path).toBe(null);
-    expect(preview?.detail.targetTile).toBe(null);
-  });
 
   test('clears preview immediately when movement finishes with resource collect interaction', () => {
     const bus = createFakeBus({ snapshotDetail: true });

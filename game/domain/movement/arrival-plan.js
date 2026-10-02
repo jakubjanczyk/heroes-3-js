@@ -4,8 +4,7 @@ import { toEntityIdOrNull } from '../value-objects/entity-id.js';
 export function buildArrivalPlan({
   occupancy,
   targetTile,
-  movingEntityId,
-  isInteractionBlocked = () => false
+  movingEntityId
 }) {
   const destinationOccupant = occupancy?.getAt?.(targetTile) ?? null;
   if (!destinationOccupant) {
@@ -18,10 +17,6 @@ export function buildArrivalPlan({
   }
 
   if (destinationEntityId === movingEntityId) {
-    return null;
-  }
-
-  if (isInteractionBlocked(destinationOccupant)) {
     return null;
   }
 

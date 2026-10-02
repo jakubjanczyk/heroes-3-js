@@ -8,7 +8,6 @@ import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
-  APP_UI_ENTITY_FADE_OUT_REQUESTED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED
 } from '../events.js';
@@ -27,6 +26,11 @@ export const registerEntityViewModule = defineModule((
   const heroStepDurationMs = Number.isFinite(configuredStepDurationMs)
     ? Math.max(0, configuredStepDurationMs)
     : 220;
+  const fadeOutMsByKind = Object.freeze({
+    MONSTER: config?.monsterDefeatFadeOutMs ?? 220,
+    RESOURCE: config?.resourceCollectFadeOutMs ?? 220
+  });
+  const fadeOutTimers = new Set();
 
   let map = null;
   let entities = null;
@@ -91,18 +95,29 @@ export const registerEntityViewModule = defineModule((
     applyHeroRestoreMotionOverride();
   }
 
-  function applyEntityFadeOut({ entityId, entityKind }) {
+  function removeEntityElement({ entityId, entityKind }) {
     if (!entityLayer || typeof entityId !== 'string' || entityId.length === 0) {
       return;
     }
 
-    const fadeOutSpec = getEntityFadeOutSpec({ entityKind });
-    if (!fadeOutSpec) {
+    const el = entityLayer.querySelector?.(`[data-entity-id="${entityId}"]`);
+    if (!el) {
       return;
     }
 
-    const el = entityLayer.querySelector?.(`${fadeOutSpec.selector}[data-entity-id="${entityId}"]`);
-    el?.classList?.add?.(fadeOutSpec.className);
+    const fadeOutSpec = getEntityFadeOutSpec({ entityKind });
+    const durationMs = fadeOutMsByKind[entityKind] ?? 0;
+    if (isRestoring || !fadeOutSpec || durationMs <= 0) {
+      el.remove();
+      return;
+    }
+
+    el.classList.add(fadeOutSpec.className);
+    const timer = setTimeout(() => {
+      fadeOutTimers.delete(timer);
+      el.remove();
+    }, durationMs);
+    fadeOutTimers.add(timer);
   }
 
   return {
@@ -129,24 +144,15 @@ export const registerEntityViewModule = defineModule((
         }
       },
       {
-        type: APP_UI_ENTITY_FADE_OUT_REQUESTED,
-        handler: (event) => {
-          applyEntityFadeOut({
-            entityId: event.detail?.entityId,
-            entityKind: event.detail?.entityKind
-          });
-        }
-      },
-      {
         type: APP_FACT_MONSTER_DEFEATED,
-        handler: () => {
-          render();
+        handler: (event) => {
+          removeEntityElement({ entityId: event.detail?.entityId, entityKind: 'MONSTER' });
         }
       },
       {
         type: APP_FACT_RESOURCE_COLLECTED,
-        handler: () => {
-          render();
+        handler: (event) => {
+          removeEntityElement({ entityId: event.detail?.entityId, entityKind: 'RESOURCE' });
         }
       },
       {
@@ -170,7 +176,13 @@ export const registerEntityViewModule = defineModule((
           });
         }
       }
-    ]
+    ],
+    dispose: () => {
+      for (const timer of fadeOutTimers) {
+        clearTimeout(timer);
+      }
+      fadeOutTimers.clear();
+    }
   };
 }, {
   id: 'entity-view',
@@ -178,7 +190,6 @@ export const registerEntityViewModule = defineModule((
   consumes: [
     APP_FACT_WORLD_READY,
     APP_FACT_HERO_MOVED,
-    APP_UI_ENTITY_FADE_OUT_REQUESTED,
     APP_FACT_MONSTER_DEFEATED,
     APP_FACT_RESOURCE_COLLECTED,
     APP_UI_RESTORE_STARTED,
