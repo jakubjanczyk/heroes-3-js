@@ -235,7 +235,7 @@ describe('camera module', () => {
     expect(viewport.dataset.restoring).toBeUndefined();
   });
 
-  test('centers camera on minimap command and emits camera update', () => {
+  test('centers camera on in-bounds minimap command, ignores out-of-bounds tiles, and emits camera update', () => {
     const bus = createFakeBus();
     const centeredOnTiles = [];
 
@@ -273,11 +273,16 @@ describe('camera module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      map: { id: 'map' }
+      map: {
+        inBounds: (tile) => tile.x >= 0 && tile.x < 20 && tile.y >= 0 && tile.y < 20
+      }
     });
 
     bus.emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, {
       tile: { x: 12, y: 9 }
+    });
+    bus.emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, {
+      tile: { x: 25, y: 9 }
     });
 
     expect(centeredOnTiles).toEqual([{ x: 12, y: 9 }]);
