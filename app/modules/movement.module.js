@@ -10,7 +10,6 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
-  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
@@ -33,7 +32,6 @@ export const registerMovementModule = defineModule((
   let heroId = null;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
-  const blockedResourceEntityIds = new Set();
   let previewTargetTile = null;
   let previewPath = null;
   let isInteractionModalOpen = false;
@@ -47,7 +45,6 @@ export const registerMovementModule = defineModule((
           const hero = findHero(scenario.entities);
           heroId = hero?.id ?? null;
           occupancy = worldOccupancy ?? null;
-          blockedResourceEntityIds.clear();
           previewTargetTile = null;
           previewPath = null;
           isInteractionModalOpen = false;
@@ -111,17 +108,6 @@ export const registerMovementModule = defineModule((
         }
       },
       {
-        type: APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
-        handler: (event) => {
-          blockedResourceEntityIds.clear();
-          for (const entityId of event.detail?.entityIds ?? []) {
-            if (typeof entityId === 'string' && entityId.length > 0) {
-              blockedResourceEntityIds.add(entityId);
-            }
-          }
-        }
-      },
-      {
         type: APP_UI_PREVIEW_UPDATED,
         handler: (event) => {
           previewTargetTile = event.detail?.targetTile ?? null;
@@ -177,9 +163,7 @@ export const registerMovementModule = defineModule((
           const arrivalPlan = buildArrivalPlan({
             occupancy,
             targetTile,
-            movingEntityId: heroId,
-            isInteractionBlocked: (entity) =>
-              Boolean(entity && blockedResourceEntityIds.has(entity.id))
+            movingEntityId: heroId
           });
 
           isMoveCommandInProgress = true;
@@ -201,7 +185,6 @@ export const registerMovementModule = defineModule((
   consumes: [
     APP_FACT_WORLD_READY,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
-    APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
     APP_UI_PREVIEW_UPDATED,
     APP_UI_INTERACTION_MODAL_OPENED,
     APP_UI_INTERACTION_MODAL_CLOSED,

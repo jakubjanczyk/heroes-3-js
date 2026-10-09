@@ -227,7 +227,7 @@ function defineInteractionModalElement(window) {
 
 export function createInteractionModalElement({ document, transitionMs = 260 } = {}) {
   const window = document?.defaultView ?? globalThis.window;
-  const InteractionModalElement = defineInteractionModalElement(window);
+  defineInteractionModalElement(window);
   const modal = document?.createElement?.(INTERACTION_MODAL_TAG);
   if (!modal) {
     return null;

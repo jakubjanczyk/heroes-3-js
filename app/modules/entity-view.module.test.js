@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
   APP_FACT_HERO_MOVED,
@@ -13,7 +13,7 @@ import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerEntityViewModule } from './entity-view.module.js';
 
 describe('entity view module', () => {
-  test('updates hero position in place and rerenders for interaction facts', () => {
+  test('updates hero position in place without rerendering the layer', () => {
     const bus = createFakeBus();
     const renderCalls = [];
     const heroElement = {
@@ -75,10 +75,8 @@ describe('entity view module', () => {
       scenario: { entities: [{ id: 'hero-1' }] }
     });
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
-    bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
-    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
 
-    expect(renderCalls).toHaveLength(3);
+    expect(renderCalls).toHaveLength(1);
     expect(renderCalls[0].entities).toEqual([{ id: 'hero-1' }]);
     expect(entityLayer.style['--hero-step-duration']).toBe('240ms');
     expect(heroElement.dataset.tileX).toBe('1');
@@ -297,6 +295,109 @@ describe('entity view module', () => {
     bus.emit(APP_UI_RESTORE_COMPLETED, {});
 
     expect(heroElements[0].style.transition).toBe('');
+  });
+
+  function setupEntityViewWithEntityElements({ config = {} } = {}) {
+    const bus = createFakeBus();
+    const elementsById = new Map();
+    const createEntityElement = (entityId) => {
+      const classes = new Set();
+      const element = {
+        removed: false,
+        classList: {
+          add: (name) => classes.add(name),
+          contains: (name) => classes.has(name)
+        },
+        remove() {
+          element.removed = true;
+          elementsById.delete(entityId);
+        }
+      };
+      elementsById.set(entityId, element);
+      return element;
+    };
+    const entityLayer = {
+      style: { setProperty() {} },
+      querySelector(selector) {
+        const match = /^\[data-entity-id="(.+)"\]$/.exec(selector);
+        return match ? elementsById.get(match[1]) ?? null : null;
+      },
+      querySelectorAll() {
+        return [];
+      }
+    };
+
+    registerEntityViewModule(
+      {
+        bus,
+        env: {
+          document: {
+            querySelector: (selector) => (selector === '.entity-layer' ? entityLayer : null),
+            createElement: () => ({})
+          }
+        },
+        config
+      },
+      { renderEntityLayer: () => {} }
+    );
+
+    bus.emit(APP_FACT_WORLD_READY, { map: {}, scenario: { entities: [] } });
+
+    return { bus, createEntityElement };
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test('fades out defeated monster and removes it after the configured duration', () => {
+    vi.useFakeTimers();
+    const { bus, createEntityElement } = setupEntityViewWithEntityElements({
+      config: { monsterDefeatFadeOutMs: 100 }
+    });
+    const monster = createEntityElement('monster-1');
+
+    bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
+
+    expect(monster.classList.contains('entity--monster-defeating')).toBe(true);
+    expect(monster.removed).toBe(false);
+
+    vi.advanceTimersByTime(100);
+
+    expect(monster.removed).toBe(true);
+  });
+
+  test('fades out collected resource and removes it after the configured duration', () => {
+    vi.useFakeTimers();
+    const { bus, createEntityElement } = setupEntityViewWithEntityElements({
+      config: { resourceCollectFadeOutMs: 50 }
+    });
+    const resource = createEntityElement('resource-1');
+
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
+
+    expect(resource.classList.contains('entity--resource-collecting')).toBe(true);
+    expect(resource.removed).toBe(false);
+
+    vi.advanceTimersByTime(50);
+
+    expect(resource.removed).toBe(true);
+  });
+
+  test('removes entities immediately without fade-out while restoring', () => {
+    const { bus, createEntityElement } = setupEntityViewWithEntityElements({
+      config: { monsterDefeatFadeOutMs: 100, resourceCollectFadeOutMs: 100 }
+    });
+    const monster = createEntityElement('monster-1');
+    const resource = createEntityElement('resource-1');
+
+    bus.emit(APP_UI_RESTORE_STARTED, {});
+    bus.emit(APP_FACT_MONSTER_DEFEATED, { entityId: 'monster-1' });
+    bus.emit(APP_FACT_RESOURCE_COLLECTED, { entityId: 'resource-1' });
+
+    expect(monster.removed).toBe(true);
+    expect(monster.classList.contains('entity--monster-defeating')).toBe(false);
+    expect(resource.removed).toBe(true);
   });
 
   test('does not render when entity layer is missing', () => {

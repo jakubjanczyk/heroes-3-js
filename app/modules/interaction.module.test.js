@@ -21,19 +21,12 @@ import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 import { registerInteractionModule } from './interaction.module.js';
 
 describe('interaction module', () => {
-  test('opens modal on monster combat and finalizes defeat after modal close', async () => {
+  test('opens modal on monster combat and emits defeat when modal closes', () => {
     const bus = createFakeBus();
     const resolveCalls = [];
-    const finalizeCalls = [];
 
     registerInteractionModule(
-      {
-        bus,
-        config: {
-          monsterDefeatFadeOutMs: 0,
-          interactionSleep: async () => {}
-        }
-      },
+      { bus },
       {
         createInteractionSystem: () => ({
           resolveArrivalAtDestination({ destinationTile }) {
@@ -48,10 +41,6 @@ describe('interaction module', () => {
                 message: 'Skeleton defeated'
               }
             };
-          },
-          finalizeMonsterDefeat({ entityId }) {
-            finalizeCalls.push(entityId);
-            return true;
           }
         })
       }
@@ -88,9 +77,7 @@ describe('interaction module', () => {
     expect(bus.emitted.find((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)).toBeFalsy();
 
     bus.emit(APP_UI_INTERACTION_MODAL_CLOSED, {});
-    await Promise.resolve();
 
-    expect(finalizeCalls).toEqual(['monster-1']);
     expect(bus.emitted).toContainEqual({
       type: APP_FACT_MONSTER_DEFEATED,
       detail: {
@@ -135,20 +122,13 @@ describe('interaction module', () => {
     ).toBeFalsy();
   });
 
-  test('fades and finalizes resource collection without opening modal', async () => {
+  test('emits resource collected immediately without opening modal', () => {
     const bus = createFakeBus();
     const resolveCalls = [];
-    const finalizeCalls = [];
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
 
     registerInteractionModule(
-      {
-        bus,
-        config: {
-          resourceCollectFadeOutMs: 0,
-          interactionSleep: async () => {}
-        }
-      },
+      { bus },
       {
         createInteractionSystem: () => ({
           resolveArrivalAtDestination({ destinationTile }) {
@@ -161,10 +141,6 @@ describe('interaction module', () => {
               tile: destinationTile,
               resourceName: 'Gold pile'
             };
-          },
-          finalizeResourceCollection({ entityId }) {
-            finalizeCalls.push(entityId);
-            return true;
           }
         })
       }
@@ -185,10 +161,8 @@ describe('interaction module', () => {
         targetTile: { x: 1, y: 0 }
       }
     });
-    await Promise.resolve();
 
     expect(resolveCalls).toEqual([{ x: 1, y: 0 }]);
-    expect(finalizeCalls).toEqual(['resource-1']);
     expect(bus.emitted).toContainEqual({
       type: APP_FACT_RESOURCE_COLLECTED,
       detail: {

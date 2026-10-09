@@ -23,6 +23,12 @@ Run locally:
 - `npm run lint` — runs Biome checks (lint + formatting diagnostics).
 - `npm run lint:fix` — applies Biome fixes/formatting.
 
+Deployment (GitHub Pages, served from the `gh-pages` branch):
+
+- Pushes to `main` publish the site to the `gh-pages` root (`.github/workflows/deploy-pages.yml`).
+- Each PR from this repo gets a preview at `/pr-preview/pr-<number>/`, linked in a PR comment and removed when the PR closes (`.github/workflows/pr-preview.yml`). Previews omit music and keep their own saved session.
+- `node scripts/build-site.mjs <outDir> [--without-music]` builds the same site locally.
+
 ## Coding Style & Naming Conventions
 
 - JavaScript is native ESM (`"type": "module"` in `package.json`).

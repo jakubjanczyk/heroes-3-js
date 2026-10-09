@@ -82,6 +82,7 @@ describe('resource interaction behavior', () => {
     expectHeroAt(0, 0);
     expectMovementPoints(14);
     expectResourceCollecting('resource-1');
+    expectResourceTotal('Gold pile', 100);
     expectInteractionModalClosed();
 
     await waitMs(25);

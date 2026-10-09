@@ -8,11 +8,11 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../game/domain/interaction-kinds.js';
 import { registerMovementModule } from './movement.module.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 
@@ -275,7 +275,7 @@ describe('movement module', () => {
     expect(moveRequests).toEqual([]);
   });
 
-  test('passes arrival plan built from resource blocking snapshot', async () => {
+  test('passes arrival plan for interactable destination', async () => {
     const bus = createFakeBus();
     const arrivalPlans = [];
 
@@ -314,15 +314,18 @@ describe('movement module', () => {
         }
       }
     });
-    bus.emit(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, {
-      entityIds: ['resource-1']
-    });
     bus.emit(APP_COMMAND_MOVE_REQUESTED, {
       targetTile: { x: 1, y: 0 },
       path: [{ x: 0, y: 0 }, { x: 1, y: 0 }]
     });
     await Promise.resolve();
 
-    expect(arrivalPlans).toEqual([null]);
+    expect(arrivalPlans).toEqual([
+      {
+        entityId: 'resource-1',
+        movementInteractionKind: MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+        stopBeforeTarget: true
+      }
+    ]);
   });
 });

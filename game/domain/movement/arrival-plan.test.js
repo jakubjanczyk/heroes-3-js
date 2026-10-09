@@ -57,18 +57,4 @@ describe('arrival plan', () => {
     });
   });
 
-  test('returns null when destination interaction is currently blocked', () => {
-    const plan = buildArrivalPlan({
-      occupancy: {
-        getAt() {
-          return { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
-        }
-      },
-      targetTile: { x: 1, y: 0 },
-      movingEntityId: 'hero-1',
-      isInteractionBlocked: (entity) => entity.id === 'resource-1'
-    });
-
-    expect(plan).toBe(null);
-  });
 });

@@ -90,15 +90,14 @@ The app runtime should not need to know about every archetype in-line.
 
 - `app/modules/interaction.module.js` listens for `fact.move.finished`, asks the domain interaction
   system for an `outcome`, then delegates to a handler registry and owns all event emission.
-- `app/modules/shared/interaction-outcomes.js` maps `outcome.kind` to declarative effect plans:
-  - pre-events to emit immediately
-  - optional fade-out request
-  - finalize method name for the domain interaction system
-  - post-events emitted only when finalization succeeds
-  - optional `pendingModalOutcome` for modal close flows
+- `app/modules/shared/interaction-outcomes.js` maps `outcome.kind` to declarative effects:
+  - `facts` emitted immediately when the interaction resolves
+  - optional `modal` payload
+  - optional `factsOnModalClosed`, emitted once the player acknowledges the modal
 
-Fade-outs are requested by `ui.entity.fadeOut.requested`, and applied by views based on presentation
-metadata rather than `if (kind === ...)`.
+Domain facts never wait for animations. Views animate removals themselves: `entity-view` reacts to
+`fact.monster.defeated` / `fact.resource.collected` by applying the presentation fade-out class and
+removing the element after the configured duration (immediately during restore).
 
 ## Rendering: engine stays generic, app owns presentation
 
@@ -143,8 +142,8 @@ Rule of thumb:
    - register it in `app/presentation/entities/registry.js`
 5. Add/extend outcome handling:
    - add a handler entry in `app/modules/shared/interaction-outcomes.js` for the new `outcome.kind`
-   - return an effect plan (pre-events / optional fade-out / finalize method / post-events)
-   - decide: modal vs non-modal flow (`pendingModalOutcome` for modal close finalization)
+   - return `{ facts, modal, factsOnModalClosed }`
+   - decide: which facts are committed immediately vs only after the modal is acknowledged
 6. Add tests:
    - unit tests for behavior outcome shape (`game/domain/entity-behaviors.test.js` patterns)
    - unit tests for module behavior if new bus flow is introduced

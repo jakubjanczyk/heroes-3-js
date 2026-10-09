@@ -5,7 +5,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["node_modules/**", "dist/**", "coverage/**", ".specify/**", "docs_bkp/**"]
+    "includes": [
+      "**",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/coverage",
+      "!!**/.specify",
+      "!!**/docs_bkp"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -13,21 +20,42 @@
     "indentWidth": 2,
     "lineWidth": 100
   },
-  "organizeImports": {
-    "enabled": true
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
-      "suspicious/noConsole": "off"
+      "suspicious": {
+        "noConsole": "off"
+      }
     }
   },
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
-      "semicolons": "asNeeded"
+      "semicolons": "asNeeded",
+      "trailingCommas": "none"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["engine/layers/homm3-resource-atlas.js"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noApproximativeNumericConstant": "off"
+          }
+        }
+      },
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ]
 }
-

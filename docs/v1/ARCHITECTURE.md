@@ -167,14 +167,14 @@ Quick matrix:
 
 | Module | Subscribes | Emits | Owns mutable state | Owns DOM |
 |---|---|---|---|---|
-| `world.module` | `command.app.start`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.resource.collection.started` | `fact.world.ready`, `fact.world.load.failed`, `fact.resource.collection.blocking.changed` | `hasStarted`, `worldState` | none |
+| `world.module` | `command.app.start`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted`, `worldState` | none |
 | `turn.module` | `fact.world.ready`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnSystem`, `isMoving` | none |
-| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.resource.collection.blocking.changed`, `ui.preview.updated`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `command.tile.clicked`, `command.move.requested` | `command.move.requested`, `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `blockedResourceEntityIds`, `preview*`, `isMoveCommandInProgress`, `isInteractionModalOpen` | none |
-| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.entity.fadeOut.requested`, `ui.interaction.modal.opened`, `ui.resource.collection.started`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | `hero`, `interactions`, `pendingModalOutcome`, `pendingOutcomeEntityIds` | none |
-| `preview.module` | `fact.world.ready`, `fact.resource.collection.blocking.changed`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints`, `blockedResourceEntityIds` | none |
+| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `ui.preview.updated`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `command.tile.clicked`, `command.move.requested` | `command.move.requested`, `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `preview*`, `isMoveCommandInProgress`, `isInteractionModalOpen` | none |
+| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | `hero`, `interactions`, `factsOnModalClosed` | none |
+| `preview.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
 | `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `hero`, `map`, `isMoving` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.entity.fadeOut.requested` | none | `map`, `entities`, `fadeOutState` | queries `.entity-layer` |
+| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.restore.started`, `ui.restore.completed` | none | `map`, `entities`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
 | `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
 | `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
@@ -250,7 +250,7 @@ sequenceDiagram
   Input->>Bus: emit(command.tile.clicked)
   Bus->>Preview: command.tile.clicked (first click selects/updates preview)
   Bus->>Movement: command.tile.clicked (second click confirms selected target)
-  Movement->>Movement: buildArrivalPlan(occupancy + behaviors + blocking snapshot)
+  Movement->>Movement: buildArrivalPlan(occupancy + behaviors)
   Movement->>MovementSystem: moveHeroTo(targetTile, { plannedPath, arrivalPlan })
   Movement->>Turn: command.turn.spendMovementPoints.requested(amount)
   Turn-->>all: fact.hero.movementPoints.changed
@@ -293,20 +293,21 @@ This is the canonical behavior for long routes in the current runtime.
 
 ### 7.6 Monster combat -> modal -> deferred removal
 
-- `movement.module` computes an `arrivalPlan` before executing movement (using destination occupant behavior + blocking snapshot).
+- `movement.module` computes an `arrivalPlan` before executing movement (using destination occupant behavior).
 - `movement-system` executes the provided plan (stop-before vs step-into), spends movement cost, and reports `fact.move.finished` with `interaction.kind`.
 - `interaction.module` resolves combat from move-finished context and emits `ui.interaction.modal.opened`.
 - `interaction-modal.module` mounts `<interaction-modal>` in `.viewport`.
 - closing the modal emits `ui.interaction.modal.closed`.
-- after close, `interaction.module` runs monster fade-out and only then emits `fact.monster.defeated`.
-- `entity-view.module` rerenders from world state on `fact.monster.defeated`.
+- on close, `interaction.module` emits `fact.monster.defeated` immediately (the defeat is committed only once the player acknowledges the modal; a reload while the modal is open keeps the monster).
+- `world.module` removes the monster from world state and occupancy.
+- `entity-view.module` fades the monster element out and removes it after `monsterDefeatFadeOutMs` (immediately during restore).
 
-### 7.7 Resource collection blocking ownership
+### 7.7 Resource collection
 
-- `interaction.module` emits `ui.resource.collection.started` as soon as resource interaction begins.
-- `world.module` owns the blocking set inside `worldState` (`blockEntityById` / `unblockEntityById`).
-- `world.module` emits `fact.resource.collection.blocking.changed` snapshots after block/unblock transitions.
-- `preview.module` and `movement.module` consume that snapshot to prevent selecting/confirming blocked resource interactions.
+- `interaction.module` emits `fact.resource.collected` as soon as the arrival resolves (no modal).
+- `world.module` removes the resource from world state and occupancy, so it can't be targeted again.
+- `hud.module` updates totals immediately; `entity-view.module` fades the element out on its own.
+- domain facts never wait on view animations, so a reload mid-fade keeps the resource collected.
 
 ## 8) DOM ownership map
 

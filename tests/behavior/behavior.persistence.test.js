@@ -9,6 +9,7 @@ import {
   expectHeroAt,
   expectInteractionModalClosed,
   expectInteractionModalOpen,
+  expectMonsterDefeating,
   expectMonsterNotPresent,
   expectMonsterPresent,
   expectMovementPoints,
@@ -16,6 +17,7 @@ import {
   expectPreviewNotOverLimitTargetAt,
   expectPreviewOverLimitTargetAt,
   expectPreviewTargetAt,
+  expectResourceCollecting,
   expectResourceNotPresent,
   expectResourceTotal,
   expectTownPresent,
@@ -475,6 +477,80 @@ describe('session persistence behavior', () => {
     expectResourceNotPresent('resource-2');
     expectResourceTotal('Gold pile', 100);
     expectResourceTotal('Wood pile', 5);
+  });
+
+  test('given resource is still fading out when app reloads then resource stays collected', async () => {
+    const eventLog = createMemoryEventLog();
+    const sharedAppOptions = {
+      eventLog,
+      loadGameOptions: {
+        width: 3,
+        height: 1,
+        tiles: [0, 0, 0],
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } }
+        ],
+        definitions: {
+          resources: {
+            GOLD_PILE: { name: 'Gold pile', amount: 100 }
+          }
+        }
+      },
+      appConfig: {
+        resourceCollectFadeOutMs: 1000
+      }
+    };
+
+    await setupMovementBehaviorApp(sharedAppOptions);
+
+    confirmTileClickByDispatch(1, 0);
+    await flushMicrotasks();
+
+    expectResourceCollecting('resource-1');
+    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_RESOURCE_COLLECTED)).toHaveLength(1);
+
+    await setupMovementBehaviorApp(sharedAppOptions);
+    await flushMicrotasks();
+
+    expectResourceNotPresent('resource-1');
+    expectResourceTotal('Gold pile', 100);
+  });
+
+  test('given monster is still fading out after modal close when app reloads then monster stays defeated', async () => {
+    const eventLog = createMemoryEventLog();
+    const sharedAppOptions = {
+      eventLog,
+      loadGameOptions: {
+        width: 3,
+        height: 1,
+        tiles: [0, 0, 0],
+        entities: [
+          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
+        ]
+      },
+      appConfig: {
+        interactionModalTransitionMs: 0,
+        monsterDefeatFadeOutMs: 1000
+      }
+    };
+
+    const firstSession = await setupMovementBehaviorApp(sharedAppOptions);
+
+    confirmTileClickByDispatch(1, 0);
+    await flushMicrotasks();
+    await closeInteractionModal(firstSession.user);
+    await flushMicrotasks();
+
+    expectMonsterDefeating('monster-1');
+    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)).toHaveLength(1);
+
+    await setupMovementBehaviorApp(sharedAppOptions);
+    await flushMicrotasks();
+
+    expectMonsterNotPresent('monster-1');
+    expectInteractionModalClosed();
   });
 
   test('given movement already spent before reload when player moves again after reload then hero position and MP continue from restored state', async () => {

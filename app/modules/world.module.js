@@ -5,10 +5,8 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED,
   APP_FACT_WORLD_LOAD_FAILED,
-  APP_FACT_WORLD_READY,
-  APP_UI_RESOURCE_COLLECTION_STARTED
+  APP_FACT_WORLD_READY
 } from '../events.js';
 import { normalizeTile } from '../../game/domain/value-objects/tile.js';
 import { defineModule } from './shared/module-runtime.js';
@@ -29,12 +27,6 @@ export const registerWorldModule = defineModule((
 
   function removeEntityFromWorld(entityId) {
     worldState?.removeEntityById?.(entityId);
-  }
-
-  function emitResourceCollectionBlockingChanged() {
-    emit(APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED, {
-      entityIds: worldState?.listBlockedEntityIds?.() ?? []
-    });
   }
 
   return {
@@ -79,25 +71,7 @@ export const registerWorldModule = defineModule((
       {
         type: APP_FACT_RESOURCE_COLLECTED,
         handler: (event) => {
-          const entityId = event.detail?.entityId;
-          const didUnblock = worldState?.unblockEntityById?.(entityId) ?? false;
-          removeEntityFromWorld(entityId);
-          if (!didUnblock) {
-            return;
-          }
-
-          emitResourceCollectionBlockingChanged();
-        }
-      },
-      {
-        type: APP_UI_RESOURCE_COLLECTION_STARTED,
-        handler: (event) => {
-          const didBlock = worldState?.blockEntityById?.(event.detail?.entityId) ?? false;
-          if (!didBlock) {
-            return;
-          }
-
-          emitResourceCollectionBlockingChanged();
+          removeEntityFromWorld(event.detail?.entityId);
         }
       },
       {
@@ -121,8 +95,6 @@ export const registerWorldModule = defineModule((
                 map,
                 occupancy
               });
-
-              emitResourceCollectionBlockingChanged();
             } catch (error) {
               emit(APP_FACT_WORLD_LOAD_FAILED, {
                 error
@@ -140,12 +112,10 @@ export const registerWorldModule = defineModule((
     APP_COMMAND_APP_START,
     APP_FACT_HERO_MOVED,
     APP_FACT_MONSTER_DEFEATED,
-    APP_FACT_RESOURCE_COLLECTED,
-    APP_UI_RESOURCE_COLLECTION_STARTED
+    APP_FACT_RESOURCE_COLLECTED
   ],
   produces: [
     APP_FACT_WORLD_READY,
-    APP_FACT_WORLD_LOAD_FAILED,
-    APP_FACT_RESOURCE_COLLECTION_BLOCKING_CHANGED
+    APP_FACT_WORLD_LOAD_FAILED
   ]
 });

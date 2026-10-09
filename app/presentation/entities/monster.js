@@ -1,5 +1,4 @@
 export const fadeOut = Object.freeze({
-  selector: '.entity--monster',
   className: 'entity--monster-defeating'
 });
 
