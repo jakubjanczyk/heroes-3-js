@@ -6,8 +6,8 @@ import { registerInteractionModule } from './interaction.module.js';
 import { registerMinimapViewModule } from './minimap-view.module.js';
 import { registerMovementModule } from './movement.module.js';
 import { registerMusicModule } from './music.module.js';
-import { registerPreviewModule } from './preview.module.js';
 import { registerPreviewViewModule } from './preview-view.module.js';
+import { registerSelectionModule } from './selection.module.js';
 import { registerTerrainViewModule } from './terrain-view.module.js';
 import { registerTurnModule } from './turn.module.js';
 import { registerWorldModule } from './world.module.js';
@@ -23,7 +23,7 @@ const MODULES = [
   registerTurnModule,
   registerMovementModule,
   registerInteractionModule,
-  registerPreviewModule,
+  registerSelectionModule,
   registerCameraModule,
   registerTerrainViewModule,
   registerEntityViewModule,

@@ -2,6 +2,7 @@ import { findPath } from '../../engine/pathfinding.js';
 import { isArrivalInteractionEntity } from '../../game/domain/entity-behaviors.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 import {
+  APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
@@ -17,7 +18,7 @@ import {
 import { sameTile } from '../../engine/tile-utils.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerPreviewModule = defineModule(({ emit }) => {
+export const registerSelectionModule = defineModule(({ emit }) => {
   let map = null;
   let occupancy = null;
   let hero = null;
@@ -120,6 +121,9 @@ export const registerPreviewModule = defineModule(({ emit }) => {
 
           const { tile } = event.detail;
           if (previewTarget && sameTile(previewTarget, tile)) {
+            if (previewPath?.length >= 2 && remainingMovementPoints >= 1) {
+              emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: tile, path: [...previewPath] });
+            }
             return;
           }
 
@@ -234,7 +238,7 @@ export const registerPreviewModule = defineModule(({ emit }) => {
   };
 
 }, {
-  id: 'preview',
+  id: 'selection',
   phase: 'domain',
   consumes: [
     APP_FACT_WORLD_READY,
@@ -249,6 +253,7 @@ export const registerPreviewModule = defineModule(({ emit }) => {
     APP_FACT_PREVIEW_CLEARED
   ],
   produces: [
+    APP_COMMAND_MOVE_REQUESTED,
     APP_UI_PREVIEW_UPDATED,
     APP_FACT_PREVIEW_TARGET_SELECTED,
     APP_FACT_PREVIEW_CLEARED
