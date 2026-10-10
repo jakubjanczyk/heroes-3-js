@@ -4,6 +4,7 @@ import { createMap } from '../../engine/map.js';
 import { createOccupancyIndex } from '../../engine/occupancy.js';
 import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../game/domain/interaction-kinds.js';
 import {
+  APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
@@ -17,16 +18,82 @@ import {
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
 import { createFakeBus, getLastEmittedByType } from '../../tests/test-utils/fake-bus.js';
-import { registerPreviewModule } from './preview.module.js';
+import { registerSelectionModule } from './selection.module.js';
 
-describe('preview module', () => {
+function setupSelection({ movementPoints = 15 } = {}) {
+  const bus = createFakeBus({ snapshotDetail: true });
+  const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
+  const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
+  const occupancy = createOccupancyIndex([hero]);
+
+  registerSelectionModule({ bus });
+
+  bus.emit(APP_FACT_WORLD_READY, { scenario: { entities: [hero] }, map, occupancy });
+  bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: movementPoints, max: 15 });
+
+  return bus;
+}
+
+function getMoveRequests(bus) {
+  return bus.emitted.filter((entry) => entry.type === APP_COMMAND_MOVE_REQUESTED);
+}
+
+describe('selection module', () => {
+  test('requests a move along the selected path when the selected target is clicked again', () => {
+    const bus = setupSelection();
+
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    expect(getMoveRequests(bus)).toEqual([]);
+
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    expect(getMoveRequests(bus)).toEqual([
+      {
+        type: APP_COMMAND_MOVE_REQUESTED,
+        detail: {
+          targetTile: { x: 2, y: 0 },
+          path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
+        }
+      }
+    ]);
+  });
+
+  test('does not request a move when the selected target is clicked with zero movement points', () => {
+    const bus = setupSelection({ movementPoints: 0 });
+
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+
+    expect(getMoveRequests(bus)).toEqual([]);
+  });
+
+  test('does not request another move while the hero is already moving', () => {
+    const bus = setupSelection();
+
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    bus.emit(APP_FACT_MOVE_STARTED, { targetTile: { x: 2, y: 0 } });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+
+    expect(getMoveRequests(bus)).toEqual([]);
+  });
+
+  test('does not request a move from clicks while the interaction modal is open', () => {
+    const bus = setupSelection();
+
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {});
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
+
+    expect(getMoveRequests(bus)).toEqual([]);
+  });
+
   test('emits preview updates and keeps selected preview on second click', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -52,7 +119,7 @@ describe('preview module', () => {
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -73,7 +140,7 @@ describe('preview module', () => {
     const map = createMap({ width: 4, height: 1, tiles: [0, 0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -101,7 +168,7 @@ describe('preview module', () => {
     const map = createMap({ width: 6, height: 1, tiles: [0, 0, 0, 0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -135,7 +202,7 @@ describe('preview module', () => {
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -166,7 +233,7 @@ describe('preview module', () => {
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
     const occupancy = createOccupancyIndex([hero, resource]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero, resource] },
@@ -188,7 +255,7 @@ describe('preview module', () => {
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
     const occupancy = createOccupancyIndex([hero, townBlocker]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -210,7 +277,7 @@ describe('preview module', () => {
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
     const occupancy = createOccupancyIndex([hero, town]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero, town] },
@@ -235,7 +302,7 @@ describe('preview module', () => {
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -264,7 +331,7 @@ describe('preview module', () => {
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -286,7 +353,7 @@ describe('preview module', () => {
     const map = createMap({ width: 4, height: 1, tiles: [0, 0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
@@ -317,7 +384,7 @@ describe('preview module', () => {
     const map = createMap({ width: 4, height: 1, tiles: [0, 0, 0, 0] });
     const occupancy = createOccupancyIndex([hero]);
 
-    registerPreviewModule({ bus });
+    registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
