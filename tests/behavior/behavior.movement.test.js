@@ -198,7 +198,7 @@ describe('movement behavior', () => {
     expect(document.querySelector('.path-preview-target-line')).toBeTruthy();
   });
 
-  test('given no destination is selected when another input requesrent tile then the selection changes and hero stays', async () => {
+  test('given a destination is selected when player clicks a different tile then the selection changes and hero stays', async () => {
     const { user } = await setupMovementBehaviorApp();
 
     await clickTile(user, 2, 0);
