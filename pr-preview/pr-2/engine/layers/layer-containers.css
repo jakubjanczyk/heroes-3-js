@@ -1,0 +1,19 @@
+.terrain-layer,
+.entity-layer,
+.effects-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.terrain-layer {
+  z-index: var(--z-layer-terrain);
+  overflow: visible;
+}
+
+.entity-layer {
+  z-index: var(--z-layer-entities);
+}
+
+.effects-layer {
+  z-index: var(--z-layer-effects);
+}
