@@ -1,19 +1,14 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
-import { sameTile } from '../../engine/tile-utils.js';
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
 import {
-  APP_COMMAND_TILE_CLICKED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_UI_INTERACTION_MODAL_CLOSED,
-  APP_UI_INTERACTION_MODAL_OPENED,
-  APP_UI_PREVIEW_UPDATED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
@@ -32,9 +27,6 @@ export const registerMovementModule = defineModule((
   let heroId = null;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
-  let previewTargetTile = null;
-  let previewPath = null;
-  let isInteractionModalOpen = false;
 
   return {
     subscriptions: [
@@ -45,9 +37,6 @@ export const registerMovementModule = defineModule((
           const hero = findHero(scenario.entities);
           heroId = hero?.id ?? null;
           occupancy = worldOccupancy ?? null;
-          previewTargetTile = null;
-          previewPath = null;
-          isInteractionModalOpen = false;
 
           if (!hero) {
             movement = null;
@@ -108,51 +97,6 @@ export const registerMovementModule = defineModule((
         }
       },
       {
-        type: APP_UI_PREVIEW_UPDATED,
-        handler: (event) => {
-          previewTargetTile = event.detail?.targetTile ?? null;
-          previewPath = event.detail?.path ?? null;
-        }
-      },
-      {
-        type: APP_UI_INTERACTION_MODAL_OPENED,
-        handler: () => {
-          isInteractionModalOpen = true;
-        }
-      },
-      {
-        type: APP_UI_INTERACTION_MODAL_CLOSED,
-        handler: () => {
-          isInteractionModalOpen = false;
-        }
-      },
-      {
-        type: APP_COMMAND_TILE_CLICKED,
-        handler: (event) => {
-          if (!movement || isMoveCommandInProgress || isInteractionModalOpen) {
-            return;
-          }
-
-          if (!previewTargetTile || !Array.isArray(previewPath) || previewPath.length < 2) {
-            return;
-          }
-
-          if (remainingMovementPoints < 1) {
-            return;
-          }
-
-          const tile = event.detail?.tile;
-          if (!tile || !sameTile(previewTargetTile, tile)) {
-            return;
-          }
-
-          emit(APP_COMMAND_MOVE_REQUESTED, {
-            targetTile: tile,
-            path: previewPath
-          });
-        }
-      },
-      {
         type: APP_COMMAND_MOVE_REQUESTED,
         handler: (event) => {
           if (!movement || isMoveCommandInProgress) {
@@ -185,14 +129,9 @@ export const registerMovementModule = defineModule((
   consumes: [
     APP_FACT_WORLD_READY,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
-    APP_UI_PREVIEW_UPDATED,
-    APP_UI_INTERACTION_MODAL_OPENED,
-    APP_UI_INTERACTION_MODAL_CLOSED,
-    APP_COMMAND_TILE_CLICKED,
     APP_COMMAND_MOVE_REQUESTED
   ],
   produces: [
-    APP_COMMAND_MOVE_REQUESTED,
     APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
     APP_FACT_MOVE_STARTED,
     APP_FACT_HERO_MOVED,

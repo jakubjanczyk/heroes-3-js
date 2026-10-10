@@ -31,7 +31,7 @@ app/
     turn.module.js
     movement.module.js
     interaction.module.js
-    preview.module.js
+    selection.module.js
     camera.module.js
     terrain-view.module.js
     entity-view.module.js
@@ -58,7 +58,7 @@ flowchart TD
   Registry --> Turn[turn.module]
   Registry --> Movement[movement.module]
   Registry --> Interaction[interaction.module]
-  Registry --> Preview[preview.module]
+  Registry --> Selection[selection.module]
   Registry --> Camera[camera.module]
   Registry --> TerrainView[terrain-view.module]
   Registry --> EntityView[entity-view.module]
@@ -72,7 +72,8 @@ flowchart TD
   World -->|fact.world.ready| Turn
   World -->|fact.world.ready| Movement
   World -->|fact.world.ready| Interaction
-  World -->|fact.world.ready| Preview
+  World -->|fact.world.ready| Selection
+  Selection -->|command.move.requested| Movement
   World -->|fact.world.ready| Camera
   World -->|fact.world.ready| TerrainView
   World -->|fact.world.ready| EntityView
@@ -169,9 +170,9 @@ Quick matrix:
 |---|---|---|---|---|
 | `world.module` | `command.app.start`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted`, `worldState` | none |
 | `turn.module` | `fact.world.ready`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnSystem`, `isMoving` | none |
-| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `ui.preview.updated`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `command.tile.clicked`, `command.move.requested` | `command.move.requested`, `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `preview*`, `isMoveCommandInProgress`, `isInteractionModalOpen` | none |
+| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
 | `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | `hero`, `interactions`, `factsOnModalClosed` | none |
-| `preview.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
+| `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
 | `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `hero`, `map`, `isMoving` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
 | `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.restore.started`, `ui.restore.completed` | none | `map`, `entities`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
@@ -186,10 +187,15 @@ Quick matrix:
 
 Runtime modules are intentionally split into two categories:
 
-- domain/control modules: `world`, `turn`, `movement`, `interaction`, `preview`, `camera`, `music`
+- domain/control modules: `world`, `turn`, `movement`, `interaction`, `selection`, `camera`, `music`
 - view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `world-view`, `minimap-view`, `interaction-modal`, `hud`
 
 `register-modules.js` registers domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
+
+Route selection vs. movement:
+
+- `selection.module` owns the selected target and route, the select-then-confirm click flow, and when a confirm is allowed (hero idle, no modal open, movement points left). It emits `command.move.requested`.
+- `movement.module` only executes `command.move.requested`; any other input (keyboard, minimap, AI) can emit that command directly without going through selection.
 
 ### 6.2 Reusable UI components (custom elements)
 
@@ -217,19 +223,19 @@ How to use going forward:
 
 ## 7) Important end-to-end flows
 
-### 7.1 Tile click -> preview update (first click)
+### 7.1 Tile click -> route selection (first click)
 
 ```mermaid
 sequenceDiagram
   participant Input as camera input binding
   participant Bus as event bus
-  participant Preview as preview.module
+  participant Selection as selection.module
   participant View as preview-view.module
 
   Input->>Bus: emit(command.tile.clicked)
-  Bus->>Preview: command.tile.clicked
-  Preview->>Preview: findPath(from hero to tile)
-  Preview->>Bus: emit(ui.preview.updated)
+  Bus->>Selection: command.tile.clicked
+  Selection->>Selection: findPath(from hero to tile)
+  Selection->>Bus: emit(ui.preview.updated)
   Bus->>View: ui.preview.updated
   View->>View: render path/target markers
 ```
@@ -240,7 +246,7 @@ sequenceDiagram
 sequenceDiagram
   participant Input as camera input binding
   participant Bus as event bus
-  participant Preview as preview.module
+  participant Selection as selection.module
   participant Movement as movement.module
   participant MovementSystem as movement-system
   participant Turn as turn.module
@@ -248,8 +254,9 @@ sequenceDiagram
   participant EntityView as entity-view.module
 
   Input->>Bus: emit(command.tile.clicked)
-  Bus->>Preview: command.tile.clicked (first click selects/updates preview)
-  Bus->>Movement: command.tile.clicked (second click confirms selected target)
+  Bus->>Selection: command.tile.clicked (first click selects/updates the route)
+  Bus->>Selection: command.tile.clicked (second click on the same target confirms it)
+  Selection->>Movement: command.move.requested(targetTile, path)
   Movement->>Movement: buildArrivalPlan(occupancy + behaviors)
   Movement->>MovementSystem: moveHeroTo(targetTile, { plannedPath, arrivalPlan })
   Movement->>Turn: command.turn.spendMovementPoints.requested(amount)
@@ -259,7 +266,7 @@ sequenceDiagram
     Movement-->>all: fact.hero.moved(from,to)
     EntityView->>EntityView: rerender hero position
     Camera->>Camera: center on step tile while moving
-    Preview->>Preview: trim consumed preview path
+    Selection->>Selection: trim consumed route
   end
   Movement-->>all: fact.move.finished
 ```
@@ -278,7 +285,7 @@ This ensures end-turn cannot race movement completion.
 
 - `movement-system` caps executed steps to remaining movement points.
 - each executed step emits `fact.hero.moved`.
-- `preview.module` progressively trims path on each move fact.
+- `selection.module` progressively trims the route on each move fact.
 - after `fact.move.finished`:
   - if target is not reached, remaining route stays previewed (red over-limit segment support via `maxAffordableSteps`)
   - if target is reached, preview clears

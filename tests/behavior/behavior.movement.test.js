@@ -9,11 +9,13 @@ import {
   expectHasOverLimitTargetMarker,
   expectHeroAt,
   expectMovementPoints,
+  expectPreviewTargetAt,
   flushMicrotasks,
   setupLinearMovementApp,
   setupMovementBehaviorApp,
   waitMs
 } from './behavior.utils.js';
+import { APP_COMMAND_MOVE_REQUESTED } from '../../app/events.js';
 
 describe('movement behavior', () => {
   const originalRequestAnimationFrame = window.requestAnimationFrame;
@@ -195,5 +197,33 @@ describe('movement behavior', () => {
     expectMovementPoints(15);
     expect(document.querySelector('.path-preview-target-line-over-limit')).toBeFalsy();
     expect(document.querySelector('.path-preview-target-line')).toBeTruthy();
+  });
+
+  test('given no destination is selected when another input requests a move then hero walks there without any tile clicks', async () => {
+    const { world } = await setupMovementBehaviorApp();
+
+    world.bus.emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: { x: 2, y: 0 } });
+    await flushMicrotasks();
+
+    expectHeroAt(2, 0);
+    expectMovementPoints(13);
+  });
+
+  test('given a destination is selected when player clicks a different tile then the selection changes and hero stays', async () => {
+    const { user } = await setupMovementBehaviorApp();
+
+    await clickTile(user, 2, 0);
+    await clickTile(user, 3, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(0, 0);
+    expectMovementPoints(15);
+    expectPreviewTargetAt(3, 0);
+
+    await clickTile(user, 3, 0);
+    await flushMicrotasks();
+
+    expectHeroAt(3, 0);
+    expectMovementPoints(12);
   });
 });

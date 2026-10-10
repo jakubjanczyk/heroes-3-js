@@ -1,15 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
 import {
-  APP_COMMAND_TILE_CLICKED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_UI_INTERACTION_MODAL_OPENED,
-  APP_UI_PREVIEW_UPDATED,
   APP_FACT_WORLD_READY
 } from '../events.js';
 import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../game/domain/interaction-kinds.js';
@@ -193,86 +190,6 @@ describe('movement module', () => {
     await Promise.resolve();
 
     expect(bus.emitted.some((entry) => entry.type === APP_FACT_HERO_MOVED)).toBe(false);
-  });
-
-  test('dispatches move request when clicking currently selected preview target', () => {
-    const bus = createFakeBus();
-
-    registerMovementModule(
-      {
-        bus,
-        config: {
-          movementStepDelayMs: 0
-        }
-      },
-      {
-        createMovementSystem: () => ({
-          async moveHeroTo() {
-            return true;
-          }
-        })
-      }
-    );
-
-    bus.emit(APP_FACT_WORLD_READY, {
-      scenario: {
-        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
-      },
-      map: {},
-      occupancy: {}
-    });
-    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
-    bus.emit(APP_UI_PREVIEW_UPDATED, {
-      targetTile: { x: 2, y: 0 },
-      path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
-    });
-    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
-
-    expect(bus.emitted).toContainEqual({
-      type: APP_COMMAND_MOVE_REQUESTED,
-      detail: {
-        targetTile: { x: 2, y: 0 },
-        path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
-      }
-    });
-  });
-
-  test('does not dispatch move request from tile click when interaction modal is open', () => {
-    const bus = createFakeBus();
-
-    registerMovementModule(
-      {
-        bus,
-        config: {
-          movementStepDelayMs: 0
-        }
-      },
-      {
-        createMovementSystem: () => ({
-          async moveHeroTo() {
-            return true;
-          }
-        })
-      }
-    );
-
-    bus.emit(APP_FACT_WORLD_READY, {
-      scenario: {
-        entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
-      },
-      map: {},
-      occupancy: {}
-    });
-    bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
-    bus.emit(APP_UI_PREVIEW_UPDATED, {
-      targetTile: { x: 2, y: 0 },
-      path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
-    });
-    bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {});
-    bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
-
-    const moveRequests = bus.emitted.filter((entry) => entry.type === APP_COMMAND_MOVE_REQUESTED);
-    expect(moveRequests).toEqual([]);
   });
 
   test('passes arrival plan for interactable destination', async () => {
