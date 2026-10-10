@@ -44,6 +44,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - Test files: `**/*.test.js` (co-located with source files).
 - Keep tests deterministic (no network, no wall-clock dependencies unless mocked).
 - For new features, start by adding behavior coverage in `tests/behavior/` for that feature before implementation work.
+- Behavior tests drive the app only the way a player can (clicks, keys, reloads) and assert on what is visible. They must not emit or listen to bus events; cover bus contracts in module unit tests instead.
 - If the user provides behavior scenarios/cases, implement those first and identify additional important missing cases.
 - If the user does not provide scenarios/cases, identify the expected behavior cases yourself first, then add behavior tests for them.
 
