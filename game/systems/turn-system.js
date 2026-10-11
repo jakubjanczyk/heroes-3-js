@@ -1,96 +1,55 @@
-import { normalizeMovementPoints, toMovementPointsOrNull } from '../domain/value-objects/movement-points.js';
+import {
+  normalizeMovementPoints,
+  toMovementPointsOrNull
+} from '../domain/value-objects/movement-points.js';
 
-export function createTurnSystem({
-  maxMovementPoints = 15,
-  remainingMovementPoints = maxMovementPoints,
-  turnNumber = 1
-} = {}) {
-  const normalizedMaxMovementPoints =
-    normalizeMovementPoints(maxMovementPoints, { min: 1, fallback: 15 }) ?? 15;
-  const parsedTurnNumber = Number(turnNumber);
-  let currentTurnNumber = Math.max(
-    1,
-    Math.floor(Number.isFinite(parsedTurnNumber) ? parsedTurnNumber : 1)
-  );
+const DEFAULT_MAX_MOVEMENT_POINTS = 15;
 
-  let currentRemainingMovementPoints =
-    normalizeMovementPoints(remainingMovementPoints, {
-      min: 0,
-      max: normalizedMaxMovementPoints,
-      fallback: normalizedMaxMovementPoints
-    }) ?? normalizedMaxMovementPoints;
+export function createTurnState({ maxMovementPoints = DEFAULT_MAX_MOVEMENT_POINTS } = {}) {
+  const max =
+    normalizeMovementPoints(maxMovementPoints, { min: 1, fallback: DEFAULT_MAX_MOVEMENT_POINTS }) ??
+    DEFAULT_MAX_MOVEMENT_POINTS;
 
-  function getRemainingMovementPoints() {
-    return currentRemainingMovementPoints;
+  return {
+    maxMovementPoints: max,
+    remainingMovementPoints: max,
+    turnNumber: 1
+  };
+}
+
+export function decideSpendMovementPoints(state, amount) {
+  const stepCount = toMovementPointsOrNull(amount);
+  if (stepCount === null || stepCount < 1 || stepCount > state.remainingMovementPoints) {
+    return null;
   }
 
-  function getTurnNumber() {
-    return currentTurnNumber;
-  }
+  return { remainingMovementPoints: state.remainingMovementPoints - stepCount };
+}
 
-  function canMoveSteps(stepCount) {
-    const normalizedStepCount = normalizeMovementPoints(stepCount, {
-      min: 0,
-      fallback: 0
-    });
-    if (normalizedStepCount === null || normalizedStepCount === 0) {
-      return true;
-    }
+export function decideEndTurn(state) {
+  return {
+    turnNumber: state.turnNumber + 1,
+    remainingMovementPoints: state.maxMovementPoints
+  };
+}
 
-    return normalizedStepCount <= currentRemainingMovementPoints;
-  }
-
-  function spendMovementPoints(stepCount) {
-    const normalizedStepCount = normalizeMovementPoints(stepCount, {
-      min: 0,
-      fallback: 0
-    });
-    if (normalizedStepCount === null || normalizedStepCount === 0) {
-      return true;
-    }
-
-    if (!canMoveSteps(stepCount)) {
-      return false;
-    }
-    currentRemainingMovementPoints -= normalizedStepCount;
-    return true;
-  }
-
-  function endTurn() {
-    currentTurnNumber += 1;
-    currentRemainingMovementPoints = normalizedMaxMovementPoints;
-  }
-
-  function setRemainingMovementPoints(value) {
-    const parsedValue = toMovementPointsOrNull(value);
-    if (parsedValue === null) {
-      return;
-    }
-
-    currentRemainingMovementPoints =
-      normalizeMovementPoints(parsedValue, {
-        min: 0,
-        max: normalizedMaxMovementPoints,
-        fallback: currentRemainingMovementPoints
-      }) ?? currentRemainingMovementPoints;
-  }
-
-  function setTurnNumber(value) {
-    const parsedValue = Number(value);
-    if (!Number.isFinite(parsedValue)) {
-      return;
-    }
-
-    currentTurnNumber = Math.max(1, Math.floor(parsedValue));
+export function applyMovementPointsChanged(state, value) {
+  const remaining = toMovementPointsOrNull(value);
+  if (remaining === null) {
+    return state;
   }
 
   return {
-    getRemainingMovementPoints,
-    getTurnNumber,
-    canMoveSteps,
-    spendMovementPoints,
-    endTurn,
-    setRemainingMovementPoints,
-    setTurnNumber
+    ...state,
+    remainingMovementPoints: Math.max(0, Math.min(state.maxMovementPoints, remaining))
   };
+}
+
+export function applyTurnEnded(state, turnNumber) {
+  const parsed = Number(turnNumber);
+  if (!Number.isFinite(parsed)) {
+    return state;
+  }
+
+  return { ...state, turnNumber: Math.max(1, Math.floor(parsed)) };
 }

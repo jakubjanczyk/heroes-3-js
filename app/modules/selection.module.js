@@ -36,33 +36,29 @@ export const registerSelectionModule = defineModule(({ emit }) => {
     });
   }
 
-  function clearPreview({ log = true, emitFact = true } = {}) {
-    const hadPreview = Boolean(previewPath || previewTarget);
+  // The selected route is only assigned in fact handlers (or derived from replayed move facts);
+  // commands and reactions emit facts instead, so live play and replay share one code path.
+  function resetPreview() {
     previewPath = null;
     previewTarget = null;
     emitPreview();
-
-    if (emitFact && hadPreview) {
-      emit(APP_FACT_PREVIEW_CLEARED, {}, { log });
-    }
   }
 
-  function setPreview({ targetTile, path, log = true, emitFact = true }) {
-    const hadPreview = Boolean(previewPath || previewTarget);
-    const hadSameTarget = Boolean(previewTarget && targetTile && sameTile(previewTarget, targetTile));
+  function applySelectedTarget(tile) {
+    const path = buildPath(tile);
+    if (!path || path.length < 2) {
+      resetPreview();
+      return;
+    }
 
-    previewTarget = targetTile;
+    previewTarget = tile;
     previewPath = path;
     emitPreview();
+  }
 
-    if (emitFact && targetTile && (!hadPreview || !hadSameTarget)) {
-      emit(
-        APP_FACT_PREVIEW_TARGET_SELECTED,
-        {
-          tile: targetTile
-        },
-        { log }
-      );
+  function requestClearPreview() {
+    if (previewPath || previewTarget) {
+      emit(APP_FACT_PREVIEW_CLEARED, {});
     }
   }
 
@@ -100,7 +96,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
           map = world.map;
           occupancy = world.occupancy;
           hero = findHero(world.scenario.entities);
-          clearPreview({ log: false, emitFact: false });
+          resetPreview();
         }
       },
       {
@@ -129,11 +125,11 @@ export const registerSelectionModule = defineModule(({ emit }) => {
 
           const path = buildPath(tile);
           if (!path || path.length < 2) {
-            clearPreview();
+            requestClearPreview();
             return;
           }
 
-          setPreview({ targetTile: tile, path });
+          emit(APP_FACT_PREVIEW_TARGET_SELECTED, { tile });
         }
       },
       {
@@ -158,7 +154,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
           }
 
           if (previewTarget && sameTile(previewTarget, to)) {
-            clearPreview({ emitFact: false });
+            resetPreview();
             return;
           }
 
@@ -170,7 +166,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
         handler: (event) => {
           isMoving = false;
           if (event.detail.interaction?.kind) {
-            clearPreview();
+            requestClearPreview();
             return;
           }
           if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
@@ -178,14 +174,14 @@ export const registerSelectionModule = defineModule(({ emit }) => {
             return;
           }
 
-          clearPreview();
+          requestClearPreview();
         }
       },
       {
         type: APP_UI_INTERACTION_MODAL_OPENED,
         handler: () => {
           isInteractionModalOpen = true;
-          clearPreview();
+          requestClearPreview();
         }
       },
       {
@@ -197,41 +193,18 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_FACT_PREVIEW_TARGET_SELECTED,
         handler: (event) => {
-          if (!hero || isMoving || isInteractionModalOpen) {
-            return;
-          }
-
           const tile = event.detail?.tile;
-          if (!tile) {
+          if (!hero || !tile) {
             return;
           }
 
-          if (previewTarget && sameTile(previewTarget, tile) && previewPath?.length) {
-            return;
-          }
-
-          const path = buildPath(tile);
-          if (!path || path.length < 2) {
-            clearPreview({ log: false, emitFact: false });
-            return;
-          }
-
-          setPreview({
-            targetTile: tile,
-            path,
-            log: false,
-            emitFact: false
-          });
+          applySelectedTarget(tile);
         }
       },
       {
         type: APP_FACT_PREVIEW_CLEARED,
         handler: () => {
-          if (!previewPath && !previewTarget) {
-            return;
-          }
-
-          clearPreview({ log: false, emitFact: false });
+          resetPreview();
         }
       }
     ]

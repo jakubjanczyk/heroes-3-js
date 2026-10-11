@@ -169,7 +169,7 @@ Quick matrix:
 | Module | Subscribes | Emits | Owns mutable state | Owns DOM |
 |---|---|---|---|---|
 | `world.module` | `command.app.start`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted`, `worldState` | none |
-| `turn.module` | `fact.world.ready`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnSystem`, `isMoving` | none |
+| `turn.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnState` (assigned only in fact handlers), `isMoving` | none |
 | `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
 | `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | `hero`, `interactions`, `factsOnModalClosed` | none |
 | `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
@@ -403,5 +403,6 @@ When editing architecture, preserve these invariants:
 - no `deps` god-object passed from boot into feature logic.
 - no module-to-module direct calls for runtime behavior.
 - bus events are the only cross-module coordination channel.
+- persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/systems/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
 - `engine/` never imports from `game/`.
 - module tests validate module internals; behavior tests validate user-observable flows.

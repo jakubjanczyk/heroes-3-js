@@ -12,41 +12,59 @@ import {
 import { registerTurnModule } from './turn.module.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
 
-describe('turn module', () => {
-  test('emits turn state updates and blocks end-turn while moving', () => {
-    const bus = createFakeBus();
-    const fakeTurnSystem = {
-      remaining: 15,
-      turnNumber: 1,
-      endTurnCalls: 0,
-      spendMovementPoints(amount) {
-        this.remaining = Math.max(0, this.remaining - amount);
-        return true;
-      },
-      endTurn() {
-        this.endTurnCalls += 1;
-        this.turnNumber += 1;
-        this.remaining = 15;
-      },
-      getRemainingMovementPoints() {
-        return this.remaining;
-      },
-      getTurnNumber() {
-        return this.turnNumber;
-      }
-    };
+function setupTurnModule() {
+  const bus = createFakeBus();
+  registerTurnModule({ bus, config: { maxMovementPoints: 15, movementStepDelayMs: 0 } });
+  return bus;
+}
 
-    registerTurnModule(
-      {
-        bus,
-        config: {
-          maxMovementPoints: 15
-        }
-      },
-      {
-        createTurnSystem: () => fakeTurnSystem
-      }
-    );
+function emittedOfType(bus, type) {
+  return bus.emitted.filter((entry) => entry.type === type);
+}
+
+describe('turn module', () => {
+  test('announces full movement points when the world is ready', () => {
+    const bus = setupTurnModule();
+
+    bus.emit(APP_FACT_WORLD_READY, {});
+
+    expect(emittedOfType(bus, APP_FACT_MOVEMENT_POINTS_CHANGED)).toEqual([
+      { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 15, max: 15 } }
+    ]);
+  });
+
+  test('spend commands emit movement-points facts based on the last applied value', () => {
+    const bus = setupTurnModule();
+
+    bus.emit(APP_FACT_WORLD_READY, {});
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 4 });
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 4 });
+
+    expect(emittedOfType(bus, APP_FACT_MOVEMENT_POINTS_CHANGED).map((entry) => entry.detail)).toEqual([
+      { value: 15, max: 15 },
+      { value: 11, max: 15 },
+      { value: 7, max: 15 }
+    ]);
+  });
+
+  test('ignores spend requests before world is ready, for non-positive amounts and for overspending', () => {
+    const bus = setupTurnModule();
+
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 5 });
+    bus.emit(APP_FACT_WORLD_READY, {});
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 0 });
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: -2 });
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 16 });
+    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 3.9 });
+
+    expect(emittedOfType(bus, APP_FACT_MOVEMENT_POINTS_CHANGED).map((entry) => entry.detail)).toEqual([
+      { value: 15, max: 15 },
+      { value: 12, max: 15 }
+    ]);
+  });
+
+  test('end turn emits the next turn number and full movement points, and is blocked while moving', () => {
+    const bus = setupTurnModule();
 
     bus.emit(APP_FACT_WORLD_READY, {});
     bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 4 });
@@ -55,90 +73,37 @@ describe('turn module', () => {
     bus.emit(APP_FACT_MOVE_FINISHED, {});
     bus.emit(APP_COMMAND_END_TURN_REQUESTED, {});
 
-    const movementStates = bus.emitted.filter((entry) => entry.type === APP_FACT_MOVEMENT_POINTS_CHANGED);
-    expect(movementStates).toEqual([
-      { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 15, max: 15 } },
-      { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 11, max: 15 } },
-      { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 15, max: 15 } }
+    expect(emittedOfType(bus, APP_FACT_TURN_ENDED)).toEqual([
+      { type: APP_FACT_TURN_ENDED, detail: { turnNumber: 2 } }
     ]);
-    expect(fakeTurnSystem.endTurnCalls).toBe(1);
-    expect(bus.emitted).toContainEqual({ type: APP_FACT_TURN_ENDED, detail: { turnNumber: 2 } });
+    expect(emittedOfType(bus, APP_FACT_MOVEMENT_POINTS_CHANGED).map((entry) => entry.detail)).toEqual([
+      { value: 15, max: 15 },
+      { value: 11, max: 15 },
+      { value: 15, max: 15 }
+    ]);
   });
 
-  test('ignores spend requests before world is ready and for non-positive amounts', () => {
-    const bus = createFakeBus();
-    const fakeTurnSystem = {
-      remaining: 15,
-      spendCalls: [],
-      spendMovementPoints(amount) {
-        this.spendCalls.push(amount);
-        this.remaining -= amount;
-        return true;
-      },
-      endTurn() {},
-      getRemainingMovementPoints() {
-        return this.remaining;
-      }
-    };
-
-    registerTurnModule(
-      {
-        bus,
-        config: {
-          maxMovementPoints: 15
-        }
-      },
-      {
-        createTurnSystem: () => fakeTurnSystem
-      }
-    );
-
-    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 5 });
-    bus.emit(APP_FACT_WORLD_READY, {});
-    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 0 });
-    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: -2 });
-    bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 3.9 });
-
-    expect(fakeTurnSystem.spendCalls).toEqual([3]);
-  });
-
-  test('syncs remaining movement points from replayed movement-points facts', () => {
-    const bus = createFakeBus();
-
-    registerTurnModule({
-      bus,
-      config: {
-        maxMovementPoints: 15
-      }
-    });
+  test('replayed movement-points facts set the state that later commands decide from', () => {
+    const bus = setupTurnModule();
 
     bus.emit(APP_FACT_WORLD_READY, {});
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 0, max: 15 });
     bus.emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, { amount: 1 });
 
-    const movementStates = bus.emitted.filter((entry) => entry.type === APP_FACT_MOVEMENT_POINTS_CHANGED);
-    expect(movementStates).toEqual([
-      { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 15, max: 15 } },
-      { type: APP_FACT_MOVEMENT_POINTS_CHANGED, detail: { value: 0, max: 15 } }
+    expect(emittedOfType(bus, APP_FACT_MOVEMENT_POINTS_CHANGED).map((entry) => entry.detail)).toEqual([
+      { value: 15, max: 15 },
+      { value: 0, max: 15 }
     ]);
   });
 
-  test('syncs turn number from replayed turn-ended facts', () => {
-    const bus = createFakeBus();
-
-    registerTurnModule({
-      bus,
-      config: {
-        maxMovementPoints: 15
-      }
-    });
+  test('replayed turn-ended facts set the turn number that the next end turn continues from', () => {
+    const bus = setupTurnModule();
 
     bus.emit(APP_FACT_WORLD_READY, {});
     bus.emit(APP_FACT_TURN_ENDED, { turnNumber: 5 });
     bus.emit(APP_COMMAND_END_TURN_REQUESTED, {});
 
-    const turnEndedFacts = bus.emitted.filter((entry) => entry.type === APP_FACT_TURN_ENDED);
-    expect(turnEndedFacts).toEqual([
+    expect(emittedOfType(bus, APP_FACT_TURN_ENDED)).toEqual([
       { type: APP_FACT_TURN_ENDED, detail: { turnNumber: 5 } },
       { type: APP_FACT_TURN_ENDED, detail: { turnNumber: 6 } }
     ]);
