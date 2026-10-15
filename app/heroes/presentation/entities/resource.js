@@ -1,8 +1,10 @@
-import { getResourceSpriteStyle } from '../../../engine/layers/resource-sprites.js';
+import { getResourceSpriteStyle } from '../resource-sprites.js';
 import { typeToClass } from './shared.js';
 
 export const fadeOut = Object.freeze({
-  className: 'entity--resource-collecting'
+  className: 'entity--resource-collecting',
+  durationMs: 220,
+  durationConfigKey: 'resourceCollectFadeOutMs'
 });
 
 export function getEntityLayerStyle({ entity }) {

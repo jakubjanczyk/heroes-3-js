@@ -96,14 +96,14 @@ The app runtime should not need to know about every archetype in-line.
 
 - `app/modules/interaction.module.js` listens for `fact.move.finished`, asks the domain interaction
   system for an `outcome`, then delegates to a handler registry and owns all event emission.
-- `app/modules/shared/interaction-outcomes.js` maps `outcome.kind` to declarative effects:
+- `app/heroes/interaction-outcomes.js` (`heroesOutcomeEffects`) maps `outcome.kind` to declarative effects:
   - `facts` emitted immediately when the interaction resolves
   - optional `modal` payload
   - optional `factsOnModalClosed`, emitted once the player acknowledges the modal
 
 Domain facts never wait for animations. Views animate removals themselves: `entity-view` reacts to
-`fact.monster.defeated` / `fact.resource.collected` by applying the presentation fade-out class and
-removing the element after the configured duration (immediately during restore).
+the generic `fact.entity.removed` by applying the kind's fade-out class (`getFadeOutSpec` from the content's
+`entityPresentation`) and removing the element after its duration (immediately during restore).
 
 ## Rendering: engine stays generic, app owns presentation
 
@@ -111,12 +111,13 @@ The engine entity layer does not know about HERO/MONSTER/RESOURCE/TOWN.
 
 - `engine/layers/entity-layer.js` renders entities using an injected style resolver:
   - `getEntityStyle({ entity, map }) -> { className, width, height, offsetX, offsetY, ... }`
-- `app/presentation/entities/registry.js` maps `entity.kind` to:
+- `app/heroes/presentation/entities/registry.js` maps `entity.kind` to:
   - entity-layer style
-  - optional fade-out behavior metadata
-- `app/presentation/entity-style.js` is the default style provider used by runtime modules.
+  - optional fade-out (`className`, `durationMs`, and the config key that can override the duration)
+- `app/heroes/content.js` passes it to `entity-view` as `config.content.entityPresentation`.
+- the Heroes resource sprites (`resource-sprites.js`, `homm3-resource-atlas.js`) live in `app/heroes/presentation/`.
 
-This keeps all visuals (sprite selection, sizes, CSS class conventions) in the app layer.
+This keeps all visuals (sprite selection, sizes, CSS class conventions) in the game's content, out of `engine/`.
 
 ## World construction: one place to assemble derived entities
 
@@ -127,13 +128,13 @@ World assembly is centralized in:
 Responsibilities:
 
 - build `map`
-- create derived occupancy-only entities (e.g. town footprint blockers)
+- create footprint blockers from each behavior's `footprintOffsets` (e.g. the tiles a town or mine building covers)
 - build `staticOccupancy` (everything except heroes; read-only `getAt`)
 - an outcome that takes its entity off the map sets `removesEntity: true`; the app turns that into `fact.entity.removed`
 
 Rule of thumb:
 
-- Derived entities (like `TOWN_BLOCKER`) are domain/infra helpers; they should not leak into UI
+- Footprint blockers (`FOOTPRINT_BLOCKER`) only block tiles; they should not leak into UI
   logic unless we explicitly decide to render them.
 
 ## Playbook: adding a new archetype (e.g. MINE or TREASURE_CHEST)
@@ -144,10 +145,10 @@ Rule of thumb:
    - add it to `entityBehaviors` in `game/heroes/content.js`
 3. Load definitions (if needed): extend `game/load.js` to load a new `game/data/*.json` file.
 4. Add presentation:
-   - `app/presentation/entities/<kind>.js`
-   - register it in `app/presentation/entities/registry.js`
+   - `app/heroes/presentation/entities/<kind>.js`
+   - register it in `app/heroes/presentation/entities/registry.js`
 5. Add/extend outcome handling:
-   - add a handler entry in `app/modules/shared/interaction-outcomes.js` for the new `outcome.kind`
+   - add a handler entry in `app/heroes/interaction-outcomes.js` for the new `outcome.kind`
    - return `{ facts, modal, factsOnModalClosed }`
    - decide: which facts are committed immediately vs only after the modal is acknowledged
 6. Add tests:
@@ -157,5 +158,5 @@ If you find yourself adding a `switch (kind)` in a system/module, it usually mea
 belongs in:
 
 - `game/heroes/entity-behaviors/*` (domain rules), or
-- `app/presentation/entities/*` (visuals / CSS hooks), or
-- `app/modules/shared/*` registries (runtime outcome dispatch).
+- `app/heroes/presentation/entities/*` (visuals / CSS hooks), or
+- `app/heroes/interaction-outcomes.js` (runtime outcome dispatch).

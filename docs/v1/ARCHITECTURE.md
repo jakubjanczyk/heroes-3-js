@@ -25,10 +25,9 @@ main.js
 app/
   boot-app.js
   events.js
-  modules/
-    register-modules.js
+  modules/                   core modules, used by any game
+    register-modules.js      core list + config.content.modules
     world.module.js
-    turn.module.js
     movement.module.js
     interaction.module.js
     selection.module.js
@@ -37,14 +36,27 @@ app/
     entity-view.module.js
     preview-view.module.js
     world-view.module.js
-    minimap-view.module.js
     interaction-modal.module.js
-    hud.module.js
-    music.module.js
     dev/bus-dev-panel.js
+  heroes/                    Heroes content, picked in boot-app.js as config.content
+    content.js               heroesAppContent
+    interaction-outcomes.js  outcome kind -> facts and modal
+    modules/                 turn, hud, music, minimap-view
+    presentation/            entity styles, fade-outs, resource sprites
   ui/
     interaction-modal.element.js
+game/
+  heroes/                    Heroes rules: entity behaviors, footprints, turn system
 ```
+
+Core code (`app/` outside `app/heroes/`, `game/` outside `game/heroes/`, `engine/`) never imports Heroes content; `tests/architecture/boundaries.test.js` enforces it. `app/boot-app.js` is the one place that picks the content.
+
+`config.content` shape:
+
+- `entityBehaviors`: list of `{ kind, arrivalInteraction?, footprintOffsets? }` (game rules per entity kind)
+- `outcomeEffects`: map from outcome kind to `{ facts?, modal?, factsOnModalClosed? }`
+- `entityPresentation`: `{ getEntityStyle({ entity, map }), getFadeOutSpec({ entityKind }) }`
+- `modules`: extra modules the game registers next to the core ones
 
 ## 3) Top-level architecture
 
@@ -175,7 +187,7 @@ Quick matrix:
 | `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.route.requested`, `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `requestedTile`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
 | `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `map` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.defeated`, `fact.resource.collected`, `ui.restore.started`, `ui.restore.completed` | none | `removedIds`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
+| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `ui.restore.started`, `ui.restore.completed` | none | `removedIds`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
 | `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
 | `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
@@ -190,7 +202,7 @@ Runtime modules are intentionally split into two categories:
 - domain/control modules: `world`, `turn`, `movement`, `interaction`, `selection`, `camera`, `music`
 - view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `world-view`, `minimap-view`, `interaction-modal`, `hud`
 
-`register-modules.js` registers domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
+`register-modules.js` registers the core modules plus the game's `config.content.modules` (for Heroes: turn, hud, music, minimap-view), domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
 
 Route selection vs. movement:
 
@@ -201,13 +213,13 @@ Route selection vs. movement:
 World state:
 
 - `world.module` only loads the scenario and emits a deeply frozen `fact.world.ready` snapshot: `scenario`, `definitions`, `map` and `staticOccupancy`. It holds no live state.
-- `staticOccupancy` (`game/build-world.js`) indexes everything that never moves (towns and their footprints, mines, monsters, resources). Heroes are left out on purpose, so a hero standing on a town never hides it. It only exposes `getAt(tile)`.
+- `staticOccupancy` (`game/build-world.js`) indexes everything that never moves (entities plus the footprint blockers from each behavior's `footprintOffsets`). Heroes are left out on purpose, so a hero standing on a town never hides it. It only exposes `getAt(tile)`.
 - the hero's tile comes from the facts themselves: `fact.hero.moved` carries `to`, `fact.move.started` carries `from`, `fact.move.finished` carries `heroId` and `reachedTile`.
   - only `movement` remembers it, as one `heroTile` variable set from the snapshot and then from each `to`.
   - `camera` centers on the tile in each fact, `selection` trims its route by `to` and compares `reachedTile`, `entity-view` moves the hero element to `to`; none of them keep a copy.
 - `removedIds` (`game/domain/removed-entities.js`): ids taken off the map, updated from the generic `fact.entity.removed`. Kept by `movement` (route planning) and `entity-view` (full re-render).
 - `getOccupantAt` (`game/domain/tile-occupant.js`) answers "what stands on this tile": the static entry, unless it was removed. Only `movement` uses it.
-- an entity behavior marks an outcome with `removesEntity: true`; `interaction-outcomes.js` then emits `fact.entity.removed` with the outcome's own facts. Nothing outside the behavior needs to know which kinds disappear.
+- an entity behavior marks an outcome with `removesEntity: true`; `app/modules/shared/interaction-outcomes.js` then emits `fact.entity.removed` with the outcome's own facts. Nothing outside the behavior needs to know which kinds disappear.
 - the movement system takes queries, not entity lists: `createMovementSystem({ getHero, occupancy })`, and exposes `planRoute(tile)` and `moveHeroTo(tile)`.
 
 ### 6.2 Reusable UI components (custom elements)
@@ -383,7 +395,7 @@ Unit tests are kept only where they catch something behavior tests can't:
 
 - `engine/pathfinding.test.js`: routing rules (no corner cutting, tie-breaking, shortest detours)
 - `engine/eventlog.test.js`: real IndexedDB saving and the in-memory fallback (behavior tests use an in-memory log)
-- `game/load.test.js`, `game/town-footprint.test.js`: scenario validation and checks on the real demo map data
+- `game/load.test.js`, `game/heroes/demo-scenario.test.js`: scenario validation and checks on the real demo map data
 - `game/audio/*.test.js`: track selection and missing or broken music manifests
 - `app/ui/interaction-modal.element.test.js`: native dialog quirks (Escape, backdrop, unexpected close)
 - `app/session-db-name.test.js`: PR previews keep separate saves
@@ -400,7 +412,7 @@ Module wiring (module X reacts to event A by emitting B) is not unit tested; beh
    - module-owned direct DOM (simple projections), or
    - custom element under `app/ui/` (reusable/interactive UI).
 5. if using a custom element, keep module as bus/controller layer and component as UI implementation.
-6. register module from `app/modules/register-modules.js`.
+6. register a core module in `app/modules/register-modules.js`, or a game-specific one in that game's content (`modules` in `app/heroes/content.js`).
 7. add behavior tests first; add a unit test only for what behavior tests can't reach (see 10.2).
 
 ## 12) Invariants to keep
@@ -411,7 +423,7 @@ When editing architecture, preserve these invariants:
 - no `deps` god-object passed from boot into feature logic.
 - no module-to-module direct calls for runtime behavior.
 - bus events are the only cross-module coordination channel.
-- persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/systems/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
+- persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/heroes/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
 - `fact.world.ready` is a deeply frozen snapshot (`scenario`, `definitions`, `map`, `staticOccupancy`); nobody mutates shared world objects. Changes during play live only in small state derived from facts (`heroTile`, `removedIds`), kept only where a module needs it later (see "World state").
 - `engine/` never imports from `game/`.
 - core `game/` code never imports `game/heroes/`; the game's content (entity behaviors) is chosen in `bootApp` as `config.content` and passed to modules (see `ENTITY_ARCHETYPES.md`).

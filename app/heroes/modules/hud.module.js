@@ -6,8 +6,8 @@ import {
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED
-} from '../events.js';
-import { defineModule } from './shared/module-runtime.js';
+} from '../../events.js';
+import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerHudModule = defineModule(({ emit, env }) => {
   const uiLayer = env.document?.querySelector('.ui-layer');

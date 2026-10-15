@@ -1,13 +1,9 @@
 import {renderEntityLayer as renderEntityLayerDefault} from '../../engine/layers/entity-layer.js';
 import {setStyleVar} from '../../engine/layers/dom-layer-utils.js';
 import {getMapCenteredOrigin, getTileCenter} from '../../engine/layers/layout.js';
-import {getDefaultEntityLayerStyle as getDefaultEntityStyle} from '../presentation/entity-style.js';
-import {getEntityFadeOutSpec} from '../presentation/entities/registry.js';
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
-  APP_FACT_MONSTER_DEFEATED,
-  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED
@@ -18,20 +14,17 @@ import {NO_REMOVED_ENTITIES, applyEntityRemoved} from '../../game/domain/removed
 export const registerEntityViewModule = defineModule((
   { env, config },
   {
-    renderEntityLayer = renderEntityLayerDefault,
-    getEntityStyle = getDefaultEntityStyle
+    renderEntityLayer = renderEntityLayerDefault
   } = {}
 ) => {
+  const presentation = config?.content?.entityPresentation;
+  const getEntityStyle = presentation?.getEntityStyle ?? (() => null);
   const entityLayer = env.document?.querySelector('.entity-layer');
   const createElement = env.document?.createElement?.bind(env.document);
   const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
   const heroStepDurationMs = Number.isFinite(configuredStepDurationMs)
     ? Math.max(0, configuredStepDurationMs)
     : 220;
-  const fadeOutMsByKind = Object.freeze({
-    MONSTER: config?.monsterDefeatFadeOutMs ?? 220,
-    RESOURCE: config?.resourceCollectFadeOutMs ?? 220
-  });
   const fadeOutTimers = new Set();
 
   let map = null;
@@ -98,7 +91,7 @@ export const registerEntityViewModule = defineModule((
     applyHeroRestoreMotionOverride();
   }
 
-  function removeEntityElement({ entityId, entityKind }) {
+  function removeEntityElement(entityId) {
     if (!entityLayer || typeof entityId !== 'string' || entityId.length === 0) {
       return;
     }
@@ -108,8 +101,11 @@ export const registerEntityViewModule = defineModule((
       return;
     }
 
-    const fadeOutSpec = getEntityFadeOutSpec({ entityKind });
-    const durationMs = fadeOutMsByKind[entityKind] ?? 0;
+    const entityKind = scenarioEntities?.find((entity) => entity.id === entityId)?.kind;
+    const fadeOutSpec = presentation?.getFadeOutSpec?.({ entityKind }) ?? null;
+    const durationMs = fadeOutSpec
+      ? Number(config?.[fadeOutSpec.durationConfigKey] ?? fadeOutSpec.durationMs ?? 0)
+      : 0;
     if (isRestoring || !fadeOutSpec || durationMs <= 0) {
       el.remove();
       return;
@@ -152,18 +148,7 @@ export const registerEntityViewModule = defineModule((
         type: APP_FACT_ENTITY_REMOVED,
         handler: (event) => {
           removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
-        }
-      },
-      {
-        type: APP_FACT_MONSTER_DEFEATED,
-        handler: (event) => {
-          removeEntityElement({ entityId: event.detail?.entityId, entityKind: 'MONSTER' });
-        }
-      },
-      {
-        type: APP_FACT_RESOURCE_COLLECTED,
-        handler: (event) => {
-          removeEntityElement({ entityId: event.detail?.entityId, entityKind: 'RESOURCE' });
+          removeEntityElement(event.detail?.entityId);
         }
       },
       {
@@ -202,8 +187,6 @@ export const registerEntityViewModule = defineModule((
     APP_FACT_WORLD_READY,
     APP_FACT_HERO_MOVED,
     APP_FACT_ENTITY_REMOVED,
-    APP_FACT_MONSTER_DEFEATED,
-    APP_FACT_RESOURCE_COLLECTED,
     APP_UI_RESTORE_STARTED,
     APP_UI_RESTORE_COMPLETED
   ],

@@ -1,10 +1,12 @@
-// Builds the lookup for the entity kinds a game provides (e.g. `game/heroes/content.js`).
-// Each behavior is `{ kind, arrivalInteraction }`; core code only goes through this lookup.
 export function createEntityBehaviors(behaviors = []) {
   const behaviorByKind = new Map(behaviors.map((behavior) => [behavior.kind, behavior]));
 
   function getArrivalInteraction(entity) {
     return behaviorByKind.get(entity?.kind)?.arrivalInteraction ?? null;
+  }
+
+  function getFootprintOffsets(entity) {
+    return behaviorByKind.get(entity?.kind)?.footprintOffsets ?? [];
   }
 
   function isArrivalInteractionEntity(entity) {
@@ -22,6 +24,7 @@ export function createEntityBehaviors(behaviors = []) {
 
   return Object.freeze({
     getArrivalInteraction,
+    getFootprintOffsets,
     isArrivalInteractionEntity,
     resolveArrivalOutcome
   });
