@@ -6,13 +6,14 @@ import {
   decideSpendMovementPoints
 } from '../../../game/heroes/turn-system.js';
 import {
+  APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY
 } from '../../events.js';
-import { APP_COMMAND_END_TURN_REQUESTED, APP_FACT_TURN_ENDED } from '../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerTurnModule = defineModule(({ emit, config }) => {

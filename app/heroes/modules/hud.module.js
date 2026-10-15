@@ -1,14 +1,12 @@
 import {
-  APP_COMMAND_RESET_SESSION_REQUESTED,
-  APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_WORLD_READY
-} from '../../events.js';
-import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+  APP_COMMAND_RESET_SESSION_REQUESTED,
+  APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED
-} from '../events.js';
+} from '../../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerHudModule = defineModule(({ emit, env }) => {

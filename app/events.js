@@ -7,6 +7,8 @@ export const APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED =
 export const APP_COMMAND_RESET_SESSION_REQUESTED = 'command.session.reset.requested';
 export const APP_COMMAND_CAMERA_PAN_BY = 'command.camera.panBy';
 export const APP_COMMAND_CAMERA_CENTER_ON_TILE = 'command.camera.centerOnTile';
+export const APP_COMMAND_END_TURN_REQUESTED = 'command.turn.end.requested';
+export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requested';
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready';
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed';
@@ -18,6 +20,10 @@ export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.change
 export const APP_FACT_ENTITY_REMOVED = 'fact.entity.removed';
 export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected';
 export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared';
+export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
+export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';
+export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected';
+export const APP_FACT_TOWN_VISITED = 'fact.town.visited';
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated';
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened';
@@ -26,17 +32,20 @@ export const APP_UI_CAMERA_UPDATED = 'ui.camera.updated';
 export const APP_UI_WORLD_MOTION_UPDATED = 'ui.world.motion.updated';
 export const APP_UI_RESTORE_STARTED = 'ui.restore.started';
 export const APP_UI_RESTORE_COMPLETED = 'ui.restore.completed';
+export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed';
 
-const APP_PERSISTED_FACT_TYPES = Object.freeze([
+const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
-  APP_FACT_PREVIEW_CLEARED
+  APP_FACT_PREVIEW_CLEARED,
+  APP_FACT_TURN_ENDED,
+  APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED
 ]);
 
-// Saved facts are the core ones plus the ones the game's content adds.
-export function createFactPersistencePolicy(contentFactTypes = []) {
-  const persistedTypes = new Set([...APP_PERSISTED_FACT_TYPES, ...contentFactTypes]);
-  return (type) => persistedTypes.has(type);
+export function shouldPersistFactEvent(type) {
+  return APP_PERSISTED_FACT_TYPES.has(type);
 }
