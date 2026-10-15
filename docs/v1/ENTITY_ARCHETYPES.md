@@ -80,9 +80,9 @@ Why this is important:
   - executes steps only; it does not query archetype behavior directly.
   - consumes the precomputed `arrivalPlan` and emits `fact.move.finished` with
     `interaction.kind = movementInteractionKind` when triggered.
-- `game/systems/interaction-system.js`
-  - resolves an arrival outcome for a destination tile.
-  - takes `arrivingEntityId` so it can ignore the moving entity (no special-case "HERO" checks).
+- `interaction.module`
+  - resolves the outcome with `resolveArrivalOutcome` (`game/domain/entity-behaviors.js`) for the entity
+    named in `fact.move.finished` (`interaction.entityId`); no tile lookup needed.
 
 ## App: translating outcomes into UX (without kind switches)
 
