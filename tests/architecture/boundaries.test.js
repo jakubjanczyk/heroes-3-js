@@ -80,6 +80,18 @@ describe('architecture boundaries', () => {
     });
   });
 
+  test('core game code never imports heroes content', () => {
+    const coreGameFiles = walkJsFiles(join(REPO_ROOT, 'game')).filter(
+      (filePath) => !relative(REPO_ROOT, filePath).startsWith('game/heroes/')
+    );
+
+    assertNoImportMatch({
+      files: coreGameFiles,
+      pattern: /from\s+['"][^'"]*heroes\//,
+      errorLabel: 'heroes content is chosen at boot and passed in, so a different game can reuse the core'
+    });
+  });
+
   test('only the world module builds the static world', () => {
     const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter((filePath) => {
       const rel = relative(REPO_ROOT, filePath);

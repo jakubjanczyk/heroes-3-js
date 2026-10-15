@@ -414,4 +414,5 @@ When editing architecture, preserve these invariants:
 - persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/systems/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
 - `fact.world.ready` is a deeply frozen snapshot (`scenario`, `definitions`, `map`, `staticOccupancy`); nobody mutates shared world objects. Changes during play live only in small state derived from facts (`heroTile`, `removedIds`), kept only where a module needs it later (see "World state").
 - `engine/` never imports from `game/`.
+- core `game/` code never imports `game/heroes/`; the game's content (entity behaviors) is chosen in `bootApp` as `config.content` and passed to modules (see `ENTITY_ARCHETYPES.md`).
 - behavior tests validate user-observable flows; unit tests exist only for what behavior tests can't reach (see 10.2).

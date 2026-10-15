@@ -46,16 +46,22 @@ Rule of thumb:
 - Add a new `kind` only when the interaction rules/UX are genuinely different (HoMM3-style:
   many content types, few interaction archetypes).
 
-## Domain rules live in `game/domain/entity-behaviors/*`
+## Domain rules: core lookup, game-specific behaviors
 
-Archetype rules are expressed as behavior modules and discovered through a registry.
+Archetype rules are behavior modules that belong to a game's content. The core never imports them;
+the app picks the content at boot and passes it in, so another game can reuse the core with its own kinds.
 
 Key entry points:
 
-- `game/domain/entity-behaviors/registry.js`
-  - `getArrivalInteraction(entity)` -> archetype-specific arrival interaction contract.
-- `game/domain/entity-behaviors/*.js`
-  - one module per archetype (e.g. monster/resource/town).
+- `game/heroes/content.js`
+  - `heroesContent.entityBehaviors`: the list of Heroes behaviors (mine, monster, resource, town).
+  - chosen as `config.content` in `app/boot-app.js`.
+- `game/heroes/entity-behaviors/*.js`
+  - one module per archetype, each `{ kind, arrivalInteraction }`.
+- `game/domain/entity-behaviors.js`
+  - `createEntityBehaviors(behaviors)` builds the lookup core code uses:
+    `getArrivalInteraction(entity)`, `isArrivalInteractionEntity(entity)`, `resolveArrivalOutcome(...)`.
+- `tests/architecture/boundaries.test.js` fails if core `game/` code imports `game/heroes/`.
 
 Core value objects used by domain services live in `game/domain/value-objects/*`
 (`tile`, `entity-id`, `movement-points`) so validation/normalization rules stay centralized.
@@ -68,8 +74,8 @@ Arrival interaction contract (shape):
 
 Why this is important:
 
-- `game/systems/*` can stay generic and ask the registry for behavior.
-- Adding a new archetype is done by adding a new behavior module + registering it.
+- `game/systems/*` can stay generic and ask the lookup it was given for behavior.
+- Adding a new archetype is done by adding a new behavior module + listing it in the game's content.
 
 ### Movement and interactions
 
@@ -81,7 +87,7 @@ Why this is important:
   - consumes the precomputed `arrivalPlan` and emits `fact.move.finished` with
     `interaction.kind = movementInteractionKind` when triggered.
 - `interaction.module`
-  - resolves the outcome with `resolveArrivalOutcome` (`game/domain/entity-behaviors.js`) for the entity
+  - resolves the outcome with `entityBehaviors.resolveArrivalOutcome` for the entity
     named in `fact.move.finished` (`interaction.entityId`); no tile lookup needed.
 
 ## App: translating outcomes into UX (without kind switches)
@@ -134,8 +140,8 @@ Rule of thumb:
 
 1. Pick a new `kind` (archetype) and decide the definitions namespace key.
 2. Add domain behavior:
-   - create `game/domain/entity-behaviors/<kind>.js` implementing the arrival interaction contract
-   - register it in `game/domain/entity-behaviors/registry.js`
+   - create `game/heroes/entity-behaviors/<kind>.js` implementing the arrival interaction contract
+   - add it to `entityBehaviors` in `game/heroes/content.js`
 3. Load definitions (if needed): extend `game/load.js` to load a new `game/data/*.json` file.
 4. Add presentation:
    - `app/presentation/entities/<kind>.js`
@@ -150,6 +156,6 @@ Rule of thumb:
 If you find yourself adding a `switch (kind)` in a system/module, it usually means the behavior
 belongs in:
 
-- `game/domain/entity-behaviors/*` (domain rules), or
+- `game/heroes/entity-behaviors/*` (domain rules), or
 - `app/presentation/entities/*` (visuals / CSS hooks), or
 - `app/modules/shared/*` registries (runtime outcome dispatch).

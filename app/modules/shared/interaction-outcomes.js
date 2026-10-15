@@ -8,7 +8,7 @@ import {
   INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   INTERACTION_OUTCOME_KIND_TOWN_VISITED
-} from '../../../game/domain/interaction-kinds.js';
+} from '../../../game/heroes/interaction-kinds.js';
 
 function toModal(outcome) {
   return {
