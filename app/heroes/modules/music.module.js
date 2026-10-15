@@ -1,19 +1,10 @@
-import { loadMusicTracks as loadMusicTracksDefault } from '../../../game/audio/load-music-tracks.js';
-import { createMusicPlayer as createMusicPlayerDefault } from '../../../game/audio/music-player.js';
-import {
-  APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
-  APP_FACT_WORLD_READY,
-  APP_UI_MUSIC_STATE_CHANGED
-} from '../../events.js';
+import { loadMusicTracks } from '../../../game/audio/load-music-tracks.js';
+import { createMusicPlayer } from '../../../game/audio/music-player.js';
+import { APP_FACT_WORLD_READY } from '../../events.js';
+import { HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED, HEROES_UI_MUSIC_STATE_CHANGED } from '../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
-export const registerMusicModule = defineModule((
-  { emit, env, config },
-  {
-    loadMusicTracks = loadMusicTracksDefault,
-    createMusicPlayer = createMusicPlayerDefault
-  } = {}
-) => {
+export const registerMusicModule = defineModule(({ emit, env, config }) => {
   let musicPlayer = null;
   let hasInitialized = false;
 
@@ -47,21 +38,21 @@ export const registerMusicModule = defineModule((
             });
 
             await Promise.resolve(musicPlayer?.start?.());
-            emit(APP_UI_MUSIC_STATE_CHANGED, {
+            emit(HEROES_UI_MUSIC_STATE_CHANGED, {
               enabled: Boolean(musicPlayer?.isEnabled?.())
             });
           })();
         }
       },
       {
-        type: APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+        type: HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED,
         handler: () => {
           if (!musicPlayer) {
             return;
           }
 
           Promise.resolve(musicPlayer.toggle()).finally(() => {
-            emit(APP_UI_MUSIC_STATE_CHANGED, {
+            emit(HEROES_UI_MUSIC_STATE_CHANGED, {
               enabled: Boolean(musicPlayer?.isEnabled?.())
             });
           });
@@ -74,9 +65,9 @@ export const registerMusicModule = defineModule((
   phase: 'view',
   consumes: [
     APP_FACT_WORLD_READY,
-    APP_COMMAND_MUSIC_TOGGLE_REQUESTED
+    HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED
   ],
   produces: [
-    APP_UI_MUSIC_STATE_CHANGED
+    HEROES_UI_MUSIC_STATE_CHANGED
   ]
 });

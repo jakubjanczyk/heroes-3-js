@@ -1,7 +1,7 @@
 import { createBus } from '../engine/bus.js';
 import { createEventLog } from '../engine/eventlog.js';
 import { heroesAppContent } from './heroes/content.js';
-import { APP_COMMAND_APP_START, shouldPersistFactEvent } from './events.js';
+import { APP_COMMAND_APP_START, createFactPersistencePolicy } from './events.js';
 import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
 import { registerModules } from './modules/register-modules.js';
 import { restoreSession } from './restore-session.js';
@@ -27,7 +27,7 @@ function composeBusLoggers(...loggers) {
   };
 }
 
-function setupAppBus(busDebug, document, busLogger, appEventLog) {
+function setupAppBus(busDebug, document, busLogger, appEventLog, content) {
   const busPanel = busDebug ? createBusDevPanel({ document }) : null;
   const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
 
@@ -35,7 +35,7 @@ function setupAppBus(busDebug, document, busLogger, appEventLog) {
     debug: busDebug,
     log: activeBusLogger,
     eventLog: appEventLog,
-    shouldLogEvent: shouldPersistFactEvent
+    shouldLogEvent: createFactPersistencePolicy(content?.persistedFactTypes)
   });
 }
 
@@ -54,7 +54,6 @@ export async function bootApp({
   const appEventLog = eventLog ?? createEventLog();
   await appEventLog.init?.();
 
-  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog);
   const env = {
     fetch,
     document,
@@ -68,6 +67,7 @@ export async function bootApp({
     musicManifestUrl,
     ...configOverride
   };
+  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog, config.content);
 
   const lifecycle = createDisposer();
 

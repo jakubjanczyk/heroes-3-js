@@ -117,9 +117,9 @@ export function createModuleRuntime({ bus, env, config }) {
 export function defineModule(setup, meta = {}) {
   const moduleMeta = normalizeModuleMeta(meta);
 
-  const registerModule = (runtime, overrides) => {
+  const registerModule = (runtime) => {
     const moduleRuntime = createModuleRuntime(runtime);
-    const moduleDefinition = setup(moduleRuntime, overrides);
+    const moduleDefinition = setup(moduleRuntime);
 
     if (isFunction(moduleDefinition)) {
       moduleRuntime.registerDisposer(moduleDefinition);

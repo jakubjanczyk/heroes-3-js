@@ -55,6 +55,7 @@ Core code (`app/` outside `app/heroes/`, `game/` outside `game/heroes/`, `engine
 
 - `entityBehaviors`: list of `{ kind, arrivalInteraction?, footprintOffsets? }` (game rules per entity kind)
 - `outcomeEffects`: map from outcome kind to `{ facts?, modal?, factsOnModalClosed? }`
+- `persistedFactTypes`: the game's facts that are saved to the event log
 - `entityPresentation`: `{ getEntityStyle({ entity, map }), getFadeOutSpec({ entityKind }) }`
 - `modules`: extra modules the game registers next to the core ones
 
@@ -118,7 +119,9 @@ Debug mode (`createBus({ debug: true, log })`) reports structured entries for:
 - subscribe / unsubscribe / remove-all actions
 - emit actions with subscriber counts
 
-### 4.2 Event taxonomy (`app/events.js`)
+### 4.2 Event taxonomy (`app/events.js`, `app/heroes/events.js`)
+
+Core events live in `app/events.js`; Heroes-only events (turns, music, monster/resource/town facts) live in `app/heroes/events.js`. Facts saved to the event log are the core list plus the content's `persistedFactTypes` (`createFactPersistencePolicy`).
 
 Event names follow prefixes:
 
@@ -130,10 +133,9 @@ Event names follow prefixes:
 
 Every runtime module follows this shape:
 
-- primary API: `registerXModule({ bus, env, config }, overrides?)`
+- primary API: `registerXModule({ bus, env, config })`
 - module registers all its own bus listeners
 - module queries its own DOM dependencies via `env.document`
-- `overrides` are optional dependency seams (no tests use them at the moment)
 
 `registerModules` wires modules exactly once from `bootApp`.
 
@@ -332,7 +334,7 @@ This is the canonical behavior for long routes in the current runtime.
 - closing the modal emits `ui.interaction.modal.closed`.
 - on close, `interaction.module` emits `fact.monster.defeated` immediately (the defeat is committed only once the player acknowledges the modal; a reload while the modal is open keeps the monster).
 - the same close also emits `fact.entity.removed`; modules add the id to their `removedIds`, so the tile is free again.
-- `entity-view.module` fades the monster element out and removes it after `monsterDefeatFadeOutMs` (immediately during restore).
+- `entity-view.module` fades the monster element out on `fact.entity.removed` and removes it after the presentation's `durationMs` (overridable per kind with `config.fadeOutMsByKind`; immediately during restore).
 
 ### 7.7 Resource collection
 
@@ -405,7 +407,7 @@ Module wiring (module X reacts to event A by emitting B) is not unit tested; beh
 
 ## 11) Extension playbook (how to add a feature safely)
 
-1. define new events in `app/events.js` using the `command.*` / `fact.*` / `ui.*` naming scheme.
+1. define new events using the `command.*` / `fact.*` / `ui.*` naming scheme: core events in `app/events.js`, game-specific ones in the game's content (`app/heroes/events.js`).
 2. implement feature logic in a single module (or a small set of modules) under `app/modules/`.
 3. keep communication bus-first; do not call another module directly.
 4. if DOM is involved, decide between:

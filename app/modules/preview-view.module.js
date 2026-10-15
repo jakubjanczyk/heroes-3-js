@@ -1,13 +1,8 @@
-import { renderPathPreviewLayer as renderPathPreviewLayerDefault } from '../../engine/layers/path-preview-layer.js';
+import { renderPathPreviewLayer } from '../../engine/layers/path-preview-layer.js';
 import { APP_FACT_WORLD_READY, APP_UI_PREVIEW_UPDATED } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerPreviewViewModule = defineModule((
-  { env },
-  {
-    renderPathPreviewLayer = renderPathPreviewLayerDefault
-  } = {}
-) => {
+export const registerPreviewViewModule = defineModule(({ env }) => {
   const effectsLayer = env.document?.querySelector('.effects-layer');
   const createElement = env.document?.createElement?.bind(env.document);
 

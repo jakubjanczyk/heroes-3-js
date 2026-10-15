@@ -1,5 +1,5 @@
-import { createCamera as createCameraDefault } from '../../engine/camera.js';
-import { attachCameraInput as attachCameraInputDefault } from '../../engine/input.js';
+import { createCamera } from '../../engine/camera.js';
+import { attachCameraInput } from '../../engine/input.js';
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -16,13 +16,7 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 
-export const registerCameraModule = defineModule((
-  { emit, env, config },
-  {
-    createCamera = createCameraDefault,
-    attachCameraInput = attachCameraInputDefault
-  } = {}
-) => {
+export const registerCameraModule = defineModule(({ emit, env, config }) => {
   const viewport = env.document?.querySelector('.viewport');
   const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220);
   const cameraStepDurationMs = Number.isFinite(configuredStepDurationMs)

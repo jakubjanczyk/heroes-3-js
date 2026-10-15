@@ -24,14 +24,13 @@ import {
   flushMicrotasks,
   setupMovementBehaviorApp
 } from './behavior.utils.js';
+import { APP_FACT_PREVIEW_CLEARED, APP_FACT_PREVIEW_TARGET_SELECTED } from '../../app/events.js';
 import {
-  APP_FACT_MONSTER_DEFEATED,
-  APP_FACT_PREVIEW_CLEARED,
-  APP_FACT_PREVIEW_TARGET_SELECTED,
-  APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_TOWN_VISITED,
-  APP_FACT_TURN_ENDED
-} from '../../app/events.js';
+  HEROES_FACT_MONSTER_DEFEATED,
+  HEROES_FACT_RESOURCE_COLLECTED,
+  HEROES_FACT_TOWN_VISITED,
+  HEROES_FACT_TURN_ENDED
+} from '../../app/heroes/events.js';
 
 function createMemoryEventLog() {
   const entries = [];
@@ -85,8 +84,7 @@ describe('session persistence behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 0,
-        resourceCollectFadeOutMs: 0
+        fadeOutMsByKind: { MONSTER: 0, RESOURCE: 0 }
       }
     };
 
@@ -194,7 +192,7 @@ describe('session persistence behavior', () => {
 
     let turnFacts = eventLog
       .getAll()
-      .filter((entry) => entry.type === APP_FACT_TURN_ENDED)
+      .filter((entry) => entry.type === HEROES_FACT_TURN_ENDED)
       .map((entry) => entry.detail.turnNumber);
     expect(turnFacts).toEqual([2]);
 
@@ -206,7 +204,7 @@ describe('session persistence behavior', () => {
 
     turnFacts = eventLog
       .getAll()
-      .filter((entry) => entry.type === APP_FACT_TURN_ENDED)
+      .filter((entry) => entry.type === HEROES_FACT_TURN_ENDED)
       .map((entry) => entry.detail.turnNumber);
     expect(turnFacts).toEqual([2, 3]);
   });
@@ -340,7 +338,7 @@ describe('session persistence behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 0
+        fadeOutMsByKind: { MONSTER: 0 }
       }
     };
 
@@ -354,7 +352,7 @@ describe('session persistence behavior', () => {
     expectMonsterPresent('monster-1');
     expectInteractionModalOpen('Monster defeated');
     expect(
-      eventLog.getAll().filter((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)
+      eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)
     ).toHaveLength(0);
 
     await setupMovementBehaviorApp(sharedAppOptions);
@@ -365,7 +363,7 @@ describe('session persistence behavior', () => {
     expectMonsterPresent('monster-1');
     expectInteractionModalClosed();
     expect(
-      eventLog.getAll().filter((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)
+      eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)
     ).toHaveLength(0);
   });
 
@@ -401,7 +399,7 @@ describe('session persistence behavior', () => {
     expectMovementPoints(13);
     expectTownPresent('town-1');
     expectInteractionModalOpen('Castle visited');
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_TOWN_VISITED)).toHaveLength(1);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(1);
 
     await setupMovementBehaviorApp(sharedAppOptions);
     await flushMicrotasks();
@@ -410,7 +408,7 @@ describe('session persistence behavior', () => {
     expectMovementPoints(13);
     expectTownPresent('town-1');
     expectInteractionModalClosed();
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_TOWN_VISITED)).toHaveLength(1);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(1);
   });
 
   test('given resources are collected across sessions when app reloads multiple times then totals and removals stay cumulative', async () => {
@@ -434,7 +432,7 @@ describe('session persistence behavior', () => {
         }
       },
       appConfig: {
-        resourceCollectFadeOutMs: 0
+        fadeOutMsByKind: { RESOURCE: 0 }
       }
     };
 
@@ -466,7 +464,7 @@ describe('session persistence behavior', () => {
     expectResourceNotPresent('resource-2');
     expectResourceTotal('Gold pile', 100);
     expectResourceTotal('Wood pile', 5);
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_RESOURCE_COLLECTED)).toHaveLength(2);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_RESOURCE_COLLECTED)).toHaveLength(2);
 
     await setupMovementBehaviorApp(sharedAppOptions);
     await flushMicrotasks();
@@ -498,7 +496,7 @@ describe('session persistence behavior', () => {
         }
       },
       appConfig: {
-        resourceCollectFadeOutMs: 1000
+        fadeOutMsByKind: { RESOURCE: 1000 }
       }
     };
 
@@ -508,7 +506,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks();
 
     expectResourceCollecting('resource-1');
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_RESOURCE_COLLECTED)).toHaveLength(1);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_RESOURCE_COLLECTED)).toHaveLength(1);
 
     await setupMovementBehaviorApp(sharedAppOptions);
     await flushMicrotasks();
@@ -532,7 +530,7 @@ describe('session persistence behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 1000
+        fadeOutMsByKind: { MONSTER: 1000 }
       }
     };
 
@@ -544,7 +542,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks();
 
     expectMonsterDefeating('monster-1');
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)).toHaveLength(1);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)).toHaveLength(1);
 
     await setupMovementBehaviorApp(sharedAppOptions);
     await flushMicrotasks();
@@ -737,7 +735,7 @@ describe('session persistence behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 0
+        fadeOutMsByKind: { MONSTER: 0 }
       }
     };
 
@@ -781,7 +779,7 @@ describe('session persistence behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 0
+        fadeOutMsByKind: { MONSTER: 0 }
       }
     };
 
@@ -791,7 +789,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks();
 
     expectInteractionModalOpen('Monster defeated');
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)).toHaveLength(0);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)).toHaveLength(0);
 
     const secondSession = await setupMovementBehaviorApp(sharedAppOptions);
     await flushMicrotasks();
@@ -809,7 +807,7 @@ describe('session persistence behavior', () => {
 
     expectMonsterNotPresent('monster-1');
     expectMovementPoints(13);
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_MONSTER_DEFEATED)).toHaveLength(1);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)).toHaveLength(1);
   });
 
   test('given town was visited before reload when hero leaves and re-enters after reload then a new town visit is recorded', async () => {
@@ -843,7 +841,7 @@ describe('session persistence behavior', () => {
     await closeInteractionModal(firstSession.user);
     await flushMicrotasks();
 
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_TOWN_VISITED)).toHaveLength(1);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(1);
     expectHeroAt(4, 3);
 
     const secondSession = await setupMovementBehaviorApp(sharedAppOptions);
@@ -863,7 +861,7 @@ describe('session persistence behavior', () => {
     await closeInteractionModal(secondSession.user);
     await flushMicrotasks();
 
-    expect(eventLog.getAll().filter((entry) => entry.type === APP_FACT_TOWN_VISITED)).toHaveLength(2);
+    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(2);
     expectHeroAt(4, 3);
   });
 });

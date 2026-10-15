@@ -113,7 +113,7 @@ The engine entity layer does not know about HERO/MONSTER/RESOURCE/TOWN.
   - `getEntityStyle({ entity, map }) -> { className, width, height, offsetX, offsetY, ... }`
 - `app/heroes/presentation/entities/registry.js` maps `entity.kind` to:
   - entity-layer style
-  - optional fade-out (`className`, `durationMs`, and the config key that can override the duration)
+  - optional fade-out (`className`, `durationMs`; tests can override durations with `config.fadeOutMsByKind`)
 - `app/heroes/content.js` passes it to `entity-view` as `config.content.entityPresentation`.
 - the Heroes resource sprites (`resource-sprites.js`, `homm3-resource-atlas.js`) live in `app/heroes/presentation/`.
 

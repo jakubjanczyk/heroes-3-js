@@ -6,14 +6,13 @@ import {
   decideSpendMovementPoints
 } from '../../../game/heroes/turn-system.js';
 import {
-  APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY
 } from '../../events.js';
+import { HEROES_COMMAND_END_TURN_REQUESTED, HEROES_FACT_TURN_ENDED } from '../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerTurnModule = defineModule(({ emit, config }) => {
@@ -58,7 +57,7 @@ export const registerTurnModule = defineModule(({ emit, config }) => {
         }
       },
       {
-        type: APP_FACT_TURN_ENDED,
+        type: HEROES_FACT_TURN_ENDED,
         handler: (event) => {
           if (!turnState) {
             return;
@@ -104,14 +103,14 @@ export const registerTurnModule = defineModule(({ emit, config }) => {
         }
       },
       {
-        type: APP_COMMAND_END_TURN_REQUESTED,
+        type: HEROES_COMMAND_END_TURN_REQUESTED,
         handler: () => {
           if (!turnState || isMoving || now() < suppressEndTurnUntil) {
             return;
           }
 
           const outcome = decideEndTurn(turnState);
-          emit(APP_FACT_TURN_ENDED, { turnNumber: outcome.turnNumber });
+          emit(HEROES_FACT_TURN_ENDED, { turnNumber: outcome.turnNumber });
           emitMovementPointsChanged(outcome.remainingMovementPoints);
         }
       }
@@ -123,14 +122,14 @@ export const registerTurnModule = defineModule(({ emit, config }) => {
   consumes: [
     APP_FACT_WORLD_READY,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
-    APP_FACT_TURN_ENDED,
+    HEROES_FACT_TURN_ENDED,
     APP_FACT_MOVE_STARTED,
     APP_FACT_MOVE_FINISHED,
     APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
-    APP_COMMAND_END_TURN_REQUESTED
+    HEROES_COMMAND_END_TURN_REQUESTED
   ],
   produces: [
     APP_FACT_MOVEMENT_POINTS_CHANGED,
-    APP_FACT_TURN_ENDED
+    HEROES_FACT_TURN_ENDED
   ]
 });

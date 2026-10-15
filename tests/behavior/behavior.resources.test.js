@@ -72,7 +72,7 @@ describe('resource interaction behavior', () => {
         }
       },
       appConfig: {
-        resourceCollectFadeOutMs: 20
+        fadeOutMsByKind: { RESOURCE: 20 }
       }
     });
 
@@ -111,7 +111,7 @@ describe('resource interaction behavior', () => {
         }
       },
       appConfig: {
-        resourceCollectFadeOutMs: 20
+        fadeOutMsByKind: { RESOURCE: 20 }
       }
     });
 
@@ -163,7 +163,7 @@ describe('resource interaction behavior', () => {
       },
       movementStepDelayMs: 20,
       appConfig: {
-        resourceCollectFadeOutMs: 0
+        fadeOutMsByKind: { RESOURCE: 0 }
       }
     });
 
@@ -200,7 +200,7 @@ describe('resource interaction behavior', () => {
       },
       movementStepDelayMs: 220,
       appConfig: {
-        resourceCollectFadeOutMs: 0
+        fadeOutMsByKind: { RESOURCE: 0 }
       }
     });
 
