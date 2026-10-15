@@ -1,18 +1,17 @@
 import { createMap as createMapDefault } from '../engine/map.js';
 import { createOccupancyIndex as createOccupancyIndexDefault } from '../engine/occupancy.js';
 import { tileKey } from '../engine/tile-utils.js';
-import { createWorldState as createWorldStateDefault } from './domain/world-state.js';
+import { isHero } from './domain/entity-queries.js';
 import { createMineFootprintBlockers } from './mine-footprint.js';
 import { createTownFootprintBlockers } from './town-footprint.js';
 
+// Builds the parts of the world that never change during play. Heroes are left out of
+// the occupancy index on purpose: they move, so their positions are tracked from facts.
 export function buildWorld(
-  {
-    scenario
-  },
+  { scenario },
   {
     createMap = createMapDefault,
-    createOccupancyIndex = createOccupancyIndexDefault,
-    createWorldState = createWorldStateDefault
+    createOccupancyIndex = createOccupancyIndexDefault
   } = {}
 ) {
   const map = createMap(scenario.terrain);
@@ -29,18 +28,15 @@ export function buildWorld(
     occupiedTiles
   });
   const occupancy = createOccupancyIndex([
-    ...scenario.entities,
+    ...scenario.entities.filter((entity) => !isHero(entity)),
     ...townFootprintBlockers,
     ...mineFootprintBlockers
   ]);
-  const worldState = createWorldState({
-    scenario,
-    occupancy
-  });
 
   return {
     map,
-    occupancy,
-    worldState
+    staticOccupancy: {
+      getAt: (tile) => occupancy.getAt(tile)
+    }
   };
 }

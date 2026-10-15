@@ -7,7 +7,6 @@ import {
   flushMicrotasks,
   setupMovementBehaviorApp
 } from './behavior.utils.js';
-import { findHero } from '../../game/domain/entity-queries.js';
 
 function createPanScenario({
   width = 60,
@@ -144,7 +143,7 @@ describe('camera behavior', () => {
   });
 
   test('given hero moves when movement completes then camera remains centered on latest hero tile', async () => {
-    const { world } = await setupMovementBehaviorApp({
+    await setupMovementBehaviorApp({
       loadGameOptions: createPanScenario(),
       viewportSize: { width: 1000, height: 700 }
     });
@@ -156,8 +155,7 @@ describe('camera behavior', () => {
     confirmTileClickByDispatch(22, 15);
     await flushMicrotasks();
 
-    const hero = findHero(world.scenario.entities);
-    expect(hero?.tile).toEqual({ x: 22, y: 15 });
+    expectHeroAt(22, 15);
 
     expect(worldElement?.style?.transform).not.toBe(before);
   });

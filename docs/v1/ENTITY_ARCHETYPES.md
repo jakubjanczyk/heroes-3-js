@@ -10,7 +10,7 @@ Instead, entity-specific rules live behind registries, while the engine stays ge
 The repo is intentionally split into three layers:
 
 - `engine/` (infrastructure): generic rendering, input, camera, pathfinding, occupancy.
-- `game/` (domain): gameplay rules, entity behaviors, systems, world-state.
+- `game/` (domain): gameplay rules, entity behaviors, systems, removed entities, tile occupant lookup.
 - `app/` (runtime): bus-first modules, UI/presentation, translating outcomes to UX.
 
 Hard boundaries (enforced by `tests/architecture/boundaries.test.js`):
@@ -122,8 +122,8 @@ Responsibilities:
 
 - build `map`
 - create derived occupancy-only entities (e.g. town footprint blockers)
-- build `occupancy`
-- create `worldState`
+- build `staticOccupancy` (everything except heroes; read-only `getAt`)
+- an outcome that takes its entity off the map sets `removesEntity: true`; the app turns that into `fact.entity.removed`
 
 Rule of thumb:
 

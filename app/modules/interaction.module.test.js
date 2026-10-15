@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { createMap } from '../../engine/map.js';
 import {
   INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
@@ -50,7 +51,7 @@ describe('interaction module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      occupancy: {},
+      map: createMap({ width: 3, height: 1, tiles: [0, 0, 0] }),
       definitions: {}
     });
     bus.emit(APP_FACT_MOVE_FINISHED, {
@@ -108,7 +109,7 @@ describe('interaction module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      occupancy: {},
+      map: createMap({ width: 3, height: 1, tiles: [0, 0, 0] }),
       definitions: {}
     });
     bus.emit(APP_FACT_MOVE_FINISHED, {
@@ -150,7 +151,7 @@ describe('interaction module', () => {
       scenario: {
         entities: [hero]
       },
-      occupancy: {},
+      map: createMap({ width: 3, height: 1, tiles: [0, 0, 0] }),
       definitions: {}
     });
     bus.emit(APP_FACT_MOVE_FINISHED, {
@@ -208,7 +209,7 @@ describe('interaction module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      occupancy: {},
+      map: createMap({ width: 3, height: 1, tiles: [0, 0, 0] }),
       definitions: {}
     });
     bus.emit(APP_FACT_MOVE_FINISHED, {

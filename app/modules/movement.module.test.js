@@ -9,6 +9,7 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_WORLD_READY
 } from '../events.js';
+import { buildWorld } from '../../game/build-world.js';
 import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../game/domain/interaction-kinds.js';
 import { registerMovementModule } from './movement.module.js';
 import { createFakeBus } from '../../tests/test-utils/fake-bus.js';
@@ -47,8 +48,7 @@ describe('movement module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      map: {},
-      occupancy: {}
+      map: {}
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 6, max: 15 });
     bus.emit(APP_COMMAND_MOVE_REQUESTED, {
@@ -104,8 +104,7 @@ describe('movement module', () => {
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [] },
-      map: {},
-      occupancy: {}
+      map: {}
     });
     bus.emit(APP_COMMAND_MOVE_REQUESTED, {
       targetTile: { x: 1, y: 0 },
@@ -138,8 +137,7 @@ describe('movement module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      map: {},
-      occupancy: {}
+      map: {}
     });
 
     bus.emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: { x: 1, y: 0 }, path: null });
@@ -180,8 +178,7 @@ describe('movement module', () => {
       scenario: {
         entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }]
       },
-      map: {},
-      occupancy: {}
+      map: {}
     });
     bus.emit(APP_COMMAND_MOVE_REQUESTED, {
       targetTile: { x: 1, y: 0 },
@@ -213,24 +210,14 @@ describe('movement module', () => {
       }
     );
 
-    bus.emit(APP_FACT_WORLD_READY, {
-      scenario: {
-        entities: [
-          { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } }
-        ]
-      },
-      map: {},
-      occupancy: {
-        getAt(tile) {
-          if (tile.x === 1 && tile.y === 0) {
-            return { id: 'resource-1', kind: 'RESOURCE', tile };
-          }
-
-          return null;
-        }
-      }
-    });
+    const scenario = {
+      terrain: { width: 2, height: 1, tiles: [0, 0] },
+      entities: [
+        { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } },
+        { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } }
+      ]
+    };
+    bus.emit(APP_FACT_WORLD_READY, { scenario, ...buildWorld({ scenario }) });
     bus.emit(APP_COMMAND_MOVE_REQUESTED, {
       targetTile: { x: 1, y: 0 },
       path: [{ x: 0, y: 0 }, { x: 1, y: 0 }]

@@ -1,16 +1,15 @@
+import { deepFreeze } from '../../engine/deep-freeze.js';
 import { buildWorld as buildWorldDefault } from '../../game/build-world.js';
 import { loadGame as loadGameDefault } from '../../game/load.js';
 import {
   APP_COMMAND_APP_START,
-  APP_FACT_HERO_MOVED,
-  APP_FACT_MONSTER_DEFEATED,
-  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_LOAD_FAILED,
   APP_FACT_WORLD_READY
 } from '../events.js';
-import { normalizeTile } from '../../game/domain/value-objects/tile.js';
 import { defineModule } from './shared/module-runtime.js';
 
+// Loads the scenario and publishes it as a frozen snapshot of everything that never changes.
+// It holds no live state: hero positions and removed entities come from facts.
 export const registerWorldModule = defineModule((
   { emit, env },
   {
@@ -19,61 +18,9 @@ export const registerWorldModule = defineModule((
   } = {}
 ) => {
   let hasStarted = false;
-  let worldState = null;
-
-  function getEntityById(entityId) {
-    return worldState?.getEntityById?.(entityId) ?? null;
-  }
-
-  function removeEntityFromWorld(entityId) {
-    worldState?.removeEntityById?.(entityId);
-  }
 
   return {
     subscriptions: [
-      {
-        type: APP_FACT_HERO_MOVED,
-        handler: (event) => {
-          const movedEntity = getEntityById(event.detail?.heroId);
-          const fromTile = normalizeTile(event.detail?.from);
-          const toTile = normalizeTile(event.detail?.to);
-          if (!movedEntity || !toTile) {
-            return;
-          }
-
-          const previousTile = normalizeTile(movedEntity.tile);
-
-          const didMove = worldState?.moveEntity?.({
-            entityId: movedEntity.id,
-            toTile
-          });
-          if (!didMove) {
-            return;
-          }
-
-          const restoreTile = fromTile ?? previousTile;
-          const shouldRestoreTile =
-            restoreTile && (restoreTile.x !== toTile.x || restoreTile.y !== toTile.y);
-
-          if (!shouldRestoreTile) {
-            return;
-          }
-
-          worldState?.restorePersistentEntitiesAt?.(restoreTile);
-        }
-      },
-      {
-        type: APP_FACT_MONSTER_DEFEATED,
-        handler: (event) => {
-          removeEntityFromWorld(event.detail?.entityId);
-        }
-      },
-      {
-        type: APP_FACT_RESOURCE_COLLECTED,
-        handler: (event) => {
-          removeEntityFromWorld(event.detail?.entityId);
-        }
-      },
       {
         type: APP_COMMAND_APP_START,
         handler: () => {
@@ -85,16 +32,15 @@ export const registerWorldModule = defineModule((
           void (async () => {
             try {
               const { scenario, definitions } = await loadGame({ fetch: env.fetch });
-              const built = buildWorld({ scenario });
-              const { map, occupancy, worldState: nextWorldState } = built;
-              worldState = nextWorldState;
 
-              emit(APP_FACT_WORLD_READY, {
+              const { map, staticOccupancy } = buildWorld({ scenario });
+
+              emit(APP_FACT_WORLD_READY, deepFreeze({
                 scenario,
                 definitions,
                 map,
-                occupancy
-              });
+                staticOccupancy
+              }));
             } catch (error) {
               emit(APP_FACT_WORLD_LOAD_FAILED, {
                 error
@@ -108,12 +54,7 @@ export const registerWorldModule = defineModule((
 }, {
   id: 'world',
   phase: 'domain',
-  consumes: [
-    APP_COMMAND_APP_START,
-    APP_FACT_HERO_MOVED,
-    APP_FACT_MONSTER_DEFEATED,
-    APP_FACT_RESOURCE_COLLECTED
-  ],
+  consumes: [APP_COMMAND_APP_START],
   produces: [
     APP_FACT_WORLD_READY,
     APP_FACT_WORLD_LOAD_FAILED

@@ -153,8 +153,8 @@ describe('camera module', () => {
       map: {}
     });
 
-    bus.emit(APP_FACT_MOVE_STARTED, {});
-    bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
+    bus.emit(APP_FACT_MOVE_STARTED, { heroId: 'hero-1', from: { x: 0, y: 0 } });
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', from: { x: 0, y: 0 }, to: { x: 1, y: 0 } });
     bus.emit(APP_FACT_MOVE_FINISHED, {});
 
     for (const emitted of bus.emitted) {
@@ -170,17 +170,16 @@ describe('camera module', () => {
     ]);
 
     expect(calls).toEqual([
-      'update',
+      ['centerOnTile', { x: 0, y: 0 }],
       'clearPan',
       'lockFollow',
       ['centerOnTile', { x: 0, y: 0 }],
       ['centerOnTile', { x: 1, y: 0 }],
-      'unlockFollow',
-      'update'
+      'unlockFollow'
     ]);
   });
 
-  test('toggles restore attributes and recenters hero on restore complete', () => {
+  test('toggles restore attributes and ends centered on the hero after replayed moves', () => {
     const bus = createFakeBus();
     const centeredOnTiles = [];
     const viewport = {
@@ -228,9 +227,10 @@ describe('camera module', () => {
     expect(viewport.dataset.viewportVisibility).toBe('hidden');
     expect(viewport.dataset.restoring).toBe('true');
 
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', from: { x: 2, y: 1 }, to: { x: 3, y: 1 } });
     bus.emit(APP_UI_RESTORE_COMPLETED, {});
 
-    expect(centeredOnTiles).toContainEqual({ x: 2, y: 1 });
+    expect(centeredOnTiles.at(-1)).toEqual({ x: 3, y: 1 });
     expect(viewport.dataset.viewportVisibility).toBe('visible');
     expect(viewport.dataset.restoring).toBeUndefined();
   });
@@ -285,7 +285,8 @@ describe('camera module', () => {
       tile: { x: 25, y: 9 }
     });
 
-    expect(centeredOnTiles).toEqual([{ x: 12, y: 9 }]);
+    // The first entry is the start-up centering on the hero.
+    expect(centeredOnTiles).toEqual([{ x: 0, y: 0 }, { x: 12, y: 9 }]);
     expect(bus.emitted).toContainEqual({
       type: APP_UI_CAMERA_UPDATED,
       detail: {

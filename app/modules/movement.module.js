@@ -1,10 +1,13 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
-import { findHero } from '../../game/domain/entity-queries.js';
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
+import { findHero } from '../../game/domain/entity-queries.js';
+import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
+import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
+  APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
@@ -23,30 +26,39 @@ export const registerMovementModule = defineModule((
   const movementSleep = typeof config?.movementSleep === 'function' ? config.movementSleep : undefined;
 
   let movement = null;
-  let occupancy = null;
+  let staticOccupancy = null;
   let heroId = null;
+  let heroTile = null;
+  let removedIds = NO_REMOVED_ENTITIES;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
+
+  const occupancy = {
+    getAt: (tile) =>
+      getOccupantAt({ tile, staticOccupancy, removedIds })
+  };
 
   return {
     subscriptions: [
       {
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
-          const { scenario, map, occupancy: worldOccupancy } = event.detail;
-          const hero = findHero(scenario.entities);
+          const world = event.detail;
+          staticOccupancy = world.staticOccupancy;
+          const hero = findHero(world.scenario.entities);
           heroId = hero?.id ?? null;
-          occupancy = worldOccupancy ?? null;
+          heroTile = hero?.tile ?? null;
+          removedIds = NO_REMOVED_ENTITIES;
 
-          if (!hero) {
+          if (!heroId) {
             movement = null;
             return;
           }
 
           movement = createMovementSystem({
-            entities: scenario.entities,
-            map,
-            occupancy: worldOccupancy,
+            getHero: () => ({ id: heroId, tile: heroTile }),
+            map: world.map,
+            occupancy,
             ...(movementSleep ? { sleep: movementSleep } : {}),
             stepDelayMs,
             getMaxMovableSteps: () => remainingMovementPoints,
@@ -55,15 +67,19 @@ export const registerMovementModule = defineModule((
                 amount
               });
             },
-            onMoveStart: ({ targetTile }) => {
+            onMoveStart: ({ hero, from, targetTile }) => {
               emit(APP_FACT_MOVE_STARTED, {
+                heroId: hero?.id,
+                from,
                 targetTile
               });
             },
-            onMoveFinish: ({ targetTile, interaction }) => {
+            onMoveFinish: ({ hero, targetTile, reachedTile, interaction }) => {
               const detail = {
                 moved: true,
-                targetTile
+                heroId: hero?.id,
+                targetTile,
+                reachedTile
               };
               if (interaction) {
                 detail.interaction = interaction;
@@ -84,6 +100,20 @@ export const registerMovementModule = defineModule((
               });
             }
           });
+        }
+      },
+      {
+        type: APP_FACT_HERO_MOVED,
+        handler: (event) => {
+          if (event.detail?.heroId === heroId && event.detail?.to) {
+            heroTile = event.detail.to;
+          }
+        }
+      },
+      {
+        type: APP_FACT_ENTITY_REMOVED,
+        handler: (event) => {
+          removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
         }
       },
       {
@@ -128,6 +158,8 @@ export const registerMovementModule = defineModule((
   phase: 'domain',
   consumes: [
     APP_FACT_WORLD_READY,
+    APP_FACT_HERO_MOVED,
+    APP_FACT_ENTITY_REMOVED,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
     APP_COMMAND_MOVE_REQUESTED
   ],

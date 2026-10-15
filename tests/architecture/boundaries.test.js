@@ -79,4 +79,17 @@ describe('architecture boundaries', () => {
       errorLabel: 'runtime modules should communicate over bus events only'
     });
   });
+
+  test('only the world module builds the static world', () => {
+    const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter((filePath) => {
+      const rel = relative(REPO_ROOT, filePath);
+      return !rel.endsWith('.test.js') && rel !== 'app/modules/world.module.js';
+    });
+
+    assertNoImportMatch({
+      files: moduleFiles,
+      pattern: /from\s+['"][^'"]*game\/build-world\.js['"]/,
+      errorLabel: 'modules read the frozen world-ready snapshot and track changes from facts'
+    });
+  });
 });

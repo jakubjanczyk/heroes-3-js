@@ -31,6 +31,7 @@ export const resourceBehavior = Object.freeze({
         entityId: entity.id,
         entityType: entity.type,
         tile,
+        removesEntity: true,
         amount: Number.isFinite(parsedAmount) ? parsedAmount : 0,
         resourceName
       };

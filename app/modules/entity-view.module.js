@@ -4,6 +4,7 @@ import {getMapCenteredOrigin, getTileCenter} from '../../engine/layers/layout.js
 import {getDefaultEntityLayerStyle as getDefaultEntityStyle} from '../presentation/entity-style.js';
 import {getEntityFadeOutSpec} from '../presentation/entities/registry.js';
 import {
+  APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -12,6 +13,7 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../events.js';
 import {defineModule} from './shared/module-runtime.js';
+import {NO_REMOVED_ENTITIES, applyEntityRemoved} from '../../game/domain/removed-entities.js';
 
 export const registerEntityViewModule = defineModule((
   { env, config },
@@ -33,7 +35,8 @@ export const registerEntityViewModule = defineModule((
   const fadeOutTimers = new Set();
 
   let map = null;
-  let entities = null;
+  let scenarioEntities = null;
+  let removedIds = NO_REMOVED_ENTITIES;
   let isRestoring = false;
 
   function applyHeroRestoreMotionOverride() {
@@ -69,7 +72,7 @@ export const registerEntityViewModule = defineModule((
     if (isRestoring) {
       heroEntity.style.transition = 'none';
     }
-    const hero = entities?.find((entity) => entity.id === heroId) ?? null;
+    const hero = scenarioEntities?.find((entity) => entity.id === heroId) ?? null;
     const heroStyle = hero ? getEntityStyle({ entity: hero, map }) : null;
     const offsetX = Number(heroStyle?.offsetX);
     const offsetY = Number(heroStyle?.offsetY);
@@ -81,14 +84,14 @@ export const registerEntityViewModule = defineModule((
   }
 
   function render() {
-    if (!entityLayer || !map || !entities) {
+    if (!entityLayer || !map || !scenarioEntities) {
       return;
     }
 
     renderEntityLayer({
       container: entityLayer,
       map,
-      entities,
+      entities: scenarioEntities.filter((entity) => !removedIds.has(entity.id)),
       createElement,
       getEntityStyle
     });
@@ -126,7 +129,8 @@ export const registerEntityViewModule = defineModule((
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
           map = event.detail.map;
-          entities = event.detail.scenario.entities;
+          scenarioEntities = event.detail.scenario.entities;
+          removedIds = NO_REMOVED_ENTITIES;
           setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
           render();
         }
@@ -141,6 +145,13 @@ export const registerEntityViewModule = defineModule((
           }
 
           render();
+          updateHeroPosition({ heroId, tile: toTile });
+        }
+      },
+      {
+        type: APP_FACT_ENTITY_REMOVED,
+        handler: (event) => {
+          removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
         }
       },
       {
@@ -190,6 +201,7 @@ export const registerEntityViewModule = defineModule((
   consumes: [
     APP_FACT_WORLD_READY,
     APP_FACT_HERO_MOVED,
+    APP_FACT_ENTITY_REMOVED,
     APP_FACT_MONSTER_DEFEATED,
     APP_FACT_RESOURCE_COLLECTED,
     APP_UI_RESTORE_STARTED,
