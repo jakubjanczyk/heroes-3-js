@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heroes 3 JS</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <div class="game-shell">
+        <div class="viewport" aria-label="Viewport">
+          <div class="world" aria-label="World">
+            <div class="terrain-layer" aria-label="Terrain"></div>
+            <div class="entity-layer" aria-label="Entities"></div>
+            <div class="effects-layer" aria-label="Effects"></div>
+          </div>
+        </div>
+        <div class="ui-layer" aria-label="UI">
+          <div class="minimap" aria-label="Minimap">
+            <div class="minimap__title">Minimap</div>
+            <div class="minimap__map" id="minimap-map">
+              <div class="minimap__terrain" id="minimap-terrain"></div>
+              <div class="minimap__towns" id="minimap-towns"></div>
+              <div class="minimap__viewport" id="minimap-viewport"></div>
+            </div>
+          </div>
+          <div class="hud">
+            <div class="hud__title">Heroes 3 JS</div>
+            <div class="hud__status" id="boot-status">Booting…</div>
+            <div class="hud__row">
+              <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
+              <div class="hud__resources" id="resource-totals-status">Resources: none</div>
+              <button class="hud__button" id="end-turn-button" type="button">End turn</button>
+              <button class="hud__button" id="reset-session-button" type="button">Reset</button>
+              <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="false">Music: Off</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
