@@ -562,4 +562,5 @@ describe('session persistence behavior', () => {
     await flushMicrotasks();
 
     expectHeroAt(4, 3);
-  });});
+  });
+});
