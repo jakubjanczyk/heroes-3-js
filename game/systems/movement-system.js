@@ -1,6 +1,5 @@
 import { findPath } from '../../engine/pathfinding.js';
 import { sameTile } from '../../engine/tile-utils.js';
-import { isArrivalInteractionEntity } from '../domain/entity-behaviors.js';
 import { toEntityIdOrNull } from '../domain/value-objects/entity-id.js';
 
 function isValidPlannedPath(path, fromTile, toTile, map) {
@@ -49,6 +48,7 @@ export function createMovementSystem({
   getHero,
   map,
   occupancy,
+  entityBehaviors,
   sleep = defaultSleep,
   stepDelayMs = 80,
   getMaxMovableSteps = () => Number.POSITIVE_INFINITY,
@@ -83,7 +83,7 @@ export function createMovementSystem({
     if (
       destinationOccupant &&
       destinationOccupant.id !== hero.id &&
-      !isArrivalInteractionEntity(destinationOccupant)
+      !entityBehaviors.isArrivalInteractionEntity(destinationOccupant)
     ) {
       return null;
     }

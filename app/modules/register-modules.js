@@ -1,15 +1,11 @@
 import { registerCameraModule } from './camera.module.js';
 import { registerEntityViewModule } from './entity-view.module.js';
-import { registerHudModule } from './hud.module.js';
 import { registerInteractionModalModule } from './interaction-modal.module.js';
 import { registerInteractionModule } from './interaction.module.js';
-import { registerMinimapViewModule } from './minimap-view.module.js';
 import { registerMovementModule } from './movement.module.js';
-import { registerMusicModule } from './music.module.js';
 import { registerPreviewViewModule } from './preview-view.module.js';
 import { registerSelectionModule } from './selection.module.js';
 import { registerTerrainViewModule } from './terrain-view.module.js';
-import { registerTurnModule } from './turn.module.js';
 import { registerWorldModule } from './world.module.js';
 import { registerWorldViewModule } from './world-view.module.js';
 
@@ -18,9 +14,8 @@ const PHASE_ORDER = Object.freeze({
   view: 1
 });
 
-const MODULES = [
+const CORE_MODULES = [
   registerWorldModule,
-  registerTurnModule,
   registerMovementModule,
   registerInteractionModule,
   registerSelectionModule,
@@ -29,10 +24,7 @@ const MODULES = [
   registerEntityViewModule,
   registerPreviewViewModule,
   registerWorldViewModule,
-  registerMinimapViewModule,
-  registerInteractionModalModule,
-  registerHudModule,
-  registerMusicModule
+  registerInteractionModalModule
 ];
 
 function getModuleId(meta, index) {
@@ -93,16 +85,12 @@ function orderModulesByPhase(modules) {
     .map((entry) => entry.registerModule);
 }
 
-assertModuleMetadata(MODULES);
-const ORDERED_MODULES = orderModulesByPhase(MODULES);
-
-export function listModuleMetadata() {
-  return ORDERED_MODULES.map((registerModule) => registerModule.meta);
-}
-
 export function registerModules({ bus, env, config }) {
+  const modules = [...CORE_MODULES, ...(config?.content?.modules ?? [])];
+  assertModuleMetadata(modules);
+
   const runtime = { bus, env, config };
-  const disposers = ORDERED_MODULES
+  const disposers = orderModulesByPhase(modules)
     .map((registerModule) => registerModule(runtime))
     .filter((dispose) => typeof dispose === 'function');
 

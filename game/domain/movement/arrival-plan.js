@@ -1,10 +1,10 @@
-import { getArrivalInteraction } from '../entity-behaviors/registry.js';
 import { toEntityIdOrNull } from '../value-objects/entity-id.js';
 
 export function buildArrivalPlan({
   occupancy,
   targetTile,
-  movingEntityId
+  movingEntityId,
+  entityBehaviors
 }) {
   const destinationOccupant = occupancy?.getAt?.(targetTile) ?? null;
   if (!destinationOccupant) {
@@ -20,7 +20,7 @@ export function buildArrivalPlan({
     return null;
   }
 
-  const interaction = getArrivalInteraction(destinationOccupant);
+  const interaction = entityBehaviors.getArrivalInteraction(destinationOccupant);
   if (!interaction) {
     return null;
   }

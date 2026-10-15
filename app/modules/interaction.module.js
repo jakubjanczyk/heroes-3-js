@@ -1,4 +1,4 @@
-import { resolveArrivalOutcome } from '../../game/domain/entity-behaviors.js';
+import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js';
 import { getInteractionEffects } from './shared/interaction-outcomes.js';
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -12,7 +12,8 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerInteractionModule = defineModule(({ emit }) => {
+export const registerInteractionModule = defineModule(({ emit, config }) => {
+  const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors);
   let entitiesById = new Map();
   let definitions = {};
   let factsOnModalClosed = [];
@@ -43,12 +44,12 @@ export const registerInteractionModule = defineModule(({ emit }) => {
             return;
           }
 
-          const outcome = resolveArrivalOutcome({
+          const outcome = entityBehaviors.resolveArrivalOutcome({
             entity,
             definitions,
             tile: interaction.targetTile ?? event.detail.targetTile
           });
-          const effects = getInteractionEffects(outcome);
+          const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects);
           if (!effects) {
             return;
           }

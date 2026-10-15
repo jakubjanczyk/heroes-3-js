@@ -1,5 +1,7 @@
 export const fadeOut = Object.freeze({
-  className: 'entity--monster-defeating'
+  className: 'entity--monster-defeating',
+  durationMs: 220,
+  durationConfigKey: 'monsterDefeatFadeOutMs'
 });
 
 export function getEntityLayerStyle() {

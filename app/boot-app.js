@@ -1,5 +1,6 @@
 import { createBus } from '../engine/bus.js';
 import { createEventLog } from '../engine/eventlog.js';
+import { heroesAppContent } from './heroes/content.js';
 import { APP_COMMAND_APP_START, shouldPersistFactEvent } from './events.js';
 import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
 import { registerModules } from './modules/register-modules.js';
@@ -61,6 +62,7 @@ export async function bootApp({
     AudioCtor
   };
   const config = {
+    content: heroesAppContent,
     maxMovementPoints: MAX_MOVEMENT_POINTS,
     musicTracks,
     musicManifestUrl,

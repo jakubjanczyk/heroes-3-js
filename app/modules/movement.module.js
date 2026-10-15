@@ -1,5 +1,6 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
+import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js';
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
 import { findHero } from '../../game/domain/entity-queries.js';
 import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
@@ -26,6 +27,7 @@ export const registerMovementModule = defineModule((
 ) => {
   const stepDelayMs = config?.movementStepDelayMs ?? 220;
   const movementSleep = typeof config?.movementSleep === 'function' ? config.movementSleep : undefined;
+  const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors);
 
   let movement = null;
   let staticOccupancy = null;
@@ -61,6 +63,7 @@ export const registerMovementModule = defineModule((
             getHero: () => ({ id: heroId, tile: heroTile }),
             map: world.map,
             occupancy,
+            entityBehaviors,
             ...(movementSleep ? { sleep: movementSleep } : {}),
             stepDelayMs,
             getMaxMovableSteps: () => remainingMovementPoints,
@@ -148,6 +151,7 @@ export const registerMovementModule = defineModule((
           const { targetTile, path } = event.detail;
           const arrivalPlan = buildArrivalPlan({
             occupancy,
+            entityBehaviors,
             targetTile,
             movingEntityId: heroId
           });

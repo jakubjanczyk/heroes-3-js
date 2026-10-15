@@ -1,11 +1,11 @@
-import { loadMusicTracks as loadMusicTracksDefault } from '../../game/audio/load-music-tracks.js';
-import { createMusicPlayer as createMusicPlayerDefault } from '../../game/audio/music-player.js';
+import { loadMusicTracks as loadMusicTracksDefault } from '../../../game/audio/load-music-tracks.js';
+import { createMusicPlayer as createMusicPlayerDefault } from '../../../game/audio/music-player.js';
 import {
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED
-} from '../events.js';
-import { defineModule } from './shared/module-runtime.js';
+} from '../../events.js';
+import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerMusicModule = defineModule((
   { emit, env, config },

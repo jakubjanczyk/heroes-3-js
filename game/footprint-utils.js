@@ -1,53 +1,28 @@
 import { tileKey } from '../engine/tile-utils.js';
 
-function canPlaceOnMap(map, tile) {
-  if (typeof map?.inBounds !== 'function') {
-    return true;
-  }
+export const FOOTPRINT_BLOCKER_KIND = 'FOOTPRINT_BLOCKER';
 
-  return map.inBounds(tile);
-}
-
-export function createFootprintBlockers({
-  entities,
-  map,
-  blockedOffsets,
-  occupiedTiles = null,
-  isFootprintEntity = () => false,
-  makeBlocker = () => null
-}) {
-  const occupied =
-    occupiedTiles instanceof Set
-      ? new Set(occupiedTiles)
-      : new Set((entities ?? []).map((entity) => tileKey(entity.tile)));
+// One blocker per footprint tile, skipping tiles off the map or already taken by an entity
+// or an earlier footprint.
+export function createFootprintBlockers({ entities, map, getFootprintOffsets }) {
+  const occupied = new Set((entities ?? []).map((entity) => tileKey(entity.tile)));
   const blockers = [];
 
   for (const entity of entities ?? []) {
-    if (!isFootprintEntity(entity)) {
-      continue;
-    }
-
-    for (let index = 0; index < blockedOffsets.length; index += 1) {
-      const offset = blockedOffsets[index];
-      const tile = {
-        x: entity.tile.x + offset.x,
-        y: entity.tile.y + offset.y
-      };
-
-      if (!canPlaceOnMap(map, tile)) {
-        continue;
-      }
-
+    for (const offset of getFootprintOffsets(entity)) {
+      const tile = { x: entity.tile.x + offset.x, y: entity.tile.y + offset.y };
       const key = tileKey(tile);
-      if (occupied.has(key)) {
+      if (!map.inBounds(tile) || occupied.has(key)) {
         continue;
       }
 
       occupied.add(key);
-      const blocker = makeBlocker({ entity, tile, offset, index });
-      if (blocker) {
-        blockers.push(blocker);
-      }
+      blockers.push({
+        id: `${entity.id}__footprint_${offset.x},${offset.y}`,
+        kind: FOOTPRINT_BLOCKER_KIND,
+        ownerId: entity.id,
+        tile
+      });
     }
   }
 
