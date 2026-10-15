@@ -1,13 +1,10 @@
 import { getArrivalInteraction } from '../domain/entity-behaviors/registry.js';
-import { sameTile } from '../../engine/tile-utils.js';
 
-export function createInteractionSystem({ entities, definitions = {} }) {
+// `getOccupantAt(tile)` says what stands on a tile; the system never sees the entity list.
+export function createInteractionSystem({ getOccupantAt, definitions = {} }) {
   function resolveArrivalAtDestination({ destinationTile, arrivingEntityId }) {
-    const interactionEntity =
-      entities.find(
-        (entity) => entity.id !== arrivingEntityId && sameTile(entity.tile, destinationTile)
-      ) ?? null;
-    if (!interactionEntity) {
+    const interactionEntity = getOccupantAt(destinationTile) ?? null;
+    if (!interactionEntity || interactionEntity.id === arrivingEntityId) {
       return null;
     }
 

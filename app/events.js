@@ -19,6 +19,7 @@ export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected';
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited';
+export const APP_FACT_ENTITY_REMOVED = 'fact.entity.removed';
 export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected';
 export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared';
 
@@ -38,6 +39,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
+  APP_FACT_ENTITY_REMOVED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_PREVIEW_CLEARED
 ]);

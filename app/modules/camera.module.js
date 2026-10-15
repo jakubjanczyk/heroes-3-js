@@ -1,6 +1,5 @@
 import { createCamera as createCameraDefault } from '../../engine/camera.js';
 import { attachCameraInput as attachCameraInputDefault } from '../../engine/input.js';
-import { findHero } from '../../game/domain/entity-queries.js';
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -15,6 +14,7 @@ import {
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
+import { findHero } from '../../game/domain/entity-queries.js';
 
 export const registerCameraModule = defineModule((
   { emit, env, config },
@@ -29,10 +29,17 @@ export const registerCameraModule = defineModule((
     ? Math.max(0, configuredStepDurationMs)
     : 220;
   let camera = null;
-  let hero = null;
   let map = null;
-  let isMoving = false;
   let detachCameraInput = null;
+
+  function centerOn(tile) {
+    if (!camera || !tile) {
+      return;
+    }
+
+    camera.centerOnTile?.(tile);
+    emitCameraUpdated();
+  }
 
   function emitCameraUpdated() {
     if (!camera) {
@@ -69,7 +76,6 @@ export const registerCameraModule = defineModule((
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
           const world = event.detail;
-          hero = findHero(world.scenario.entities);
           map = world.map;
 
           if (!viewport || !map) {
@@ -86,9 +92,8 @@ export const registerCameraModule = defineModule((
             stepDurationMs: cameraStepDurationMs
           });
 
-          camera.setFollowTileGetter(() => hero?.tile ?? null);
-          camera.update();
-          emitCameraUpdated();
+          // Start on the hero; from here on every hero fact carries the tile to center on.
+          centerOn(findHero(world.scenario.entities)?.tile);
 
           const inputCamera = {
             moveBy(dx, dy) {
@@ -121,11 +126,7 @@ export const registerCameraModule = defineModule((
       {
         type: APP_UI_RESTORE_COMPLETED,
         handler: () => {
-          if (camera && hero?.tile) {
-            camera.centerOnTile?.(hero.tile);
-            emitCameraUpdated();
-          }
-
+          // Replayed hero moves already centered the camera on the hero's last tile.
           viewport.dataset.viewportVisibility = 'visible';
           delete viewport.dataset.restoring;
         }
@@ -158,37 +159,21 @@ export const registerCameraModule = defineModule((
       },
       {
         type: APP_FACT_MOVE_STARTED,
-        handler: () => {
-          if (!camera) {
-            return;
-          }
-
-          isMoving = true;
-          emitWorldMotionUpdated({ followHero: true });
-          camera.clearPan?.();
-          camera.lockFollow?.();
-          if (hero?.tile) {
-            camera.centerOnTile?.(hero.tile);
-            emitCameraUpdated();
-          }
-        }
-      },
-      {
-        type: APP_FACT_HERO_MOVED,
         handler: (event) => {
           if (!camera) {
             return;
           }
 
-          const { to } = event.detail;
-          if (isMoving) {
-            camera.centerOnTile?.(to);
-            emitCameraUpdated();
-            return;
-          }
-
-          camera.update?.();
-          emitCameraUpdated();
+          emitWorldMotionUpdated({ followHero: true });
+          camera.clearPan?.();
+          camera.lockFollow?.();
+          centerOn(event.detail?.from);
+        }
+      },
+      {
+        type: APP_FACT_HERO_MOVED,
+        handler: (event) => {
+          centerOn(event.detail?.to);
         }
       },
       {
@@ -198,11 +183,8 @@ export const registerCameraModule = defineModule((
             return;
           }
 
-          isMoving = false;
           emitWorldMotionUpdated({ followHero: false });
           camera.unlockFollow?.();
-          camera.update?.();
-          emitCameraUpdated();
         }
       }
     ],

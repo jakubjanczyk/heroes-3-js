@@ -1,6 +1,5 @@
 import { findPath } from '../../engine/pathfinding.js';
 import { sameTile } from '../../engine/tile-utils.js';
-import { findHero } from '../domain/entity-queries.js';
 import { toEntityIdOrNull } from '../domain/value-objects/entity-id.js';
 
 function isValidPlannedPath(path, fromTile, toTile, map) {
@@ -44,8 +43,9 @@ function getFinalSettleDelayMs(stepDelayMs) {
   return clampedStepDelayMs;
 }
 
+// `getHero` returns the moving hero ({ id, tile }); `occupancy.getAt(tile)` says what blocks a tile.
 export function createMovementSystem({
-  entities,
+  getHero,
   map,
   occupancy,
   sleep = defaultSleep,
@@ -57,10 +57,6 @@ export function createMovementSystem({
   onStep = () => {}
 }) {
   let isMoving = false;
-
-  function getHero() {
-    return findHero(entities);
-  }
 
   async function moveHeroTo(toTile, { path: plannedPath = null, arrivalPlan = null } = {}) {
     if (isMoving) {

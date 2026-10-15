@@ -26,6 +26,7 @@ export const monsterBehavior = Object.freeze({
         entityId: entity.id,
         entityType: entity.type,
         tile,
+        removesEntity: true,
         modal: {
           title: 'Interaction',
           message: `${monsterName} defeated`
