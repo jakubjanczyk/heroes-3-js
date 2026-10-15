@@ -1,7 +1,7 @@
 import { loadMusicTracks } from '../../../game/audio/load-music-tracks.js';
 import { createMusicPlayer } from '../../../game/audio/music-player.js';
 import { APP_FACT_WORLD_READY } from '../../events.js';
-import { HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED, HEROES_UI_MUSIC_STATE_CHANGED } from '../events.js';
+import { APP_COMMAND_MUSIC_TOGGLE_REQUESTED, APP_UI_MUSIC_STATE_CHANGED } from '../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerMusicModule = defineModule(({ emit, env, config }) => {
@@ -38,21 +38,21 @@ export const registerMusicModule = defineModule(({ emit, env, config }) => {
             });
 
             await Promise.resolve(musicPlayer?.start?.());
-            emit(HEROES_UI_MUSIC_STATE_CHANGED, {
+            emit(APP_UI_MUSIC_STATE_CHANGED, {
               enabled: Boolean(musicPlayer?.isEnabled?.())
             });
           })();
         }
       },
       {
-        type: HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED,
+        type: APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
         handler: () => {
           if (!musicPlayer) {
             return;
           }
 
           Promise.resolve(musicPlayer.toggle()).finally(() => {
-            emit(HEROES_UI_MUSIC_STATE_CHANGED, {
+            emit(APP_UI_MUSIC_STATE_CHANGED, {
               enabled: Boolean(musicPlayer?.isEnabled?.())
             });
           });
@@ -65,9 +65,9 @@ export const registerMusicModule = defineModule(({ emit, env, config }) => {
   phase: 'view',
   consumes: [
     APP_FACT_WORLD_READY,
-    HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED
+    APP_COMMAND_MUSIC_TOGGLE_REQUESTED
   ],
   produces: [
-    HEROES_UI_MUSIC_STATE_CHANGED
+    APP_UI_MUSIC_STATE_CHANGED
   ]
 });

@@ -4,10 +4,10 @@ import {
   APP_FACT_WORLD_READY
 } from '../../events.js';
 import {
-  HEROES_COMMAND_END_TURN_REQUESTED,
-  HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED,
-  HEROES_FACT_RESOURCE_COLLECTED,
-  HEROES_UI_MUSIC_STATE_CHANGED
+  APP_COMMAND_END_TURN_REQUESTED,
+  APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_UI_MUSIC_STATE_CHANGED
 } from '../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
@@ -47,7 +47,7 @@ export const registerHudModule = defineModule(({ emit, env }) => {
         type: 'click',
         handler: (event) => {
           event?.stopPropagation?.();
-          emit(HEROES_COMMAND_END_TURN_REQUESTED, {});
+          emit(APP_COMMAND_END_TURN_REQUESTED, {});
         }
       },
       {
@@ -55,7 +55,7 @@ export const registerHudModule = defineModule(({ emit, env }) => {
         type: 'click',
         handler: (event) => {
           event?.stopPropagation?.();
-          emit(HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
+          emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {});
         }
       },
       {
@@ -87,7 +87,7 @@ export const registerHudModule = defineModule(({ emit, env }) => {
         }
       },
       {
-        type: HEROES_UI_MUSIC_STATE_CHANGED,
+        type: APP_UI_MUSIC_STATE_CHANGED,
         handler: (event) => {
           if (!musicToggleButton) {
             return;
@@ -121,7 +121,7 @@ export const registerHudModule = defineModule(({ emit, env }) => {
         }
       },
       {
-        type: HEROES_FACT_RESOURCE_COLLECTED,
+        type: APP_FACT_RESOURCE_COLLECTED,
         handler: (event) => {
           const resourceType = event.detail.entityType;
           if (!resourceType) {
@@ -150,13 +150,13 @@ export const registerHudModule = defineModule(({ emit, env }) => {
   phase: 'view',
   consumes: [
     APP_FACT_MOVEMENT_POINTS_CHANGED,
-    HEROES_UI_MUSIC_STATE_CHANGED,
+    APP_UI_MUSIC_STATE_CHANGED,
     APP_FACT_WORLD_READY,
-    HEROES_FACT_RESOURCE_COLLECTED
+    APP_FACT_RESOURCE_COLLECTED
   ],
   produces: [
-    HEROES_COMMAND_END_TURN_REQUESTED,
-    HEROES_COMMAND_MUSIC_TOGGLE_REQUESTED,
+    APP_COMMAND_END_TURN_REQUESTED,
+    APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
     APP_COMMAND_RESET_SESSION_REQUESTED
   ]
 });
