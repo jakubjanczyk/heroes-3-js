@@ -1,70 +1,66 @@
 import { describe, expect, test } from 'vitest';
 
-import { createTurnSystem } from './turn-system.js';
+import {
+  applyMovementPointsChanged,
+  applyTurnEnded,
+  createTurnState,
+  decideEndTurn,
+  decideSpendMovementPoints
+} from './turn-system.js';
 
 describe('turn system', () => {
-  test('starts with 15 movement points by default', () => {
-    const turn = createTurnSystem();
-
-    expect(turn.getRemainingMovementPoints()).toBe(15);
-  });
-
-  test('spends movement points and blocks overspend', () => {
-    const turn = createTurnSystem();
-
-    expect(turn.canMoveSteps(3)).toBe(true);
-    expect(turn.spendMovementPoints(3)).toBe(true);
-    expect(turn.getRemainingMovementPoints()).toBe(12);
-    expect(turn.canMoveSteps(13)).toBe(false);
-    expect(turn.spendMovementPoints(13)).toBe(false);
-    expect(turn.getRemainingMovementPoints()).toBe(12);
-  });
-
-  test('endTurn resets movement points to max', () => {
-    const turn = createTurnSystem({ maxMovementPoints: 20 });
-
-    expect(turn.spendMovementPoints(6)).toBe(true);
-    expect(turn.getRemainingMovementPoints()).toBe(14);
-
-    turn.endTurn();
-
-    expect(turn.getRemainingMovementPoints()).toBe(20);
-  });
-
-  test('supports restoring remaining movement points and turn number', () => {
-    const turn = createTurnSystem({
+  test('starts on turn 1 with full movement points', () => {
+    expect(createTurnState({ maxMovementPoints: 15 })).toEqual({
       maxMovementPoints: 15,
-      remainingMovementPoints: 11,
-      turnNumber: 4
+      remainingMovementPoints: 15,
+      turnNumber: 1
     });
-
-    expect(turn.getRemainingMovementPoints()).toBe(11);
-    expect(turn.getTurnNumber()).toBe(4);
-
-    turn.endTurn();
-
-    expect(turn.getTurnNumber()).toBe(5);
-    expect(turn.getRemainingMovementPoints()).toBe(15);
   });
 
-  test('restores zero remaining movement points without resetting to max', () => {
-    const turn = createTurnSystem({
-      maxMovementPoints: 15,
-      remainingMovementPoints: 0,
-      turnNumber: 3
-    });
-
-    expect(turn.getTurnNumber()).toBe(3);
-    expect(turn.getRemainingMovementPoints()).toBe(0);
+  test('falls back to 15 max movement points for invalid config', () => {
+    expect(createTurnState({ maxMovementPoints: 'x' }).maxMovementPoints).toBe(15);
+    expect(createTurnState().maxMovementPoints).toBe(15);
   });
 
-  test('supports explicit synchronization of replayed turn state', () => {
-    const turn = createTurnSystem({ maxMovementPoints: 15 });
+  test('deciding to spend movement points returns the new remaining value without changing state', () => {
+    const state = createTurnState({ maxMovementPoints: 15 });
 
-    turn.setTurnNumber(6);
-    turn.setRemainingMovementPoints(4);
+    expect(decideSpendMovementPoints(state, 3)).toEqual({ remainingMovementPoints: 12 });
+    expect(state.remainingMovementPoints).toBe(15);
+  });
 
-    expect(turn.getTurnNumber()).toBe(6);
-    expect(turn.getRemainingMovementPoints()).toBe(4);
+  test('refuses to overspend and ignores non-positive or fractional-below-one amounts', () => {
+    const state = applyMovementPointsChanged(createTurnState({ maxMovementPoints: 15 }), 2);
+
+    expect(decideSpendMovementPoints(state, 3)).toBe(null);
+    expect(decideSpendMovementPoints(state, 0)).toBe(null);
+    expect(decideSpendMovementPoints(state, -1)).toBe(null);
+    expect(decideSpendMovementPoints(state, 0.5)).toBe(null);
+    expect(decideSpendMovementPoints(state, 1.9)).toEqual({ remainingMovementPoints: 1 });
+  });
+
+  test('deciding to end the turn returns the next turn number and full movement points without changing state', () => {
+    const state = applyMovementPointsChanged(createTurnState({ maxMovementPoints: 20 }), 6);
+
+    expect(decideEndTurn(state)).toEqual({ turnNumber: 2, remainingMovementPoints: 20 });
+    expect(state).toEqual({ maxMovementPoints: 20, remainingMovementPoints: 6, turnNumber: 1 });
+  });
+
+  test('applying facts returns updated state, including zero movement points', () => {
+    let state = createTurnState({ maxMovementPoints: 15 });
+
+    state = applyMovementPointsChanged(state, 0);
+    state = applyTurnEnded(state, 4);
+
+    expect(state).toEqual({ maxMovementPoints: 15, remainingMovementPoints: 0, turnNumber: 4 });
+    expect(decideEndTurn(state)).toEqual({ turnNumber: 5, remainingMovementPoints: 15 });
+  });
+
+  test('applying facts clamps movement points to the max and ignores invalid values', () => {
+    const state = createTurnState({ maxMovementPoints: 15 });
+
+    expect(applyMovementPointsChanged(state, 99).remainingMovementPoints).toBe(15);
+    expect(applyMovementPointsChanged(state, 'x')).toBe(state);
+    expect(applyTurnEnded(state, 'x')).toBe(state);
   });
 });
