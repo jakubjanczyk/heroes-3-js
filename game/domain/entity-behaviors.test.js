@@ -63,6 +63,7 @@ describe('entity behaviors', () => {
       entityId: 'monster-1',
       entityType: 'SKELETON',
       tile: { x: 2, y: 3 },
+      removesEntity: true,
       modal: {
         title: 'Interaction',
         message: 'Skeleton defeated'
@@ -114,6 +115,7 @@ describe('entity behaviors', () => {
       entityId: 'resource-1',
       entityType: 'GOLD_PILE',
       tile: { x: 1, y: 1 },
+      removesEntity: true,
       amount: 100,
       resourceName: 'Gold pile'
     });

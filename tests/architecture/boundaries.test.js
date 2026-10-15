@@ -80,15 +80,16 @@ describe('architecture boundaries', () => {
     });
   });
 
-  test('app runtime modules build world state only through the world replica', () => {
-    const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter(
-      (filePath) => !filePath.endsWith('.test.js')
-    );
+  test('only the world module builds the static world', () => {
+    const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter((filePath) => {
+      const rel = relative(REPO_ROOT, filePath);
+      return !rel.endsWith('.test.js') && rel !== 'app/modules/world.module.js';
+    });
 
     assertNoImportMatch({
       files: moduleFiles,
-      pattern: /from\s+['"][^'"]*game\/(?:build-world|domain\/world-state)\.js['"]/,
-      errorLabel: 'modules must keep their own world replica instead of building shared world state'
+      pattern: /from\s+['"][^'"]*game\/build-world\.js['"]/,
+      errorLabel: 'modules read the frozen world-ready snapshot and track changes from facts'
     });
   });
 });

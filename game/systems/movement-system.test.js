@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { createMap } from '../../engine/map.js';
 import { createOccupancyIndex } from '../../engine/occupancy.js';
+import { findHero } from '../domain/entity-queries.js';
 import {
   MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
@@ -22,7 +23,7 @@ describe('movement system', () => {
     const steps = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -50,7 +51,7 @@ describe('movement system', () => {
     const spent = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -76,7 +77,7 @@ describe('movement system', () => {
     const occupancy = createOccupancyIndex(entities);
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {}
@@ -99,7 +100,7 @@ describe('movement system', () => {
     const occupancy = createOccupancyIndex(entities);
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {}
@@ -134,7 +135,7 @@ describe('movement system', () => {
     };
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep
@@ -165,7 +166,7 @@ describe('movement system', () => {
     const steps = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -191,7 +192,7 @@ describe('movement system', () => {
     const occupancy = createOccupancyIndex(entities);
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {}
@@ -223,7 +224,7 @@ describe('movement system', () => {
     const steps = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -250,7 +251,7 @@ describe('movement system', () => {
     const spent = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -286,7 +287,7 @@ describe('movement system', () => {
     const finishes = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -339,7 +340,7 @@ describe('movement system', () => {
     const finishes = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -384,7 +385,7 @@ describe('movement system', () => {
     const finishes = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -431,7 +432,7 @@ describe('movement system', () => {
     const occupancy = createOccupancyIndex(entities);
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {}
@@ -468,7 +469,7 @@ describe('movement system', () => {
     const finishes = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -514,7 +515,7 @@ describe('movement system', () => {
     const sleepCalls = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       stepDelayMs: 220,
@@ -550,7 +551,7 @@ describe('movement system', () => {
     const finishes = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},
@@ -583,7 +584,7 @@ describe('movement system', () => {
     const finishes = [];
 
     const movement = createMovementSystem({
-      entities,
+      getHero: () => findHero(entities),
       map,
       occupancy,
       sleep: async () => {},

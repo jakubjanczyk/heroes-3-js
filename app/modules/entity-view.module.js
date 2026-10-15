@@ -4,6 +4,7 @@ import {getMapCenteredOrigin, getTileCenter} from '../../engine/layers/layout.js
 import {getDefaultEntityLayerStyle as getDefaultEntityStyle} from '../presentation/entity-style.js';
 import {getEntityFadeOutSpec} from '../presentation/entities/registry.js';
 import {
+  APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -12,7 +13,8 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../events.js';
 import {defineModule} from './shared/module-runtime.js';
-import {WORLD_REPLICA_EVENTS, createWorldReplicaTracker} from './shared/world-replica-tracker.js';
+import {applyHeroMoved, createHeroPositions, getHeroTile} from '../../game/domain/hero-positions.js';
+import {NO_REMOVED_ENTITIES, applyEntityRemoved} from '../../game/domain/removed-entities.js';
 
 export const registerEntityViewModule = defineModule((
   { env, config },
@@ -32,11 +34,22 @@ export const registerEntityViewModule = defineModule((
     RESOURCE: config?.resourceCollectFadeOutMs ?? 220
   });
   const fadeOutTimers = new Set();
-  const world = createWorldReplicaTracker();
 
   let map = null;
-  let entities = null;
+  let scenarioEntities = null;
+  let heroPositions = {};
+  let removedIds = NO_REMOVED_ENTITIES;
   let isRestoring = false;
+
+  // Entities as they stand now: scenario entities minus removed ones, heroes at their latest tile.
+  function getCurrentEntities() {
+    return scenarioEntities
+      .filter((entity) => !removedIds.has(entity.id))
+      .map((entity) => {
+        const heroTile = getHeroTile(heroPositions, entity.id);
+        return heroTile ? { ...entity, tile: heroTile } : entity;
+      });
+  }
 
   function applyHeroRestoreMotionOverride() {
     if (!entityLayer || !isRestoring) {
@@ -71,7 +84,7 @@ export const registerEntityViewModule = defineModule((
     if (isRestoring) {
       heroEntity.style.transition = 'none';
     }
-    const hero = entities?.find((entity) => entity.id === heroId) ?? null;
+    const hero = scenarioEntities?.find((entity) => entity.id === heroId) ?? null;
     const heroStyle = hero ? getEntityStyle({ entity: hero, map }) : null;
     const offsetX = Number(heroStyle?.offsetX);
     const offsetY = Number(heroStyle?.offsetY);
@@ -83,14 +96,14 @@ export const registerEntityViewModule = defineModule((
   }
 
   function render() {
-    if (!entityLayer || !map || !entities) {
+    if (!entityLayer || !map || !scenarioEntities) {
       return;
     }
 
     renderEntityLayer({
       container: entityLayer,
       map,
-      entities,
+      entities: getCurrentEntities(),
       createElement,
       getEntityStyle
     });
@@ -124,13 +137,13 @@ export const registerEntityViewModule = defineModule((
 
   return {
     subscriptions: [
-      ...world.subscriptions,
       {
         type: APP_FACT_WORLD_READY,
-        handler: () => {
-          const replica = world.get();
-          map = replica.map;
-          entities = replica.entities;
+        handler: (event) => {
+          map = event.detail.map;
+          scenarioEntities = event.detail.scenario.entities;
+          heroPositions = createHeroPositions(scenarioEntities);
+          removedIds = NO_REMOVED_ENTITIES;
           setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
           render();
         }
@@ -138,6 +151,7 @@ export const registerEntityViewModule = defineModule((
       {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
+          heroPositions = applyHeroMoved(heroPositions, event.detail);
           const heroId = event.detail?.heroId;
           const toTile = event.detail?.to;
           if (updateHeroPosition({ heroId, tile: toTile })) {
@@ -145,6 +159,12 @@ export const registerEntityViewModule = defineModule((
           }
 
           render();
+        }
+      },
+      {
+        type: APP_FACT_ENTITY_REMOVED,
+        handler: (event) => {
+          removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
         }
       },
       {
@@ -192,9 +212,9 @@ export const registerEntityViewModule = defineModule((
   id: 'entity-view',
   phase: 'view',
   consumes: [
-    ...WORLD_REPLICA_EVENTS,
     APP_FACT_WORLD_READY,
     APP_FACT_HERO_MOVED,
+    APP_FACT_ENTITY_REMOVED,
     APP_FACT_MONSTER_DEFEATED,
     APP_FACT_RESOURCE_COLLECTED,
     APP_UI_RESTORE_STARTED,

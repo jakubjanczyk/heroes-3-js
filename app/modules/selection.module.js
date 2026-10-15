@@ -3,6 +3,7 @@ import { isArrivalInteractionEntity } from '../../game/domain/entity-behaviors.j
 import {
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
+  APP_FACT_ENTITY_REMOVED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_HERO_MOVED,
@@ -15,19 +16,30 @@ import {
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
 import { sameTile } from '../../engine/tile-utils.js';
+import { findHero } from '../../game/domain/entity-queries.js';
+import { applyHeroMoved, createHeroPositions, getHeroTile } from '../../game/domain/hero-positions.js';
+import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
+import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import { defineModule } from './shared/module-runtime.js';
-import { WORLD_REPLICA_EVENTS, createWorldReplicaTracker } from './shared/world-replica-tracker.js';
 
 export const registerSelectionModule = defineModule(({ emit }) => {
-  const world = createWorldReplicaTracker();
+  let map = null;
+  let staticOccupancy = null;
+  let heroId = null;
+  let heroPositions = {};
+  let removedIds = NO_REMOVED_ENTITIES;
   let previewPath = null;
   let previewTarget = null;
   let isMoving = false;
   let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
 
-  function getHero() {
-    return world.get()?.getHero() ?? null;
+  function getActiveHeroTile() {
+    return getHeroTile(heroPositions, heroId);
+  }
+
+  function getOccupant(tile) {
+    return getOccupantAt({ tile, staticOccupancy, heroPositions, removedIds, excludeHeroId: heroId });
   }
 
   function emitPreview() {
@@ -65,39 +77,42 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   }
 
   function buildPath(toTile) {
-    const replica = world.get();
-    const hero = replica?.getHero();
-    if (!replica || !hero) {
+    const heroTile = getActiveHeroTile();
+    if (!map || !heroTile) {
       return null;
     }
 
-    const destinationOccupant = replica.getEntityAt(toTile);
-    if (
-      destinationOccupant &&
-      destinationOccupant.id !== hero.id &&
-      !isArrivalInteractionEntity(destinationOccupant)
-    ) {
+    const destinationOccupant = getOccupant(toTile);
+    if (destinationOccupant && !isArrivalInteractionEntity(destinationOccupant)) {
       return null;
     }
 
     return findPath({
-      fromTile: hero.tile,
+      fromTile: heroTile,
       toTile,
-      map: replica.map,
-      isBlocked: (tile) => {
-        const occupant = replica.getEntityAt(tile);
-        return occupant !== null && occupant.id !== hero.id;
-      }
+      map,
+      isBlocked: (tile) => getOccupant(tile) !== null
     });
   }
 
   return {
     subscriptions: [
-      ...world.subscriptions,
       {
         type: APP_FACT_WORLD_READY,
-        handler: () => {
+        handler: (event) => {
+          const world = event.detail;
+          map = world.map;
+          staticOccupancy = world.staticOccupancy;
+          heroId = findHero(world.scenario.entities)?.id ?? null;
+          heroPositions = createHeroPositions(world.scenario.entities);
+          removedIds = NO_REMOVED_ENTITIES;
           resetPreview();
+        }
+      },
+      {
+        type: APP_FACT_ENTITY_REMOVED,
+        handler: (event) => {
+          removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
         }
       },
       {
@@ -112,7 +127,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_COMMAND_TILE_CLICKED,
         handler: (event) => {
-          if (!getHero() || isMoving || isInteractionModalOpen) {
+          if (!getActiveHeroTile() || isMoving || isInteractionModalOpen) {
             return;
           }
 
@@ -145,6 +160,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
+          heroPositions = applyHeroMoved(heroPositions, event.detail);
           const to = event.detail.to;
           if (!previewPath || previewPath.length === 0) {
             return;
@@ -170,8 +186,8 @@ export const registerSelectionModule = defineModule(({ emit }) => {
             requestClearPreview();
             return;
           }
-          const hero = getHero();
-          if (previewTarget && hero && !sameTile(hero.tile, previewTarget)) {
+          const heroTile = getActiveHeroTile();
+          if (previewTarget && heroTile && !sameTile(heroTile, previewTarget)) {
             emitPreview();
             return;
           }
@@ -196,7 +212,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
         type: APP_FACT_PREVIEW_TARGET_SELECTED,
         handler: (event) => {
           const tile = event.detail?.tile;
-          if (!getHero() || !tile) {
+          if (!getActiveHeroTile() || !tile) {
             return;
           }
 
@@ -216,8 +232,8 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   id: 'selection',
   phase: 'domain',
   consumes: [
-    ...WORLD_REPLICA_EVENTS,
     APP_FACT_WORLD_READY,
+    APP_FACT_ENTITY_REMOVED,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
     APP_COMMAND_TILE_CLICKED,
     APP_FACT_MOVE_STARTED,

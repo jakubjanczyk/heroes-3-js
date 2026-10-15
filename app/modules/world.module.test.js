@@ -108,7 +108,10 @@ describe('world module', () => {
     await flushMicrotasks();
 
     const snapshot = getLastEmittedByType(bus, APP_FACT_WORLD_READY)?.detail;
-    expect(Object.keys(snapshot).sort()).toEqual(['definitions', 'map', 'scenario']);
+    expect(Object.keys(snapshot).sort()).toEqual(['definitions', 'map', 'scenario', 'staticOccupancy']);
+    expect(Object.keys(snapshot.staticOccupancy)).toEqual(['getAt']);
+    expect(snapshot.staticOccupancy.getAt({ x: 3, y: 0 })?.id).toBe('resource-1');
+    expect(snapshot.staticOccupancy.getAt({ x: 0, y: 0 })).toBe(null);
     expect(Object.isFrozen(snapshot)).toBe(true);
     expect(Object.isFrozen(snapshot.scenario.entities)).toBe(true);
     expect(Object.isFrozen(snapshot.scenario.entities[0].tile)).toBe(true);
