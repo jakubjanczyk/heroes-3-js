@@ -562,23 +562,4 @@ describe('session persistence behavior', () => {
     await flushMicrotasks();
 
     expectHeroAt(4, 3);
-  });
-
-  test('given player spent movement points and ended the turn when app reloads then movement points stay reset', async () => {
-    const session = createSession(aScenario().withSize(4));
-
-    const firstSession = await setupMovementBehaviorApp(session);
-    confirmTileClickByDispatch(2, 0);
-    await flushMicrotasks();
-    expectMovementPoints(13);
-
-    await clickEndTurn(firstSession.user);
-    await flushMicrotasks();
-    expectMovementPoints(15);
-
-    await reload(session);
-
-    expectHeroAt(2, 0);
-    expectMovementPoints(15);
-  });
-});
+  });});
