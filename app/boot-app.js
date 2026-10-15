@@ -91,8 +91,6 @@ export async function bootApp({
       appBus
     });
 
-    console.log(`boot ok: ${world.scenario.meta.id} (entities: ${world.scenario.entities.length})`);
-
     return {
       ...world,
       bus: appBus,
