@@ -1,5 +1,5 @@
-import { loadMusicTracks as loadMusicTracksDefault } from '../../../game/audio/load-music-tracks.js';
-import { createMusicPlayer as createMusicPlayerDefault } from '../../../game/audio/music-player.js';
+import { loadMusicTracks } from '../../../game/audio/load-music-tracks.js';
+import { createMusicPlayer } from '../../../game/audio/music-player.js';
 import {
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
   APP_FACT_WORLD_READY,
@@ -7,13 +7,7 @@ import {
 } from '../../events.js';
 import { defineModule } from '../../modules/shared/module-runtime.js';
 
-export const registerMusicModule = defineModule((
-  { emit, env, config },
-  {
-    loadMusicTracks = loadMusicTracksDefault,
-    createMusicPlayer = createMusicPlayerDefault
-  } = {}
-) => {
+export const registerMusicModule = defineModule(({ emit, env, config }) => {
   let musicPlayer = null;
   let hasInitialized = false;
 

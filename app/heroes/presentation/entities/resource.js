@@ -3,8 +3,7 @@ import { typeToClass } from './shared.js';
 
 export const fadeOut = Object.freeze({
   className: 'entity--resource-collecting',
-  durationMs: 220,
-  durationConfigKey: 'resourceCollectFadeOutMs'
+  durationMs: 220
 });
 
 export function getEntityLayerStyle({ entity }) {

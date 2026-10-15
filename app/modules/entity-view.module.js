@@ -1,4 +1,4 @@
-import {renderEntityLayer as renderEntityLayerDefault} from '../../engine/layers/entity-layer.js';
+import {renderEntityLayer} from '../../engine/layers/entity-layer.js';
 import {setStyleVar} from '../../engine/layers/dom-layer-utils.js';
 import {getMapCenteredOrigin, getTileCenter} from '../../engine/layers/layout.js';
 import {
@@ -11,12 +11,7 @@ import {
 import {defineModule} from './shared/module-runtime.js';
 import {NO_REMOVED_ENTITIES, applyEntityRemoved} from '../../game/domain/removed-entities.js';
 
-export const registerEntityViewModule = defineModule((
-  { env, config },
-  {
-    renderEntityLayer = renderEntityLayerDefault
-  } = {}
-) => {
+export const registerEntityViewModule = defineModule(({ env, config }) => {
   const presentation = config?.content?.entityPresentation;
   const getEntityStyle = presentation?.getEntityStyle ?? (() => null);
   const entityLayer = env.document?.querySelector('.entity-layer');
@@ -103,9 +98,7 @@ export const registerEntityViewModule = defineModule((
 
     const entityKind = scenarioEntities?.find((entity) => entity.id === entityId)?.kind;
     const fadeOutSpec = presentation?.getFadeOutSpec?.({ entityKind }) ?? null;
-    const durationMs = fadeOutSpec
-      ? Number(config?.[fadeOutSpec.durationConfigKey] ?? fadeOutSpec.durationMs ?? 0)
-      : 0;
+    const durationMs = Number(config?.fadeOutMsByKind?.[entityKind] ?? fadeOutSpec?.durationMs ?? 0);
     if (isRestoring || !fadeOutSpec || durationMs <= 0) {
       el.remove();
       return;

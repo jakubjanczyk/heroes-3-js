@@ -2,10 +2,7 @@ import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js';
 import { getInteractionEffects } from './shared/interaction-outcomes.js';
 import {
   APP_FACT_ENTITY_REMOVED,
-  APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
-  APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED
@@ -82,9 +79,6 @@ export const registerInteractionModule = defineModule(({ emit, config }) => {
   ],
   produces: [
     APP_UI_INTERACTION_MODAL_OPENED,
-    APP_FACT_MONSTER_DEFEATED,
-    APP_FACT_RESOURCE_COLLECTED,
-    APP_FACT_TOWN_VISITED,
     APP_FACT_ENTITY_REMOVED
   ]
 });
