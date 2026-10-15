@@ -2,11 +2,11 @@ import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED
-} from '../events.js';
-import { isTown } from '../../game/domain/entity-queries.js';
-import { clamp } from '../../engine/math-utils.js';
-import { setStyleVar } from '../../engine/layers/dom-layer-utils.js';
-import { defineModule } from './shared/module-runtime.js';
+} from '../../events.js';
+import { isTown } from '../../../game/domain/entity-queries.js';
+import { clamp } from '../../../engine/math-utils.js';
+import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js';
+import { defineModule } from '../../modules/shared/module-runtime.js';
 
 function clearNode(node) {
   if (!node) {

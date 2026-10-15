@@ -45,7 +45,7 @@
   },
   "overrides": [
     {
-      "includes": ["engine/layers/homm3-resource-atlas.js"],
+      "includes": ["app/heroes/presentation/homm3-resource-atlas.js"],
       "linter": {
         "rules": {
           "suspicious": {

@@ -62,7 +62,10 @@ describe('architecture boundaries', () => {
   });
 
   test('app runtime modules do not import each other directly', () => {
-    const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter((filePath) => {
+    const moduleFiles = [
+      ...walkJsFiles(join(REPO_ROOT, 'app/modules')),
+      ...walkJsFiles(join(REPO_ROOT, 'app/heroes/modules'))
+    ].filter((filePath) => {
       const rel = relative(REPO_ROOT, filePath);
       if (rel.endsWith('.test.js')) {
         return false;
@@ -77,6 +80,31 @@ describe('architecture boundaries', () => {
       files: moduleFiles,
       pattern: /from\s+['"]\.\/(?!shared\/)[^'"]+\.js['"];/,
       errorLabel: 'runtime modules should communicate over bus events only'
+    });
+  });
+
+  test('core game code never imports heroes content', () => {
+    const coreGameFiles = walkJsFiles(join(REPO_ROOT, 'game')).filter(
+      (filePath) => !relative(REPO_ROOT, filePath).startsWith('game/heroes/')
+    );
+
+    assertNoImportMatch({
+      files: coreGameFiles,
+      pattern: /from\s+['"][^'"]*heroes\//,
+      errorLabel: 'heroes content is chosen at boot and passed in, so a different game can reuse the core'
+    });
+  });
+
+  test('core app code never imports heroes content; only boot picks it', () => {
+    const coreAppFiles = walkJsFiles(join(REPO_ROOT, 'app')).filter((filePath) => {
+      const rel = relative(REPO_ROOT, filePath);
+      return !rel.startsWith('app/heroes/') && rel !== 'app/boot-app.js';
+    });
+
+    assertNoImportMatch({
+      files: coreAppFiles,
+      pattern: /from\s+['"][^'"]*heroes\//,
+      errorLabel: 'core app modules get heroes content through config.content'
     });
   });
 

@@ -4,7 +4,7 @@ import {
   createTurnState,
   decideEndTurn,
   decideSpendMovementPoints
-} from '../../game/systems/turn-system.js';
+} from '../../../game/heroes/turn-system.js';
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
@@ -13,8 +13,8 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY
-} from '../events.js';
-import { defineModule } from './shared/module-runtime.js';
+} from '../../events.js';
+import { defineModule } from '../../modules/shared/module-runtime.js';
 
 export const registerTurnModule = defineModule(({ emit, config }) => {
   const maxMovementPoints = config.maxMovementPoints;

@@ -1,22 +1,31 @@
-import { getArrivalInteraction } from './entity-behaviors/registry.js';
+export function createEntityBehaviors(behaviors = []) {
+  const behaviorByKind = new Map(behaviors.map((behavior) => [behavior.kind, behavior]));
 
-export function isArrivalInteractionEntity(entity) {
-  return getArrivalInteraction(entity) !== null;
-}
-
-export function toMovementInteractionKind(entity) {
-  return getArrivalInteraction(entity)?.movementInteractionKind ?? null;
-}
-
-export function requiresSteppingIntoTarget(entity) {
-  return getArrivalInteraction(entity)?.requiresSteppingIntoTarget ?? false;
-}
-
-export function resolveArrivalOutcome({ entity, definitions = {}, tile }) {
-  const interaction = getArrivalInteraction(entity);
-  if (!interaction) {
-    return null;
+  function getArrivalInteraction(entity) {
+    return behaviorByKind.get(entity?.kind)?.arrivalInteraction ?? null;
   }
 
-  return interaction.resolveArrivalOutcome({ entity, definitions, tile });
+  function getFootprintOffsets(entity) {
+    return behaviorByKind.get(entity?.kind)?.footprintOffsets ?? [];
+  }
+
+  function isArrivalInteractionEntity(entity) {
+    return getArrivalInteraction(entity) !== null;
+  }
+
+  function resolveArrivalOutcome({ entity, definitions = {}, tile }) {
+    const interaction = getArrivalInteraction(entity);
+    if (!interaction) {
+      return null;
+    }
+
+    return interaction.resolveArrivalOutcome({ entity, definitions, tile });
+  }
+
+  return Object.freeze({
+    getArrivalInteraction,
+    getFootprintOffsets,
+    isArrivalInteractionEntity,
+    resolveArrivalOutcome
+  });
 }

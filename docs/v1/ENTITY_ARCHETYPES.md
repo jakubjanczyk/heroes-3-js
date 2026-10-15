@@ -46,16 +46,22 @@ Rule of thumb:
 - Add a new `kind` only when the interaction rules/UX are genuinely different (HoMM3-style:
   many content types, few interaction archetypes).
 
-## Domain rules live in `game/domain/entity-behaviors/*`
+## Domain rules: core lookup, game-specific behaviors
 
-Archetype rules are expressed as behavior modules and discovered through a registry.
+Archetype rules are behavior modules that belong to a game's content. The core never imports them;
+the app picks the content at boot and passes it in, so another game can reuse the core with its own kinds.
 
 Key entry points:
 
-- `game/domain/entity-behaviors/registry.js`
-  - `getArrivalInteraction(entity)` -> archetype-specific arrival interaction contract.
-- `game/domain/entity-behaviors/*.js`
-  - one module per archetype (e.g. monster/resource/town).
+- `game/heroes/content.js`
+  - `heroesContent.entityBehaviors`: the list of Heroes behaviors (mine, monster, resource, town).
+  - chosen as `config.content` in `app/boot-app.js`.
+- `game/heroes/entity-behaviors/*.js`
+  - one module per archetype, each `{ kind, arrivalInteraction }`.
+- `game/domain/entity-behaviors.js`
+  - `createEntityBehaviors(behaviors)` builds the lookup core code uses:
+    `getArrivalInteraction(entity)`, `isArrivalInteractionEntity(entity)`, `resolveArrivalOutcome(...)`.
+- `tests/architecture/boundaries.test.js` fails if core `game/` code imports `game/heroes/`.
 
 Core value objects used by domain services live in `game/domain/value-objects/*`
 (`tile`, `entity-id`, `movement-points`) so validation/normalization rules stay centralized.
@@ -68,8 +74,8 @@ Arrival interaction contract (shape):
 
 Why this is important:
 
-- `game/systems/*` can stay generic and ask the registry for behavior.
-- Adding a new archetype is done by adding a new behavior module + registering it.
+- `game/systems/*` can stay generic and ask the lookup it was given for behavior.
+- Adding a new archetype is done by adding a new behavior module + listing it in the game's content.
 
 ### Movement and interactions
 
@@ -81,7 +87,7 @@ Why this is important:
   - consumes the precomputed `arrivalPlan` and emits `fact.move.finished` with
     `interaction.kind = movementInteractionKind` when triggered.
 - `interaction.module`
-  - resolves the outcome with `resolveArrivalOutcome` (`game/domain/entity-behaviors.js`) for the entity
+  - resolves the outcome with `entityBehaviors.resolveArrivalOutcome` for the entity
     named in `fact.move.finished` (`interaction.entityId`); no tile lookup needed.
 
 ## App: translating outcomes into UX (without kind switches)
@@ -90,14 +96,14 @@ The app runtime should not need to know about every archetype in-line.
 
 - `app/modules/interaction.module.js` listens for `fact.move.finished`, asks the domain interaction
   system for an `outcome`, then delegates to a handler registry and owns all event emission.
-- `app/modules/shared/interaction-outcomes.js` maps `outcome.kind` to declarative effects:
+- `app/heroes/interaction-outcomes.js` (`heroesOutcomeEffects`) maps `outcome.kind` to declarative effects:
   - `facts` emitted immediately when the interaction resolves
   - optional `modal` payload
   - optional `factsOnModalClosed`, emitted once the player acknowledges the modal
 
 Domain facts never wait for animations. Views animate removals themselves: `entity-view` reacts to
-`fact.monster.defeated` / `fact.resource.collected` by applying the presentation fade-out class and
-removing the element after the configured duration (immediately during restore).
+the generic `fact.entity.removed` by applying the kind's fade-out class (`getFadeOutSpec` from the content's
+`entityPresentation`) and removing the element after its duration (immediately during restore).
 
 ## Rendering: engine stays generic, app owns presentation
 
@@ -105,12 +111,13 @@ The engine entity layer does not know about HERO/MONSTER/RESOURCE/TOWN.
 
 - `engine/layers/entity-layer.js` renders entities using an injected style resolver:
   - `getEntityStyle({ entity, map }) -> { className, width, height, offsetX, offsetY, ... }`
-- `app/presentation/entities/registry.js` maps `entity.kind` to:
+- `app/heroes/presentation/entities/registry.js` maps `entity.kind` to:
   - entity-layer style
-  - optional fade-out behavior metadata
-- `app/presentation/entity-style.js` is the default style provider used by runtime modules.
+  - optional fade-out (`className`, `durationMs`, and the config key that can override the duration)
+- `app/heroes/content.js` passes it to `entity-view` as `config.content.entityPresentation`.
+- the Heroes resource sprites (`resource-sprites.js`, `homm3-resource-atlas.js`) live in `app/heroes/presentation/`.
 
-This keeps all visuals (sprite selection, sizes, CSS class conventions) in the app layer.
+This keeps all visuals (sprite selection, sizes, CSS class conventions) in the game's content, out of `engine/`.
 
 ## World construction: one place to assemble derived entities
 
@@ -121,27 +128,27 @@ World assembly is centralized in:
 Responsibilities:
 
 - build `map`
-- create derived occupancy-only entities (e.g. town footprint blockers)
+- create footprint blockers from each behavior's `footprintOffsets` (e.g. the tiles a town or mine building covers)
 - build `staticOccupancy` (everything except heroes; read-only `getAt`)
 - an outcome that takes its entity off the map sets `removesEntity: true`; the app turns that into `fact.entity.removed`
 
 Rule of thumb:
 
-- Derived entities (like `TOWN_BLOCKER`) are domain/infra helpers; they should not leak into UI
+- Footprint blockers (`FOOTPRINT_BLOCKER`) only block tiles; they should not leak into UI
   logic unless we explicitly decide to render them.
 
 ## Playbook: adding a new archetype (e.g. MINE or TREASURE_CHEST)
 
 1. Pick a new `kind` (archetype) and decide the definitions namespace key.
 2. Add domain behavior:
-   - create `game/domain/entity-behaviors/<kind>.js` implementing the arrival interaction contract
-   - register it in `game/domain/entity-behaviors/registry.js`
+   - create `game/heroes/entity-behaviors/<kind>.js` implementing the arrival interaction contract
+   - add it to `entityBehaviors` in `game/heroes/content.js`
 3. Load definitions (if needed): extend `game/load.js` to load a new `game/data/*.json` file.
 4. Add presentation:
-   - `app/presentation/entities/<kind>.js`
-   - register it in `app/presentation/entities/registry.js`
+   - `app/heroes/presentation/entities/<kind>.js`
+   - register it in `app/heroes/presentation/entities/registry.js`
 5. Add/extend outcome handling:
-   - add a handler entry in `app/modules/shared/interaction-outcomes.js` for the new `outcome.kind`
+   - add a handler entry in `app/heroes/interaction-outcomes.js` for the new `outcome.kind`
    - return `{ facts, modal, factsOnModalClosed }`
    - decide: which facts are committed immediately vs only after the modal is acknowledged
 6. Add tests:
@@ -150,6 +157,6 @@ Rule of thumb:
 If you find yourself adding a `switch (kind)` in a system/module, it usually means the behavior
 belongs in:
 
-- `game/domain/entity-behaviors/*` (domain rules), or
-- `app/presentation/entities/*` (visuals / CSS hooks), or
-- `app/modules/shared/*` registries (runtime outcome dispatch).
+- `game/heroes/entity-behaviors/*` (domain rules), or
+- `app/heroes/presentation/entities/*` (visuals / CSS hooks), or
+- `app/heroes/interaction-outcomes.js` (runtime outcome dispatch).

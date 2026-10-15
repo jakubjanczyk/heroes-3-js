@@ -1,5 +1,6 @@
 import { deepFreeze } from '../../engine/deep-freeze.js';
 import { buildWorld as buildWorldDefault } from '../../game/build-world.js';
+import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js';
 import { loadGame as loadGameDefault } from '../../game/load.js';
 import {
   APP_COMMAND_APP_START,
@@ -9,12 +10,13 @@ import {
 import { defineModule } from './shared/module-runtime.js';
 
 export const registerWorldModule = defineModule((
-  { emit, env },
+  { emit, env, config },
   {
     loadGame = loadGameDefault,
     buildWorld = buildWorldDefault
   } = {}
 ) => {
+  const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors);
   let hasStarted = false;
 
   return {
@@ -31,7 +33,7 @@ export const registerWorldModule = defineModule((
             try {
               const { scenario, definitions } = await loadGame({ fetch: env.fetch });
 
-              const { map, staticOccupancy } = buildWorld({ scenario });
+              const { map, staticOccupancy } = buildWorld({ scenario, entityBehaviors });
 
               emit(APP_FACT_WORLD_READY, deepFreeze({
                 scenario,
