@@ -2,7 +2,6 @@ import { createMovementSystem as createMovementSystemDefault } from '../../game/
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
 import { findHero } from '../../game/domain/entity-queries.js';
-import { applyHeroMoved, createHeroPositions, getHeroTile } from '../../game/domain/hero-positions.js';
 import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
 import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import {
@@ -29,14 +28,14 @@ export const registerMovementModule = defineModule((
   let movement = null;
   let staticOccupancy = null;
   let heroId = null;
-  let heroPositions = {};
+  let heroTile = null;
   let removedIds = NO_REMOVED_ENTITIES;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
 
   const occupancy = {
     getAt: (tile) =>
-      getOccupantAt({ tile, staticOccupancy, heroPositions, removedIds, excludeHeroId: heroId })
+      getOccupantAt({ tile, staticOccupancy, removedIds })
   };
 
   return {
@@ -46,8 +45,9 @@ export const registerMovementModule = defineModule((
         handler: (event) => {
           const world = event.detail;
           staticOccupancy = world.staticOccupancy;
-          heroId = findHero(world.scenario.entities)?.id ?? null;
-          heroPositions = createHeroPositions(world.scenario.entities);
+          const hero = findHero(world.scenario.entities);
+          heroId = hero?.id ?? null;
+          heroTile = hero?.tile ?? null;
           removedIds = NO_REMOVED_ENTITIES;
 
           if (!heroId) {
@@ -56,7 +56,7 @@ export const registerMovementModule = defineModule((
           }
 
           movement = createMovementSystem({
-            getHero: () => ({ id: heroId, tile: getHeroTile(heroPositions, heroId) }),
+            getHero: () => ({ id: heroId, tile: heroTile }),
             map: world.map,
             occupancy,
             ...(movementSleep ? { sleep: movementSleep } : {}),
@@ -67,15 +67,19 @@ export const registerMovementModule = defineModule((
                 amount
               });
             },
-            onMoveStart: ({ targetTile }) => {
+            onMoveStart: ({ hero, from, targetTile }) => {
               emit(APP_FACT_MOVE_STARTED, {
+                heroId: hero?.id,
+                from,
                 targetTile
               });
             },
-            onMoveFinish: ({ targetTile, interaction }) => {
+            onMoveFinish: ({ hero, targetTile, reachedTile, interaction }) => {
               const detail = {
                 moved: true,
-                targetTile
+                heroId: hero?.id,
+                targetTile,
+                reachedTile
               };
               if (interaction) {
                 detail.interaction = interaction;
@@ -101,7 +105,9 @@ export const registerMovementModule = defineModule((
       {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
-          heroPositions = applyHeroMoved(heroPositions, event.detail);
+          if (event.detail?.heroId === heroId && event.detail?.to) {
+            heroTile = event.detail.to;
+          }
         }
       },
       {

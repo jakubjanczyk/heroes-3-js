@@ -15,7 +15,6 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 import { findHero } from '../../game/domain/entity-queries.js';
-import { applyHeroMoved, createHeroPositions, getHeroTile } from '../../game/domain/hero-positions.js';
 
 export const registerCameraModule = defineModule((
   { emit, env, config },
@@ -31,13 +30,15 @@ export const registerCameraModule = defineModule((
     : 220;
   let camera = null;
   let map = null;
-  let heroId = null;
-  let heroPositions = {};
-  let isMoving = false;
   let detachCameraInput = null;
 
-  function getActiveHeroTile() {
-    return getHeroTile(heroPositions, heroId);
+  function centerOn(tile) {
+    if (!camera || !tile) {
+      return;
+    }
+
+    camera.centerOnTile?.(tile);
+    emitCameraUpdated();
   }
 
   function emitCameraUpdated() {
@@ -76,8 +77,6 @@ export const registerCameraModule = defineModule((
         handler: (event) => {
           const world = event.detail;
           map = world.map;
-          heroId = findHero(world.scenario.entities)?.id ?? null;
-          heroPositions = createHeroPositions(world.scenario.entities);
 
           if (!viewport || !map) {
             return;
@@ -93,9 +92,8 @@ export const registerCameraModule = defineModule((
             stepDurationMs: cameraStepDurationMs
           });
 
-          camera.setFollowTileGetter(getActiveHeroTile);
-          camera.update();
-          emitCameraUpdated();
+          // Start on the hero; from here on every hero fact carries the tile to center on.
+          centerOn(findHero(world.scenario.entities)?.tile);
 
           const inputCamera = {
             moveBy(dx, dy) {
@@ -128,12 +126,7 @@ export const registerCameraModule = defineModule((
       {
         type: APP_UI_RESTORE_COMPLETED,
         handler: () => {
-          const heroTile = getActiveHeroTile();
-          if (camera && heroTile) {
-            camera.centerOnTile?.(heroTile);
-            emitCameraUpdated();
-          }
-
+          // Replayed hero moves already centered the camera on the hero's last tile.
           viewport.dataset.viewportVisibility = 'visible';
           delete viewport.dataset.restoring;
         }
@@ -166,39 +159,21 @@ export const registerCameraModule = defineModule((
       },
       {
         type: APP_FACT_MOVE_STARTED,
-        handler: () => {
+        handler: (event) => {
           if (!camera) {
             return;
           }
 
-          isMoving = true;
           emitWorldMotionUpdated({ followHero: true });
           camera.clearPan?.();
           camera.lockFollow?.();
-          const heroTile = getActiveHeroTile();
-          if (heroTile) {
-            camera.centerOnTile?.(heroTile);
-            emitCameraUpdated();
-          }
+          centerOn(event.detail?.from);
         }
       },
       {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
-          heroPositions = applyHeroMoved(heroPositions, event.detail);
-          if (!camera) {
-            return;
-          }
-
-          const { to } = event.detail;
-          if (isMoving) {
-            camera.centerOnTile?.(to);
-            emitCameraUpdated();
-            return;
-          }
-
-          camera.update?.();
-          emitCameraUpdated();
+          centerOn(event.detail?.to);
         }
       },
       {
@@ -208,11 +183,8 @@ export const registerCameraModule = defineModule((
             return;
           }
 
-          isMoving = false;
           emitWorldMotionUpdated({ followHero: false });
           camera.unlockFollow?.();
-          camera.update?.();
-          emitCameraUpdated();
         }
       }
     ],

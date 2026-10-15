@@ -1,13 +1,10 @@
 import { createInteractionSystem as createInteractionSystemDefault } from '../../game/systems/interaction-system.js';
-import { findHero } from '../../game/domain/entity-queries.js';
-import { applyHeroMoved, createHeroPositions, getHeroTile } from '../../game/domain/hero-positions.js';
 import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
 import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import { sameTile } from '../../engine/tile-utils.js';
 import { getInteractionEffects } from './shared/interaction-outcomes.js';
 import {
   APP_FACT_ENTITY_REMOVED,
-  APP_FACT_HERO_MOVED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -25,8 +22,6 @@ export const registerInteractionModule = defineModule((
   } = {}
 ) => {
   let staticOccupancy = null;
-  let heroId = null;
-  let heroPositions = {};
   let removedIds = NO_REMOVED_ENTITIES;
   let interactions = null;
   let factsOnModalClosed = [];
@@ -44,21 +39,12 @@ export const registerInteractionModule = defineModule((
         handler: (event) => {
           const world = event.detail;
           staticOccupancy = world.staticOccupancy;
-          heroId = findHero(world.scenario.entities)?.id ?? null;
-          heroPositions = createHeroPositions(world.scenario.entities);
           removedIds = NO_REMOVED_ENTITIES;
           factsOnModalClosed = [];
           interactions = createInteractionSystem({
-            getOccupantAt: (tile) =>
-              getOccupantAt({ tile, staticOccupancy, heroPositions, removedIds, excludeHeroId: heroId }),
+            getOccupantAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds }),
             definitions: world.definitions
           });
-        }
-      },
-      {
-        type: APP_FACT_HERO_MOVED,
-        handler: (event) => {
-          heroPositions = applyHeroMoved(heroPositions, event.detail);
         }
       },
       {
@@ -70,8 +56,8 @@ export const registerInteractionModule = defineModule((
       {
         type: APP_FACT_MOVE_FINISHED,
         handler: (event) => {
-          const heroTile = getHeroTile(heroPositions, heroId);
-          if (!interactions || !heroTile) {
+          const { heroId, reachedTile } = event.detail;
+          if (!interactions) {
             return;
           }
 
@@ -81,7 +67,7 @@ export const registerInteractionModule = defineModule((
           }
 
           const didTriggerArrivalInteraction = Boolean(event.detail.interaction?.kind);
-          if (!didTriggerArrivalInteraction && !sameTile(heroTile, destinationTile)) {
+          if (!didTriggerArrivalInteraction && !sameTile(reachedTile, destinationTile)) {
             return;
           }
 
@@ -117,7 +103,6 @@ export const registerInteractionModule = defineModule((
   phase: 'domain',
   consumes: [
     APP_FACT_WORLD_READY,
-    APP_FACT_HERO_MOVED,
     APP_FACT_ENTITY_REMOVED,
     APP_FACT_MOVE_FINISHED,
     APP_UI_INTERACTION_MODAL_CLOSED
