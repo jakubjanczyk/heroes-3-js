@@ -42,6 +42,32 @@ export function mountAppTemplate() {
   `;
 }
 
+export function createMemoryEventLog() {
+  const entries = [];
+
+  return {
+    async init() {},
+    async record(event) {
+      entries.push({
+        id: entries.length + 1,
+        v: 1,
+        type: event.type,
+        detail: event.detail,
+        at: Date.now()
+      });
+    },
+    getAll() {
+      return [...entries];
+    },
+    async reset() {
+      entries.length = 0;
+    },
+    hasExistingSession() {
+      return entries.length > 0;
+    }
+  };
+}
+
 export function createLoadGame({
   width = 4,
   height = 1,

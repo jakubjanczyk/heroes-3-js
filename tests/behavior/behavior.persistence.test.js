@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, test } from 'vitest';
+import { describe, test } from 'vitest';
 
+import { aHero, aMonster, aResource, aScenario, aTown } from './builders.js';
 import {
   clickEndTurn,
   closeInteractionModal,
   confirmTileClickByDispatch,
+  createMemoryEventLog,
   dispatchTileClick,
   expectHeroAt,
   expectInteractionModalClosed,
@@ -24,71 +26,35 @@ import {
   flushMicrotasks,
   setupMovementBehaviorApp
 } from './behavior.utils.js';
-import { APP_FACT_PREVIEW_CLEARED, APP_FACT_PREVIEW_TARGET_SELECTED } from '../../app/events.js';
-import {
-  HEROES_FACT_MONSTER_DEFEATED,
-  HEROES_FACT_RESOURCE_COLLECTED,
-  HEROES_FACT_TOWN_VISITED,
-  HEROES_FACT_TURN_ENDED
-} from '../../app/heroes/events.js';
 
-function createMemoryEventLog() {
-  const entries = [];
-
+function createSession(scenario, appConfig = {}) {
   return {
-    async init() {},
-    async record(event) {
-      entries.push({
-        id: entries.length + 1,
-        v: 1,
-        type: event.type,
-        detail: event.detail,
-        at: Date.now()
-      });
-    },
-    getAll() {
-      return [...entries];
-    },
-    async reset() {
-      entries.length = 0;
-    },
-    hasExistingSession() {
-      return entries.length > 0;
-    }
+    eventLog: createMemoryEventLog(),
+    loadGameOptions: scenario.build(),
+    appConfig
   };
 }
 
+async function reload(sessionOptions) {
+  const session = await setupMovementBehaviorApp(sessionOptions);
+  await flushMicrotasks();
+  return session;
+}
+
+const skeletonDefinitions = { monsters: { SKELETON: { name: 'Skeleton' } } };
+const goldDefinitions = { resources: { GOLD_PILE: { name: 'Gold pile', amount: 100 } } };
+const castleDefinitions = { towns: { CASTLE: { name: 'Castle' } } };
+
 describe('session persistence behavior', () => {
   test('given hero moved and interactions resolved when app reloads then final world and HUD state are restored without replaying notifications', async () => {
-    const eventLog = createMemoryEventLog();
+    const session = createSession(
+      aScenario()
+        .withEntities(aHero(), aMonster().at(1, 0), aResource().at(3, 0))
+        .withDefinitions({ ...skeletonDefinitions, ...goldDefinitions }),
+      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0, RESOURCE: 0 } }
+    );
 
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 6,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 3, y: 0 } }
-        ],
-        definitions: {
-          monsters: {
-            SKELETON: { name: 'Skeleton' }
-          },
-          resources: {
-            GOLD_PILE: { name: 'Gold pile', amount: 100 }
-          }
-        }
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0,
-        fadeOutMsByKind: { MONSTER: 0, RESOURCE: 0 }
-      }
-    };
-
-    const firstSession = await setupMovementBehaviorApp(sharedAppOptions);
+    const firstSession = await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
@@ -98,68 +64,44 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(3, 0);
     await flushMicrotasks();
 
-    const firstSessionHero = expectHeroAt(2, 0);
+    expectHeroAt(2, 0);
     expectMonsterNotPresent('monster-1');
     expectResourceNotPresent('resource-1');
     expectResourceTotal('Gold pile', 100);
     expectMovementPoints(11);
     expectInteractionModalClosed();
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
-    const reloadedHero = expectHeroAt(2, 0);
+    expectHeroAt(2, 0);
     expectMonsterNotPresent('monster-1');
     expectResourceNotPresent('resource-1');
     expectResourceTotal('Gold pile', 100);
     expectMovementPoints(11);
     expectInteractionModalClosed();
-    expect(reloadedHero).not.toBe(firstSessionHero);
-    expect(eventLog.hasExistingSession()).toBe(true);
-    expect(eventLog.getAll().length).toBeGreaterThan(0);
   });
 
   test('given a preview path is selected when app reloads then selected path target is restored', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 5,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario().withSize(5));
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     dispatchTileClick(3, 0);
     await flushMicrotasks();
 
     expectHeroAt(0, 0);
     expectPreviewTargetAt(3, 0);
-    expect(eventLog.hasExistingSession()).toBe(true);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(0, 0);
     expectPreviewTargetAt(3, 0);
   });
 
   test('given hero has zero remaining movement points when app reloads then MP stays at zero', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario().withSize(20));
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(16, 0);
     await flushMicrotasks();
@@ -167,61 +109,16 @@ describe('session persistence behavior', () => {
     expectHeroAt(15, 0);
     expectMovementPoints(0);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(15, 0);
     expectMovementPoints(0);
   });
 
-  test('given turn already advanced when app reloads then next end turn continues from restored turn number', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
-
-    const firstSession = await setupMovementBehaviorApp(sharedAppOptions);
-    await clickEndTurn(firstSession.user);
-    await flushMicrotasks();
-
-    let turnFacts = eventLog
-      .getAll()
-      .filter((entry) => entry.type === HEROES_FACT_TURN_ENDED)
-      .map((entry) => entry.detail.turnNumber);
-    expect(turnFacts).toEqual([2]);
-
-    const secondSession = await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
-
-    await clickEndTurn(secondSession.user);
-    await flushMicrotasks();
-
-    turnFacts = eventLog
-      .getAll()
-      .filter((entry) => entry.type === HEROES_FACT_TURN_ENDED)
-      .map((entry) => entry.detail.turnNumber);
-    expect(turnFacts).toEqual([2, 3]);
-  });
-
   test('given preview was selected then cleared before reload when app reloads then preview remains cleared', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 6,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario());
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     dispatchTileClick(3, 0);
     await flushMicrotasks();
@@ -237,20 +134,7 @@ describe('session persistence behavior', () => {
     expectMovementPoints(13);
     expectNoPreview();
 
-    const previewFacts = eventLog
-      .getAll()
-      .filter(
-        (entry) =>
-          entry.type === APP_FACT_PREVIEW_TARGET_SELECTED || entry.type === APP_FACT_PREVIEW_CLEARED
-      )
-      .map((entry) => entry.type);
-    expect(previewFacts.slice(0, 2)).toEqual([
-      APP_FACT_PREVIEW_TARGET_SELECTED,
-      APP_FACT_PREVIEW_CLEARED
-    ]);
-
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(2, 0);
     expectMovementPoints(13);
@@ -258,18 +142,9 @@ describe('session persistence behavior', () => {
   });
 
   test('given low movement points with an over-limit preview when app reloads then target and over-limit marker are restored', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario().withSize(20));
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(10, 0);
     await flushMicrotasks();
@@ -281,8 +156,7 @@ describe('session persistence behavior', () => {
     expectPreviewTargetAt(17, 0);
     expectPreviewOverLimitTargetAt(17, 0);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(10, 0);
     expectMovementPoints(5);
@@ -291,25 +165,15 @@ describe('session persistence behavior', () => {
   });
 
   test('given a restored preview target when player clicks the same tile after reload then movement starts from that restored selection', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 6,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario());
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     dispatchTileClick(3, 0);
     await flushMicrotasks();
     expectPreviewTargetAt(3, 0);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(0, 0);
     expectMovementPoints(15);
@@ -324,25 +188,12 @@ describe('session persistence behavior', () => {
   });
 
   test('given monster interaction modal is open when app reloads then monster remains and modal does not reopen', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0,
-        fadeOutMsByKind: { MONSTER: 0 }
-      }
-    };
+    const session = createSession(
+      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
+      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
+    );
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
@@ -351,46 +202,25 @@ describe('session persistence behavior', () => {
     expectMovementPoints(14);
     expectMonsterPresent('monster-1');
     expectInteractionModalOpen('Monster defeated');
-    expect(
-      eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)
-    ).toHaveLength(0);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(0, 0);
     expectMovementPoints(14);
     expectMonsterPresent('monster-1');
     expectInteractionModalClosed();
-    expect(
-      eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)
-    ).toHaveLength(0);
   });
 
   test('given town modal is open when app reloads then visited town state is preserved without reopening modal', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0
-      }
-    };
+    const session = createSession(
+      aScenario()
+        .withSize(8, 7)
+        .withEntities(aHero().at(4, 5), aTown().at(4, 3))
+        .withDefinitions(castleDefinitions),
+      { interactionModalTransitionMs: 0 }
+    );
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(4, 3);
     await flushMicrotasks();
@@ -399,44 +229,34 @@ describe('session persistence behavior', () => {
     expectMovementPoints(13);
     expectTownPresent('town-1');
     expectInteractionModalOpen('Castle visited');
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(1);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(4, 3);
     expectMovementPoints(13);
     expectTownPresent('town-1');
     expectInteractionModalClosed();
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(1);
   });
 
   test('given resources are collected across sessions when app reloads multiple times then totals and removals stay cumulative', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 5,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } },
-          { id: 'resource-2', kind: 'RESOURCE', type: 'WOOD_PILE', tile: { x: 3, y: 0 } }
-        ],
-        definitions: {
+    const session = createSession(
+      aScenario()
+        .withSize(5)
+        .withEntities(
+          aHero(),
+          aResource().at(1, 0),
+          aResource().withId('resource-2').withType('WOOD_PILE').at(3, 0)
+        )
+        .withDefinitions({
           resources: {
             GOLD_PILE: { name: 'Gold pile', amount: 100 },
             WOOD_PILE: { name: 'Wood pile', amount: 5 }
           }
-        }
-      },
-      appConfig: {
-        fadeOutMsByKind: { RESOURCE: 0 }
-      }
-    };
+        }),
+      { fadeOutMsByKind: { RESOURCE: 0 } }
+    );
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
@@ -447,8 +267,7 @@ describe('session persistence behavior', () => {
     expectResourceTotal('Gold pile', 100);
     expectResourceTotal('Wood pile', 0);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(0, 0);
     expectMovementPoints(14);
@@ -464,10 +283,8 @@ describe('session persistence behavior', () => {
     expectResourceNotPresent('resource-2');
     expectResourceTotal('Gold pile', 100);
     expectResourceTotal('Wood pile', 5);
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_RESOURCE_COLLECTED)).toHaveLength(2);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(2, 0);
     expectMovementPoints(11);
@@ -478,63 +295,31 @@ describe('session persistence behavior', () => {
   });
 
   test('given resource is still fading out when app reloads then resource stays collected', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } }
-        ],
-        definitions: {
-          resources: {
-            GOLD_PILE: { name: 'Gold pile', amount: 100 }
-          }
-        }
-      },
-      appConfig: {
-        fadeOutMsByKind: { RESOURCE: 1000 }
-      }
-    };
+    const session = createSession(
+      aScenario().withSize(3).withEntities(aHero(), aResource().at(1, 0)).withDefinitions(goldDefinitions),
+      { fadeOutMsByKind: { RESOURCE: 1000 } }
+    );
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
 
     expectResourceCollecting('resource-1');
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_RESOURCE_COLLECTED)).toHaveLength(1);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectResourceNotPresent('resource-1');
     expectResourceTotal('Gold pile', 100);
   });
 
   test('given monster is still fading out after modal close when app reloads then monster stays defeated', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0,
-        fadeOutMsByKind: { MONSTER: 1000 }
-      }
-    };
+    const session = createSession(
+      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
+      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 1000 } }
+    );
 
-    const firstSession = await setupMovementBehaviorApp(sharedAppOptions);
+    const firstSession = await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
@@ -542,28 +327,17 @@ describe('session persistence behavior', () => {
     await flushMicrotasks();
 
     expectMonsterDefeating('monster-1');
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)).toHaveLength(1);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectMonsterNotPresent('monster-1');
     expectInteractionModalClosed();
   });
 
   test('given movement already spent before reload when player moves again after reload then hero position and MP continue from restored state', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 8,
-        height: 1,
-        tiles: new Array(8).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario().withSize(8));
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(2, 0);
     await flushMicrotasks();
@@ -571,8 +345,7 @@ describe('session persistence behavior', () => {
     expectHeroAt(2, 0);
     expectMovementPoints(13);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(2, 0);
     expectMovementPoints(13);
@@ -583,26 +356,16 @@ describe('session persistence behavior', () => {
     expectHeroAt(5, 0);
     expectMovementPoints(10);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(5, 0);
     expectMovementPoints(10);
   });
 
   test('given over-limit preview is restored when player ends turn after reload then same preview becomes affordable and can be confirmed', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario().withSize(20));
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(10, 0);
     await flushMicrotasks();
@@ -615,8 +378,7 @@ describe('session persistence behavior', () => {
     expectPreviewTargetAt(17, 0);
     expectPreviewOverLimitTargetAt(17, 0);
 
-    const secondSession = await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    const secondSession = await reload(session);
 
     expectHeroAt(10, 0);
     expectMovementPoints(5);
@@ -638,60 +400,40 @@ describe('session persistence behavior', () => {
     expectNoPreview();
   });
 
-  test('given persisted facts exist when app reloads repeatedly without new actions then replay does not append duplicate persisted facts', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 6,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+  test('given progress was saved when app reloads repeatedly without new actions then nothing is applied twice', async () => {
+    const session = createSession(
+      aScenario().withEntities(aHero(), aResource().at(1, 0)).withDefinitions(goldDefinitions),
+      { fadeOutMsByKind: { RESOURCE: 0 } }
+    );
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
-    confirmTileClickByDispatch(2, 0);
+    confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
-    dispatchTileClick(4, 0);
+    confirmTileClickByDispatch(3, 0);
+    await flushMicrotasks();
+    dispatchTileClick(5, 0);
     await flushMicrotasks();
 
-    expectHeroAt(2, 0);
-    expectMovementPoints(13);
-    expectPreviewTargetAt(4, 0);
+    expectHeroAt(3, 0);
+    expectMovementPoints(11);
+    expectResourceTotal('Gold pile', 100);
+    expectPreviewTargetAt(5, 0);
 
-    const entryCountBeforeReload = eventLog.getAll().length;
-    expect(entryCountBeforeReload).toBeGreaterThan(0);
+    for (let reloadCount = 0; reloadCount < 3; reloadCount += 1) {
+      await reload(session);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
-    expectHeroAt(2, 0);
-    expectMovementPoints(13);
-    expectPreviewTargetAt(4, 0);
-
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
-    expectHeroAt(2, 0);
-    expectMovementPoints(13);
-    expectPreviewTargetAt(4, 0);
-
-    expect(eventLog.getAll()).toHaveLength(entryCountBeforeReload);
+      expectHeroAt(3, 0);
+      expectMovementPoints(11);
+      expectResourceTotal('Gold pile', 100);
+      expectPreviewTargetAt(5, 0);
+    }
   });
 
   test('given hero has zero MP and restored over-limit preview when player confirms same target after reload then hero still cannot move', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
-    };
+    const session = createSession(aScenario().withSize(20));
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(15, 0);
     await flushMicrotasks();
@@ -703,8 +445,7 @@ describe('session persistence behavior', () => {
     expectPreviewTargetAt(16, 0);
     expectPreviewOverLimitTargetAt(16, 0);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectHeroAt(15, 0);
     expectMovementPoints(0);
@@ -721,25 +462,12 @@ describe('session persistence behavior', () => {
   });
 
   test('given monster was defeated before reload when app reloads then hero can path through that tile in restored world state', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0,
-        fadeOutMsByKind: { MONSTER: 0 }
-      }
-    };
+    const session = createSession(
+      aScenario().withSize(4).withEntities(aHero(), aMonster().at(1, 0)),
+      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
+    );
 
-    const firstSession = await setupMovementBehaviorApp(sharedAppOptions);
+    const firstSession = await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
@@ -750,8 +478,7 @@ describe('session persistence behavior', () => {
     expectHeroAt(0, 0);
     expectMovementPoints(14);
 
-    await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    await reload(session);
 
     expectMonsterNotPresent('monster-1');
     expectHeroAt(0, 0);
@@ -764,35 +491,20 @@ describe('session persistence behavior', () => {
     expectMovementPoints(11);
   });
 
-  test('given monster modal was open at reload when player attacks again after reload then interaction can still resolve and persist defeat', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0,
-        fadeOutMsByKind: { MONSTER: 0 }
-      }
-    };
+  test('given monster modal was open at reload when player attacks again after reload then the defeat resolves and stays after another reload', async () => {
+    const session = createSession(
+      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
+      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
+    );
 
-    await setupMovementBehaviorApp(sharedAppOptions);
+    await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(1, 0);
     await flushMicrotasks();
 
     expectInteractionModalOpen('Monster defeated');
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)).toHaveLength(0);
 
-    const secondSession = await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    const secondSession = await reload(session);
 
     expectInteractionModalClosed();
     expectMonsterPresent('monster-1');
@@ -807,33 +519,23 @@ describe('session persistence behavior', () => {
 
     expectMonsterNotPresent('monster-1');
     expectMovementPoints(13);
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_MONSTER_DEFEATED)).toHaveLength(1);
+
+    await reload(session);
+
+    expectMonsterNotPresent('monster-1');
+    expectMovementPoints(13);
   });
 
-  test('given town was visited before reload when hero leaves and re-enters after reload then a new town visit is recorded', async () => {
-    const eventLog = createMemoryEventLog();
-    const sharedAppOptions = {
-      eventLog,
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      },
-      appConfig: {
-        interactionModalTransitionMs: 0
-      }
-    };
+  test('given town was visited before reload when hero leaves and re-enters after reload then the town modal opens again', async () => {
+    const session = createSession(
+      aScenario()
+        .withSize(8, 7)
+        .withEntities(aHero().at(4, 5), aTown().at(4, 3))
+        .withDefinitions(castleDefinitions),
+      { interactionModalTransitionMs: 0 }
+    );
 
-    const firstSession = await setupMovementBehaviorApp(sharedAppOptions);
+    const firstSession = await setupMovementBehaviorApp(session);
 
     confirmTileClickByDispatch(4, 3);
     await flushMicrotasks();
@@ -841,11 +543,9 @@ describe('session persistence behavior', () => {
     await closeInteractionModal(firstSession.user);
     await flushMicrotasks();
 
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(1);
     expectHeroAt(4, 3);
 
-    const secondSession = await setupMovementBehaviorApp(sharedAppOptions);
-    await flushMicrotasks();
+    const secondSession = await reload(session);
 
     expectHeroAt(4, 3);
     expectInteractionModalClosed();
@@ -861,7 +561,6 @@ describe('session persistence behavior', () => {
     await closeInteractionModal(secondSession.user);
     await flushMicrotasks();
 
-    expect(eventLog.getAll().filter((entry) => entry.type === HEROES_FACT_TOWN_VISITED)).toHaveLength(2);
     expectHeroAt(4, 3);
   });
 });
