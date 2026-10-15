@@ -6,6 +6,11 @@ import {
 
 export const mineBehavior = Object.freeze({
   kind: 'MINE',
+  // Tiles around the entry tile that the mine's building covers.
+  footprintOffsets: Object.freeze([
+    { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+    { x: -1, y: 0 }, { x: 1, y: 0 }
+  ]),
   arrivalInteraction: Object.freeze({
     movementInteractionKind: MOVEMENT_INTERACTION_KIND_MINE_ENTER,
     outcomeKind: INTERACTION_OUTCOME_KIND_MINE_ENTERED,

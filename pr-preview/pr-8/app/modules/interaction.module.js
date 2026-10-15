@@ -49,7 +49,7 @@ export const registerInteractionModule = defineModule(({ emit, config }) => {
             definitions,
             tile: interaction.targetTile ?? event.detail.targetTile
           });
-          const effects = getInteractionEffects(outcome);
+          const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects);
           if (!effects) {
             return;
           }
