@@ -170,12 +170,12 @@ Quick matrix:
 |---|---|---|---|---|
 | `world.module` | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted` | none |
 | `turn.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnState` (assigned only in fact handlers), `isMoving` | none |
-| `movement.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `heroPositions`, `removedIds`, `movement`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
-| `interaction.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited`, `fact.entity.removed` | `heroPositions`, `removedIds`, `interactions`, `factsOnModalClosed` | none |
-| `selection.module` | `fact.world.ready`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `heroPositions`, `removedIds`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
-| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `heroPositions`, `camera`, `map`, `isMoving` | queries `.viewport`, `.world` |
+| `movement.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `heroTile`, `removedIds`, `movement`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
+| `interaction.module` | `fact.world.ready`, `fact.entity.removed`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited`, `fact.entity.removed` | `removedIds`, `interactions`, `factsOnModalClosed` | none |
+| `selection.module` | `fact.world.ready`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `heroTile`, `removedIds`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
+| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `map` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.defeated`, `fact.resource.collected`, `ui.restore.started`, `ui.restore.completed` | none | `heroPositions`, `removedIds`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
+| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.defeated`, `fact.resource.collected`, `ui.restore.started`, `ui.restore.completed` | none | `removedIds`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
 | `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
 | `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
@@ -201,10 +201,11 @@ World state:
 
 - `world.module` only loads the scenario and emits a deeply frozen `fact.world.ready` snapshot: `scenario`, `definitions`, `map` and `staticOccupancy`. It holds no live state.
 - `staticOccupancy` (`game/build-world.js`) indexes everything that never moves (towns and their footprints, mines, monsters, resources). Heroes are left out on purpose, so a hero standing on a town never hides it. It only exposes `getAt(tile)`.
-- what changes during play is two small pieces of state, each about one thing, kept by the modules that need them:
-  - `heroPositions` (`game/domain/hero-positions.js`): hero tiles keyed by hero id, updated from `fact.hero.moved`.
-  - `removedIds` (`game/domain/removed-entities.js`): ids taken off the map, updated from the generic `fact.entity.removed`.
-- `getOccupantAt` (`game/domain/tile-occupant.js`) answers "what stands on this tile" by combining the three: another hero first, then the static entry unless it was removed.
+- the hero's tile comes from the facts themselves: `fact.hero.moved` carries `to`, `fact.move.started` carries `from`, `fact.move.finished` carries `heroId` and `reachedTile`.
+  - only `selection` (route start on click) and `movement` (move start) remember it, as one `heroTile` variable set from the snapshot and then from each `to`.
+  - `camera` centers on the tile in each fact, `interaction` reads `reachedTile`, `entity-view` moves the hero element to `to`; none of them keep a copy.
+- `removedIds` (`game/domain/removed-entities.js`): ids taken off the map, updated from the generic `fact.entity.removed`.
+- `getOccupantAt` (`game/domain/tile-occupant.js`) answers "what stands on this tile": the static entry, unless it was removed.
 - an entity behavior marks an outcome with `removesEntity: true`; `interaction-outcomes.js` then emits `fact.entity.removed` with the outcome's own facts. Nothing outside the behavior needs to know which kinds disappear.
 - systems take queries, not entity lists: `createMovementSystem({ getHero, occupancy })`, `createInteractionSystem({ getOccupantAt })`.
 
@@ -415,6 +416,6 @@ When editing architecture, preserve these invariants:
 - no module-to-module direct calls for runtime behavior.
 - bus events are the only cross-module coordination channel.
 - persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/systems/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
-- `fact.world.ready` is a deeply frozen snapshot (`scenario`, `definitions`, `map`, `staticOccupancy`); nobody mutates shared world objects. Changes during play live only in small per-concern state (`heroPositions`, `removedIds`) derived from facts (see "World state").
+- `fact.world.ready` is a deeply frozen snapshot (`scenario`, `definitions`, `map`, `staticOccupancy`); nobody mutates shared world objects. Changes during play live only in small state derived from facts (`heroTile`, `removedIds`), kept only where a module needs it later (see "World state").
 - `engine/` never imports from `game/`.
 - module tests validate module internals; behavior tests validate user-observable flows.

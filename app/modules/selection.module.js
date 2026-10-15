@@ -17,7 +17,6 @@ import {
 } from '../events.js';
 import { sameTile } from '../../engine/tile-utils.js';
 import { findHero } from '../../game/domain/entity-queries.js';
-import { applyHeroMoved, createHeroPositions, getHeroTile } from '../../game/domain/hero-positions.js';
 import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
 import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import { defineModule } from './shared/module-runtime.js';
@@ -26,7 +25,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   let map = null;
   let staticOccupancy = null;
   let heroId = null;
-  let heroPositions = {};
+  let heroTile = null;
   let removedIds = NO_REMOVED_ENTITIES;
   let previewPath = null;
   let previewTarget = null;
@@ -34,12 +33,8 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
 
-  function getActiveHeroTile() {
-    return getHeroTile(heroPositions, heroId);
-  }
-
   function getOccupant(tile) {
-    return getOccupantAt({ tile, staticOccupancy, heroPositions, removedIds, excludeHeroId: heroId });
+    return getOccupantAt({ tile, staticOccupancy, removedIds });
   }
 
   function emitPreview() {
@@ -77,7 +72,6 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   }
 
   function buildPath(toTile) {
-    const heroTile = getActiveHeroTile();
     if (!map || !heroTile) {
       return null;
     }
@@ -103,8 +97,9 @@ export const registerSelectionModule = defineModule(({ emit }) => {
           const world = event.detail;
           map = world.map;
           staticOccupancy = world.staticOccupancy;
-          heroId = findHero(world.scenario.entities)?.id ?? null;
-          heroPositions = createHeroPositions(world.scenario.entities);
+          const hero = findHero(world.scenario.entities);
+          heroId = hero?.id ?? null;
+          heroTile = hero?.tile ?? null;
           removedIds = NO_REMOVED_ENTITIES;
           resetPreview();
         }
@@ -127,7 +122,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_COMMAND_TILE_CLICKED,
         handler: (event) => {
-          if (!getActiveHeroTile() || isMoving || isInteractionModalOpen) {
+          if (!heroTile || isMoving || isInteractionModalOpen) {
             return;
           }
 
@@ -160,8 +155,10 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
-          heroPositions = applyHeroMoved(heroPositions, event.detail);
           const to = event.detail.to;
+          if (event.detail.heroId === heroId && to) {
+            heroTile = to;
+          }
           if (!previewPath || previewPath.length === 0) {
             return;
           }
@@ -186,7 +183,6 @@ export const registerSelectionModule = defineModule(({ emit }) => {
             requestClearPreview();
             return;
           }
-          const heroTile = getActiveHeroTile();
           if (previewTarget && heroTile && !sameTile(heroTile, previewTarget)) {
             emitPreview();
             return;
@@ -212,7 +208,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
         type: APP_FACT_PREVIEW_TARGET_SELECTED,
         handler: (event) => {
           const tile = event.detail?.tile;
-          if (!getActiveHeroTile() || !tile) {
+          if (!heroTile || !tile) {
             return;
           }
 
