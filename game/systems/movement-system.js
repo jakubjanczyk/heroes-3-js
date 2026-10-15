@@ -1,5 +1,6 @@
 import { findPath } from '../../engine/pathfinding.js';
 import { sameTile } from '../../engine/tile-utils.js';
+import { isArrivalInteractionEntity } from '../domain/entity-behaviors.js';
 import { toEntityIdOrNull } from '../domain/value-objects/entity-id.js';
 
 function isValidPlannedPath(path, fromTile, toTile, map) {
@@ -58,6 +59,39 @@ export function createMovementSystem({
 }) {
   let isMoving = false;
 
+  function findRoute(hero, toTile) {
+    return findPath({
+      fromTile: hero.tile,
+      toTile,
+      map,
+      isBlocked: (tile) => {
+        const occupant = occupancy.getAt(tile);
+        return occupant !== null && occupant.id !== hero.id;
+      }
+    });
+  }
+
+  // The route the hero would take to `toTile`, or null when it can't go there.
+  // A destination holding an entity is only a valid target if the hero can interact with it.
+  function planRoute(toTile) {
+    const hero = getHero();
+    if (!hero?.tile) {
+      return null;
+    }
+
+    const destinationOccupant = occupancy.getAt(toTile);
+    if (
+      destinationOccupant &&
+      destinationOccupant.id !== hero.id &&
+      !isArrivalInteractionEntity(destinationOccupant)
+    ) {
+      return null;
+    }
+
+    const path = findRoute(hero, toTile);
+    return path && path.length >= 2 ? path : null;
+  }
+
   async function moveHeroTo(toTile, { path: plannedPath = null, arrivalPlan = null } = {}) {
     if (isMoving) {
       return false;
@@ -70,15 +104,7 @@ export function createMovementSystem({
 
     const path = isValidPlannedPath(plannedPath, hero.tile, toTile, map)
       ? plannedPath
-      : findPath({
-          fromTile: hero.tile,
-          toTile,
-          map,
-          isBlocked: (tile) => {
-            const occupant = occupancy.getAt(tile);
-            return occupant !== null && occupant.id !== hero.id;
-          }
-        });
+      : findRoute(hero, toTile);
 
     if (!path || path.length < 2) {
       return false;
@@ -176,6 +202,7 @@ export function createMovementSystem({
   }
 
   return {
+    planRoute,
     moveHeroTo
   };
 }

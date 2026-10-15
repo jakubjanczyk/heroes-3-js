@@ -1,41 +1,32 @@
-import { findPath } from '../../engine/pathfinding.js';
-import { isArrivalInteractionEntity } from '../../game/domain/entity-behaviors.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
+  APP_COMMAND_ROUTE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
-  APP_FACT_ENTITY_REMOVED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_ROUTE_PLANNED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED
 } from '../events.js';
 import { sameTile } from '../../engine/tile-utils.js';
-import { findHero } from '../../game/domain/entity-queries.js';
-import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
-import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import { defineModule } from './shared/module-runtime.js';
 
+// Owns the select-then-confirm click flow and the selected route. Routes themselves are
+// planned by the movement module: selection asks with command.route.requested.
 export const registerSelectionModule = defineModule(({ emit }) => {
-  let map = null;
-  let staticOccupancy = null;
-  let heroId = null;
-  let heroTile = null;
-  let removedIds = NO_REMOVED_ENTITIES;
+  let isWorldReady = false;
+  let requestedTile = null;
   let previewPath = null;
   let previewTarget = null;
   let isMoving = false;
   let isInteractionModalOpen = false;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
-
-  function getOccupant(tile) {
-    return getOccupantAt({ tile, staticOccupancy, removedIds });
-  }
 
   function emitPreview() {
     emit(APP_UI_PREVIEW_UPDATED, {
@@ -53,61 +44,19 @@ export const registerSelectionModule = defineModule(({ emit }) => {
     emitPreview();
   }
 
-  function applySelectedTarget(tile) {
-    const path = buildPath(tile);
-    if (!path || path.length < 2) {
-      resetPreview();
-      return;
-    }
-
-    previewTarget = tile;
-    previewPath = path;
-    emitPreview();
-  }
-
   function requestClearPreview() {
     if (previewPath || previewTarget) {
       emit(APP_FACT_PREVIEW_CLEARED, {});
     }
   }
 
-  function buildPath(toTile) {
-    if (!map || !heroTile) {
-      return null;
-    }
-
-    const destinationOccupant = getOccupant(toTile);
-    if (destinationOccupant && !isArrivalInteractionEntity(destinationOccupant)) {
-      return null;
-    }
-
-    return findPath({
-      fromTile: heroTile,
-      toTile,
-      map,
-      isBlocked: (tile) => getOccupant(tile) !== null
-    });
-  }
-
   return {
     subscriptions: [
       {
         type: APP_FACT_WORLD_READY,
-        handler: (event) => {
-          const world = event.detail;
-          map = world.map;
-          staticOccupancy = world.staticOccupancy;
-          const hero = findHero(world.scenario.entities);
-          heroId = hero?.id ?? null;
-          heroTile = hero?.tile ?? null;
-          removedIds = NO_REMOVED_ENTITIES;
+        handler: () => {
+          isWorldReady = true;
           resetPreview();
-        }
-      },
-      {
-        type: APP_FACT_ENTITY_REMOVED,
-        handler: (event) => {
-          removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
         }
       },
       {
@@ -122,7 +71,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_COMMAND_TILE_CLICKED,
         handler: (event) => {
-          if (!heroTile || isMoving || isInteractionModalOpen) {
+          if (!isWorldReady || isMoving || isInteractionModalOpen) {
             return;
           }
 
@@ -134,13 +83,25 @@ export const registerSelectionModule = defineModule(({ emit }) => {
             return;
           }
 
-          const path = buildPath(tile);
-          if (!path || path.length < 2) {
+          requestedTile = tile;
+          emit(APP_COMMAND_ROUTE_REQUESTED, { tile });
+        }
+      },
+      {
+        type: APP_FACT_ROUTE_PLANNED,
+        handler: (event) => {
+          const { tile, path } = event.detail ?? {};
+          if (!requestedTile || !sameTile(requestedTile, tile)) {
+            return;
+          }
+
+          requestedTile = null;
+          if (!path) {
             requestClearPreview();
             return;
           }
 
-          emit(APP_FACT_PREVIEW_TARGET_SELECTED, { tile });
+          emit(APP_FACT_PREVIEW_TARGET_SELECTED, { tile, path });
         }
       },
       {
@@ -156,9 +117,6 @@ export const registerSelectionModule = defineModule(({ emit }) => {
         type: APP_FACT_HERO_MOVED,
         handler: (event) => {
           const to = event.detail.to;
-          if (event.detail.heroId === heroId && to) {
-            heroTile = to;
-          }
           if (!previewPath || previewPath.length === 0) {
             return;
           }
@@ -183,7 +141,9 @@ export const registerSelectionModule = defineModule(({ emit }) => {
             requestClearPreview();
             return;
           }
-          if (previewTarget && heroTile && !sameTile(heroTile, previewTarget)) {
+
+          const reachedTile = event.detail.reachedTile;
+          if (previewTarget && reachedTile && !sameTile(reachedTile, previewTarget)) {
             emitPreview();
             return;
           }
@@ -207,12 +167,16 @@ export const registerSelectionModule = defineModule(({ emit }) => {
       {
         type: APP_FACT_PREVIEW_TARGET_SELECTED,
         handler: (event) => {
-          const tile = event.detail?.tile;
-          if (!heroTile || !tile) {
+          const { tile, path } = event.detail ?? {};
+          // Saves from before routes were stored in this fact carry no path; drop those.
+          if (!tile || !Array.isArray(path) || path.length < 2) {
+            resetPreview();
             return;
           }
 
-          applySelectedTarget(tile);
+          previewTarget = tile;
+          previewPath = [...path];
+          emitPreview();
         }
       },
       {
@@ -229,9 +193,9 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   phase: 'domain',
   consumes: [
     APP_FACT_WORLD_READY,
-    APP_FACT_ENTITY_REMOVED,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
     APP_COMMAND_TILE_CLICKED,
+    APP_FACT_ROUTE_PLANNED,
     APP_FACT_MOVE_STARTED,
     APP_FACT_HERO_MOVED,
     APP_FACT_MOVE_FINISHED,
@@ -242,6 +206,7 @@ export const registerSelectionModule = defineModule(({ emit }) => {
   ],
   produces: [
     APP_COMMAND_MOVE_REQUESTED,
+    APP_COMMAND_ROUTE_REQUESTED,
     APP_UI_PREVIEW_UPDATED,
     APP_FACT_PREVIEW_TARGET_SELECTED,
     APP_FACT_PREVIEW_CLEARED
