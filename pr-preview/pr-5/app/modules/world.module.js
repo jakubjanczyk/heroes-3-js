@@ -1,5 +1,5 @@
 import { deepFreeze } from '../../engine/deep-freeze.js';
-import { createMap as createMapDefault } from '../../engine/map.js';
+import { buildWorld as buildWorldDefault } from '../../game/build-world.js';
 import { loadGame as loadGameDefault } from '../../game/load.js';
 import {
   APP_COMMAND_APP_START,
@@ -8,13 +8,13 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-// Loads the scenario and publishes it as a frozen snapshot. It holds no live world state:
-// modules that track entities build their own replica from this snapshot and world facts.
+// Loads the scenario and publishes it as a frozen snapshot of everything that never changes.
+// It holds no live state: hero positions and removed entities come from facts.
 export const registerWorldModule = defineModule((
   { emit, env },
   {
     loadGame = loadGameDefault,
-    createMap = createMapDefault
+    buildWorld = buildWorldDefault
   } = {}
 ) => {
   let hasStarted = false;
@@ -33,10 +33,13 @@ export const registerWorldModule = defineModule((
             try {
               const { scenario, definitions } = await loadGame({ fetch: env.fetch });
 
+              const { map, staticOccupancy } = buildWorld({ scenario });
+
               emit(APP_FACT_WORLD_READY, deepFreeze({
                 scenario,
                 definitions,
-                map: createMap(scenario.terrain)
+                map,
+                staticOccupancy
               }));
             } catch (error) {
               emit(APP_FACT_WORLD_LOAD_FAILED, {
