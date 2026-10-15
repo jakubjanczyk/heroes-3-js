@@ -79,4 +79,16 @@ describe('architecture boundaries', () => {
       errorLabel: 'runtime modules should communicate over bus events only'
     });
   });
+
+  test('app runtime modules build world state only through the world replica', () => {
+    const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter(
+      (filePath) => !filePath.endsWith('.test.js')
+    );
+
+    assertNoImportMatch({
+      files: moduleFiles,
+      pattern: /from\s+['"][^'"]*game\/(?:build-world|domain\/world-state)\.js['"]/,
+      errorLabel: 'modules must keep their own world replica instead of building shared world state'
+    });
+  });
 });

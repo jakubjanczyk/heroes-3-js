@@ -72,12 +72,12 @@ describe('entity view module', () => {
 
     bus.emit(APP_FACT_WORLD_READY, {
       map,
-      scenario: { entities: [{ id: 'hero-1' }] }
+      scenario: { entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }] }
     });
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
 
     expect(renderCalls).toHaveLength(1);
-    expect(renderCalls[0].entities).toEqual([{ id: 'hero-1' }]);
+    expect(renderCalls[0].entities).toEqual([{ id: 'hero-1', kind: 'HERO', tile: { x: 1, y: 0 } }]);
     expect(entityLayer.style['--hero-step-duration']).toBe('240ms');
     expect(heroElement.dataset.tileX).toBe('1');
     expect(heroElement.dataset.tileY).toBe('0');
@@ -156,7 +156,7 @@ describe('entity view module', () => {
 
     bus.emit(APP_FACT_WORLD_READY, {
       map,
-      scenario: { entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO' }] }
+      scenario: { entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }] }
     });
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
 
@@ -201,7 +201,7 @@ describe('entity view module', () => {
 
     bus.emit(APP_FACT_WORLD_READY, {
       map,
-      scenario: { entities: [{ id: 'hero-1' }] }
+      scenario: { entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }] }
     });
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });
 
@@ -281,7 +281,7 @@ describe('entity view module', () => {
 
     bus.emit(APP_FACT_WORLD_READY, {
       map,
-      scenario: { entities: [{ id: 'hero-1' }] }
+      scenario: { entities: [{ id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } }] }
     });
     bus.emit(APP_UI_RESTORE_STARTED, {});
     bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', to: { x: 1, y: 0 } });

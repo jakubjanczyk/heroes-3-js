@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
 import { createMap } from '../../engine/map.js';
-import { createOccupancyIndex } from '../../engine/occupancy.js';
 import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../game/domain/interaction-kinds.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
@@ -24,11 +23,10 @@ function setupSelection({ movementPoints = 15 } = {}) {
   const bus = createFakeBus({ snapshotDetail: true });
   const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
   const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
-  const occupancy = createOccupancyIndex([hero]);
 
   registerSelectionModule({ bus });
 
-  bus.emit(APP_FACT_WORLD_READY, { scenario: { entities: [hero] }, map, occupancy });
+  bus.emit(APP_FACT_WORLD_READY, { scenario: { entities: [hero] }, map });
   bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: movementPoints, max: 15 });
 
   return bus;
@@ -91,14 +89,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
 
@@ -117,14 +113,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 0, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
@@ -138,22 +132,19 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 4, height: 1, tiles: [0, 0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 3, y: 0 } });
     bus.emit(APP_FACT_MOVE_STARTED, { targetTile: { x: 3, y: 0 } });
-    bus.emit(APP_FACT_HERO_MOVED, { to: { x: 1, y: 0 } });
-    bus.emit(APP_FACT_HERO_MOVED, { to: { x: 2, y: 0 } });
-    hero.tile = { x: 3, y: 0 };
-    bus.emit(APP_FACT_HERO_MOVED, { to: { x: 3, y: 0 } });
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', from: { x: 0, y: 0 }, to: { x: 1, y: 0 } });
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', from: { x: 1, y: 0 }, to: { x: 2, y: 0 } });
+    bus.emit(APP_FACT_HERO_MOVED, { heroId: 'hero-1', from: { x: 2, y: 0 }, to: { x: 3, y: 0 } });
     bus.emit(APP_FACT_MOVE_FINISHED, {});
 
     const previews = bus.emitted.filter((entry) => entry.type === APP_UI_PREVIEW_UPDATED);
@@ -166,14 +157,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 6, height: 1, tiles: [0, 0, 0, 0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 2, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 5, y: 0 } });
@@ -200,14 +189,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_UI_INTERACTION_MODAL_OPENED, {
@@ -231,14 +218,12 @@ describe('selection module', () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const resource = { id: 'resource-1', kind: 'RESOURCE', tile: { x: 1, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero, resource]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero, resource] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
@@ -251,16 +236,14 @@ describe('selection module', () => {
   test('does not preview when destination is a non-interactable town footprint blocker tile', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
-    const townBlocker = { id: 'town-1__blocker_0', kind: 'TOWN_BLOCKER', tile: { x: 1, y: 0 } };
-    const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
-    const occupancy = createOccupancyIndex([hero, townBlocker]);
+    const town = { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 2, y: 0 } };
+    const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
-      scenario: { entities: [hero] },
-      map,
-      occupancy
+      scenario: { entities: [hero, town] },
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
@@ -275,14 +258,12 @@ describe('selection module', () => {
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const town = { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } };
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
-    const occupancy = createOccupancyIndex([hero, town]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero, town] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
@@ -300,14 +281,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 3, height: 1, tiles: [0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 2, y: 0 } });
@@ -329,14 +308,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 2, height: 1, tiles: [0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 1, y: 0 } });
@@ -351,14 +328,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 4, height: 1, tiles: [0, 0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { value: 15, max: 15 });
     bus.emit(APP_COMMAND_TILE_CLICKED, { tile: { x: 3, y: 0 } });
@@ -382,14 +357,12 @@ describe('selection module', () => {
     const bus = createFakeBus({ snapshotDetail: true });
     const hero = { id: 'hero-1', kind: 'HERO', tile: { x: 0, y: 0 } };
     const map = createMap({ width: 4, height: 1, tiles: [0, 0, 0, 0] });
-    const occupancy = createOccupancyIndex([hero]);
 
     registerSelectionModule({ bus });
 
     bus.emit(APP_FACT_WORLD_READY, {
       scenario: { entities: [hero] },
-      map,
-      occupancy
+      map
     });
     bus.emit(APP_FACT_PREVIEW_TARGET_SELECTED, {
       tile: { x: 3, y: 0 }

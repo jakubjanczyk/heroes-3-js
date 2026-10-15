@@ -1,6 +1,5 @@
 import { createCamera as createCameraDefault } from '../../engine/camera.js';
 import { attachCameraInput as attachCameraInputDefault } from '../../engine/input.js';
-import { findHero } from '../../game/domain/entity-queries.js';
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -15,6 +14,7 @@ import {
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
+import { WORLD_REPLICA_EVENTS, createWorldReplicaTracker } from './shared/world-replica-tracker.js';
 
 export const registerCameraModule = defineModule((
   { emit, env, config },
@@ -28,11 +28,15 @@ export const registerCameraModule = defineModule((
   const cameraStepDurationMs = Number.isFinite(configuredStepDurationMs)
     ? Math.max(0, configuredStepDurationMs)
     : 220;
+  const world = createWorldReplicaTracker();
   let camera = null;
-  let hero = null;
   let map = null;
   let isMoving = false;
   let detachCameraInput = null;
+
+  function getHeroTile() {
+    return world.get()?.getHero()?.tile ?? null;
+  }
 
   function emitCameraUpdated() {
     if (!camera) {
@@ -65,12 +69,11 @@ export const registerCameraModule = defineModule((
 
   return {
     subscriptions: [
+      ...world.subscriptions,
       {
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
-          const world = event.detail;
-          hero = findHero(world.scenario.entities);
-          map = world.map;
+          map = event.detail.map;
 
           if (!viewport || !map) {
             return;
@@ -86,7 +89,7 @@ export const registerCameraModule = defineModule((
             stepDurationMs: cameraStepDurationMs
           });
 
-          camera.setFollowTileGetter(() => hero?.tile ?? null);
+          camera.setFollowTileGetter(getHeroTile);
           camera.update();
           emitCameraUpdated();
 
@@ -121,8 +124,9 @@ export const registerCameraModule = defineModule((
       {
         type: APP_UI_RESTORE_COMPLETED,
         handler: () => {
-          if (camera && hero?.tile) {
-            camera.centerOnTile?.(hero.tile);
+          const heroTile = getHeroTile();
+          if (camera && heroTile) {
+            camera.centerOnTile?.(heroTile);
             emitCameraUpdated();
           }
 
@@ -167,8 +171,9 @@ export const registerCameraModule = defineModule((
           emitWorldMotionUpdated({ followHero: true });
           camera.clearPan?.();
           camera.lockFollow?.();
-          if (hero?.tile) {
-            camera.centerOnTile?.(hero.tile);
+          const heroTile = getHeroTile();
+          if (heroTile) {
+            camera.centerOnTile?.(heroTile);
             emitCameraUpdated();
           }
         }
@@ -214,6 +219,7 @@ export const registerCameraModule = defineModule((
   id: 'camera',
   phase: 'domain',
   consumes: [
+    ...WORLD_REPLICA_EVENTS,
     APP_FACT_WORLD_READY,
     APP_UI_RESTORE_STARTED,
     APP_UI_RESTORE_COMPLETED,

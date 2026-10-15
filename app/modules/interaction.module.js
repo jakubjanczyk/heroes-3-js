@@ -1,5 +1,4 @@
 import { createInteractionSystem as createInteractionSystemDefault } from '../../game/systems/interaction-system.js';
-import { findHero } from '../../game/domain/entity-queries.js';
 import { sameTile } from '../../engine/tile-utils.js';
 import { getInteractionEffects } from './shared/interaction-outcomes.js';
 import {
@@ -12,6 +11,7 @@ import {
   APP_UI_INTERACTION_MODAL_OPENED
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
+import { WORLD_REPLICA_EVENTS, createWorldReplicaTracker } from './shared/world-replica-tracker.js';
 
 export const registerInteractionModule = defineModule((
   { emit },
@@ -19,7 +19,7 @@ export const registerInteractionModule = defineModule((
     createInteractionSystem = createInteractionSystemDefault
   } = {}
 ) => {
-  let hero = null;
+  const world = createWorldReplicaTracker();
   let interactions = null;
   let factsOnModalClosed = [];
 
@@ -31,21 +31,21 @@ export const registerInteractionModule = defineModule((
 
   return {
     subscriptions: [
+      ...world.subscriptions,
       {
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
-          const world = event.detail;
-          hero = findHero(world.scenario.entities);
           factsOnModalClosed = [];
           interactions = createInteractionSystem({
-            entities: world.scenario.entities,
-            definitions: world.definitions
+            entities: world.get().entities,
+            definitions: event.detail.definitions
           });
         }
       },
       {
         type: APP_FACT_MOVE_FINISHED,
         handler: (event) => {
+          const hero = world.get()?.getHero();
           if (!interactions || !hero) {
             return;
           }
@@ -91,6 +91,7 @@ export const registerInteractionModule = defineModule((
   id: 'interaction',
   phase: 'domain',
   consumes: [
+    ...WORLD_REPLICA_EVENTS,
     APP_FACT_WORLD_READY,
     APP_FACT_MOVE_FINISHED,
     APP_UI_INTERACTION_MODAL_CLOSED

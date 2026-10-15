@@ -1,6 +1,5 @@
 import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
-import { findHero } from '../../game/domain/entity-queries.js';
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
@@ -12,6 +11,7 @@ import {
   APP_FACT_WORLD_READY
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
+import { WORLD_REPLICA_EVENTS, createWorldReplicaTracker } from './shared/world-replica-tracker.js';
 
 export const registerMovementModule = defineModule((
   { emit, config },
@@ -22,21 +22,21 @@ export const registerMovementModule = defineModule((
   const stepDelayMs = config?.movementStepDelayMs ?? 220;
   const movementSleep = typeof config?.movementSleep === 'function' ? config.movementSleep : undefined;
 
+  const world = createWorldReplicaTracker();
   let movement = null;
-  let occupancy = null;
   let heroId = null;
   let remainingMovementPoints = Number.POSITIVE_INFINITY;
   let isMoveCommandInProgress = false;
 
   return {
     subscriptions: [
+      ...world.subscriptions,
       {
         type: APP_FACT_WORLD_READY,
-        handler: (event) => {
-          const { scenario, map, occupancy: worldOccupancy } = event.detail;
-          const hero = findHero(scenario.entities);
+        handler: () => {
+          const replica = world.get();
+          const hero = replica.getHero();
           heroId = hero?.id ?? null;
-          occupancy = worldOccupancy ?? null;
 
           if (!hero) {
             movement = null;
@@ -44,9 +44,9 @@ export const registerMovementModule = defineModule((
           }
 
           movement = createMovementSystem({
-            entities: scenario.entities,
-            map,
-            occupancy: worldOccupancy,
+            entities: replica.entities,
+            map: replica.map,
+            occupancy: replica.occupancy,
             ...(movementSleep ? { sleep: movementSleep } : {}),
             stepDelayMs,
             getMaxMovableSteps: () => remainingMovementPoints,
@@ -105,7 +105,7 @@ export const registerMovementModule = defineModule((
 
           const { targetTile, path } = event.detail;
           const arrivalPlan = buildArrivalPlan({
-            occupancy,
+            occupancy: world.get().occupancy,
             targetTile,
             movingEntityId: heroId
           });
@@ -127,6 +127,7 @@ export const registerMovementModule = defineModule((
   id: 'movement',
   phase: 'domain',
   consumes: [
+    ...WORLD_REPLICA_EVENTS,
     APP_FACT_WORLD_READY,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
     APP_COMMAND_MOVE_REQUESTED

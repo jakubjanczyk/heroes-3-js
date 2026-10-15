@@ -12,6 +12,7 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../events.js';
 import {defineModule} from './shared/module-runtime.js';
+import {WORLD_REPLICA_EVENTS, createWorldReplicaTracker} from './shared/world-replica-tracker.js';
 
 export const registerEntityViewModule = defineModule((
   { env, config },
@@ -31,6 +32,7 @@ export const registerEntityViewModule = defineModule((
     RESOURCE: config?.resourceCollectFadeOutMs ?? 220
   });
   const fadeOutTimers = new Set();
+  const world = createWorldReplicaTracker();
 
   let map = null;
   let entities = null;
@@ -122,11 +124,13 @@ export const registerEntityViewModule = defineModule((
 
   return {
     subscriptions: [
+      ...world.subscriptions,
       {
         type: APP_FACT_WORLD_READY,
-        handler: (event) => {
-          map = event.detail.map;
-          entities = event.detail.scenario.entities;
+        handler: () => {
+          const replica = world.get();
+          map = replica.map;
+          entities = replica.entities;
           setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`);
           render();
         }
@@ -188,6 +192,7 @@ export const registerEntityViewModule = defineModule((
   id: 'entity-view',
   phase: 'view',
   consumes: [
+    ...WORLD_REPLICA_EVENTS,
     APP_FACT_WORLD_READY,
     APP_FACT_HERO_MOVED,
     APP_FACT_MONSTER_DEFEATED,

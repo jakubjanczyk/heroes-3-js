@@ -7,7 +7,8 @@ import { createTownFootprintBlockers } from './town-footprint.js';
 
 export function buildWorld(
   {
-    scenario
+    scenario,
+    map: existingMap = null
   },
   {
     createMap = createMapDefault,
@@ -15,7 +16,7 @@ export function buildWorld(
     createWorldState = createWorldStateDefault
   } = {}
 ) {
-  const map = createMap(scenario.terrain);
+  const map = existingMap ?? createMap(scenario.terrain);
   const townFootprintBlockers = createTownFootprintBlockers({
     entities: scenario.entities,
     map

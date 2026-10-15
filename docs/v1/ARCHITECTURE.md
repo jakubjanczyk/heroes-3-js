@@ -140,7 +140,7 @@ High-level steps:
 7. wire reset command handling (`command.session.reset.requested` -> `eventLog.reset()` + `location.reload()`).
 8. emit `command.app.start`.
 9. await either:
-   - `fact.world.ready` -> resolve boot and return `{ scenario, definitions, map, occupancy, bus, eventLog }`
+   - `fact.world.ready` -> resolve boot and return `{ scenario, definitions, map, bus, eventLog }` (the world part is the frozen world-ready snapshot)
    - `fact.world.load.failed` -> reject boot
 
 ```mermaid
@@ -156,7 +156,7 @@ sequenceDiagram
   Boot->>Modules: register all modules
   Boot->>Bus: emit(command.app.start)
   Bus->>World: command.app.start
-  World->>World: loadGame + createMap + createOccupancy
+  World->>World: loadGame + createMap + deepFreeze
   World->>Bus: emit(fact.world.ready)
   Bus->>Boot: fact.world.ready
   Boot-->>Main: return world + bus
@@ -168,14 +168,14 @@ Quick matrix:
 
 | Module | Subscribes | Emits | Owns mutable state | Owns DOM |
 |---|---|---|---|---|
-| `world.module` | `command.app.start`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted`, `worldState` | none |
+| `world.module` | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted` | none |
 | `turn.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnState` (assigned only in fact handlers), `isMoving` | none |
-| `movement.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `movement`, `occupancy`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
-| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | `hero`, `interactions`, `factsOnModalClosed` | none |
-| `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `map`, `occupancy`, `hero`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
-| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `hero`, `map`, `isMoving` | queries `.viewport`, `.world` |
+| `movement.module` | world replica facts, `fact.hero.movementPoints.changed`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | world replica, `movement`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
+| `interaction.module` | world replica facts, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited` | world replica, `interactions`, `factsOnModalClosed` | none |
+| `selection.module` | world replica facts, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `fact.move.started`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | world replica, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
+| `camera.module` | world replica facts, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | world replica, `camera`, `map`, `isMoving` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`, `ui.restore.started`, `ui.restore.completed` | none | `map`, `entities`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
+| `entity-view.module` | world replica facts, `ui.restore.started`, `ui.restore.completed` | none | world replica, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
 | `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
 | `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
@@ -196,6 +196,13 @@ Route selection vs. movement:
 
 - `selection.module` owns the selected target and route, the select-then-confirm click flow, and when a confirm is allowed (hero idle, no modal open, movement points left). It emits `command.move.requested`.
 - `movement.module` only executes `command.move.requested`; any other input (keyboard, minimap, AI) can emit that command directly without going through selection.
+
+World replicas:
+
+- `world.module` only loads the scenario and emits a deeply frozen `fact.world.ready` snapshot. It holds no live world state.
+- modules that need live entities or occupancy (`movement`, `interaction`, `selection`, `camera`, `entity-view`) use `createWorldReplicaTracker()` from `app/modules/shared/world-replica-tracker.js`. It builds a private `createWorldReplica` (`game/world-replica.js`) on `fact.world.ready` and applies "world replica facts" (`fact.hero.moved`, `fact.monster.defeated`, `fact.resource.collected`) to it.
+- a module spreads the tracker's `subscriptions` before its own, so its replica is already up to date when its own handler sees the same fact.
+- the static map and definitions are shared by reference; entities and occupancy are copied per module, so no module can change what another module sees.
 
 ### 6.2 Reusable UI components (custom elements)
 
@@ -306,13 +313,13 @@ This is the canonical behavior for long routes in the current runtime.
 - `interaction-modal.module` mounts `<interaction-modal>` in `.viewport`.
 - closing the modal emits `ui.interaction.modal.closed`.
 - on close, `interaction.module` emits `fact.monster.defeated` immediately (the defeat is committed only once the player acknowledges the modal; a reload while the modal is open keeps the monster).
-- `world.module` removes the monster from world state and occupancy.
+- every module with a world replica removes the monster from its own entities and occupancy.
 - `entity-view.module` fades the monster element out and removes it after `monsterDefeatFadeOutMs` (immediately during restore).
 
 ### 7.7 Resource collection
 
 - `interaction.module` emits `fact.resource.collected` as soon as the arrival resolves (no modal).
-- `world.module` removes the resource from world state and occupancy, so it can't be targeted again.
+- every module with a world replica removes the resource from its own entities and occupancy, so it can't be targeted again.
 - `hud.module` updates totals immediately; `entity-view.module` fades the element out on its own.
 - domain facts never wait on view animations, so a reload mid-fade keeps the resource collected.
 
@@ -404,5 +411,6 @@ When editing architecture, preserve these invariants:
 - no module-to-module direct calls for runtime behavior.
 - bus events are the only cross-module coordination channel.
 - persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/systems/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
+- `fact.world.ready` is a deeply frozen snapshot (`scenario`, `definitions`, `map`); nobody mutates shared world objects. Modules that need live entities or occupancy keep a private world replica (see "World replicas").
 - `engine/` never imports from `game/`.
 - module tests validate module internals; behavior tests validate user-observable flows.
