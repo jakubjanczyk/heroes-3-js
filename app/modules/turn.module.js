@@ -1,4 +1,10 @@
-import { createTurnSystem as createTurnSystemDefault } from '../../game/systems/turn-system.js';
+import {
+  applyMovementPointsChanged,
+  applyTurnEnded,
+  createTurnState,
+  decideEndTurn,
+  decideSpendMovementPoints
+} from '../../game/systems/turn-system.js';
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
@@ -10,34 +16,26 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerTurnModule = defineModule((
-  { emit, config },
-  {
-    createTurnSystem = createTurnSystemDefault
-  } = {}
-) => {
+export const registerTurnModule = defineModule(({ emit, config }) => {
   const maxMovementPoints = config.maxMovementPoints;
   const now = typeof config?.now === 'function' ? config.now : () => Date.now();
   const moveDurationThresholdMs = config?.moveDurationThresholdMs ?? 16;
   const endTurnPostMoveGraceMs = config?.endTurnPostMoveGraceMs ?? 32;
   const shouldApplyPostMoveGrace = Number(config?.movementStepDelayMs ?? 220) > 0;
 
-  let turnSystem = null;
+  // Only fact handlers assign turnState; commands decide and emit facts, so live play and replay
+  // go through the same code path.
+  let turnState = null;
   let isMoving = false;
   let moveStartedAt = 0;
   let suppressEndTurnUntil = 0;
 
-  function emitTurnState({ log = true } = {}) {
-    if (!turnSystem) {
-      return;
-    }
-
-    emit(APP_FACT_MOVEMENT_POINTS_CHANGED, {
-      value: turnSystem.getRemainingMovementPoints(),
-      max: maxMovementPoints
-    }, {
-      log
-    });
+  function emitMovementPointsChanged(value, { log = true } = {}) {
+    emit(
+      APP_FACT_MOVEMENT_POINTS_CHANGED,
+      { value, max: turnState.maxMovementPoints },
+      { log }
+    );
   }
 
   return {
@@ -45,30 +43,28 @@ export const registerTurnModule = defineModule((
       {
         type: APP_FACT_WORLD_READY,
         handler: () => {
-          turnSystem = createTurnSystem({
-            maxMovementPoints
-          });
-          emitTurnState({ log: false });
+          turnState = createTurnState({ maxMovementPoints });
+          emitMovementPointsChanged(turnState.remainingMovementPoints, { log: false });
         }
       },
       {
         type: APP_FACT_MOVEMENT_POINTS_CHANGED,
         handler: (event) => {
-          if (!turnSystem) {
+          if (!turnState) {
             return;
           }
 
-          turnSystem.setRemainingMovementPoints?.(event.detail.value);
+          turnState = applyMovementPointsChanged(turnState, event.detail.value);
         }
       },
       {
         type: APP_FACT_TURN_ENDED,
         handler: (event) => {
-          if (!turnSystem) {
+          if (!turnState) {
             return;
           }
 
-          turnSystem.setTurnNumber?.(event.detail.turnNumber);
+          turnState = applyTurnEnded(turnState, event.detail.turnNumber);
         }
       },
       {
@@ -95,35 +91,28 @@ export const registerTurnModule = defineModule((
       {
         type: APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
         handler: (event) => {
-          if (!turnSystem) {
+          if (!turnState) {
             return;
           }
 
-          const amount = Math.max(0, Math.floor(event.detail.amount ?? 0));
-          if (amount < 1) {
+          const outcome = decideSpendMovementPoints(turnState, event.detail.amount);
+          if (!outcome) {
             return;
           }
 
-          const didSpendMovementPoints = turnSystem.spendMovementPoints(amount);
-          if (!didSpendMovementPoints) {
-            return;
-          }
-
-          emitTurnState();
+          emitMovementPointsChanged(outcome.remainingMovementPoints);
         }
       },
       {
         type: APP_COMMAND_END_TURN_REQUESTED,
         handler: () => {
-          if (!turnSystem || isMoving || now() < suppressEndTurnUntil) {
+          if (!turnState || isMoving || now() < suppressEndTurnUntil) {
             return;
           }
 
-          turnSystem.endTurn();
-          emit(APP_FACT_TURN_ENDED, {
-            turnNumber: turnSystem.getTurnNumber()
-          });
-          emitTurnState();
+          const outcome = decideEndTurn(turnState);
+          emit(APP_FACT_TURN_ENDED, { turnNumber: outcome.turnNumber });
+          emitMovementPointsChanged(outcome.remainingMovementPoints);
         }
       }
     ]
