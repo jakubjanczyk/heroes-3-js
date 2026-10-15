@@ -121,7 +121,7 @@ Every runtime module follows this shape:
 - primary API: `registerXModule({ bus, env, config }, overrides?)`
 - module registers all its own bus listeners
 - module queries its own DOM dependencies via `env.document`
-- `overrides` are optional test seams for module unit tests
+- `overrides` are optional dependency seams (no tests use them at the moment)
 
 `registerModules` wires modules exactly once from `bootApp`.
 
@@ -365,26 +365,7 @@ Panel styles are in `app/modules/dev/bus-dev-panel.css`.
 
 ## 10) Testing strategy and seams
 
-### 10.1 Module unit tests
-
-Each module has a focused unit test file under `app/modules/*.test.js`.
-
-Test seams are explicit and local:
-
-- module-level overrides (second argument) for dependencies like `createMovementSystem`, `createCamera`, `loadMusicTracks`
-- fake bus (`tests/test-utils/fake-bus.js`) to assert emitted events and listener behavior
-
-### 10.3 UI component tests
-
-Reusable custom elements are tested directly under `app/ui/*.test.js`.
-
-For `interaction-modal` this includes:
-
-- payload rendering (`title`, `message`)
-- close mechanics (OK click, Escape, transition delay)
-- event emission contract (`interaction-modal-closed`)
-
-### 10.2 Behavior tests
+### 10.1 Behavior tests (main safety net)
 
 End-to-end behavior scenarios live in `tests/behavior/*` and boot the real module graph.
 
@@ -394,6 +375,20 @@ Important deterministic controls used by tests:
 - `config.movementSleep`
 
 These allow movement timing to be deterministic without reintroducing boot-level dependency wiring.
+
+### 10.2 Unit tests (only where behavior tests can't reach)
+
+Unit tests are kept only where they catch something behavior tests can't:
+
+- `engine/pathfinding.test.js`: routing rules (no corner cutting, tie-breaking, shortest detours)
+- `engine/eventlog.test.js`: real IndexedDB saving and the in-memory fallback (behavior tests use an in-memory log)
+- `game/load.test.js`, `game/town-footprint.test.js`: scenario validation and checks on the real demo map data
+- `game/audio/*.test.js`: track selection and missing or broken music manifests
+- `app/ui/interaction-modal.element.test.js`: native dialog quirks (Escape, backdrop, unexpected close)
+- `app/session-db-name.test.js`: PR previews keep separate saves
+- `tests/architecture/boundaries.test.js`: layering rules
+
+Module wiring (module X reacts to event A by emitting B) is not unit tested; behavior tests cover it.
 
 ## 11) Extension playbook (how to add a feature safely)
 
@@ -405,7 +400,7 @@ These allow movement timing to be deterministic without reintroducing boot-level
    - custom element under `app/ui/` (reusable/interactive UI).
 5. if using a custom element, keep module as bus/controller layer and component as UI implementation.
 6. register module from `app/modules/register-modules.js`.
-7. add/expand module and component tests first, then behavior tests.
+7. add behavior tests first; add a unit test only for what behavior tests can't reach (see 10.2).
 
 ## 12) Invariants to keep
 
@@ -418,4 +413,4 @@ When editing architecture, preserve these invariants:
 - persisted state changes only in `fact.*` handlers. Command handlers decide (e.g. `decideEndTurn` in `game/systems/turn-system.js`) and emit facts; they never assign state themselves. Live play and replay therefore run the same code.
 - `fact.world.ready` is a deeply frozen snapshot (`scenario`, `definitions`, `map`, `staticOccupancy`); nobody mutates shared world objects. Changes during play live only in small state derived from facts (`heroTile`, `removedIds`), kept only where a module needs it later (see "World state").
 - `engine/` never imports from `game/`.
-- module tests validate module internals; behavior tests validate user-observable flows.
+- behavior tests validate user-observable flows; unit tests exist only for what behavior tests can't reach (see 10.2).
