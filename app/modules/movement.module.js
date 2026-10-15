@@ -1,4 +1,4 @@
-import { createMovementSystem as createMovementSystemDefault } from '../../game/systems/movement-system.js';
+import { createMovementSystem } from '../../game/systems/movement-system.js';
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js';
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js';
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js';
@@ -19,12 +19,7 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerMovementModule = defineModule((
-  { emit, config },
-  {
-    createMovementSystem = createMovementSystemDefault
-  } = {}
-) => {
+export const registerMovementModule = defineModule(({ emit, config }) => {
   const stepDelayMs = config?.movementStepDelayMs ?? 220;
   const movementSleep = typeof config?.movementSleep === 'function' ? config.movementSleep : undefined;
   const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors);

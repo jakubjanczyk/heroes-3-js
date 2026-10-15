@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "@jjanczyk/object-builder": "^1.0.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/user-event": "^14.6.1",
     "jsdom": "^28.1.0",

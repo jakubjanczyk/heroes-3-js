@@ -54,7 +54,6 @@ export async function bootApp({
   const appEventLog = eventLog ?? createEventLog();
   await appEventLog.init?.();
 
-  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog);
   const env = {
     fetch,
     document,
@@ -68,6 +67,7 @@ export async function bootApp({
     musicManifestUrl,
     ...configOverride
   };
+  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog);
 
   const lifecycle = createDisposer();
 

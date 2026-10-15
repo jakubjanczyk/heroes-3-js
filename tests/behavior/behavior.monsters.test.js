@@ -71,7 +71,7 @@ describe('monster interaction behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 20,
-        monsterDefeatFadeOutMs: 20
+        fadeOutMsByKind: { MONSTER: 20 }
       }
     });
 
@@ -124,7 +124,7 @@ describe('monster interaction behavior', () => {
       },
       appConfig: {
         interactionModalTransitionMs: 20,
-        monsterDefeatFadeOutMs: 20
+        fadeOutMsByKind: { MONSTER: 20 }
       }
     });
 
@@ -156,7 +156,7 @@ describe('monster interaction behavior', () => {
       movementStepDelayMs: 20,
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 0
+        fadeOutMsByKind: { MONSTER: 0 }
       }
     });
 
@@ -188,7 +188,7 @@ describe('monster interaction behavior', () => {
       movementStepDelayMs: 220,
       appConfig: {
         interactionModalTransitionMs: 0,
-        monsterDefeatFadeOutMs: 0
+        fadeOutMsByKind: { MONSTER: 0 }
       }
     });
 
