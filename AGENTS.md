@@ -23,6 +23,10 @@ Run locally:
 - `npm run lint` — runs Biome checks (lint + formatting diagnostics).
 - `npm run lint:fix` — applies Biome fixes/formatting.
 
+Continuous integration:
+
+- Every PR and every push to `main` runs `npm ci` + `npm test` on Node 22 (`.github/workflows/test.yml`).
+
 Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Pushes to `main` publish the site to the `gh-pages` root (`.github/workflows/deploy-pages.yml`).
