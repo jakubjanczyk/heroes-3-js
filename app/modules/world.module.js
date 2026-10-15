@@ -8,8 +8,6 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-// Loads the scenario and publishes it as a frozen snapshot of everything that never changes.
-// It holds no live state: hero positions and removed entities come from facts.
 export const registerWorldModule = defineModule((
   { emit, env },
   {

@@ -12,8 +12,6 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-// Resolves what happens when a move ends on an entity. The movement module already found that
-// entity and names it in fact.move.finished, so this module needs no map or occupancy.
 export const registerInteractionModule = defineModule(({ emit }) => {
   let entitiesById = new Map();
   let definitions = {};
