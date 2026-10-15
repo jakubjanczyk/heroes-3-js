@@ -1,6 +1,7 @@
 export const APP_COMMAND_APP_START = 'command.app.start';
 export const APP_COMMAND_TILE_CLICKED = 'command.tile.clicked';
 export const APP_COMMAND_MOVE_REQUESTED = 'command.move.requested';
+export const APP_COMMAND_ROUTE_REQUESTED = 'command.route.requested';
 export const APP_COMMAND_END_TURN_REQUESTED = 'command.turn.end.requested';
 export const APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED =
   'command.turn.spendMovementPoints.requested';
@@ -14,6 +15,7 @@ export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed';
 export const APP_FACT_MOVE_STARTED = 'fact.move.started';
 export const APP_FACT_MOVE_FINISHED = 'fact.move.finished';
 export const APP_FACT_HERO_MOVED = 'fact.hero.moved';
+export const APP_FACT_ROUTE_PLANNED = 'fact.route.planned';
 export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.changed';
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended';
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated';

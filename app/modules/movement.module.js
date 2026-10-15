@@ -6,9 +6,11 @@ import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/remov
 import { getOccupantAt } from '../../game/domain/tile-occupant.js';
 import {
   APP_COMMAND_MOVE_REQUESTED,
+  APP_COMMAND_ROUTE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
+  APP_FACT_ROUTE_PLANNED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
@@ -127,6 +129,16 @@ export const registerMovementModule = defineModule((
         }
       },
       {
+        type: APP_COMMAND_ROUTE_REQUESTED,
+        handler: (event) => {
+          const tile = event.detail?.tile;
+          emit(APP_FACT_ROUTE_PLANNED, {
+            tile,
+            path: tile ? (movement?.planRoute(tile) ?? null) : null
+          });
+        }
+      },
+      {
         type: APP_COMMAND_MOVE_REQUESTED,
         handler: (event) => {
           if (!movement || isMoveCommandInProgress) {
@@ -161,10 +173,12 @@ export const registerMovementModule = defineModule((
     APP_FACT_HERO_MOVED,
     APP_FACT_ENTITY_REMOVED,
     APP_FACT_MOVEMENT_POINTS_CHANGED,
+    APP_COMMAND_ROUTE_REQUESTED,
     APP_COMMAND_MOVE_REQUESTED
   ],
   produces: [
     APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
+    APP_FACT_ROUTE_PLANNED,
     APP_FACT_MOVE_STARTED,
     APP_FACT_HERO_MOVED,
     APP_FACT_MOVE_FINISHED

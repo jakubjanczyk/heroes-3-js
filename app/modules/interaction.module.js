@@ -1,7 +1,4 @@
-import { createInteractionSystem as createInteractionSystemDefault } from '../../game/systems/interaction-system.js';
-import { NO_REMOVED_ENTITIES, applyEntityRemoved } from '../../game/domain/removed-entities.js';
-import { getOccupantAt } from '../../game/domain/tile-occupant.js';
-import { sameTile } from '../../engine/tile-utils.js';
+import { resolveArrivalOutcome } from '../../game/domain/entity-behaviors.js';
 import { getInteractionEffects } from './shared/interaction-outcomes.js';
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -15,15 +12,9 @@ import {
 } from '../events.js';
 import { defineModule } from './shared/module-runtime.js';
 
-export const registerInteractionModule = defineModule((
-  { emit },
-  {
-    createInteractionSystem = createInteractionSystemDefault
-  } = {}
-) => {
-  let staticOccupancy = null;
-  let removedIds = NO_REMOVED_ENTITIES;
-  let interactions = null;
+export const registerInteractionModule = defineModule(({ emit }) => {
+  let entitiesById = new Map();
+  let definitions = {};
   let factsOnModalClosed = [];
 
   function emitFacts(facts) {
@@ -38,42 +29,24 @@ export const registerInteractionModule = defineModule((
         type: APP_FACT_WORLD_READY,
         handler: (event) => {
           const world = event.detail;
-          staticOccupancy = world.staticOccupancy;
-          removedIds = NO_REMOVED_ENTITIES;
+          entitiesById = new Map(world.scenario.entities.map((entity) => [entity.id, entity]));
+          definitions = world.definitions ?? {};
           factsOnModalClosed = [];
-          interactions = createInteractionSystem({
-            getOccupantAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds }),
-            definitions: world.definitions
-          });
-        }
-      },
-      {
-        type: APP_FACT_ENTITY_REMOVED,
-        handler: (event) => {
-          removedIds = applyEntityRemoved(removedIds, event.detail?.entityId);
         }
       },
       {
         type: APP_FACT_MOVE_FINISHED,
         handler: (event) => {
-          const { heroId, reachedTile } = event.detail;
-          if (!interactions) {
+          const interaction = event.detail.interaction;
+          const entity = entitiesById.get(interaction?.entityId);
+          if (!entity) {
             return;
           }
 
-          const destinationTile = event.detail.targetTile;
-          if (!destinationTile) {
-            return;
-          }
-
-          const didTriggerArrivalInteraction = Boolean(event.detail.interaction?.kind);
-          if (!didTriggerArrivalInteraction && !sameTile(reachedTile, destinationTile)) {
-            return;
-          }
-
-          const outcome = interactions.resolveArrivalAtDestination({
-            destinationTile,
-            arrivingEntityId: heroId
+          const outcome = resolveArrivalOutcome({
+            entity,
+            definitions,
+            tile: interaction.targetTile ?? event.detail.targetTile
           });
           const effects = getInteractionEffects(outcome);
           if (!effects) {
@@ -103,7 +76,6 @@ export const registerInteractionModule = defineModule((
   phase: 'domain',
   consumes: [
     APP_FACT_WORLD_READY,
-    APP_FACT_ENTITY_REMOVED,
     APP_FACT_MOVE_FINISHED,
     APP_UI_INTERACTION_MODAL_CLOSED
   ],
