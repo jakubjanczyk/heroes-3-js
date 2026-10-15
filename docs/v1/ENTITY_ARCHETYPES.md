@@ -145,9 +145,7 @@ Rule of thumb:
    - return `{ facts, modal, factsOnModalClosed }`
    - decide: which facts are committed immediately vs only after the modal is acknowledged
 6. Add tests:
-   - unit tests for behavior outcome shape (`game/domain/entity-behaviors.test.js` patterns)
-   - unit tests for module behavior if new bus flow is introduced
-   - behavior tests under `tests/behavior/` for the user-visible scenario
+   - behavior tests under `tests/behavior/` for the user-visible scenario (no unit tests for outcome shapes or module wiring)
 
 If you find yourself adding a `switch (kind)` in a system/module, it usually means the behavior
 belongs in:
