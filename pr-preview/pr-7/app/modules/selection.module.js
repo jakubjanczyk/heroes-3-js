@@ -17,8 +17,6 @@ import {
 import { sameTile } from '../../engine/tile-utils.js';
 import { defineModule } from './shared/module-runtime.js';
 
-// Owns the select-then-confirm click flow and the selected route. Routes themselves are
-// planned by the movement module: selection asks with command.route.requested.
 export const registerSelectionModule = defineModule(({ emit }) => {
   let isWorldReady = false;
   let requestedTile = null;
