@@ -15,11 +15,9 @@ export function renderTerrainLayer({ container, map, createElement }) {
       const tile = { x, y }
       const tileEl = makeElement('div')
       const topLeft = getTileTopLeft({ map, tile, origin })
-      const passable = map.isPassable(tile)
+      const terrainName = map.getTerrainType(tile)?.name
 
-      tileEl.className = passable
-        ? 'terrain-tile terrain-tile--passable'
-        : 'terrain-tile terrain-tile--blocked'
+      tileEl.className = terrainName ? `terrain-tile terrain-tile--${terrainName}` : 'terrain-tile'
       tileEl.style.transform = `translate(${topLeft.x}px, ${topLeft.y}px)`
       tileEl.dataset.x = String(x)
       tileEl.dataset.y = String(y)

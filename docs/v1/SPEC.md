@@ -52,6 +52,7 @@ V1 uses a minimal terrain model:
 
 - The map is a grid with **passable** and **blocked** tiles only.
 - There are **no named terrain types** (no grass/dirt/road system yet).
+  - Post-V1: named terrain types were added; see `docs/notes/2026-10-16-terrain-types.md`.
 - There are **no roads** in V1.
 - Movement cost is **1 movement point per step**.
 
@@ -142,6 +143,7 @@ One JSON scenario file (example shape):
 - `terrain`: `{ width, height, tiles }`
   - `tiles` is a flat array of length `width * height`
   - tile value `0` = passable, `1` = blocked
+    (post-V1: values are terrain codes, `0` grass and `1` rock; see `docs/notes/2026-10-16-terrain-types.md`)
 - `entities`: array of placements:
   - `{ id, kind, type, tile: {x,y} }`
 

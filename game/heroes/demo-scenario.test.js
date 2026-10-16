@@ -15,7 +15,11 @@ describe('demo scenario towns', () => {
       readFileSync(new URL('../../scenarios/scenario.json', import.meta.url), 'utf8')
     )
     const entityBehaviors = createEntityBehaviors(heroesContent.entityBehaviors)
-    const { map, staticOccupancy } = buildWorld({ scenario, entityBehaviors })
+    const { map, staticOccupancy } = buildWorld({
+      scenario,
+      entityBehaviors,
+      terrainTypes: heroesContent.terrainTypes
+    })
     const towns = scenario.entities.filter(isTown)
     const hero = findHero(scenario.entities)
 
