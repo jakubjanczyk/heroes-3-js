@@ -4,6 +4,7 @@ import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
 import { bootApp } from '../../app/boot-app.js';
+import { aScenario } from './builders.js';
 
 export function mountAppTemplate() {
   document.body.innerHTML = `
@@ -97,19 +98,6 @@ export function createLoadGame({
       mines: {},
       ...definitions
     }
-  };
-}
-
-export function createLinearScenario({
-  width = 20,
-  heroId = 'hero-1',
-  heroTile = { x: 0, y: 0 }
-} = {}) {
-  return {
-    width,
-    height: 1,
-    tiles: new Array(width).fill(0),
-    entities: [{ id: heroId, kind: 'HERO', type: 'HERO', tile: heroTile }]
   };
 }
 
@@ -240,18 +228,9 @@ export async function setupMovementBehaviorApp({
 }
 
 export async function setupLinearMovementApp(options = {}) {
-  const {
-    width,
-    heroId,
-    heroTile,
-    viewportSize,
-    musicTracks,
-    AudioCtor,
-    movementStepDelayMs,
-    appConfig
-  } = options;
+  const { width = 20, viewportSize, musicTracks, AudioCtor, movementStepDelayMs, appConfig } = options;
   return setupMovementBehaviorApp({
-    loadGameOptions: createLinearScenario({ width, heroId, heroTile }),
+    loadGameOptions: aScenario().withSize(width).build(),
     viewportSize,
     musicTracks,
     AudioCtor,

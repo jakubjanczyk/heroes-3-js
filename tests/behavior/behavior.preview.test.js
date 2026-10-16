@@ -22,19 +22,15 @@ import {
   setupLinearMovementApp,
   setupMovementBehaviorApp
 } from './behavior.utils.js';
+import { aScenario } from './builders.js';
 
 describe('path preview behavior', () => {
   test('given blocked terrain between hero and destination when player previews a move then preview routes around the obstacle and never crosses blocked tiles', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 2,
-        tiles: [
-          0, 1, 1, 0,
-          0, 0, 0, 0
-        ],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(4, 2).withTiles([
+        0, 1, 1, 0,
+        0, 0, 0, 0
+      ]).build()
     });
 
     dispatchTileClick(3, 0);
@@ -100,12 +96,7 @@ describe('path preview behavior', () => {
 
   test('given preview exists when player clicks unreachable tile then preview clears', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 1],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(4).withTiles([0, 0, 0, 1]).build()
     });
 
     dispatchTileClick(2, 0);
@@ -121,12 +112,7 @@ describe('path preview behavior', () => {
 
   test('given destination is reachable only by a diagonal step when player previews then preview shows the target marker', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 2,
-        height: 2,
-        tiles: [0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(2, 2).build()
     });
 
     dispatchTileClick(1, 1);
@@ -138,12 +124,7 @@ describe('path preview behavior', () => {
 
   test('given destination is reachable only by a diagonal step when player confirms then hero moves diagonally and MP decreases by 1', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 2,
-        height: 2,
-        tiles: [0, 0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(2, 2).build()
     });
 
     confirmTileClickByDispatch(1, 1);
@@ -155,15 +136,10 @@ describe('path preview behavior', () => {
 
   test('given diagonal corner-cut would be required when player clicks the diagonal destination then no preview is shown and hero cannot move there', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 2,
-        height: 2,
-        tiles: [
-          0, 1,
-          1, 0
-        ],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(2, 2).withTiles([
+        0, 1,
+        1, 0
+      ]).build()
     });
 
     dispatchTileClick(1, 1);

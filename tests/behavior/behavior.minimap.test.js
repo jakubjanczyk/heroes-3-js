@@ -2,6 +2,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { setupMovementBehaviorApp } from './behavior.utils.js';
+import { aHero, aScenario, aTown } from './builders.js';
 
 const DEFAULT_MINIMAP_BOUNDS = {
   left: 0,
@@ -14,18 +15,9 @@ const DEFAULT_MINIMAP_BOUNDS = {
 
 const LARGE_VIEWPORT_SIZE = { width: 1000, height: 700 };
 
-function createPassableMapScenario() {
-  return {
-    width: 60,
-    height: 40,
-    tiles: new Array(60 * 40).fill(0),
-    entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 20, y: 15 } }]
-  };
-}
-
 async function setupLargeMapMinimapApp() {
   await setupMovementBehaviorApp({
-    loadGameOptions: createPassableMapScenario(),
+    loadGameOptions: aScenario().withSize(60, 40).withEntities(aHero().at(20, 15)).build(),
     viewportSize: LARGE_VIEWPORT_SIZE
   });
 }
@@ -60,12 +52,7 @@ function clickMinimap(minimapMap, clientX, clientY) {
 describe('minimap behavior', () => {
   test('given app boots when world is ready then minimap renders full map with passable and blocked terrain', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 2,
-        tiles: [0, 1, 0, 1, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(3, 2).withTiles([0, 1, 0, 1, 0, 0]).build()
     });
 
     const minimapTiles = document.querySelectorAll('.minimap-tile');
@@ -80,16 +67,10 @@ describe('minimap behavior', () => {
 
   test('given app boots with towns when minimap is rendered then town markers appear at town coordinates', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(8 * 7).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } },
-          { id: 'town-2', kind: 'TOWN', type: 'CASTLE', tile: { x: 6, y: 2 } }
-        ]
-      }
+      loadGameOptions: aScenario()
+        .withSize(8, 7)
+        .withEntities(aHero(), aTown().at(4, 3), aTown().withId('town-2').at(6, 2))
+        .build()
     });
 
     const townMarkers = document.querySelectorAll('.minimap-town-marker');

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, test } from 'vitest';
 
+import { aHero, aMine, aScenario } from './builders.js';
 import {
   confirmTileClickByDispatch,
   dispatchTileClick,
@@ -16,21 +17,19 @@ import {
 describe('mine interaction behavior', () => {
   test('given scenario contains all mine types when app boots then each mine is rendered', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 20,
-        height: 1,
-        tiles: new Array(20).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 2, y: 0 } },
-          { id: 'mine-2', kind: 'MINE', type: 'SAWMILL', tile: { x: 4, y: 0 } },
-          { id: 'mine-3', kind: 'MINE', type: 'ORE_PIT', tile: { x: 6, y: 0 } },
-          { id: 'mine-4', kind: 'MINE', type: 'ALCHEMIST_LAB', tile: { x: 8, y: 0 } },
-          { id: 'mine-5', kind: 'MINE', type: 'SULFUR_DUNE', tile: { x: 10, y: 0 } },
-          { id: 'mine-6', kind: 'MINE', type: 'CRYSTAL_CAVERN', tile: { x: 12, y: 0 } },
-          { id: 'mine-7', kind: 'MINE', type: 'GEM_POND', tile: { x: 14, y: 0 } }
-        ]
-      }
+      loadGameOptions: aScenario()
+        .withSize(20)
+        .withEntities(
+          aHero(),
+          aMine().withId('mine-1').withType('GOLD_MINE').at(2, 0),
+          aMine().withId('mine-2').withType('SAWMILL').at(4, 0),
+          aMine().withId('mine-3').withType('ORE_PIT').at(6, 0),
+          aMine().withId('mine-4').withType('ALCHEMIST_LAB').at(8, 0),
+          aMine().withId('mine-5').withType('SULFUR_DUNE').at(10, 0),
+          aMine().withId('mine-6').withType('CRYSTAL_CAVERN').at(12, 0),
+          aMine().withId('mine-7').withType('GEM_POND').at(14, 0)
+        )
+        .build()
     });
 
     expectMineAt(2, 0, 'mine-1');
@@ -44,15 +43,10 @@ describe('mine interaction behavior', () => {
 
   test('given hero enters mine bottom-center tile when movement resolves then mine stays and no modal appears', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 6,
-        height: 3,
-        tiles: new Array(18).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 1 } },
-          { id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 2, y: 1 } }
-        ]
-      }
+      loadGameOptions: aScenario()
+        .withSize(6, 3)
+        .withEntities(aHero().at(0, 1), aMine().at(2, 1))
+        .build()
     });
 
     confirmTileClickByDispatch(2, 1);
@@ -65,15 +59,10 @@ describe('mine interaction behavior', () => {
 
   test('given mine is rendered as 3x2 when player previews non-entry footprint tiles then no preview is shown', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 4,
-        tiles: new Array(32).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 2 } },
-          { id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 3, y: 2 } }
-        ]
-      }
+      loadGameOptions: aScenario()
+        .withSize(8, 4)
+        .withEntities(aHero().at(0, 2), aMine().at(3, 2))
+        .build()
     });
 
     dispatchTileClick(2, 1);

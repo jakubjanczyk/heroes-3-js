@@ -18,6 +18,9 @@ export const aResource = () =>
 export const aTown = () =>
   builder({ id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } }, placeable);
 
+export const aMine = () =>
+  builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, placeable);
+
 export const aScenario = () =>
   builder(
     {

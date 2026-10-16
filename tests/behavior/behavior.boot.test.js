@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest';
 
+import { aHero, aScenario } from './builders.js';
 import {
   clickEndTurn,
   expectHeroAt,
@@ -14,12 +15,7 @@ import {
 describe('app boot behavior', () => {
   test('given app starts when scenario loads then terrain tiles are rendered from data', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 2,
-        tiles: [0, 1, 2, 3, 4, 5],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(3, 2).withTiles([0, 1, 2, 3, 4, 5]).build()
     });
 
     const terrainTiles = document.querySelectorAll('.terrain-tile');
@@ -30,12 +26,10 @@ describe('app boot behavior', () => {
 
   test('given app starts when hero exists then hero is rendered with expected entity id', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [{ id: 'hero-custom', kind: 'HERO', type: 'HERO', tile: { x: 1, y: 0 } }]
-      }
+      loadGameOptions: aScenario()
+        .withSize(3)
+        .withEntities(aHero().withId('hero-custom').at(1, 0))
+        .build()
     });
 
     const heroEntity = document.querySelector('.entity--hero[data-entity-id="hero-custom"]');
