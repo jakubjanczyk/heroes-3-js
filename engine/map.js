@@ -1,7 +1,9 @@
+import { deepFreeze } from './deep-freeze.js'
+
 // Tile code -> terrain type. Without one, tiles are plain open (0) or blocked (1) ground.
-const DEFAULT_TERRAIN_TYPES = Object.freeze({
-  0: Object.freeze({ name: 'open', passable: true }),
-  1: Object.freeze({ name: 'blocked', passable: false })
+const DEFAULT_TERRAIN_TYPES = deepFreeze({
+  0: { name: 'open', passable: true },
+  1: { name: 'blocked', passable: false }
 })
 
 export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES) {
