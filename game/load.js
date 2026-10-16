@@ -1,3 +1,5 @@
+import { createMap } from '../engine/map.js'
+
 async function fetchJson(fetch, url) {
   const res = await fetch(url)
   if (!res.ok) {
@@ -14,25 +16,23 @@ async function fetchJsonOrEmpty(fetch, url) {
   return res.json()
 }
 
-function isInBounds(terrain, tile) {
-  return tile.x >= 0 && tile.y >= 0 && tile.x < terrain.width && tile.y < terrain.height
-}
-
-function isPassableTile(terrain, tile) {
-  if (!isInBounds(terrain, tile)) {
-    return false
+function assertKnownTerrainCodes(terrain, map) {
+  for (let y = 0; y < terrain.height; y += 1) {
+    for (let x = 0; x < terrain.width; x += 1) {
+      if (map.getTerrainType({ x, y }) === null) {
+        const code = terrain.tiles[y * terrain.width + x]
+        throw new Error(`Unknown terrain code ${code} at tile (${x}, ${y})`)
+      }
+    }
   }
-
-  const index = tile.y * terrain.width + tile.x
-  return terrain.tiles[index] === 0
 }
 
-function assertEntitiesOnPassableTiles(scenario) {
+function assertEntitiesOnPassableTiles(scenario, map) {
   const entities = scenario.entities ?? []
 
   for (const entity of entities) {
     const tile = entity.tile ?? {}
-    if (isPassableTile(scenario.terrain, tile)) {
+    if (map.isPassable(tile)) {
       continue
     }
 
@@ -52,6 +52,7 @@ function normalizeStaticUrl(url) {
 
 export async function loadGame({
   fetch,
+  terrainTypes,
   scenarioUrl = '/scenarios/scenario.json',
   dataBaseUrl = '/game/data'
 }) {
@@ -71,7 +72,9 @@ export async function loadGame({
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`)
   ])
 
-  assertEntitiesOnPassableTiles(scenario)
+  const map = createMap(scenario.terrain, terrainTypes)
+  assertKnownTerrainCodes(scenario.terrain, map)
+  assertEntitiesOnPassableTiles(scenario, map)
 
   return {
     scenario,

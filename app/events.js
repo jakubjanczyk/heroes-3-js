@@ -1,6 +1,7 @@
 export const APP_COMMAND_APP_START = 'command.app.start'
 export const APP_COMMAND_TILE_CLICKED = 'command.tile.clicked'
 export const APP_COMMAND_MOVE_REQUESTED = 'command.move.requested'
+export const APP_COMMAND_MOVE_CONTINUE_REQUESTED = 'command.move.continue.requested'
 export const APP_COMMAND_ROUTE_REQUESTED = 'command.route.requested'
 export const APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED =
   'command.turn.spendMovementPoints.requested'

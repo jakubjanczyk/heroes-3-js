@@ -1,11 +1,13 @@
 import {
   APP_COMMAND_END_TURN_REQUESTED,
+  APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
   APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_WORLD_READY,
-  APP_UI_MUSIC_STATE_CHANGED
+  APP_UI_MUSIC_STATE_CHANGED,
+  APP_UI_PREVIEW_UPDATED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
@@ -14,6 +16,7 @@ export const registerHudModule = defineModule(
     const uiLayer = env.document?.querySelector('.ui-layer')
     const movementPointsStatus = env.document?.getElementById('movement-points-status')
     const resourceTotalsStatus = env.document?.getElementById('resource-totals-status')
+    const moveHeroButton = env.document?.getElementById('move-hero-button')
     const endTurnButton = env.document?.getElementById('end-turn-button')
     const resetSessionButton = env.document?.getElementById('reset-session-button')
     const musicToggleButton = env.document?.getElementById('music-toggle-button')
@@ -41,6 +44,14 @@ export const registerHudModule = defineModule(
 
     return {
       domSubscriptions: [
+        {
+          target: moveHeroButton,
+          type: 'click',
+          handler: (event) => {
+            event?.stopPropagation?.()
+            emit(APP_COMMAND_MOVE_CONTINUE_REQUESTED, {})
+          }
+        },
         {
           target: endTurnButton,
           type: 'click',
@@ -74,6 +85,16 @@ export const registerHudModule = defineModule(
         }
       ],
       subscriptions: [
+        {
+          type: APP_UI_PREVIEW_UPDATED,
+          handler: (event) => {
+            if (!moveHeroButton) {
+              return
+            }
+
+            moveHeroButton.disabled = !event.detail.canMove
+          }
+        },
         {
           type: APP_FACT_MOVEMENT_POINTS_CHANGED,
           handler: (event) => {
@@ -149,12 +170,14 @@ export const registerHudModule = defineModule(
     id: 'hud',
     phase: 'view',
     consumes: [
+      APP_UI_PREVIEW_UPDATED,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_MUSIC_STATE_CHANGED,
       APP_FACT_WORLD_READY,
       APP_FACT_RESOURCE_COLLECTED
     ],
     produces: [
+      APP_COMMAND_MOVE_CONTINUE_REQUESTED,
       APP_COMMAND_END_TURN_REQUESTED,
       APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
       APP_COMMAND_RESET_SESSION_REQUESTED
