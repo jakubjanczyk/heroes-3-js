@@ -1,5 +1,6 @@
 import { sameTile } from '../../engine/tile-utils.js'
 import {
+  APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_ROUTE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
@@ -27,11 +28,28 @@ export const registerSelectionModule = defineModule(
     let isInteractionModalOpen = false
     let remainingMovementPoints = Number.POSITIVE_INFINITY
 
+    function canMove() {
+      return (
+        isWorldReady &&
+        !isMoving &&
+        !isInteractionModalOpen &&
+        previewPath?.length >= 2 &&
+        remainingMovementPoints >= 1
+      )
+    }
+
+    function requestMove() {
+      if (canMove()) {
+        emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: previewTarget, path: [...previewPath] })
+      }
+    }
+
     function emitPreview() {
       emit(APP_UI_PREVIEW_UPDATED, {
         path: previewPath,
         targetTile: previewTarget,
-        maxAffordableSteps: remainingMovementPoints
+        maxAffordableSteps: remainingMovementPoints,
+        canMove: canMove()
       })
     }
 
@@ -76,14 +94,18 @@ export const registerSelectionModule = defineModule(
 
             const { tile } = event.detail
             if (previewTarget && sameTile(previewTarget, tile)) {
-              if (previewPath?.length >= 2 && remainingMovementPoints >= 1) {
-                emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: tile, path: [...previewPath] })
-              }
+              requestMove()
               return
             }
 
             requestedTile = tile
             emit(APP_COMMAND_ROUTE_REQUESTED, { tile })
+          }
+        },
+        {
+          type: APP_COMMAND_MOVE_CONTINUE_REQUESTED,
+          handler: () => {
+            requestMove()
           }
         },
         {
@@ -194,6 +216,7 @@ export const registerSelectionModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_COMMAND_TILE_CLICKED,
+      APP_COMMAND_MOVE_CONTINUE_REQUESTED,
       APP_FACT_ROUTE_PLANNED,
       APP_FACT_MOVE_STARTED,
       APP_FACT_HERO_MOVED,

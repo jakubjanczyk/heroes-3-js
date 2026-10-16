@@ -60,7 +60,12 @@
     translate var(--duration-fast) var(--ease-standard),
     box-shadow var(--duration-fast) var(--ease-standard);
 
-  &:hover {
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  &:hover:not(:disabled) {
     translate: 0 -1px;
     border-color: color-mix(in oklab, var(--color-accent) 34%, var(--color-border));
     box-shadow: 0 0.4rem 0.9rem color-mix(in oklab, var(--color-shadow) 60%, transparent);
