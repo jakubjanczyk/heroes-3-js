@@ -27,10 +27,10 @@ The portfolio is a **separate project** consuming this as a core engine/library.
 Make the game visually functional. CSS-based - no sprites yet.
 
 ### 1.1 Terrain Types
-- [ ] Terrain type enum: grass, dirt, snow, swamp, desert, lava, sand, rough, subterranean, water
-- [ ] Terrain data in scenario JSON (tile value encodes terrain type, not just 0/1)
-- [ ] CSS class per terrain type with distinct color/pattern
-- [ ] Water tiles are impassable
+- [x] Terrain type enum: grass, dirt, snow, swamp, lava, sand, rough, subterranean, water, rock (no desert: Heroes 3 uses sand)
+- [x] Terrain data in scenario JSON (tile value encodes terrain type, not just 0/1)
+- [x] CSS class per terrain type with distinct color/pattern
+- [x] Water tiles are impassable
 - [ ] Terrain type affects movement cost (see 4.6)
 
 ### 1.2 Cursor System
@@ -557,7 +557,7 @@ Rich adventure map with meaningful locations.
 - [ ] Stepping on entrance teleports hero to exit (costs movement points)
 
 ### 7.10 Water & Boats
-- [ ] Water tiles are impassable on foot
+- [x] Water tiles are impassable on foot
 - [ ] Boats: hero boards a boat at shore to travel on water
 - [ ] Boat locations on map (entity type)
 - [ ] Hero movement changes to water movement when on boat

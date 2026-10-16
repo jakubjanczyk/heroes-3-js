@@ -22,6 +22,12 @@ function createFakeFetch(urlToJson) {
   }
 }
 
+const TERRAIN_TYPES = {
+  0: { name: 'grass', passable: true },
+  1: { name: 'rock', passable: false },
+  9: { name: 'water', passable: false }
+}
+
 describe('bootstrap', () => {
   test('loadGame loads scenario and definitions', async () => {
     const scenario = {
@@ -75,6 +81,46 @@ describe('bootstrap', () => {
     })
 
     await expect(loadGame({ fetch })).rejects.toThrow(
+      'Entity monster-1 (MONSTER) must be placed on a passable tile: (1, 0)'
+    )
+  })
+
+  test('loadGame rejects scenarios with an unknown terrain code', async () => {
+    const scenario = {
+      meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
+      terrain: { width: 2, height: 1, tiles: [0, 42] },
+      entities: [{ id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+    }
+
+    const fetch = createFakeFetch({
+      './scenarios/scenario.json': scenario,
+      './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/monsters.json': {},
+      './game/data/resources.json': {},
+      './game/data/towns.json': {}
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Unknown terrain code 42 at tile (1, 0)'
+    )
+  })
+
+  test('loadGame rejects scenarios where entity is on water', async () => {
+    const scenario = {
+      meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
+      terrain: { width: 2, height: 1, tiles: [0, 9] },
+      entities: [{ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }]
+    }
+
+    const fetch = createFakeFetch({
+      './scenarios/scenario.json': scenario,
+      './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
+      './game/data/resources.json': {},
+      './game/data/towns.json': {}
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
       'Entity monster-1 (MONSTER) must be placed on a passable tile: (1, 0)'
     )
   })

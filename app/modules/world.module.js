@@ -12,6 +12,7 @@ import { defineModule } from './shared/module-runtime.js'
 export const registerWorldModule = defineModule(
   ({ emit, env, config }) => {
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
+    const terrainTypes = config?.content?.terrainTypes
     let hasStarted = false
 
     return {
@@ -26,9 +27,13 @@ export const registerWorldModule = defineModule(
             hasStarted = true
             void (async () => {
               try {
-                const { scenario, definitions } = await loadGame({ fetch: env.fetch })
+                const { scenario, definitions } = await loadGame({ fetch: env.fetch, terrainTypes })
 
-                const { map, staticOccupancy } = buildWorld({ scenario, entityBehaviors })
+                const { map, staticOccupancy } = buildWorld({
+                  scenario,
+                  entityBehaviors,
+                  terrainTypes
+                })
 
                 emit(
                   APP_FACT_WORLD_READY,

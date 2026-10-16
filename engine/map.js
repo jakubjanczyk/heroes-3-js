@@ -1,4 +1,10 @@
-export function createMap(terrain) {
+// Tile code -> terrain type. Without one, tiles are plain open (0) or blocked (1) ground.
+const DEFAULT_TERRAIN_TYPES = Object.freeze({
+  0: Object.freeze({ name: 'open', passable: true }),
+  1: Object.freeze({ name: 'blocked', passable: false })
+})
+
+export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES) {
   const { width, height, tiles } = terrain
   const tileWidth = 32
   const tileHeight = 32
@@ -9,13 +15,17 @@ export function createMap(terrain) {
     return tile.x >= 0 && tile.y >= 0 && tile.x < width && tile.y < height
   }
 
-  function isPassable(tile) {
+  function getTerrainType(tile) {
     if (!inBounds(tile)) {
-      return false
+      return null
     }
 
-    const index = tile.y * width + tile.x
-    return tiles[index] === 0
+    const code = tiles[tile.y * width + tile.x]
+    return Object.hasOwn(terrainTypes, code) ? terrainTypes[code] : null
+  }
+
+  function isPassable(tile) {
+    return getTerrainType(tile)?.passable === true
   }
 
   function tileToScreen(tile) {
@@ -41,6 +51,7 @@ export function createMap(terrain) {
     halfTileWidth,
     halfTileHeight,
     inBounds,
+    getTerrainType,
     isPassable,
     tileToScreen,
     screenToTile
