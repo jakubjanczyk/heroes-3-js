@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, test } from 'vitest';
 
+import { aHero, aMonster, aScenario } from './builders.js';
 import {
   clickTile,
   closeInteractionModal,
@@ -24,15 +25,7 @@ import {
 describe('monster interaction behavior', () => {
   test('given scenario contains a monster when app boots then monster is rendered', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      }
+      loadGameOptions: aScenario().withSize(3).withEntities(aHero(), aMonster()).build()
     });
 
     expectMonsterAt(1, 0, 'monster-1');
@@ -40,15 +33,7 @@ describe('monster interaction behavior', () => {
 
   test('given monster blocks the direct path when player clicks tile behind it then no path preview is shown', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      }
+      loadGameOptions: aScenario().withSize(3).withEntities(aHero(), aMonster()).build()
     });
 
     dispatchTileClick(2, 0);
@@ -60,15 +45,7 @@ describe('monster interaction behavior', () => {
 
   test('given player confirms monster attack when movement finishes then modal opens and monster disappears after modal close', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }
-        ]
-      },
+      loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster()).build(),
       appConfig: {
         interactionModalTransitionMs: 20,
         fadeOutMsByKind: { MONSTER: 20 }
@@ -113,15 +90,7 @@ describe('monster interaction behavior', () => {
 
   test('given monster is not adjacent when player confirms attack then hero stops on tile before monster and fight still costs one step', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 2, y: 0 } }
-        ]
-      },
+      loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
       appConfig: {
         interactionModalTransitionMs: 20,
         fadeOutMsByKind: { MONSTER: 20 }
@@ -144,15 +113,7 @@ describe('monster interaction behavior', () => {
 
   test('given final step before monster resolves when movement is still animating then modal waits until hero fully reaches the last tile', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 2, y: 0 } }
-        ]
-      },
+      loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
       movementStepDelayMs: 20,
       appConfig: {
         interactionModalTransitionMs: 0,
@@ -176,15 +137,7 @@ describe('monster interaction behavior', () => {
 
   test('given default-speed movement when hero is still visually arriving before a monster then modal stays closed', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 2, y: 0 } }
-        ]
-      },
+      loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
       movementStepDelayMs: 220,
       appConfig: {
         interactionModalTransitionMs: 0,

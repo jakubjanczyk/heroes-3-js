@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest';
 
+import { aScenario } from './builders.js';
 import {
   clickEndTurn,
   dispatchTileClick,
@@ -28,12 +29,7 @@ describe('tile click behavior', () => {
 
   test('given no path exists around blocked tiles when player clicks destination then no preview is shown and no movement occurs', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 1, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(3).withTiles([0, 1, 0]).build()
     });
 
     dispatchTileClick(2, 0);
@@ -46,12 +42,7 @@ describe('tile click behavior', () => {
 
   test('given player clicks a blocked terrain tile when no preview exists then no preview is shown and hero does not move', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 2,
-        height: 1,
-        tiles: [0, 1],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(2).withTiles([0, 1]).build()
     });
 
     dispatchTileClick(1, 0);

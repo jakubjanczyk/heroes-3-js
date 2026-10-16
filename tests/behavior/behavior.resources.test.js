@@ -17,19 +17,14 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './behavior.utils.js';
+import { aHero, aResource, aScenario } from './builders.js';
+
+const goldDefinitions = { resources: { GOLD_PILE: { name: 'Gold pile', amount: 100 } } };
 
 describe('resource interaction behavior', () => {
   test('given scenario contains resources when app boots then resources are rendered', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } }
-        ]
-      }
+      loadGameOptions: aScenario().withSize(3).withEntities(aHero(), aResource()).build()
     });
 
     expectResourceAt(1, 0, 'resource-1');
@@ -37,15 +32,7 @@ describe('resource interaction behavior', () => {
 
   test('given resource blocks direct path when player clicks tile behind it then no path preview is shown', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } }
-        ]
-      }
+      loadGameOptions: aScenario().withSize(3).withEntities(aHero(), aResource()).build()
     });
 
     dispatchTileClick(2, 0);
@@ -57,20 +44,11 @@ describe('resource interaction behavior', () => {
 
   test('given player confirms collecting a resource when movement finishes then hero stops before it and HUD total updates immediately', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } }
-        ],
-        definitions: {
-          resources: {
-            GOLD_PILE: { name: 'Gold pile', amount: 100 }
-          }
-        }
-      },
+      loadGameOptions: aScenario()
+        .withSize(3)
+        .withEntities(aHero(), aResource())
+        .withDefinitions(goldDefinitions)
+        .build(),
       appConfig: {
         fadeOutMsByKind: { RESOURCE: 20 }
       }
@@ -94,22 +72,16 @@ describe('resource interaction behavior', () => {
 
   test('given two resource kinds are collected when each interaction resolves then HUD tracks totals independently', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 5,
-        height: 1,
-        tiles: [0, 0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } },
-          { id: 'resource-2', kind: 'RESOURCE', type: 'WOOD_PILE', tile: { x: 3, y: 0 } }
-        ],
-        definitions: {
+      loadGameOptions: aScenario()
+        .withSize(5)
+        .withEntities(aHero(), aResource(), aResource().withId('resource-2').withType('WOOD_PILE').at(3, 0))
+        .withDefinitions({
           resources: {
             GOLD_PILE: { name: 'Gold pile', amount: 100 },
             WOOD_PILE: { name: 'Wood pile', amount: 5 }
           }
-        }
-      },
+        })
+        .build(),
       appConfig: {
         fadeOutMsByKind: { RESOURCE: 20 }
       }
@@ -147,20 +119,11 @@ describe('resource interaction behavior', () => {
 
   test('given final step before resource resolves when movement is still animating then collection waits until hero fully reaches the last tile', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 2, y: 0 } }
-        ],
-        definitions: {
-          resources: {
-            GOLD_PILE: { name: 'Gold pile', amount: 100 }
-          }
-        }
-      },
+      loadGameOptions: aScenario()
+        .withSize(4)
+        .withEntities(aHero(), aResource().at(2, 0))
+        .withDefinitions(goldDefinitions)
+        .build(),
       movementStepDelayMs: 20,
       appConfig: {
         fadeOutMsByKind: { RESOURCE: 0 }
@@ -184,20 +147,11 @@ describe('resource interaction behavior', () => {
 
   test('given default-speed movement when hero is still visually arriving at a resource then collection has not started yet', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 4,
-        height: 1,
-        tiles: [0, 0, 0, 0],
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 2, y: 0 } }
-        ],
-        definitions: {
-          resources: {
-            GOLD_PILE: { name: 'Gold pile', amount: 100 }
-          }
-        }
-      },
+      loadGameOptions: aScenario()
+        .withSize(4)
+        .withEntities(aHero(), aResource().at(2, 0))
+        .withDefinitions(goldDefinitions)
+        .build(),
       movementStepDelayMs: 220,
       appConfig: {
         fadeOutMsByKind: { RESOURCE: 0 }

@@ -17,24 +17,18 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './behavior.utils.js';
+import { aHero, aScenario, aTown } from './builders.js';
+
+const aCastleScenario = (hero) =>
+  aScenario()
+    .withSize(8, 7)
+    .withEntities(hero, aTown().at(4, 3))
+    .withDefinitions({ towns: { CASTLE: { name: 'Castle' } } });
 
 describe('town interaction behavior', () => {
   test('given scenario contains a town when app boots then town is rendered', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      }
+      loadGameOptions: aCastleScenario(aHero()).build()
     });
 
     expectTownAt(4, 3, 'town-1');
@@ -42,20 +36,7 @@ describe('town interaction behavior', () => {
 
   test('given town is on the map when player previews blocked footprint tiles then each blocked tile has no preview', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      }
+      loadGameOptions: aCastleScenario(aHero()).build()
     });
 
     const blockedTiles = [
@@ -82,20 +63,7 @@ describe('town interaction behavior', () => {
 
   test('given town is on the map when player previews known non-blocked nearby tiles then preview appears', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      }
+      loadGameOptions: aCastleScenario(aHero()).build()
     });
 
     const reachableTiles = [
@@ -115,20 +83,7 @@ describe('town interaction behavior', () => {
 
   test('given player confirms move to town entry when movement resolves then hero steps into town tile and town remains', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      },
+      loadGameOptions: aCastleScenario(aHero().at(4, 5)).build(),
       appConfig: {
         interactionModalTransitionMs: 0
       }
@@ -149,20 +104,7 @@ describe('town interaction behavior', () => {
 
   test('given hero leaves and re-enters the same town in one session then the town modal opens again', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      },
+      loadGameOptions: aCastleScenario(aHero().at(4, 5)).build(),
       appConfig: {
         interactionModalTransitionMs: 0
       }
@@ -188,20 +130,7 @@ describe('town interaction behavior', () => {
 
   test('given hero steps onto a town tile when modal has not opened yet then the preview target is already cleared', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 5 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      },
+      loadGameOptions: aCastleScenario(aHero().at(4, 5)).build(),
       movementStepDelayMs: 20,
       appConfig: {
         interactionModalTransitionMs: 0
@@ -218,20 +147,7 @@ describe('town interaction behavior', () => {
 
   test('given default-speed movement when hero is still visually arriving on a town tile then modal stays closed', async () => {
     await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 8,
-        height: 7,
-        tiles: new Array(56).fill(0),
-        entities: [
-          { id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 4, y: 4 } },
-          { id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 4, y: 3 } }
-        ],
-        definitions: {
-          towns: {
-            CASTLE: { name: 'Castle' }
-          }
-        }
-      },
+      loadGameOptions: aCastleScenario(aHero().at(4, 4)).build(),
       movementStepDelayMs: 220,
       appConfig: {
         interactionModalTransitionMs: 0

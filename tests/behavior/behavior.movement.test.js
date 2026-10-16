@@ -15,6 +15,7 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './behavior.utils.js';
+import { aScenario } from './builders.js';
 
 describe('movement behavior', () => {
   const originalRequestAnimationFrame = window.requestAnimationFrame;
@@ -50,12 +51,7 @@ describe('movement behavior', () => {
 
   test('given a multi-step move when movement is in progress then movement points decrease one-by-one per traversed tile', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      },
+      loadGameOptions: aScenario().withSize(3).build(),
       movementStepDelayMs: 100
     });
 
@@ -119,19 +115,11 @@ describe('movement behavior', () => {
   });
 
   test('given a detour route around blocked terrain when player confirms then hero reaches destination via that route and MP decreases by full detour length', async () => {
-    const width = 4;
-    const height = 2;
-    const tiles = [
-      0, 1, 1, 0,
-      0, 0, 0, 0
-    ];
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width,
-        height,
-        tiles,
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      }
+      loadGameOptions: aScenario().withSize(4, 2).withTiles([
+        0, 1, 1, 0,
+        0, 0, 0, 0
+      ]).build()
     });
 
     await confirmMove(user, 3, 0);
@@ -143,12 +131,7 @@ describe('movement behavior', () => {
 
   test('given move is in progress when player clicks End turn then End turn is ignored until movement completes', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: {
-        width: 3,
-        height: 1,
-        tiles: [0, 0, 0],
-        entities: [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
-      },
+      loadGameOptions: aScenario().withSize(3).build(),
       movementStepDelayMs: 200
     });
 
