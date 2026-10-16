@@ -1,13 +1,13 @@
 import {
-  APP_FACT_MONSTER_DEFEATED,
-  APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_TOWN_VISITED
-} from '../events.js';
-import {
   INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   INTERACTION_OUTCOME_KIND_TOWN_VISITED
-} from '../../game/heroes/interaction-kinds.js';
+} from '../../game/heroes/interaction-kinds.js'
+import {
+  APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED
+} from '../events.js'
 
 function toModal(outcome) {
   return {
@@ -16,7 +16,7 @@ function toModal(outcome) {
     entityType: outcome.entityType,
     title: outcome.modal.title,
     message: outcome.modal.message
-  };
+  }
 }
 
 function toEntityFactDetail(outcome) {
@@ -24,15 +24,13 @@ function toEntityFactDetail(outcome) {
     entityId: outcome.entityId,
     entityType: outcome.entityType,
     tile: outcome.tile
-  };
+  }
 }
 
 export const heroesOutcomeEffects = Object.freeze({
   [INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED]: (outcome) => ({
     modal: toModal(outcome),
-    factsOnModalClosed: [
-      { type: APP_FACT_MONSTER_DEFEATED, detail: toEntityFactDetail(outcome) }
-    ]
+    factsOnModalClosed: [{ type: APP_FACT_MONSTER_DEFEATED, detail: toEntityFactDetail(outcome) }]
   }),
   [INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED]: (outcome) => ({
     facts: [
@@ -46,4 +44,4 @@ export const heroesOutcomeEffects = Object.freeze({
     facts: [{ type: APP_FACT_TOWN_VISITED, detail: toEntityFactDetail(outcome) }],
     modal: toModal(outcome)
   })
-});
+})

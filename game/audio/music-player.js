@@ -3,94 +3,94 @@ export function createMusicPlayer({
   createAudio = (src) => new Audio(src),
   random = Math.random
 } = {}) {
-  let enabled = false;
-  let currentAudio = null;
-  let currentTrackIndex = -1;
+  let enabled = false
+  let currentAudio = null
+  let currentTrackIndex = -1
 
-  const normalizedTracks = tracks.filter((track) => typeof track === 'string' && track.length > 0);
+  const normalizedTracks = tracks.filter((track) => typeof track === 'string' && track.length > 0)
 
   function stopCurrentAudio() {
     if (!currentAudio) {
-      return;
+      return
     }
-    currentAudio.removeEventListener?.('ended', onEnded);
-    currentAudio.pause?.();
-    currentAudio = null;
+    currentAudio.removeEventListener?.('ended', onEnded)
+    currentAudio.pause?.()
+    currentAudio = null
   }
 
   function chooseNextTrackIndex() {
-    const trackCount = normalizedTracks.length;
+    const trackCount = normalizedTracks.length
     if (trackCount === 0) {
-      return -1;
+      return -1
     }
     if (trackCount === 1) {
-      return 0;
+      return 0
     }
 
-    const candidate = Math.floor(random() * trackCount);
+    const candidate = Math.floor(random() * trackCount)
     if (candidate === currentTrackIndex) {
-      return (candidate + 1) % trackCount;
+      return (candidate + 1) % trackCount
     }
-    return candidate;
+    return candidate
   }
 
   async function playRandomTrack() {
     if (!enabled) {
-      return false;
+      return false
     }
 
-    const nextTrackIndex = chooseNextTrackIndex();
+    const nextTrackIndex = chooseNextTrackIndex()
     if (nextTrackIndex < 0) {
-      return false;
+      return false
     }
 
-    stopCurrentAudio();
+    stopCurrentAudio()
 
-    currentTrackIndex = nextTrackIndex;
-    const audio = createAudio(normalizedTracks[nextTrackIndex]);
+    currentTrackIndex = nextTrackIndex
+    const audio = createAudio(normalizedTracks[nextTrackIndex])
     if (!audio) {
-      return false;
+      return false
     }
 
-    currentAudio = audio;
-    currentAudio.addEventListener?.('ended', onEnded);
+    currentAudio = audio
+    currentAudio.addEventListener?.('ended', onEnded)
 
     try {
-      await currentAudio.play?.();
-      return true;
+      await currentAudio.play?.()
+      return true
     } catch {
-      enabled = false;
-      stopCurrentAudio();
-      return false;
+      enabled = false
+      stopCurrentAudio()
+      return false
     }
   }
 
   function onEnded() {
-    void playRandomTrack();
+    void playRandomTrack()
   }
 
   async function start() {
-    return playRandomTrack();
+    return playRandomTrack()
   }
 
   async function toggle() {
-    enabled = !enabled;
+    enabled = !enabled
 
     if (enabled) {
-      await playRandomTrack();
-      return true;
+      await playRandomTrack()
+      return true
     }
 
-    stopCurrentAudio();
-    return false;
+    stopCurrentAudio()
+    return false
   }
 
   function isEnabled() {
-    return enabled;
+    return enabled
   }
 
   function destroy() {
-    stopCurrentAudio();
+    stopCurrentAudio()
   }
 
   return {
@@ -98,5 +98,5 @@ export function createMusicPlayer({
     toggle,
     isEnabled,
     destroy
-  };
+  }
 }

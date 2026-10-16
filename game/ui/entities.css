@@ -50,7 +50,7 @@
 }
 
 .entity--town::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 22%;
   right: 22%;
@@ -63,7 +63,7 @@
 }
 
 .entity--town::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 24px;
   height: 22px;

@@ -5,5 +5,5 @@ export function getEntityLayerStyle() {
     height: 24,
     offsetX: -12,
     offsetY: -12
-  };
+  }
 }

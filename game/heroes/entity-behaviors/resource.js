@@ -1,8 +1,8 @@
-import { getDefinitionForEntity, getEntityName } from './shared.js';
 import {
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
-} from '../interaction-kinds.js';
+} from '../interaction-kinds.js'
+import { getDefinitionForEntity, getEntityName } from './shared.js'
 
 export const resourceBehavior = Object.freeze({
   kind: 'RESOURCE',
@@ -18,13 +18,13 @@ export const resourceBehavior = Object.freeze({
         definitions,
         definitionsKey: 'resources',
         defaultName: 'Resource'
-      });
+      })
       const resourceDefinition = getDefinitionForEntity({
         entity,
         definitions,
         definitionsKey: 'resources'
-      });
-      const parsedAmount = Number(resourceDefinition?.amount);
+      })
+      const parsedAmount = Number(resourceDefinition?.amount)
 
       return {
         kind: INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
@@ -34,7 +34,7 @@ export const resourceBehavior = Object.freeze({
         removesEntity: true,
         amount: Number.isFinite(parsedAmount) ? parsedAmount : 0,
         resourceName
-      };
+      }
     }
   })
-});
+})

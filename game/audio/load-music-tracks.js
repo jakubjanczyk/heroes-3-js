@@ -1,17 +1,17 @@
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') {
-    return url;
+    return url
   }
   if (url.startsWith('//')) {
-    return url;
+    return url
   }
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) {
-    return url;
+    return url
   }
   if (url.startsWith('/')) {
-    return `.${url}`;
+    return `.${url}`
   }
-  return url;
+  return url
 }
 
 export async function loadMusicTracks({
@@ -19,24 +19,24 @@ export async function loadMusicTracks({
   manifestUrl = '/assets/music/tracks.json'
 } = {}) {
   if (typeof fetch !== 'function') {
-    return [];
+    return []
   }
 
   try {
-    const response = await fetch(normalizeStaticUrl(manifestUrl));
+    const response = await fetch(normalizeStaticUrl(manifestUrl))
     if (!response?.ok) {
-      return [];
+      return []
     }
 
-    const tracks = await response.json();
+    const tracks = await response.json()
     if (!Array.isArray(tracks)) {
-      return [];
+      return []
     }
 
     return tracks
       .filter((track) => typeof track === 'string' && track.length > 0)
-      .map((track) => normalizeStaticUrl(track));
+      .map((track) => normalizeStaticUrl(track))
   } catch {
-    return [];
+    return []
   }
 }

@@ -8,163 +8,163 @@ export function createEdgePanController({
   requestAnimationFrame = globalThis.requestAnimationFrame,
   cancelAnimationFrame = globalThis.cancelAnimationFrame
 }) {
-  let isMouseOverViewport = false;
-  let edgeDirection = null;
-  let edgeDirectionStartedAt = 0;
-  let edgeVelocity = { x: 0, y: 0 };
-  let edgePanFrameHandle = null;
-  let edgePanLastTimestamp = null;
+  let isMouseOverViewport = false
+  let edgeDirection = null
+  let edgeDirectionStartedAt = 0
+  let edgeVelocity = { x: 0, y: 0 }
+  let edgePanFrameHandle = null
+  let edgePanLastTimestamp = null
 
   function scheduleEdgePanFrame(callback) {
     if (typeof requestAnimationFrame === 'function') {
-      let isSynchronous = true;
+      let isSynchronous = true
       const id = requestAnimationFrame((timestamp) => {
         if (isSynchronous) {
           setTimeout(() => {
-            callback(timestamp);
-          }, 0);
-          return;
+            callback(timestamp)
+          }, 0)
+          return
         }
 
-        callback(timestamp);
-      });
-      isSynchronous = false;
-      return { kind: 'raf', id };
+        callback(timestamp)
+      })
+      isSynchronous = false
+      return { kind: 'raf', id }
     }
 
     const id = setTimeout(() => {
-      callback(now());
-    }, 16);
-    return { kind: 'timeout', id };
+      callback(now())
+    }, 16)
+    return { kind: 'timeout', id }
   }
 
   function clearEdgePanFrame(handle) {
     if (handle === null) {
-      return;
+      return
     }
 
     if (handle.kind === 'raf' && typeof cancelAnimationFrame === 'function') {
-      cancelAnimationFrame(handle.id);
-      return;
+      cancelAnimationFrame(handle.id)
+      return
     }
 
-    clearTimeout(handle.id);
+    clearTimeout(handle.id)
   }
 
   function stopEdgePanLoop() {
-    clearEdgePanFrame(edgePanFrameHandle);
-    edgePanFrameHandle = null;
-    edgePanLastTimestamp = null;
+    clearEdgePanFrame(edgePanFrameHandle)
+    edgePanFrameHandle = null
+    edgePanLastTimestamp = null
   }
 
   function clearEdgeDirection() {
-    edgeDirection = null;
-    edgeDirectionStartedAt = 0;
-    edgeVelocity = { x: 0, y: 0 };
-    stopEdgePanLoop();
+    edgeDirection = null
+    edgeDirectionStartedAt = 0
+    edgeVelocity = { x: 0, y: 0 }
+    stopEdgePanLoop()
   }
 
   function getEdgeIntensity({ value, min, max }) {
     if (value <= min + edgeSize) {
-      return Math.max(0, Math.min(1, (min + edgeSize - value) / edgeSize));
+      return Math.max(0, Math.min(1, (min + edgeSize - value) / edgeSize))
     }
     if (value >= max - edgeSize) {
-      return -Math.max(0, Math.min(1, (value - (max - edgeSize)) / edgeSize));
+      return -Math.max(0, Math.min(1, (value - (max - edgeSize)) / edgeSize))
     }
 
-    return 0;
+    return 0
   }
 
   function setEdgeVelocityFromPointer(event) {
-    const rect = viewport.getBoundingClientRect();
+    const rect = viewport.getBoundingClientRect()
     const nextVelocity = {
       x: getEdgeIntensity({ value: event.clientX, min: rect.left, max: rect.right }),
       y: getEdgeIntensity({ value: event.clientY, min: rect.top, max: rect.bottom })
-    };
-
-    edgeVelocity = nextVelocity;
-
-    if (nextVelocity.x !== 0 || nextVelocity.y !== 0) {
-      const nextDirection = `${Math.sign(nextVelocity.x)}:${Math.sign(nextVelocity.y)}`;
-      if (edgeDirection !== nextDirection) {
-        edgeDirection = nextDirection;
-        edgeDirectionStartedAt = now();
-      }
-      return;
     }
 
-    clearEdgeDirection();
+    edgeVelocity = nextVelocity
+
+    if (nextVelocity.x !== 0 || nextVelocity.y !== 0) {
+      const nextDirection = `${Math.sign(nextVelocity.x)}:${Math.sign(nextVelocity.y)}`
+      if (edgeDirection !== nextDirection) {
+        edgeDirection = nextDirection
+        edgeDirectionStartedAt = now()
+      }
+      return
+    }
+
+    clearEdgeDirection()
   }
 
   function shouldPanFromEdge() {
     if (edgeVelocity.x === 0 && edgeVelocity.y === 0) {
-      return false;
+      return false
     }
 
     if (edgePanDelayMs <= 0) {
-      return true;
+      return true
     }
 
-    return now() - edgeDirectionStartedAt >= edgePanDelayMs;
+    return now() - edgeDirectionStartedAt >= edgePanDelayMs
   }
 
   function runEdgePanFrame(timestamp) {
-    edgePanFrameHandle = null;
+    edgePanFrameHandle = null
 
     if (!isMouseOverViewport || (edgeVelocity.x === 0 && edgeVelocity.y === 0)) {
-      stopEdgePanLoop();
-      return;
+      stopEdgePanLoop()
+      return
     }
 
     if (edgePanLastTimestamp === null) {
-      edgePanLastTimestamp = timestamp;
+      edgePanLastTimestamp = timestamp
     }
 
-    const deltaMs = Math.max(0, Math.min(50, timestamp - edgePanLastTimestamp));
-    edgePanLastTimestamp = timestamp;
+    const deltaMs = Math.max(0, Math.min(50, timestamp - edgePanLastTimestamp))
+    edgePanLastTimestamp = timestamp
 
     if (shouldPanFromEdge()) {
-      const deltaSeconds = deltaMs / 1000;
-      const dx = edgeVelocity.x * edgePanSpeed * deltaSeconds;
-      const dy = edgeVelocity.y * edgePanSpeed * deltaSeconds;
+      const deltaSeconds = deltaMs / 1000
+      const dx = edgeVelocity.x * edgePanSpeed * deltaSeconds
+      const dy = edgeVelocity.y * edgePanSpeed * deltaSeconds
       if (dx !== 0 || dy !== 0) {
-        camera.moveBy(dx, dy);
+        camera.moveBy(dx, dy)
       }
     }
 
-    edgePanFrameHandle = scheduleEdgePanFrame(runEdgePanFrame);
+    edgePanFrameHandle = scheduleEdgePanFrame(runEdgePanFrame)
   }
 
   function ensureEdgePanLoop() {
     if (edgePanFrameHandle !== null) {
-      return;
+      return
     }
 
-    edgePanFrameHandle = scheduleEdgePanFrame(runEdgePanFrame);
+    edgePanFrameHandle = scheduleEdgePanFrame(runEdgePanFrame)
   }
 
   function onMouseMove(event) {
     if (!isMouseOverViewport) {
-      return;
+      return
     }
 
-    setEdgeVelocityFromPointer(event);
+    setEdgeVelocityFromPointer(event)
     if (edgeVelocity.x !== 0 || edgeVelocity.y !== 0) {
-      ensureEdgePanLoop();
+      ensureEdgePanLoop()
     }
   }
 
   function onMouseEnter() {
-    isMouseOverViewport = true;
+    isMouseOverViewport = true
   }
 
   function onMouseLeave() {
-    isMouseOverViewport = false;
-    clearEdgeDirection();
+    isMouseOverViewport = false
+    clearEdgeDirection()
   }
 
   function destroy() {
-    clearEdgeDirection();
+    clearEdgeDirection()
   }
 
   return {
@@ -172,5 +172,5 @@ export function createEdgePanController({
     onMouseEnter,
     onMouseLeave,
     destroy
-  };
+  }
 }

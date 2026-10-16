@@ -1,18 +1,18 @@
-import { registerCameraModule } from './camera.module.js';
-import { registerEntityViewModule } from './entity-view.module.js';
-import { registerInteractionModalModule } from './interaction-modal.module.js';
-import { registerInteractionModule } from './interaction.module.js';
-import { registerMovementModule } from './movement.module.js';
-import { registerPreviewViewModule } from './preview-view.module.js';
-import { registerSelectionModule } from './selection.module.js';
-import { registerTerrainViewModule } from './terrain-view.module.js';
-import { registerWorldModule } from './world.module.js';
-import { registerWorldViewModule } from './world-view.module.js';
+import { registerCameraModule } from './camera.module.js'
+import { registerEntityViewModule } from './entity-view.module.js'
+import { registerInteractionModule } from './interaction.module.js'
+import { registerInteractionModalModule } from './interaction-modal.module.js'
+import { registerMovementModule } from './movement.module.js'
+import { registerPreviewViewModule } from './preview-view.module.js'
+import { registerSelectionModule } from './selection.module.js'
+import { registerTerrainViewModule } from './terrain-view.module.js'
+import { registerWorldModule } from './world.module.js'
+import { registerWorldViewModule } from './world-view.module.js'
 
 const PHASE_ORDER = Object.freeze({
   domain: 0,
   view: 1
-});
+})
 
 const CORE_MODULES = [
   registerWorldModule,
@@ -25,44 +25,44 @@ const CORE_MODULES = [
   registerPreviewViewModule,
   registerWorldViewModule,
   registerInteractionModalModule
-];
+]
 
 function getModuleId(meta, index) {
   if (typeof meta?.id === 'string' && meta.id.length > 0) {
-    return meta.id;
+    return meta.id
   }
 
-  throw new Error(`Invalid module metadata: missing id at index ${index}`);
+  throw new Error(`Invalid module metadata: missing id at index ${index}`)
 }
 
 function getModulePhase(meta, id) {
-  const phase = meta?.phase;
+  const phase = meta?.phase
   if (phase === 'domain' || phase === 'view') {
-    return phase;
+    return phase
   }
 
-  throw new Error(`Invalid module metadata: module "${id}" has unsupported phase "${phase}"`);
+  throw new Error(`Invalid module metadata: module "${id}" has unsupported phase "${phase}"`)
 }
 
 function assertModuleMetadata(modules) {
-  const seenIds = new Set();
+  const seenIds = new Set()
 
   for (let index = 0; index < modules.length; index += 1) {
-    const registerModule = modules[index];
-    const meta = registerModule?.meta;
-    const id = getModuleId(meta, index);
-    getModulePhase(meta, id);
+    const registerModule = modules[index]
+    const meta = registerModule?.meta
+    const id = getModuleId(meta, index)
+    getModulePhase(meta, id)
 
     if (seenIds.has(id)) {
-      throw new Error(`Invalid module metadata: duplicate id "${id}"`);
+      throw new Error(`Invalid module metadata: duplicate id "${id}"`)
     }
 
-    seenIds.add(id);
+    seenIds.add(id)
 
     if (!Array.isArray(meta?.consumes) || !Array.isArray(meta?.produces)) {
       throw new Error(
         `Invalid module metadata: module "${id}" must define consumes and produces arrays`
-      );
+      )
     }
   }
 }
@@ -75,28 +75,28 @@ function orderModulesByPhase(modules) {
       phase: getModulePhase(registerModule?.meta, getModuleId(registerModule?.meta, index))
     }))
     .sort((left, right) => {
-      const phaseDiff = PHASE_ORDER[left.phase] - PHASE_ORDER[right.phase];
+      const phaseDiff = PHASE_ORDER[left.phase] - PHASE_ORDER[right.phase]
       if (phaseDiff !== 0) {
-        return phaseDiff;
+        return phaseDiff
       }
 
-      return left.index - right.index;
+      return left.index - right.index
     })
-    .map((entry) => entry.registerModule);
+    .map((entry) => entry.registerModule)
 }
 
 export function registerModules({ bus, env, config }) {
-  const modules = [...CORE_MODULES, ...(config?.content?.modules ?? [])];
-  assertModuleMetadata(modules);
+  const modules = [...CORE_MODULES, ...(config?.content?.modules ?? [])]
+  assertModuleMetadata(modules)
 
-  const runtime = { bus, env, config };
+  const runtime = { bus, env, config }
   const disposers = orderModulesByPhase(modules)
     .map((registerModule) => registerModule(runtime))
-    .filter((dispose) => typeof dispose === 'function');
+    .filter((dispose) => typeof dispose === 'function')
 
   return () => {
     for (let index = disposers.length - 1; index >= 0; index -= 1) {
-      disposers[index]();
+      disposers[index]()
     }
-  };
+  }
 }
