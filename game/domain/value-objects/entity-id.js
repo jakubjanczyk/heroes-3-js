@@ -1,13 +1,13 @@
-import { isNonEmptyString } from '../string-utils.js';
+import { isNonEmptyString } from '../string-utils.js'
 
 export function toEntityIdOrNull(value) {
   if (!isNonEmptyString(value)) {
-    return null;
+    return null
   }
 
-  return value;
+  return value
 }
 
 export function isEntityId(value) {
-  return toEntityIdOrNull(value) !== null;
+  return toEntityIdOrNull(value) !== null
 }

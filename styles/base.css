@@ -1,45 +1,45 @@
 @property --world-offset-x {
-  syntax: '<length>';
+  syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
 @property --world-offset-y {
-  syntax: '<length>';
+  syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
 @property --entity-center-x {
-  syntax: '<length>';
+  syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
 @property --entity-center-y {
-  syntax: '<length>';
+  syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
 @property --entity-offset-x {
-  syntax: '<length>';
+  syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
 @property --entity-offset-y {
-  syntax: '<length>';
+  syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
 :root {
   color-scheme: dark;
-  font-family: 'Trebuchet MS', 'Gill Sans', 'Segoe UI Variable Text', sans-serif;
+  font-family: "Trebuchet MS", "Gill Sans", "Segoe UI Variable Text", sans-serif;
 
-  --font-ui: 'Trebuchet MS', 'Gill Sans', 'Segoe UI Variable Text', sans-serif;
-  --font-mono: 'Cascadia Mono', 'SFMono-Regular', 'Liberation Mono', monospace;
+  --font-ui: "Trebuchet MS", "Gill Sans", "Segoe UI Variable Text", sans-serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", "Liberation Mono", monospace;
 
   --space-2xs: 0.25rem;
   --space-xs: 0.5rem;
@@ -82,7 +82,12 @@
   --color-panel: color-mix(in oklab, oklch(0.24 0.028 245) 78%, transparent);
   --color-panel-strong: color-mix(in oklab, oklch(0.28 0.03 245) 88%, transparent);
   --color-border: color-mix(in oklab, var(--color-ink) 16%, transparent);
-  --color-border-strong: color-mix(in oklab, var(--color-accent) 20%, var(--color-ink) 12%, transparent);
+  --color-border-strong: color-mix(
+    in oklab,
+    var(--color-accent) 20%,
+    var(--color-ink) 12%,
+    transparent
+  );
   --color-shadow: color-mix(in oklab, black 68%, transparent);
 
   --z-layer-terrain: 0;

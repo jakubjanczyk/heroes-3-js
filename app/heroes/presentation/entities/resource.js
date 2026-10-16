@@ -1,17 +1,17 @@
-import { getResourceSpriteStyle } from '../resource-sprites.js';
-import { typeToClass } from './shared.js';
+import { getResourceSpriteStyle } from '../resource-sprites.js'
+import { typeToClass } from './shared.js'
 
 export const fadeOut = Object.freeze({
   className: 'entity--resource-collecting',
   durationMs: 220
-});
+})
 
 export function getEntityLayerStyle({ entity }) {
-  const resourceSpriteStyle = getResourceSpriteStyle(entity.type);
-  const resourceTypeClass = typeToClass(entity.type);
-  const dataset = {};
+  const resourceSpriteStyle = getResourceSpriteStyle(entity.type)
+  const resourceTypeClass = typeToClass(entity.type)
+  const dataset = {}
   if (typeof entity.type === 'string') {
-    dataset.resourceType = entity.type;
+    dataset.resourceType = entity.type
   }
 
   return {
@@ -25,5 +25,5 @@ export function getEntityLayerStyle({ entity }) {
     offsetY: -Math.round(resourceSpriteStyle.height / 2),
     backgroundImage: resourceSpriteStyle.backgroundImage,
     dataset
-  };
+  }
 }

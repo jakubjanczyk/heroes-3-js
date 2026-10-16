@@ -1,33 +1,28 @@
-import { toEntityIdOrNull } from '../value-objects/entity-id.js';
+import { toEntityIdOrNull } from '../value-objects/entity-id.js'
 
-export function buildArrivalPlan({
-  occupancy,
-  targetTile,
-  movingEntityId,
-  entityBehaviors
-}) {
-  const destinationOccupant = occupancy?.getAt?.(targetTile) ?? null;
+export function buildArrivalPlan({ occupancy, targetTile, movingEntityId, entityBehaviors }) {
+  const destinationOccupant = occupancy?.getAt?.(targetTile) ?? null
   if (!destinationOccupant) {
-    return null;
+    return null
   }
 
-  const destinationEntityId = toEntityIdOrNull(destinationOccupant.id);
+  const destinationEntityId = toEntityIdOrNull(destinationOccupant.id)
   if (!destinationEntityId) {
-    return null;
+    return null
   }
 
   if (destinationEntityId === movingEntityId) {
-    return null;
+    return null
   }
 
-  const interaction = entityBehaviors.getArrivalInteraction(destinationOccupant);
+  const interaction = entityBehaviors.getArrivalInteraction(destinationOccupant)
   if (!interaction) {
-    return null;
+    return null
   }
 
   return {
     entityId: destinationEntityId,
     movementInteractionKind: interaction.movementInteractionKind,
     stopBeforeTarget: !interaction.requiresSteppingIntoTarget
-  };
+  }
 }

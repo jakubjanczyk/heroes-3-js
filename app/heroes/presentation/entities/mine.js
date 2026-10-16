@@ -1,14 +1,14 @@
-import { typeToClass } from './shared.js';
+import { typeToClass } from './shared.js'
 
 export function getEntityLayerStyle({ entity, map }) {
-  const mineTypeClass = typeToClass(entity.type);
-  const dataset = {};
+  const mineTypeClass = typeToClass(entity.type)
+  const dataset = {}
   if (typeof entity.type === 'string') {
-    dataset.mineType = entity.type;
+    dataset.mineType = entity.type
   }
 
-  const width = map.tileWidth * 3;
-  const height = map.tileHeight * 2;
+  const width = map.tileWidth * 3
+  const height = map.tileHeight * 2
   return {
     className:
       mineTypeClass === null
@@ -19,5 +19,5 @@ export function getEntityLayerStyle({ entity, map }) {
     offsetX: -Math.round(width / 2),
     offsetY: -Math.round(height - map.tileHeight / 2),
     dataset
-  };
+  }
 }

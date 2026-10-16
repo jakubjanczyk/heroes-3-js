@@ -1,10 +1,11 @@
 // Shared utilities for behavior-level tests.
-import { expect } from 'vitest';
-import { screen } from '@testing-library/dom';
-import userEvent from '@testing-library/user-event';
 
-import { bootApp } from '../../app/boot-app.js';
-import { aScenario } from './builders.js';
+import { screen } from '@testing-library/dom'
+import userEvent from '@testing-library/user-event'
+import { expect } from 'vitest'
+
+import { bootApp } from '../../app/boot-app.js'
+import { aScenario } from './builders.js'
 
 export function mountAppTemplate() {
   document.body.innerHTML = `
@@ -40,11 +41,11 @@ export function mountAppTemplate() {
         </div>
       </div>
     </div>
-  `;
+  `
 }
 
 export function createMemoryEventLog() {
-  const entries = [];
+  const entries = []
 
   return {
     async init() {},
@@ -55,18 +56,18 @@ export function createMemoryEventLog() {
         type: event.type,
         detail: event.detail,
         at: Date.now()
-      });
+      })
     },
     getAll() {
-      return [...entries];
+      return [...entries]
     },
     async reset() {
-      entries.length = 0;
+      entries.length = 0
     },
     hasExistingSession() {
-      return entries.length > 0;
+      return entries.length > 0
     }
-  };
+  }
 }
 
 export function createLoadGame({
@@ -76,13 +77,13 @@ export function createLoadGame({
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
-  const terrainTiles = Array.isArray(tiles) ? [...tiles] : [];
+  const terrainTiles = Array.isArray(tiles) ? [...tiles] : []
   const scenarioEntities = Array.isArray(entities)
     ? entities.map((entity) => ({
         ...entity,
         tile: entity?.tile ? { ...entity.tile } : entity.tile
       }))
-    : [];
+    : []
 
   return {
     scenario: {
@@ -98,19 +99,19 @@ export function createLoadGame({
       mines: {},
       ...definitions
     }
-  };
+  }
 }
 
 export async function flushMicrotasks(times = 30) {
   for (let i = 0; i < times; i += 1) {
-    await Promise.resolve();
+    await Promise.resolve()
   }
 }
 
 export async function waitMs(ms = 0) {
   await new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+    setTimeout(resolve, ms)
+  })
 }
 
 function createJsonResponse(value) {
@@ -118,9 +119,9 @@ function createJsonResponse(value) {
     ok: true,
     status: 200,
     async json() {
-      return value;
+      return value
     }
-  };
+  }
 }
 
 function createGameFetch({ scenario, definitions, musicTracks = [] }) {
@@ -139,7 +140,7 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
     ['/game/data/mines.json', definitions.mines ?? {}],
     ['./assets/music/tracks.json', musicTracks],
     ['/assets/music/tracks.json', musicTracks]
-  ]);
+  ])
 
   return async (url) => {
     if (!routeMap.has(url)) {
@@ -147,32 +148,32 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
         ok: false,
         status: 404,
         async json() {
-          return null;
+          return null
         }
-      };
+      }
     }
 
-    return createJsonResponse(routeMap.get(url));
-  };
+    return createJsonResponse(routeMap.get(url))
+  }
 }
 
 export function setViewportSize(width, height) {
-  const viewport = document.querySelector('.viewport');
-  expect(viewport).toBeTruthy();
+  const viewport = document.querySelector('.viewport')
+  expect(viewport).toBeTruthy()
   Object.defineProperty(viewport, 'clientWidth', {
     value: width,
     configurable: true
-  });
+  })
   Object.defineProperty(viewport, 'clientHeight', {
     value: height,
     configurable: true
-  });
+  })
   viewport.getBoundingClientRect = () => ({
     left: 0,
     top: 0,
     right: width,
     bottom: height
-  });
+  })
 }
 
 export async function setupMovementBehaviorApp({
@@ -185,29 +186,29 @@ export async function setupMovementBehaviorApp({
   eventLog,
   envWindow
 } = {}) {
-  mountAppTemplate();
+  mountAppTemplate()
   if (viewportSize) {
-    setViewportSize(viewportSize.width, viewportSize.height);
+    setViewportSize(viewportSize.width, viewportSize.height)
   }
 
-  const gameData = createLoadGame(loadGameOptions);
+  const gameData = createLoadGame(loadGameOptions)
   const fetch = createGameFetch({
     scenario: gameData.scenario,
     definitions: gameData.definitions,
     musicTracks
-  });
+  })
 
   const movementSleep = (ms) => {
     if (ms <= 0) {
-      return Promise.resolve();
+      return Promise.resolve()
     }
 
     return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+      setTimeout(resolve, ms)
+    })
+  }
 
-  const user = userEvent.setup();
+  const user = userEvent.setup()
 
   const world = await bootApp({
     fetch,
@@ -222,13 +223,20 @@ export async function setupMovementBehaviorApp({
       interactionModalTransitionMs: 0,
       ...appConfig
     }
-  });
+  })
 
-  return { user, world };
+  return { user, world }
 }
 
 export async function setupLinearMovementApp(options = {}) {
-  const { width = 20, viewportSize, musicTracks, AudioCtor, movementStepDelayMs, appConfig } = options;
+  const {
+    width = 20,
+    viewportSize,
+    musicTracks,
+    AudioCtor,
+    movementStepDelayMs,
+    appConfig
+  } = options
   return setupMovementBehaviorApp({
     loadGameOptions: aScenario().withSize(width).build(),
     viewportSize,
@@ -236,260 +244,260 @@ export async function setupLinearMovementApp(options = {}) {
     AudioCtor,
     movementStepDelayMs,
     appConfig
-  });
+  })
 }
 
 export function getTerrainTile(x, y) {
-  return document.querySelector(`.terrain-tile[data-x="${x}"][data-y="${y}"]`);
+  return document.querySelector(`.terrain-tile[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function getHeroEntity() {
-  return document.querySelector('.entity--hero[data-entity-id="hero-1"]');
+  return document.querySelector('.entity--hero[data-entity-id="hero-1"]')
 }
 
 export function getMonsterEntity(entityId = 'monster-1') {
-  return document.querySelector(`.entity--monster[data-entity-id="${entityId}"]`);
+  return document.querySelector(`.entity--monster[data-entity-id="${entityId}"]`)
 }
 
 export function getResourceEntity(entityId = 'resource-1') {
-  return document.querySelector(`.entity--resource[data-entity-id="${entityId}"]`);
+  return document.querySelector(`.entity--resource[data-entity-id="${entityId}"]`)
 }
 
 export function getTownEntity(entityId = 'town-1') {
-  return document.querySelector(`.entity--town[data-entity-id="${entityId}"]`);
+  return document.querySelector(`.entity--town[data-entity-id="${entityId}"]`)
 }
 
 export function getMineEntity(entityId = 'mine-1') {
-  return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`);
+  return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`)
 }
 
 export function expectHeroAt(x, y) {
-  const heroEntity = getHeroEntity();
-  expect(heroEntity).toBeTruthy();
-  expect(heroEntity?.dataset.tileX).toBe(String(x));
-  expect(heroEntity?.dataset.tileY).toBe(String(y));
-  return heroEntity;
+  const heroEntity = getHeroEntity()
+  expect(heroEntity).toBeTruthy()
+  expect(heroEntity?.dataset.tileX).toBe(String(x))
+  expect(heroEntity?.dataset.tileY).toBe(String(y))
+  return heroEntity
 }
 
 export function expectMovementPoints(current, max = 15) {
-  expect(screen.getByText(`MP: ${current} / ${max}`)).toBeTruthy();
+  expect(screen.getByText(`MP: ${current} / ${max}`)).toBeTruthy()
 }
 
 export function expectMonsterPresent(entityId = 'monster-1') {
-  const monsterEntity = getMonsterEntity(entityId);
-  expect(monsterEntity).toBeTruthy();
-  return monsterEntity;
+  const monsterEntity = getMonsterEntity(entityId)
+  expect(monsterEntity).toBeTruthy()
+  return monsterEntity
 }
 
 export function expectMonsterAt(x, y, entityId = 'monster-1') {
-  const monsterEntity = expectMonsterPresent(entityId);
-  expect(monsterEntity?.dataset.tileX).toBe(String(x));
-  expect(monsterEntity?.dataset.tileY).toBe(String(y));
-  return monsterEntity;
+  const monsterEntity = expectMonsterPresent(entityId)
+  expect(monsterEntity?.dataset.tileX).toBe(String(x))
+  expect(monsterEntity?.dataset.tileY).toBe(String(y))
+  return monsterEntity
 }
 
 export function expectMonsterNotPresent(entityId = 'monster-1') {
-  expect(getMonsterEntity(entityId)).toBeFalsy();
+  expect(getMonsterEntity(entityId)).toBeFalsy()
 }
 
 export function expectMonsterDefeating(entityId = 'monster-1') {
-  expect(getMonsterEntity(entityId)?.className).toContain('entity--monster-defeating');
+  expect(getMonsterEntity(entityId)?.className).toContain('entity--monster-defeating')
 }
 
 export function expectResourcePresent(entityId = 'resource-1') {
-  const resourceEntity = getResourceEntity(entityId);
-  expect(resourceEntity).toBeTruthy();
-  return resourceEntity;
+  const resourceEntity = getResourceEntity(entityId)
+  expect(resourceEntity).toBeTruthy()
+  return resourceEntity
 }
 
 export function expectResourceAt(x, y, entityId = 'resource-1') {
-  const resourceEntity = expectResourcePresent(entityId);
-  expect(resourceEntity?.dataset.tileX).toBe(String(x));
-  expect(resourceEntity?.dataset.tileY).toBe(String(y));
-  return resourceEntity;
+  const resourceEntity = expectResourcePresent(entityId)
+  expect(resourceEntity?.dataset.tileX).toBe(String(x))
+  expect(resourceEntity?.dataset.tileY).toBe(String(y))
+  return resourceEntity
 }
 
 export function expectResourceNotPresent(entityId = 'resource-1') {
-  expect(getResourceEntity(entityId)).toBeFalsy();
+  expect(getResourceEntity(entityId)).toBeFalsy()
 }
 
 export function expectResourceCollecting(entityId = 'resource-1') {
-  expect(getResourceEntity(entityId)?.className).toContain('entity--resource-collecting');
+  expect(getResourceEntity(entityId)?.className).toContain('entity--resource-collecting')
 }
 
 export function expectTownPresent(entityId = 'town-1') {
-  const townEntity = getTownEntity(entityId);
-  expect(townEntity).toBeTruthy();
-  return townEntity;
+  const townEntity = getTownEntity(entityId)
+  expect(townEntity).toBeTruthy()
+  return townEntity
 }
 
 export function expectTownAt(x, y, entityId = 'town-1') {
-  const townEntity = expectTownPresent(entityId);
-  expect(townEntity?.dataset.tileX).toBe(String(x));
-  expect(townEntity?.dataset.tileY).toBe(String(y));
-  return townEntity;
+  const townEntity = expectTownPresent(entityId)
+  expect(townEntity?.dataset.tileX).toBe(String(x))
+  expect(townEntity?.dataset.tileY).toBe(String(y))
+  return townEntity
 }
 
 export function expectTownNotPresent(entityId = 'town-1') {
-  expect(getTownEntity(entityId)).toBeFalsy();
+  expect(getTownEntity(entityId)).toBeFalsy()
 }
 
 export function expectMinePresent(entityId = 'mine-1') {
-  const mineEntity = getMineEntity(entityId);
-  expect(mineEntity).toBeTruthy();
-  return mineEntity;
+  const mineEntity = getMineEntity(entityId)
+  expect(mineEntity).toBeTruthy()
+  return mineEntity
 }
 
 export function expectMineAt(x, y, entityId = 'mine-1') {
-  const mineEntity = expectMinePresent(entityId);
-  expect(mineEntity?.dataset.tileX).toBe(String(x));
-  expect(mineEntity?.dataset.tileY).toBe(String(y));
-  return mineEntity;
+  const mineEntity = expectMinePresent(entityId)
+  expect(mineEntity?.dataset.tileX).toBe(String(x))
+  expect(mineEntity?.dataset.tileY).toBe(String(y))
+  return mineEntity
 }
 
 export function expectMineNotPresent(entityId = 'mine-1') {
-  expect(getMineEntity(entityId)).toBeFalsy();
+  expect(getMineEntity(entityId)).toBeFalsy()
 }
 
 export function expectResourceTotal(resourceName, amount) {
-  const totalsText = document.getElementById('resource-totals-status')?.textContent ?? '';
-  expect(totalsText).toContain(`${resourceName}: ${amount}`);
+  const totalsText = document.getElementById('resource-totals-status')?.textContent ?? ''
+  expect(totalsText).toContain(`${resourceName}: ${amount}`)
 }
 
 export function getInteractionModal() {
-  return document.querySelector('interaction-modal, .interaction-modal');
+  return document.querySelector('interaction-modal, .interaction-modal')
 }
 
 export function getInteractionModalMessage() {
-  return getInteractionModal()?.querySelector('.interaction-modal__message') ?? null;
+  return getInteractionModal()?.querySelector('.interaction-modal__message') ?? null
 }
 
 export function getInteractionModalOkButton() {
-  return getInteractionModal()?.querySelector('.interaction-modal__ok-button') ?? null;
+  return getInteractionModal()?.querySelector('.interaction-modal__ok-button') ?? null
 }
 
 export function expectInteractionModalOpen(messageIncludes = null) {
-  const modal = getInteractionModal();
-  expect(modal).toBeTruthy();
+  const modal = getInteractionModal()
+  expect(modal).toBeTruthy()
 
   if (messageIncludes !== null) {
-    expect(getInteractionModalMessage()?.textContent ?? '').toContain(messageIncludes);
+    expect(getInteractionModalMessage()?.textContent ?? '').toContain(messageIncludes)
   }
 
-  return modal;
+  return modal
 }
 
 export function expectInteractionModalClosed() {
-  expect(getInteractionModal()).toBeFalsy();
+  expect(getInteractionModal()).toBeFalsy()
 }
 
 export async function closeInteractionModal(user) {
-  const okButton = getInteractionModalOkButton();
-  expect(okButton).toBeTruthy();
-  await user.click(okButton);
+  const okButton = getInteractionModalOkButton()
+  expect(okButton).toBeTruthy()
+  await user.click(okButton)
 }
 
 export function expectHasOverLimitTargetMarker() {
-  expect(document.querySelector('.path-preview-target-line-over-limit')).toBeTruthy();
+  expect(document.querySelector('.path-preview-target-line-over-limit')).toBeTruthy()
 }
 
 export function getPreviewSvg() {
-  return document.querySelector('.effects-layer .path-preview-svg');
+  return document.querySelector('.effects-layer .path-preview-svg')
 }
 
 export function getPreviewDashAt(x, y) {
-  return document.querySelector(`.path-preview-dash[data-x="${x}"][data-y="${y}"]`);
+  return document.querySelector(`.path-preview-dash[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function getPreviewCornerAt(x, y) {
-  return document.querySelector(`.path-preview-corner[data-x="${x}"][data-y="${y}"]`);
+  return document.querySelector(`.path-preview-corner[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function getPreviewTargetAt(x, y) {
-  return document.querySelector(`.path-preview-target[data-x="${x}"][data-y="${y}"]`);
+  return document.querySelector(`.path-preview-target[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function getPreviewOverLimitDashAt(x, y) {
-  return document.querySelector(`.path-preview-dash-over-limit[data-x="${x}"][data-y="${y}"]`);
+  return document.querySelector(`.path-preview-dash-over-limit[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function hasOverLimitTargetLineAt(x, y) {
-  const target = getPreviewTargetAt(x, y);
+  const target = getPreviewTargetAt(x, y)
   if (!target) {
-    return false;
+    return false
   }
-  return Boolean(target.querySelector('.path-preview-target-line-over-limit'));
+  return Boolean(target.querySelector('.path-preview-target-line-over-limit'))
 }
 
 export function expectPreviewDashAt(x, y) {
-  expect(getPreviewDashAt(x, y)).toBeTruthy();
+  expect(getPreviewDashAt(x, y)).toBeTruthy()
 }
 
 export function expectPreviewCornerAt(x, y) {
-  expect(getPreviewCornerAt(x, y)).toBeTruthy();
+  expect(getPreviewCornerAt(x, y)).toBeTruthy()
 }
 
 export function expectPreviewTargetAt(x, y) {
-  expect(getPreviewTargetAt(x, y)).toBeTruthy();
+  expect(getPreviewTargetAt(x, y)).toBeTruthy()
 }
 
 export function expectPreviewOverLimitDashAt(x, y) {
-  expect(getPreviewOverLimitDashAt(x, y)).toBeTruthy();
+  expect(getPreviewOverLimitDashAt(x, y)).toBeTruthy()
 }
 
 export function expectPreviewOverLimitTargetAt(x, y) {
-  expect(hasOverLimitTargetLineAt(x, y)).toBe(true);
+  expect(hasOverLimitTargetLineAt(x, y)).toBe(true)
 }
 
 export function expectPreviewNotOverLimitTargetAt(x, y) {
-  expect(hasOverLimitTargetLineAt(x, y)).toBe(false);
+  expect(hasOverLimitTargetLineAt(x, y)).toBe(false)
 }
 
 export function expectNoPreview() {
-  expect(document.querySelector('.path-preview-svg')).toBeFalsy();
-  expect(document.querySelector('.path-preview-target')).toBeFalsy();
+  expect(document.querySelector('.path-preview-svg')).toBeFalsy()
+  expect(document.querySelector('.path-preview-target')).toBeFalsy()
 }
 
 export async function confirmMove(user, x, y) {
-  const tile = getTerrainTile(x, y);
-  expect(tile).toBeTruthy();
-  await user.click(tile);
-  await user.click(tile);
+  const tile = getTerrainTile(x, y)
+  expect(tile).toBeTruthy()
+  await user.click(tile)
+  await user.click(tile)
 }
 
 export async function clickTile(user, x, y) {
-  const tile = getTerrainTile(x, y);
-  expect(tile).toBeTruthy();
-  await user.click(tile);
+  const tile = getTerrainTile(x, y)
+  expect(tile).toBeTruthy()
+  await user.click(tile)
 }
 
 export function dispatchTileClick(x, y) {
-  const tile = getTerrainTile(x, y);
-  expect(tile).toBeTruthy();
-  tile?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+  const tile = getTerrainTile(x, y)
+  expect(tile).toBeTruthy()
+  tile?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
 }
 
 export function confirmTileClickByDispatch(x, y) {
-  dispatchTileClick(x, y);
-  dispatchTileClick(x, y);
+  dispatchTileClick(x, y)
+  dispatchTileClick(x, y)
 }
 
 export function getEndTurnButton() {
-  return document.querySelector('#end-turn-button');
+  return document.querySelector('#end-turn-button')
 }
 
 export async function clickEndTurn(user) {
-  const endTurnButton = getEndTurnButton();
-  expect(endTurnButton).toBeTruthy();
-  await user.click(endTurnButton);
+  const endTurnButton = getEndTurnButton()
+  expect(endTurnButton).toBeTruthy()
+  await user.click(endTurnButton)
 }
 
 export function getResetSessionButton() {
-  return document.querySelector('#reset-session-button');
+  return document.querySelector('#reset-session-button')
 }
 
 export async function clickResetSession(user) {
-  const resetButton = getResetSessionButton();
-  expect(resetButton).toBeTruthy();
-  await user.click(resetButton);
+  const resetButton = getResetSessionButton()
+  expect(resetButton).toBeTruthy()
+  await user.click(resetButton)
 }

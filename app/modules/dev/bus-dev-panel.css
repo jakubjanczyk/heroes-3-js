@@ -29,7 +29,7 @@
   }
 
   &::before {
-    content: '>';
+    content: ">";
     transition: rotate var(--duration-fast) var(--ease-standard);
   }
 

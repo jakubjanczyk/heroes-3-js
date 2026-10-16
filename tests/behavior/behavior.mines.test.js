@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
-import { describe, test } from 'vitest';
-
-import { aHero, aMine, aScenario } from './builders.js';
+import { describe, test } from 'vitest'
 import {
   confirmTileClickByDispatch,
   dispatchTileClick,
@@ -12,7 +10,8 @@ import {
   expectNoPreview,
   flushMicrotasks,
   setupMovementBehaviorApp
-} from './behavior.utils.js';
+} from './behavior.utils.js'
+import { aHero, aMine, aScenario } from './builders.js'
 
 describe('mine interaction behavior', () => {
   test('given scenario contains all mine types when app boots then each mine is rendered', async () => {
@@ -30,16 +29,16 @@ describe('mine interaction behavior', () => {
           aMine().withId('mine-7').withType('GEM_POND').at(14, 0)
         )
         .build()
-    });
+    })
 
-    expectMineAt(2, 0, 'mine-1');
-    expectMineAt(4, 0, 'mine-2');
-    expectMineAt(6, 0, 'mine-3');
-    expectMineAt(8, 0, 'mine-4');
-    expectMineAt(10, 0, 'mine-5');
-    expectMineAt(12, 0, 'mine-6');
-    expectMineAt(14, 0, 'mine-7');
-  });
+    expectMineAt(2, 0, 'mine-1')
+    expectMineAt(4, 0, 'mine-2')
+    expectMineAt(6, 0, 'mine-3')
+    expectMineAt(8, 0, 'mine-4')
+    expectMineAt(10, 0, 'mine-5')
+    expectMineAt(12, 0, 'mine-6')
+    expectMineAt(14, 0, 'mine-7')
+  })
 
   test('given hero enters mine bottom-center tile when movement resolves then mine stays and no modal appears', async () => {
     await setupMovementBehaviorApp({
@@ -47,15 +46,15 @@ describe('mine interaction behavior', () => {
         .withSize(6, 3)
         .withEntities(aHero().at(0, 1), aMine().at(2, 1))
         .build()
-    });
+    })
 
-    confirmTileClickByDispatch(2, 1);
-    await flushMicrotasks();
+    confirmTileClickByDispatch(2, 1)
+    await flushMicrotasks()
 
-    expectHeroAt(2, 1);
-    expectInteractionModalClosed();
-    expectMinePresent('mine-1');
-  });
+    expectHeroAt(2, 1)
+    expectInteractionModalClosed()
+    expectMinePresent('mine-1')
+  })
 
   test('given mine is rendered as 3x2 when player previews non-entry footprint tiles then no preview is shown', async () => {
     await setupMovementBehaviorApp({
@@ -63,26 +62,26 @@ describe('mine interaction behavior', () => {
         .withSize(8, 4)
         .withEntities(aHero().at(0, 2), aMine().at(3, 2))
         .build()
-    });
+    })
 
-    dispatchTileClick(2, 1);
-    await flushMicrotasks();
-    expectNoPreview();
+    dispatchTileClick(2, 1)
+    await flushMicrotasks()
+    expectNoPreview()
 
-    dispatchTileClick(3, 1);
-    await flushMicrotasks();
-    expectNoPreview();
+    dispatchTileClick(3, 1)
+    await flushMicrotasks()
+    expectNoPreview()
 
-    dispatchTileClick(4, 1);
-    await flushMicrotasks();
-    expectNoPreview();
+    dispatchTileClick(4, 1)
+    await flushMicrotasks()
+    expectNoPreview()
 
-    dispatchTileClick(2, 2);
-    await flushMicrotasks();
-    expectNoPreview();
+    dispatchTileClick(2, 2)
+    await flushMicrotasks()
+    expectNoPreview()
 
-    dispatchTileClick(4, 2);
-    await flushMicrotasks();
-    expectNoPreview();
-  });
-});
+    dispatchTileClick(4, 2)
+    await flushMicrotasks()
+    expectNoPreview()
+  })
+})

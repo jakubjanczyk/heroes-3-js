@@ -1,8 +1,8 @@
-import { getEntityName } from './shared.js';
 import {
   INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
   MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT
-} from '../interaction-kinds.js';
+} from '../interaction-kinds.js'
+import { getEntityName } from './shared.js'
 
 export const monsterBehavior = Object.freeze({
   kind: 'MONSTER',
@@ -19,7 +19,7 @@ export const monsterBehavior = Object.freeze({
         definitions,
         definitionsKey: 'monsters',
         defaultName: 'Monster'
-      });
+      })
 
       return {
         kind: INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
@@ -31,7 +31,7 @@ export const monsterBehavior = Object.freeze({
           title: 'Interaction',
           message: `${monsterName} defeated`
         }
-      };
+      }
     }
   })
-});
+})

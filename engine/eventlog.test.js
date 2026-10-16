@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest'
 
-import { createEventLog } from './eventlog.js';
+import { createEventLog } from './eventlog.js'
 
 describe('event log', () => {
   test('loads persisted entries and records new events with schema metadata', async () => {
@@ -12,24 +12,24 @@ describe('event log', () => {
         detail: { turnNumber: 2 },
         at: 1000
       }
-    ];
-    const addedEntries = [];
+    ]
+    const addedEntries = []
 
     const eventLog = createEventLog({
       now: () => 12345,
       openDatabase: async () => ({}),
       getAll: async () => storedEntries,
       add: async (_db, _storeName, value) => {
-        addedEntries.push(value);
-        return 3;
+        addedEntries.push(value)
+        return 3
       },
       clear: async () => {}
-    });
+    })
 
-    await eventLog.init();
+    await eventLog.init()
 
-    expect(eventLog.hasExistingSession()).toBe(true);
-    expect(eventLog.getAll()).toEqual(storedEntries);
+    expect(eventLog.hasExistingSession()).toBe(true)
+    expect(eventLog.getAll()).toEqual(storedEntries)
 
     await eventLog.record({
       type: 'fact.hero.moved',
@@ -37,7 +37,7 @@ describe('event log', () => {
         from: { x: 0, y: 0 },
         to: { x: 1, y: 0 }
       }
-    });
+    })
 
     expect(addedEntries).toEqual([
       {
@@ -49,28 +49,28 @@ describe('event log', () => {
         },
         at: 12345
       }
-    ]);
+    ])
     expect(eventLog.getAll()).toEqual([
       ...storedEntries,
       {
         id: 3,
         ...addedEntries[0]
       }
-    ]);
-  });
+    ])
+  })
 
   test('falls back to in-memory mode when IndexedDB is unavailable', async () => {
     const eventLog = createEventLog({
       now: () => 222,
       openDatabase: async () => {
-        throw new Error('no indexeddb');
+        throw new Error('no indexeddb')
       }
-    });
+    })
 
-    await eventLog.init();
-    expect(eventLog.hasExistingSession()).toBe(false);
+    await eventLog.init()
+    expect(eventLog.hasExistingSession()).toBe(false)
 
-    await eventLog.record({ type: 'fact.turn.ended', detail: { turnNumber: 2 } });
+    await eventLog.record({ type: 'fact.turn.ended', detail: { turnNumber: 2 } })
 
     expect(eventLog.getAll()).toEqual([
       {
@@ -80,11 +80,11 @@ describe('event log', () => {
         detail: { turnNumber: 2 },
         at: 222
       }
-    ]);
-  });
+    ])
+  })
 
   test('reset clears cached and persisted entries', async () => {
-    let clearCalls = 0;
+    let clearCalls = 0
     const eventLog = createEventLog({
       openDatabase: async () => ({}),
       getAll: async () => [
@@ -98,15 +98,15 @@ describe('event log', () => {
       ],
       add: async () => 2,
       clear: async () => {
-        clearCalls += 1;
+        clearCalls += 1
       }
-    });
+    })
 
-    await eventLog.init();
-    await eventLog.reset();
+    await eventLog.init()
+    await eventLog.reset()
 
-    expect(clearCalls).toBe(1);
-    expect(eventLog.getAll()).toEqual([]);
-    expect(eventLog.hasExistingSession()).toBe(false);
-  });
-});
+    expect(clearCalls).toBe(1)
+    expect(eventLog.getAll()).toEqual([])
+    expect(eventLog.hasExistingSession()).toBe(false)
+  })
+})

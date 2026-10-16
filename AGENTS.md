@@ -25,7 +25,7 @@ Run locally:
 
 Continuous integration:
 
-- Every PR and every push to `main` runs `npm ci` + `npm test` on Node 22 (`.github/workflows/test.yml`).
+- Every PR and every push to `main` runs `npm ci`, `npm run lint` and `npm test` on Node 22 (`.github/workflows/test.yml`).
 
 Deployment (GitHub Pages, served from the `gh-pages` branch):
 

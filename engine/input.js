@@ -1,21 +1,21 @@
-import { getMapCenteredOrigin } from './layers/layout.js';
-import { createEdgePanController } from './edge-pan-controller.js';
+import { createEdgePanController } from './edge-pan-controller.js'
+import { getMapCenteredOrigin } from './layers/layout.js'
 
 function getArrowPanDelta(key, panStep) {
   if (key === 'ArrowLeft') {
-    return [panStep, 0];
+    return [panStep, 0]
   }
   if (key === 'ArrowRight') {
-    return [-panStep, 0];
+    return [-panStep, 0]
   }
   if (key === 'ArrowUp') {
-    return [0, panStep];
+    return [0, panStep]
   }
   if (key === 'ArrowDown') {
-    return [0, -panStep];
+    return [0, -panStep]
   }
 
-  return null;
+  return null
 }
 
 export function attachCameraInput({
@@ -41,91 +41,91 @@ export function attachCameraInput({
     now,
     requestAnimationFrame,
     cancelAnimationFrame
-  });
+  })
 
   function getTileFromEventTarget(target) {
-    let node = target ?? null;
+    let node = target ?? null
     while (node) {
-      const rawX = node?.dataset?.x;
-      const rawY = node?.dataset?.y;
+      const rawX = node?.dataset?.x
+      const rawY = node?.dataset?.y
       if (rawX !== undefined && rawY !== undefined) {
-        const x = Number.parseInt(rawX, 10);
-        const y = Number.parseInt(rawY, 10);
+        const x = Number.parseInt(rawX, 10)
+        const y = Number.parseInt(rawY, 10)
         if (Number.isFinite(x) && Number.isFinite(y)) {
-          return { x, y };
+          return { x, y }
         }
       }
-      node = node.parentElement ?? null;
+      node = node.parentElement ?? null
     }
-    return null;
+    return null
   }
 
   function onKeyDown(event) {
-    const delta = getArrowPanDelta(event.key, panStep);
+    const delta = getArrowPanDelta(event.key, panStep)
     if (!delta) {
-      return;
+      return
     }
 
-    camera.moveBy(delta[0], delta[1]);
+    camera.moveBy(delta[0], delta[1])
   }
 
   function onMouseMove(event) {
-    edgePanController.onMouseMove(event);
+    edgePanController.onMouseMove(event)
   }
 
   function onMouseEnter() {
-    edgePanController.onMouseEnter();
+    edgePanController.onMouseEnter()
   }
 
   function onMouseLeave() {
-    edgePanController.onMouseLeave();
+    edgePanController.onMouseLeave()
   }
 
   function onViewportClick(event) {
     if (!map || typeof onTileClick !== 'function') {
-      return;
+      return
     }
 
-    const targetTile = getTileFromEventTarget(event?.target);
+    const targetTile = getTileFromEventTarget(event?.target)
     if (targetTile && map.inBounds(targetTile)) {
-      onTileClick(targetTile);
-      return;
+      onTileClick(targetTile)
+      return
     }
     if (typeof event?.clientX !== 'number' || typeof event?.clientY !== 'number') {
-      return;
+      return
     }
 
-    const rect = viewport.getBoundingClientRect();
-    const offset = camera.getOffset?.() ?? { x: 0, y: 0 };
+    const rect = viewport.getBoundingClientRect()
+    const offset = camera.getOffset?.() ?? { x: 0, y: 0 }
     const origin = getMapCenteredOrigin({
       width: viewport.clientWidth ?? 0,
       height: viewport.clientHeight ?? 0,
       map
-    });
+    })
     const tile = map.screenToTile({
       x: event.clientX - rect.left - offset.x - origin.x,
       y: event.clientY - rect.top - offset.y - origin.y
-    });
+    })
 
     if (!map.inBounds(tile)) {
-      return;
+      return
     }
 
-    onTileClick(tile);
+    onTileClick(tile)
   }
 
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('mousemove', onMouseMove);
-  viewport.addEventListener('mouseenter', onMouseEnter);
-  viewport.addEventListener('mouseleave', onMouseLeave);
-  viewport.addEventListener('click', onViewportClick);
+  window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('mousemove', onMouseMove)
+  viewport.addEventListener('mouseenter', onMouseEnter)
+  viewport.addEventListener('mouseleave', onMouseLeave)
+  viewport.addEventListener('click', onViewportClick)
 
   return () => {
-    edgePanController.destroy();
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('mousemove', onMouseMove);
-    viewport.removeEventListener('mouseenter', onMouseEnter);
-    viewport.removeEventListener('mouseleave', onMouseLeave);
-    viewport.removeEventListener('click', onViewportClick);
-  };
+    edgePanController.destroy()
+    window.removeEventListener('keydown', onKeyDown)
+    window.removeEventListener('mousemove', onMouseMove)
+    viewport.removeEventListener('mouseenter', onMouseEnter)
+    viewport.removeEventListener('mouseleave', onMouseLeave)
+    viewport.removeEventListener('click', onViewportClick)
+  }
 }
