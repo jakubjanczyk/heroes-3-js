@@ -7,7 +7,3 @@ export function toEntityIdOrNull(value) {
 
   return value
 }
-
-export function isEntityId(value) {
-  return toEntityIdOrNull(value) !== null
-}
