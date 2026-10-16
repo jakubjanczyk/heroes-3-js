@@ -1,103 +1,103 @@
 function noop() {}
 
 function isFunction(value) {
-  return typeof value === 'function';
+  return typeof value === 'function'
 }
 
 function isObject(value) {
-  return value !== null && typeof value === 'object';
+  return value !== null && typeof value === 'object'
 }
 
 function toList(value) {
-  return Array.isArray(value) ? value : [];
+  return Array.isArray(value) ? value : []
 }
 
 function resolveTarget(target, runtime) {
   if (isFunction(target)) {
-    return target(runtime);
+    return target(runtime)
   }
 
-  return target;
+  return target
 }
 
 function toEventTypeList(value) {
-  const values = toList(value);
-  const seen = new Set();
-  const types = [];
+  const values = toList(value)
+  const seen = new Set()
+  const types = []
 
   for (const candidate of values) {
     if (typeof candidate !== 'string' || candidate.length < 1) {
-      continue;
+      continue
     }
 
     if (seen.has(candidate)) {
-      continue;
+      continue
     }
 
-    seen.add(candidate);
-    types.push(candidate);
+    seen.add(candidate)
+    types.push(candidate)
   }
 
-  return Object.freeze(types);
+  return Object.freeze(types)
 }
 
 function normalizeModuleMeta(meta) {
-  const id = typeof meta?.id === 'string' && meta.id.length > 0 ? meta.id : null;
-  const phase = meta?.phase === 'view' ? 'view' : meta?.phase === 'domain' ? 'domain' : null;
+  const id = typeof meta?.id === 'string' && meta.id.length > 0 ? meta.id : null
+  const phase = meta?.phase === 'view' ? 'view' : meta?.phase === 'domain' ? 'domain' : null
 
   return Object.freeze({
     id,
     phase,
     consumes: toEventTypeList(meta?.consumes),
     produces: toEventTypeList(meta?.produces)
-  });
+  })
 }
 
 export function createModuleRuntime({ bus, env, config }) {
-  const disposers = [];
+  const disposers = []
 
   function registerDisposer(disposer) {
     if (!isFunction(disposer)) {
-      return noop;
+      return noop
     }
 
-    disposers.push(disposer);
-    return disposer;
+    disposers.push(disposer)
+    return disposer
   }
 
   function on(type, handler, options) {
-    bus.addEventListener(type, handler, options);
+    bus.addEventListener(type, handler, options)
 
     if (isFunction(bus.removeEventListener)) {
       return registerDisposer(() => {
-        bus.removeEventListener(type, handler, options);
-      });
+        bus.removeEventListener(type, handler, options)
+      })
     }
 
-    return noop;
+    return noop
   }
 
   function onDom(target, type, handler, options) {
     if (!target?.addEventListener) {
-      return noop;
+      return noop
     }
 
-    target.addEventListener(type, handler, options);
+    target.addEventListener(type, handler, options)
 
     return registerDisposer(() => {
-      target.removeEventListener?.(type, handler, options);
-    });
+      target.removeEventListener?.(type, handler, options)
+    })
   }
 
   function emit(type, detail, options) {
-    bus.emit(type, detail, options);
+    bus.emit(type, detail, options)
   }
 
   function dispose() {
     while (disposers.length > 0) {
-      const disposer = disposers.pop();
+      const disposer = disposers.pop()
       try {
-        disposer();
+        disposer()
       } catch {}
     }
   }
@@ -111,52 +111,52 @@ export function createModuleRuntime({ bus, env, config }) {
     emit,
     registerDisposer,
     dispose
-  };
+  }
 }
 
 export function defineModule(setup, meta = {}) {
-  const moduleMeta = normalizeModuleMeta(meta);
+  const moduleMeta = normalizeModuleMeta(meta)
 
   const registerModule = (runtime) => {
-    const moduleRuntime = createModuleRuntime(runtime);
-    const moduleDefinition = setup(moduleRuntime);
+    const moduleRuntime = createModuleRuntime(runtime)
+    const moduleDefinition = setup(moduleRuntime)
 
     if (isFunction(moduleDefinition)) {
-      moduleRuntime.registerDisposer(moduleDefinition);
+      moduleRuntime.registerDisposer(moduleDefinition)
     }
 
     if (isObject(moduleDefinition)) {
       for (const entry of toList(moduleDefinition.subscriptions)) {
-        const type = entry?.type;
-        const handler = entry?.handler;
-        const options = entry?.options;
+        const type = entry?.type
+        const handler = entry?.handler
+        const options = entry?.options
         if (typeof type !== 'string' || !isFunction(handler)) {
-          continue;
+          continue
         }
 
-        moduleRuntime.on(type, handler, options);
+        moduleRuntime.on(type, handler, options)
       }
 
       for (const entry of toList(moduleDefinition.domSubscriptions)) {
-        const type = entry?.type;
-        const handler = entry?.handler;
-        const options = entry?.options;
+        const type = entry?.type
+        const handler = entry?.handler
+        const options = entry?.options
         if (typeof type !== 'string' || !isFunction(handler)) {
-          continue;
+          continue
         }
 
-        const target = resolveTarget(entry?.target, moduleRuntime);
-        moduleRuntime.onDom(target, type, handler, options);
+        const target = resolveTarget(entry?.target, moduleRuntime)
+        moduleRuntime.onDom(target, type, handler, options)
       }
 
-      moduleRuntime.registerDisposer(moduleDefinition.dispose);
+      moduleRuntime.registerDisposer(moduleDefinition.dispose)
     }
 
     return () => {
-      moduleRuntime.dispose();
-    };
-  };
+      moduleRuntime.dispose()
+    }
+  }
 
-  registerModule.meta = moduleMeta;
-  return registerModule;
+  registerModule.meta = moduleMeta
+  return registerModule
 }

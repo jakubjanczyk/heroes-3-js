@@ -1,123 +1,124 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
+import { describe, expect, test } from 'vitest'
 
-const REPO_ROOT = process.cwd();
+const REPO_ROOT = process.cwd()
 
 function walkJsFiles(dirPath) {
-  const entries = readdirSync(dirPath, { withFileTypes: true });
-  const files = [];
+  const entries = readdirSync(dirPath, { withFileTypes: true })
+  const files = []
 
   for (const entry of entries) {
-    const fullPath = join(dirPath, entry.name);
+    const fullPath = join(dirPath, entry.name)
     if (entry.isDirectory()) {
-      files.push(...walkJsFiles(fullPath));
-      continue;
+      files.push(...walkJsFiles(fullPath))
+      continue
     }
 
     if (!entry.isFile() || !entry.name.endsWith('.js')) {
-      continue;
+      continue
     }
 
-    files.push(fullPath);
+    files.push(fullPath)
   }
 
-  return files;
+  return files
 }
 
 function assertNoImportMatch({ files, pattern, errorLabel }) {
-  const violations = [];
+  const violations = []
 
   for (const filePath of files) {
-    const source = readFileSync(filePath, 'utf8');
+    const source = readFileSync(filePath, 'utf8')
     if (!pattern.test(source)) {
-      continue;
+      continue
     }
 
-    violations.push(relative(REPO_ROOT, filePath));
+    violations.push(relative(REPO_ROOT, filePath))
   }
 
-  expect(violations, errorLabel).toEqual([]);
+  expect(violations, errorLabel).toEqual([])
 }
 
 describe('architecture boundaries', () => {
   test('engine layer never imports game or app modules', () => {
-    const engineFiles = walkJsFiles(join(REPO_ROOT, 'engine'));
+    const engineFiles = walkJsFiles(join(REPO_ROOT, 'engine'))
 
     assertNoImportMatch({
       files: engineFiles,
       pattern: /from\s+['"][^'"]*(?:\/|\.\.\/)(?:app|game)\//,
       errorLabel: 'engine files must stay infra-only'
-    });
-  });
+    })
+  })
 
   test('game layer never imports app modules', () => {
-    const gameFiles = walkJsFiles(join(REPO_ROOT, 'game'));
+    const gameFiles = walkJsFiles(join(REPO_ROOT, 'game'))
 
     assertNoImportMatch({
       files: gameFiles,
       pattern: /from\s+['"][^'"]*(?:\/|\.\.\/)app\//,
       errorLabel: 'game files must not depend on app layer'
-    });
-  });
+    })
+  })
 
   test('app runtime modules do not import each other directly', () => {
     const moduleFiles = [
       ...walkJsFiles(join(REPO_ROOT, 'app/modules')),
       ...walkJsFiles(join(REPO_ROOT, 'app/heroes/modules'))
     ].filter((filePath) => {
-      const rel = relative(REPO_ROOT, filePath);
+      const rel = relative(REPO_ROOT, filePath)
       if (rel.endsWith('.test.js')) {
-        return false;
+        return false
       }
       if (rel === 'app/modules/register-modules.js') {
-        return false;
+        return false
       }
-      return true;
-    });
+      return true
+    })
 
     assertNoImportMatch({
       files: moduleFiles,
       pattern: /from\s+['"]\.\/(?!shared\/)[^'"]+\.js['"];/,
       errorLabel: 'runtime modules should communicate over bus events only'
-    });
-  });
+    })
+  })
 
   test('core game code never imports heroes content', () => {
     const coreGameFiles = walkJsFiles(join(REPO_ROOT, 'game')).filter(
       (filePath) => !relative(REPO_ROOT, filePath).startsWith('game/heroes/')
-    );
+    )
 
     assertNoImportMatch({
       files: coreGameFiles,
       pattern: /from\s+['"][^'"]*heroes\//,
-      errorLabel: 'heroes content is chosen at boot and passed in, so a different game can reuse the core'
-    });
-  });
+      errorLabel:
+        'heroes content is chosen at boot and passed in, so a different game can reuse the core'
+    })
+  })
 
   test('core app code never imports heroes content; only boot picks it', () => {
     const coreAppFiles = walkJsFiles(join(REPO_ROOT, 'app')).filter((filePath) => {
-      const rel = relative(REPO_ROOT, filePath);
-      return !rel.startsWith('app/heroes/') && rel !== 'app/boot-app.js';
-    });
+      const rel = relative(REPO_ROOT, filePath)
+      return !rel.startsWith('app/heroes/') && rel !== 'app/boot-app.js'
+    })
 
     assertNoImportMatch({
       files: coreAppFiles,
       pattern: /from\s+['"][^'"]*heroes\//,
       errorLabel: 'core app modules get heroes content through config.content'
-    });
-  });
+    })
+  })
 
   test('only the world module builds the static world', () => {
     const moduleFiles = walkJsFiles(join(REPO_ROOT, 'app/modules')).filter((filePath) => {
-      const rel = relative(REPO_ROOT, filePath);
-      return !rel.endsWith('.test.js') && rel !== 'app/modules/world.module.js';
-    });
+      const rel = relative(REPO_ROOT, filePath)
+      return !rel.endsWith('.test.js') && rel !== 'app/modules/world.module.js'
+    })
 
     assertNoImportMatch({
       files: moduleFiles,
       pattern: /from\s+['"][^'"]*game\/build-world\.js['"]/,
       errorLabel: 'modules read the frozen world-ready snapshot and track changes from facts'
-    });
-  });
-});
+    })
+  })
+})

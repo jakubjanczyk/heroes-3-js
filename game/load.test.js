@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest'
 
-import { loadGame } from './load.js';
+import { loadGame } from './load.js'
 
 function createFakeFetch(urlToJson) {
   return async (url) => {
@@ -9,17 +9,17 @@ function createFakeFetch(urlToJson) {
         ok: false,
         status: 404,
         json: async () => {
-          throw new Error('not found');
+          throw new Error('not found')
         }
-      };
+      }
     }
 
     return {
       ok: true,
       status: 200,
       json: async () => urlToJson[url]
-    };
-  };
+    }
+  }
 }
 
 describe('bootstrap', () => {
@@ -33,7 +33,7 @@ describe('bootstrap', () => {
         { id: 'r1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 0, y: 1 } },
         { id: 't1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 1 } }
       ]
-    };
+    }
 
     const definitions = {
       hero: { id: 'HERO', name: 'Hero' },
@@ -41,7 +41,7 @@ describe('bootstrap', () => {
       resources: { GOLD_PILE: { name: 'Gold Pile', amount: 100 } },
       towns: { CASTLE: { name: 'Castle' } },
       mines: { GOLD_MINE: { name: 'Gold mine' } }
-    };
+    }
 
     const fetch = createFakeFetch({
       './scenarios/scenario.json': scenario,
@@ -50,21 +50,21 @@ describe('bootstrap', () => {
       './game/data/resources.json': definitions.resources,
       './game/data/towns.json': definitions.towns,
       './game/data/mines.json': definitions.mines
-    });
+    })
 
-    const loaded = await loadGame({ fetch });
+    const loaded = await loadGame({ fetch })
 
-    expect(loaded.scenario.meta.id).toBe('demo');
-    expect(loaded.scenario.entities).toHaveLength(4);
-    expect(loaded.definitions).toEqual(definitions);
-  });
+    expect(loaded.scenario.meta.id).toBe('demo')
+    expect(loaded.scenario.entities).toHaveLength(4)
+    expect(loaded.definitions).toEqual(definitions)
+  })
 
   test('loadGame rejects scenarios where entity is on blocked tile', async () => {
     const scenario = {
       meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
       terrain: { width: 2, height: 1, tiles: [0, 1] },
       entities: [{ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }]
-    };
+    }
 
     const fetch = createFakeFetch({
       './scenarios/scenario.json': scenario,
@@ -72,10 +72,10 @@ describe('bootstrap', () => {
       './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
       './game/data/resources.json': {},
       './game/data/towns.json': {}
-    });
+    })
 
     await expect(loadGame({ fetch })).rejects.toThrow(
       'Entity monster-1 (MONSTER) must be placed on a passable tile: (1, 0)'
-    );
-  });
-});
+    )
+  })
+})

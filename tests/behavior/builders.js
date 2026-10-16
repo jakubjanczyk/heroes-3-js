@@ -1,25 +1,28 @@
-import { builder } from '@jjanczyk/object-builder';
+import { builder } from '@jjanczyk/object-builder'
 
 const placeable = (entity) => ({
   at(x, y) {
-    entity.tile = { x, y };
+    entity.tile = { x, y }
   }
-});
+})
 
 export const aHero = () =>
-  builder({ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, placeable);
+  builder({ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, placeable)
 
 export const aMonster = () =>
-  builder({ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }, placeable);
+  builder({ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }, placeable)
 
 export const aResource = () =>
-  builder({ id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } }, placeable);
+  builder(
+    { id: 'resource-1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 1, y: 0 } },
+    placeable
+  )
 
 export const aTown = () =>
-  builder({ id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } }, placeable);
+  builder({ id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } }, placeable)
 
 export const aMine = () =>
-  builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, placeable);
+  builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, placeable)
 
 export const aScenario = () =>
   builder(
@@ -32,12 +35,12 @@ export const aScenario = () =>
     },
     (scenario) => ({
       withSize(width, height = 1) {
-        scenario.width = width;
-        scenario.height = height;
-        scenario.tiles = new Array(width * height).fill(0);
+        scenario.width = width
+        scenario.height = height
+        scenario.tiles = new Array(width * height).fill(0)
       },
       withEntities(...entities) {
-        scenario.entities = entities.map((entity) => entity.build());
+        scenario.entities = entities.map((entity) => entity.build())
       }
     })
-  );
+  )

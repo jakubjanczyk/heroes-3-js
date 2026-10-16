@@ -1,5 +1,5 @@
-import http from 'node:http'
 import { createReadStream, statSync } from 'node:fs'
+import http from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -27,13 +27,13 @@ const contentTypeByExt = new Map([
   ['.gif', 'image/gif'],
   ['.ico', 'image/x-icon'],
   ['.mp3', 'audio/mpeg'],
-  ['.txt', 'text/plain; charset=utf-8'],
+  ['.txt', 'text/plain; charset=utf-8']
 ])
 
 function send(res, statusCode, body, headers = {}) {
   res.writeHead(statusCode, {
     'Cache-Control': 'no-store',
-    ...headers,
+    ...headers
   })
   res.end(body)
 }
@@ -78,7 +78,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, {
     'Content-Type': contentType,
     'Content-Length': stat.size,
-    'Cache-Control': 'no-store',
+    'Cache-Control': 'no-store'
   })
   if (req.method === 'HEAD') return res.end()
 

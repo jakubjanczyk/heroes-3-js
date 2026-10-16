@@ -1,39 +1,39 @@
-import { tileKey } from './tile-utils.js';
+import { tileKey } from './tile-utils.js'
 
 export function createOccupancyIndex(entities) {
-  const byTile = new Map();
-  const byEntityId = new Map();
+  const byTile = new Map()
+  const byEntityId = new Map()
   for (const entity of entities) {
-    const key = tileKey(entity.tile);
-    byTile.set(key, entity);
-    byEntityId.set(entity.id, key);
+    const key = tileKey(entity.tile)
+    byTile.set(key, entity)
+    byEntityId.set(entity.id, key)
   }
 
   return {
     getAt(tile) {
-      return byTile.get(tileKey(tile)) ?? null;
+      return byTile.get(tileKey(tile)) ?? null
     },
     moveEntity(entity, toTile) {
-      const previousKey = byEntityId.get(entity.id);
+      const previousKey = byEntityId.get(entity.id)
       if (previousKey) {
-        byTile.delete(previousKey);
+        byTile.delete(previousKey)
       }
-      const nextKey = tileKey(toTile);
-      byTile.set(nextKey, entity);
-      byEntityId.set(entity.id, nextKey);
+      const nextKey = tileKey(toTile)
+      byTile.set(nextKey, entity)
+      byEntityId.set(entity.id, nextKey)
     },
     removeEntity(entity) {
-      const key = byEntityId.get(entity.id);
+      const key = byEntityId.get(entity.id)
       if (!key) {
-        return;
+        return
       }
 
-      const entityAtTile = byTile.get(key);
+      const entityAtTile = byTile.get(key)
       if (entityAtTile?.id === entity.id) {
-        byTile.delete(key);
+        byTile.delete(key)
       }
 
-      byEntityId.delete(entity.id);
+      byEntityId.delete(entity.id)
     }
-  };
+  }
 }

@@ -71,7 +71,7 @@
     outline-offset: 2px;
   }
 
-  &[aria-pressed='true'] {
+  &[aria-pressed="true"] {
     border-color: color-mix(in oklab, var(--color-success) 42%, var(--color-border));
     background: color-mix(in oklab, var(--color-success) 18%, var(--color-panel-strong));
   }

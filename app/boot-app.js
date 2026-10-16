@@ -1,42 +1,42 @@
-import { createBus } from '../engine/bus.js';
-import { createEventLog } from '../engine/eventlog.js';
-import { heroesAppContent } from './heroes/content.js';
-import { APP_COMMAND_APP_START, shouldPersistFactEvent } from './events.js';
-import { createBusDevPanel } from './modules/dev/bus-dev-panel.js';
-import { registerModules } from './modules/register-modules.js';
-import { restoreSession } from './restore-session.js';
-import { createDisposer, createWorld, setupResetListener } from './boot-lifecycle.js';
+import { createBus } from '../engine/bus.js'
+import { createEventLog } from '../engine/eventlog.js'
+import { createDisposer, createWorld, setupResetListener } from './boot-lifecycle.js'
+import { APP_COMMAND_APP_START, shouldPersistFactEvent } from './events.js'
+import { heroesAppContent } from './heroes/content.js'
+import { createBusDevPanel } from './modules/dev/bus-dev-panel.js'
+import { registerModules } from './modules/register-modules.js'
+import { restoreSession } from './restore-session.js'
 
-const MAX_MOVEMENT_POINTS = 15;
+const MAX_MOVEMENT_POINTS = 15
 
 function defaultBusLogger(entry) {
-  const { action, type = '-', subscribers = 0 } = entry;
-  console.log(`[bus] ${action} ${type} (subscribers: ${subscribers})`, entry);
+  const { action, type = '-', subscribers = 0 } = entry
+  console.log(`[bus] ${action} ${type} (subscribers: ${subscribers})`, entry)
 }
 
 function composeBusLoggers(...loggers) {
-  const enabled = loggers.filter((logger) => typeof logger === 'function');
+  const enabled = loggers.filter((logger) => typeof logger === 'function')
   if (enabled.length < 1) {
-    return null;
+    return null
   }
 
   return (entry) => {
     for (const logger of enabled) {
-      logger(entry);
+      logger(entry)
     }
-  };
+  }
 }
 
 function setupAppBus(busDebug, document, busLogger, appEventLog) {
-  const busPanel = busDebug ? createBusDevPanel({ document }) : null;
-  const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log);
+  const busPanel = busDebug ? createBusDevPanel({ document }) : null
+  const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log)
 
   return createBus({
     debug: busDebug,
     log: activeBusLogger,
     eventLog: appEventLog,
     shouldLogEvent: shouldPersistFactEvent
-  });
+  })
 }
 
 export async function bootApp({
@@ -51,56 +51,56 @@ export async function bootApp({
   musicTracks,
   musicManifestUrl = '/assets/music/tracks.json'
 } = {}) {
-  const appEventLog = eventLog ?? createEventLog();
-  await appEventLog.init?.();
+  const appEventLog = eventLog ?? createEventLog()
+  await appEventLog.init?.()
 
   const env = {
     fetch,
     document,
     window,
     AudioCtor
-  };
+  }
   const config = {
     content: heroesAppContent,
     maxMovementPoints: MAX_MOVEMENT_POINTS,
     musicTracks,
     musicManifestUrl,
     ...configOverride
-  };
-  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog);
+  }
+  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog)
 
-  const lifecycle = createDisposer();
+  const lifecycle = createDisposer()
 
   try {
     lifecycle.add(() => {
-      appBus.removeAllEventListeners?.();
-    });
+      appBus.removeAllEventListeners?.()
+    })
     lifecycle.add(
       registerModules({
         bus: appBus,
         env,
         config
       })
-    );
-    lifecycle.add(setupResetListener(appBus, appEventLog, window, lifecycle.dispose));
+    )
+    lifecycle.add(setupResetListener(appBus, appEventLog, window, lifecycle.dispose))
 
-    const worldPromise = createWorld(appBus);
-    appBus.emit(APP_COMMAND_APP_START, {});
+    const worldPromise = createWorld(appBus)
+    appBus.emit(APP_COMMAND_APP_START, {})
 
-    const world = await worldPromise;
+    const world = await worldPromise
     await restoreSession({
       persistedFacts: appEventLog?.getAll?.(),
       appBus
-    });
+    })
 
     return {
       ...world,
       bus: appBus,
       eventLog: appEventLog,
       dispose: lifecycle.dispose
-    };
+    }
   } catch (error) {
-    lifecycle.dispose();
-    throw error;
+    lifecycle.dispose()
+    throw error
   }
 }
