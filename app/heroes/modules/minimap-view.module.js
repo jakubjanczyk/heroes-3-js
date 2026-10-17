@@ -1,8 +1,10 @@
 import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js'
 import { clamp } from '../../../engine/math-utils.js'
-import { isTown } from '../../../game/domain/entity-queries.js'
+import { findHero, isMine, isTown } from '../../../game/domain/entity-queries.js'
+import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
+  APP_FACT_HERO_MOVED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED
 } from '../../events.js'
@@ -21,12 +23,50 @@ export const registerMinimapViewModule = defineModule(
     const minimapMap = env.document?.getElementById('minimap-map')
     const minimapTerrain = env.document?.getElementById('minimap-terrain')
     const minimapTowns = env.document?.getElementById('minimap-towns')
+    const minimapHeroes = env.document?.getElementById('minimap-heroes')
     const minimapViewport = env.document?.getElementById('minimap-viewport')
     const createElement = env.document?.createElement?.bind(env.document)
 
     let map = null
+    let staticOccupancy = null
+    let entitiesById = new Map()
     let towns = []
+    let heroMarker = null
+    let isDragging = false
     let lastCameraUpdate = null
+
+    // As in Heroes 3, a tile covered by a mine takes its owner's colour instead of the terrain's.
+    // Mines cannot be captured yet, so they are always neutral.
+    function isCoveredByMine(tile) {
+      const occupant = staticOccupancy?.getAt(tile)
+      if (!occupant) {
+        return false
+      }
+
+      if (occupant.kind === FOOTPRINT_BLOCKER_KIND) {
+        return isMine(entitiesById.get(occupant.ownerId))
+      }
+
+      return isMine(occupant)
+    }
+
+    function getTileClassName(tile) {
+      const classNames = ['minimap-tile']
+      const terrainName = map.getTerrainType(tile)?.name
+      if (terrainName) {
+        classNames.push(`terrain-tile--${terrainName}`)
+      }
+      if (isCoveredByMine(tile)) {
+        classNames.push('minimap-tile--neutral')
+      }
+
+      return classNames.join(' ')
+    }
+
+    function placeMarker(marker, tile) {
+      setStyleVar(marker, '--minimap-marker-x', `${((tile.x + 0.5) / map.width) * 100}%`)
+      setStyleVar(marker, '--minimap-marker-y', `${((tile.y + 0.5) / map.height) * 100}%`)
+    }
 
     function renderTerrain() {
       if (!map || !minimapTerrain || typeof createElement !== 'function') {
@@ -38,9 +78,7 @@ export const registerMinimapViewModule = defineModule(
       for (let y = 0; y < map.height; y += 1) {
         for (let x = 0; x < map.width; x += 1) {
           const tile = createElement('div')
-          tile.className = map.isPassable({ x, y })
-            ? 'minimap-tile minimap-tile--passable'
-            : 'minimap-tile minimap-tile--blocked'
+          tile.className = getTileClassName({ x, y })
           tile.dataset.x = String(x)
           tile.dataset.y = String(y)
           minimapTerrain.appendChild(tile)
@@ -59,12 +97,52 @@ export const registerMinimapViewModule = defineModule(
         const marker = createElement('div')
         marker.className = 'minimap-town-marker'
         marker.dataset.entityId = town.id
-        marker.dataset.tileX = String(town.tile.x)
-        marker.dataset.tileY = String(town.tile.y)
-        setStyleVar(marker, '--minimap-marker-x', `${((town.tile.x + 0.5) / map.width) * 100}%`)
-        setStyleVar(marker, '--minimap-marker-y', `${((town.tile.y + 0.5) / map.height) * 100}%`)
+        placeMarker(marker, town.tile)
         minimapTowns.appendChild(marker)
       }
+    }
+
+    function renderHero(hero) {
+      heroMarker = null
+      if (!map || !minimapHeroes || typeof createElement !== 'function') {
+        return
+      }
+
+      clearNode(minimapHeroes)
+      if (!hero) {
+        return
+      }
+
+      heroMarker = createElement('div')
+      heroMarker.className = 'minimap-hero-marker'
+      heroMarker.dataset.entityId = hero.id
+      placeMarker(heroMarker, hero.tile)
+      minimapHeroes.appendChild(heroMarker)
+    }
+
+    function centerCameraOnPoint(event) {
+      if (!map) {
+        return
+      }
+
+      const rect = minimapMap.getBoundingClientRect?.()
+      const width = Number(rect?.width ?? 0)
+      const height = Number(rect?.height ?? 0)
+      if (width <= 0 || height <= 0) {
+        return
+      }
+
+      const localX = clamp(Number(event.clientX) - rect.left, 0, Math.max(0, width - 1))
+      const localY = clamp(Number(event.clientY) - rect.top, 0, Math.max(0, height - 1))
+      const tileX = Math.min(map.width - 1, Math.floor((localX / width) * map.width))
+      const tileY = Math.min(map.height - 1, Math.floor((localY / height) * map.height))
+      const tile = { x: tileX, y: tileY }
+
+      if (!map.inBounds(tile)) {
+        return
+      }
+
+      emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile })
     }
 
     function updateViewportBox(cameraUpdate) {
@@ -115,32 +193,44 @@ export const registerMinimapViewModule = defineModule(
     return {
       domSubscriptions: [
         {
+          // Pointer events cover mouse, touch and pen alike.
           target: minimapMap,
-          type: 'click',
+          type: 'pointerdown',
           handler: (event) => {
-            if (!map) {
+            if (!event.isPrimary || event.button !== 0) {
               return
             }
 
-            const rect = minimapMap.getBoundingClientRect?.()
-            const width = Number(rect?.width ?? 0)
-            const height = Number(rect?.height ?? 0)
-            if (width <= 0 || height <= 0) {
-              return
+            // Keeps the browser from selecting text or dragging an image while the player drags.
+            event.preventDefault?.()
+            isDragging = true
+            centerCameraOnPoint(event)
+          }
+        },
+        {
+          // The drag follows the pointer on the whole window, so it keeps going when the pointer
+          // leaves the minimap.
+          target: env.window,
+          type: 'pointermove',
+          handler: (event) => {
+            // Checking the held button too ends a drag whose pointerup never arrived.
+            if (isDragging && event.isPrimary && (event.buttons & 1) === 1) {
+              centerCameraOnPoint(event)
             }
-
-            const localX = clamp(Number(event.clientX) - rect.left, 0, Math.max(0, width - 1))
-            const localY = clamp(Number(event.clientY) - rect.top, 0, Math.max(0, height - 1))
-            const tileX = Math.min(map.width - 1, Math.floor((localX / width) * map.width))
-            const tileY = Math.min(map.height - 1, Math.floor((localY / height) * map.height))
-            const tile = { x: tileX, y: tileY }
-
-            if (!map.inBounds(tile)) {
-              return
-            }
-
-            event.stopPropagation?.()
-            emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile })
+          }
+        },
+        {
+          target: env.window,
+          type: 'pointerup',
+          handler: () => {
+            isDragging = false
+          }
+        },
+        {
+          target: env.window,
+          type: 'pointercancel',
+          handler: () => {
+            isDragging = false
           }
         }
       ],
@@ -148,8 +238,11 @@ export const registerMinimapViewModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
+            const entities = event.detail.scenario?.entities ?? []
             map = event.detail.map
-            towns = (event.detail.scenario?.entities ?? []).filter(isTown)
+            staticOccupancy = event.detail.staticOccupancy ?? null
+            entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
+            towns = entities.filter(isTown)
 
             if (minimapMap && map?.width > 0 && map?.height > 0) {
               setStyleVar(minimapMap, '--minimap-columns', String(map.width))
@@ -160,7 +253,24 @@ export const registerMinimapViewModule = defineModule(
 
             renderTerrain()
             renderTowns()
+            renderHero(findHero(entities))
             updateViewportBox(lastCameraUpdate)
+          }
+        },
+        {
+          type: APP_FACT_HERO_MOVED,
+          handler: (event) => {
+            const tile = event.detail?.to
+            if (
+              !map ||
+              !heroMarker ||
+              !tile ||
+              event.detail?.heroId !== heroMarker.dataset.entityId
+            ) {
+              return
+            }
+
+            placeMarker(heroMarker, tile)
           }
         },
         {
@@ -176,7 +286,7 @@ export const registerMinimapViewModule = defineModule(
   {
     id: 'minimap-view',
     phase: 'view',
-    consumes: [APP_FACT_WORLD_READY, APP_UI_CAMERA_UPDATED],
+    consumes: [APP_FACT_WORLD_READY, APP_FACT_HERO_MOVED, APP_UI_CAMERA_UPDATED],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE]
   }
 )
