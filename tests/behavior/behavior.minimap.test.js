@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest'
 import { loadAppStyles } from './app-styles.js'
 import {
   confirmMove,
+  confirmTileClickByDispatch,
   expectHeroAt,
   expectNoPreview,
   flushMicrotasks,
@@ -254,6 +255,28 @@ describe('minimap behavior', () => {
       const colours = mineTiles.map(([x, y]) => backgroundOf(getMinimapTile(x, y)))
 
       expect(colours).toEqual(new Array(6).fill(NEUTRAL_GREY))
+    })
+
+    test('given the hero captured a mine when the minimap renders then its tiles are drawn in the player colour', async () => {
+      await loadAppStyles()
+      await setupApp(
+        aScenario().withSize(5, 3).withEntities(aHero().at(2, 2), aMine().at(2, 1)).build()
+      )
+
+      confirmTileClickByDispatch(2, 1)
+      await flushMicrotasks()
+
+      const mineTiles = [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [1, 1],
+        [2, 1],
+        [3, 1]
+      ]
+      const colours = mineTiles.map(([x, y]) => backgroundOf(getMinimapTile(x, y)))
+
+      expect(colours).toEqual(new Array(6).fill(PLAYER_RED))
     })
 
     test('given a town when the minimap renders then its marker is neutral grey', async () => {

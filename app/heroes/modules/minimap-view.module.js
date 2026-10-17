@@ -5,6 +5,7 @@ import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_MOVED,
+  APP_FACT_MINE_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED
 } from '../../events.js'
@@ -30,24 +31,17 @@ export const registerMinimapViewModule = defineModule(
     let map = null
     let staticOccupancy = null
     let entitiesById = new Map()
+    let ownedMineIds = new Set()
     let towns = []
     let heroMarker = null
     let isDragging = false
     let lastCameraUpdate = null
 
-    // As in Heroes 3, a tile covered by a mine takes its owner's colour instead of the terrain's.
-    // Mines cannot be captured yet, so they are always neutral.
-    function isCoveredByMine(tile) {
+    function getMineCovering(tile) {
       const occupant = staticOccupancy?.getAt(tile)
-      if (!occupant) {
-        return false
-      }
-
-      if (occupant.kind === FOOTPRINT_BLOCKER_KIND) {
-        return isMine(entitiesById.get(occupant.ownerId))
-      }
-
-      return isMine(occupant)
+      const entity =
+        occupant?.kind === FOOTPRINT_BLOCKER_KIND ? entitiesById.get(occupant.ownerId) : occupant
+      return isMine(entity) ? entity : null
     }
 
     function getTileClassName(tile) {
@@ -56,8 +50,12 @@ export const registerMinimapViewModule = defineModule(
       if (terrainName) {
         classNames.push(`terrain-tile--${terrainName}`)
       }
-      if (isCoveredByMine(tile)) {
-        classNames.push('minimap-tile--neutral')
+      // As in Heroes 3, a tile covered by a mine takes its owner's colour instead of the terrain's.
+      const mine = getMineCovering(tile)
+      if (mine) {
+        classNames.push(
+          ownedMineIds.has(mine.id) ? 'minimap-tile--player' : 'minimap-tile--neutral'
+        )
       }
 
       return classNames.join(' ')
@@ -242,6 +240,7 @@ export const registerMinimapViewModule = defineModule(
             map = event.detail.map
             staticOccupancy = event.detail.staticOccupancy ?? null
             entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
+            ownedMineIds = new Set()
             towns = entities.filter(isTown)
 
             if (minimapMap && map?.width > 0 && map?.height > 0) {
@@ -274,6 +273,13 @@ export const registerMinimapViewModule = defineModule(
           }
         },
         {
+          type: APP_FACT_MINE_CAPTURED,
+          handler: (event) => {
+            ownedMineIds.add(event.detail.entityId)
+            renderTerrain()
+          }
+        },
+        {
           type: APP_UI_CAMERA_UPDATED,
           handler: (event) => {
             lastCameraUpdate = event.detail
@@ -286,7 +292,12 @@ export const registerMinimapViewModule = defineModule(
   {
     id: 'minimap-view',
     phase: 'view',
-    consumes: [APP_FACT_WORLD_READY, APP_FACT_HERO_MOVED, APP_UI_CAMERA_UPDATED],
+    consumes: [
+      APP_FACT_WORLD_READY,
+      APP_FACT_HERO_MOVED,
+      APP_FACT_MINE_CAPTURED,
+      APP_UI_CAMERA_UPDATED
+    ],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE]
   }
 )

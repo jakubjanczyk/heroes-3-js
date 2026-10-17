@@ -25,6 +25,8 @@ export const APP_FACT_TURN_ENDED = 'fact.turn.ended'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
+export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
+export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -45,7 +47,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TURN_ENDED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
-  APP_FACT_TOWN_VISITED
+  APP_FACT_TOWN_VISITED,
+  APP_FACT_MINE_CAPTURED
 ])
 
 export function shouldPersistFactEvent(type) {
