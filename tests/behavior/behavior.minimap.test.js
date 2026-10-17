@@ -141,12 +141,14 @@ function dispatchMouse(target, type, clientX, clientY) {
   )
 }
 
-function dispatchPointer(target, type, clientX, clientY, pointerType) {
+// `buttons` is 1 while the primary button is held (or a finger is down), 0 otherwise.
+function dispatchPointer(target, type, clientX, clientY, pointerType, buttons) {
   target.dispatchEvent(
     new window.PointerEvent(type, {
       bubbles: true,
       cancelable: true,
       button: 0,
+      buttons,
       pointerId: 1,
       isPrimary: true,
       pointerType,
@@ -156,20 +158,33 @@ function dispatchPointer(target, type, clientX, clientY, pointerType) {
   )
 }
 
+// A click is a press and a release followed by the click event, as browsers send it.
 function clickMinimap(clientX, clientY) {
+  pressOnMinimap(clientX, clientY)
+  releasePointer(clientX, clientY)
   dispatchMouse(getMinimapMap(), 'click', clientX, clientY)
 }
 
-function pressOnMinimap(clientX, clientY, pointerType = 'mouse') {
-  dispatchPointer(getMinimapMap(), 'pointerdown', clientX, clientY, pointerType)
+function pressPointer(clientX, clientY, target, pointerType = 'mouse') {
+  dispatchPointer(target, 'pointerdown', clientX, clientY, pointerType, 1)
 }
 
+function pressOnMinimap(clientX, clientY, pointerType = 'mouse') {
+  pressPointer(clientX, clientY, getMinimapMap(), pointerType)
+}
+
+// Moves with the button held, as in a drag.
 function movePointer(clientX, clientY, target = getMinimapMap(), pointerType = 'mouse') {
-  dispatchPointer(target, 'pointermove', clientX, clientY, pointerType)
+  dispatchPointer(target, 'pointermove', clientX, clientY, pointerType, 1)
+}
+
+// Moves with no button held.
+function hoverPointer(clientX, clientY, target = getMinimapMap()) {
+  dispatchPointer(target, 'pointermove', clientX, clientY, 'mouse', 0)
 }
 
 function releasePointer(clientX, clientY, target = getMinimapMap(), pointerType = 'mouse') {
-  dispatchPointer(target, 'pointerup', clientX, clientY, pointerType)
+  dispatchPointer(target, 'pointerup', clientX, clientY, pointerType, 0)
 }
 
 describe('minimap behavior', () => {
@@ -335,13 +350,26 @@ describe('minimap behavior', () => {
       expect(getMapViewArea()).toEqual(MAP_VIEW_AT_BOTTOM_RIGHT_CORNER)
     })
 
-    test('given the player releases the pointer when they move the mouse afterwards then the camera stops following', async () => {
+    test('given the player released a minimap drag when they later drag elsewhere then the camera does not follow', async () => {
       await setupLargeMapMinimapApp()
+      const hud = getElementOrFail('.hud')
 
       pressOnMinimap(10, 10)
       movePointer(100, 100)
       releasePointer(100, 100)
-      movePointer(190, 190)
+      pressPointer(190, 190, hud)
+      movePointer(195, 195, hud)
+
+      expect(getMapViewCentreTile()).toEqual({ x: 30, y: 20 })
+    })
+
+    test('given the release of a minimap drag was lost when the mouse moves with no button held then the camera does not follow', async () => {
+      await setupLargeMapMinimapApp()
+
+      pressOnMinimap(10, 10)
+      movePointer(100, 100)
+      // No pointerup arrives, e.g. the button was released while a context menu was open.
+      hoverPointer(190, 190)
 
       expect(getMapViewCentreTile()).toEqual({ x: 30, y: 20 })
     })
