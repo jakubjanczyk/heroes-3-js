@@ -364,7 +364,13 @@ export function expectMineNotPresent(entityId = 'mine-1') {
 
 export function expectResourceTotal(resourceName, amount) {
   const totalsText = document.getElementById('resource-totals-status')?.textContent ?? ''
-  expect(totalsText).toContain(`${resourceName}: ${amount}`)
+  const totals = Object.fromEntries(
+    totalsText
+      .replace(/^Resources: /, '')
+      .split(' | ')
+      .map((part) => part.split(': '))
+  )
+  expect(totals[resourceName]).toBe(String(amount))
 }
 
 export function getInteractionModal() {

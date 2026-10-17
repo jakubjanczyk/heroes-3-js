@@ -59,7 +59,8 @@ Make the game visually functional. CSS-based - no sprites yet.
 ### 1.4 Minimap Improvements
 - [x] Minimap shows terrain colors matching terrain types
 - [x] Object colours as in H3: hero in player colour; towns and mines neutral grey until owned. Monsters and resources are not shown (H3 does not show them either)
-- [ ] Owned towns and mines in the owner's player colour (needs town ownership and mine capture)
+- [x] Owned mines in the owner's player colour
+- [ ] Owned towns in the owner's player colour (needs town ownership)
 - [x] Click on minimap to move camera to that location
 - [x] Drag on minimap to pan camera
 - [x] Current viewport rectangle shown on minimap
@@ -141,22 +142,24 @@ Core game loop - resources flow, time passes.
 - [x] Day 1 of week 1 is the starting day
 
 ### 3.2 Resource Income System
-- [ ] At the start of each new day (after end turn), income is calculated and applied
-- [ ] Income sources: owned mines, owned towns
-- [ ] Income event: `fact.income_collected` with breakdown per source
+- [x] At the start of each new day (after end turn), income is calculated and applied
+- [x] Income source: owned mines (daily amounts as in H3, in `game/data/mines.json`)
+- [ ] Income source: owned towns (needs town ownership)
+- [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
+- [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
 - [ ] Visual feedback when income is added (brief flash/highlight on resource counts)
 - [ ] Starting resources defined in scenario JSON
 
 ### 3.3 Mine Ownership
-- [ ] Mines have an `owner` property: null (neutral), or player ID
-- [ ] Hero arriving at neutral mine: captures it, owner set to hero's player
-- [ ] Hero arriving at own mine: "You already own this mine" (no action or brief info)
+- [x] Mines are neutral until captured (one player for now, so ownership is just captured or not)
+- [x] Hero arriving at neutral mine: captures it, with no message
+- [x] Hero arriving at own mine: no action
 - [ ] Hero arriving at enemy mine: captures it (combat later, auto-capture for now)
-- [ ] Mine visual indicator: small colored flag/dot showing owner color
-- [ ] Neutral mines have no flag or gray flag
-- [ ] Mine ownership persisted in event log
-- [ ] Mine income only from owned mines
+- [x] Mine visual indicator: small flag in the owner's colour
+- [x] Neutral mines have no flag
+- [x] Mine ownership persisted in event log
+- [x] Mine income only from owned mines
 
 ### 3.4 Resource Spending Framework
 - [ ] `canAfford(costs)` utility: checks if player has enough resources
