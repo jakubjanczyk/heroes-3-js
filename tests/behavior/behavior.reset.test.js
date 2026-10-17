@@ -4,6 +4,8 @@ import {
   clickResetSession,
   confirmTileClickByDispatch,
   createMemoryEventLog,
+  endTurns,
+  expectCalendarDate,
   expectHeroAt,
   expectMovementPoints,
   flushMicrotasks,
@@ -58,5 +60,20 @@ describe('reset session behavior', () => {
 
     expectHeroAt(0, 0)
     expectMovementPoints(15)
+  })
+  test('given days have passed when player clicks Reset then next boot starts on Month 1, Week 1, Day 1', async () => {
+    const eventLog = createMemoryEventLog()
+    const { envWindow } = createWindowWithReloadSpy()
+    const sharedOptions = { eventLog, loadGameOptions: aScenario().withSize(4).build() }
+
+    const firstSession = await setupMovementBehaviorApp({ ...sharedOptions, envWindow })
+    await endTurns(firstSession.user, 8)
+    expectCalendarDate({ month: 1, week: 2, day: 2 })
+
+    await clickResetSession(firstSession.user)
+    await flushMicrotasks()
+    await setupMovementBehaviorApp(sharedOptions)
+
+    expectCalendarDate({ month: 1, week: 1, day: 1 })
   })
 })

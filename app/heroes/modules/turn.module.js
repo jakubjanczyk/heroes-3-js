@@ -1,3 +1,4 @@
+import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import {
   applyMovementPointsChanged,
   applyTurnEnded,
@@ -12,7 +13,8 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_TURN_ENDED,
-  APP_FACT_WORLD_READY
+  APP_FACT_WORLD_READY,
+  APP_UI_NOTICE_OPENED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
@@ -110,6 +112,14 @@ export const registerTurnModule = defineModule(
             const outcome = decideEndTurn(turnState)
             emit(APP_FACT_TURN_ENDED, { turnNumber: outcome.turnNumber })
             emitMovementPointsChanged(outcome.remainingMovementPoints)
+
+            const date = calendarDateOfTurn(outcome.turnNumber)
+            if (date.day === 1) {
+              emit(APP_UI_NOTICE_OPENED, {
+                title: 'New week',
+                message: `A new week begins. Week ${date.week}`
+              })
+            }
           }
         }
       ]
@@ -127,6 +137,6 @@ export const registerTurnModule = defineModule(
       APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
       APP_COMMAND_END_TURN_REQUESTED
     ],
-    produces: [APP_FACT_MOVEMENT_POINTS_CHANGED, APP_FACT_TURN_ENDED]
+    produces: [APP_FACT_MOVEMENT_POINTS_CHANGED, APP_FACT_TURN_ENDED, APP_UI_NOTICE_OPENED]
   }
 )
