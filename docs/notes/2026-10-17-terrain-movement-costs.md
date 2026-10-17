@@ -23,7 +23,7 @@ Roadmap 1.1 and 4.6. Movement now follows Heroes 3, checked against VCMI's pathf
 
 ## Saved games
 
-Saves from before this change replay at 1 point per step and would put the hero somewhere else. The session database is now `heroes-3-js-v2` (`app/session-db-name.js`), so the game starts fresh and old saves are left behind.
+Saves from before this change replay at 1 point per step, so the hero can end up somewhere else. They are not kept compatible; use Reset to start fresh.
 
 ## Not yet
 
