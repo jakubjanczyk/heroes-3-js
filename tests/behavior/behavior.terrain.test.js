@@ -13,19 +13,18 @@ import {
   setupMovementBehaviorApp
 } from './behavior.utils.js'
 import { aHero, aScenario } from './builders.js'
-
-const GRASS = 0
-const ROCK = 1
-const DIRT = 2
-const SAND = 3
-const SNOW = 4
-const SWAMP = 5
-const ROUGH = 6
-const SUBTERRANEAN = 7
-const LAVA = 8
-const WATER = 9
-
-const ALL_TERRAINS = [GRASS, ROCK, DIRT, SAND, SNOW, SWAMP, ROUGH, SUBTERRANEAN, LAVA, WATER]
+import {
+  ALL_TERRAINS,
+  DIRT,
+  GRASS,
+  LAVA,
+  ROUGH,
+  SAND,
+  SNOW,
+  SUBTERRANEAN,
+  SWAMP,
+  WATER
+} from './terrain-codes.js'
 
 describe('terrain behavior', () => {
   test('given every terrain type in the scenario when the map renders then each terrain is drawn in its own colour', async () => {

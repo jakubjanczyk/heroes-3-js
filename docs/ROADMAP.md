@@ -57,16 +57,17 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [ ] Resource bar tooltips showing daily income per resource
 
 ### 1.4 Minimap Improvements
-- [ ] Minimap shows terrain colors matching terrain types
-- [ ] Entity dots on minimap: hero (player color), town (large dot), monster (red), resource (yellow)
-- [ ] Click on minimap to move camera to that location
-- [ ] Drag on minimap to pan camera
-- [ ] Current viewport rectangle shown on minimap
+- [x] Minimap shows terrain colors matching terrain types
+- [x] Object colours as in H3: hero in player colour; towns and mines neutral grey until owned. Monsters and resources are not shown (H3 does not show them either)
+- [ ] Owned towns and mines in the owner's player colour (needs town ownership and mine capture)
+- [x] Click on minimap to move camera to that location
+- [x] Drag on minimap to pan camera
+- [x] Current viewport rectangle shown on minimap
 - [ ] Fog of war reflected on minimap (when fog is implemented)
 
 ### 1.5 Camera Improvements
-- [ ] Keyboard arrow keys scroll the map
-- [ ] Camera bounds - cannot scroll beyond map edges
+- [x] Keyboard arrow keys scroll the map
+- [x] Camera bounds - cannot scroll beyond map edges
 - [ ] Smooth camera transitions when clicking minimap
 - [ ] Double-click on hero portrait centers camera on hero
 

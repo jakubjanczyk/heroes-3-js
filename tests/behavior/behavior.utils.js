@@ -24,6 +24,7 @@ export function mountAppTemplate() {
             <div class="minimap__map" id="minimap-map">
               <div class="minimap__terrain" id="minimap-terrain"></div>
               <div class="minimap__towns" id="minimap-towns"></div>
+              <div class="minimap__heroes" id="minimap-heroes"></div>
               <div class="minimap__viewport" id="minimap-viewport"></div>
             </div>
           </div>
