@@ -1,0 +1,117 @@
+.minimap {
+  --minimap-town-size: 8px;
+  --minimap-hero-size: 6px;
+
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 1rem 2rem color-mix(in oklab, var(--color-shadow) 72%, transparent),
+    inset 0 1px 0 color-mix(in oklab, white 7%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+
+  & .minimap__title {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  & .minimap__map {
+    position: relative;
+    width: 100%;
+    margin-inline: auto;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid color-mix(in oklab, var(--color-accent) 16%, var(--color-border));
+    background: color-mix(in oklab, var(--color-bg) 78%, black 12%);
+    cursor: pointer;
+    /* Touch drags pan the camera instead of scrolling the page, and taps do not flash. */
+    touch-action: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    aspect-ratio: var(--minimap-map-width, 1) / var(--minimap-map-height, 1);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 7%, transparent);
+  }
+
+  & .minimap__terrain,
+  & .minimap__towns,
+  & .minimap__heroes,
+  & .minimap__viewport {
+    position: absolute;
+    inset: 0;
+  }
+
+  & .minimap__terrain {
+    display: grid;
+    grid-template-columns: repeat(var(--minimap-columns, 1), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--minimap-rows, 1), minmax(0, 1fr));
+  }
+
+  & .minimap__towns,
+  & .minimap__heroes,
+  & .minimap__viewport {
+    pointer-events: none;
+  }
+
+  & .minimap__viewport {
+    inset-inline-start: var(--minimap-viewport-left, 0%);
+    inset-block-start: var(--minimap-viewport-top, 0%);
+    inline-size: var(--minimap-viewport-width, 0%);
+    block-size: var(--minimap-viewport-height, 0%);
+    border: 1px dashed color-mix(in oklab, var(--color-danger) 78%, white 8%);
+    background: color-mix(in oklab, var(--color-danger) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, white 14%, transparent);
+  }
+
+  & .minimap-tile {
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
+  & .minimap-tile--neutral {
+    background: var(--neutral-grey);
+  }
+
+  & .minimap-tile--player {
+    background: var(--player-red);
+  }
+
+  & .minimap-town-marker {
+    position: absolute;
+    inset-inline-start: var(--minimap-marker-x, 0%);
+    inset-block-start: var(--minimap-marker-y, 0%);
+    width: var(--minimap-town-size);
+    height: var(--minimap-town-size);
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    background: var(--neutral-grey);
+    border: 1px solid color-mix(in oklab, black 58%, var(--neutral-grey));
+    box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
+  }
+
+  & .minimap-hero-marker {
+    position: absolute;
+    inset-inline-start: var(--minimap-marker-x, 0%);
+    inset-block-start: var(--minimap-marker-y, 0%);
+    width: var(--minimap-hero-size);
+    height: var(--minimap-hero-size);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--player-red);
+    border: 1px solid color-mix(in oklab, black 58%, var(--player-red));
+    box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
+  }
+}
+
+@container sidebar (width < 20rem) {
+  .minimap {
+    & .minimap__map {
+      max-width: 220px;
+    }
+  }
+}
