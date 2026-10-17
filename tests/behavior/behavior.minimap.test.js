@@ -80,20 +80,35 @@ function dispatchMouse(target, type, clientX, clientY) {
   )
 }
 
+function dispatchPointer(target, type, clientX, clientY, pointerType) {
+  target.dispatchEvent(
+    new window.PointerEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+      pointerId: 1,
+      isPrimary: true,
+      pointerType,
+      clientX,
+      clientY
+    })
+  )
+}
+
 function clickMinimap(clientX, clientY) {
   dispatchMouse(getMinimapMap(), 'click', clientX, clientY)
 }
 
-function pressOnMinimap(clientX, clientY) {
-  dispatchMouse(getMinimapMap(), 'mousedown', clientX, clientY)
+function pressOnMinimap(clientX, clientY, pointerType = 'mouse') {
+  dispatchPointer(getMinimapMap(), 'pointerdown', clientX, clientY, pointerType)
 }
 
-function movePointer(clientX, clientY, target = getMinimapMap()) {
-  dispatchMouse(target, 'mousemove', clientX, clientY)
+function movePointer(clientX, clientY, target = getMinimapMap(), pointerType = 'mouse') {
+  dispatchPointer(target, 'pointermove', clientX, clientY, pointerType)
 }
 
-function releasePointer(clientX, clientY, target = getMinimapMap()) {
-  dispatchMouse(target, 'mouseup', clientX, clientY)
+function releasePointer(clientX, clientY, target = getMinimapMap(), pointerType = 'mouse') {
+  dispatchPointer(target, 'pointerup', clientX, clientY, pointerType)
 }
 
 describe('minimap behavior', () => {
@@ -245,6 +260,15 @@ describe('minimap behavior', () => {
 
       pressOnMinimap(10, 10)
       movePointer(100, 100)
+
+      expect(getCameraTransform()).toBe(CAMERA_CENTERED_ON_MIDDLE)
+    })
+
+    test('given the player touches the minimap and slides their finger when it moves then the camera follows the finger', async () => {
+      await setupLargeMapMinimapApp()
+
+      pressOnMinimap(10, 10, 'touch')
+      movePointer(100, 100, getMinimapMap(), 'touch')
 
       expect(getCameraTransform()).toBe(CAMERA_CENTERED_ON_MIDDLE)
     })

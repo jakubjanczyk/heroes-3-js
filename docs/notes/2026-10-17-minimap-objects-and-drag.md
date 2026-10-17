@@ -22,5 +22,5 @@ Clicking the minimap centres the view on that point, and holding the button whil
 - Towns keep their marker, now neutral grey. Town ownership does not exist yet.
 - The hero is a red marker that follows hero moves, including moves replayed on reload.
 - Monsters and resources are not shown.
-- Pressing on the minimap and moving the mouse pans the camera; the drag continues outside the minimap (clamped to the map edges) until the button is released.
+- Pressing on the minimap (mouse, touch or pen, via pointer events) and moving pans the camera; the drag continues outside the minimap (clamped to the map edges) until the pointer is released. `touch-action: none` stops touch drags from scrolling the page, and the mobile tap highlight is turned off so a tap does not flash the minimap.
 - Our blocked tiles are their own terrain types (rock, water), so rule 3 adds nothing yet. Fog of war (rule 1) waits for fog.

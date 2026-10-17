@@ -198,32 +198,41 @@ export const registerMinimapViewModule = defineModule(
           }
         },
         {
+          // Pointer events cover mouse, touch and pen alike.
           target: minimapMap,
-          type: 'mousedown',
+          type: 'pointerdown',
           handler: (event) => {
-            if (event.button !== 0) {
+            if (!event.isPrimary || event.button !== 0) {
               return
             }
 
             // Keeps the browser from selecting text or dragging an image while the player drags.
             event.preventDefault?.()
             isDragging = true
+            centerCameraOnPoint(event)
           }
         },
         {
           // The drag follows the pointer on the whole window, so it keeps going when the pointer
           // leaves the minimap.
           target: env.window,
-          type: 'mousemove',
+          type: 'pointermove',
           handler: (event) => {
-            if (isDragging) {
+            if (isDragging && event.isPrimary) {
               centerCameraOnPoint(event)
             }
           }
         },
         {
           target: env.window,
-          type: 'mouseup',
+          type: 'pointerup',
+          handler: () => {
+            isDragging = false
+          }
+        },
+        {
+          target: env.window,
+          type: 'pointercancel',
           handler: () => {
             isDragging = false
           }
