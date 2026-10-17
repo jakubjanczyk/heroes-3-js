@@ -1,4 +1,8 @@
-import { APP_UI_INTERACTION_MODAL_CLOSED, APP_UI_INTERACTION_MODAL_OPENED } from '../events.js'
+import {
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_NOTICE_OPENED
+} from '../events.js'
 import {
   createInteractionModalElement,
   INTERACTION_MODAL_CLOSED_EVENT
@@ -53,6 +57,12 @@ export const registerInteractionModalModule = defineModule(
           handler: (event) => {
             openModal(event.detail)
           }
+        },
+        {
+          type: APP_UI_NOTICE_OPENED,
+          handler: (event) => {
+            openModal(event.detail)
+          }
         }
       ]
     }
@@ -60,7 +70,7 @@ export const registerInteractionModalModule = defineModule(
   {
     id: 'interaction-modal',
     phase: 'view',
-    consumes: [APP_UI_INTERACTION_MODAL_OPENED],
+    consumes: [APP_UI_INTERACTION_MODAL_OPENED, APP_UI_NOTICE_OPENED],
     produces: [APP_UI_INTERACTION_MODAL_CLOSED]
   }
 )

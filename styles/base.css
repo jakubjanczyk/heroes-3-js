@@ -36,6 +36,9 @@
 
 :root {
   color-scheme: dark;
+  /* Heroes 3 neutral grey and the first player's red. */
+  --neutral-grey: #848484;
+  --player-red: #ff0000;
   font-family: "Trebuchet MS", "Gill Sans", "Segoe UI Variable Text", sans-serif;
 
   --font-ui: "Trebuchet MS", "Gill Sans", "Segoe UI Variable Text", sans-serif;

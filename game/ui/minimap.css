@@ -1,9 +1,3 @@
-:root {
-  /* Heroes 3 neutral grey and the first player's red. */
-  --minimap-neutral: #848484;
-  --minimap-player: #ff0000;
-}
-
 .minimap {
   --minimap-town-size: 8px;
   --minimap-hero-size: 6px;
@@ -80,7 +74,11 @@
   }
 
   & .minimap-tile--neutral {
-    background: var(--minimap-neutral);
+    background: var(--neutral-grey);
+  }
+
+  & .minimap-tile--player {
+    background: var(--player-red);
   }
 
   & .minimap-town-marker {
@@ -91,8 +89,8 @@
     height: var(--minimap-town-size);
     border-radius: 2px;
     transform: translate(-50%, -50%);
-    background: var(--minimap-neutral);
-    border: 1px solid color-mix(in oklab, black 58%, var(--minimap-neutral));
+    background: var(--neutral-grey);
+    border: 1px solid color-mix(in oklab, black 58%, var(--neutral-grey));
     box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
   }
 
@@ -104,8 +102,8 @@
     height: var(--minimap-hero-size);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    background: var(--minimap-player);
-    border: 1px solid color-mix(in oklab, black 58%, var(--minimap-player));
+    background: var(--player-red);
+    border: 1px solid color-mix(in oklab, black 58%, var(--player-red));
     box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
   }
 }

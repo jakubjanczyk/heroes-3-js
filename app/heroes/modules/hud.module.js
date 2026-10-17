@@ -1,10 +1,13 @@
+import { calendarDateOfTurn, formatCalendarDate } from '../../../game/heroes/calendar.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
   APP_COMMAND_RESET_SESSION_REQUESTED,
+  APP_FACT_INCOME_COLLECTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED,
   APP_UI_PREVIEW_UPDATED
@@ -14,6 +17,7 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 export const registerHudModule = defineModule(
   ({ emit, env }) => {
     const uiLayer = env.document?.querySelector('.ui-layer')
+    const calendarStatus = env.document?.getElementById('calendar-status')
     const movementPointsStatus = env.document?.getElementById('movement-points-status')
     const resourceTotalsStatus = env.document?.getElementById('resource-totals-status')
     const moveHeroButton = env.document?.getElementById('move-hero-button')
@@ -24,6 +28,14 @@ export const registerHudModule = defineModule(
     let resourceTypeOrder = []
     let resourceNamesByType = {}
     let resourceTotalsByType = {}
+
+    function renderCalendarDate(turnNumber) {
+      if (!calendarStatus) {
+        return
+      }
+
+      calendarStatus.textContent = formatCalendarDate(calendarDateOfTurn(turnNumber))
+    }
 
     function renderResourceTotals() {
       if (!resourceTotalsStatus) {
@@ -40,6 +52,21 @@ export const registerHudModule = defineModule(
           `${resourceNamesByType[resourceType] ?? resourceType}: ${resourceTotalsByType[resourceType] ?? 0}`
       )
       resourceTotalsStatus.textContent = `Resources: ${parts.join(' | ')}`
+    }
+
+    function addToResourceTotal(resourceType, amount) {
+      if (!resourceTypeOrder.includes(resourceType)) {
+        resourceTypeOrder.push(resourceType)
+      }
+
+      if (!(resourceType in resourceNamesByType)) {
+        resourceNamesByType[resourceType] = resourceType
+      }
+
+      const parsedAmount = Number(amount)
+      resourceTotalsByType[resourceType] =
+        (resourceTotalsByType[resourceType] ?? 0) +
+        (Number.isFinite(parsedAmount) ? parsedAmount : 0)
     }
 
     return {
@@ -132,12 +159,19 @@ export const registerHudModule = defineModule(
             }
 
             renderResourceTotals()
+            renderCalendarDate(1)
 
             if (!bootStatus) {
               return
             }
 
             bootStatus.textContent = `Boot ok: ${event.detail.scenario.meta.id}`
+          }
+        },
+        {
+          type: APP_FACT_TURN_ENDED,
+          handler: (event) => {
+            renderCalendarDate(event.detail.turnNumber)
           }
         },
         {
@@ -148,18 +182,16 @@ export const registerHudModule = defineModule(
               return
             }
 
-            if (!resourceTypeOrder.includes(resourceType)) {
-              resourceTypeOrder.push(resourceType)
+            addToResourceTotal(resourceType, event.detail.amount)
+            renderResourceTotals()
+          }
+        },
+        {
+          type: APP_FACT_INCOME_COLLECTED,
+          handler: (event) => {
+            for (const [resourceType, amount] of Object.entries(event.detail.income ?? {})) {
+              addToResourceTotal(resourceType, amount)
             }
-
-            if (!(resourceType in resourceNamesByType)) {
-              resourceNamesByType[resourceType] = resourceType
-            }
-
-            const amount = Number(event.detail.amount)
-            const collectedAmount = Number.isFinite(amount) ? amount : 0
-            resourceTotalsByType[resourceType] =
-              (resourceTotalsByType[resourceType] ?? 0) + collectedAmount
             renderResourceTotals()
           }
         }
@@ -174,7 +206,9 @@ export const registerHudModule = defineModule(
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_MUSIC_STATE_CHANGED,
       APP_FACT_WORLD_READY,
-      APP_FACT_RESOURCE_COLLECTED
+      APP_FACT_TURN_ENDED,
+      APP_FACT_RESOURCE_COLLECTED,
+      APP_FACT_INCOME_COLLECTED
     ],
     produces: [
       APP_COMMAND_MOVE_CONTINUE_REQUESTED,
