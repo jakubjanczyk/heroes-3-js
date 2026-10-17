@@ -34,8 +34,8 @@ describe('path preview behavior', () => {
     await flushMicrotasks()
 
     expectPreviewTargetAt(3, 0)
-    expectPreviewCornerAt(0, 1)
-    expectPreviewDashAt(2, 1)
+    expectPreviewCornerAt(1, 1)
+    expectPreviewCornerAt(2, 1)
     expect(getPreviewDashAt(1, 0)).toBeFalsy()
     expect(getPreviewCornerAt(1, 0)).toBeFalsy()
   })
@@ -47,7 +47,7 @@ describe('path preview behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expect(getPreviewSvg()).toBeTruthy()
     expectPreviewDashAt(1, 0)
     expectPreviewTargetAt(2, 0)
@@ -68,7 +68,7 @@ describe('path preview behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
   })
 
   test('given preview exists when player clicks different reachable tile then preview retargets to new tile', async () => {
@@ -119,7 +119,7 @@ describe('path preview behavior', () => {
     expectPreviewTargetAt(1, 1)
   })
 
-  test('given destination is reachable only by a diagonal step when player confirms then hero moves diagonally and MP decreases by 1', async () => {
+  test('given destination is reachable only by a diagonal step when player confirms then hero moves diagonally and MP decreases by the diagonal cost', async () => {
     await setupMovementBehaviorApp({
       loadGameOptions: aScenario().withSize(2, 2).build()
     })
@@ -128,20 +128,7 @@ describe('path preview behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(1, 1)
-    expectMovementPoints(14)
-  })
-
-  test('given diagonal corner-cut would be required when player clicks the diagonal destination then no preview is shown and hero cannot move there', async () => {
-    await setupMovementBehaviorApp({
-      loadGameOptions: aScenario().withSize(2, 2).withTiles([0, 1, 1, 0]).build()
-    })
-
-    dispatchTileClick(1, 1)
-    await flushMicrotasks()
-
-    expectNoPreview()
-    expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1359)
   })
 
   test('given path exceeds remaining movement points when preview is shown then over-limit segments are red', async () => {
@@ -150,7 +137,7 @@ describe('path preview behavior', () => {
     confirmTileClickByDispatch(10, 0)
     await flushMicrotasks()
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
 
     dispatchTileClick(17, 0)
     await flushMicrotasks()
@@ -168,7 +155,7 @@ describe('path preview behavior', () => {
     confirmTileClickByDispatch(10, 0)
     await flushMicrotasks()
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
 
     dispatchTileClick(17, 0)
     await flushMicrotasks()
@@ -183,7 +170,7 @@ describe('path preview behavior', () => {
     confirmTileClickByDispatch(10, 0)
     await flushMicrotasks()
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
 
     dispatchTileClick(15, 0)
     await flushMicrotasks()

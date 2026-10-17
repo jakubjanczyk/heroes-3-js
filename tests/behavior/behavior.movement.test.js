@@ -46,7 +46,7 @@ describe('movement behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
   })
 
   test('given a multi-step move when movement is in progress then movement points decrease one-by-one per traversed tile', async () => {
@@ -58,17 +58,17 @@ describe('movement behavior', () => {
     await confirmMove(user, 2, 0)
 
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
 
     await waitMs(120)
 
     expectHeroAt(1, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
 
     await waitMs(120)
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
   })
 
   test('given path longer than remaining MP when player confirms then hero moves only up to limit and stops', async () => {
@@ -114,7 +114,7 @@ describe('movement behavior', () => {
     expectMovementPoints(0)
   })
 
-  test('given a detour route around blocked terrain when player confirms then hero reaches destination via that route and MP decreases by full detour length', async () => {
+  test('given a detour route around blocked terrain when player confirms then hero reaches destination via that route and MP decreases by the detour cost', async () => {
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: aScenario().withSize(4, 2).withTiles([0, 1, 1, 0, 0, 0, 0, 0]).build()
     })
@@ -123,7 +123,8 @@ describe('movement behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(3, 0)
-    expectMovementPoints(10)
+    // Diagonal down, straight, diagonal up: 141 + 100 + 141.
+    expectMovementPoints(1118)
   })
 
   test('given move is in progress when player clicks End turn then End turn is ignored until movement completes', async () => {
@@ -136,29 +137,29 @@ describe('movement behavior', () => {
     await flushMicrotasks(3)
 
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
 
     await waitMs(660)
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
-  test('given movement completed when player clicks End turn then MP resets to 15', async () => {
+  test('given movement completed when player clicks End turn then MP resets to 1500', async () => {
     const { user } = await setupMovementBehaviorApp()
 
     await confirmMove(user, 2, 0)
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await clickEndTurn(user)
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given queued red remainder after End turn then affordable part becomes green based on refreshed MP', async () => {
@@ -173,7 +174,7 @@ describe('movement behavior', () => {
 
     await clickEndTurn(user)
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expect(document.querySelector('.path-preview-target-line-over-limit')).toBeFalsy()
     expect(document.querySelector('.path-preview-target-line')).toBeTruthy()
   })
@@ -186,13 +187,13 @@ describe('movement behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectPreviewTargetAt(3, 0)
 
     await clickTile(user, 3, 0)
     await flushMicrotasks()
 
     expectHeroAt(3, 0)
-    expectMovementPoints(12)
+    expectMovementPoints(1200)
   })
 })

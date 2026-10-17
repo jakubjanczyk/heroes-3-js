@@ -7,7 +7,7 @@ import { createBusDevPanel } from './modules/dev/bus-dev-panel.js'
 import { registerModules } from './modules/register-modules.js'
 import { restoreSession } from './restore-session.js'
 
-const MAX_MOVEMENT_POINTS = 15
+const MAX_MOVEMENT_POINTS = 1500
 
 function defaultBusLogger(entry) {
   const { action, type = '-', subscribers = 0 } = entry

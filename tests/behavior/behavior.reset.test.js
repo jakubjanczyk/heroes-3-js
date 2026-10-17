@@ -46,7 +46,7 @@ describe('reset session behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await clickResetSession(firstSession.user)
     await flushMicrotasks()
@@ -59,7 +59,7 @@ describe('reset session behavior', () => {
     })
 
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
   test('given days have passed when player clicks Reset then next boot starts on Month 1, Week 1, Day 1', async () => {
     const eventLog = createMemoryEventLog()

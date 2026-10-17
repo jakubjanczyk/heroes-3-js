@@ -31,7 +31,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Terrain data in scenario JSON (tile value encodes terrain type, not just 0/1)
 - [x] CSS class per terrain type with distinct color/pattern
 - [x] Water tiles are impassable
-- [ ] Terrain type affects movement cost (see 4.6)
+- [x] Terrain type affects movement cost (see 4.6)
 
 ### 1.2 Cursor System
 - [ ] Custom cursor images replacing default browser cursor
@@ -226,18 +226,24 @@ Heroes become characters with identity and progression.
 - [ ] Hero defeated (loses all army): hero removed from map, goes to tavern pool (recruitable again)
 
 ### 4.6 Movement Points & Terrain
-- [ ] Base MP per hero (default 1500 in H3 - different from current 15)
-- [ ] Terrain movement costs:
-  - Road: 75% of base (fastest)
-  - Dirt, grass, subterranean: 100 MP per tile (base cost)
-  - Rough, sand: 125 MP per tile
-  - Snow, swamp, desert: 150 MP per tile
-- [ ] Pathfinding skill reduces terrain penalties:
-  - Basic: 75% penalty, Advanced: 50%, Expert: no penalty
+Rules checked against VCMI's pathfinder (`config/terrains.json`, `config/roads.json`, `lib/pathfinder/CPathfinder.cpp`).
+- [x] 1500 MP per day for now (H3: 1300-2000 from the slowest creature's speed; needs hero army, 4.3)
+- [x] A step costs the terrain of the tile the hero leaves:
+  - Grass, dirt, lava, subterranean: 100
+  - Rough: 125
+  - Sand, snow: 150
+  - Swamp: 175
+  - Rock, water: impassable on foot
+- [x] Diagonal step costs the straight cost × √2, rounded down (141 / 176 / 212 / 247)
+- [x] Diagonal step that no longer fits is allowed when a straight one would, and takes all MP left
+- [x] When what is left after a step can't pay a straight step from the new tile, MP drops to 0
+- [x] Route search picks the cheapest route by MP; diagonal steps may pass between two blocked tiles
+- [x] Path preview marks the part of the route past today's MP (H3 shows no per-step costs)
+- [ ] Roads (needs a road layer): used only when both tiles have a road, cost of the road left: dirt 75, gravel 65, cobblestone 50
+- [ ] Pathfinding skill takes 25 / 50 / 75 off the terrain cost, never below 100
+- [ ] Native terrain: an all-native army pays 100 on its terrain
 - [ ] Logistics skill increases total MP:
   - Basic: +10%, Advanced: +20%, Expert: +30%
-- [ ] Path preview shows MP cost per step and total
-- [ ] Unreachable tiles (water, mountains) have infinite cost
 
 ### 4.7 Hero Secondary Skills
 - [ ] Up to 8 secondary skills per hero

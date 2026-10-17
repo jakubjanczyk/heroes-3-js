@@ -37,9 +37,9 @@ describe('app boot behavior', () => {
     expect(heroEntity?.dataset.tileY).toBe('0')
   })
 
-  test('given app starts when HUD loads then movement points show 15 out of 15', async () => {
+  test('given app starts when HUD loads then movement points show 1500 out of 1500', async () => {
     await setupMovementBehaviorApp()
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given HUD is outside viewport when user clicks End turn then no map tile selection occurs', async () => {
@@ -49,7 +49,7 @@ describe('app boot behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectNoPreview()
   })
 })

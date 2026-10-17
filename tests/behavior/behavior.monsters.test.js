@@ -20,6 +20,7 @@ import {
   waitMs
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
+import { SWAMP } from './terrain-codes.js'
 
 describe('monster interaction behavior', () => {
   test('given scenario contains a monster when app boots then monster is rendered', async () => {
@@ -56,7 +57,7 @@ describe('monster interaction behavior', () => {
     await waitMs()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
     expectMonsterPresent('monster-1')
     expectInteractionModalOpen('Monster defeated')
 
@@ -100,7 +101,7 @@ describe('monster interaction behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(1, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
     expectMonsterPresent('monster-1')
 
     await closeInteractionModal(user)
@@ -155,5 +156,24 @@ describe('monster interaction behavior', () => {
     await flushMicrotasks()
 
     expectInteractionModalOpen('Monster defeated')
+  })
+
+  test('given remaining points do not cover the step onto a monster when player confirms then hero stops next to it and the fight does not start', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: aScenario()
+        .withSize(10)
+        .withTiles(new Array(10).fill(SWAMP))
+        .withEntities(aHero(), aMonster().at(9, 0))
+        .build()
+    })
+
+    // 8 swamp steps cost 1400; the attack step from the 8th tile would cost 175 more.
+    confirmTileClickByDispatch(9, 0)
+    await flushMicrotasks()
+    await waitMs()
+
+    expectHeroAt(8, 0)
+    expectInteractionModalClosed()
+    expectMonsterPresent('monster-1')
   })
 })

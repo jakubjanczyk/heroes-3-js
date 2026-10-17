@@ -51,7 +51,7 @@ describe('terrain behavior', () => {
 
     expectNoPreview()
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given hero starts on snow when player confirms a move across dirt, sand, swamp, rough, subterranean and lava then hero reaches the destination', async () => {

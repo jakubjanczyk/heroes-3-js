@@ -3,7 +3,7 @@ import {
   toMovementPointsOrNull
 } from '../domain/value-objects/movement-points.js'
 
-const DEFAULT_MAX_MOVEMENT_POINTS = 15
+const DEFAULT_MAX_MOVEMENT_POINTS = 1500
 
 export function createTurnState({ maxMovementPoints = DEFAULT_MAX_MOVEMENT_POINTS } = {}) {
   const max =

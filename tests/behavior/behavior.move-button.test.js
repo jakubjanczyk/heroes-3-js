@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import {
@@ -10,15 +9,12 @@ import {
   expectHeroAt,
   expectMovementPoints,
   flushMicrotasks,
+  getMoveButton,
   setupLinearMovementApp,
   setupMovementBehaviorApp,
   waitMs
 } from './behavior.utils.js'
 import { aScenario } from './builders.js'
-
-function getMoveButton() {
-  return screen.getByRole('button', { name: 'Move' })
-}
 
 async function clickMove(user) {
   await user.click(getMoveButton())
@@ -42,7 +38,7 @@ describe('move button behavior', () => {
     await clickMove(user)
 
     expectHeroAt(3, 0)
-    expectMovementPoints(12)
+    expectMovementPoints(1200)
   })
 
   test('given hero stopped at the movement point limit with route remaining then the Move button is disabled', async () => {
@@ -69,7 +65,7 @@ describe('move button behavior', () => {
     await clickMove(user)
 
     expectHeroAt(16, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
   })
 
   test('given hero is moving then the Move button is disabled', async () => {
@@ -117,6 +113,6 @@ describe('move button behavior', () => {
     await clickMove(user)
 
     expectHeroAt(3, 0)
-    expectMovementPoints(12)
+    expectMovementPoints(1200)
   })
 })

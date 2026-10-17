@@ -93,7 +93,7 @@ describe('town interaction behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(4, 3)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
     expectInteractionModalOpen('Castle visited')
 
     await closeInteractionModal(user)
