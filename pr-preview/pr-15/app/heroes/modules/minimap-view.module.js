@@ -59,8 +59,6 @@ export const registerMinimapViewModule = defineModule(
     }
 
     function placeMarker(marker, tile) {
-      marker.dataset.tileX = String(tile.x)
-      marker.dataset.tileY = String(tile.y)
       setStyleVar(marker, '--minimap-marker-x', `${((tile.x + 0.5) / map.width) * 100}%`)
       setStyleVar(marker, '--minimap-marker-y', `${((tile.y + 0.5) / map.height) * 100}%`)
     }
