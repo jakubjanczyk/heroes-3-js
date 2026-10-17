@@ -1,6 +1,7 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { findHero } from '../../game/domain/entity-queries.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
+import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
 import { applyEntityRemoved, NO_REMOVED_ENTITIES } from '../../game/domain/removed-entities.js'
 import { getOccupantAt } from '../../game/domain/tile-occupant.js'
 import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js'
@@ -25,6 +26,7 @@ export const registerMovementModule = defineModule(
     const movementSleep =
       typeof config?.movementSleep === 'function' ? config.movementSleep : undefined
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
+    const movementRules = resolveMovementRules(config?.content?.movementRules)
 
     let movement = null
     let staticOccupancy = null
@@ -62,7 +64,13 @@ export const registerMovementModule = defineModule(
               entityBehaviors,
               ...(movementSleep ? { sleep: movementSleep } : {}),
               stepDelayMs,
-              getMaxMovableSteps: () => remainingMovementPoints,
+              getStepCost: (from, to) => movementRules.stepCost({ map: world.map, from, to }),
+              getStepCharges: (path) =>
+                movementRules.chargeSteps({
+                  map: world.map,
+                  path,
+                  remainingMovementPoints
+                }),
               spendMovementPoints: (amount) => {
                 emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
                   amount

@@ -1,4 +1,5 @@
 import { sameTile } from '../../engine/tile-utils.js'
+import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
 import {
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
@@ -19,7 +20,9 @@ import {
 import { defineModule } from './shared/module-runtime.js'
 
 export const registerSelectionModule = defineModule(
-  ({ emit }) => {
+  ({ emit, config }) => {
+    const movementRules = resolveMovementRules(config?.content?.movementRules)
+    let map = null
     let isWorldReady = false
     let requestedTile = null
     let previewPath = null
@@ -28,13 +31,21 @@ export const registerSelectionModule = defineModule(
     let isInteractionModalOpen = false
     let remainingMovementPoints = Number.POSITIVE_INFINITY
 
+    function affordableStepCount() {
+      if (!map || !previewPath || previewPath.length < 2) {
+        return 0
+      }
+
+      return movementRules.chargeSteps({ map, path: previewPath, remainingMovementPoints }).length
+    }
+
     function canMove() {
       return (
         isWorldReady &&
         !isMoving &&
         !isInteractionModalOpen &&
         previewPath?.length >= 2 &&
-        remainingMovementPoints >= 1
+        affordableStepCount() >= 1
       )
     }
 
@@ -48,7 +59,7 @@ export const registerSelectionModule = defineModule(
       emit(APP_UI_PREVIEW_UPDATED, {
         path: previewPath,
         targetTile: previewTarget,
-        maxAffordableSteps: remainingMovementPoints,
+        maxAffordableSteps: affordableStepCount(),
         canMove: canMove()
       })
     }
@@ -71,7 +82,8 @@ export const registerSelectionModule = defineModule(
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
-          handler: () => {
+          handler: (event) => {
+            map = event.detail.map
             isWorldReady = true
             resetPreview()
           }
