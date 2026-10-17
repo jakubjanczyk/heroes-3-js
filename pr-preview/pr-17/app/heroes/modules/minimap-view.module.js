@@ -32,6 +32,7 @@ export const registerMinimapViewModule = defineModule(
     let staticOccupancy = null
     let entitiesById = new Map()
     let ownedMineIds = new Set()
+    let mineTilesByMineId = new Map()
     let towns = []
     let heroMarker = null
     let isDragging = false
@@ -72,6 +73,7 @@ export const registerMinimapViewModule = defineModule(
       }
 
       clearNode(minimapTerrain)
+      mineTilesByMineId = new Map()
 
       for (let y = 0; y < map.height; y += 1) {
         for (let x = 0; x < map.width; x += 1) {
@@ -80,7 +82,19 @@ export const registerMinimapViewModule = defineModule(
           tile.dataset.x = String(x)
           tile.dataset.y = String(y)
           minimapTerrain.appendChild(tile)
+
+          const mine = getMineCovering({ x, y })
+          if (mine) {
+            mineTilesByMineId.set(mine.id, [...(mineTilesByMineId.get(mine.id) ?? []), tile])
+          }
         }
+      }
+    }
+
+    // A capture changes only the tiles that mine covers, so the rest of the minimap stays as is.
+    function renderMineTiles(mineId) {
+      for (const tile of mineTilesByMineId.get(mineId) ?? []) {
+        tile.className = getTileClassName({ x: Number(tile.dataset.x), y: Number(tile.dataset.y) })
       }
     }
 
@@ -276,7 +290,7 @@ export const registerMinimapViewModule = defineModule(
           type: APP_FACT_MINE_CAPTURED,
           handler: (event) => {
             ownedMineIds.add(event.detail.entityId)
-            renderTerrain()
+            renderMineTiles(event.detail.entityId)
           }
         },
         {
