@@ -44,6 +44,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 ## Testing Guidelines
 
+- Follow the `writing-tests` skill (`.claude/skills/writing-tests/SKILL.md`) for any feature, behavior change or bug fix: list scenarios first, get them approved, write tests before the code. The rules below are this repo's specifics on top of it.
 - Test runner: Vitest.
 - Test files: `**/*.test.js` (co-located with source files).
 - Keep tests deterministic (no network, no wall-clock dependencies unless mocked).
