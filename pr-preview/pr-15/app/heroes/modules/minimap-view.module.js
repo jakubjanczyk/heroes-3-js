@@ -1,6 +1,7 @@
 import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js'
 import { clamp } from '../../../engine/math-utils.js'
 import { findHero, isMine, isTown } from '../../../game/domain/entity-queries.js'
+import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_MOVED,
@@ -42,7 +43,11 @@ export const registerMinimapViewModule = defineModule(
         return false
       }
 
-      return isMine(occupant) || isMine(entitiesById.get(occupant.ownerId))
+      if (occupant.kind === FOOTPRINT_BLOCKER_KIND) {
+        return isMine(entitiesById.get(occupant.ownerId))
+      }
+
+      return isMine(occupant)
     }
 
     function getTileClassName(tile) {
@@ -188,14 +193,6 @@ export const registerMinimapViewModule = defineModule(
     return {
       domSubscriptions: [
         {
-          target: minimapMap,
-          type: 'click',
-          handler: (event) => {
-            event.stopPropagation?.()
-            centerCameraOnPoint(event)
-          }
-        },
-        {
           // Pointer events cover mouse, touch and pen alike.
           target: minimapMap,
           type: 'pointerdown',
@@ -216,7 +213,8 @@ export const registerMinimapViewModule = defineModule(
           target: env.window,
           type: 'pointermove',
           handler: (event) => {
-            if (isDragging && event.isPrimary) {
+            // Checking the held button too ends a drag whose pointerup never arrived.
+            if (isDragging && event.isPrimary && (event.buttons & 1) === 1) {
               centerCameraOnPoint(event)
             }
           }
