@@ -62,7 +62,7 @@ describe('pathfinding', () => {
     expect(path).toBe(null)
   })
 
-  test('does not allow diagonal corner cutting between blocked orthogonals', () => {
+  test('allows a diagonal step between two blocked orthogonals', () => {
     const map = createMap({
       width: 2,
       height: 2,
@@ -76,7 +76,33 @@ describe('pathfinding', () => {
       isBlocked: () => false
     })
 
-    expect(path).toBe(null)
+    expect(path).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 1 }
+    ])
+  })
+
+  test('avoids a tile that is expensive to leave when a route around it is cheaper', () => {
+    const map = createMap({
+      width: 3,
+      height: 2,
+      tiles: new Array(6).fill(0)
+    })
+    const expensiveTile = { x: 1, y: 0 }
+
+    const path = findPath({
+      fromTile: { x: 0, y: 0 },
+      toTile: { x: 2, y: 0 },
+      map,
+      isBlocked: () => false,
+      getStepCost: (from) => (from.x === expensiveTile.x && from.y === expensiveTile.y ? 10 : 1)
+    })
+
+    expect(path).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 1 },
+      { x: 2, y: 0 }
+    ])
   })
 
   test('treats occupied intermediate tile as blocked', () => {
@@ -119,7 +145,7 @@ describe('pathfinding', () => {
     ])
   })
 
-  test('chooses shortest detour in diagonal-style route with blockers', () => {
+  test('chooses the shortest detour around a diagonal wall of blockers', () => {
     const width = 6
     const height = 5
     const tiles = new Array(width * height).fill(0)
@@ -137,7 +163,7 @@ describe('pathfinding', () => {
     expect(path).not.toBe(null)
     expect(path?.[0]).toEqual({ x: 5, y: 0 })
     expect(path?.at(-1)).toEqual({ x: 1, y: 4 })
-    expect(path?.length).toBe(7)
+    expect(path?.length).toBe(6)
     expect(path).not.toContainEqual({ x: 3, y: 2 })
     expect(path).not.toContainEqual({ x: 2, y: 3 })
   })

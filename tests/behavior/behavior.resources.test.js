@@ -58,7 +58,7 @@ describe('resource interaction behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
     expectResourceCollecting('resource-1')
     expectResourceTotal('Gold pile', 100)
     expectInteractionModalClosed()
@@ -110,7 +110,7 @@ describe('resource interaction behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
 
     await waitMs(25)
     await flushMicrotasks()

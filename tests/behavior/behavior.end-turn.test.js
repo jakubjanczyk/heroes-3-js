@@ -19,18 +19,18 @@ import {
 } from './behavior.utils.js'
 
 describe('end turn behavior', () => {
-  test('given hero has spent movement points when player clicks End turn then movement points reset to 15', async () => {
+  test('given hero has spent movement points when player clicks End turn then movement points reset to 1500', async () => {
     const { user } = await setupLinearMovementApp({ width: 4 })
 
     confirmTileClickByDispatch(2, 0)
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await clickEndTurn(user)
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given an affordable preview is selected when player clicks End turn then the selected preview remains and remains affordable after MP resets', async () => {
@@ -45,7 +45,7 @@ describe('end turn behavior', () => {
     await clickEndTurn(user)
     await flushMicrotasks()
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectPreviewTargetAt(2, 0)
     expectPreviewNotOverLimitTargetAt(2, 0)
   })
@@ -62,7 +62,7 @@ describe('end turn behavior', () => {
 
     await clickEndTurn(user)
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectPreviewTargetAt(16, 0)
   })
 
@@ -98,11 +98,11 @@ describe('end turn behavior', () => {
     await flushMicrotasks(3)
 
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
 
     await waitMs(660)
 
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
   })
 
   test('given movement completes after ignored End turn click when player clicks End turn again then turn ends and movement points reset', async () => {
@@ -115,13 +115,13 @@ describe('end turn behavior', () => {
     await flushMicrotasks(3)
 
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
 
     await waitMs(660)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given full path is now affordable after End turn when player confirms same target then hero completes remaining route', async () => {
@@ -134,14 +134,14 @@ describe('end turn behavior', () => {
     expectPreviewTargetAt(16, 0)
 
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectPreviewTargetAt(16, 0)
 
     dispatchTileClick(16, 0)
     await flushMicrotasks()
 
     expectHeroAt(16, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
   })
 
   test('given player retargets route after End turn when clicking a different tile then old queued route is replaced', async () => {
@@ -161,14 +161,14 @@ describe('end turn behavior', () => {
     expect(getPreviewTargetAt(16, 0)).toBeFalsy()
     expectPreviewTargetAt(14, 0)
     expectHeroAt(15, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
-  test('given no movement happened this turn when player clicks End turn then movement points remain 15', async () => {
+  test('given no movement happened this turn when player clicks End turn then movement points remain 1500', async () => {
     const { user } = await setupLinearMovementApp()
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     await clickEndTurn(user)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 })

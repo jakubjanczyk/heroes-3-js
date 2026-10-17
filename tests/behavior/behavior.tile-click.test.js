@@ -36,7 +36,7 @@ describe('tile click behavior', () => {
 
     expectNoPreview()
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given player clicks a blocked terrain tile when no preview exists then no preview is shown and hero does not move', async () => {
@@ -49,7 +49,7 @@ describe('tile click behavior', () => {
 
     expectNoPreview()
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given player clicks the hero current tile when no preview exists then no preview is shown and hero does not move', async () => {
@@ -60,7 +60,7 @@ describe('tile click behavior', () => {
 
     expectNoPreview()
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given user clicks outside map bounds then no movement or preview is started', async () => {
@@ -80,7 +80,7 @@ describe('tile click behavior', () => {
 
     expectNoPreview()
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 
   test('given user clicks HUD controls then tile click handling is not triggered', async () => {
@@ -94,6 +94,6 @@ describe('tile click behavior', () => {
 
     expectNoPreview()
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
   })
 })

@@ -44,6 +44,8 @@ function getFinalSettleDelayMs(stepDelayMs) {
 }
 
 // `getHero` returns the moving hero ({ id, tile }); `occupancy.getAt(tile)` says what blocks a tile.
+// `getStepCost(from, to)` is what the route search minimises; `getStepCharges(path)` lists what
+// each step of `path` the hero can still take costs.
 export function createMovementSystem({
   getHero,
   map,
@@ -51,7 +53,8 @@ export function createMovementSystem({
   entityBehaviors,
   sleep = defaultSleep,
   stepDelayMs = 80,
-  getMaxMovableSteps = () => Number.POSITIVE_INFINITY,
+  getStepCost = () => 1,
+  getStepCharges = (path) => new Array(path.length - 1).fill(1),
   spendMovementPoints = () => {},
   onMoveStart = () => {},
   onMoveFinish = () => {},
@@ -64,6 +67,7 @@ export function createMovementSystem({
       fromTile: hero.tile,
       toTile,
       map,
+      getStepCost,
       isBlocked: (tile) => {
         const occupant = occupancy.getAt(tile)
         return occupant !== null && occupant.id !== hero.id
@@ -110,10 +114,8 @@ export function createMovementSystem({
       return false
     }
     const totalStepCount = path.length - 1
-    const cappedStepCount = Math.min(
-      totalStepCount,
-      Math.max(0, Math.floor(getMaxMovableSteps(totalStepCount)))
-    )
+    const stepCharges = getStepCharges(path).slice(0, totalStepCount)
+    const cappedStepCount = stepCharges.length
     if (cappedStepCount < 1) {
       return false
     }
@@ -165,12 +167,13 @@ export function createMovementSystem({
       cappedStepCount
     })
     try {
-      for (const stepTile of path.slice(1, executedStepCount + 1)) {
+      for (let stepIndex = 0; stepIndex < executedStepCount; stepIndex += 1) {
+        const stepTile = path[stepIndex + 1]
         const stepFromTile = { x: currentTile.x, y: currentTile.y }
         await sleep(stepDelayMs)
         currentTile = { x: stepTile.x, y: stepTile.y }
         onStep({ hero, from: stepFromTile, to: stepTile })
-        spendMovementPoints(1)
+        spendMovementPoints(stepCharges[stepIndex])
       }
 
       if (executedStepCount > 0) {
@@ -178,7 +181,7 @@ export function createMovementSystem({
       }
 
       if (didTriggerArrivalInteraction && normalizedArrivalPlan.stopBeforeTarget) {
-        spendMovementPoints(1)
+        spendMovementPoints(stepCharges[cappedStepCount - 1])
       }
     } finally {
       isMoving = false

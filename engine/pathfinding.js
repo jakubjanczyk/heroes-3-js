@@ -17,20 +17,6 @@ function getNeighbors(tile) {
   return neighbors
 }
 
-function isDiagonalStep(from, to) {
-  return from.x !== to.x && from.y !== to.y
-}
-
-function allowsDiagonalStep({ from, to, map }) {
-  if (!isDiagonalStep(from, to)) {
-    return true
-  }
-
-  const orthogonalA = { x: to.x, y: from.y }
-  const orthogonalB = { x: from.x, y: to.y }
-  return map.isPassable(orthogonalA) && map.isPassable(orthogonalB)
-}
-
 function reconstructPath(cameFrom, endTile) {
   const path = []
   let currentState = endTile
@@ -53,8 +39,8 @@ function isBetterCost(a, b) {
   if (b === null) {
     return true
   }
-  if (a.steps !== b.steps) {
-    return a.steps < b.steps
+  if (a.cost !== b.cost) {
+    return a.cost < b.cost
   }
   if (a.turns !== b.turns) {
     return a.turns < b.turns
@@ -63,8 +49,8 @@ function isBetterCost(a, b) {
 }
 
 function compareStates(a, b, toTile) {
-  if (a.steps !== b.steps) {
-    return a.steps - b.steps
+  if (a.cost !== b.cost) {
+    return a.cost - b.cost
   }
   if (a.turns !== b.turns) {
     return a.turns - b.turns
@@ -135,7 +121,8 @@ function heapPop(heap, toTile) {
   }
 }
 
-export function findPath({ fromTile, toTile, map, isBlocked }) {
+// Cheapest route by `getStepCost(from, to)`; among equally cheap routes, the one with fewest turns.
+export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () => 1 }) {
   if (!map.inBounds(fromTile) || !map.inBounds(toTile)) {
     return null
   }
@@ -153,13 +140,13 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
     tile: fromTile,
     dirX: 0,
     dirY: 0,
-    steps: 0,
+    cost: 0,
     turns: 0,
     order: 0
   }
   const frontier = [startState]
   let nextStateOrder = 1
-  const bestByState = new Map([[startState.key, { steps: 0, turns: 0 }]])
+  const bestByState = new Map([[startState.key, { cost: 0, turns: 0 }]])
   const cameFrom = new Map()
 
   while (frontier.length > 0) {
@@ -182,9 +169,6 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
       if (isBlocked(next) && !sameTile(next, toTile)) {
         continue
       }
-      if (!allowsDiagonalStep({ from: current.tile, to: next, map })) {
-        continue
-      }
 
       const dirX = next.x - current.tile.x
       const dirY = next.y - current.tile.y
@@ -200,16 +184,16 @@ export function findPath({ fromTile, toTile, map, isBlocked }) {
         tile: next,
         dirX,
         dirY,
-        steps: current.steps + 1,
+        cost: current.cost + getStepCost(current.tile, next),
         turns,
         order: nextStateOrder
       }
       nextStateOrder += 1
       const bestKnown = bestByState.get(nextState.key) ?? null
-      if (!isBetterCost({ steps: nextState.steps, turns: nextState.turns }, bestKnown)) {
+      if (!isBetterCost({ cost: nextState.cost, turns: nextState.turns }, bestKnown)) {
         continue
       }
-      bestByState.set(nextState.key, { steps: nextState.steps, turns: nextState.turns })
+      bestByState.set(nextState.key, { cost: nextState.cost, turns: nextState.turns })
       cameFrom.set(nextState.key, current)
       heapPush(frontier, nextState, toTile)
     }

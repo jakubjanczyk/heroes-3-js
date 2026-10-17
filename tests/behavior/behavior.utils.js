@@ -33,7 +33,7 @@ export function mountAppTemplate() {
             <div class="hud__status" id="boot-status">Booting…</div>
             <div class="hud__row">
               <div class="hud__calendar" id="calendar-status">Month: 1, Week: 1, Day: 1</div>
-              <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
+              <div class="hud__movement" id="movement-points-status">MP: 1500 / 1500</div>
               <div class="hud__resources" id="resource-totals-status">Resources: none</div>
               <button class="hud__button" id="move-hero-button" type="button" disabled>Move</button>
               <button class="hud__button" id="end-turn-button" type="button">End turn</button>
@@ -282,7 +282,7 @@ export function expectHeroAt(x, y) {
   return heroEntity
 }
 
-export function expectMovementPoints(current, max = 15) {
+export function expectMovementPoints(current, max = 1500) {
   expect(screen.getByText(`MP: ${current} / ${max}`)).toBeTruthy()
 }
 
@@ -489,6 +489,10 @@ export function dispatchTileClick(x, y) {
 export function confirmTileClickByDispatch(x, y) {
   dispatchTileClick(x, y)
   dispatchTileClick(x, y)
+}
+
+export function getMoveButton() {
+  return screen.getByRole('button', { name: 'Move' })
 }
 
 export function getEndTurnButton() {

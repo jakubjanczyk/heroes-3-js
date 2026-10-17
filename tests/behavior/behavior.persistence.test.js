@@ -67,7 +67,7 @@ describe('session persistence behavior', () => {
     expectMonsterNotPresent('monster-1')
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
     expectInteractionModalClosed()
 
     await reload(session)
@@ -76,7 +76,7 @@ describe('session persistence behavior', () => {
     expectMonsterNotPresent('monster-1')
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
     expectInteractionModalClosed()
   })
 
@@ -130,13 +130,13 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(2, 0)
     await flushMicrotasks()
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
     expectNoPreview()
 
     await reload(session)
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
     expectNoPreview()
   })
 
@@ -148,7 +148,7 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(10, 0)
     await flushMicrotasks()
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
 
     dispatchTileClick(17, 0)
     await flushMicrotasks()
@@ -158,7 +158,7 @@ describe('session persistence behavior', () => {
     await reload(session)
 
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
     expectPreviewTargetAt(17, 0)
     expectPreviewOverLimitTargetAt(17, 0)
   })
@@ -175,14 +175,14 @@ describe('session persistence behavior', () => {
     await reload(session)
 
     expectHeroAt(0, 0)
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectPreviewTargetAt(3, 0)
 
     dispatchTileClick(3, 0)
     await flushMicrotasks()
 
     expectHeroAt(3, 0)
-    expectMovementPoints(12)
+    expectMovementPoints(1200)
     expectNoPreview()
   })
 
@@ -198,14 +198,14 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
     expectMonsterPresent('monster-1')
     expectInteractionModalOpen('Monster defeated')
 
     await reload(session)
 
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
     expectMonsterPresent('monster-1')
     expectInteractionModalClosed()
   })
@@ -225,14 +225,14 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(4, 3)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
     expectTownPresent('town-1')
     expectInteractionModalOpen('Castle visited')
 
     await reload(session)
 
     expectHeroAt(4, 3)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
     expectTownPresent('town-1')
     expectInteractionModalClosed()
   })
@@ -261,7 +261,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
     expectResourceTotal('Wood pile', 0)
@@ -269,7 +269,7 @@ describe('session persistence behavior', () => {
     await reload(session)
 
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
     expectResourceTotal('Wood pile', 0)
@@ -278,7 +278,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
     expectResourceNotPresent('resource-2')
     expectResourceTotal('Gold pile', 100)
     expectResourceTotal('Wood pile', 5)
@@ -286,7 +286,7 @@ describe('session persistence behavior', () => {
     await reload(session)
 
     expectHeroAt(2, 0)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
     expectResourceNotPresent('resource-1')
     expectResourceNotPresent('resource-2')
     expectResourceTotal('Gold pile', 100)
@@ -345,23 +345,23 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await reload(session)
 
     expectHeroAt(2, 0)
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     confirmTileClickByDispatch(5, 0)
     await flushMicrotasks()
 
     expectHeroAt(5, 0)
-    expectMovementPoints(10)
+    expectMovementPoints(1000)
 
     await reload(session)
 
     expectHeroAt(5, 0)
-    expectMovementPoints(10)
+    expectMovementPoints(1000)
   })
 
   test('given over-limit preview is restored when player ends turn after reload then same preview becomes affordable and can be confirmed', async () => {
@@ -376,21 +376,21 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
     expectPreviewTargetAt(17, 0)
     expectPreviewOverLimitTargetAt(17, 0)
 
     const secondSession = await reload(session)
 
     expectHeroAt(10, 0)
-    expectMovementPoints(5)
+    expectMovementPoints(500)
     expectPreviewTargetAt(17, 0)
     expectPreviewOverLimitTargetAt(17, 0)
 
     await clickEndTurn(secondSession.user)
     await flushMicrotasks()
 
-    expectMovementPoints(15)
+    expectMovementPoints(1500)
     expectPreviewTargetAt(17, 0)
     expectPreviewNotOverLimitTargetAt(17, 0)
 
@@ -398,7 +398,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(17, 0)
-    expectMovementPoints(8)
+    expectMovementPoints(800)
     expectNoPreview()
   })
 
@@ -418,7 +418,7 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(3, 0)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
     expectResourceTotal('Gold pile', 100)
     expectPreviewTargetAt(5, 0)
 
@@ -426,7 +426,7 @@ describe('session persistence behavior', () => {
       await reload(session)
 
       expectHeroAt(3, 0)
-      expectMovementPoints(11)
+      expectMovementPoints(1100)
       expectResourceTotal('Gold pile', 100)
       expectPreviewTargetAt(5, 0)
     }
@@ -478,19 +478,19 @@ describe('session persistence behavior', () => {
 
     expectMonsterNotPresent('monster-1')
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
 
     await reload(session)
 
     expectMonsterNotPresent('monster-1')
     expectHeroAt(0, 0)
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
 
     confirmTileClickByDispatch(3, 0)
     await flushMicrotasks()
 
     expectHeroAt(3, 0)
-    expectMovementPoints(11)
+    expectMovementPoints(1100)
   })
 
   test('given monster modal was open at reload when player attacks again after reload then the defeat resolves and stays after another reload', async () => {
@@ -510,7 +510,7 @@ describe('session persistence behavior', () => {
 
     expectInteractionModalClosed()
     expectMonsterPresent('monster-1')
-    expectMovementPoints(14)
+    expectMovementPoints(1400)
 
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
@@ -520,12 +520,12 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     expectMonsterNotPresent('monster-1')
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
 
     await reload(session)
 
     expectMonsterNotPresent('monster-1')
-    expectMovementPoints(13)
+    expectMovementPoints(1300)
   })
 
   test('given town was visited before reload when hero leaves and re-enters after reload then the town modal opens again', async () => {
