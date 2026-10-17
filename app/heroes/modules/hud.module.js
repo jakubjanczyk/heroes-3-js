@@ -1,3 +1,4 @@
+import { calendarDateOfTurn, formatCalendarDate } from '../../../game/heroes/calendar.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
@@ -5,6 +6,7 @@ import {
   APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_MUSIC_STATE_CHANGED,
   APP_UI_PREVIEW_UPDATED
@@ -14,6 +16,7 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 export const registerHudModule = defineModule(
   ({ emit, env }) => {
     const uiLayer = env.document?.querySelector('.ui-layer')
+    const calendarStatus = env.document?.getElementById('calendar-status')
     const movementPointsStatus = env.document?.getElementById('movement-points-status')
     const resourceTotalsStatus = env.document?.getElementById('resource-totals-status')
     const moveHeroButton = env.document?.getElementById('move-hero-button')
@@ -24,6 +27,14 @@ export const registerHudModule = defineModule(
     let resourceTypeOrder = []
     let resourceNamesByType = {}
     let resourceTotalsByType = {}
+
+    function renderCalendarDate(turnNumber) {
+      if (!calendarStatus) {
+        return
+      }
+
+      calendarStatus.textContent = formatCalendarDate(calendarDateOfTurn(turnNumber))
+    }
 
     function renderResourceTotals() {
       if (!resourceTotalsStatus) {
@@ -132,12 +143,19 @@ export const registerHudModule = defineModule(
             }
 
             renderResourceTotals()
+            renderCalendarDate(1)
 
             if (!bootStatus) {
               return
             }
 
             bootStatus.textContent = `Boot ok: ${event.detail.scenario.meta.id}`
+          }
+        },
+        {
+          type: APP_FACT_TURN_ENDED,
+          handler: (event) => {
+            renderCalendarDate(event.detail.turnNumber)
           }
         },
         {
@@ -174,6 +192,7 @@ export const registerHudModule = defineModule(
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_MUSIC_STATE_CHANGED,
       APP_FACT_WORLD_READY,
+      APP_FACT_TURN_ENDED,
       APP_FACT_RESOURCE_COLLECTED
     ],
     produces: [

@@ -32,6 +32,7 @@ export function mountAppTemplate() {
             <div class="hud__title">Heroes 3 JS</div>
             <div class="hud__status" id="boot-status">Booting…</div>
             <div class="hud__row">
+              <div class="hud__calendar" id="calendar-status">Month: 1, Week: 1, Day: 1</div>
               <div class="hud__movement" id="movement-points-status">MP: 15 / 15</div>
               <div class="hud__resources" id="resource-totals-status">Resources: none</div>
               <button class="hud__button" id="move-hero-button" type="button" disabled>Move</button>
@@ -502,4 +503,18 @@ export async function clickResetSession(user) {
   const resetButton = getResetSessionButton()
   expect(resetButton).toBeTruthy()
   await user.click(resetButton)
+}
+
+export function expectCalendarDate({ month, week, day }) {
+  expect(screen.getByText(`Month: ${month}, Week: ${week}, Day: ${day}`)).toBeTruthy()
+}
+
+export async function endTurns(user, count) {
+  for (let turn = 0; turn < count; turn += 1) {
+    await clickEndTurn(user)
+    const okButton = getInteractionModalOkButton()
+    if (okButton) {
+      await user.click(okButton)
+    }
+  }
 }

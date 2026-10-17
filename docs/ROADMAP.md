@@ -132,14 +132,13 @@ Entities become meaningful content containers. Critical for portfolio.
 Core game loop - resources flow, time passes.
 
 ### 3.1 Day/Week/Month Cycle
-- [ ] End turn advances day counter by 1
-- [ ] Day counter persisted in event log
-- [ ] Week = 7 days. New week triggers `fact.week_started` event
-- [ ] Month = 4 weeks (28 days). New month triggers `fact.month_started` event
-- [ ] "New Week" notification popup at start of each week
-- [ ] "New Month" notification popup at start of each month
-- [ ] Current date displayed in HUD: "Month 1, Week 2, Day 3"
-- [ ] Day 1 of week 1 is the starting day
+- [x] End turn advances day counter by 1
+- [x] Day counter persisted in event log (derived from the persisted turn number)
+- [ ] Week = 7 days. New week triggers `fact.week_started` event (add when something reacts to it, e.g. creature growth)
+- [ ] Month = 4 weeks (28 days). New month triggers `fact.month_started` event (same)
+- [x] "New Week" notification popup at start of each week (a new month shows the same popup; no separate month popup)
+- [x] Current date displayed in HUD: "Month: 1, Week: 2, Day: 3"
+- [x] Day 1 of week 1 is the starting day
 
 ### 3.2 Resource Income System
 - [ ] At the start of each new day (after end turn), income is calculated and applied
