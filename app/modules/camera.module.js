@@ -15,6 +15,8 @@ import {
   APP_UI_SYSTEM_OPTIONS_CLOSED,
   APP_UI_SYSTEM_OPTIONS_OPENED,
   APP_UI_TILE_HOVERED,
+  APP_UI_TILE_INFO_DISMISSED,
+  APP_UI_TILE_INFO_REQUESTED,
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js'
 import { defineModule } from './shared/module-runtime.js'
@@ -120,7 +122,14 @@ export const registerCameraModule = defineModule(
                 // null once the pointer is off the map.
                 onTileHover: (tile) => {
                   emit(APP_UI_TILE_HOVERED, { tile })
-                }
+                },
+                onTileInfoPress: (tile, pointer) => {
+                  emit(APP_UI_TILE_INFO_REQUESTED, { tile, pointer })
+                },
+                onTileInfoRelease: () => {
+                  emit(APP_UI_TILE_INFO_DISMISSED, {})
+                },
+                longPressMs: config?.longPressMs
               }) ?? null
           }
         },
@@ -233,6 +242,8 @@ export const registerCameraModule = defineModule(
       APP_COMMAND_TILE_CLICKED,
       APP_UI_CAMERA_UPDATED,
       APP_UI_TILE_HOVERED,
+      APP_UI_TILE_INFO_REQUESTED,
+      APP_UI_TILE_INFO_DISMISSED,
       APP_UI_WORLD_MOTION_UPDATED
     ]
   }

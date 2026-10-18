@@ -32,7 +32,13 @@ export function attachCameraInput({
   cancelAnimationFrame = window?.cancelAnimationFrame?.bind(window),
   map = null,
   onTileClick = null,
-  onTileHover = null
+  onTileHover = null,
+  onTileInfoPress = null,
+  onTileInfoRelease = null,
+  longPressMs = 500,
+  longPressSlop = 10,
+  setTimeout = window?.setTimeout?.bind(window) ?? globalThis.setTimeout,
+  clearTimeout = window?.clearTimeout?.bind(window) ?? globalThis.clearTimeout
 }) {
   const edgePanController = createEdgePanController({
     camera,
@@ -127,7 +133,92 @@ export function attachCameraInput({
     setHoveredTile(null)
   }
 
+  // A held right button, or a finger held still for longPressMs, asks what is on a tile until it is let go.
+  let isInfoPressActive = false
+  let longPress = null
+  let ignoreNextClick = false
+
+  function startInfoPress(event) {
+    const tile = getTileAtPointer(event)
+    if (!tile || typeof onTileInfoPress !== 'function') {
+      return
+    }
+
+    isInfoPressActive = true
+    onTileInfoPress(tile, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pointerType: event.pointerType
+    })
+  }
+
+  function cancelLongPress() {
+    if (longPress) {
+      clearTimeout(longPress.timer)
+      longPress = null
+    }
+  }
+
+  function onViewportPointerDown(event) {
+    ignoreNextClick = false
+    if (!map) {
+      return
+    }
+
+    if (event.pointerType === 'touch') {
+      cancelLongPress()
+      longPress = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        timer: setTimeout(() => {
+          longPress = null
+          ignoreNextClick = true
+          startInfoPress(event)
+        }, longPressMs)
+      }
+      return
+    }
+
+    if (event.button === 2) {
+      startInfoPress(event)
+    }
+  }
+
+  function onWindowPointerMove(event) {
+    if (!longPress || event.pointerId !== longPress.pointerId) {
+      return
+    }
+
+    const distance = Math.hypot(event.clientX - longPress.startX, event.clientY - longPress.startY)
+    if (distance > longPressSlop) {
+      cancelLongPress()
+    }
+  }
+
+  function onWindowPointerUp(event) {
+    if (longPress && event.pointerId === longPress.pointerId) {
+      cancelLongPress()
+    }
+
+    const isInfoPressRelease = event.pointerType === 'touch' || event.button === 2
+    if (isInfoPressActive && (isInfoPressRelease || event.type === 'pointercancel')) {
+      isInfoPressActive = false
+      onTileInfoRelease?.()
+    }
+  }
+
+  function onViewportContextMenu(event) {
+    event.preventDefault()
+  }
+
   function onViewportClick(event) {
+    // The browser still sends a click when the finger of a long press lifts.
+    if (ignoreNextClick) {
+      ignoreNextClick = false
+      return
+    }
+
     if (!map || typeof onTileClick !== 'function') {
       return
     }
@@ -144,8 +235,14 @@ export function attachCameraInput({
   viewport.addEventListener('mouseenter', onMouseEnter)
   viewport.addEventListener('mouseleave', onMouseLeave)
   viewport.addEventListener('click', onViewportClick)
+  viewport.addEventListener('pointerdown', onViewportPointerDown)
+  viewport.addEventListener('contextmenu', onViewportContextMenu)
+  window.addEventListener('pointermove', onWindowPointerMove)
+  window.addEventListener('pointerup', onWindowPointerUp)
+  window.addEventListener('pointercancel', onWindowPointerUp)
 
   return () => {
+    cancelLongPress()
     edgePanController.destroy()
     window.removeEventListener('keydown', onKeyDown)
     window.removeEventListener('mousemove', onMouseMove)
@@ -153,5 +250,10 @@ export function attachCameraInput({
     viewport.removeEventListener('mouseenter', onMouseEnter)
     viewport.removeEventListener('mouseleave', onMouseLeave)
     viewport.removeEventListener('click', onViewportClick)
+    viewport.removeEventListener('pointerdown', onViewportPointerDown)
+    viewport.removeEventListener('contextmenu', onViewportContextMenu)
+    window.removeEventListener('pointermove', onWindowPointerMove)
+    window.removeEventListener('pointerup', onWindowPointerUp)
+    window.removeEventListener('pointercancel', onWindowPointerUp)
   }
 }

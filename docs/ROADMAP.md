@@ -83,15 +83,19 @@ Entities become meaningful content containers. Critical for portfolio.
 
 ### 2.1 Right-Click Info Panels
 As in H3, the popup is shown only while the right mouse button is held down and disappears when it is released.
-- [ ] Right-click (and hold) any map object shows an info popup near the cursor
-- [ ] Releasing the right mouse button dismisses it (no Escape / click outside: there is nothing to dismiss once released)
+- [x] Right-click (and hold) any map object shows an info popup centred on the cursor
+- [x] Releasing the right mouse button dismisses it (no Escape / click outside: there is nothing to dismiss once released)
 - [ ] Monster: count category and name, as on hover ("Pack of Skeletons"); never the exact number
-- [ ] Resource: resource name only; the amount stays hidden until it is picked up
-- [ ] Mine: mine name and owner
+  - [x] For now: the creature's picture (its map look until sprites) and plural name ("Skeletons"); the count category needs 5.2
+- [x] Resource: resource name only; the amount stays hidden until it is picked up
+- [x] Mine: mine name, and the owner's colour on the next line ("(Red)") once owned
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
+  - [x] For now: the town's name (needs town ownership and buildings)
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
-- [ ] Right-click on empty terrain shows the terrain name
-- [ ] Popups have an H3-style parchment/panel background
+  - [x] For now: the hero's name (needs 4.1 / 4.3)
+- [x] Right-click on empty terrain shows the terrain name
+- [x] Popups have an H3-style panel background in the interface colours
+- [x] (Not in H3, touch screens) Long press (500 ms) opens the same popup above the finger; lifting the finger closes it, a short tap still moves as before
 
 ### 2.2 Entity Data Model Expansion
 - [ ] Entities support `metadata` field in scenario JSON: `{ title, description, image, links[], tags[] }`

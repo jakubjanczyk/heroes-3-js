@@ -1,0 +1,32 @@
+/* The Heroes 3 right-click popup, in the interface frame's colours. */
+.info-popup {
+  position: fixed;
+  z-index: var(--z-ui-info-popup);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-inline-size: 8rem;
+  max-inline-size: min(18rem, calc(100vw - 1rem));
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(180deg, var(--frame-mid), var(--frame-dark));
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    0 0.5rem 1.25rem var(--color-shadow);
+  color: var(--hud-text);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  /* Never takes the pointer, so releasing the button over the popup still reaches the page. */
+  pointer-events: none;
+}
+
+.info-popup__line {
+  margin: 0;
+}
+
+.info-popup__picture {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  margin-block-end: var(--space-2xs);
+}

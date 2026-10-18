@@ -36,6 +36,9 @@
   overflow: clip;
   background: black;
   isolation: isolate;
+  /* A long press opens the info popup, not the browser's callout or a text selection. */
+  -webkit-touch-callout: none;
+  user-select: none;
 
   &[data-viewport-visibility="hidden"] {
     visibility: hidden;
