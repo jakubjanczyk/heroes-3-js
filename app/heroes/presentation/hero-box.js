@@ -1,33 +1,19 @@
-import { createPrimarySkillsList } from './primary-skills-list.js'
-
-const ARMY_SLOT_COUNT = 7
-
-// The Heroes 3 hero box, shared by the info box and the hero's right-click popup: the portrait
-// (the hero's initial until there are portraits), the name over the primary skills, and the
-// seven army slots.
+// Fills a container with the Heroes 3 hero box from `#hero-box-template` in index.html: the
+// portrait (the hero's initial until there are portraits), the name, the four primary skills
+// (an icon each with the value under it, as in the game) and the seven army slots.
 export function renderHeroBox(container, document, { name, skills }) {
-  const portrait = document.createElement('div')
-  portrait.className = 'hero-box__portrait'
-  portrait.setAttribute('role', 'img')
+  const box = document.getElementById('hero-box-template').content.cloneNode(true)
+
+  const portrait = box.querySelector('.hero-box__portrait')
   portrait.setAttribute('aria-label', name)
   portrait.textContent = name.charAt(0)
 
-  const heading = document.createElement('h2')
-  heading.className = 'hero-box__name'
-  heading.textContent = name
+  box.querySelector('.hero-box__name').textContent = name
 
-  const skillsList = createPrimarySkillsList(document, skills)
-  skillsList.classList.add('hero-box__skills')
-
-  const army = document.createElement('ul')
-  army.className = 'hero-box__army'
-  army.setAttribute('aria-label', 'Army')
-  for (let slot = 0; slot < ARMY_SLOT_COUNT; slot += 1) {
-    const armySlot = document.createElement('li')
-    armySlot.className = 'army-slot'
-    army.appendChild(armySlot)
+  for (const { key, value } of skills) {
+    box.querySelector(`[data-skill="${key}"] .primary-skills__value`).textContent = String(value)
   }
 
   container.classList.add('hero-box')
-  container.replaceChildren(portrait, heading, skillsList, army)
+  container.replaceChildren(box)
 }

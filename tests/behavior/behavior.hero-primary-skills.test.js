@@ -31,7 +31,8 @@ function readPrimarySkills(container) {
   return within(list)
     .getAllByRole('listitem')
     .map(
-      (item) => `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent}`
+      (item) =>
+        `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`
     )
 }
 
