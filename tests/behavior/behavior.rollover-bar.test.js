@@ -34,8 +34,8 @@ const gameDefinitions = {
   mines: readGameData('mines.json')
 }
 
-function getRolloverBar() {
-  return screen.getByRole('status', { name: 'Rollover bar' })
+function expectRolloverText(text) {
+  expect(screen.getByRole('status', { name: 'Rollover bar' }).textContent).toBe(text)
 }
 
 async function setupApp(scenario, { viewportSize } = {}) {
@@ -50,7 +50,7 @@ describe('rollover bar behavior', () => {
   test('given a new game when the mouse has not been over the map then the rollover bar is empty', async () => {
     await setupApp(aScenario().withSize(3))
 
-    expect(getRolloverBar().textContent).toBe('')
+    expectRolloverText('')
   })
 
   test.each([
@@ -72,7 +72,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 1, 0)
 
-    expect(getRolloverBar().textContent).toBe(name)
+    expectRolloverText(name)
   })
 
   test('given a monster when the mouse is over it then the rollover bar shows its plural name', async () => {
@@ -82,7 +82,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 2, 0)
 
-    expect(getRolloverBar().textContent).toBe('Skeletons')
+    expectRolloverText('Skeletons')
   })
 
   test('given a resource when the mouse is over it then the rollover bar shows only its name', async () => {
@@ -92,7 +92,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 2, 0)
 
-    expect(getRolloverBar().textContent).toBe('Gold')
+    expectRolloverText('Gold')
   })
 
   test.each([
@@ -110,7 +110,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, x, y)
 
-    expect(getRolloverBar().textContent).toBe('Gold Mine')
+    expectRolloverText('Gold Mine')
   })
 
   test.each([
@@ -126,7 +126,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, x, y)
 
-    expect(getRolloverBar().textContent).toBe('Castle')
+    expectRolloverText('Castle')
   })
 
   test("given the hero when the mouse is over it then the rollover bar shows the hero's name", async () => {
@@ -134,7 +134,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 1, 0)
 
-    expect(getRolloverBar().textContent).toBe('Hero')
+    expectRolloverText('Hero')
   })
 
   test("given the hero has moved when the mouse is over its new tile then the rollover bar shows the hero's name", async () => {
@@ -144,7 +144,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 2, 0)
 
-    expect(getRolloverBar().textContent).toBe('Hero')
+    expectRolloverText('Hero')
   })
 
   test('given the map has scrolled when the mouse is over a tile then the rollover bar names that tile', async () => {
@@ -157,7 +157,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 25, 0)
 
-    expect(getRolloverBar().textContent).toBe('Water')
+    expectRolloverText('Water')
   })
 
   test('given a defeated monster when the mouse is over its tile then the rollover bar shows the terrain name', async () => {
@@ -173,7 +173,7 @@ describe('rollover bar behavior', () => {
 
     await hoverTile(user, 1, 0)
 
-    expect(getRolloverBar().textContent).toBe('Grass')
+    expectRolloverText('Grass')
   })
 
   test('given the mouse is over the map when it leaves the map then the rollover bar empties', async () => {
@@ -182,6 +182,6 @@ describe('rollover bar behavior', () => {
 
     await user.hover(screen.getByRole('button', { name: 'End turn' }))
 
-    expect(getRolloverBar().textContent).toBe('')
+    expectRolloverText('')
   })
 })
