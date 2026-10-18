@@ -94,11 +94,19 @@
   background: var(--panel-inset);
   padding: 2px;
 
+  /* On short screens the minimap gives up height first, so the whole HUD fits the viewport. */
+  --minimap-max-height: min(var(--adventure-panel-width), 32dvh);
+
   & .minimap__map {
     position: relative;
-    inline-size: 100%;
-    /* On short screens the minimap gives up height first, so the whole HUD fits the viewport. */
-    max-block-size: min(var(--adventure-panel-width), 32dvh);
+    /* Narrower rather than squashed: the width follows the height cap and the map's proportions. */
+    inline-size: min(
+      100%,
+      var(--minimap-max-height) *
+      var(--minimap-map-width, 1) /
+      var(--minimap-map-height, 1)
+    );
+    max-block-size: var(--minimap-max-height);
     margin-inline: auto;
     overflow: hidden;
     background: black;
@@ -447,8 +455,8 @@
 
 /* Short screens (a landscape phone, a small laptop window): army slots in one row. */
 @media (height < 42rem) {
-  .minimap .minimap__map {
-    max-block-size: 28dvh;
+  .minimap {
+    --minimap-max-height: 28dvh;
   }
 
   .resource-bar {
@@ -537,10 +545,7 @@
     grid-area: minimap;
     display: grid;
     align-content: center;
-
-    & .minimap__map {
-      max-block-size: 100%;
-    }
+    --minimap-max-height: calc(var(--compact-panel-height) - 8px);
   }
 
   .hero-list {
