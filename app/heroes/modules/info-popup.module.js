@@ -1,4 +1,5 @@
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
+import { getEntityName } from '../../../game/heroes/status-bar-text.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
@@ -70,7 +71,7 @@ export const registerInfoPopupModule = defineModule(
         const picture = document.createElement('div')
         picture.className = 'info-popup__picture entity--monster'
         picture.setAttribute('role', 'img')
-        picture.setAttribute('aria-label', lines[0])
+        picture.setAttribute('aria-label', getEntityName({ entity, definitions }))
         popup.appendChild(picture)
       }
 

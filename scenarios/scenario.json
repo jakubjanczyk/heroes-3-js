@@ -329,6 +329,7 @@
       "id": "monster-1",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 3,
       "tile": {
         "x": 13,
         "y": 7
@@ -338,6 +339,7 @@
       "id": "monster-2",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 7,
       "tile": {
         "x": 21,
         "y": 12
@@ -347,6 +349,7 @@
       "id": "monster-3",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 12,
       "tile": {
         "x": 33,
         "y": 9
@@ -356,6 +359,7 @@
       "id": "monster-4",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 25,
       "tile": {
         "x": 52,
         "y": 8
@@ -365,6 +369,7 @@
       "id": "monster-5",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 60,
       "tile": {
         "x": 12,
         "y": 24
@@ -374,6 +379,7 @@
       "id": "monster-6",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 150,
       "tile": {
         "x": 28,
         "y": 19
@@ -383,6 +389,7 @@
       "id": "monster-7",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 300,
       "tile": {
         "x": 38,
         "y": 24
@@ -392,6 +399,7 @@
       "id": "monster-8",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 700,
       "tile": {
         "x": 47,
         "y": 23
@@ -401,6 +409,7 @@
       "id": "monster-9",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 1200,
       "tile": {
         "x": 7,
         "y": 35
@@ -410,6 +419,7 @@
       "id": "monster-10",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 3,
       "tile": {
         "x": 17,
         "y": 32
@@ -419,6 +429,7 @@
       "id": "monster-11",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 7,
       "tile": {
         "x": 31,
         "y": 31
@@ -428,6 +439,7 @@
       "id": "monster-12",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 12,
       "tile": {
         "x": 45,
         "y": 39
@@ -437,6 +449,7 @@
       "id": "monster-13",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 25,
       "tile": {
         "x": 57,
         "y": 36
@@ -446,6 +459,7 @@
       "id": "monster-14",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 60,
       "tile": {
         "x": 5,
         "y": 49
@@ -455,6 +469,7 @@
       "id": "monster-15",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 150,
       "tile": {
         "x": 19,
         "y": 55
@@ -464,6 +479,7 @@
       "id": "monster-16",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 300,
       "tile": {
         "x": 31,
         "y": 50
@@ -473,6 +489,7 @@
       "id": "monster-17",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 700,
       "tile": {
         "x": 46,
         "y": 55
@@ -482,6 +499,7 @@
       "id": "monster-18",
       "kind": "MONSTER",
       "type": "SKELETON",
+      "count": 1200,
       "tile": {
         "x": 60,
         "y": 57

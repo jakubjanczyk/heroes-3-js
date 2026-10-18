@@ -6,6 +6,7 @@ import { findPath } from '../../engine/pathfinding.js'
 import { buildWorld } from '../build-world.js'
 import { createEntityBehaviors } from '../domain/entity-behaviors.js'
 import { findHero, isTown } from '../domain/entity-queries.js'
+import { loadGame } from '../load.js'
 import { heroesContent } from './content.js'
 
 // Validates the real scenario data: a broken map would otherwise only show up while playing.
@@ -45,5 +46,18 @@ describe('demo scenario towns', () => {
 
       expect(path?.length).toBeGreaterThan(1)
     }
+  })
+})
+
+describe('demo scenario loading', () => {
+  test('the demo scenario and the game data pass the checks made on load', async () => {
+    const readFromRepo = async (url) => ({
+      ok: true,
+      json: async () => JSON.parse(readFileSync(new URL(`../../${url}`, import.meta.url), 'utf8'))
+    })
+
+    await expect(
+      loadGame({ fetch: readFromRepo, terrainTypes: heroesContent.terrainTypes })
+    ).resolves.toBeTruthy()
   })
 })

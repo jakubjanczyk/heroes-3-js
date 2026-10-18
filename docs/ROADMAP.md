@@ -49,7 +49,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Resource bar along the bottom (as in H3) showing all 7 resource types with icons and counts, in H3 order
 - [x] Day/week/month display at the end of the resource bar ("Month: 1, Week: 1, Day: 1")
 - [x] Right sidebar panel as in H3: minimap, then hero list / 2x5 adventure buttons / town list side by side, then the info box with the army
-- [x] Rollover bar between the map and the resource bar, naming whatever the mouse is over (see 2.5)
+- [x] Status bar between the map and the resource bar, naming whatever the mouse is over (see 2.5)
 - [x] "End Turn" button styled and positioned like H3 (hourglass icon in right panel)
 - [x] "Next Hero" button (arrow icon): centres on the hero, disabled once it has no movement left (cycling needs several heroes)
 - [x] System options button (gear icon): popup with Music, Reset and Return to game
@@ -73,7 +73,8 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Keyboard arrow keys scroll the map
 - [x] Camera bounds - cannot scroll beyond map edges
 - [ ] (Not in H3, optional extra) Smooth camera transitions when clicking minimap. H3 jumps straight there
-- [ ] Double-click on hero portrait centers camera on hero
+- [x] Clicking the hero's portrait in the hero list centres the camera on the hero (as in H3, one click is enough)
+- [ ] Double-click on the hero's portrait opens the hero screen, as in H3 (needs a hero screen, 4.1 / 4.3)
 
 ---
 
@@ -85,8 +86,7 @@ Entities become meaningful content containers. Critical for portfolio.
 As in H3, the popup is shown only while the right mouse button is held down and disappears when it is released.
 - [x] Right-click (and hold) any map object shows an info popup centred on the cursor
 - [x] Releasing the right mouse button dismisses it (no Escape / click outside: there is nothing to dismiss once released)
-- [ ] Monster: count category and name, as on hover ("Pack of Skeletons"); never the exact number
-  - [x] For now: the creature's picture (its map look until sprites) and plural name ("Skeletons"); the count category needs 5.2
+- [x] Monster: the creature's picture (its map look until sprites), then count category and plural name, as on hover ("Pack of Skeletons"); never the exact number
 - [x] Resource: resource name only; the amount stays hidden until it is picked up
 - [x] Mine: mine name, and the owner's colour on the next line ("(Red)") once owned
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
@@ -125,11 +125,11 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
 - [ ] Dwelling visit modal: show available creatures, count, cost, recruit button
 
-### 2.5 Rollover Bar
-As in H3: a one-line rollover bar between the map and the resource bar. Text only, no icons, no amounts or income.
+### 2.5 Status Bar
+As in H3: a one-line status bar between the map and the resource bar. Text only, no icons, no amounts or income.
 - [x] Hovering over a tile with nothing on it shows the terrain name ("Grass", "Water")
 - [x] Hovering over a monster shows its plural name ("Skeletons")
-- [ ] With monster counts (5.2): count category and plural name ("Pack of Skeletons")
+- [x] With monster counts (5.2): count category and plural name ("Pack of Skeletons")
 - [x] Hovering over a resource shows its name ("Gold"); never the amount
 - [x] Hovering over a mine shows its name ("Gold Mine"), on any tile of its footprint
 - [x] Hovering over a town shows its name, on any tile of its footprint
@@ -322,9 +322,9 @@ The central gameplay mechanic.
   - T7: Angel / Archangel
 
 ### 5.2 Monster Encounters on Map
-- [ ] Monsters on map have a creature type and count (not just "skeleton")
-- [ ] Monster count categories as in H3: Few (1-4), Several (5-9), Pack (10-19), Lots (20-49), Horde (50-99), Throng (100-249), Swarm (250-499), Zounds (500-999), Legion (1000+)
-- [ ] Monster count shown on hover (category, not exact number)
+- [x] Monsters on map have a creature type and count (not just "skeleton"); the scenario must give every monster a count
+- [x] Monster count categories as in H3: Few (1-4), Several (5-9), Pack (10-19), Lots (20-49), Horde (50-99), Throng (100-249), Swarm (250-499), Zounds (500-999), Legion (1000+)
+- [x] Monster count shown on hover and in the right-click popup (category, not exact number)
 - [ ] Monster aggression: some flee, some join, some fight (based on army strength ratio + Diplomacy)
 - [ ] Monster growth over time: count increases each week (optional, based on scenario settings)
 - [ ] Approaching a monster initiates combat (not instant defeat)
@@ -759,7 +759,7 @@ Sprites and map authoring are intentionally late.
 1. Terrain types with CSS (1.1)
 2. Cursor system (1.2)
 3. HUD redesign (1.3)
-4. Rollover bar on hover (2.5)
+4. Status bar on hover (2.5)
 5. Right-click info panels (2.1)
 6. Roads (7.2): finishes terrain movement costs (4.6)
 7. Day/week/month cycle (3.1)

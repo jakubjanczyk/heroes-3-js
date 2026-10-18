@@ -23,7 +23,7 @@ A plain popup is the game's standard message box (`CInfoWindow`, drawn in the pl
 - Resource: its name. Terrain: its name.
 - Mine: its name, then "(Red)" once the hero has captured it.
 - Town and hero: their name. The info boxes wait for town ownership, hero stats and armies.
-- Any tile of a mine's or town's footprint names it, as the rollover bar does (both use `app/heroes/map-objects.js`).
+- Any tile of a mine's or town's footprint names it, as the status bar does (both use `app/heroes/map-objects.js`).
 - The browser's context menu does not open on the map.
 
 ## Touch screens
