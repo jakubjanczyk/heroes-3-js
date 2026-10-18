@@ -12,6 +12,8 @@ import {
   APP_UI_CAMERA_UPDATED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED,
+  APP_UI_SYSTEM_OPTIONS_CLOSED,
+  APP_UI_SYSTEM_OPTIONS_OPENED,
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js'
 import { defineModule } from './shared/module-runtime.js'
@@ -26,6 +28,7 @@ export const registerCameraModule = defineModule(
     let camera = null
     let map = null
     let detachCameraInput = null
+    let isSystemOptionsOpen = false
 
     function centerOn(tile) {
       if (!camera || !tile) {
@@ -92,6 +95,11 @@ export const registerCameraModule = defineModule(
 
             const inputCamera = {
               moveBy(dx, dy) {
+                // Arrow keys and edge scrolling must not move the map behind the System options popup.
+                if (isSystemOptionsOpen) {
+                  return
+                }
+
                 emit(APP_COMMAND_CAMERA_PAN_BY, { dx, dy })
               },
               getOffset: camera.getOffset?.bind(camera)
@@ -124,6 +132,18 @@ export const registerCameraModule = defineModule(
             // Replayed hero moves already centered the camera on the hero's last tile.
             viewport.dataset.viewportVisibility = 'visible'
             delete viewport.dataset.restoring
+          }
+        },
+        {
+          type: APP_UI_SYSTEM_OPTIONS_OPENED,
+          handler: () => {
+            isSystemOptionsOpen = true
+          }
+        },
+        {
+          type: APP_UI_SYSTEM_OPTIONS_CLOSED,
+          handler: () => {
+            isSystemOptionsOpen = false
           }
         },
         {
@@ -195,6 +215,8 @@ export const registerCameraModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
+      APP_UI_SYSTEM_OPTIONS_OPENED,
+      APP_UI_SYSTEM_OPTIONS_CLOSED,
       APP_COMMAND_CAMERA_PAN_BY,
       APP_COMMAND_CAMERA_CENTER_ON_TILE,
       APP_FACT_MOVE_STARTED,

@@ -1,7 +1,8 @@
 .bus-dev-panel {
   position: fixed;
-  inset-inline-end: 12px;
-  inset-block-end: 12px;
+  /* Top-left, over the map, so it covers none of the adventure HUD. */
+  inset-inline-start: 24px;
+  inset-block-start: 24px;
   z-index: var(--z-ui-dev-panel);
   inline-size: min(460px, calc(100vw - 24px));
   display: grid;
@@ -10,7 +11,7 @@
 }
 
 .bus-dev-panel__toggle {
-  justify-self: end;
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);

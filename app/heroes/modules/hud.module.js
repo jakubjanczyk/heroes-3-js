@@ -2,14 +2,10 @@ import { calendarDateOfTurn, formatCalendarDate } from '../../../game/heroes/cal
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
-  APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
-  APP_COMMAND_RESET_SESSION_REQUESTED,
   APP_FACT_INCOME_COLLECTED,
-  APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
-  APP_UI_MUSIC_STATE_CHANGED,
   APP_UI_PREVIEW_UPDATED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
@@ -18,13 +14,9 @@ export const registerHudModule = defineModule(
   ({ emit, env }) => {
     const uiLayer = env.document?.querySelector('.ui-layer')
     const calendarStatus = env.document?.getElementById('calendar-status')
-    const movementPointsStatus = env.document?.getElementById('movement-points-status')
-    const resourceTotalsStatus = env.document?.getElementById('resource-totals-status')
+    const resourceBarList = env.document?.getElementById('resource-bar-list')
     const moveHeroButton = env.document?.getElementById('move-hero-button')
     const endTurnButton = env.document?.getElementById('end-turn-button')
-    const resetSessionButton = env.document?.getElementById('reset-session-button')
-    const musicToggleButton = env.document?.getElementById('music-toggle-button')
-    const bootStatus = env.document?.getElementById('boot-status')
     let resourceTypeOrder = []
     let resourceNamesByType = {}
     let resourceTotalsByType = {}
@@ -38,20 +30,34 @@ export const registerHudModule = defineModule(
     }
 
     function renderResourceTotals() {
-      if (!resourceTotalsStatus) {
+      if (!resourceBarList || !env.document) {
         return
       }
 
-      if (resourceTypeOrder.length === 0) {
-        resourceTotalsStatus.textContent = 'Resources: none'
-        return
-      }
+      resourceBarList.replaceChildren(
+        ...resourceTypeOrder.map((resourceType) => {
+          const name = resourceNamesByType[resourceType] ?? resourceType
+          const item = env.document.createElement('li')
+          item.className = 'resource-bar__item'
+          item.dataset.resource = resourceType
+          item.title = name
 
-      const parts = resourceTypeOrder.map(
-        (resourceType) =>
-          `${resourceNamesByType[resourceType] ?? resourceType}: ${resourceTotalsByType[resourceType] ?? 0}`
+          const icon = env.document.createElement('span')
+          icon.className = 'resource-bar__icon'
+          icon.setAttribute('aria-hidden', 'true')
+
+          const label = env.document.createElement('span')
+          label.className = 'visually-hidden'
+          label.textContent = `${name} `
+
+          const amount = env.document.createElement('span')
+          amount.className = 'resource-bar__amount'
+          amount.textContent = String(resourceTotalsByType[resourceType] ?? 0)
+
+          item.append(icon, label, amount)
+          return item
+        })
       )
-      resourceTotalsStatus.textContent = `Resources: ${parts.join(' | ')}`
     }
 
     function addToResourceTotal(resourceType, amount) {
@@ -88,22 +94,6 @@ export const registerHudModule = defineModule(
           }
         },
         {
-          target: musicToggleButton,
-          type: 'click',
-          handler: (event) => {
-            event?.stopPropagation?.()
-            emit(APP_COMMAND_MUSIC_TOGGLE_REQUESTED, {})
-          }
-        },
-        {
-          target: resetSessionButton,
-          type: 'click',
-          handler: (event) => {
-            event?.stopPropagation?.()
-            emit(APP_COMMAND_RESET_SESSION_REQUESTED, {})
-          }
-        },
-        {
           target: uiLayer,
           type: 'click',
           handler: (event) => {
@@ -123,29 +113,6 @@ export const registerHudModule = defineModule(
           }
         },
         {
-          type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-          handler: (event) => {
-            if (!movementPointsStatus) {
-              return
-            }
-
-            const { value, max } = event.detail
-            movementPointsStatus.textContent = `MP: ${value} / ${max}`
-          }
-        },
-        {
-          type: APP_UI_MUSIC_STATE_CHANGED,
-          handler: (event) => {
-            if (!musicToggleButton) {
-              return
-            }
-
-            const enabled = Boolean(event.detail.enabled)
-            musicToggleButton.textContent = enabled ? 'Music: On' : 'Music: Off'
-            musicToggleButton.setAttribute?.('aria-pressed', enabled ? 'true' : 'false')
-          }
-        },
-        {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             const definitions = event.detail.definitions?.resources ?? {}
@@ -160,12 +127,6 @@ export const registerHudModule = defineModule(
 
             renderResourceTotals()
             renderCalendarDate(1)
-
-            if (!bootStatus) {
-              return
-            }
-
-            bootStatus.textContent = `Boot ok: ${event.detail.scenario.meta.id}`
           }
         },
         {
@@ -203,18 +164,11 @@ export const registerHudModule = defineModule(
     phase: 'view',
     consumes: [
       APP_UI_PREVIEW_UPDATED,
-      APP_FACT_MOVEMENT_POINTS_CHANGED,
-      APP_UI_MUSIC_STATE_CHANGED,
       APP_FACT_WORLD_READY,
       APP_FACT_TURN_ENDED,
       APP_FACT_RESOURCE_COLLECTED,
       APP_FACT_INCOME_COLLECTED
     ],
-    produces: [
-      APP_COMMAND_MOVE_CONTINUE_REQUESTED,
-      APP_COMMAND_END_TURN_REQUESTED,
-      APP_COMMAND_MUSIC_TOGGLE_REQUESTED,
-      APP_COMMAND_RESET_SESSION_REQUESTED
-    ]
+    produces: [APP_COMMAND_MOVE_CONTINUE_REQUESTED, APP_COMMAND_END_TURN_REQUESTED]
   }
 )
