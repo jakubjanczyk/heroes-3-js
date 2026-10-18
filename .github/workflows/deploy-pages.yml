@@ -8,8 +8,9 @@ on:
 permissions:
   contents: write
 
+# Shared with the other workflow that pushes to gh-pages, so their pushes run one at a time.
 concurrency:
-  group: gh-pages-deploy
+  group: gh-pages
   cancel-in-progress: false
 
 jobs:
