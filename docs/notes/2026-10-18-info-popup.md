@@ -13,6 +13,10 @@ Checked in VCMI, the open-source Heroes 3 engine:
 
 VCMI's own extras (monster threat level, the mine's resource after the owner) are not in the original and are left out.
 
+## Look
+
+A plain popup is the game's standard message box (`CInfoWindow`, drawn in the player's colour): brown leather background, and the player's colour only in the frame, a thin band between gold lines with gold corner pieces. Checked against a VCMI screenshot of the "Search map object" dialog, which uses the same frame (`static/img/screenshots/1.6.0/Search object vanilla.jpg` in the `vcmi/vcmi.eu` repository). We draw it with CSS (no game graphics): the leather is a mottled gradient and the corners are plain gold brackets instead of the game's ornaments.
+
 ## What we do
 
 - Monster: its picture and plural name. There are no creature portraits yet, so the picture is the monster as the map draws it. The count category waits for monster counts (5.2).

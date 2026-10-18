@@ -94,7 +94,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
   - [x] For now: the hero's name (needs 4.1 / 4.3)
 - [x] Right-click on empty terrain shows the terrain name
-- [x] Popups have an H3-style panel background in the interface colours
+- [x] Popups look like H3 message boxes: brown leather background, player colour only in the gold-trimmed frame
 - [x] (Not in H3, touch screens) Long press (500 ms) opens the same popup above the finger; lifting the finger closes it, a short tap still moves as before
 
 ### 2.2 Entity Data Model Expansion
