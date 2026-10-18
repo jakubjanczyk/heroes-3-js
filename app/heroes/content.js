@@ -2,6 +2,7 @@ import { heroesContent } from '../../game/heroes/content.js'
 import { heroesOutcomeEffects } from './interaction-outcomes.js'
 import { registerHeroPanelModule } from './modules/hero-panel.module.js'
 import { registerHudModule } from './modules/hud.module.js'
+import { registerInfoPopupModule } from './modules/info-popup.module.js'
 import { registerMineFlagViewModule } from './modules/mine-flag-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
@@ -25,6 +26,7 @@ export const heroesAppContent = Object.freeze({
     registerMinimapViewModule,
     registerHudModule,
     registerRolloverBarModule,
+    registerInfoPopupModule,
     registerHeroPanelModule,
     registerSystemOptionsModule,
     registerMusicModule

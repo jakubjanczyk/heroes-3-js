@@ -1,12 +1,37 @@
 // Heroes 3 adventure map movement (checked against VCMI's pathfinder):
-// - a step costs the movementCost of the tile the hero leaves; a diagonal step costs it times √2;
+// - a step costs the movementCost of the tile the hero leaves: its road when both tiles have a
+//   road, else its terrain; a diagonal step costs it times √2;
 // - a diagonal step that no longer fits is still allowed when a straight one would, and takes
 //   all points left;
-// - when what is left after a step can't pay a straight step from the new tile, it drops to 0.
+// - when what is left after a step can't pay the cheapest straight step from the new tile (a
+//   road step when a road continues from it), it drops to 0.
 const DEFAULT_TERRAIN_MOVEMENT_COST = 100
+const NEIGHBOR_OFFSETS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1]
+]
 
-function straightStepCost(map, tile) {
+function terrainCost(map, tile) {
   return map.getTerrainType(tile)?.movementCost ?? DEFAULT_TERRAIN_MOVEMENT_COST
+}
+
+function straightStepCost(map, from, to) {
+  const fromRoad = map.getRoadType(from)
+  return fromRoad && map.getRoadType(to) ? fromRoad.movementCost : terrainCost(map, from)
+}
+
+// The cheapest straight step the hero could take next from `tile`.
+function cheapestStepFrom(map, tile) {
+  const costs = NEIGHBOR_OFFSETS.map(([dx, dy]) =>
+    straightStepCost(map, tile, { x: tile.x + dx, y: tile.y + dy })
+  )
+  return Math.min(...costs)
 }
 
 function isDiagonalStep(from, to) {
@@ -14,7 +39,7 @@ function isDiagonalStep(from, to) {
 }
 
 function stepCost({ map, from, to }) {
-  const straightCost = straightStepCost(map, from)
+  const straightCost = straightStepCost(map, from, to)
   return isDiagonalStep(from, to) ? Math.floor(straightCost * Math.SQRT2) : straightCost
 }
 
@@ -27,12 +52,12 @@ function chargeSteps({ map, path, remainingMovementPoints }) {
     const to = path[index]
     const cost = stepCost({ map, from, to })
     const takesAllLeft =
-      cost > remaining && isDiagonalStep(from, to) && remaining >= straightStepCost(map, from)
+      cost > remaining && isDiagonalStep(from, to) && remaining >= straightStepCost(map, from, to)
     if (cost > remaining && !takesAllLeft) {
       break
     }
 
-    const charge = takesAllLeft || remaining - cost < straightStepCost(map, to) ? remaining : cost
+    const charge = takesAllLeft || remaining - cost < cheapestStepFrom(map, to) ? remaining : cost
     charges.push(charge)
     remaining -= charge
   }
