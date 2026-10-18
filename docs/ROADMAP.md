@@ -73,7 +73,8 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Keyboard arrow keys scroll the map
 - [x] Camera bounds - cannot scroll beyond map edges
 - [ ] (Not in H3, optional extra) Smooth camera transitions when clicking minimap. H3 jumps straight there
-- [ ] Double-click on hero portrait centers camera on hero
+- [x] Clicking the hero's portrait in the hero list centres the camera on the hero (as in H3, one click is enough)
+- [ ] Double-click on the hero's portrait opens the hero screen, as in H3 (needs a hero screen, 4.1 / 4.3)
 
 ---
 
