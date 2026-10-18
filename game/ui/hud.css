@@ -78,7 +78,7 @@
 
 .adventure-panel {
   display: grid;
-  grid-template-rows: auto auto minmax(4rem, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: calc(var(--frame-width) + 2px);
 }
 
@@ -98,10 +98,12 @@
   }
 }
 
-/* Adventure buttons: two columns of five, as in Heroes 3. */
+/* Adventure buttons: two columns of five between the hero and town lists, as in Heroes 3. */
 .adventure-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 2rem;
+  align-content: start;
   gap: 3px;
 }
 
@@ -109,7 +111,6 @@
   appearance: none;
   display: grid;
   place-items: center;
-  block-size: 2rem;
   padding: 0;
   border: 1px solid var(--trim-gold-dark);
   border-radius: 2px;
@@ -170,17 +171,18 @@
   }
 }
 
-/* Hero and town lists, side by side. */
+/* Hero list, adventure buttons and town list, side by side. */
 .adventure-lists {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
   gap: calc(var(--frame-width) + 2px);
+  min-block-size: calc(5 * 2rem + 4 * 3px);
 }
 
 .hero-list,
 .town-list {
   display: grid;
-  grid-auto-rows: 2.25rem;
+  grid-auto-rows: 2rem;
   gap: 2px;
   margin: 0;
   padding: 2px;
@@ -244,11 +246,12 @@
 }
 
 /* Info box: the selected hero and the seven slots of their army. */
+/* Nearly square like the Heroes 3 status window: the hero's name over two rows of big army slots. */
 .info-box {
   display: grid;
   align-content: start;
-  gap: var(--space-xs);
-  padding: var(--space-xs);
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-xs) var(--space-md);
   background:
     radial-gradient(
       circle at 50% 0%,
@@ -266,19 +269,26 @@
     text-shadow: 0 1px 0 black;
   }
 
+  /* Seven army slots as in Heroes 3: four on top, three centred below. */
   & .info-box__army {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 2px;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 3px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   & .army-slot {
+    grid-column: span 2;
     aspect-ratio: 1;
     background: #0d0f14;
     border: 1px solid #2a2d36;
+    box-shadow: inset 0 0 0 1px black;
+  }
+
+  & .army-slot:nth-child(5) {
+    grid-column: 2 / span 2;
   }
 }
 

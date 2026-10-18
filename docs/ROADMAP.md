@@ -48,7 +48,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 ### 1.3 HUD Redesign
 - [x] Resource bar along the bottom (as in H3) showing all 7 resource types with icons and counts, in H3 order
 - [x] Day/week/month display at the end of the resource bar ("Month: 1, Week: 1, Day: 1")
-- [x] Right sidebar panel as in H3: minimap, 2x5 adventure buttons, hero list next to town list, info box
+- [x] Right sidebar panel as in H3: minimap, then hero list / 2x5 adventure buttons / town list side by side, then the info box with the army
 - [ ] Bottom info bar: shows name + brief info of whatever entity the mouse hovers over (see 2.5)
 - [x] "End Turn" button styled and positioned like H3 (hourglass icon in right panel)
 - [x] "Next Hero" button (arrow icon): centres on the hero, disabled once it has no movement left (cycling needs several heroes)
