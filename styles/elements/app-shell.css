@@ -63,18 +63,19 @@
   container: sidebar / inline-size;
 }
 
-@media (width < 48rem) {
+@media (width < 48rem), (height < 32rem) {
+  .app {
+    --shell-padding: 0.25rem;
+  }
+}
+
+@media (width < 48rem) and (orientation: portrait) {
   .game-shell {
-    block-size: auto;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-template-rows: minmax(0, 1fr) auto auto;
     grid-template-areas:
       "map"
       "resources"
       "panel";
-  }
-
-  .viewport {
-    min-block-size: min(70dvh, 45rem);
   }
 }

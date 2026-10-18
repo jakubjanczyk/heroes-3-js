@@ -80,6 +80,7 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: calc(var(--frame-width) + 2px);
+  block-size: 100%;
 }
 
 /* Minimap */
@@ -90,7 +91,8 @@
   & .minimap__map {
     position: relative;
     inline-size: 100%;
-    max-block-size: var(--adventure-panel-width);
+    /* On short screens the minimap gives up height first, so the whole HUD fits the viewport. */
+    max-block-size: min(var(--adventure-panel-width), 32dvh);
     margin-inline: auto;
     overflow: hidden;
     background: black;
@@ -102,7 +104,7 @@
 .adventure-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: 2rem;
+  grid-auto-rows: minmax(0.875rem, 2rem);
   align-content: start;
   gap: 3px;
 }
@@ -127,8 +129,10 @@
   cursor: pointer;
 
   & .adventure-button__icon {
-    inline-size: 1.25rem;
-    block-size: 1.25rem;
+    /* Shrinks with the button when a short screen squeezes the button rows. */
+    block-size: min(1.25rem, 80%);
+    inline-size: auto;
+    aspect-ratio: 1;
     fill: currentColor;
     filter: drop-shadow(0 1px 0 black);
   }
@@ -175,8 +179,9 @@
 .adventure-lists {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  /* One row as tall as the panel leaves, so the button rows shrink instead of overflowing. */
+  grid-template-rows: minmax(0, 1fr);
   gap: calc(var(--frame-width) + 2px);
-  min-block-size: calc(5 * 2rem + 4 * 3px);
 }
 
 .hero-list,
@@ -307,7 +312,7 @@
   flex: 1 1 20rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem var(--space-md);
+  gap: 0.25rem clamp(0.5rem, 1.5vw, var(--space-md));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -317,7 +322,7 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  min-inline-size: 4.5rem;
+  min-inline-size: clamp(2.75rem, 6vw, 4.5rem);
 }
 
 .resource-bar__amount {
@@ -433,13 +438,120 @@
   }
 }
 
-@media (width < 48rem) {
+/* Short screens (a landscape phone, a small laptop window): army slots in one row. */
+@media (height < 42rem) {
+  .minimap .minimap__map {
+    max-block-size: 28dvh;
+  }
+
+  .resource-bar {
+    padding-block: 0.125rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .resource-bar__item {
+    min-inline-size: 2.5rem;
+  }
+
+  .resource-bar__icon {
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+  }
+
+  .info-box {
+    gap: var(--space-2xs);
+    padding: var(--space-2xs) var(--space-xs) var(--space-xs);
+
+    & .info-box__army {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    & .army-slot,
+    & .army-slot:nth-child(5) {
+      grid-column: auto;
+    }
+  }
+}
+
+/*
+ * Portrait phones: map on top, then the resource bar, then a compact panel with the ten buttons
+ * in one row over the minimap, hero list, town list and info box. Landscape phones keep the side panel.
+ */
+@media (width < 48rem) and (orientation: portrait) {
+  .game-shell {
+    --frame-width: 0.25rem;
+  }
+
   .resource-bar {
     flex-wrap: wrap;
+    gap: 0 var(--space-sm);
+    padding: 0.125rem var(--space-xs);
+    font-size: var(--font-size-xs);
+  }
+
+  .resource-bar__list {
+    flex-basis: 100%;
+    justify-content: space-between;
+    gap: 0.125rem 0.5rem;
+  }
+
+  .resource-bar__item {
+    min-inline-size: 0;
+    gap: 0.25rem;
+  }
+
+  .resource-bar__icon {
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
   }
 
   .adventure-panel {
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    grid-template-rows: none;
+    --compact-panel-height: 7rem;
+
+    grid-template-columns: var(--compact-panel-height) 3rem 3rem minmax(0, 1fr);
+    grid-template-rows: 2rem var(--compact-panel-height);
+    grid-template-areas:
+      "buttons buttons buttons buttons"
+      "minimap heroes towns info";
+    block-size: auto;
+  }
+
+  .adventure-lists {
+    display: contents;
+  }
+
+  .adventure-buttons {
+    grid-area: buttons;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-auto-rows: 2rem;
+  }
+
+  .minimap {
+    grid-area: minimap;
+    display: grid;
+    align-content: center;
+
+    & .minimap__map {
+      max-block-size: 100%;
+    }
+  }
+
+  .hero-list {
+    grid-area: heroes;
+  }
+
+  .town-list {
+    grid-area: towns;
+  }
+
+  .info-box {
+    grid-area: info;
+    padding: var(--space-2xs) var(--space-xs);
+    gap: var(--space-2xs);
+    overflow: hidden;
+
+    & .info-box__name {
+      font-size: var(--font-size-sm);
+    }
   }
 }

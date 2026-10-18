@@ -12,7 +12,10 @@ Roadmap 1.3. The screen now follows the Heroes 3 adventure screen, drawn with CS
 - System options (gear) opens a popup with Music On/Off, Reset and Return to game. Escape also closes it. While it is open, map clicks do nothing.
 - The info box is nearly square, as in H3: the hero's name over seven big army slots, four on top and three centred below (armies come with 4.3).
 - The town list shows five empty slots until towns can be owned.
-- On narrow screens (under 48rem) the map, resource bar and panel stack.
+- The whole screen, map and HUD, always fits the viewport with no page scroll:
+  - Short screens (a laptop window, a landscape phone): the minimap gives up height first, the button rows shrink, and the army slots go into one row.
+  - Portrait phones (under 48rem wide): the map is on top, then the resource bar, then a compact panel with the ten buttons in one row over the minimap, hero list, town list and info box.
+  - Landscape phones keep the side panel.
 
 ## Player colour
 
