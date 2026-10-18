@@ -469,11 +469,13 @@ export function expectNoPreview() {
   expect(document.querySelector('.path-preview-target')).toBeFalsy()
 }
 
+// Resolves once the move has played out (with no step delay, it settles in microtasks).
 export async function confirmMove(user, x, y) {
   const tile = getTerrainTile(x, y)
   expect(tile).toBeTruthy()
   await user.click(tile)
   await user.click(tile)
+  await flushMicrotasks()
 }
 
 export async function clickTile(user, x, y) {

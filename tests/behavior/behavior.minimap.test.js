@@ -225,7 +225,6 @@ describe('minimap behavior', () => {
       )
 
       await confirmMove(user, 4, 2)
-      await flushMicrotasks()
 
       expectHeroAt(4, 2)
       expect(getMinimapDotTile(getHeroDot())).toEqual({ x: 4, y: 2 })

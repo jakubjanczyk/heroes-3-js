@@ -38,7 +38,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectHeroAt(1, 0)
     expectMovementPoints(expectedMovementPoints)
@@ -57,7 +56,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 1, 1)
-    await flushMicrotasks()
 
     expectHeroAt(1, 1)
     expectMovementPoints(expectedMovementPoints)
@@ -69,7 +67,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectMovementPoints(1400)
   })
@@ -80,7 +77,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectMovementPoints(1400)
   })
@@ -91,7 +87,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectMovementPoints(1450)
   })
@@ -106,7 +101,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectMovementPoints(1425)
   })
@@ -125,7 +119,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 4, 0)
-    await flushMicrotasks()
 
     expectHeroAt(4, 0)
     // Along the road: two diagonal and two straight cobblestone steps (70 + 50 + 50 + 70).
@@ -139,7 +132,6 @@ describe('roads behavior', () => {
     })
 
     await confirmMove(user, 29, 0)
-    await flushMicrotasks()
 
     // 29 cobblestone steps cost 1450; the 50 left still pay a cobblestone step.
     expectHeroAt(29, 0)

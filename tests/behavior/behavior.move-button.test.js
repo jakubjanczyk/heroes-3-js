@@ -45,7 +45,6 @@ describe('move button behavior', () => {
     const { user } = await setupLinearMovementApp()
 
     await confirmMove(user, 16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -56,7 +55,6 @@ describe('move button behavior', () => {
     const { user } = await setupLinearMovementApp()
 
     await confirmMove(user, 16, 0)
-    await flushMicrotasks()
     expectHeroAt(15, 0)
 
     await clickEndTurn(user)
@@ -90,7 +88,6 @@ describe('move button behavior', () => {
     const { user } = await setupLinearMovementApp({ width: 4 })
 
     await confirmMove(user, 3, 0)
-    await flushMicrotasks()
 
     expectHeroAt(3, 0)
     expect(getMoveButton().disabled).toBe(true)

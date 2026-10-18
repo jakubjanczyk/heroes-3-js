@@ -42,7 +42,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectHeroAt(1, 0)
     expectMovementPoints(expectedMovementPoints)
@@ -59,7 +58,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 1, 1)
-    await flushMicrotasks()
 
     expectHeroAt(1, 1)
     expectMovementPoints(expectedMovementPoints)
@@ -71,7 +69,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 1, 0)
-    await flushMicrotasks()
 
     expectHeroAt(1, 0)
     expectMovementPoints(1400)
@@ -93,7 +90,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 4, 1)
-    await flushMicrotasks()
 
     expectHeroAt(4, 1)
     // Around: two diagonal and two straight grass steps (141 + 100 + 100 + 141).
@@ -117,7 +113,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 2, 1)
-    await flushMicrotasks()
 
     expectHeroAt(2, 1)
     // Across: onto the swamp from grass (100), then off the swamp (175).
@@ -131,7 +126,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 1, 1)
-    await flushMicrotasks()
 
     expectHeroAt(1, 1)
     expectMovementPoints(1359)
@@ -158,7 +152,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 10, 0)
-    await flushMicrotasks()
 
     expectHeroAt(8, 0)
     expectPreviewTargetAt(10, 0)
@@ -170,7 +163,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 8, 0)
-    await flushMicrotasks()
 
     // 8 swamp steps cost 1400; the 100 left can't pay for a 175 swamp step.
     expectHeroAt(8, 0)
@@ -184,7 +176,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     await confirmMove(user, 14, 0)
-    await flushMicrotasks()
 
     expectHeroAt(14, 0)
     expectMovementPoints(100)
@@ -195,11 +186,9 @@ describe('terrain movement cost behavior', () => {
       loadGameOptions: aScenario().withSize(16, 2).build()
     })
     await confirmMove(user, 14, 0)
-    await flushMicrotasks()
     expectMovementPoints(100)
 
     await confirmMove(user, 15, 1)
-    await flushMicrotasks()
 
     expectHeroAt(15, 1)
     expectMovementPoints(0)
@@ -210,7 +199,6 @@ describe('terrain movement cost behavior', () => {
       loadGameOptions: aScenario().withSize(11).withTiles(swampRow(11)).build()
     })
     await confirmMove(user, 10, 0)
-    await flushMicrotasks()
     expectHeroAt(8, 0)
 
     await clickEndTurn(user)

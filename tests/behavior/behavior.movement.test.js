@@ -43,7 +43,6 @@ describe('movement behavior', () => {
     const { user } = await setupMovementBehaviorApp()
 
     await confirmMove(user, 2, 0)
-    await flushMicrotasks()
 
     expectHeroAt(2, 0)
     expectMovementPoints(1300)
@@ -75,7 +74,6 @@ describe('movement behavior', () => {
     const { user } = await setupLinearMovementApp()
 
     await confirmMove(user, 16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -84,7 +82,6 @@ describe('movement behavior', () => {
     const { user } = await setupLinearMovementApp()
 
     await confirmMove(user, 16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -102,13 +99,11 @@ describe('movement behavior', () => {
     const { user } = await setupLinearMovementApp()
 
     await confirmMove(user, 16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
 
     await confirmMove(user, 14, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -120,7 +115,6 @@ describe('movement behavior', () => {
     })
 
     await confirmMove(user, 3, 0)
-    await flushMicrotasks()
 
     expectHeroAt(3, 0)
     // Diagonal down, straight, diagonal up: 141 + 100 + 141.
@@ -152,7 +146,6 @@ describe('movement behavior', () => {
     const { user } = await setupMovementBehaviorApp()
 
     await confirmMove(user, 2, 0)
-    await flushMicrotasks()
 
     expectHeroAt(2, 0)
     expectMovementPoints(1300)
@@ -166,7 +159,6 @@ describe('movement behavior', () => {
     const { user } = await setupLinearMovementApp()
 
     await confirmMove(user, 16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
