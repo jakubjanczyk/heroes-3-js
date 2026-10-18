@@ -64,7 +64,7 @@
 
 /* Gold-trimmed inset well shared by the map, minimap, lists and info box. */
 .adventure-frame,
-.rollover-bar,
+.status-bar,
 .minimap,
 .hero-list,
 .town-list,
@@ -313,9 +313,9 @@
   }
 }
 
-/* Rollover bar: one line under the map naming whatever the mouse is over. Keeps its height when empty. */
-.rollover-bar {
-  grid-area: rollover;
+/* Status bar: one line under the map naming whatever the mouse is over. Keeps its height when empty. */
+.status-bar {
+  grid-area: status;
   min-inline-size: 0;
   block-size: 1.5rem;
   padding-inline: var(--space-sm);
@@ -475,7 +475,7 @@
     --minimap-max-height: 28dvh;
   }
 
-  .rollover-bar {
+  .status-bar {
     block-size: 1.25rem;
     font-size: var(--font-size-xs);
     line-height: 1.25rem;

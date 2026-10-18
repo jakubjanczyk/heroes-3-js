@@ -6,7 +6,7 @@
 }
 
 /*
- * The Heroes 3 adventure screen: map on the left with the rollover bar under it, the panel on the
+ * The Heroes 3 adventure screen: map on the left with the status bar under it, the panel on the
  * right, resources along the bottom.
  */
 .game-shell {
@@ -18,7 +18,7 @@
   grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-areas:
     "map panel"
-    "rollover panel"
+    "status panel"
     "resources resources";
 }
 
@@ -82,7 +82,7 @@
     grid-template-rows: minmax(0, 1fr) auto auto auto;
     grid-template-areas:
       "map"
-      "rollover"
+      "status"
       "resources"
       "panel";
   }

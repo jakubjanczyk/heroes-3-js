@@ -42,6 +42,14 @@ function assertEntitiesOnPassableTiles(scenario, map) {
   }
 }
 
+function assertMonsterCounts(scenario) {
+  for (const entity of scenario.entities ?? []) {
+    if (entity.kind === 'MONSTER' && !(Number.isInteger(entity.count) && entity.count > 0)) {
+      throw new Error(`Monster ${entity.id} must have a count that is a positive whole number`)
+    }
+  }
+}
+
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') return url
   if (url.startsWith('//')) return url
@@ -75,6 +83,7 @@ export async function loadGame({
   const map = createMap(scenario.terrain, terrainTypes)
   assertKnownTerrainCodes(scenario.terrain, map)
   assertEntitiesOnPassableTiles(scenario, map)
+  assertMonsterCounts(scenario)
 
   return {
     scenario,

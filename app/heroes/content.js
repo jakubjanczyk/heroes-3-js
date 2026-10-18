@@ -7,7 +7,7 @@ import { registerMineFlagViewModule } from './modules/mine-flag-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
-import { registerRolloverBarModule } from './modules/rollover-bar.module.js'
+import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
@@ -25,7 +25,7 @@ export const heroesAppContent = Object.freeze({
     registerMineFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
-    registerRolloverBarModule,
+    registerStatusBarModule,
     registerInfoPopupModule,
     registerHeroPanelModule,
     registerSystemOptionsModule,
