@@ -496,10 +496,10 @@ Rich adventure map with meaningful locations.
 - [ ] Scouting skill: Basic +1, Advanced +2, Expert +3 vision radius
 
 ### 7.2 Roads
-- [ ] Road tile type in terrain data
-- [ ] Roads reduce movement cost to 75% of base
-- [ ] Road visuals: dirt path rendered on tiles
-- [ ] Pathfinding prefers roads (lower cost = naturally preferred by A*)
+- [ ] Road layer in scenario data: dirt, gravel or cobblestone per tile, on top of the terrain
+- [ ] Road movement costs as in 4.6: used only when both tiles have a road, cost of the road left (dirt 75, gravel 65, cobblestone 50)
+- [ ] Road visuals: road rendered on tiles
+- [ ] Route search prefers roads (lower cost, so the cheapest route takes them)
 - [ ] Roads connect towns and key locations in scenarios
 
 ### 7.3 Obstacles & Multi-Tile Objects
@@ -757,39 +757,39 @@ Sprites and map authoring are intentionally late.
 3. HUD redesign (1.3)
 4. Rollover bar on hover (2.5)
 5. Right-click info panels (2.1)
-6. Day/week/month cycle (3.1)
-7. Mine ownership (3.3)
-8. Resource income system (3.2)
-9. Resource spending framework (3.4)
+6. Roads (7.2): finishes terrain movement costs (4.6)
+7. Day/week/month cycle (3.1)
+8. Mine ownership (3.3)
+9. Resource income system (3.2)
+10. Resource spending framework (3.4)
 
 ### Phase 2 - "Heroes Have Depth"
-10. Hero primary attributes (4.1)
-11. Hero experience & leveling (4.2)
-12. Hero army (4.3)
-13. Movement points & terrain costs (4.6)
-14. Monster encounters (count + categories) (5.2)
-15. Entity data model expansion (2.2)
+11. Hero primary attributes (4.1)
+12. Hero experience & leveling (4.2)
+13. Hero army (4.3)
+14. Movement points & terrain costs (4.6)
+15. Monster encounters (count + categories) (5.2)
+16. Entity data model expansion (2.2)
 
 ### Phase 3 - "Combat Works"
-16. Creature database (5.1)
-17. Combat grid & layout (5.3)
-18. Combat turn order (5.4)
-19. Combat movement (5.5)
-20. Combat attacks (melee + ranged) (5.6)
-21. Combat actions: wait, defend, retreat (5.7)
-22. Combat resolution (5.9)
+17. Creature database (5.1)
+18. Combat grid & layout (5.3)
+19. Combat turn order (5.4)
+20. Combat movement (5.5)
+21. Combat attacks (melee + ranged) (5.6)
+22. Combat actions: wait, defend, retreat (5.7)
+23. Combat resolution (5.9)
 
 ### Phase 4 - "Towns & Economy"
-23. Town view screen (2.3)
-24. Town buildings system (6.1)
-25. Common buildings (6.2)
-26. Creature dwellings in town (6.3)
-27. Town garrison (6.4)
-28. Interaction modals upgrade (2.4)
+24. Town view screen (2.3)
+25. Town buildings system (6.1)
+26. Common buildings (6.2)
+27. Creature dwellings in town (6.3)
+28. Town garrison (6.4)
+29. Interaction modals upgrade (2.4)
 
 ### Phase 5 - "Living World"
-29. Fog of war (7.1)
-30. Roads (7.2)
+30. Fog of war (7.1)
 31. Multiple heroes (4.5)
 32. Hero secondary skills (4.7)
 33. Creature dwellings on map (7.4)
