@@ -89,5 +89,17 @@ describe('hero primary skills behavior', () => {
       expect(within(popup).getByText('Hero')).toBeTruthy()
       expect(readPrimarySkills(popup)).toEqual(['Attack 3', 'Defense 2', 'Power 1', 'Knowledge 1'])
     })
+
+    test("given the hero when the player holds the right button on it then the popup shows the hero's portrait and seven army slots, as the info box does", async () => {
+      const { user } = await setupApp(aScenario().withSize(3).withEntities(aHero().at(1, 0)))
+
+      await holdRightButtonOn(user, 1, 0)
+
+      const popup = screen.getByRole('tooltip')
+      expect(within(popup).getByRole('img', { name: 'Hero' })).toBeTruthy()
+      expect(
+        within(within(popup).getByRole('list', { name: 'Army' })).getAllByRole('listitem')
+      ).toHaveLength(7)
+    })
   })
 })

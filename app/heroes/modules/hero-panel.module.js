@@ -7,7 +7,7 @@ import {
   APP_FACT_WORLD_READY
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
-import { createPrimarySkillsList } from '../presentation/primary-skills-list.js'
+import { renderHeroBox } from '../presentation/hero-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
@@ -15,9 +15,7 @@ const DEFAULT_HERO_NAME = 'Hero'
 export const registerHeroPanelModule = defineModule(
   ({ emit, env }) => {
     const heroList = env.document?.getElementById('hero-list')
-    const heroInfoName = env.document?.getElementById('hero-info-name')
-    const heroInfoPortrait = env.document?.getElementById('hero-info-portrait')
-    const heroInfoSkills = env.document?.getElementById('hero-info-skills')
+    const heroInfo = env.document?.getElementById('hero-info')
     const nextHeroButton = env.document?.getElementById('next-hero-button')
     let heroTile = null
     let movementBar = null
@@ -57,17 +55,12 @@ export const registerHeroPanelModule = defineModule(
       item.append(movementBar, portrait)
       heroList.replaceChildren(item)
       renderMovementPoints()
-
-      if (heroInfoName) {
-        heroInfoName.textContent = name
-      }
-      if (heroInfoPortrait) {
-        heroInfoPortrait.textContent = name.charAt(0)
-      }
     }
 
-    function renderPrimarySkills(skills) {
-      heroInfoSkills?.replaceChildren(createPrimarySkillsList(env.document, skills))
+    function renderInfoBox(name, skills) {
+      if (heroInfo) {
+        renderHeroBox(heroInfo, env.document, { name, skills })
+      }
     }
 
     function renderMovementPoints() {
@@ -102,8 +95,10 @@ export const registerHeroPanelModule = defineModule(
           handler: (event) => {
             const hero = findHero(event.detail.scenario.entities)
             heroTile = hero?.tile ?? null
-            renderHero(event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME)
-            renderPrimarySkills(
+            const name = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
+            renderHero(name)
+            renderInfoBox(
+              name,
               getHeroPrimarySkills({ entity: hero, definitions: event.detail.definitions })
             )
           }

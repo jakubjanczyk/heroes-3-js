@@ -92,7 +92,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
   - [x] For now: the town's name (needs town ownership and buildings)
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
-  - [x] For now: the hero's name and primary skills (portrait, morale/luck and army need 4.3 and later)
+  - [x] For now: the same box as the info box (portrait initial, name, primary skills, empty army slots); morale/luck, spell points and the army need 4.3 and later
 - [x] Right-click on empty terrain shows the terrain name
 - [x] Popups look like H3 message boxes: brown leather background, player colour only in the gold-trimmed frame
 - [x] (Not in H3, touch screens) Long press (500 ms) opens the same popup above the finger; lifting the finger closes it, a short tap still moves as before

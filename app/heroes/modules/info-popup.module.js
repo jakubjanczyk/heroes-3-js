@@ -11,7 +11,7 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
-import { createPrimarySkillsList } from '../presentation/primary-skills-list.js'
+import { renderHeroBox } from '../presentation/hero-box.js'
 
 const PLAYER_COLOR_NAME = 'Red'
 const SCREEN_MARGIN_PX = 8
@@ -54,20 +54,18 @@ export const registerInfoPopupModule = defineModule(
       popup.style.top = `${clamp(top, SCREEN_MARGIN_PX, window.innerHeight - height - SCREEN_MARGIN_PX)}px`
     }
 
-    function open(tile, pointer) {
-      close()
-      const entity = mapObjects.getEntityAt(tile)
-      const lines = getInfoPopupLines({
-        entity,
-        terrainName: mapObjects.getTerrainName(tile),
-        definitions,
-        ownerColorName: entity && ownedMineIds.has(entity.id) ? PLAYER_COLOR_NAME : null
+    // As in Heroes 3, a hero gets the same box as the info box.
+    function fillHeroBox(entity) {
+      popup.classList.add('info-popup--hero')
+      const box = document.createElement('div')
+      renderHeroBox(box, document, {
+        name: getEntityName({ entity, definitions }),
+        skills: getHeroPrimarySkills({ entity, definitions })
       })
+      popup.appendChild(box)
+    }
 
-      popup = document.createElement('div')
-      popup.className = 'info-popup'
-      popup.setAttribute('role', 'tooltip')
-
+    function fillLines(entity, tile) {
       // No creature portraits yet: the monster is pictured as it is drawn on the map.
       if (entity?.kind === 'MONSTER') {
         const picture = document.createElement('div')
@@ -77,18 +75,32 @@ export const registerInfoPopupModule = defineModule(
         popup.appendChild(picture)
       }
 
+      const lines = getInfoPopupLines({
+        entity,
+        terrainName: mapObjects.getTerrainName(tile),
+        definitions,
+        ownerColorName: entity && ownedMineIds.has(entity.id) ? PLAYER_COLOR_NAME : null
+      })
       for (const line of lines) {
         const text = document.createElement('p')
         text.className = 'info-popup__line'
         text.textContent = line
         popup.appendChild(text)
       }
+    }
 
-      // As in the Heroes 3 hero info box: the primary skills under the name.
+    function open(tile, pointer) {
+      close()
+      const entity = mapObjects.getEntityAt(tile)
+
+      popup = document.createElement('div')
+      popup.className = 'info-popup'
+      popup.setAttribute('role', 'tooltip')
+
       if (entity?.kind === 'HERO') {
-        popup.appendChild(
-          createPrimarySkillsList(document, getHeroPrimarySkills({ entity, definitions }))
-        )
+        fillHeroBox(entity)
+      } else {
+        fillLines(entity, tile)
       }
 
       host.appendChild(popup)

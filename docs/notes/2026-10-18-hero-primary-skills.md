@@ -41,7 +41,7 @@ The other eleven classes are left for when we can check them against a source.
   - Each skill is an SVG icon with its value in a box underneath. Screen readers hear "Attack" and the value; the mouse gets the name as a tooltip.
   - Below: three army slots, then four. The morale, luck and spell points slots are left out until those exist.
   - On short screens the army goes into one row, as before. On portrait phones the panel is too small for the portrait (the hero list shows it), so it is the name, the skills and one row of army.
-- Right-click popup on the hero: the name, then the same four skills.
+- Right-click popup on the hero: the same hero box as the info box (portrait, name, skills, seven army slots), inside the popup's player-coloured frame, as `CInfoBoxPopup` does. Both are drawn by `app/heroes/presentation/hero-box.js`. The popup always uses the full layout, whatever the screen size.
 - Nothing is stored in the event log. The values come from the scenario, and nothing changes them yet. Leveling (4.2) will be the first thing that does.
 
 ## Not yet

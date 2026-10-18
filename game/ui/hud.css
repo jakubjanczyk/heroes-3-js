@@ -265,21 +265,9 @@
   border: 1px solid #1d2028;
 }
 
-/* Info box: the selected hero and the seven slots of their army. */
-/*
- * Laid out like the Heroes 3 info box: the portrait on the left, the name and the four primary
- * skills beside it, then the army in two rows under them.
- */
+/* Info box: the selected hero (a hero box) at the bottom of the panel. */
 .info-box {
   grid-row: -2;
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  grid-template-areas:
-    "portrait name"
-    "portrait skills"
-    "army army";
-  align-content: start;
-  gap: var(--space-xs) var(--space-sm);
   padding: var(--space-sm) var(--space-xs) var(--space-md);
   background:
     radial-gradient(
@@ -288,9 +276,24 @@
       transparent 70%
     ),
     var(--panel-inset);
+}
+
+/*
+ * Hero box, shared by the info box and the hero's right-click popup as in Heroes 3: the portrait
+ * on the left, the name and the four primary skills beside it, then the army in two rows.
+ */
+.hero-box {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-areas:
+    "portrait name"
+    "portrait skills"
+    "army army";
+  align-content: start;
+  gap: var(--space-xs) var(--space-sm);
 
   /* The hero's initial until there are portraits, as in the hero list. */
-  & .info-box__portrait {
+  & .hero-box__portrait {
     grid-area: portrait;
     display: grid;
     place-items: center;
@@ -309,11 +312,12 @@
     text-shadow: 0 1px 0 black;
   }
 
-  & .info-box__name {
+  & .hero-box__name {
     grid-area: name;
     margin: 0;
     padding: 0 var(--space-2xs);
     font-size: var(--font-size-md);
+    text-align: start;
     font-weight: 700;
     color: var(--hud-text-gold);
     text-shadow: 0 1px 0 black;
@@ -324,13 +328,13 @@
     white-space: nowrap;
   }
 
-  & .info-box__skills {
+  & .hero-box__skills {
     grid-area: skills;
     align-self: end;
   }
 
   /* Seven army slots as in Heroes 3: three on top, four below. */
-  & .info-box__army {
+  & .hero-box__army {
     grid-area: army;
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -576,7 +580,7 @@
     gap: var(--space-2xs);
     padding: var(--space-2xs) var(--space-xs) var(--space-xs);
 
-    & .info-box__army {
+    & .hero-box__army {
       grid-template-columns: repeat(7, minmax(0, 1fr));
     }
 
@@ -667,11 +671,11 @@
       "skills"
       "army";
 
-    & .info-box__portrait {
+    & .hero-box__portrait {
       display: none;
     }
 
-    & .info-box__name {
+    & .hero-box__name {
       font-size: var(--font-size-sm);
     }
 
@@ -680,7 +684,7 @@
       block-size: 0.875rem;
     }
 
-    & .info-box__army {
+    & .hero-box__army {
       grid-template-columns: repeat(7, minmax(0, 1fr));
     }
 
