@@ -1,10 +1,12 @@
 import { heroesContent } from '../../game/heroes/content.js'
 import { heroesOutcomeEffects } from './interaction-outcomes.js'
+import { registerHeroPanelModule } from './modules/hero-panel.module.js'
 import { registerHudModule } from './modules/hud.module.js'
 import { registerMineFlagViewModule } from './modules/mine-flag-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
+import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
 
@@ -21,6 +23,8 @@ export const heroesAppContent = Object.freeze({
     registerMineFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
+    registerHeroPanelModule,
+    registerSystemOptionsModule,
     registerMusicModule
   ])
 })

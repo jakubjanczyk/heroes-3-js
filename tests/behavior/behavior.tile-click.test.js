@@ -9,6 +9,7 @@ import {
   expectPreviewDashAt,
   expectPreviewTargetAt,
   flushMicrotasks,
+  getHeroInfoBox,
   setupLinearMovementApp,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
@@ -86,9 +87,7 @@ describe('tile click behavior', () => {
   test('given user clicks HUD controls then tile click handling is not triggered', async () => {
     const { user } = await setupLinearMovementApp({ width: 4 })
 
-    const hudTitle = document.querySelector('.hud__title')
-    expect(hudTitle).toBeTruthy()
-    await user.click(hudTitle)
+    await user.click(getHeroInfoBox())
     await clickEndTurn(user)
     await flushMicrotasks()
 

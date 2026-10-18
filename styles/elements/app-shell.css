@@ -5,15 +5,24 @@
   padding: var(--shell-padding);
 }
 
+/* The Heroes 3 adventure screen: map on the left, the panel on the right, resources along the bottom. */
 .game-shell {
   inline-size: min(100%, 112rem);
   block-size: calc(100dvh - (2 * var(--shell-padding)));
   min-inline-size: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(18rem, 24vw, 22rem);
-  gap: var(--panel-gap);
-  align-items: stretch;
-  container: shell / inline-size;
+  grid-template-columns: minmax(0, 1fr) var(--adventure-panel-width);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "map panel"
+    "resources resources";
+}
+
+.adventure-frame {
+  grid-area: map;
+  min-inline-size: 0;
+  min-block-size: 0;
+  display: grid;
 }
 
 .viewport {
@@ -21,12 +30,7 @@
   min-inline-size: 0;
   min-block-size: 0;
   overflow: clip;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-xl);
-  background: color-mix(in oklab, var(--color-bg-deep) 92%, black 6%);
-  box-shadow:
-    0 1.25rem 2.5rem color-mix(in oklab, var(--color-shadow) 88%, transparent),
-    inset 0 1px 0 color-mix(in oklab, white 8%, transparent);
+  background: black;
   isolation: isolate;
 
   &[data-viewport-visibility="hidden"] {
@@ -52,22 +56,26 @@
 }
 
 .ui-layer {
-  inline-size: clamp(18rem, 24vw, 22rem);
+  grid-area: panel;
   min-inline-size: 0;
-  display: grid;
-  align-content: start;
-  gap: var(--panel-gap);
+  min-block-size: 0;
   pointer-events: auto;
   container: sidebar / inline-size;
 }
 
-@container shell (width < 74rem) {
-  .game-shell {
-    block-size: auto;
-    grid-template-columns: minmax(0, 1fr);
+@media (width < 48rem), (height < 32rem) {
+  .app {
+    --shell-padding: 0.25rem;
   }
+}
 
-  .viewport {
-    min-block-size: min(70dvh, 45rem);
+@media (width < 48rem) and (orientation: portrait) {
+  .game-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "map"
+      "resources"
+      "panel";
   }
 }

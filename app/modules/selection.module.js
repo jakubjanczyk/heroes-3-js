@@ -15,7 +15,9 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
-  APP_UI_PREVIEW_UPDATED
+  APP_UI_PREVIEW_UPDATED,
+  APP_UI_SYSTEM_OPTIONS_CLOSED,
+  APP_UI_SYSTEM_OPTIONS_OPENED
 } from '../events.js'
 import { defineModule } from './shared/module-runtime.js'
 
@@ -29,6 +31,7 @@ export const registerSelectionModule = defineModule(
     let previewTarget = null
     let isMoving = false
     let isInteractionModalOpen = false
+    let isSystemOptionsOpen = false
     let remainingMovementPoints = Number.POSITIVE_INFINITY
 
     function affordableStepCount() {
@@ -44,6 +47,7 @@ export const registerSelectionModule = defineModule(
         isWorldReady &&
         !isMoving &&
         !isInteractionModalOpen &&
+        !isSystemOptionsOpen &&
         previewPath?.length >= 2 &&
         affordableStepCount() >= 1
       )
@@ -100,7 +104,7 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_COMMAND_TILE_CLICKED,
           handler: (event) => {
-            if (!isWorldReady || isMoving || isInteractionModalOpen) {
+            if (!isWorldReady || isMoving || isInteractionModalOpen || isSystemOptionsOpen) {
               return
             }
 
@@ -198,6 +202,18 @@ export const registerSelectionModule = defineModule(
           }
         },
         {
+          type: APP_UI_SYSTEM_OPTIONS_OPENED,
+          handler: () => {
+            isSystemOptionsOpen = true
+          }
+        },
+        {
+          type: APP_UI_SYSTEM_OPTIONS_CLOSED,
+          handler: () => {
+            isSystemOptionsOpen = false
+          }
+        },
+        {
           type: APP_FACT_PREVIEW_TARGET_SELECTED,
           handler: (event) => {
             const { tile, path } = event.detail ?? {}
@@ -235,6 +251,8 @@ export const registerSelectionModule = defineModule(
       APP_FACT_MOVE_FINISHED,
       APP_UI_INTERACTION_MODAL_OPENED,
       APP_UI_INTERACTION_MODAL_CLOSED,
+      APP_UI_SYSTEM_OPTIONS_OPENED,
+      APP_UI_SYSTEM_OPTIONS_CLOSED,
       APP_FACT_PREVIEW_TARGET_SELECTED,
       APP_FACT_PREVIEW_CLEARED
     ],

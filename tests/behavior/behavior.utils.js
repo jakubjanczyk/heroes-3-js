@@ -1,50 +1,26 @@
 // Shared utilities for behavior-level tests.
 
-import { screen } from '@testing-library/dom'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+import { screen, within } from '@testing-library/dom'
 import userEvent from '@testing-library/user-event'
 import { expect } from 'vitest'
 
 import { bootApp } from '../../app/boot-app.js'
 import { aScenario } from './builders.js'
 
+const INDEX_HTML_PATH = join(import.meta.dirname, '../../index.html')
+const appBodyHtml = readFileSync(INDEX_HTML_PATH, 'utf8')
+  .match(/<body>([\s\S]*)<\/body>/)[1]
+  .replace(/<script[\s\S]*?<\/script>/g, '')
+
+export function readGameData(fileName) {
+  return JSON.parse(readFileSync(join(import.meta.dirname, '../../game/data', fileName), 'utf8'))
+}
+
 export function mountAppTemplate() {
-  document.body.innerHTML = `
-    <div class="app">
-      <div class="game-shell">
-        <div class="viewport" aria-label="Viewport">
-          <div class="world" aria-label="World">
-            <div class="terrain-layer" aria-label="Terrain"></div>
-            <div class="entity-layer" aria-label="Entities"></div>
-            <div class="effects-layer" aria-label="Effects"></div>
-          </div>
-        </div>
-        <div class="ui-layer" aria-label="UI">
-          <div class="minimap" aria-label="Minimap">
-            <div class="minimap__title">Minimap</div>
-            <div class="minimap__map" id="minimap-map">
-              <div class="minimap__terrain" id="minimap-terrain"></div>
-              <div class="minimap__towns" id="minimap-towns"></div>
-              <div class="minimap__heroes" id="minimap-heroes"></div>
-              <div class="minimap__viewport" id="minimap-viewport"></div>
-            </div>
-          </div>
-          <div class="hud">
-            <div class="hud__title">Heroes 3 JS</div>
-            <div class="hud__status" id="boot-status">Booting…</div>
-            <div class="hud__row">
-              <div class="hud__calendar" id="calendar-status">Month: 1, Week: 1, Day: 1</div>
-              <div class="hud__movement" id="movement-points-status">MP: 1500 / 1500</div>
-              <div class="hud__resources" id="resource-totals-status">Resources: none</div>
-              <button class="hud__button" id="move-hero-button" type="button" disabled>Move</button>
-              <button class="hud__button" id="end-turn-button" type="button">End turn</button>
-              <button class="hud__button" id="reset-session-button" type="button">Reset</button>
-              <button class="hud__button" id="music-toggle-button" type="button" aria-pressed="false">Music: Off</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  document.body.innerHTML = appBodyHtml
 }
 
 export function createMemoryEventLog() {
@@ -282,8 +258,28 @@ export function expectHeroAt(x, y) {
   return heroEntity
 }
 
+export function getHeroList() {
+  return screen.getByRole('list', { name: 'Heroes' })
+}
+
+export function getHeroInHeroList(heroName) {
+  return within(getHeroList()).getByRole('button', { name: heroName })
+}
+
+export function getHeroInfoBox() {
+  return screen.getByRole('region', { name: 'Hero info' })
+}
+
+export function getNextHeroButton() {
+  return screen.getByRole('button', { name: 'Next hero' })
+}
+
 export function expectMovementPoints(current, max = 1500) {
-  expect(screen.getByText(`MP: ${current} / ${max}`)).toBeTruthy()
+  const movementBar = within(getHeroList()).getByRole('progressbar', { name: 'Movement points' })
+  expect({
+    value: movementBar.getAttribute('aria-valuenow'),
+    max: movementBar.getAttribute('aria-valuemax')
+  }).toEqual({ value: String(current), max: String(max) })
 }
 
 export function expectMonsterPresent(entityId = 'monster-1') {
@@ -362,15 +358,16 @@ export function expectMineNotPresent(entityId = 'mine-1') {
   expect(getMineEntity(entityId)).toBeFalsy()
 }
 
+// Each resource bar entry as the player reads it, e.g. 'Gold 100'.
+export function getResourceBarItems() {
+  const resourceBar = screen.getByRole('list', { name: 'Resources' })
+  return within(resourceBar)
+    .getAllByRole('listitem')
+    .map((item) => item.textContent.replace(/\s+/g, ' ').trim())
+}
+
 export function expectResourceTotal(resourceName, amount) {
-  const totalsText = document.getElementById('resource-totals-status')?.textContent ?? ''
-  const totals = Object.fromEntries(
-    totalsText
-      .replace(/^Resources: /, '')
-      .split(' | ')
-      .map((part) => part.split(': '))
-  )
-  expect(totals[resourceName]).toBe(String(amount))
+  expect(getResourceBarItems()).toContain(`${resourceName} ${amount}`)
 }
 
 export function getInteractionModal() {
@@ -492,11 +489,11 @@ export function confirmTileClickByDispatch(x, y) {
 }
 
 export function getMoveButton() {
-  return screen.getByRole('button', { name: 'Move' })
+  return screen.getByRole('button', { name: 'Move hero' })
 }
 
 export function getEndTurnButton() {
-  return document.querySelector('#end-turn-button')
+  return screen.getByRole('button', { name: 'End turn' })
 }
 
 export async function clickEndTurn(user) {
@@ -505,14 +502,45 @@ export async function clickEndTurn(user) {
   await user.click(endTurnButton)
 }
 
-export function getResetSessionButton() {
-  return document.querySelector('#reset-session-button')
+export function querySystemOptions() {
+  return screen.queryByRole('dialog', { name: 'System options' })
+}
+
+export async function openSystemOptions(user) {
+  await user.click(screen.getByRole('button', { name: 'System options' }))
+  const systemOptions = querySystemOptions()
+  expect(systemOptions).toBeTruthy()
+  return systemOptions
 }
 
 export async function clickResetSession(user) {
-  const resetButton = getResetSessionButton()
-  expect(resetButton).toBeTruthy()
-  await user.click(resetButton)
+  const systemOptions = await openSystemOptions(user)
+  await user.click(within(systemOptions).getByRole('button', { name: 'Reset' }))
+}
+
+export async function getMusicToggleButton(user) {
+  const systemOptions = await openSystemOptions(user)
+  return within(systemOptions).getByRole('button', { name: /^Music:/ })
+}
+
+export function panCamera(arrowKey, times) {
+  for (let press = 0; press < times; press += 1) {
+    window.dispatchEvent(new window.KeyboardEvent('keydown', { key: arrowKey }))
+  }
+}
+
+const TILE_SIZE = 32
+
+// The tile at the centre of what the map view shows.
+export function getMapViewCentreTile() {
+  const viewport = document.querySelector('.viewport')
+  const [, offsetX, offsetY] = document
+    .querySelector('.world')
+    .style.transform.match(/translate\((-?[\d.]+)px, (-?[\d.]+)px\)/)
+  return {
+    x: Math.floor((-Number(offsetX) + viewport.clientWidth / 2) / TILE_SIZE),
+    y: Math.floor((-Number(offsetY) + viewport.clientHeight / 2) / TILE_SIZE)
+  }
 }
 
 export function expectCalendarDate({ month, week, day }) {

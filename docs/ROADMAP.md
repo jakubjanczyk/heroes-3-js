@@ -46,14 +46,17 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [ ] Cursor reflects whether tile is within current turn's movement range
 
 ### 1.3 HUD Redesign
-- [ ] Top resource bar showing all 7 resource types with icons and counts
-- [ ] Day/week/month display in resource bar (e.g. "Month 1, Week 1, Day 1")
-- [ ] Right sidebar panel: minimap at top, hero portrait below, action buttons below
-- [ ] Bottom info bar: shows name + brief info of whatever entity the mouse hovers over
-- [ ] "End Turn" button styled and positioned like H3 (hourglass icon in right panel)
-- [ ] "Next Hero" button (arrow icon) - cycles to next hero with remaining movement
-- [ ] System menu button (gear icon) - placeholder for options/save/load
-- [ ] H3-style border/frame around the map viewport area
+- [x] Resource bar along the bottom (as in H3) showing all 7 resource types with icons and counts, in H3 order
+- [x] Day/week/month display at the end of the resource bar ("Month: 1, Week: 1, Day: 1")
+- [x] Right sidebar panel as in H3: minimap, then hero list / 2x5 adventure buttons / town list side by side, then the info box with the army
+- [ ] Bottom info bar: shows name + brief info of whatever entity the mouse hovers over (see 2.5)
+- [x] "End Turn" button styled and positioned like H3 (hourglass icon in right panel)
+- [x] "Next Hero" button (arrow icon): centres on the hero, disabled once it has no movement left (cycling needs several heroes)
+- [x] System options button (gear icon): popup with Music, Reset and Return to game
+- [x] H3-style border/frame around the map viewport area
+- [x] Interface frame tinted in the current player's colour (`data-player-color` on `.game-shell`; only red used for now)
+- [x] Hero list shows the movement left as a green bar beside the portrait, with no number (as in H3)
+- [x] Buttons for features that don't exist yet are shown disabled: Kingdom overview, Underground, Quest log, Sleep hero, Cast spell, Adventure options
 - [ ] Resource bar tooltips showing daily income per resource
 
 ### 1.4 Minimap Improvements
