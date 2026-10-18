@@ -5,16 +5,20 @@
   padding: var(--shell-padding);
 }
 
-/* The Heroes 3 adventure screen: map on the left, the panel on the right, resources along the bottom. */
+/*
+ * The Heroes 3 adventure screen: map on the left with the rollover bar under it, the panel on the
+ * right, resources along the bottom.
+ */
 .game-shell {
   inline-size: min(100%, 112rem);
   block-size: calc(100dvh - (2 * var(--shell-padding)));
   min-inline-size: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--adventure-panel-width);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-areas:
     "map panel"
+    "rollover panel"
     "resources resources";
 }
 
@@ -72,9 +76,10 @@
 @media (width < 48rem) and (orientation: portrait) {
   .game-shell {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
     grid-template-areas:
       "map"
+      "rollover"
       "resources"
       "panel";
   }

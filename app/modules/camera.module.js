@@ -14,6 +14,7 @@ import {
   APP_UI_RESTORE_STARTED,
   APP_UI_SYSTEM_OPTIONS_CLOSED,
   APP_UI_SYSTEM_OPTIONS_OPENED,
+  APP_UI_TILE_HOVERED,
   APP_UI_WORLD_MOTION_UPDATED
 } from '../events.js'
 import { defineModule } from './shared/module-runtime.js'
@@ -115,6 +116,10 @@ export const registerCameraModule = defineModule(
                 map,
                 onTileClick: (tile) => {
                   emit(APP_COMMAND_TILE_CLICKED, { tile })
+                },
+                // null once the pointer is off the map.
+                onTileHover: (tile) => {
+                  emit(APP_UI_TILE_HOVERED, { tile })
                 }
               }) ?? null
           }
@@ -227,6 +232,7 @@ export const registerCameraModule = defineModule(
       APP_COMMAND_CAMERA_PAN_BY,
       APP_COMMAND_TILE_CLICKED,
       APP_UI_CAMERA_UPDATED,
+      APP_UI_TILE_HOVERED,
       APP_UI_WORLD_MOTION_UPDATED
     ]
   }
