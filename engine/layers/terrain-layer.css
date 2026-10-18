@@ -37,43 +37,9 @@
   position: absolute;
   inset-inline-start: 0;
   inset-block-start: -6px;
-  inline-size: 16px;
+  inline-size: var(--road-arm-length);
   block-size: 12px;
   background: inherit;
+  transform: rotate(var(--road-arm-angle));
   transform-origin: 0 50%;
-}
-
-.road__arm--ne,
-.road__arm--se,
-.road__arm--sw,
-.road__arm--nw {
-  inline-size: 22.63px;
-}
-
-.road__arm--n {
-  transform: rotate(-90deg);
-}
-
-.road__arm--ne {
-  transform: rotate(-45deg);
-}
-
-.road__arm--se {
-  transform: rotate(45deg);
-}
-
-.road__arm--s {
-  transform: rotate(90deg);
-}
-
-.road__arm--sw {
-  transform: rotate(135deg);
-}
-
-.road__arm--w {
-  transform: rotate(180deg);
-}
-
-.road__arm--nw {
-  transform: rotate(-135deg);
 }
