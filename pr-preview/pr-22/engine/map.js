@@ -33,7 +33,7 @@ export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES, roadTyp
     }
 
     const code = roads[tile.y * width + tile.x]
-    return Object.hasOwn(roadTypes, code) ? roadTypes[code] : null
+    return roadTypes[code] ?? null
   }
 
   function isPassable(tile) {
