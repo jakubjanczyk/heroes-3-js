@@ -10,7 +10,10 @@ export const aHero = () =>
   builder({ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, placeable)
 
 export const aMonster = () =>
-  builder({ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }, placeable)
+  builder(
+    { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', count: 10, tile: { x: 1, y: 0 } },
+    placeable
+  )
 
 export const aResource = () =>
   builder(

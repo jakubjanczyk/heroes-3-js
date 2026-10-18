@@ -75,14 +75,38 @@ describe('rollover bar behavior', () => {
     expectRolloverText(name)
   })
 
-  test('given a monster when the mouse is over it then the rollover bar shows its plural name', async () => {
+  test.each([
+    { count: 1, text: 'Few Skeletons' },
+    { count: 4, text: 'Few Skeletons' },
+    { count: 5, text: 'Several Skeletons' },
+    { count: 9, text: 'Several Skeletons' },
+    { count: 10, text: 'Pack of Skeletons' },
+    { count: 19, text: 'Pack of Skeletons' },
+    { count: 20, text: 'Lots of Skeletons' },
+    { count: 49, text: 'Lots of Skeletons' },
+    { count: 50, text: 'Horde of Skeletons' },
+    { count: 99, text: 'Horde of Skeletons' },
+    { count: 100, text: 'Throng of Skeletons' },
+    { count: 249, text: 'Throng of Skeletons' },
+    { count: 250, text: 'Swarm of Skeletons' },
+    { count: 499, text: 'Swarm of Skeletons' },
+    { count: 500, text: 'Zounds of Skeletons' },
+    { count: 999, text: 'Zounds of Skeletons' },
+    { count: 1000, text: 'Legion of Skeletons' },
+    { count: 5000, text: 'Legion of Skeletons' }
+  ])('given $count skeletons when the mouse is over them then the rollover bar shows $text', async ({
+    count,
+    text
+  }) => {
     const { user } = await setupApp(
-      aScenario().withSize(3).withEntities(aHero(), aMonster().withType('SKELETON').at(2, 0))
+      aScenario()
+        .withSize(3)
+        .withEntities(aHero(), aMonster().withType('SKELETON').withCount(count).at(2, 0))
     )
 
     await hoverTile(user, 2, 0)
 
-    expectRolloverText('Skeletons')
+    expectRolloverText(text)
   })
 
   test('given a resource when the mouse is over it then the rollover bar shows only its name', async () => {

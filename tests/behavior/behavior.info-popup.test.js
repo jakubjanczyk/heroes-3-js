@@ -90,14 +90,16 @@ async function defeatMonsterAt(user, x, y) {
 
 describe('info popup behavior', () => {
   describe('holding the right mouse button', () => {
-    test('given a monster when the player holds the right button on it then a popup shows its picture and plural name', async () => {
+    test('given a pack of monsters when the player holds the right button on it then a popup shows their picture, size and plural name', async () => {
       const { user } = await setupApp(
-        aScenario().withSize(3).withEntities(aHero(), aMonster().withType('SKELETON').at(2, 0))
+        aScenario()
+          .withSize(3)
+          .withEntities(aHero(), aMonster().withType('SKELETON').withCount(12).at(2, 0))
       )
 
       await holdRightButtonOn(user, 2, 0)
 
-      expectInfoPopupLines(['Skeletons'])
+      expectInfoPopupLines(['Pack of Skeletons'])
       expectInfoPopupPicture('Skeletons')
     })
 
@@ -237,14 +239,16 @@ describe('info popup behavior', () => {
   })
 
   describe('long press on a touch screen', () => {
-    test('given a monster when the player presses and holds a finger on it then a popup shows its picture and plural name', async () => {
+    test('given a pack of monsters when the player presses and holds a finger on it then a popup shows their picture, size and plural name', async () => {
       const { user } = await setupApp(
-        aScenario().withSize(3).withEntities(aHero(), aMonster().withType('SKELETON').at(2, 0))
+        aScenario()
+          .withSize(3)
+          .withEntities(aHero(), aMonster().withType('SKELETON').withCount(12).at(2, 0))
       )
 
       await longPressOn(user, 2, 0)
 
-      expectInfoPopupLines(['Skeletons'])
+      expectInfoPopupLines(['Pack of Skeletons'])
       expectInfoPopupPicture('Skeletons')
     })
 

@@ -86,8 +86,7 @@ Entities become meaningful content containers. Critical for portfolio.
 As in H3, the popup is shown only while the right mouse button is held down and disappears when it is released.
 - [x] Right-click (and hold) any map object shows an info popup centred on the cursor
 - [x] Releasing the right mouse button dismisses it (no Escape / click outside: there is nothing to dismiss once released)
-- [ ] Monster: count category and name, as on hover ("Pack of Skeletons"); never the exact number
-  - [x] For now: the creature's picture (its map look until sprites) and plural name ("Skeletons"); the count category needs 5.2
+- [x] Monster: the creature's picture (its map look until sprites), then count category and plural name, as on hover ("Pack of Skeletons"); never the exact number
 - [x] Resource: resource name only; the amount stays hidden until it is picked up
 - [x] Mine: mine name, and the owner's colour on the next line ("(Red)") once owned
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
@@ -130,7 +129,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 As in H3: a one-line rollover bar between the map and the resource bar. Text only, no icons, no amounts or income.
 - [x] Hovering over a tile with nothing on it shows the terrain name ("Grass", "Water")
 - [x] Hovering over a monster shows its plural name ("Skeletons")
-- [ ] With monster counts (5.2): count category and plural name ("Pack of Skeletons")
+- [x] With monster counts (5.2): count category and plural name ("Pack of Skeletons")
 - [x] Hovering over a resource shows its name ("Gold"); never the amount
 - [x] Hovering over a mine shows its name ("Gold Mine"), on any tile of its footprint
 - [x] Hovering over a town shows its name, on any tile of its footprint
@@ -323,9 +322,9 @@ The central gameplay mechanic.
   - T7: Angel / Archangel
 
 ### 5.2 Monster Encounters on Map
-- [ ] Monsters on map have a creature type and count (not just "skeleton")
-- [ ] Monster count categories as in H3: Few (1-4), Several (5-9), Pack (10-19), Lots (20-49), Horde (50-99), Throng (100-249), Swarm (250-499), Zounds (500-999), Legion (1000+)
-- [ ] Monster count shown on hover (category, not exact number)
+- [x] Monsters on map have a creature type and count (not just "skeleton"); the scenario must give every monster a count
+- [x] Monster count categories as in H3: Few (1-4), Several (5-9), Pack (10-19), Lots (20-49), Horde (50-99), Throng (100-249), Swarm (250-499), Zounds (500-999), Legion (1000+)
+- [x] Monster count shown on hover and in the right-click popup (category, not exact number)
 - [ ] Monster aggression: some flee, some join, some fight (based on army strength ratio + Diplomacy)
 - [ ] Monster growth over time: count increases each week (optional, based on scenario settings)
 - [ ] Approaching a monster initiates combat (not instant defeat)

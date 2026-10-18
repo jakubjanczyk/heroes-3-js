@@ -35,7 +35,7 @@ describe('bootstrap', () => {
       terrain: { width: 3, height: 2, tiles: [0, 1, 0, 0, 0, 1] },
       entities: [
         { id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
-        { id: 'm1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 2, y: 0 } },
+        { id: 'm1', kind: 'MONSTER', type: 'SKELETON', count: 12, tile: { x: 2, y: 0 } },
         { id: 'r1', kind: 'RESOURCE', type: 'GOLD_PILE', tile: { x: 0, y: 1 } },
         { id: 't1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 1 } }
       ]
@@ -69,7 +69,9 @@ describe('bootstrap', () => {
     const scenario = {
       meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
       terrain: { width: 2, height: 1, tiles: [0, 1] },
-      entities: [{ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }]
+      entities: [
+        { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', count: 12, tile: { x: 1, y: 0 } }
+      ]
     }
 
     const fetch = createFakeFetch({
@@ -109,7 +111,9 @@ describe('bootstrap', () => {
     const scenario = {
       meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
       terrain: { width: 2, height: 1, tiles: [0, 9] },
-      entities: [{ id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', tile: { x: 1, y: 0 } }]
+      entities: [
+        { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', count: 12, tile: { x: 1, y: 0 } }
+      ]
     }
 
     const fetch = createFakeFetch({
@@ -124,4 +128,50 @@ describe('bootstrap', () => {
       'Entity monster-1 (MONSTER) must be placed on a passable tile: (1, 0)'
     )
   })
+
+  test('loadGame rejects scenarios with a monster without a count', async () => {
+    const fetch = fakeFetchWithMonster({
+      id: 'monster-1',
+      kind: 'MONSTER',
+      type: 'SKELETON',
+      tile: { x: 1, y: 0 }
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Monster monster-1 must have a count that is a positive whole number'
+    )
+  })
+
+  test.each([
+    0,
+    -3,
+    2.5,
+    '12'
+  ])('loadGame rejects scenarios with a monster count of %j', async (count) => {
+    const fetch = fakeFetchWithMonster({
+      id: 'monster-1',
+      kind: 'MONSTER',
+      type: 'SKELETON',
+      count,
+      tile: { x: 1, y: 0 }
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Monster monster-1 must have a count that is a positive whole number'
+    )
+  })
 })
+
+function fakeFetchWithMonster(monster) {
+  return createFakeFetch({
+    './scenarios/scenario.json': {
+      meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
+      terrain: { width: 2, height: 1, tiles: [0, 0] },
+      entities: [{ id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, monster]
+    },
+    './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+    './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
+    './game/data/resources.json': {},
+    './game/data/towns.json': {}
+  })
+}

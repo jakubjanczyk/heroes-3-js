@@ -22,6 +22,6 @@ Roadmap 2.5. As in Heroes 3, a one-line bar between the map and the resource bar
 
 ## Not yet
 
-- Count categories for monsters ("Pack of Skeletons") need monster counts (5.2).
+- Count categories for monsters ("Pack of Skeletons"): done, see `2026-10-18-monster-counts.md`.
 - Hovering HUD buttons does not describe them yet.
 - If the map scrolls under a still mouse (arrow keys, edge scrolling), the text updates on the next mouse move.
