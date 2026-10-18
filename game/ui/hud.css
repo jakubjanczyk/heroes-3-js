@@ -76,9 +76,15 @@
     0 0 0 3px var(--frame-dark);
 }
 
+/*
+ * As in Heroes 3 the lists stop at five slots and the info box sits at the bottom of the panel;
+ * on tall screens the space left over stays empty between them. Short screens shrink the lists.
+ */
 .adventure-panel {
+  --adventure-lists-max-height: 11.25rem;
+
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, var(--adventure-lists-max-height)) minmax(0, 1fr) auto;
   gap: calc(var(--frame-width) + 2px);
   block-size: 100%;
 }
@@ -253,6 +259,7 @@
 /* Info box: the selected hero and the seven slots of their army. */
 /* Nearly square like the Heroes 3 status window: the hero's name over two rows of big army slots. */
 .info-box {
+  grid-row: -2;
   display: grid;
   align-content: start;
   gap: var(--space-sm);

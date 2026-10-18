@@ -4,7 +4,7 @@ Roadmap 1.3. The screen now follows the Heroes 3 adventure screen, drawn with CS
 
 ## Behaviour
 
-- The map sits in a frame on the left. The right panel holds, top to bottom: the minimap; the hero list, the ten adventure buttons in two columns and the town list side by side; and the info box.
+- The map sits in a frame on the left. The right panel holds, top to bottom: the minimap; the hero list, the ten adventure buttons in two columns and the town list side by side; and the info box. As in H3 the lists stop at five slots and the info box sits at the bottom of the panel, so on tall screens the space left over stays empty between them.
 - The resource bar runs along the bottom: Wood, Mercury, Ore, Sulfur, Crystal, Gems and Gold, each with an icon and its amount, then the date. Resource names come from `game/data/resources.json`, which now uses the H3 names ("Gold", not "Gold pile") in H3 order.
 - The hero list shows the hero's portrait (their initial for now) with a green movement bar beside it. As in H3 there is no number; screen readers get it from the bar (`progressbar`, "Movement points"). Clicking the portrait centres the map on the hero.
 - Buttons, as in H3: Kingdom overview, Underground, Quest log, Sleep hero, Move hero, Cast spell, Adventure options, System options, Next hero, End turn. Those with no feature behind them are disabled with a "not available yet" tooltip.
