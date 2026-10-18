@@ -28,11 +28,7 @@ export const registerWorldModule = defineModule(
             hasStarted = true
             void (async () => {
               try {
-                const { scenario, definitions } = await loadGame({
-                  fetch: env.fetch,
-                  terrainTypes,
-                  roadTypes
-                })
+                const { scenario, definitions } = await loadGame({ fetch: env.fetch, terrainTypes })
 
                 const { map, staticOccupancy } = buildWorld({
                   scenario,
