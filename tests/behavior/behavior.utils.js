@@ -531,16 +531,35 @@ export function panCamera(arrowKey, times) {
 
 const TILE_SIZE = 32
 
-// The tile at the centre of what the map view shows.
-export function getMapViewCentreTile() {
-  const viewport = document.querySelector('.viewport')
+// How far the camera has scrolled the map, in pixels.
+function getWorldOffset() {
   const [, offsetX, offsetY] = document
     .querySelector('.world')
     .style.transform.match(/translate\((-?[\d.]+)px, (-?[\d.]+)px\)/)
+  return { x: Number(offsetX), y: Number(offsetY) }
+}
+
+// The tile at the centre of what the map view shows.
+export function getMapViewCentreTile() {
+  const viewport = document.querySelector('.viewport')
+  const offset = getWorldOffset()
   return {
-    x: Math.floor((-Number(offsetX) + viewport.clientWidth / 2) / TILE_SIZE),
-    y: Math.floor((-Number(offsetY) + viewport.clientHeight / 2) / TILE_SIZE)
+    x: Math.floor((-offset.x + viewport.clientWidth / 2) / TILE_SIZE),
+    y: Math.floor((-offset.y + viewport.clientHeight / 2) / TILE_SIZE)
   }
+}
+
+// Moves the mouse over the middle of a map tile. As in a browser, the pointer lands on the layer
+// drawn on top of the tiles, not on the tile itself.
+export async function hoverTile(user, x, y) {
+  const offset = getWorldOffset()
+  await user.pointer({
+    target: document.querySelector('.effects-layer'),
+    coords: {
+      clientX: offset.x + x * TILE_SIZE + TILE_SIZE / 2,
+      clientY: offset.y + y * TILE_SIZE + TILE_SIZE / 2
+    }
+  })
 }
 
 export function expectCalendarDate({ month, week, day }) {

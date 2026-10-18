@@ -30,5 +30,5 @@ In H3 the whole interface frame is tinted in the colour of the player whose turn
 
 ## Not yet
 
-- The bottom status bar with hover info (2.5) and income tooltips on the resources (3.2).
+- The rollover bar under the map (2.5): done, see `2026-10-18-rollover-bar.md`.
 - Hero portraits, mana bar, towns in the town list, and the army in the info box.

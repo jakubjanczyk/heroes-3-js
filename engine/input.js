@@ -1,5 +1,6 @@
 import { createEdgePanController } from './edge-pan-controller.js'
 import { getMapCenteredOrigin } from './layers/layout.js'
+import { sameTile } from './tile-utils.js'
 
 function getArrowPanDelta(key, panStep) {
   if (key === 'ArrowLeft') {
@@ -30,7 +31,8 @@ export function attachCameraInput({
   requestAnimationFrame = window?.requestAnimationFrame?.bind(window),
   cancelAnimationFrame = window?.cancelAnimationFrame?.bind(window),
   map = null,
-  onTileClick = null
+  onTileClick = null,
+  onTileHover = null
 }) {
   const edgePanController = createEdgePanController({
     camera,
@@ -69,30 +71,14 @@ export function attachCameraInput({
     camera.moveBy(delta[0], delta[1])
   }
 
-  function onMouseMove(event) {
-    edgePanController.onMouseMove(event)
-  }
-
-  function onMouseEnter() {
-    edgePanController.onMouseEnter()
-  }
-
-  function onMouseLeave() {
-    edgePanController.onMouseLeave()
-  }
-
-  function onViewportClick(event) {
-    if (!map || typeof onTileClick !== 'function') {
-      return
-    }
-
+  // The map tile under the pointer, or null when it is off the map.
+  function getTileAtPointer(event) {
     const targetTile = getTileFromEventTarget(event?.target)
     if (targetTile && map.inBounds(targetTile)) {
-      onTileClick(targetTile)
-      return
+      return targetTile
     }
     if (typeof event?.clientX !== 'number' || typeof event?.clientY !== 'number') {
-      return
+      return null
     }
 
     const rect = viewport.getBoundingClientRect()
@@ -107,15 +93,54 @@ export function attachCameraInput({
       y: event.clientY - rect.top - offset.y - origin.y
     })
 
-    if (!map.inBounds(tile)) {
+    return map.inBounds(tile) ? tile : null
+  }
+
+  function onMouseMove(event) {
+    edgePanController.onMouseMove(event)
+  }
+
+  let hoveredTile = null
+
+  // Reports the tile under the pointer only when it changes, null once it leaves the map.
+  function setHoveredTile(tile) {
+    if (sameTile(tile, hoveredTile) || typeof onTileHover !== 'function') {
       return
     }
 
-    onTileClick(tile)
+    hoveredTile = tile
+    onTileHover(tile)
+  }
+
+  function onViewportMouseMove(event) {
+    if (map) {
+      setHoveredTile(getTileAtPointer(event))
+    }
+  }
+
+  function onMouseEnter() {
+    edgePanController.onMouseEnter()
+  }
+
+  function onMouseLeave() {
+    edgePanController.onMouseLeave()
+    setHoveredTile(null)
+  }
+
+  function onViewportClick(event) {
+    if (!map || typeof onTileClick !== 'function') {
+      return
+    }
+
+    const tile = getTileAtPointer(event)
+    if (tile) {
+      onTileClick(tile)
+    }
   }
 
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('mousemove', onMouseMove)
+  viewport.addEventListener('mousemove', onViewportMouseMove)
   viewport.addEventListener('mouseenter', onMouseEnter)
   viewport.addEventListener('mouseleave', onMouseLeave)
   viewport.addEventListener('click', onViewportClick)
@@ -124,6 +149,7 @@ export function attachCameraInput({
     edgePanController.destroy()
     window.removeEventListener('keydown', onKeyDown)
     window.removeEventListener('mousemove', onMouseMove)
+    viewport.removeEventListener('mousemove', onViewportMouseMove)
     viewport.removeEventListener('mouseenter', onMouseEnter)
     viewport.removeEventListener('mouseleave', onMouseLeave)
     viewport.removeEventListener('click', onViewportClick)

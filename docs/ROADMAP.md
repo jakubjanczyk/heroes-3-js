@@ -49,7 +49,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Resource bar along the bottom (as in H3) showing all 7 resource types with icons and counts, in H3 order
 - [x] Day/week/month display at the end of the resource bar ("Month: 1, Week: 1, Day: 1")
 - [x] Right sidebar panel as in H3: minimap, then hero list / 2x5 adventure buttons / town list side by side, then the info box with the army
-- [ ] Bottom info bar: shows name + brief info of whatever entity the mouse hovers over (see 2.5)
+- [x] Rollover bar between the map and the resource bar, naming whatever the mouse is over (see 2.5)
 - [x] "End Turn" button styled and positioned like H3 (hourglass icon in right panel)
 - [x] "Next Hero" button (arrow icon): centres on the hero, disabled once it has no movement left (cycling needs several heroes)
 - [x] System options button (gear icon): popup with Music, Reset and Return to game
@@ -57,7 +57,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Interface frame tinted in the current player's colour (`data-player-color` on `.game-shell`; only red used for now)
 - [x] Hero list shows the movement left as a green bar beside the portrait, with no number (as in H3)
 - [x] Buttons for features that don't exist yet are shown disabled: Kingdom overview, Underground, Quest log, Sleep hero, Cast spell, Adventure options
-- [ ] Resource bar tooltips showing daily income per resource
+- [ ] (Not in H3, optional extra) Resource bar tooltips showing daily income per resource. H3 shows income in Kingdom overview
 
 ### 1.4 Minimap Improvements
 - [x] Minimap shows terrain colors matching terrain types
@@ -72,7 +72,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 ### 1.5 Camera Improvements
 - [x] Keyboard arrow keys scroll the map
 - [x] Camera bounds - cannot scroll beyond map edges
-- [ ] Smooth camera transitions when clicking minimap
+- [ ] (Not in H3, optional extra) Smooth camera transitions when clicking minimap. H3 jumps straight there
 - [ ] Double-click on hero portrait centers camera on hero
 
 ---
@@ -82,15 +82,16 @@ Make the game visually functional. CSS-based - no sprites yet.
 Entities become meaningful content containers. Critical for portfolio.
 
 ### 2.1 Right-Click Info Panels
-- [ ] Right-click any entity shows an info popup overlay
-- [ ] Popup positioned near the clicked entity, not centered
-- [ ] Click outside or press Escape to dismiss
-- [ ] Monster info: name, creature type, estimated count (Few/Several/Pack/Lots/Horde/Throng/Legion), difficulty indicator
-- [ ] Town info: name, faction type, owner (player color or neutral), garrison preview, built structures summary
-- [ ] Resource info: resource type, amount to be collected
-- [ ] Mine info: mine type, daily income amount, current owner
-- [ ] Hero info: name, portrait, level, primary stats (A/D/P/K), army summary (creature icons + counts)
-- [ ] Info panels have H3-style parchment/panel background
+As in H3, the popup is shown only while the right mouse button is held down and disappears when it is released.
+- [ ] Right-click (and hold) any map object shows an info popup near the cursor
+- [ ] Releasing the right mouse button dismisses it (no Escape / click outside: there is nothing to dismiss once released)
+- [ ] Monster: count category and name, as on hover ("Pack of Skeletons"); never the exact number
+- [ ] Resource: resource name only; the amount stays hidden until it is picked up
+- [ ] Mine: mine name and owner
+- [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
+- [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
+- [ ] Right-click on empty terrain shows the terrain name
+- [ ] Popups have an H3-style parchment/panel background
 
 ### 2.2 Entity Data Model Expansion
 - [ ] Entities support `metadata` field in scenario JSON: `{ title, description, image, links[], tags[] }`
@@ -120,14 +121,17 @@ Entities become meaningful content containers. Critical for portfolio.
 - [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
 - [ ] Dwelling visit modal: show available creatures, count, cost, recruit button
 
-### 2.5 Bottom Info Bar
-- [ ] Hovering over any tile shows terrain type name
-- [ ] Hovering over an entity shows: icon + name + brief description
-- [ ] Hovering over monster shows: name + estimated strength ("A few Skeletons guard this area")
-- [ ] Hovering over resource shows: type + amount ("500 Gold")
-- [ ] Hovering over mine shows: type + owner + income ("Gold Mine - Neutral - 1000g/day")
-- [ ] Hovering over town shows: name + faction + owner ("Castle - Player 1")
-- [ ] Info bar clears when mouse moves to empty tile or off map
+### 2.5 Rollover Bar
+As in H3: a one-line rollover bar between the map and the resource bar. Text only, no icons, no amounts or income.
+- [x] Hovering over a tile with nothing on it shows the terrain name ("Grass", "Water")
+- [x] Hovering over a monster shows its plural name ("Skeletons")
+- [ ] With monster counts (5.2): count category and plural name ("Pack of Skeletons")
+- [x] Hovering over a resource shows its name ("Gold"); never the amount
+- [x] Hovering over a mine shows its name ("Gold Mine"), on any tile of its footprint
+- [x] Hovering over a town shows its name, on any tile of its footprint
+- [x] Hovering over the hero shows the hero's name
+- [x] The bar empties when the mouse leaves the map
+- [ ] Later: hovering over HUD buttons shows what they do ("End turn"), as in H3
 
 ---
 
@@ -150,7 +154,7 @@ Core game loop - resources flow, time passes.
 - [ ] Income source: owned towns (needs town ownership)
 - [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
-- [ ] Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
+- [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
 - [ ] Visual feedback when income is added (brief flash/highlight on resource counts)
 - [ ] Starting resources defined in scenario JSON
 
@@ -315,7 +319,7 @@ The central gameplay mechanic.
 
 ### 5.2 Monster Encounters on Map
 - [ ] Monsters on map have a creature type and count (not just "skeleton")
-- [ ] Monster count categories: Few (1-4), Several (5-9), Pack (10-19), Lots (20-49), Horde (50-99), Throng (100-249), Legion (250+)
+- [ ] Monster count categories as in H3: Few (1-4), Several (5-9), Pack (10-19), Lots (20-49), Horde (50-99), Throng (100-249), Swarm (250-499), Zounds (500-999), Legion (1000+)
 - [ ] Monster count shown on hover (category, not exact number)
 - [ ] Monster aggression: some flee, some join, some fight (based on army strength ratio + Diplomacy)
 - [ ] Monster growth over time: count increases each week (optional, based on scenario settings)
@@ -751,7 +755,7 @@ Sprites and map authoring are intentionally late.
 1. Terrain types with CSS (1.1)
 2. Cursor system (1.2)
 3. HUD redesign (1.3)
-4. Bottom info bar on hover (2.5)
+4. Rollover bar on hover (2.5)
 5. Right-click info panels (2.1)
 6. Day/week/month cycle (3.1)
 7. Mine ownership (3.3)

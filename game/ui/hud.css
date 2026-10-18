@@ -64,6 +64,7 @@
 
 /* Gold-trimmed inset well shared by the map, minimap, lists and info box. */
 .adventure-frame,
+.rollover-bar,
 .minimap,
 .hero-list,
 .town-list,
@@ -312,6 +313,21 @@
   }
 }
 
+/* Rollover bar: one line under the map naming whatever the mouse is over. Keeps its height when empty. */
+.rollover-bar {
+  grid-area: rollover;
+  min-inline-size: 0;
+  block-size: 1.5rem;
+  padding-inline: var(--space-sm);
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a1d26, #0b0d12);
+  font-size: var(--font-size-sm);
+  line-height: 1.5rem;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* Resource bar: the seven resources and the date, along the bottom of the screen. */
 .resource-bar {
   grid-area: resources;
@@ -457,6 +473,12 @@
 @media (height < 42rem) {
   .minimap {
     --minimap-max-height: 28dvh;
+  }
+
+  .rollover-bar {
+    block-size: 1.25rem;
+    font-size: var(--font-size-xs);
+    line-height: 1.25rem;
   }
 
   .resource-bar {

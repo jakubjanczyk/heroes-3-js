@@ -1,6 +1,6 @@
 {
   "GOLD_MINE": {
-    "name": "Gold mine",
+    "name": "Gold Mine",
     "income": { "resource": "GOLD_PILE", "amount": 1000 }
   },
   "SAWMILL": {
@@ -8,23 +8,23 @@
     "income": { "resource": "WOOD_PILE", "amount": 2 }
   },
   "ORE_PIT": {
-    "name": "Ore pit",
+    "name": "Ore Pit",
     "income": { "resource": "ORE_PILE", "amount": 2 }
   },
   "ALCHEMIST_LAB": {
-    "name": "Alchemist lab",
+    "name": "Alchemist's Lab",
     "income": { "resource": "MERCURY_PILE", "amount": 1 }
   },
   "SULFUR_DUNE": {
-    "name": "Sulfur dune",
+    "name": "Sulfur Dune",
     "income": { "resource": "SULFUR_PILE", "amount": 1 }
   },
   "CRYSTAL_CAVERN": {
-    "name": "Crystal cavern",
+    "name": "Crystal Cavern",
     "income": { "resource": "CRYSTAL_PILE", "amount": 1 }
   },
   "GEM_POND": {
-    "name": "Gem pond",
+    "name": "Gem Pond",
     "income": { "resource": "GEMS_PILE", "amount": 1 }
   }
 }
