@@ -9,10 +9,14 @@ import {
   expectMovementPoints,
   expectNoPreview,
   flushMicrotasks,
+  getHeroInfoBox,
+  getHeroInHeroList,
   getMapViewCentreTile,
+  getNextHeroButton,
   getResourceBarItems,
   openSystemOptions,
   panCamera,
+  querySystemOptions,
   readGameData,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
@@ -20,11 +24,10 @@ import { aHero, aScenario } from './builders.js'
 
 const LARGE_VIEWPORT_SIZE = { width: 1000, height: 700 }
 
-const aLargeMapScenario = () => aScenario().withSize(60, 40).withEntities(aHero().at(20, 15))
+const HERO_NAME = 'Sir Christian'
+const heroDefinitions = { hero: { name: HERO_NAME } }
 
-function getSystemOptionsDialog() {
-  return screen.queryByRole('dialog', { name: 'System options' })
-}
+const aLargeMapScenario = () => aScenario().withSize(60, 40).withEntities(aHero().at(20, 15))
 
 describe('adventure HUD behavior', () => {
   describe('resource bar', () => {
@@ -50,13 +53,10 @@ describe('adventure HUD behavior', () => {
   describe('hero list', () => {
     test('given a new game when the HUD loads then the hero is in the hero list with a full movement bar', async () => {
       await setupMovementBehaviorApp({
-        loadGameOptions: aScenario()
-          .withDefinitions({ hero: { name: 'Sir Christian' } })
-          .build()
+        loadGameOptions: aScenario().withDefinitions(heroDefinitions).build()
       })
 
-      const heroList = screen.getByRole('list', { name: 'Heroes' })
-      expect(within(heroList).getByRole('button', { name: 'Sir Christian' })).toBeTruthy()
+      expect(getHeroInHeroList(HERO_NAME)).toBeTruthy()
       expectMovementPoints(1500)
     })
 
@@ -71,15 +71,12 @@ describe('adventure HUD behavior', () => {
 
     test('given the player panned away from the hero when they click the hero in the hero list then the camera centres on the hero', async () => {
       const { user } = await setupMovementBehaviorApp({
-        loadGameOptions: aLargeMapScenario()
-          .withDefinitions({ hero: { name: 'Sir Christian' } })
-          .build(),
+        loadGameOptions: aLargeMapScenario().withDefinitions(heroDefinitions).build(),
         viewportSize: LARGE_VIEWPORT_SIZE
       })
       panCamera('ArrowRight', 20)
 
-      const heroList = screen.getByRole('list', { name: 'Heroes' })
-      await user.click(within(heroList).getByRole('button', { name: 'Sir Christian' }))
+      await user.click(getHeroInHeroList(HERO_NAME))
 
       expect(getMapViewCentreTile()).toEqual({ x: 20, y: 15 })
     })
@@ -93,7 +90,7 @@ describe('adventure HUD behavior', () => {
       })
       panCamera('ArrowDown', 20)
 
-      await user.click(screen.getByRole('button', { name: 'Next hero' }))
+      await user.click(getNextHeroButton())
 
       expect(getMapViewCentreTile()).toEqual({ x: 20, y: 15 })
     })
@@ -105,7 +102,7 @@ describe('adventure HUD behavior', () => {
       await flushMicrotasks()
 
       expectMovementPoints(0)
-      expect(screen.getByRole('button', { name: 'Next hero' }).disabled).toBe(true)
+      expect(getNextHeroButton().disabled).toBe(true)
     })
 
     test.each([
@@ -126,21 +123,19 @@ describe('adventure HUD behavior', () => {
     test('given the adventure map when the player clicks System options then a popup with Music and Reset opens', async () => {
       const { user } = await setupMovementBehaviorApp()
 
-      await user.click(screen.getByRole('button', { name: 'System options' }))
+      const systemOptions = await openSystemOptions(user)
 
-      const dialog = getSystemOptionsDialog()
-      expect(dialog).toBeTruthy()
-      expect(within(dialog).getByRole('button', { name: 'Music: Off' })).toBeTruthy()
-      expect(within(dialog).getByRole('button', { name: 'Reset' })).toBeTruthy()
+      expect(within(systemOptions).getByRole('button', { name: 'Music: Off' })).toBeTruthy()
+      expect(within(systemOptions).getByRole('button', { name: 'Reset' })).toBeTruthy()
     })
 
     test('given System options is open when the player clicks Return to game then it closes', async () => {
       const { user } = await setupMovementBehaviorApp()
-      await openSystemOptions(user)
+      const systemOptions = await openSystemOptions(user)
 
-      await user.click(screen.getByRole('button', { name: 'Return to game' }))
+      await user.click(within(systemOptions).getByRole('button', { name: 'Return to game' }))
 
-      expect(getSystemOptionsDialog()).toBeNull()
+      expect(querySystemOptions()).toBeNull()
     })
 
     test('given System options is open when the player presses Escape then it closes', async () => {
@@ -149,7 +144,7 @@ describe('adventure HUD behavior', () => {
 
       await user.keyboard('{Escape}')
 
-      expect(getSystemOptionsDialog()).toBeNull()
+      expect(querySystemOptions()).toBeNull()
     })
 
     test('given System options is open when the player clicks the map then the hero does not move', async () => {
@@ -167,13 +162,10 @@ describe('adventure HUD behavior', () => {
   describe('info box', () => {
     test('given a hero when the HUD loads then the info box shows the hero name', async () => {
       await setupMovementBehaviorApp({
-        loadGameOptions: aScenario()
-          .withDefinitions({ hero: { name: 'Sir Christian' } })
-          .build()
+        loadGameOptions: aScenario().withDefinitions(heroDefinitions).build()
       })
 
-      const infoBox = screen.getByRole('region', { name: 'Hero info' })
-      expect(within(infoBox).getByRole('heading', { name: 'Sir Christian' })).toBeTruthy()
+      expect(within(getHeroInfoBox()).getByRole('heading', { name: HERO_NAME })).toBeTruthy()
     })
   })
 })

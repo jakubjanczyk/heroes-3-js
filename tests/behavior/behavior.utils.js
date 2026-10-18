@@ -258,9 +258,24 @@ export function expectHeroAt(x, y) {
   return heroEntity
 }
 
+export function getHeroList() {
+  return screen.getByRole('list', { name: 'Heroes' })
+}
+
+export function getHeroInHeroList(heroName) {
+  return within(getHeroList()).getByRole('button', { name: heroName })
+}
+
+export function getHeroInfoBox() {
+  return screen.getByRole('region', { name: 'Hero info' })
+}
+
+export function getNextHeroButton() {
+  return screen.getByRole('button', { name: 'Next hero' })
+}
+
 export function expectMovementPoints(current, max = 1500) {
-  const heroList = screen.getByRole('list', { name: 'Heroes' })
-  const movementBar = within(heroList).getByRole('progressbar', { name: 'Movement points' })
+  const movementBar = within(getHeroList()).getByRole('progressbar', { name: 'Movement points' })
   expect({
     value: movementBar.getAttribute('aria-valuenow'),
     max: movementBar.getAttribute('aria-valuemax')
@@ -487,9 +502,15 @@ export async function clickEndTurn(user) {
   await user.click(endTurnButton)
 }
 
+export function querySystemOptions() {
+  return screen.queryByRole('dialog', { name: 'System options' })
+}
+
 export async function openSystemOptions(user) {
   await user.click(screen.getByRole('button', { name: 'System options' }))
-  return screen.getByRole('dialog', { name: 'System options' })
+  const systemOptions = querySystemOptions()
+  expect(systemOptions).toBeTruthy()
+  return systemOptions
 }
 
 export async function clickResetSession(user) {

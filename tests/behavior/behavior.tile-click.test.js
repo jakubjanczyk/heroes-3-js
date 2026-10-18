@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 import {
   clickEndTurn,
@@ -10,6 +9,7 @@ import {
   expectPreviewDashAt,
   expectPreviewTargetAt,
   flushMicrotasks,
+  getHeroInfoBox,
   setupLinearMovementApp,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
@@ -87,7 +87,7 @@ describe('tile click behavior', () => {
   test('given user clicks HUD controls then tile click handling is not triggered', async () => {
     const { user } = await setupLinearMovementApp({ width: 4 })
 
-    await user.click(screen.getByRole('region', { name: 'Hero info' }))
+    await user.click(getHeroInfoBox())
     await clickEndTurn(user)
     await flushMicrotasks()
 
