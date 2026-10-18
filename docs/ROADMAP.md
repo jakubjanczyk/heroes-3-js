@@ -92,7 +92,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
   - [x] For now: the town's name (needs town ownership and buildings)
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
-  - [x] For now: the hero's name (needs 4.1 / 4.3)
+  - [x] For now: the hero's name and primary skills (portrait, morale/luck and army need 4.3 and later)
 - [x] Right-click on empty terrain shows the terrain name
 - [x] Popups look like H3 message boxes: brown leather background, player colour only in the gold-trimmed frame
 - [x] (Not in H3, touch screens) Long press (500 ms) opens the same popup above the finger; lifting the finger closes it, a short tap still moves as before
@@ -192,9 +192,11 @@ Core game loop - resources flow, time passes.
 Heroes become characters with identity and progression.
 
 ### 4.1 Hero Primary Attributes
-- [ ] Four primary stats: Attack, Defense, Power, Knowledge
-- [ ] Starting values defined per hero type (e.g. Knight: A2/D2/P1/K1)
-- [ ] Stats displayed in hero panel and right-click info
+- [x] Four primary stats: Attack, Defense, Power, Knowledge
+- [x] Starting values come from the hero's class, as in H3 (Knight: A2/D2/P1/K1); only the Knight for now
+- [x] A scenario may set any of them per hero, like the H3 editor's "Customize primary skills"; values below the H3 minimums (A0/D0/P1/K1) are rejected
+- [x] Stats displayed in the info box (H3 layout: portrait, name, four icons with values) and the hero's right-click popup
+- [ ] Stats shown in the hero screen (needs a hero screen)
 - [ ] Attack: increases creature damage dealt in combat
 - [ ] Defense: reduces creature damage taken in combat
 - [ ] Power: increases spell damage/duration

@@ -1,4 +1,5 @@
 import { findHero } from '../../../game/domain/entity-queries.js'
+import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_MOVED,
@@ -6,6 +7,7 @@ import {
   APP_FACT_WORLD_READY
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createPrimarySkillsList } from '../presentation/primary-skills-list.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
@@ -14,6 +16,8 @@ export const registerHeroPanelModule = defineModule(
   ({ emit, env }) => {
     const heroList = env.document?.getElementById('hero-list')
     const heroInfoName = env.document?.getElementById('hero-info-name')
+    const heroInfoPortrait = env.document?.getElementById('hero-info-portrait')
+    const heroInfoSkills = env.document?.getElementById('hero-info-skills')
     const nextHeroButton = env.document?.getElementById('next-hero-button')
     let heroTile = null
     let movementBar = null
@@ -57,6 +61,13 @@ export const registerHeroPanelModule = defineModule(
       if (heroInfoName) {
         heroInfoName.textContent = name
       }
+      if (heroInfoPortrait) {
+        heroInfoPortrait.textContent = name.charAt(0)
+      }
+    }
+
+    function renderPrimarySkills(skills) {
+      heroInfoSkills?.replaceChildren(createPrimarySkillsList(env.document, skills))
     }
 
     function renderMovementPoints() {
@@ -89,8 +100,12 @@ export const registerHeroPanelModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            heroTile = findHero(event.detail.scenario.entities)?.tile ?? null
+            const hero = findHero(event.detail.scenario.entities)
+            heroTile = hero?.tile ?? null
             renderHero(event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME)
+            renderPrimarySkills(
+              getHeroPrimarySkills({ entity: hero, definitions: event.detail.definitions })
+            )
           }
         },
         {

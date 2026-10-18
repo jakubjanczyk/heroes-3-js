@@ -22,6 +22,13 @@ function createFakeFetch(urlToJson) {
   }
 }
 
+const PRIMARY_SKILLS = [
+  { key: 'attack', minimum: 0 },
+  { key: 'defense', minimum: 0 },
+  { key: 'power', minimum: 1 },
+  { key: 'knowledge', minimum: 1 }
+]
+
 const TERRAIN_TYPES = {
   0: { name: 'grass', passable: true },
   1: { name: 'rock', passable: false },
@@ -42,7 +49,10 @@ describe('bootstrap', () => {
     }
 
     const definitions = {
-      hero: { id: 'HERO', name: 'Hero' },
+      hero: { id: 'HERO', name: 'Hero', heroClass: 'KNIGHT' },
+      heroClasses: {
+        KNIGHT: { name: 'Knight', primarySkills: { attack: 2, defense: 2, power: 1, knowledge: 1 } }
+      },
       monsters: { SKELETON: { name: 'Skeleton' } },
       resources: { GOLD_PILE: { name: 'Gold Pile', amount: 100 } },
       towns: { CASTLE: { name: 'Castle' } },
@@ -52,6 +62,7 @@ describe('bootstrap', () => {
     const fetch = createFakeFetch({
       './scenarios/scenario.json': scenario,
       './game/data/hero.json': definitions.hero,
+      './game/data/hero-classes.json': definitions.heroClasses,
       './game/data/monsters.json': definitions.monsters,
       './game/data/resources.json': definitions.resources,
       './game/data/towns.json': definitions.towns,
@@ -77,6 +88,7 @@ describe('bootstrap', () => {
     const fetch = createFakeFetch({
       './scenarios/scenario.json': scenario,
       './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/hero-classes.json': {},
       './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
       './game/data/resources.json': {},
       './game/data/towns.json': {}
@@ -97,6 +109,7 @@ describe('bootstrap', () => {
     const fetch = createFakeFetch({
       './scenarios/scenario.json': scenario,
       './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/hero-classes.json': {},
       './game/data/monsters.json': {},
       './game/data/resources.json': {},
       './game/data/towns.json': {}
@@ -119,6 +132,7 @@ describe('bootstrap', () => {
     const fetch = createFakeFetch({
       './scenarios/scenario.json': scenario,
       './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/hero-classes.json': {},
       './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
       './game/data/resources.json': {},
       './game/data/towns.json': {}
@@ -172,7 +186,37 @@ describe('bootstrap', () => {
       'Starting resource GOLD_PILE must be a whole number of at least 0'
     )
   })
+
+  test('loadGame rejects scenarios with a hero primary skill it does not know', async () => {
+    const fetch = fakeFetchWithHero({ primarySkills: { atack: 3 } })
+
+    await expect(
+      loadGame({ fetch, terrainTypes: TERRAIN_TYPES, primarySkills: PRIMARY_SKILLS })
+    ).rejects.toThrow('Hero hero has an unknown primary skill atack')
+  })
+
+  // The Heroes 3 minimums: Attack and Defense 0, Power and Knowledge 1.
+  test.each([
+    ['attack', 2.5, 0],
+    ['knowledge', '3', 1],
+    ['attack', -1, 0],
+    ['defense', -1, 0],
+    ['power', 0, 1],
+    ['knowledge', 0, 1]
+  ])('loadGame rejects scenarios with a hero %s of %j', async (skill, value, minimum) => {
+    const fetch = fakeFetchWithHero({ primarySkills: { [skill]: value } })
+
+    await expect(
+      loadGame({ fetch, terrainTypes: TERRAIN_TYPES, primarySkills: PRIMARY_SKILLS })
+    ).rejects.toThrow(`Hero hero must have ${skill} as a whole number of at least ${minimum}`)
+  })
 })
+
+function fakeFetchWithHero(heroFields) {
+  return fakeFetchWithScenario({
+    entities: [{ id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 }, ...heroFields }]
+  })
+}
 
 function fakeFetchWithScenario(scenarioFields) {
   return createFakeFetch({
@@ -183,6 +227,7 @@ function fakeFetchWithScenario(scenarioFields) {
       ...scenarioFields
     },
     './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+    './game/data/hero-classes.json': {},
     './game/data/monsters.json': {},
     './game/data/resources.json': {},
     './game/data/towns.json': {}
@@ -197,6 +242,7 @@ function fakeFetchWithMonster(monster) {
       entities: [{ id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, monster]
     },
     './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+    './game/data/hero-classes.json': {},
     './game/data/monsters.json': { SKELETON: { name: 'Skeleton' } },
     './game/data/resources.json': {},
     './game/data/towns.json': {}

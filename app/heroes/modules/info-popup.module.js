@@ -1,4 +1,5 @@
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
+import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -10,6 +11,7 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
+import { createPrimarySkillsList } from '../presentation/primary-skills-list.js'
 
 const PLAYER_COLOR_NAME = 'Red'
 const SCREEN_MARGIN_PX = 8
@@ -80,6 +82,13 @@ export const registerInfoPopupModule = defineModule(
         text.className = 'info-popup__line'
         text.textContent = line
         popup.appendChild(text)
+      }
+
+      // As in the Heroes 3 hero info box: the primary skills under the name.
+      if (entity?.kind === 'HERO') {
+        popup.appendChild(
+          createPrimarySkillsList(document, getHeroPrimarySkills({ entity, definitions }))
+        )
       }
 
       host.appendChild(popup)

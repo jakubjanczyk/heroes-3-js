@@ -266,12 +266,20 @@
 }
 
 /* Info box: the selected hero and the seven slots of their army. */
-/* Nearly square like the Heroes 3 status window: the hero's name over two rows of big army slots. */
+/*
+ * Laid out like the Heroes 3 info box: the portrait on the left, the name and the four primary
+ * skills beside it, then the army in two rows under them.
+ */
 .info-box {
   grid-row: -2;
   display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-areas:
+    "portrait name"
+    "portrait skills"
+    "army army";
   align-content: start;
-  gap: var(--space-sm);
+  gap: var(--space-xs) var(--space-sm);
   padding: var(--space-sm) var(--space-xs) var(--space-md);
   background:
     radial-gradient(
@@ -281,17 +289,49 @@
     ),
     var(--panel-inset);
 
-  & .info-box__name {
-    margin: 0;
-    font-size: var(--font-size-md);
-    font-weight: 700;
-    text-align: center;
+  /* The hero's initial until there are portraits, as in the hero list. */
+  & .info-box__portrait {
+    grid-area: portrait;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border: 1px solid var(--trim-gold-dark);
+    background: radial-gradient(
+      circle at 50% 35%,
+      color-mix(in oklab, var(--interface-color) 40%, #6b5640),
+      #1c140c
+    );
     color: var(--hud-text-gold);
+    font:
+      700 1.6rem / 1 Georgia,
+      "Times New Roman",
+      serif;
     text-shadow: 0 1px 0 black;
   }
 
-  /* Seven army slots as in Heroes 3: four on top, three centred below. */
+  & .info-box__name {
+    grid-area: name;
+    margin: 0;
+    padding: 0 var(--space-2xs);
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--hud-text-gold);
+    text-shadow: 0 1px 0 black;
+    background: #0d0f14;
+    border: 1px solid #2a2d36;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  & .info-box__skills {
+    grid-area: skills;
+    align-self: end;
+  }
+
+  /* Seven army slots as in Heroes 3: three on top, four below. */
   & .info-box__army {
+    grid-area: army;
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 3px;
@@ -308,8 +348,45 @@
     box-shadow: inset 0 0 0 1px black;
   }
 
-  & .army-slot:nth-child(5) {
+  & .army-slot:nth-child(1) {
     grid-column: 2 / span 2;
+  }
+}
+
+/* The four primary skills, as in Heroes 3: an icon each with the value in a box under it. */
+.primary-skills {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & .primary-skills__skill {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+  }
+
+  & .primary-skills__icon {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    fill: none;
+    stroke: var(--hud-text-gold);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  & .primary-skills__value {
+    inline-size: 100%;
+    min-inline-size: 1.5rem;
+    background: #0d0f14;
+    border: 1px solid #2a2d36;
+    color: var(--hud-text);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    text-align: center;
   }
 }
 
@@ -504,7 +581,7 @@
     }
 
     & .army-slot,
-    & .army-slot:nth-child(5) {
+    & .army-slot:nth-child(1) {
       grid-column: auto;
     }
   }
@@ -583,9 +660,33 @@
     padding: var(--space-2xs) var(--space-xs);
     gap: var(--space-2xs);
     overflow: hidden;
+    /* Too small for the portrait (the hero list shows it): name, skills and one row of army. */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "name"
+      "skills"
+      "army";
+
+    & .info-box__portrait {
+      display: none;
+    }
 
     & .info-box__name {
       font-size: var(--font-size-sm);
+    }
+
+    & .primary-skills__icon {
+      inline-size: 0.875rem;
+      block-size: 0.875rem;
+    }
+
+    & .info-box__army {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    & .army-slot,
+    & .army-slot:nth-child(1) {
+      grid-column: auto;
     }
   }
 }

@@ -58,6 +58,25 @@ function assertStartingResources(scenario) {
   }
 }
 
+// primarySkills: [{ key, minimum }], the skills a scenario may set on a hero.
+function assertHeroPrimarySkills(scenario, primarySkills = []) {
+  for (const entity of scenario.entities ?? []) {
+    if (entity.kind !== 'HERO') continue
+
+    for (const [key, value] of Object.entries(entity.primarySkills ?? {})) {
+      const skill = primarySkills.find((primarySkill) => primarySkill.key === key)
+      if (!skill) {
+        throw new Error(`Hero ${entity.id} has an unknown primary skill ${key}`)
+      }
+      if (!(Number.isInteger(value) && value >= skill.minimum)) {
+        throw new Error(
+          `Hero ${entity.id} must have ${key} as a whole number of at least ${skill.minimum}`
+        )
+      }
+    }
+  }
+}
+
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') return url
   if (url.startsWith('//')) return url
@@ -69,6 +88,7 @@ function normalizeStaticUrl(url) {
 export async function loadGame({
   fetch,
   terrainTypes,
+  primarySkills,
   scenarioUrl = '/scenarios/scenario.json',
   dataBaseUrl = '/game/data'
 }) {
@@ -79,9 +99,10 @@ export async function loadGame({
   const normalizedScenarioUrl = normalizeStaticUrl(scenarioUrl)
   const normalizedDataBaseUrl = normalizeStaticUrl(dataBaseUrl)
 
-  const [scenario, hero, monsters, resources, towns, mines] = await Promise.all([
+  const [scenario, hero, heroClasses, monsters, resources, towns, mines] = await Promise.all([
     fetchJson(fetch, normalizedScenarioUrl),
     fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
+    fetchJson(fetch, `${normalizedDataBaseUrl}/hero-classes.json`),
     fetchJson(fetch, `${normalizedDataBaseUrl}/monsters.json`),
     fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
     fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
@@ -93,11 +114,13 @@ export async function loadGame({
   assertEntitiesOnPassableTiles(scenario, map)
   assertMonsterCounts(scenario)
   assertStartingResources(scenario)
+  assertHeroPrimarySkills(scenario, primarySkills)
 
   return {
     scenario,
     definitions: {
       hero,
+      heroClasses,
       monsters,
       resources,
       towns,
