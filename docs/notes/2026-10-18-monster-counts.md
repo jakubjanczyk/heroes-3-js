@@ -24,17 +24,17 @@ As in Heroes 3, the player never sees the exact count, only a word for the size 
 | 500-999 | Zounds of Skeletons |
 | 1000+ | Legion of Skeletons |
 
-- The rollover bar and the right-click popup show it. The popup's picture is still labelled with the plural name ("Skeletons").
+- The status bar and the right-click popup show it. The popup's picture is still labelled with the plural name ("Skeletons").
 - The defeat message stays "Skeleton defeated" (2.4).
 
 ## How it works
 
 - `game/heroes/monster-count.js` turns a count and a plural name into the text.
-- `game/heroes/rollover-text.js` uses it for monsters; the popup reuses the rollover text.
+- `game/heroes/status-bar-text.js` uses it for monsters; the popup reuses the status bar text.
 
 ## Tests
 
-- `tests/behavior/behavior.rollover-bar.test.js`: both ends of every band.
+- `tests/behavior/behavior.status-bar.test.js`: both ends of every band.
 - `tests/behavior/behavior.info-popup.test.js`: one example, mouse and touch.
 - `game/load.test.js`: rejected counts. `game/heroes/demo-scenario.test.js`: the real demo scenario passes the load checks.
 

@@ -1,4 +1,4 @@
-import { getRolloverText } from '../../../game/heroes/rollover-text.js'
+import { getStatusBarText } from '../../../game/heroes/status-bar-text.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
@@ -8,16 +8,16 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
-// The Heroes 3 rollover bar under the map: names whatever the mouse is over.
-export const registerRolloverBarModule = defineModule(
+// The Heroes 3 status bar under the map: names whatever the mouse is over.
+export const registerStatusBarModule = defineModule(
   ({ env }) => {
-    const rolloverBar = env.document.getElementById('rollover-bar')
+    const statusBar = env.document.getElementById('status-bar')
     const mapObjects = createMapObjects()
 
     let definitions = {}
 
     function showText(text) {
-      rolloverBar.textContent = text
+      statusBar.textContent = text
     }
 
     return {
@@ -51,7 +51,7 @@ export const registerRolloverBarModule = defineModule(
             }
 
             showText(
-              getRolloverText({
+              getStatusBarText({
                 entity: mapObjects.getEntityAt(tile),
                 terrainName: mapObjects.getTerrainName(tile),
                 definitions
@@ -63,7 +63,7 @@ export const registerRolloverBarModule = defineModule(
     }
   },
   {
-    id: 'rollover-bar',
+    id: 'status-bar',
     phase: 'view',
     consumes: [
       APP_FACT_WORLD_READY,

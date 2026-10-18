@@ -1,5 +1,5 @@
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
-import { getEntityName } from '../../../game/heroes/rollover-text.js'
+import { getEntityName } from '../../../game/heroes/status-bar-text.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,

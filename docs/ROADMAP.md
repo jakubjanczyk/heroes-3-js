@@ -49,7 +49,7 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Resource bar along the bottom (as in H3) showing all 7 resource types with icons and counts, in H3 order
 - [x] Day/week/month display at the end of the resource bar ("Month: 1, Week: 1, Day: 1")
 - [x] Right sidebar panel as in H3: minimap, then hero list / 2x5 adventure buttons / town list side by side, then the info box with the army
-- [x] Rollover bar between the map and the resource bar, naming whatever the mouse is over (see 2.5)
+- [x] Status bar between the map and the resource bar, naming whatever the mouse is over (see 2.5)
 - [x] "End Turn" button styled and positioned like H3 (hourglass icon in right panel)
 - [x] "Next Hero" button (arrow icon): centres on the hero, disabled once it has no movement left (cycling needs several heroes)
 - [x] System options button (gear icon): popup with Music, Reset and Return to game
@@ -125,8 +125,8 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
 - [ ] Dwelling visit modal: show available creatures, count, cost, recruit button
 
-### 2.5 Rollover Bar
-As in H3: a one-line rollover bar between the map and the resource bar. Text only, no icons, no amounts or income.
+### 2.5 Status Bar
+As in H3: a one-line status bar between the map and the resource bar. Text only, no icons, no amounts or income.
 - [x] Hovering over a tile with nothing on it shows the terrain name ("Grass", "Water")
 - [x] Hovering over a monster shows its plural name ("Skeletons")
 - [x] With monster counts (5.2): count category and plural name ("Pack of Skeletons")
@@ -759,7 +759,7 @@ Sprites and map authoring are intentionally late.
 1. Terrain types with CSS (1.1)
 2. Cursor system (1.2)
 3. HUD redesign (1.3)
-4. Rollover bar on hover (2.5)
+4. Status bar on hover (2.5)
 5. Right-click info panels (2.1)
 6. Roads (7.2): finishes terrain movement costs (4.6)
 7. Day/week/month cycle (3.1)
