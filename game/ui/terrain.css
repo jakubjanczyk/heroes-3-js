@@ -37,3 +37,15 @@
 .terrain-tile--water {
   background: oklch(0.45 0.11 245);
 }
+
+.road--dirt {
+  background: oklch(0.6 0.08 60);
+}
+
+.road--gravel {
+  background: oklch(0.7 0.02 80);
+}
+
+.road--cobblestone {
+  background: oklch(0.55 0.015 260);
+}

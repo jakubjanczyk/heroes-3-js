@@ -27,6 +27,31 @@ function assertKnownTerrainCodes(terrain, map) {
   }
 }
 
+function assertValidRoads(terrain, map) {
+  if (terrain.roads === undefined) {
+    return
+  }
+  if (!Array.isArray(terrain.roads) || terrain.roads.length !== terrain.tiles.length) {
+    throw new Error(
+      `Terrain roads must have one entry per tile (${terrain.tiles.length}), got ${terrain.roads?.length}`
+    )
+  }
+
+  for (let y = 0; y < terrain.height; y += 1) {
+    for (let x = 0; x < terrain.width; x += 1) {
+      const tile = { x, y }
+      const roadType = map.getRoadType(tile)
+      if (roadType === undefined) {
+        const code = terrain.roads[y * terrain.width + x]
+        throw new Error(`Unknown road code ${code} at tile (${x}, ${y})`)
+      }
+      if (roadType !== null && !map.isPassable(tile)) {
+        throw new Error(`Road must be on passable terrain: (${x}, ${y})`)
+      }
+    }
+  }
+}
+
 function assertEntitiesOnPassableTiles(scenario, map) {
   const entities = scenario.entities ?? []
 
@@ -53,6 +78,7 @@ function normalizeStaticUrl(url) {
 export async function loadGame({
   fetch,
   terrainTypes,
+  roadTypes,
   scenarioUrl = '/scenarios/scenario.json',
   dataBaseUrl = '/game/data'
 }) {
@@ -72,8 +98,9 @@ export async function loadGame({
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`)
   ])
 
-  const map = createMap(scenario.terrain, terrainTypes)
+  const map = createMap(scenario.terrain, terrainTypes, roadTypes)
   assertKnownTerrainCodes(scenario.terrain, map)
+  assertValidRoads(scenario.terrain, map)
   assertEntitiesOnPassableTiles(scenario, map)
 
   return {

@@ -39,6 +39,9 @@ export const aScenario = () =>
         scenario.height = height
         scenario.tiles = new Array(width * height).fill(0)
       },
+      withRoads(roads) {
+        scenario.roads = roads
+      },
       withEntities(...entities) {
         scenario.entities = entities.map((entity) => entity.build())
       }

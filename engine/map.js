@@ -6,8 +6,11 @@ const DEFAULT_TERRAIN_TYPES = deepFreeze({
   1: { name: 'blocked', passable: false }
 })
 
-export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES) {
-  const { width, height, tiles } = terrain
+const NO_ROAD = 0
+
+// `terrain.roads` (optional) holds a road code per tile, on top of the terrain; 0 is no road.
+export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES, roadTypes = {}) {
+  const { width, height, tiles, roads = null } = terrain
   const tileWidth = 32
   const tileHeight = 32
   const halfTileWidth = tileWidth / 2
@@ -24,6 +27,19 @@ export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES) {
 
     const code = tiles[tile.y * width + tile.x]
     return Object.hasOwn(terrainTypes, code) ? terrainTypes[code] : null
+  }
+
+  // undefined for an unknown road code, null for no road.
+  function getRoadType(tile) {
+    if (!inBounds(tile) || roads === null) {
+      return null
+    }
+
+    const code = roads[tile.y * width + tile.x]
+    if (code === NO_ROAD) {
+      return null
+    }
+    return Object.hasOwn(roadTypes, code) ? roadTypes[code] : undefined
   }
 
   function isPassable(tile) {
@@ -54,6 +70,7 @@ export function createMap(terrain, terrainTypes = DEFAULT_TERRAIN_TYPES) {
     halfTileHeight,
     inBounds,
     getTerrainType,
+    getRoadType,
     isPassable,
     tileToScreen,
     screenToTile

@@ -13,3 +13,60 @@
 .terrain-tile--blocked {
   background: color-mix(in oklab, oklch(0.38 0.014 290) 88%, black 16%);
 }
+
+/* A road: a hub in the middle of the tile, with an arm towards each neighbouring road. */
+.road {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: 12px;
+  block-size: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 2px;
+}
+
+.road__arm {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: 17px;
+  block-size: 12px;
+  margin-block-start: -6px;
+  background: inherit;
+  transform-origin: 0 50%;
+}
+
+.road__arm--ne,
+.road__arm--se,
+.road__arm--sw,
+.road__arm--nw {
+  inline-size: 24px;
+}
+
+.road__arm--n {
+  transform: rotate(-90deg);
+}
+
+.road__arm--ne {
+  transform: rotate(-45deg);
+}
+
+.road__arm--se {
+  transform: rotate(45deg);
+}
+
+.road__arm--s {
+  transform: rotate(90deg);
+}
+
+.road__arm--sw {
+  transform: rotate(135deg);
+}
+
+.road__arm--w {
+  transform: rotate(180deg);
+}
+
+.road__arm--nw {
+  transform: rotate(-135deg);
+}

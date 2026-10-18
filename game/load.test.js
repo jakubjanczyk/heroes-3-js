@@ -28,6 +28,32 @@ const TERRAIN_TYPES = {
   9: { name: 'water', passable: false }
 }
 
+const ROAD_TYPES = {
+  1: { name: 'dirt', movementCost: 75 }
+}
+
+function aFetchForTerrain(terrain) {
+  return createFakeFetch({
+    './scenarios/scenario.json': {
+      meta: { id: 'demo' },
+      terrain,
+      entities: [{ id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }]
+    },
+    './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+    './game/data/monsters.json': {},
+    './game/data/resources.json': {},
+    './game/data/towns.json': {}
+  })
+}
+
+function loadTerrain(terrain) {
+  return loadGame({
+    fetch: aFetchForTerrain(terrain),
+    terrainTypes: TERRAIN_TYPES,
+    roadTypes: ROAD_TYPES
+  })
+}
+
 describe('bootstrap', () => {
   test('loadGame loads scenario and definitions', async () => {
     const scenario = {
@@ -122,6 +148,33 @@ describe('bootstrap', () => {
 
     await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
       'Entity monster-1 (MONSTER) must be placed on a passable tile: (1, 0)'
+    )
+  })
+
+  test('loadGame loads a scenario without roads', async () => {
+    const loaded = await loadTerrain({ width: 2, height: 1, tiles: [0, 0] })
+
+    expect(loaded.scenario.terrain.roads).toBeUndefined()
+  })
+
+  test('loadGame rejects scenarios with an unknown road code', async () => {
+    await expect(
+      loadTerrain({ width: 2, height: 1, tiles: [0, 0], roads: [0, 7] })
+    ).rejects.toThrow('Unknown road code 7 at tile (1, 0)')
+  })
+
+  test.each([
+    ['rock', 1],
+    ['water', 9]
+  ])('loadGame rejects scenarios with a road on %s', async (_, terrainCode) => {
+    await expect(
+      loadTerrain({ width: 2, height: 1, tiles: [0, terrainCode], roads: [1, 1] })
+    ).rejects.toThrow('Road must be on passable terrain: (1, 0)')
+  })
+
+  test('loadGame rejects scenarios whose roads do not match the tiles', async () => {
+    await expect(loadTerrain({ width: 2, height: 1, tiles: [0, 0], roads: [1] })).rejects.toThrow(
+      'Terrain roads must have one entry per tile (2), got 1'
     )
   })
 })
