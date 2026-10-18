@@ -37,9 +37,13 @@
   position: absolute;
   inset-inline-start: 0;
   inset-block-start: -6px;
-  inline-size: var(--road-arm-length);
+  inline-size: 16px;
   block-size: 12px;
   background: inherit;
   transform: rotate(var(--road-arm-angle));
   transform-origin: 0 50%;
+}
+
+.road__arm--diagonal {
+  inline-size: 22.63px;
 }

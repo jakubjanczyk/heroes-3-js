@@ -5,9 +5,17 @@
 //   all points left;
 // - when what is left after a step can't pay the cheapest straight step from the new tile (a
 //   road step when a road continues from it), it drops to 0.
-import { getNeighborTiles } from '../../engine/tile-utils.js'
-
 const DEFAULT_TERRAIN_MOVEMENT_COST = 100
+const NEIGHBOR_OFFSETS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1]
+]
 
 function terrainCost(map, tile) {
   return map.getTerrainType(tile)?.movementCost ?? DEFAULT_TERRAIN_MOVEMENT_COST
@@ -20,7 +28,10 @@ function straightStepCost(map, from, to) {
 
 // The cheapest straight step the hero could take next from `tile`.
 function cheapestStepFrom(map, tile) {
-  return Math.min(...getNeighborTiles(tile).map((next) => straightStepCost(map, tile, next)))
+  const costs = NEIGHBOR_OFFSETS.map(([dx, dy]) =>
+    straightStepCost(map, tile, { x: tile.x + dx, y: tile.y + dy })
+  )
+  return Math.min(...costs)
 }
 
 function isDiagonalStep(from, to) {

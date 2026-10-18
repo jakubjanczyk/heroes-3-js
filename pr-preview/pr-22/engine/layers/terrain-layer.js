@@ -1,6 +1,17 @@
-import { getNeighborTiles } from '../tile-utils.js'
 import { clearLayerContainer, getLayerElementFactory, setStyleVar } from './dom-layer-utils.js'
 import { getMapCenteredOrigin, getTileTopLeft } from './layout.js'
+
+// Each way a road can leave its tile, with the angle its arm is drawn at.
+const ROAD_DIRECTIONS = [
+  { x: 1, y: 0, angle: 0 },
+  { x: 1, y: 1, angle: 45 },
+  { x: 0, y: 1, angle: 90 },
+  { x: -1, y: 1, angle: 135 },
+  { x: -1, y: 0, angle: 180 },
+  { x: -1, y: -1, angle: 225 },
+  { x: 0, y: -1, angle: 270 },
+  { x: 1, y: -1, angle: 315 }
+]
 
 function isDiagonal(direction) {
   return direction.x !== 0 && direction.y !== 0
@@ -25,9 +36,7 @@ function isStraightThrough(arms) {
 // Roads go above all terrain tiles, since diagonal arms cross the corners of other tiles.
 function createRoadElement({ map, tile, topLeft, makeElement }) {
   const roadEl = makeElement('div')
-  const arms = getNeighborTiles(tile)
-    .map((neighbor) => ({ x: neighbor.x - tile.x, y: neighbor.y - tile.y }))
-    .filter((direction) => hasRoadArm({ map, tile, direction }))
+  const arms = ROAD_DIRECTIONS.filter((direction) => hasRoadArm({ map, tile, direction }))
   const hubClass = isStraightThrough(arms) ? '' : ' road--hub'
   roadEl.className = `road road--${map.getRoadType(tile).name}${hubClass}`
   roadEl.style.transform = `translate(${topLeft.x + map.halfTileWidth}px, ${topLeft.y + map.halfTileHeight}px)`
@@ -36,17 +45,8 @@ function createRoadElement({ map, tile, topLeft, makeElement }) {
 
   for (const direction of arms) {
     const armEl = makeElement('span')
-    armEl.className = 'road__arm'
-    setStyleVar(
-      armEl,
-      '--road-arm-angle',
-      `${(Math.atan2(direction.y, direction.x) * 180) / Math.PI}deg`
-    )
-    setStyleVar(
-      armEl,
-      '--road-arm-length',
-      `${map.halfTileWidth * Math.hypot(direction.x, direction.y)}px`
-    )
+    armEl.className = isDiagonal(direction) ? 'road__arm road__arm--diagonal' : 'road__arm'
+    setStyleVar(armEl, '--road-arm-angle', `${direction.angle}deg`)
     roadEl.appendChild(armEl)
   }
 
