@@ -12,15 +12,37 @@ const ROAD_DIRECTIONS = [
   { name: 'nw', x: -1, y: -1 }
 ]
 
-// A road is drawn as a hub in the middle of its tile with an arm towards each neighbouring road.
-function createRoadElement({ map, tile, makeElement }) {
-  const roadEl = makeElement('div')
-  roadEl.className = `road road--${map.getRoadType(tile).name}`
+function isDiagonal(direction) {
+  return direction.x !== 0 && direction.y !== 0
+}
 
-  for (const direction of ROAD_DIRECTIONS) {
-    if (!map.getRoadType({ x: tile.x + direction.x, y: tile.y + direction.y })) {
-      continue
-    }
+// A diagonal neighbour already joined through a straight neighbour gets no arm of its own,
+// so a road turning a corner doesn't draw a triangle.
+function hasRoadArm({ map, tile, direction }) {
+  const hasRoadAt = (dx, dy) => map.getRoadType({ x: tile.x + dx, y: tile.y + dy }) !== null
+  if (!hasRoadAt(direction.x, direction.y)) {
+    return false
+  }
+  return !isDiagonal(direction) || (!hasRoadAt(direction.x, 0) && !hasRoadAt(0, direction.y))
+}
+
+function isStraightThrough(arms) {
+  return arms.length === 2 && arms[0].x === -arms[1].x && arms[0].y === -arms[1].y
+}
+
+// A road is drawn from the middle of its tile: an arm to the tile edge towards each road it
+// joins, meeting the neighbour's arm end to end, and a round hub where the road ends or turns.
+// Roads go above all terrain tiles, since diagonal arms cross the corners of other tiles.
+function createRoadElement({ map, tile, topLeft, makeElement }) {
+  const roadEl = makeElement('div')
+  const arms = ROAD_DIRECTIONS.filter((direction) => hasRoadArm({ map, tile, direction }))
+  const hubClass = isStraightThrough(arms) ? '' : ' road--hub'
+  roadEl.className = `road road--${map.getRoadType(tile).name}${hubClass}`
+  roadEl.style.transform = `translate(${topLeft.x + map.halfTileWidth}px, ${topLeft.y + map.halfTileHeight}px)`
+  roadEl.dataset.x = String(tile.x)
+  roadEl.dataset.y = String(tile.y)
+
+  for (const direction of arms) {
     const armEl = makeElement('span')
     armEl.className = `road__arm road__arm--${direction.name}`
     roadEl.appendChild(armEl)
@@ -37,6 +59,7 @@ export function renderTerrainLayer({ container, map, createElement }) {
     height: container.clientHeight ?? 0,
     map
   })
+  const roadElements = []
 
   for (let y = 0; y < map.height; y += 1) {
     for (let x = 0; x < map.width; x += 1) {
@@ -50,10 +73,14 @@ export function renderTerrainLayer({ container, map, createElement }) {
       tileEl.dataset.x = String(x)
       tileEl.dataset.y = String(y)
       if (map.getRoadType(tile)) {
-        tileEl.appendChild(createRoadElement({ map, tile, makeElement }))
+        roadElements.push(createRoadElement({ map, tile, topLeft, makeElement }))
       }
 
       container.appendChild(tileEl)
     }
+  }
+
+  for (const roadEl of roadElements) {
+    container.appendChild(roadEl)
   }
 }

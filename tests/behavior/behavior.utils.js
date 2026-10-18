@@ -232,7 +232,7 @@ export function getTerrainTile(x, y) {
 }
 
 export function getRoadOn(x, y) {
-  return getTerrainTile(x, y)?.querySelector('.road') ?? null
+  return document.querySelector(`.road[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function getHeroEntity() {

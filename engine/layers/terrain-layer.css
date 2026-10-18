@@ -14,24 +14,31 @@
   background: color-mix(in oklab, oklch(0.38 0.014 290) 88%, black 16%);
 }
 
-/* A road: a hub in the middle of the tile, with an arm towards each neighbouring road. */
+/* A road, placed at the middle of its tile. The element itself has no size; it only carries
+   the road colour for its arms (to the tile edges) and its hub (where the road ends or turns). */
 .road {
   position: absolute;
-  inset-inline-start: 50%;
-  inset-block-start: 50%;
+  inline-size: 0;
+  block-size: 0;
+}
+
+.road--hub::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -6px;
+  inset-block-start: -6px;
   inline-size: 12px;
   block-size: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 2px;
+  border-radius: 50%;
+  background: inherit;
 }
 
 .road__arm {
   position: absolute;
-  inset-inline-start: 50%;
-  inset-block-start: 50%;
-  inline-size: 17px;
+  inset-inline-start: 0;
+  inset-block-start: -6px;
+  inline-size: 16px;
   block-size: 12px;
-  margin-block-start: -6px;
   background: inherit;
   transform-origin: 0 50%;
 }
@@ -40,7 +47,7 @@
 .road__arm--se,
 .road__arm--sw,
 .road__arm--nw {
-  inline-size: 24px;
+  inline-size: 22.63px;
 }
 
 .road__arm--n {
