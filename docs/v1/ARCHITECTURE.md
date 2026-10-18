@@ -41,7 +41,7 @@ app/
   heroes/                    Heroes content, picked in boot-app.js as config.content
     content.js               heroesAppContent
     interaction-outcomes.js  outcome kind -> facts and modal
-    modules/                 turn, hud, music, minimap-view
+    modules/                 turn, hud, hero-panel, system-options, music, minimap-view
     presentation/            entity styles, fade-outs, resource sprites
   ui/
     interaction-modal.element.js
@@ -79,6 +79,8 @@ flowchart TD
   Registry --> MinimapView[minimap-view.module]
   Registry --> InteractionModalView[interaction-modal.module]
   Registry --> Hud[hud.module]
+  Registry --> HeroPanel[hero-panel.module]
+  Registry --> SystemOptions[system-options.module]
   Registry --> Music[music.module]
 
   World -->|fact.world.ready| Turn
@@ -185,15 +187,17 @@ Quick matrix:
 | `turn.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnState` (assigned only in fact handlers), `isMoving` | none |
 | `movement.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.route.requested`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `heroTile`, `removedIds`, `movement`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
 | `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited`, `fact.entity.removed` | `entitiesById` (static), `factsOnModalClosed` | none |
-| `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `command.move.continue.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.route.requested`, `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `requestedTile`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `remainingMovementPoints` | none |
-| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `map` | queries `.viewport`, `.world` |
+| `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `command.move.continue.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.route.requested`, `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `requestedTile`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `isSystemOptionsOpen`, `remainingMovementPoints` | none |
+| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `map`, `isSystemOptionsOpen` | queries `.viewport`, `.world` |
 | `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
 | `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `ui.restore.started`, `ui.restore.completed` | none | `removedIds`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
 | `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
 | `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
 | `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
 | `interaction-modal.module` | `ui.interaction.modal.opened` | `ui.interaction.modal.closed` | `activeModal` | queries `.viewport`; mounts custom element |
-| `hud.module` | `ui.preview.updated`, `fact.hero.movementPoints.changed`, `ui.music.state.changed`, `fact.world.ready` | `command.move.continue.requested`, `command.turn.end.requested`, `command.music.toggle.requested`, `command.session.reset.requested` | none | queries `.ui-layer`, `#movement-points-status`, `#resource-totals-status`, `#move-hero-button`, `#end-turn-button`, `#reset-session-button`, `#music-toggle-button`, `#boot-status` |
+| `hud.module` | `ui.preview.updated`, `fact.world.ready`, `fact.turn.ended`, `fact.resource.collected`, `fact.income.collected` | `command.move.continue.requested`, `command.turn.end.requested` | `resourceTypeOrder`, `resourceNamesByType`, `resourceTotalsByType` | queries `.ui-layer`, `#resource-bar-list`, `#calendar-status`, `#move-hero-button`, `#end-turn-button` |
+| `hero-panel.module` | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed` | `command.camera.centerOnTile` | `heroTile`, `movementPoints` | queries `#hero-list`, `#hero-info-name`, `#next-hero-button` |
+| `system-options.module` | `ui.music.state.changed` | `command.music.toggle.requested`, `command.session.reset.requested`, `ui.systemOptions.opened`, `ui.systemOptions.closed` | `isMusicEnabled`, `dialog` | queries `#system-options-button`, `.game-shell`; mounts the System options `<dialog>` |
 | `music.module` | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` | `musicPlayer`, `hasInitialized` | none |
 
 ### 6.1 Domain-first vs view modules
@@ -201,9 +205,9 @@ Quick matrix:
 Runtime modules are intentionally split into two categories:
 
 - domain/control modules: `world`, `turn`, `movement`, `interaction`, `selection`, `camera`, `music`
-- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `world-view`, `minimap-view`, `interaction-modal`, `hud`
+- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `world-view`, `minimap-view`, `interaction-modal`, `hud`, `hero-panel`, `system-options`
 
-`register-modules.js` registers the core modules plus the game's `config.content.modules` (for Heroes: turn, hud, music, minimap-view), domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
+`register-modules.js` registers the core modules plus the game's `config.content.modules` (for Heroes: turn, hud, hero-panel, system-options, music, minimap-view), domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
 
 Route selection vs. movement:
 
@@ -322,7 +326,7 @@ This is the canonical behavior for long routes in the current runtime.
 
 - on `fact.world.ready`, `music.module` lazily initializes player and emits initial `ui.music.state.changed`.
 - on `command.music.toggle.requested`, module toggles player and emits updated UI state.
-- `hud.module` is the single owner of music button label and `aria-pressed` rendering.
+- `system-options.module` is the single owner of the music button label and `aria-pressed` rendering; the button lives in the System options popup.
 
 ### 7.6 Monster combat -> modal -> deferred removal
 
@@ -353,12 +357,17 @@ Each module owns the selectors it queries and updates:
 - `interaction-modal.module`: `.viewport` (mount/unmount custom modal element)
 - `hud.module`:
   - `.ui-layer` (stop propagation)
-  - `#movement-points-status` (MP text)
-  - `#resource-totals-status` (resource totals text)
+  - `#resource-bar-list` (resource bar items and amounts)
+  - `#calendar-status` (date at the end of the resource bar)
+  - `#move-hero-button` (move-continue command source)
   - `#end-turn-button` (end-turn command source)
-  - `#reset-session-button` (reset command source)
-  - `#music-toggle-button` (music command source + UI state)
-  - `#boot-status` (boot status text)
+- `hero-panel.module`:
+  - `#hero-list` (hero portrait + movement bar; portrait click centres the camera)
+  - `#hero-info-name` (hero name in the info box)
+  - `#next-hero-button` (centres the camera; disabled with no movement left)
+- `system-options.module`:
+  - `#system-options-button` (opens the popup)
+  - the System options `<dialog>` it mounts in `.game-shell` (Music, Reset, Return to game)
 - `boot-app.js`: no feature DOM ownership; only optional bus dev panel composition
 
 `<interaction-modal>` owns its internal dialog DOM and interaction handlers; other modules interact with it through its public API and close event.
