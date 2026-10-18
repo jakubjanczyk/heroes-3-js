@@ -34,7 +34,8 @@ export const aScenario = () =>
       height: 1,
       tiles: new Array(6).fill(0),
       entities: [aHero().build()],
-      definitions: {}
+      definitions: {},
+      startingResources: {}
     },
     (scenario) => ({
       withSize(width, height = 1) {
@@ -44,6 +45,9 @@ export const aScenario = () =>
       },
       withRoads(roads) {
         scenario.roads = roads
+      },
+      withoutStartingResources() {
+        delete scenario.startingResources
       },
       withEntities(...entities) {
         scenario.entities = entities.map((entity) => entity.build())

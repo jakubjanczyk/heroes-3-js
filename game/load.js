@@ -50,6 +50,14 @@ function assertMonsterCounts(scenario) {
   }
 }
 
+function assertStartingResources(scenario) {
+  for (const [resourceType, amount] of Object.entries(scenario.startingResources ?? {})) {
+    if (!(Number.isInteger(amount) && amount >= 0)) {
+      throw new Error(`Starting resource ${resourceType} must be a whole number of at least 0`)
+    }
+  }
+}
+
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') return url
   if (url.startsWith('//')) return url
@@ -84,6 +92,7 @@ export async function loadGame({
   assertKnownTerrainCodes(scenario.terrain, map)
   assertEntitiesOnPassableTiles(scenario, map)
   assertMonsterCounts(scenario)
+  assertStartingResources(scenario)
 
   return {
     scenario,

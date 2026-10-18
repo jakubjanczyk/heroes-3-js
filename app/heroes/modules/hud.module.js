@@ -1,4 +1,5 @@
 import { calendarDateOfTurn, formatCalendarDate } from '../../../game/heroes/calendar.js'
+import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
@@ -116,13 +117,14 @@ export const registerHudModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             const definitions = event.detail.definitions?.resources ?? {}
+            const startingResources = startingResourcesOf(event.detail.scenario)
             resourceTypeOrder = Object.keys(definitions)
             resourceNamesByType = {}
             resourceTotalsByType = {}
 
             for (const resourceType of resourceTypeOrder) {
               resourceNamesByType[resourceType] = definitions[resourceType]?.name ?? resourceType
-              resourceTotalsByType[resourceType] = 0
+              resourceTotalsByType[resourceType] = startingResources[resourceType] ?? 0
             }
 
             renderResourceTotals()

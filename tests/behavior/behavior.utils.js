@@ -54,6 +54,7 @@ export function createLoadGame({
   height = 1,
   tiles = [0, 0, 0, 0],
   roads,
+  startingResources,
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
@@ -69,7 +70,8 @@ export function createLoadGame({
     scenario: {
       meta: { id: 'demo' },
       terrain: { width, height, tiles: terrainTiles, ...(roads ? { roads: [...roads] } : {}) },
-      entities: scenarioEntities
+      entities: scenarioEntities,
+      ...(startingResources ? { startingResources: { ...startingResources } } : {})
     },
     definitions: {
       hero: {},
