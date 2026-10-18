@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import { flushMicrotasks, setupMovementBehaviorApp } from './behavior.utils.js'
-
-function getMusicToggleButton() {
-  return document.querySelector('#music-toggle-button')
-}
+import {
+  flushMicrotasks,
+  getMusicToggleButton,
+  setupMovementBehaviorApp
+} from './behavior.utils.js'
 
 describe('music behavior', () => {
   test('given tracks exist at boot then music toggle shows off state before any user action', async () => {
@@ -21,12 +21,12 @@ describe('music behavior', () => {
       pause() {}
     }
 
-    await setupMovementBehaviorApp({
+    const { user } = await setupMovementBehaviorApp({
       musicTracks: ['/assets/music/a.mp3'],
       AudioCtor: FakeAudio
     })
 
-    const musicToggleButton = getMusicToggleButton()
+    const musicToggleButton = await getMusicToggleButton(user)
     expect(musicToggleButton).toBeTruthy()
     expect(musicToggleButton?.textContent).toBe('Music: Off')
     expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false')
@@ -50,7 +50,7 @@ describe('music behavior', () => {
       AudioCtor: FakeAudio
     })
 
-    const musicToggleButton = getMusicToggleButton()
+    const musicToggleButton = await getMusicToggleButton(user)
     expect(musicToggleButton).toBeTruthy()
 
     await user.click(musicToggleButton)
@@ -78,7 +78,7 @@ describe('music behavior', () => {
       AudioCtor: FakeAudio
     })
 
-    const musicToggleButton = getMusicToggleButton()
+    const musicToggleButton = await getMusicToggleButton(user)
     expect(musicToggleButton).toBeTruthy()
 
     await user.click(musicToggleButton)

@@ -37,6 +37,8 @@ export const APP_UI_WORLD_MOTION_UPDATED = 'ui.world.motion.updated'
 export const APP_UI_RESTORE_STARTED = 'ui.restore.started'
 export const APP_UI_RESTORE_COMPLETED = 'ui.restore.completed'
 export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed'
+export const APP_UI_SYSTEM_OPTIONS_OPENED = 'ui.systemOptions.opened'
+export const APP_UI_SYSTEM_OPTIONS_CLOSED = 'ui.systemOptions.closed'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,

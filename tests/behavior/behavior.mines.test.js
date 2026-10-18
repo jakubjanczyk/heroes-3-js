@@ -1,7 +1,4 @@
 // @vitest-environment jsdom
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
@@ -18,15 +15,12 @@ import {
   expectNoPreview,
   expectResourceTotal,
   flushMicrotasks,
+  readGameData,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
 import { aHero, aMine, aResource, aScenario } from './builders.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
-
-function readGameData(fileName) {
-  return JSON.parse(readFileSync(join(import.meta.dirname, '../../game/data', fileName), 'utf8'))
-}
 
 const gameDefinitions = {
   mines: readGameData('mines.json'),
@@ -144,13 +138,13 @@ describe('mine interaction behavior', () => {
 
   describe('income', () => {
     test.each([
-      ['GOLD_MINE', 'Gold pile', 1000],
-      ['SAWMILL', 'Wood pile', 2],
-      ['ORE_PIT', 'Ore pile', 2],
-      ['ALCHEMIST_LAB', 'Mercury pile', 1],
-      ['SULFUR_DUNE', 'Sulfur pile', 1],
-      ['CRYSTAL_CAVERN', 'Crystal pile', 1],
-      ['GEM_POND', 'Gems pile', 1]
+      ['GOLD_MINE', 'Gold', 1000],
+      ['SAWMILL', 'Wood', 2],
+      ['ORE_PIT', 'Ore', 2],
+      ['ALCHEMIST_LAB', 'Mercury', 1],
+      ['SULFUR_DUNE', 'Sulfur', 1],
+      ['CRYSTAL_CAVERN', 'Crystal', 1],
+      ['GEM_POND', 'Gems', 1]
     ])('a captured %s adds %s %i when the next day starts', async (mineType, resourceName, amount) => {
       const { user } = await setupMovementBehaviorApp({
         loadGameOptions: aMineScenario(aMine().withType(mineType).at(2, 1))
@@ -167,7 +161,7 @@ describe('mine interaction behavior', () => {
 
       await enterMineAt(2, 1)
 
-      expectResourceTotal('Gold pile', 0)
+      expectResourceTotal('Gold', 0)
     })
 
     test('pays the income again on every following day', async () => {
@@ -178,7 +172,7 @@ describe('mine interaction behavior', () => {
 
       await endTurns(user, 3)
 
-      expectResourceTotal('Gold pile', 3000)
+      expectResourceTotal('Gold', 3000)
     })
 
     test('pays the income once a day after the hero enters an owned mine again', async () => {
@@ -191,7 +185,7 @@ describe('mine interaction behavior', () => {
 
       await endTurns(user, 1)
 
-      expectResourceTotal('Gold pile', 1000)
+      expectResourceTotal('Gold', 1000)
     })
 
     test('adds the income of several owned mines together', async () => {
@@ -206,7 +200,7 @@ describe('mine interaction behavior', () => {
 
       await endTurns(user, 1)
 
-      expectResourceTotal('Gold pile', 2000)
+      expectResourceTotal('Gold', 2000)
     })
 
     test('pays nothing for a mine the hero has not entered', async () => {
@@ -216,7 +210,7 @@ describe('mine interaction behavior', () => {
 
       await endTurns(user, 1)
 
-      expectResourceTotal('Gold pile', 0)
+      expectResourceTotal('Gold', 0)
     })
 
     test('adds income on top of resources collected from piles', async () => {
@@ -229,7 +223,7 @@ describe('mine interaction behavior', () => {
 
       await endTurns(user, 1)
 
-      expectResourceTotal('Gold pile', 1100)
+      expectResourceTotal('Gold', 1100)
     })
   })
 
@@ -262,7 +256,7 @@ describe('mine interaction behavior', () => {
 
       await reload(session)
 
-      expectResourceTotal('Gold pile', 2000)
+      expectResourceTotal('Gold', 2000)
     })
 
     test('keeps paying income when the next day starts', async () => {
@@ -274,7 +268,7 @@ describe('mine interaction behavior', () => {
 
       await endTurns(reloaded.user, 1)
 
-      expectResourceTotal('Gold pile', 2000)
+      expectResourceTotal('Gold', 2000)
     })
   })
 })

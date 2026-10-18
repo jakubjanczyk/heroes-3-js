@@ -8,6 +8,7 @@ import {
   expectHeroAt,
   expectNoPreview,
   flushMicrotasks,
+  getMapViewCentreTile,
   getTerrainTile,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
@@ -110,14 +111,6 @@ function getMapViewArea() {
     top,
     right: left + viewportSize.width / TILE_SIZE,
     bottom: top + viewportSize.height / TILE_SIZE
-  }
-}
-
-function getMapViewCentreTile() {
-  const area = getMapViewArea()
-  return {
-    x: Math.floor((area.left + area.right) / 2),
-    y: Math.floor((area.top + area.bottom) / 2)
   }
 }
 
@@ -375,13 +368,13 @@ describe('minimap behavior', () => {
 
     test('given the player released a minimap drag when they later drag elsewhere then the camera does not follow', async () => {
       await setupLargeMapMinimapApp()
-      const hud = getElementOrFail('.hud')
+      const heroInfo = getElementOrFail('.info-box')
 
       pressOnMinimap(10, 10)
       movePointer(100, 100)
       releasePointer(100, 100)
-      pressPointer(190, 190, hud)
-      movePointer(195, 195, hud)
+      pressPointer(190, 190, heroInfo)
+      movePointer(195, 195, heroInfo)
 
       expect(getMapViewCentreTile()).toEqual({ x: 30, y: 20 })
     })
