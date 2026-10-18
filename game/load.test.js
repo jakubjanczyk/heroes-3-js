@@ -160,7 +160,34 @@ describe('bootstrap', () => {
       'Monster monster-1 must have a count that is a positive whole number'
     )
   })
+
+  test.each([
+    -5,
+    2.5,
+    '100'
+  ])('loadGame rejects scenarios with a starting resource amount of %j', async (amount) => {
+    const fetch = fakeFetchWithScenario({ startingResources: { GOLD_PILE: amount } })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Starting resource GOLD_PILE must be a whole number of at least 0'
+    )
+  })
 })
+
+function fakeFetchWithScenario(scenarioFields) {
+  return createFakeFetch({
+    './scenarios/scenario.json': {
+      meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
+      terrain: { width: 2, height: 1, tiles: [0, 0] },
+      entities: [{ id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
+      ...scenarioFields
+    },
+    './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+    './game/data/monsters.json': {},
+    './game/data/resources.json': {},
+    './game/data/towns.json': {}
+  })
+}
 
 function fakeFetchWithMonster(monster) {
   return createFakeFetch({

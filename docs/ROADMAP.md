@@ -160,7 +160,7 @@ Core game loop - resources flow, time passes.
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
 - [ ] Visual feedback when income is added (brief flash/highlight on resource counts)
-- [ ] Starting resources defined in scenario JSON
+- [x] Starting resources defined in scenario JSON (see 3.5)
 
 ### 3.3 Mine Ownership
 - [x] Mines are neutral until captured (one player for now, so ownership is just captured or not)
@@ -181,8 +181,9 @@ Core game loop - resources flow, time passes.
 
 ### 3.5 Starting Resources & Configuration
 - [ ] Scenario JSON defines starting resources per player
-- [ ] Default starting resources if not specified (10000 gold, 20 wood, 20 ore, etc.)
-- [ ] Resources initialized on world ready, before first turn
+  - [x] For now: one `startingResources` object for the only player (missing types start at 0)
+- [x] Default starting resources if not specified: Heroes 3 Normal difficulty (20000 gold, 20 wood, 20 ore, 10 each of mercury, sulfur, crystal and gems)
+- [x] Resources initialized on world ready, before first turn
 
 ---
 
@@ -765,7 +766,7 @@ Sprites and map authoring are intentionally late.
 7. Day/week/month cycle (3.1)
 8. Mine ownership (3.3)
 9. Resource income system (3.2)
-10. Resource spending framework (3.4)
+10. Starting resources (3.5). The resource spending framework (3.4) waits for its first user (town buildings or recruitment)
 
 ### Phase 2 - "Heroes Have Depth"
 11. Hero primary attributes (4.1)
