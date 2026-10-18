@@ -147,6 +147,18 @@ describe('adventure HUD behavior', () => {
       expect(querySystemOptions()).toBeNull()
     })
 
+    test('given System options is open when the player presses arrow keys then the map does not scroll', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aLargeMapScenario().build(),
+        viewportSize: LARGE_VIEWPORT_SIZE
+      })
+      await openSystemOptions(user)
+
+      panCamera('ArrowRight', 20)
+
+      expect(getMapViewCentreTile()).toEqual({ x: 20, y: 15 })
+    })
+
     test('given System options is open when the player clicks the map then the hero does not move', async () => {
       const { user } = await setupMovementBehaviorApp()
       await openSystemOptions(user)
