@@ -15,7 +15,7 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 // The Heroes 3 rollover bar under the map: names whatever the mouse is over.
 export const registerRolloverBarModule = defineModule(
   ({ env }) => {
-    const rolloverBar = env.document?.getElementById('rollover-bar')
+    const rolloverBar = env.document.getElementById('rollover-bar')
 
     let map = null
     let staticOccupancy = null
@@ -39,9 +39,7 @@ export const registerRolloverBarModule = defineModule(
     }
 
     function showText(text) {
-      if (rolloverBar) {
-        rolloverBar.textContent = text
-      }
+      rolloverBar.textContent = text
     }
 
     return {
@@ -49,36 +47,33 @@ export const registerRolloverBarModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            const entities = event.detail.scenario?.entities ?? []
-            map = event.detail.map ?? null
-            staticOccupancy = event.detail.staticOccupancy ?? null
-            definitions = event.detail.definitions ?? {}
-            entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
+            const { scenario } = event.detail
+            map = event.detail.map
+            staticOccupancy = event.detail.staticOccupancy
+            definitions = event.detail.definitions
+            entitiesById = new Map(scenario.entities.map((entity) => [entity.id, entity]))
             removedIds = NO_REMOVED_ENTITIES
-            hero = findHero(entities)
-            heroTile = hero?.tile ?? null
-            showText('')
+            hero = findHero(scenario.entities)
+            heroTile = hero.tile
           }
         },
         {
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
-            if (event.detail?.heroId === hero?.id && event.detail?.to) {
-              heroTile = event.detail.to
-            }
+            heroTile = event.detail.to
           }
         },
         {
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
-            removedIds = applyEntityRemoved(removedIds, event.detail?.entityId)
+            removedIds = applyEntityRemoved(removedIds, event.detail.entityId)
           }
         },
         {
           type: APP_UI_TILE_HOVERED,
           handler: (event) => {
-            const tile = event.detail?.tile
-            if (!map || !tile) {
+            const { tile } = event.detail
+            if (!tile) {
               showText('')
               return
             }
@@ -86,7 +81,7 @@ export const registerRolloverBarModule = defineModule(
             showText(
               getRolloverText({
                 entity: getEntityAt(tile),
-                terrainName: map.getTerrainType(tile)?.name,
+                terrainName: map.getTerrainType(tile).name,
                 definitions
               })
             )
