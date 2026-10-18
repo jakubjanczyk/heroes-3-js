@@ -53,6 +53,7 @@ export function createLoadGame({
   width = 4,
   height = 1,
   tiles = [0, 0, 0, 0],
+  roads,
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
@@ -67,7 +68,7 @@ export function createLoadGame({
   return {
     scenario: {
       meta: { id: 'demo' },
-      terrain: { width, height, tiles: terrainTiles },
+      terrain: { width, height, tiles: terrainTiles, ...(roads ? { roads: [...roads] } : {}) },
       entities: scenarioEntities
     },
     definitions: {
@@ -228,6 +229,10 @@ export async function setupLinearMovementApp(options = {}) {
 
 export function getTerrainTile(x, y) {
   return document.querySelector(`.terrain-tile[data-x="${x}"][data-y="${y}"]`)
+}
+
+export function getRoadOn(x, y) {
+  return document.querySelector(`.road[data-x="${x}"][data-y="${y}"]`)
 }
 
 export function getHeroEntity() {
@@ -464,11 +469,13 @@ export function expectNoPreview() {
   expect(document.querySelector('.path-preview-target')).toBeFalsy()
 }
 
+// Resolves once the move has played out (with no step delay, it settles in microtasks).
 export async function confirmMove(user, x, y) {
   const tile = getTerrainTile(x, y)
   expect(tile).toBeTruthy()
   await user.click(tile)
   await user.click(tile)
+  await flushMicrotasks()
 }
 
 export async function clickTile(user, x, y) {

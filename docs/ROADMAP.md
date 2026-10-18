@@ -250,7 +250,7 @@ Rules checked against VCMI's pathfinder (`config/terrains.json`, `config/roads.j
 - [x] When what is left after a step can't pay a straight step from the new tile, MP drops to 0
 - [x] Route search picks the cheapest route by MP; diagonal steps may pass between two blocked tiles
 - [x] Path preview marks the part of the route past today's MP (H3 shows no per-step costs)
-- [ ] Roads (needs a road layer): used only when both tiles have a road, cost of the road left: dirt 75, gravel 65, cobblestone 50
+- [x] Roads (needs a road layer): used only when both tiles have a road, cost of the road left: dirt 75, gravel 65, cobblestone 50
 - [ ] Pathfinding skill takes 25 / 50 / 75 off the terrain cost, never below 100
 - [ ] Native terrain: an all-native army pays 100 on its terrain
 - [ ] Logistics skill increases total MP:
@@ -500,11 +500,11 @@ Rich adventure map with meaningful locations.
 - [ ] Scouting skill: Basic +1, Advanced +2, Expert +3 vision radius
 
 ### 7.2 Roads
-- [ ] Road layer in scenario data: dirt, gravel or cobblestone per tile, on top of the terrain
-- [ ] Road movement costs as in 4.6: used only when both tiles have a road, cost of the road left (dirt 75, gravel 65, cobblestone 50)
-- [ ] Road visuals: road rendered on tiles
-- [ ] Route search prefers roads (lower cost, so the cheapest route takes them)
-- [ ] Roads connect towns and key locations in scenarios
+- [x] Road layer in scenario data: dirt, gravel or cobblestone per tile, on top of the terrain
+- [x] Road movement costs as in 4.6: used only when both tiles have a road, cost of the road left (dirt 75, gravel 65, cobblestone 50)
+- [x] Road visuals: road rendered on tiles
+- [x] Route search prefers roads (lower cost, so the cheapest route takes them)
+- [x] Roads connect towns and key locations in scenarios
 
 ### 7.3 Obstacles & Multi-Tile Objects
 - [ ] Mountains: large multi-tile impassable obstacles (visual variety)
@@ -643,7 +643,7 @@ Making the engine reusable. Enables portfolio and custom scenarios.
 - [ ] Scenario JSON schema documented and validated
 - [ ] Rich entity metadata support (title, description, image, links, tags)
 - [ ] Multiple terrain types in tile data (enum values instead of 0/1)
-- [ ] Road layer in terrain data
+- [x] Road layer in terrain data
 - [ ] Named regions/zones on map (for triggers, labels)
 - [ ] Starting conditions: resources, heroes, towns per player
 - [ ] Victory/loss conditions

@@ -19,10 +19,10 @@ function assertFootprintsOnPassableTerrain({ footprintBlockers, entities, map })
 // Builds the parts of the world that never change during play. Heroes are left out of
 // the occupancy index on purpose: they move, so their positions are tracked from facts.
 export function buildWorld(
-  { scenario, entityBehaviors, terrainTypes },
+  { scenario, entityBehaviors, terrainTypes, roadTypes },
   { createMap = createMapDefault, createOccupancyIndex = createOccupancyIndexDefault } = {}
 ) {
-  const map = createMap(scenario.terrain, terrainTypes)
+  const map = createMap(scenario.terrain, terrainTypes, roadTypes)
   const footprintBlockers = createFootprintBlockers({
     entities: scenario.entities,
     map,

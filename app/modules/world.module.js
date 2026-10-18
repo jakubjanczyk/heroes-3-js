@@ -13,6 +13,7 @@ export const registerWorldModule = defineModule(
   ({ emit, env, config }) => {
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
     const terrainTypes = config?.content?.terrainTypes
+    const roadTypes = config?.content?.roadTypes
     let hasStarted = false
 
     return {
@@ -32,7 +33,8 @@ export const registerWorldModule = defineModule(
                 const { map, staticOccupancy } = buildWorld({
                   scenario,
                   entityBehaviors,
-                  terrainTypes
+                  terrainTypes,
+                  roadTypes
                 })
 
                 emit(

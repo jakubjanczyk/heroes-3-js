@@ -64,7 +64,6 @@ describe('terrain behavior', () => {
     })
 
     await confirmMove(user, 6, 0)
-    await flushMicrotasks()
 
     expectHeroAt(6, 0)
   })

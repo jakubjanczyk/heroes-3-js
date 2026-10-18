@@ -64,7 +64,6 @@ describe('adventure HUD behavior', () => {
       const { user } = await setupMovementBehaviorApp()
 
       await confirmMove(user, 1, 0)
-      await flushMicrotasks()
 
       expectMovementPoints(1400)
     })
