@@ -1,7 +1,20 @@
-import { getNeighborTiles, sameTile } from './tile-utils.js'
+import { sameTile } from './tile-utils.js'
 
 function stateKey(tile, dirX, dirY) {
   return `${tile.x},${tile.y}|${dirX},${dirY}`
+}
+
+function getNeighbors(tile) {
+  const neighbors = []
+  for (let dy = -1; dy <= 1; dy += 1) {
+    for (let dx = -1; dx <= 1; dx += 1) {
+      if (dx === 0 && dy === 0) {
+        continue
+      }
+      neighbors.push({ x: tile.x + dx, y: tile.y + dy })
+    }
+  }
+  return neighbors
 }
 
 function reconstructPath(cameFrom, endTile) {
@@ -146,7 +159,7 @@ export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () =>
       return reconstructPath(cameFrom, current)
     }
 
-    for (const next of getNeighborTiles(current.tile)) {
+    for (const next of getNeighbors(current.tile)) {
       if (!map.inBounds(next)) {
         continue
       }
