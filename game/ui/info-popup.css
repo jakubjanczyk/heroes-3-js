@@ -70,3 +70,10 @@
   outline: 1px solid var(--trim-gold);
   outline-offset: 2px;
 }
+
+/* A hero's popup holds the same hero box as the info box, at the info box's size. */
+.info-popup--hero {
+  inline-size: 13rem;
+  align-items: stretch;
+  padding: var(--space-sm);
+}

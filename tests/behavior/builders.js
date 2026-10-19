@@ -7,7 +7,12 @@ const placeable = (entity) => ({
 })
 
 export const aHero = () =>
-  builder({ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, placeable)
+  builder({ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, (hero) => ({
+    ...placeable(hero),
+    withPrimarySkills(primarySkills) {
+      hero.primarySkills = primarySkills
+    }
+  }))
 
 export const aMonster = () =>
   builder(

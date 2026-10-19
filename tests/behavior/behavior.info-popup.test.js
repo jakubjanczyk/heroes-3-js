@@ -175,14 +175,6 @@ describe('info popup behavior', () => {
       expectInfoPopupLines(['Castle'])
     })
 
-    test("given the hero when the player holds the right button on it then the popup shows the hero's name", async () => {
-      const { user } = await setupApp(aScenario().withSize(3).withEntities(aHero().at(1, 0)))
-
-      await holdRightButtonOn(user, 1, 0)
-
-      expectInfoPopupLines(['Hero'])
-    })
-
     test('given an empty tile when the player holds the right button on it then the popup shows the terrain name', async () => {
       const { user } = await setupApp(aScenario().withSize(3).withTiles([0, 0, SWAMP]))
 

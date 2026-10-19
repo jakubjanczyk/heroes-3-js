@@ -75,6 +75,7 @@ export function createLoadGame({
     },
     definitions: {
       hero: {},
+      heroClasses: {},
       monsters: {},
       resources: {},
       towns: {},
@@ -112,6 +113,8 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
     ['/scenarios/scenario.json', scenario],
     ['./game/data/hero.json', definitions.hero ?? {}],
     ['/game/data/hero.json', definitions.hero ?? {}],
+    ['./game/data/hero-classes.json', definitions.heroClasses ?? {}],
+    ['/game/data/hero-classes.json', definitions.heroClasses ?? {}],
     ['./game/data/monsters.json', definitions.monsters ?? {}],
     ['/game/data/monsters.json', definitions.monsters ?? {}],
     ['./game/data/resources.json', definitions.resources ?? {}],
