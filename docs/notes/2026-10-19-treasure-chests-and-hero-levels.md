@@ -18,6 +18,8 @@ Roadmap 4.2, first step, through the Treasure Chest (7.7). Chests are the simple
 - `hero-levels.module.js` handles that command: it logs `fact.hero.experience.gained`, and for each level crossed rolls a primary skill (`config.random`, `Math.random` by default) and logs `fact.hero.leveledUp` with it before opening the popup. Replaying the log rebuilds the experience and skills without rolling again.
 - The info box and the hero's right-click popup add the level-up skills to the hero's primary skills.
 - A scenario may set a hero's starting `experience` (default 0), as the map editor allows.
+- The chest on the map is pixel art in the style of the game's chest, kept in the source as rows of palette keys (`treasure-chest-sprites.js`) and drawn at the resource sprites' scale. The dialog's experience picture is a gold star standing in for the game's experience icon; the gold picture is the gold resource sprite.
+- Dialogs are Heroes 3 message boxes, the same box as the right-click popup (`game/ui/message-box.css`): leather background, player-coloured gold-trimmed frame, centred text without a heading, the pictures with "or" between them and a gold frame on the picked one, and OK at the bottom centre.
 
 ## Not yet
 

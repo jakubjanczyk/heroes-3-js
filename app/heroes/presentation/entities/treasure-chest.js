@@ -1,9 +1,13 @@
+import { getTreasureChestSpriteStyle } from '../treasure-chest-sprites.js'
+
 export function getEntityLayerStyle() {
+  const { width, height, backgroundImage } = getTreasureChestSpriteStyle()
   return {
     className: 'entity entity--treasure-chest',
-    width: 22,
-    height: 18,
-    offsetX: -11,
-    offsetY: -9
+    width,
+    height,
+    offsetX: -Math.round(width / 2),
+    offsetY: -Math.round(height / 2),
+    backgroundImage
   }
 }

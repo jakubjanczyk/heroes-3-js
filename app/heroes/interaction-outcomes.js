@@ -15,6 +15,8 @@ import {
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED
 } from '../events.js'
+import { getResourceSpriteStyle } from './presentation/resource-sprites.js'
+import { getExperienceIconStyle } from './presentation/treasure-chest-sprites.js'
 
 const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +
@@ -68,11 +70,22 @@ export const heroesOutcomeEffects = Object.freeze({
         interactionKind: outcome.kind,
         entityId: outcome.entityId,
         entityType: outcome.entityType,
-        title: TREASURE_CHEST_NAME,
+        title: null,
+        label: TREASURE_CHEST_NAME,
         message: TREASURE_CHEST_MESSAGE,
         choices: [
-          { id: 'gold', amount: gold, label: `${gold} gold` },
-          { id: 'experience', amount: experience, label: `${experience} experience` }
+          {
+            id: 'gold',
+            amount: gold,
+            label: `${gold} gold`,
+            picture: getResourceSpriteStyle(TREASURE_CHEST_GOLD_RESOURCE).backgroundImage
+          },
+          {
+            id: 'experience',
+            amount: experience,
+            label: `${experience} experience`,
+            picture: getExperienceIconStyle().backgroundImage
+          }
         ]
       },
       factsOnModalClosed: [],

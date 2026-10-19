@@ -4,6 +4,7 @@ import {
   RESOURCE_ATLAS_SPRITES,
   RESOURCE_ATLAS_WIDTH
 } from './homm3-resource-atlas.js'
+import { isJsdomRuntime } from './pixel-art.js'
 
 const RESOURCE_TYPE_TO_SPRITE_KEY = {
   GOLD_PILE: 'gold',
@@ -22,11 +23,6 @@ function getScaledDimension(value) {
 }
 
 const resourceSpriteDataUrlByType = new Map()
-
-function isJsdomRuntime() {
-  const userAgent = globalThis.navigator?.userAgent
-  return typeof userAgent === 'string' && userAgent.toLowerCase().includes('jsdom')
-}
 
 function getSpriteForResourceType(resourceType) {
   const spriteKey = RESOURCE_TYPE_TO_SPRITE_KEY[resourceType]

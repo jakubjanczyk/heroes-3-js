@@ -1,6 +1,6 @@
 .interaction-modal {
   z-index: var(--z-ui-interaction-modal);
-  inline-size: min(28rem, calc(100% - (2 * var(--space-lg))));
+  inline-size: min(24rem, calc(100% - (2 * var(--space-lg))));
   max-inline-size: none;
   margin: auto;
   padding: 0;
@@ -15,8 +15,8 @@
     overlay var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete;
 
   &::backdrop {
-    background: color-mix(in oklab, var(--color-bg-deep) 72%, transparent);
-    backdrop-filter: blur(8px) saturate(1.1);
+    /* Heroes 3 leaves the map in view behind its messages; only dim it a little. */
+    background: rgb(0 0 0 / 0.25);
     opacity: 0;
     transition: opacity var(--interaction-modal-transition-duration, var(--duration-slow))
       var(--ease-standard);
@@ -47,14 +47,11 @@
   }
 }
 
+/* A Heroes 3 message box (message-box.css): centred text, pictures, and OK at the bottom. */
 .interaction-modal__surface {
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-strong);
-  background: color-mix(in oklab, var(--color-panel-strong) 94%, var(--color-bg));
-  box-shadow:
-    0 1.5rem 3rem color-mix(in oklab, var(--color-shadow) 90%, transparent),
-    inset 0 1px 0 color-mix(in oklab, white 8%, transparent);
-  padding: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-md);
+  line-height: 1.4;
   translate: 0 0;
   opacity: 1;
   transition:
@@ -75,52 +72,35 @@
   }
 }
 
+/* Heroes 3 messages have no heading: the title reads as the first line of the text. */
 .interaction-modal__title {
   margin: 0;
-  font-size: var(--font-size-lg);
-  line-height: 1.2;
+  font: inherit;
   text-wrap: balance;
+
+  &[hidden] {
+    display: none;
+  }
 }
 
-.interaction-modal__message {
+.interaction-modal__message,
+.interaction-modal__detail {
   margin: var(--space-sm) 0 0;
-  font-size: var(--font-size-md);
-  line-height: 1.45;
-  color: var(--color-ink-soft);
-}
+  text-wrap: pretty;
 
-.interaction-modal__actions {
-  margin-top: var(--space-md);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.interaction-modal__ok-button {
-  appearance: none;
-  border: 1px solid color-mix(in oklab, var(--color-accent) 30%, var(--color-border));
-  background: color-mix(in oklab, var(--color-panel-strong) 94%, transparent);
-  color: var(--color-ink-strong);
-  font-size: var(--font-size-sm);
-  line-height: 1;
-  padding: 0.6rem 0.95rem;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--color-accent) 72%, white 10%);
-    outline-offset: 2px;
+  .interaction-modal__title[hidden] + & {
+    margin-top: 0;
   }
 }
 
 .interaction-modal__detail {
-  margin: var(--space-sm) 0 0;
-  font-size: var(--font-size-md);
-  color: var(--color-ink-strong);
+  color: var(--hud-text-gold);
 }
 
 .interaction-modal__choices {
   margin-top: var(--space-md);
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: var(--space-md);
 
@@ -129,58 +109,92 @@
   }
 }
 
+.interaction-modal__choice-or {
+  color: var(--hud-text);
+}
+
 .interaction-modal__choice {
   appearance: none;
   display: grid;
   justify-items: center;
-  gap: var(--space-xs);
-  padding: 0.5rem 0.75rem;
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
-  background: color-mix(in oklab, var(--color-panel-strong) 94%, transparent);
-  color: var(--color-ink-strong);
-  font-size: var(--font-size-sm);
+  gap: var(--space-2xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--hud-text);
+  font: inherit;
+  text-shadow: inherit;
   cursor: pointer;
 
-  &[aria-pressed="true"] {
-    border-color: oklch(0.82 0.15 85);
+  &:focus-visible {
+    outline: 1px dotted var(--trim-gold-light);
+    outline-offset: 3px;
+  }
+}
+
+/* The picture sits in a dark well; the picked one is framed in gold, as in the game. */
+.interaction-modal__choice-picture {
+  inline-size: 3.5rem;
+  block-size: 3rem;
+  border: 1px solid black;
+  outline: 2px solid transparent;
+  background-color: rgb(0 0 0 / 0.35);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 80% auto;
+  image-rendering: pixelated;
+
+  [aria-pressed="true"] > & {
+    outline-color: var(--trim-gold-light);
+  }
+}
+
+.interaction-modal__actions {
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: center;
+}
+
+/* Styled like the adventure map buttons. */
+.interaction-modal__ok-button {
+  appearance: none;
+  min-inline-size: 4.5rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--trim-gold-dark);
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--interface-color) 18%, #29324a),
+    color-mix(in oklab, var(--interface-color) 14%, #0d1220)
+  );
+  box-shadow:
+    inset 1px 1px 0 var(--trim-gold-light),
+    inset -1px -1px 0 var(--trim-gold-dark),
+    0 0 0 1px black;
+  color: var(--trim-gold);
+  font: inherit;
+  font-weight: bold;
+  text-shadow: 0 1px 0 black;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--trim-gold-light);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow:
+      inset -1px -1px 0 var(--trim-gold-light),
+      inset 1px 1px 0 var(--trim-gold-dark),
+      0 0 0 1px black;
+  }
+
+  &:disabled {
+    filter: grayscale(0.8) brightness(0.7);
+    cursor: default;
   }
 
   &:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--color-accent) 72%, white 10%);
+    outline: 1px dotted var(--trim-gold-light);
     outline-offset: 2px;
   }
-}
-
-.interaction-modal__choice-icon {
-  inline-size: 2rem;
-  block-size: 2rem;
-  border-radius: 50%;
-
-  [data-choice="gold"] & {
-    background: radial-gradient(circle at 35% 35%, oklch(0.92 0.12 95), oklch(0.7 0.15 75));
-    border: 2px solid oklch(0.6 0.12 70);
-  }
-
-  [data-choice="experience"] & {
-    clip-path: polygon(
-      50% 0,
-      61% 35%,
-      98% 35%,
-      68% 57%,
-      79% 91%,
-      50% 70%,
-      21% 91%,
-      32% 57%,
-      2% 35%,
-      39% 35%
-    );
-    background: radial-gradient(circle, oklch(0.9 0.08 230), oklch(0.6 0.15 250));
-    border-radius: 0;
-  }
-}
-
-.interaction-modal__ok-button:disabled {
-  opacity: 0.5;
-  cursor: default;
 }

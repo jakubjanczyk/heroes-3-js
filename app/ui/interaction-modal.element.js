@@ -40,7 +40,7 @@ function ensureModalContent(host) {
   const titleId = `interaction-modal-title-${nextTitleId++}`
   host.innerHTML = `
     <dialog class="interaction-modal" closedby="none" aria-labelledby="${titleId}">
-      <article class="interaction-modal__surface">
+      <article class="interaction-modal__surface message-box">
         <h3 class="interaction-modal__title" id="${titleId}">Interaction</h3>
         <p class="interaction-modal__message"></p>
         <div class="interaction-modal__details"></div>
@@ -115,15 +115,15 @@ function renderDetails(host, details) {
   )
 }
 
-// Rewards to pick from, shown as an icon with the amount under it as in Heroes 3. OK stays
-// disabled until one is picked.
+// Rewards to pick from, as in Heroes 3: a picture each with the amount under it and "or" between
+// them; the picked one gets a gold frame. OK stays disabled until one is picked.
 function renderChoices(host, choices) {
   const document = host.ownerDocument
   host._choice = null
   host._choicesEl.hidden = choices.length === 0
   host._okButtonEl.disabled = choices.length > 0
 
-  const buttons = choices.map(({ id, amount, label }) => {
+  const buttons = choices.map(({ id, amount, label, picture }) => {
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'interaction-modal__choice'
@@ -132,8 +132,11 @@ function renderChoices(host, choices) {
     button.setAttribute('aria-pressed', 'false')
 
     const icon = document.createElement('span')
-    icon.className = 'interaction-modal__choice-icon'
+    icon.className = 'interaction-modal__choice-picture'
     icon.setAttribute('aria-hidden', 'true')
+    if (picture) {
+      icon.style.backgroundImage = `url('${picture}')`
+    }
 
     const amountLabel = document.createElement('span')
     amountLabel.className = 'interaction-modal__choice-amount'
@@ -151,7 +154,18 @@ function renderChoices(host, choices) {
     return button
   })
 
-  host._choicesEl.replaceChildren(...buttons)
+  host._choicesEl.replaceChildren(
+    ...buttons.flatMap((button, index) => {
+      if (index === 0) {
+        return [button]
+      }
+
+      const or = document.createElement('span')
+      or.className = 'interaction-modal__choice-or'
+      or.textContent = 'or'
+      return [or, button]
+    })
+  )
 }
 
 function applyTransitionMs(host) {
@@ -261,7 +275,15 @@ function defineInteractionModalElement(window) {
       }, this._transitionMs)
     }
 
-    showInteraction({ title = 'Interaction', message = '', details = [], choices = [] } = {}) {
+    // A Heroes 3 message has no title of its own: without one, `label` names the dialog for screen
+    // readers instead.
+    showInteraction({
+      title = 'Interaction',
+      label = '',
+      message = '',
+      details = [],
+      choices = []
+    } = {}) {
       configureModalHost(this, { transitionMs: this._transitionMs })
       this._clearCloseTimer()
       this._isClosing = false
@@ -269,7 +291,15 @@ function defineInteractionModalElement(window) {
       this._dialog.dataset.state = 'open'
 
       if (this._titleEl) {
-        this._titleEl.textContent = title
+        this._titleEl.textContent = title ?? ''
+        this._titleEl.hidden = !title
+      }
+      if (title) {
+        this._dialog.setAttribute('aria-labelledby', this._titleEl.id)
+        this._dialog.removeAttribute('aria-label')
+      } else {
+        this._dialog.removeAttribute('aria-labelledby')
+        this._dialog.setAttribute('aria-label', label)
       }
 
       if (this._messageEl) {

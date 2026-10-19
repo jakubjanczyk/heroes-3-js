@@ -98,7 +98,7 @@ export const registerInfoPopupModule = defineModule(
       const entity = mapObjects.getEntityAt(tile)
 
       popup = document.createElement('div')
-      popup.className = 'info-popup'
+      popup.className = 'info-popup message-box'
       popup.setAttribute('role', 'tooltip')
 
       if (entity?.kind === 'HERO') {
