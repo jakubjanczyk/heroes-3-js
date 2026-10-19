@@ -19,7 +19,7 @@ Roadmap 4.2, first step, through the Treasure Chest (7.7). Chests are the simple
 - The info box and the hero's right-click popup add the level-up skills to the hero's primary skills.
 - A scenario may set a hero's starting `experience` (default 0), as the map editor allows.
 - The chest on the map is pixel art drawn after the game's open chest, kept in the source as rows of palette keys (`treasure-chest-sprites.js`) and drawn at the resource sprites' scale.
-- The dialog matches the game's: a gold "Chest" title, the game's text in white, the gold heap and experience banner pictures (`assets/images/chest-gold.png`, `chest-experience.png`, cut from a screenshot of the game) with "or" between them and a thin gold frame on the picked one, and the checkmark OK button (`assets/images/ok-button.png`). Every dialog is drawn as the same Heroes 3 message box as the right-click popup (`game/ui/message-box.css`).
+- The dialog follows the game's: a gold "Chest" title, the game's text in white, a gold heap and the experience banner drawn as pixel art after the game's pictures (`chest-dialog-pictures.js`), "or" between them, a thin gold frame on the picked picture (never around its amount), and a checkmark OK button drawn in CSS and SVG. Every dialog is drawn as the same Heroes 3 message box as the right-click popup (`game/ui/message-box.css`). No image is taken from the game.
 
 ## Not yet
 

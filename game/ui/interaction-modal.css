@@ -128,23 +128,31 @@
   cursor: pointer;
 
   &:focus-visible {
-    outline: 1px dotted var(--trim-gold-light);
-    outline-offset: 4px;
+    outline: none;
   }
 }
 
-/* The picked picture gets a thin gold frame, as in the game. */
+/* The frame (gold when picked, dotted when focused from the keyboard) is on the picture only,
+ * never around the amount under it, as in the game. */
 .interaction-modal__choice-picture {
   inline-size: 4.5rem;
-  aspect-ratio: 147 / 168;
+  aspect-ratio: 36 / 42;
   outline: 1px solid transparent;
   outline-offset: 2px;
+  background-color: #3a2618;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: 100% auto;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.6);
+  image-rendering: pixelated;
 
   [aria-pressed="true"] > & {
     outline-color: var(--trim-gold);
+  }
+
+  :focus-visible > & {
+    outline-style: dotted;
+    outline-color: var(--trim-gold-light);
   }
 }
 
@@ -157,12 +165,17 @@
 /* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
 .interaction-modal__ok-button {
   appearance: none;
+  display: grid;
+  place-items: center;
   inline-size: 3.75rem;
-  aspect-ratio: 121 / 62;
+  block-size: 1.9rem;
   padding: 0;
-  border: 0;
-  background: url("../../assets/images/ok-button.png") center / 100% 100% no-repeat;
-  box-shadow: 0 0 0 1px black;
+  border: 1px solid black;
+  background: linear-gradient(180deg, #2c1a0e, #170d06);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 2px var(--trim-gold-dark),
+    inset 0 0 0 3px black;
   cursor: pointer;
 
   &:active:not(:disabled) {
@@ -178,4 +191,14 @@
     outline: 1px dotted var(--trim-gold-light);
     outline-offset: 2px;
   }
+}
+
+.interaction-modal__ok-check {
+  inline-size: 1.6rem;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(1px 1px 0 black);
 }

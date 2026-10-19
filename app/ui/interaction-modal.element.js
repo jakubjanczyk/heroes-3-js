@@ -46,7 +46,11 @@ function ensureModalContent(host) {
         <div class="interaction-modal__details"></div>
         <div class="interaction-modal__choices"></div>
         <div class="interaction-modal__actions">
-          <button class="interaction-modal__ok-button" type="button" aria-label="OK"></button>
+          <button class="interaction-modal__ok-button" type="button" aria-label="OK">
+            <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true">
+              <path d="M5 8.5 L9.5 13 L19 3" />
+            </svg>
+          </button>
         </div>
       </article>
     </dialog>

@@ -12,14 +12,13 @@ import {
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED
 } from '../events.js'
+import { getExperiencePicture, getGoldPicture } from './presentation/chest-dialog-pictures.js'
 
-// The Heroes 3 chest dialog: its title and text, and the pictures it offers.
+// The Heroes 3 chest dialog's title and text.
 const TREASURE_CHEST_TITLE = 'Chest'
 const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +
   'distribute it to the peasants for experience. Which do you choose?'
-const GOLD_PICTURE = './assets/images/chest-gold.png'
-const EXPERIENCE_PICTURE = './assets/images/chest-experience.png'
 
 function toModal(outcome) {
   return {
@@ -76,13 +75,13 @@ export const heroesOutcomeEffects = Object.freeze({
             id: 'gold',
             amount: gold,
             label: `${gold} gold`,
-            picture: GOLD_PICTURE
+            picture: getGoldPicture()
           },
           {
             id: 'experience',
             amount: experience,
             label: `${experience} experience`,
-            picture: EXPERIENCE_PICTURE
+            picture: getExperiencePicture()
           }
         ]
       },
