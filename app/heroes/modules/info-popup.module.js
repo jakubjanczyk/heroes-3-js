@@ -1,3 +1,4 @@
+import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
@@ -60,7 +61,8 @@ export const registerInfoPopupModule = defineModule(
       const box = document.createElement('div')
       renderHeroBox(box, document, {
         name: getEntityName({ entity, definitions }),
-        skills: getHeroPrimarySkills({ entity, definitions })
+        skills: getHeroPrimarySkills({ entity, definitions }),
+        army: getHeroArmy({ entity, definitions })
       })
       popup.appendChild(box)
     }
