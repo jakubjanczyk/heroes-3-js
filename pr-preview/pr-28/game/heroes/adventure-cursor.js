@@ -7,6 +7,18 @@ export const ADVENTURE_CURSOR = Object.freeze({
   VISIT: 'visit'
 })
 
+const COMPASS_ROWS = [
+  ['nw', 'n', 'ne'],
+  ['w', null, 'e'],
+  ['sw', 's', 'se']
+]
+
+// The arrow shown while the map scrolls from its edge, pointing the way it scrolls
+// ({ x, y }, each -1, 0 or 1; y -1 is up): 'scroll-n', 'scroll-ne', ... 'scroll-nw'.
+export function getScrollCursor(direction) {
+  return `scroll-${COMPASS_ROWS[direction.y + 1][direction.x + 1]}`
+}
+
 // Cursors from the 4th day on all show 4, as in Heroes 3.
 const LAST_NUMBERED_DAY = 4
 
