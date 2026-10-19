@@ -3,91 +3,61 @@ import { renderPixelArt } from './pixel-art.js'
 // Drawn at the same 1.25 scale as the resource sprites, so a chest sits among them at their size.
 const SCALE = 1.25
 
-// A wooden chest with gold bands and lock, in the style of the Heroes 3 map chest.
+// The Heroes 3 map chest: open, seen from above at an angle, red-brown panels in a light gold
+// frame with its contents glinting inside.
 const CHEST_ROWS = [
-  '............................',
-  '.....KKKKKKKKKKKKKKKKKK.....',
-  '...KKOHHHHHHHHHHHHHHHHYKK...',
-  '..KHYOHHHHHHHHHHHHHHHHYOHK..',
-  '.KLLYOLLLLLLLLLLLLLLLLYOLLK.',
-  '.KLLYODLLLLLDLLLLLDLLLYODLK.',
-  '.KLLYOLLLLLLLLLLLLLLLLYOLLK.',
-  '.KWWYOWWWWWKKKKKKWWWWWYOWWK.',
-  '.KDDYODDDDDKYGGGKDDDDDYODDK.',
-  '.KGOYOGOGOGKYGGGKOGOGOYOGOK.',
-  '.KLLYOLLLLLKYKKGKLLLLLYOLLK.',
-  '.KLLYOLLLLLKYKKGKLLLLLYOLLK.',
-  '.KWWYOWWWWWKYKGGKWWWWWYOWWK.',
-  '.KDDYODDDDDKKKKKKDDDDDYODDK.',
-  '.KWWYOWWWWWWWWWWWWWWWWYOWWK.',
-  '.KWWYOWWWWWWWWWWWWWWWWYOWWK.',
-  '.KWWYOWWWWWWWWWWWWWWWWYOWWK.',
-  '.KDDYODDDDDDDDDDDDDDDDYODDK.',
-  '.KWWYOWWWWWWWWWWWWWWWWYOWWK.',
-  '.KKKKKKKKKKKKKKKKKKKKKKKKKK.',
-  '...SSSSSSSSSSSSSSSSSSSSSSSS.',
-  '.....SSSSSSSSSSSSSSSSSSSS...'
+  '................................',
+  '.......kkkkkkkkkkkkkkkkkkkkkkk..',
+  '.......kTTTTTTTTTTTTTTTTTTTTTk..',
+  '......ktRRRRRRtRRRRRRtRRRRRtk...',
+  '......ktrrrrrrtrrrrrrtrrrrrtk...',
+  '.....ktrrrrrrtrrrrrrtrrrrrtk....',
+  '.....ktrrrrrrtrrrrrrtrrrrrtk....',
+  '....ktrrrrrrtrrrrrrtrrrrrtk.....',
+  '....ktttttttttttttttttttttk.....',
+  '....kuuuuuwuuuuuuuuuwuuuuuukk...',
+  '...kusnnnwswnnnsnwnnsnnnnukuk...',
+  '..kusnnnnsnnnnwnnnwsnnwnukudk...',
+  '.kusnnnnsnnnnsnnnnsnnnnukuddk...',
+  '.kTTTTTTTTTTTTTTTTTTTTTTkuddk...',
+  '.ktRRRRRtuRRRRRRtuRRRRRtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkuddk...',
+  '.ktrrrrrturrrrrrturrrrrtkudk....',
+  '.ktdddddtuddddddtudddddtkuk.....',
+  '.kuuuuuuuuuuuuuuuuuuuuuukk......',
+  '.kkkkkkkkkkkkkkkkkkkkkkkk.......',
+  '...SSSSSSSSSSSSSSSSSSSSSSSSSSSS.',
+  '......SSSSSSSSSSSSSSSSSSSSSSS...'
 ]
 
 const CHEST_PALETTE = {
-  K: [28, 16, 8, 255],
-  D: [74, 42, 18, 255],
-  W: [122, 74, 34, 255],
-  L: [160, 106, 50, 255],
-  H: [192, 138, 72, 255],
-  G: [217, 168, 56, 255],
-  Y: [244, 220, 120, 255],
-  O: [138, 100, 24, 255],
-  S: [0, 0, 0, 80]
+  k: [40, 18, 8, 255],
+  t: [214, 178, 120, 255],
+  T: [240, 214, 160, 255],
+  u: [150, 110, 64, 255],
+  r: [150, 42, 22, 255],
+  R: [186, 70, 36, 255],
+  d: [100, 30, 14, 255],
+  n: [34, 30, 48, 255],
+  s: [170, 172, 192, 255],
+  w: [240, 240, 248, 255],
+  S: [0, 0, 0, 90]
 }
 
-// Stands for experience in the chest dialog, where Heroes 3 shows its experience picture.
-const EXPERIENCE_ROWS = [
-  '........................',
-  '...........k............',
-  '...........k............',
-  '...........k............',
-  '..........kGk...........',
-  '..........kGk...........',
-  '.........kGGGk..........',
-  '.........kGGGk..........',
-  '.........kGGGk..........',
-  '.kkkkkkkkYYYYGkkkkkkkk..',
-  '...kGGGGYYYYYGGGGGGk....',
-  '....kGGGYYYWWGGGGGk.....',
-  '.....kGGYYWWWWOOOk......',
-  '......kGYYWWWWOOk.......',
-  '.......kYYYWWGOk........',
-  '.......kYYYYYGOk........',
-  '......kGGYYkYGOOk.......',
-  '......kGGGk.kGOOk.......',
-  '......kGkk...kkOk.......',
-  '.....kGk.......kOk......',
-  '.....kk.........kk......',
-  '........................',
-  '........................',
-  '........................'
-]
+let backgroundImage
 
-const EXPERIENCE_PALETTE = {
-  k: [58, 34, 6, 255],
-  O: [176, 120, 20, 255],
-  G: [230, 176, 48, 255],
-  Y: [250, 222, 110, 255],
-  W: [255, 250, 220, 255]
-}
-
-function spriteStyle(rows, palette) {
-  let backgroundImage
-  return () => {
-    backgroundImage ??= renderPixelArt({ rows, palette, scale: SCALE })
-    return {
-      width: Math.round(rows[0].length * SCALE),
-      height: Math.round(rows.length * SCALE),
-      backgroundImage
-    }
+export function getTreasureChestSpriteStyle() {
+  backgroundImage ??= renderPixelArt({ rows: CHEST_ROWS, palette: CHEST_PALETTE, scale: SCALE })
+  return {
+    width: Math.round(CHEST_ROWS[0].length * SCALE),
+    height: Math.round(CHEST_ROWS.length * SCALE),
+    backgroundImage
   }
 }
-
-export const getTreasureChestSpriteStyle = spriteStyle(CHEST_ROWS, CHEST_PALETTE)
-export const getExperienceIconStyle = spriteStyle(EXPERIENCE_ROWS, EXPERIENCE_PALETTE)

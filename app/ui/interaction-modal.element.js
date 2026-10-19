@@ -46,7 +46,7 @@ function ensureModalContent(host) {
         <div class="interaction-modal__details"></div>
         <div class="interaction-modal__choices"></div>
         <div class="interaction-modal__actions">
-          <button class="interaction-modal__ok-button" type="button">OK</button>
+          <button class="interaction-modal__ok-button" type="button" aria-label="OK"></button>
         </div>
       </article>
     </dialog>
@@ -275,15 +275,7 @@ function defineInteractionModalElement(window) {
       }, this._transitionMs)
     }
 
-    // A Heroes 3 message has no title of its own: without one, `label` names the dialog for screen
-    // readers instead.
-    showInteraction({
-      title = 'Interaction',
-      label = '',
-      message = '',
-      details = [],
-      choices = []
-    } = {}) {
+    showInteraction({ title = 'Interaction', message = '', details = [], choices = [] } = {}) {
       configureModalHost(this, { transitionMs: this._transitionMs })
       this._clearCloseTimer()
       this._isClosing = false
@@ -291,15 +283,7 @@ function defineInteractionModalElement(window) {
       this._dialog.dataset.state = 'open'
 
       if (this._titleEl) {
-        this._titleEl.textContent = title ?? ''
-        this._titleEl.hidden = !title
-      }
-      if (title) {
-        this._dialog.setAttribute('aria-labelledby', this._titleEl.id)
-        this._dialog.removeAttribute('aria-label')
-      } else {
-        this._dialog.removeAttribute('aria-labelledby')
-        this._dialog.setAttribute('aria-label', label)
+        this._titleEl.textContent = title
       }
 
       if (this._messageEl) {

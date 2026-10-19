@@ -1,6 +1,6 @@
 .interaction-modal {
   z-index: var(--z-ui-interaction-modal);
-  inline-size: min(24rem, calc(100% - (2 * var(--space-lg))));
+  inline-size: min(20rem, calc(100% - (2 * var(--space-lg))));
   max-inline-size: none;
   margin: auto;
   padding: 0;
@@ -47,11 +47,20 @@
   }
 }
 
-/* A Heroes 3 message box (message-box.css): centred text, pictures, and OK at the bottom. */
+/*
+ * A Heroes 3 message box (message-box.css): a gold title, white text, the pictures to choose from
+ * and the checkmark OK button at the bottom.
+ */
 .interaction-modal__surface {
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
   font-size: var(--font-size-md);
-  line-height: 1.4;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: white;
+  text-shadow:
+    1px 1px 0 black,
+    -1px 0 0 rgb(0 0 0 / 0.6);
   translate: 0 0;
   opacity: 1;
   transition:
@@ -72,45 +81,35 @@
   }
 }
 
-/* Heroes 3 messages have no heading: the title reads as the first line of the text. */
 .interaction-modal__title {
   margin: 0;
   font: inherit;
+  font-weight: normal;
+  color: var(--hud-text-gold);
   text-wrap: balance;
-
-  &[hidden] {
-    display: none;
-  }
 }
 
 .interaction-modal__message,
 .interaction-modal__detail {
-  margin: var(--space-sm) 0 0;
-  text-wrap: pretty;
-
-  .interaction-modal__title[hidden] + & {
-    margin-top: 0;
-  }
-}
-
-.interaction-modal__detail {
-  color: var(--hud-text-gold);
+  margin: var(--space-md) 0 0;
+  text-wrap: balance;
 }
 
 .interaction-modal__choices {
-  margin-top: var(--space-md);
+  margin-top: var(--space-lg);
   display: flex;
-  align-items: center;
+  align-items: end;
   justify-content: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 
   &[hidden] {
     display: none;
   }
 }
 
+/* "or" sits level with the bottom of the pictures, above their amounts. */
 .interaction-modal__choice-or {
-  color: var(--hud-text);
+  margin-block-end: 1.6rem;
 }
 
 .interaction-modal__choice {
@@ -121,31 +120,31 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--hud-text);
+  color: inherit;
   font: inherit;
+  font-weight: normal;
+  font-size: var(--font-size-sm);
   text-shadow: inherit;
   cursor: pointer;
 
   &:focus-visible {
     outline: 1px dotted var(--trim-gold-light);
-    outline-offset: 3px;
+    outline-offset: 4px;
   }
 }
 
-/* The picture sits in a dark well; the picked one is framed in gold, as in the game. */
+/* The picked picture gets a thin gold frame, as in the game. */
 .interaction-modal__choice-picture {
-  inline-size: 3.5rem;
-  block-size: 3rem;
-  border: 1px solid black;
-  outline: 2px solid transparent;
-  background-color: rgb(0 0 0 / 0.35);
+  inline-size: 4.5rem;
+  aspect-ratio: 147 / 168;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 80% auto;
-  image-rendering: pixelated;
+  background-size: cover;
 
   [aria-pressed="true"] > & {
-    outline-color: var(--trim-gold-light);
+    outline-color: var(--trim-gold);
   }
 }
 
@@ -155,41 +154,23 @@
   justify-content: center;
 }
 
-/* Styled like the adventure map buttons. */
+/* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
 .interaction-modal__ok-button {
   appearance: none;
-  min-inline-size: 4.5rem;
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--trim-gold-dark);
-  border-radius: 2px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--interface-color) 18%, #29324a),
-    color-mix(in oklab, var(--interface-color) 14%, #0d1220)
-  );
-  box-shadow:
-    inset 1px 1px 0 var(--trim-gold-light),
-    inset -1px -1px 0 var(--trim-gold-dark),
-    0 0 0 1px black;
-  color: var(--trim-gold);
-  font: inherit;
-  font-weight: bold;
-  text-shadow: 0 1px 0 black;
+  inline-size: 3.75rem;
+  aspect-ratio: 121 / 62;
+  padding: 0;
+  border: 0;
+  background: url("../../assets/images/ok-button.png") center / 100% 100% no-repeat;
+  box-shadow: 0 0 0 1px black;
   cursor: pointer;
 
-  &:hover:not(:disabled) {
-    color: var(--trim-gold-light);
-  }
-
   &:active:not(:disabled) {
-    box-shadow:
-      inset -1px -1px 0 var(--trim-gold-light),
-      inset 1px 1px 0 var(--trim-gold-dark),
-      0 0 0 1px black;
+    translate: 1px 1px;
   }
 
   &:disabled {
-    filter: grayscale(0.8) brightness(0.7);
+    filter: grayscale(1) brightness(0.6);
     cursor: default;
   }
 

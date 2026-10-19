@@ -4,7 +4,7 @@ Roadmap 4.2, first step, through the Treasure Chest (7.7). Chests are the simple
 
 ## How Heroes 3 does it
 
-- **Treasure Chest.** Walking up to one opens a dialog: "After scouring the area, you fall upon a hidden treasure cache. You may take the gold or distribute the gold to the peasants for experience. Do you wish to keep the gold?" The player picks the gold or the experience (two icons with the amounts) and confirms with OK. The chest is gone either way.
+- **Treasure Chest.** Walking up to one opens a dialog titled "Chest": "After scouring the area, you fall upon a hidden treasure cache. You may take the gold or distribute it to the peasants for experience. Which do you choose?" The player picks the gold or the experience (two pictures with the amounts under them) and confirms with the checkmark button. The chest is gone either way.
 - **What a chest holds.** 1000 gold or 500 experience (32%), 1500 or 1000 (32%), 2000 or 1500 (31%), or an artifact (5%).
 - **Levels.** Level 2 needs 1000 experience, then 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500 and 20600 for level 12. After that each step is 20% bigger than the one before, rounded down (VCMI `CHeroHandler::expPerLevel`).
 - **Level-up.** The player does not choose the primary skill: the game rolls it by the hero class's chances, which change after level 9 (Knight: Attack 35%, Defense 45%, Power 10%, Knowledge 10% up to level 9; 30/30/20/20 after). The choice on level-up is between two secondary skills. Each level gained shows its own popup.
@@ -18,8 +18,8 @@ Roadmap 4.2, first step, through the Treasure Chest (7.7). Chests are the simple
 - `hero-levels.module.js` handles that command: it logs `fact.hero.experience.gained`, and for each level crossed rolls a primary skill (`config.random`, `Math.random` by default) and logs `fact.hero.leveledUp` with it before opening the popup. Replaying the log rebuilds the experience and skills without rolling again.
 - The info box and the hero's right-click popup add the level-up skills to the hero's primary skills.
 - A scenario may set a hero's starting `experience` (default 0), as the map editor allows.
-- The chest on the map is pixel art in the style of the game's chest, kept in the source as rows of palette keys (`treasure-chest-sprites.js`) and drawn at the resource sprites' scale. The dialog's experience picture is a gold star standing in for the game's experience icon; the gold picture is the gold resource sprite.
-- Dialogs are Heroes 3 message boxes, the same box as the right-click popup (`game/ui/message-box.css`): leather background, player-coloured gold-trimmed frame, centred text without a heading, the pictures with "or" between them and a gold frame on the picked one, and OK at the bottom centre.
+- The chest on the map is pixel art drawn after the game's open chest, kept in the source as rows of palette keys (`treasure-chest-sprites.js`) and drawn at the resource sprites' scale.
+- The dialog matches the game's: a gold "Chest" title, the game's text in white, the gold heap and experience banner pictures (`assets/images/chest-gold.png`, `chest-experience.png`, cut from a screenshot of the game) with "or" between them and a thin gold frame on the picked one, and the checkmark OK button (`assets/images/ok-button.png`). Every dialog is drawn as the same Heroes 3 message box as the right-click popup (`game/ui/message-box.css`).
 
 ## Not yet
 

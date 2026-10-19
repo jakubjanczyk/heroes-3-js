@@ -4,10 +4,7 @@ import {
   INTERACTION_OUTCOME_KIND_TOWN_VISITED,
   INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND
 } from '../../game/heroes/interaction-kinds.js'
-import {
-  TREASURE_CHEST_GOLD_RESOURCE,
-  TREASURE_CHEST_NAME
-} from '../../game/heroes/treasure-chest.js'
+import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.js'
 import {
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_MONSTER_DEFEATED,
@@ -15,12 +12,14 @@ import {
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED
 } from '../events.js'
-import { getResourceSpriteStyle } from './presentation/resource-sprites.js'
-import { getExperienceIconStyle } from './presentation/treasure-chest-sprites.js'
 
+// The Heroes 3 chest dialog: its title and text, and the pictures it offers.
+const TREASURE_CHEST_TITLE = 'Chest'
 const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +
-  'distribute the gold to the peasants for experience. Do you wish to keep the gold?'
+  'distribute it to the peasants for experience. Which do you choose?'
+const GOLD_PICTURE = './assets/images/chest-gold.png'
+const EXPERIENCE_PICTURE = './assets/images/chest-experience.png'
 
 function toModal(outcome) {
   return {
@@ -70,21 +69,20 @@ export const heroesOutcomeEffects = Object.freeze({
         interactionKind: outcome.kind,
         entityId: outcome.entityId,
         entityType: outcome.entityType,
-        title: null,
-        label: TREASURE_CHEST_NAME,
+        title: TREASURE_CHEST_TITLE,
         message: TREASURE_CHEST_MESSAGE,
         choices: [
           {
             id: 'gold',
             amount: gold,
             label: `${gold} gold`,
-            picture: getResourceSpriteStyle(TREASURE_CHEST_GOLD_RESOURCE).backgroundImage
+            picture: GOLD_PICTURE
           },
           {
             id: 'experience',
             amount: experience,
             label: `${experience} experience`,
-            picture: getExperienceIconStyle().backgroundImage
+            picture: EXPERIENCE_PICTURE
           }
         ]
       },

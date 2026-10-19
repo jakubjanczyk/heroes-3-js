@@ -598,7 +598,7 @@ export function getTreasureChestEntity(entityId = 'chest-1') {
 }
 
 export function getTreasureChestDialog() {
-  return screen.getByRole('dialog', { name: 'Treasure Chest' })
+  return screen.getByRole('dialog', { name: 'Chest' })
 }
 
 // The rewards the chest dialog offers, as the player reads them, e.g. ['1500 gold', '1000 experience'].
