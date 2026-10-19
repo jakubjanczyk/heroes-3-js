@@ -34,16 +34,20 @@ Make the game visually functional. CSS-based - no sprites yet.
 - [x] Terrain type affects movement cost (see 4.6)
 
 ### 1.2 Cursor System
-- [ ] Custom cursor images replacing default browser cursor
-- [ ] Cursor state machine: default, move (reachable), move-far (beyond 1 turn), attack, visit, interact, blocked
-- [ ] Hover over empty passable tile: green boot (reachable) or yellow boot (2+ turns) or red X (unreachable)
-- [ ] Hover over monster: sword cursor
-- [ ] Hover over town: door/visit cursor
-- [ ] Hover over resource: grab/pickup cursor
-- [ ] Hover over mine: flag cursor
-- [ ] Hover over hero: exchange cursor (when multiple heroes exist)
-- [ ] Cursor updates in real-time as mouse moves across tiles
-- [ ] Cursor reflects whether tile is within current turn's movement range
+Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursors.md`.
+- [x] Custom cursor images replacing default browser cursor (the H3 arrow everywhere, buttons included)
+- [x] Cursor states as in H3: arrow, hero, move, attack, visit, numbered 2-4 for the day the hero gets there
+- [x] Hover over empty passable tile: horse, numbered when it takes 2+ days; arrow when unreachable
+- [x] Hover over monster: crossed swords cursor
+- [x] Hover over town entrance: rearing horse (visit) cursor; the town body shows the arrow
+- [x] Hover over resource or treasure chest: rearing horse (visit) cursor
+- [x] Hover over mine entrance: rearing horse (visit) cursor; the mine body shows the arrow
+- [x] Hover over the hero: hero helmet cursor
+- [ ] Hover over own town: town cursor (needs town ownership)
+- [ ] Hover over another hero: exchange cursor (needs multiple heroes)
+- [x] Scroll arrows at the map edges, while edge scrolling
+- [x] Cursor updates in real-time as mouse moves across tiles, and when the hero moves under a still mouse
+- [x] Cursor reflects whether tile is within current turn's movement range
 
 ### 1.3 HUD Redesign
 - [x] Resource bar along the bottom (as in H3) showing all 7 resource types with icons and counts, in H3 order

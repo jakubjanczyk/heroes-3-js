@@ -111,7 +111,6 @@
     margin-inline: auto;
     overflow: hidden;
     background: black;
-    cursor: pointer;
   }
 }
 
@@ -141,7 +140,6 @@
     inset -1px -1px 0 var(--trim-gold-dark),
     0 0 0 1px black;
   color: var(--trim-gold);
-  cursor: pointer;
 
   & .adventure-button__icon {
     /* Shrinks with the button when a short screen squeezes the button rows. */
@@ -181,7 +179,6 @@
   &:disabled {
     color: color-mix(in oklab, var(--trim-gold) 50%, #6a6a6a);
     filter: grayscale(0.6);
-    cursor: default;
   }
 
   &:focus-visible {
@@ -248,7 +245,6 @@
     "Times New Roman",
     serif;
   text-shadow: 0 1px 0 black;
-  cursor: pointer;
 
   &:hover {
     border-color: var(--trim-gold-light);
@@ -559,7 +555,6 @@
       inset 1px 1px 0 var(--trim-gold-light),
       inset -1px -1px 0 var(--trim-gold-dark);
     color: var(--hud-text-gold);
-    cursor: pointer;
 
     &:hover {
       background: linear-gradient(180deg, #36415e, #141a2c);

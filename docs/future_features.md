@@ -17,7 +17,7 @@ right click on entities
 monsters count
 resources count
 taking town
-cursor on different entities/tiles
+cursor on different entities/tiles (done, see notes/2026-10-19-cursors.md)
 info on hover at the bottom
 UI around map
 resources at the bottom

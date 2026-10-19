@@ -6,7 +6,8 @@ export function createEdgePanController({
   edgePanSpeed = 700,
   now = () => Date.now(),
   requestAnimationFrame = globalThis.requestAnimationFrame,
-  cancelAnimationFrame = globalThis.cancelAnimationFrame
+  cancelAnimationFrame = globalThis.cancelAnimationFrame,
+  onScrollDirectionChange = () => {}
 }) {
   let isMouseOverViewport = false
   let edgeDirection = null
@@ -14,6 +15,29 @@ export function createEdgePanController({
   let edgeVelocity = { x: 0, y: 0 }
   let edgePanFrameHandle = null
   let edgePanLastTimestamp = null
+  let scrollDirection = null
+
+  // Reports which way the map scrolls ({ x, y }, each -1, 0 or 1 towards the map edge it shows
+  // more of), or null once it stops, also when the camera can't go further.
+  function setScrollDirection(direction) {
+    const isSame =
+      direction === scrollDirection ||
+      (direction?.x === scrollDirection?.x && direction?.y === scrollDirection?.y)
+    if (isSame) {
+      return
+    }
+
+    scrollDirection = direction
+    onScrollDirectionChange(direction)
+  }
+
+  function panCamera(dx, dy) {
+    const before = camera.getOffset()
+    camera.moveBy(dx, dy)
+    const after = camera.getOffset()
+    const moved = { x: -Math.sign(after.x - before.x), y: -Math.sign(after.y - before.y) }
+    setScrollDirection(moved.x === 0 && moved.y === 0 ? null : moved)
+  }
 
   function scheduleEdgePanFrame(callback) {
     if (typeof requestAnimationFrame === 'function') {
@@ -62,6 +86,7 @@ export function createEdgePanController({
     edgeDirectionStartedAt = 0
     edgeVelocity = { x: 0, y: 0 }
     stopEdgePanLoop()
+    setScrollDirection(null)
   }
 
   function getEdgeIntensity({ value, min, max }) {
@@ -128,7 +153,7 @@ export function createEdgePanController({
       const dx = edgeVelocity.x * edgePanSpeed * deltaSeconds
       const dy = edgeVelocity.y * edgePanSpeed * deltaSeconds
       if (dx !== 0 || dy !== 0) {
-        camera.moveBy(dx, dy)
+        panCamera(dx, dy)
       }
     }
 

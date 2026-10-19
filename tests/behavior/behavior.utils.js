@@ -637,3 +637,27 @@ export function readPrimarySkills(container) {
 export function expectStatusBarText(text) {
   expect(screen.getByRole('status', { name: 'Status bar' }).textContent).toBe(text)
 }
+
+// The Heroes 3 cursor the mouse shows over an element, by its picture in assets/cursors:
+// 'arrow', 'hero', 'move', 'attack' or 'visit', with '-2' to '-4' for the day the hero gets there.
+export function getCursorOver(element) {
+  const cursor = window.getComputedStyle(element).cursor
+  return cursor.match(/cursors\/([\w-]+)\.png/)?.[1] ?? cursor
+}
+
+// The cursor over the map, where the pointer lands on the layer drawn on top of the tiles.
+export function getMapCursor() {
+  return getCursorOver(document.querySelector('.effects-layer'))
+}
+
+// Keeps the mouse still over the map at screen point (x, y) for longer than edge scrolling
+// waits before it starts.
+export async function holdMouseOverMap(x, y) {
+  const viewport = document.querySelector('.viewport')
+  const effectsLayer = document.querySelector('.effects-layer')
+  viewport.dispatchEvent(new window.MouseEvent('mouseenter'))
+  effectsLayer.dispatchEvent(
+    new window.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y })
+  )
+  await waitMs(360)
+}
