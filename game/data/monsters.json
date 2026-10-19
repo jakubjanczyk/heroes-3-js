@@ -1,6 +1,336 @@
 {
+  "PIKEMAN": {
+    "name": "Pikeman",
+    "namePlural": "Pikemen",
+    "faction": "CASTLE",
+    "tier": 1,
+    "upgradesTo": "HALBERDIER",
+    "attack": 4,
+    "defense": 5,
+    "damage": {
+      "min": 1,
+      "max": 3
+    },
+    "health": 10,
+    "speed": 4,
+    "growth": 14,
+    "cost": {
+      "GOLD_PILE": 60
+    },
+    "aiValue": 80,
+    "abilities": ["immuneToJousting"]
+  },
+  "HALBERDIER": {
+    "name": "Halberdier",
+    "namePlural": "Halberdiers",
+    "faction": "CASTLE",
+    "tier": 1,
+    "attack": 6,
+    "defense": 5,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "health": 10,
+    "speed": 5,
+    "growth": 14,
+    "cost": {
+      "GOLD_PILE": 75
+    },
+    "aiValue": 115,
+    "abilities": ["immuneToJousting"]
+  },
+  "ARCHER": {
+    "name": "Archer",
+    "namePlural": "Archers",
+    "faction": "CASTLE",
+    "tier": 2,
+    "upgradesTo": "MARKSMAN",
+    "attack": 6,
+    "defense": 3,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "health": 10,
+    "speed": 4,
+    "growth": 9,
+    "cost": {
+      "GOLD_PILE": 100
+    },
+    "aiValue": 126,
+    "abilities": ["ranged"],
+    "shots": 12
+  },
+  "MARKSMAN": {
+    "name": "Marksman",
+    "namePlural": "Marksmen",
+    "faction": "CASTLE",
+    "tier": 2,
+    "attack": 6,
+    "defense": 3,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "health": 10,
+    "speed": 6,
+    "growth": 9,
+    "cost": {
+      "GOLD_PILE": 150
+    },
+    "aiValue": 184,
+    "abilities": ["ranged", "shootsTwice"],
+    "shots": 24
+  },
+  "GRIFFIN": {
+    "name": "Griffin",
+    "namePlural": "Griffins",
+    "faction": "CASTLE",
+    "tier": 3,
+    "upgradesTo": "ROYAL_GRIFFIN",
+    "attack": 8,
+    "defense": 8,
+    "damage": {
+      "min": 3,
+      "max": 6
+    },
+    "health": 25,
+    "speed": 6,
+    "growth": 7,
+    "cost": {
+      "GOLD_PILE": 200
+    },
+    "aiValue": 351,
+    "abilities": ["flying", "doubleWide", "twoRetaliations"]
+  },
+  "ROYAL_GRIFFIN": {
+    "name": "Royal Griffin",
+    "namePlural": "Royal Griffins",
+    "faction": "CASTLE",
+    "tier": 3,
+    "attack": 9,
+    "defense": 9,
+    "damage": {
+      "min": 3,
+      "max": 6
+    },
+    "health": 25,
+    "speed": 9,
+    "growth": 7,
+    "cost": {
+      "GOLD_PILE": 240
+    },
+    "aiValue": 448,
+    "abilities": ["flying", "doubleWide", "unlimitedRetaliations"]
+  },
+  "SWORDSMAN": {
+    "name": "Swordsman",
+    "namePlural": "Swordsmen",
+    "faction": "CASTLE",
+    "tier": 4,
+    "upgradesTo": "CRUSADER",
+    "attack": 10,
+    "defense": 12,
+    "damage": {
+      "min": 6,
+      "max": 9
+    },
+    "health": 35,
+    "speed": 5,
+    "growth": 4,
+    "cost": {
+      "GOLD_PILE": 300
+    },
+    "aiValue": 445,
+    "abilities": []
+  },
+  "CRUSADER": {
+    "name": "Crusader",
+    "namePlural": "Crusaders",
+    "faction": "CASTLE",
+    "tier": 4,
+    "attack": 12,
+    "defense": 12,
+    "damage": {
+      "min": 7,
+      "max": 10
+    },
+    "health": 35,
+    "speed": 6,
+    "growth": 4,
+    "cost": {
+      "GOLD_PILE": 400
+    },
+    "aiValue": 588,
+    "abilities": ["strikesTwice"]
+  },
+  "MONK": {
+    "name": "Monk",
+    "namePlural": "Monks",
+    "faction": "CASTLE",
+    "tier": 5,
+    "upgradesTo": "ZEALOT",
+    "attack": 12,
+    "defense": 7,
+    "damage": {
+      "min": 10,
+      "max": 12
+    },
+    "health": 30,
+    "speed": 5,
+    "growth": 3,
+    "cost": {
+      "GOLD_PILE": 400
+    },
+    "aiValue": 485,
+    "abilities": ["ranged"],
+    "shots": 12
+  },
+  "ZEALOT": {
+    "name": "Zealot",
+    "namePlural": "Zealots",
+    "faction": "CASTLE",
+    "tier": 5,
+    "attack": 12,
+    "defense": 10,
+    "damage": {
+      "min": 10,
+      "max": 12
+    },
+    "health": 30,
+    "speed": 7,
+    "growth": 3,
+    "cost": {
+      "GOLD_PILE": 450
+    },
+    "aiValue": 750,
+    "abilities": ["ranged", "noMeleePenalty"],
+    "shots": 24
+  },
+  "CAVALIER": {
+    "name": "Cavalier",
+    "namePlural": "Cavaliers",
+    "faction": "CASTLE",
+    "tier": 6,
+    "upgradesTo": "CHAMPION",
+    "attack": 15,
+    "defense": 15,
+    "damage": {
+      "min": 15,
+      "max": 25
+    },
+    "health": 100,
+    "speed": 7,
+    "growth": 2,
+    "cost": {
+      "GOLD_PILE": 1000
+    },
+    "aiValue": 1946,
+    "abilities": ["doubleWide", "jousting"]
+  },
+  "CHAMPION": {
+    "name": "Champion",
+    "namePlural": "Champions",
+    "faction": "CASTLE",
+    "tier": 6,
+    "attack": 16,
+    "defense": 16,
+    "damage": {
+      "min": 20,
+      "max": 25
+    },
+    "health": 100,
+    "speed": 9,
+    "growth": 2,
+    "cost": {
+      "GOLD_PILE": 1200
+    },
+    "aiValue": 2100,
+    "abilities": ["doubleWide", "jousting"]
+  },
+  "ANGEL": {
+    "name": "Angel",
+    "namePlural": "Angels",
+    "faction": "CASTLE",
+    "tier": 7,
+    "upgradesTo": "ARCHANGEL",
+    "attack": 20,
+    "defense": 20,
+    "damage": {
+      "min": 50,
+      "max": 50
+    },
+    "health": 200,
+    "speed": 12,
+    "growth": 1,
+    "cost": {
+      "GOLD_PILE": 3000,
+      "GEMS_PILE": 1
+    },
+    "aiValue": 5019,
+    "abilities": ["flying", "raisesMorale", "hatesDevils"]
+  },
+  "ARCHANGEL": {
+    "name": "Archangel",
+    "namePlural": "Archangels",
+    "faction": "CASTLE",
+    "tier": 7,
+    "attack": 30,
+    "defense": 30,
+    "damage": {
+      "min": 50,
+      "max": 50
+    },
+    "health": 250,
+    "speed": 18,
+    "growth": 1,
+    "cost": {
+      "GOLD_PILE": 5000,
+      "GEMS_PILE": 3
+    },
+    "aiValue": 8776,
+    "abilities": ["flying", "doubleWide", "raisesMorale", "hatesDevils", "resurrects"]
+  },
   "SKELETON": {
     "name": "Skeleton",
-    "namePlural": "Skeletons"
+    "namePlural": "Skeletons",
+    "faction": "NECROPOLIS",
+    "tier": 1,
+    "upgradesTo": "SKELETON_WARRIOR",
+    "attack": 5,
+    "defense": 4,
+    "damage": {
+      "min": 1,
+      "max": 3
+    },
+    "health": 6,
+    "speed": 4,
+    "growth": 12,
+    "cost": {
+      "GOLD_PILE": 60
+    },
+    "aiValue": 60,
+    "abilities": ["undead"]
+  },
+  "SKELETON_WARRIOR": {
+    "name": "Skeleton Warrior",
+    "namePlural": "Skeleton Warriors",
+    "faction": "NECROPOLIS",
+    "tier": 1,
+    "attack": 6,
+    "defense": 6,
+    "damage": {
+      "min": 1,
+      "max": 3
+    },
+    "health": 6,
+    "speed": 5,
+    "growth": 12,
+    "cost": {
+      "GOLD_PILE": 70
+    },
+    "aiValue": 85,
+    "abilities": ["undead"]
   }
 }
