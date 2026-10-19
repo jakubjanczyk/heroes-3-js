@@ -67,6 +67,26 @@ describe('hero army behavior', () => {
         ''
       ])
     })
+    test('given a hero with 10 Marksmen and 1 Royal Griffin when the game loads then the army slots show them', async () => {
+      await setupApp(
+        aScenario().withEntities(
+          aHero().withArmy([
+            { creature: 'MARKSMAN', count: 10 },
+            { creature: 'ROYAL_GRIFFIN', count: 1 }
+          ])
+        )
+      )
+
+      expect(readArmySlots(getHeroInfoBox())).toEqual([
+        'Marksmen 10',
+        'Royal Griffin 1',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
   })
 
   describe('right-click popup', () => {

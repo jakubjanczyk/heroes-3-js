@@ -652,6 +652,13 @@ export function getMapCursor() {
 
 // Keeps the mouse still over the map at screen point (x, y) for longer than edge scrolling
 // waits before it starts.
+// Moves the mouse onto a tile in one step: the tile's position is read and the mouse moved before
+// the map can scroll any further, so it lands on the tile even while the map is scrolling.
+export function moveMouseOntoTile(x, y) {
+  const { target, coords } = pointerOverTile(x, y)
+  target.dispatchEvent(new window.MouseEvent('mousemove', { bubbles: true, ...coords }))
+}
+
 export async function holdMouseOverMap(x, y) {
   const viewport = document.querySelector('.viewport')
   const effectsLayer = document.querySelector('.effects-layer')

@@ -318,13 +318,16 @@ Rules checked against VCMI's pathfinder (`config/terrains.json`, `config/roads.j
 The central gameplay mechanic.
 
 ### 5.1 Creature Database
-- [ ] Creature data file per faction with all creatures
-- [ ] Creature stats: attack, defense, min damage, max damage, health, speed, growth, cost
-- [ ] Creature tier: 1-7 (determines power level and town dwelling level)
-- [ ] Creature abilities/flags: ranged, flying, double-wide (2-hex), undead, etc.
-- [ ] Upgraded creature variants (e.g. Skeleton -> Skeleton Warrior)
-- [ ] Creature value (AI value) for army strength estimation
-- [ ] At minimum implement Castle faction creatures:
+See `docs/notes/2026-10-19-creature-database.md`.
+- [ ] Creature data for every faction (one file, `game/data/monsters.json`, with a faction on each creature)
+  - [x] Castle, plus Skeleton and Skeleton Warrior (the creatures the game already uses)
+- [x] Creature stats: attack, defense, min damage, max damage, health, speed, growth, cost
+- [x] Creature tier: 1-7 (determines power level and town dwelling level)
+- [x] Creature abilities/flags: ranged (with shots), flying, double-wide (2-hex), undead, etc. (names only; they do nothing until combat)
+- [x] Upgraded creature variants (e.g. Skeleton -> Skeleton Warrior)
+- [x] Creature value (AI value) for army strength estimation
+- [ ] Creature portraits (58x64 and 32x32) for the army slots, hero screen and town
+- [x] At minimum implement Castle faction creatures:
   - T1: Pikeman / Halberdier
   - T2: Archer / Marksman
   - T3: Griffin / Royal Griffin

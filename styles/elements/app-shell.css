@@ -39,6 +39,8 @@
   /* A long press opens the info popup, not the browser's callout or a text selection. */
   -webkit-touch-callout: none;
   user-select: none;
+  /* A tap places the move marker; the browser's tap highlight would flash the whole map. */
+  -webkit-tap-highlight-color: transparent;
 
   &[data-viewport-visibility="hidden"] {
     visibility: hidden;

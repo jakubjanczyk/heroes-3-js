@@ -106,6 +106,18 @@ describe('status bar behavior', () => {
     expectStatusBarText(text)
   })
 
+  test('given a pack of Griffins when the mouse is over them then the status bar shows Pack of Griffins', async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(3)
+        .withEntities(aHero(), aMonster().withType('GRIFFIN').withCount(12).at(2, 0))
+    )
+
+    await hoverTile(user, 2, 0)
+
+    expectStatusBarText('Pack of Griffins')
+  })
+
   test('given a resource when the mouse is over it then the status bar shows only its name', async () => {
     const { user } = await setupApp(
       aScenario().withSize(3).withEntities(aHero(), aResource().withType('GOLD_PILE').at(2, 0))

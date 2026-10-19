@@ -290,8 +290,16 @@
       },
       "army": [
         {
-          "creature": "SKELETON",
-          "count": 12
+          "creature": "PIKEMAN",
+          "count": 20
+        },
+        {
+          "creature": "ARCHER",
+          "count": 8
+        },
+        {
+          "creature": "GRIFFIN",
+          "count": 3
         }
       ]
     },
@@ -334,7 +342,7 @@
     {
       "id": "monster-1",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "ANGEL",
       "count": 3,
       "tile": {
         "x": 13,
@@ -344,7 +352,7 @@
     {
       "id": "monster-2",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "CAVALIER",
       "count": 7,
       "tile": {
         "x": 21,
@@ -354,7 +362,7 @@
     {
       "id": "monster-3",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "GRIFFIN",
       "count": 12,
       "tile": {
         "x": 33,
@@ -364,7 +372,7 @@
     {
       "id": "monster-4",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "SWORDSMAN",
       "count": 25,
       "tile": {
         "x": 52,
@@ -374,7 +382,7 @@
     {
       "id": "monster-5",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "ARCHER",
       "count": 60,
       "tile": {
         "x": 12,
@@ -384,7 +392,7 @@
     {
       "id": "monster-6",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "PIKEMAN",
       "count": 150,
       "tile": {
         "x": 28,
@@ -404,7 +412,7 @@
     {
       "id": "monster-8",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "SKELETON_WARRIOR",
       "count": 700,
       "tile": {
         "x": 47,
@@ -424,7 +432,7 @@
     {
       "id": "monster-10",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "ARCHANGEL",
       "count": 3,
       "tile": {
         "x": 17,
@@ -434,7 +442,7 @@
     {
       "id": "monster-11",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "CRUSADER",
       "count": 7,
       "tile": {
         "x": 31,
@@ -444,7 +452,7 @@
     {
       "id": "monster-12",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "ROYAL_GRIFFIN",
       "count": 12,
       "tile": {
         "x": 45,
@@ -454,7 +462,7 @@
     {
       "id": "monster-13",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "MONK",
       "count": 25,
       "tile": {
         "x": 57,
@@ -464,7 +472,7 @@
     {
       "id": "monster-14",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "MARKSMAN",
       "count": 60,
       "tile": {
         "x": 5,
@@ -474,7 +482,7 @@
     {
       "id": "monster-15",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "HALBERDIER",
       "count": 150,
       "tile": {
         "x": 19,
@@ -484,7 +492,7 @@
     {
       "id": "monster-16",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "SKELETON_WARRIOR",
       "count": 300,
       "tile": {
         "x": 31,
@@ -504,7 +512,7 @@
     {
       "id": "monster-18",
       "kind": "MONSTER",
-      "type": "SKELETON",
+      "type": "SKELETON_WARRIOR",
       "count": 1200,
       "tile": {
         "x": 60,

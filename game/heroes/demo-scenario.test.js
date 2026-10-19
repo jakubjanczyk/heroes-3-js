@@ -61,3 +61,25 @@ describe('demo scenario loading', () => {
     ).resolves.toBeTruthy()
   })
 })
+
+describe('demo scenario creatures', () => {
+  test('every creature in the demo scenario, on the map or in an army, is in the creature data', () => {
+    const scenario = JSON.parse(
+      readFileSync(new URL('../../scenarios/scenario.json', import.meta.url), 'utf8')
+    )
+    const creatures = JSON.parse(
+      readFileSync(new URL('../data/monsters.json', import.meta.url), 'utf8')
+    )
+    const monsterTypes = scenario.entities
+      .filter((entity) => entity.kind === 'MONSTER')
+      .map((entity) => entity.type)
+    const armyCreatures = scenario.entities
+      .flatMap((entity) => entity.army ?? [])
+      .filter(Boolean)
+      .map((stack) => stack.creature)
+
+    const unknown = [...monsterTypes, ...armyCreatures].filter((type) => !(type in creatures))
+
+    expect(unknown).toEqual([])
+  })
+})
