@@ -125,7 +125,6 @@
   font-weight: normal;
   font-size: var(--font-size-sm);
   text-shadow: inherit;
-  cursor: pointer;
 
   &:focus-visible {
     outline: none;
@@ -176,7 +175,6 @@
     inset 0 0 0 1px var(--trim-gold),
     inset 0 0 0 2px var(--trim-gold-dark),
     inset 0 0 0 3px black;
-  cursor: pointer;
 
   &:active:not(:disabled) {
     translate: 1px 1px;
@@ -184,7 +182,6 @@
 
   &:disabled {
     filter: grayscale(1) brightness(0.6);
-    cursor: default;
   }
 
   &:focus-visible {

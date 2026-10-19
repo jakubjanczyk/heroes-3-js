@@ -1,5 +1,6 @@
 import { heroesContent } from '../../game/heroes/content.js'
 import { heroesOutcomeEffects } from './interaction-outcomes.js'
+import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
 import { registerHeroLevelsModule } from './modules/hero-levels.module.js'
 import { registerHeroPanelModule } from './modules/hero-panel.module.js'
 import { registerHudModule } from './modules/hud.module.js'
@@ -28,6 +29,7 @@ export const heroesAppContent = Object.freeze({
     registerMinimapViewModule,
     registerHudModule,
     registerStatusBarModule,
+    registerAdventureCursorModule,
     registerInfoPopupModule,
     registerHeroPanelModule,
     registerSystemOptionsModule,
