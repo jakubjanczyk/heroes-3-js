@@ -32,8 +32,6 @@ async function holdRightButtonOn(user, x, y) {
 
 const skeletons = (count) => ({ creature: 'SKELETON', count })
 
-// Each army slot is the creature's picture, named for screen readers, with the exact count;
-// an empty slot reads as ''.
 function readArmySlots(container) {
   const army = within(container).getByRole('list', { name: 'Army' })
   return within(army)

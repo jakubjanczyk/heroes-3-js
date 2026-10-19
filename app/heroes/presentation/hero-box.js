@@ -1,7 +1,6 @@
 // Fills a container with the Heroes 3 hero box from `#hero-box-template` in index.html: the
 // portrait (the hero's initial until there are portraits), the name, the four primary skills
-// (an icon each with the value under it, as in the game) and the seven army slots, each stack as
-// the creature's picture with its exact count.
+// (an icon each with the value under it, as in the game) and the seven army slots.
 export function renderHeroBox(container, document, { name, skills, army }) {
   const box = document.getElementById('hero-box-template').content.cloneNode(true)
 

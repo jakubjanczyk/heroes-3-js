@@ -6,7 +6,6 @@ const placeable = (entity) => ({
   }
 })
 
-// Every hero has an army; by default a single stack of Skeletons.
 export const aHero = () =>
   builder(
     {
