@@ -1,0 +1,79 @@
+/*
+ * The Heroes 3 right-click popup. As in the game's message boxes, the background is brown leather
+ * and the player's colour is only in the frame: a coloured band between thin gold lines, with gold
+ * corners.
+ */
+.info-popup {
+  --info-popup-leather: #5a3a24;
+  --info-popup-band: 0.1875rem;
+
+  position: fixed;
+  z-index: var(--z-ui-info-popup);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-inline-size: 8rem;
+  max-inline-size: min(18rem, calc(100vw - 1rem));
+  padding: var(--space-sm) var(--space-md);
+  background:
+    radial-gradient(circle at 18% 30%, rgb(255 214 160 / 0.1), transparent 22%),
+    radial-gradient(circle at 62% 18%, rgb(0 0 0 / 0.16), transparent 26%),
+    radial-gradient(circle at 80% 70%, rgb(255 214 160 / 0.08), transparent 24%),
+    radial-gradient(circle at 35% 82%, rgb(0 0 0 / 0.18), transparent 28%),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 0.25)),
+    var(--info-popup-leather);
+  border: var(--info-popup-band) solid color-mix(in oklab, var(--interface-color) 78%, black);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 2px #1a0f08,
+    0 0 0 1px var(--trim-gold),
+    0 0 0 2px black,
+    0 0 0 3px var(--trim-gold-light),
+    0 0.5rem 1.25rem var(--color-shadow);
+  color: var(--hud-text);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  text-shadow: 0 1px 0 black;
+  /* Never takes the pointer, so releasing the button over the popup still reaches the page. */
+  pointer-events: none;
+
+  /* Gold corner pieces over the coloured band. */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--info-popup-band));
+    --corner: 0.625rem;
+    --corner-line: 0.125rem;
+    --gold: linear-gradient(var(--trim-gold), var(--trim-gold));
+    background:
+      var(--gold) top left / var(--corner) var(--corner-line),
+      var(--gold) top left / var(--corner-line) var(--corner),
+      var(--gold) top right / var(--corner) var(--corner-line),
+      var(--gold) top right / var(--corner-line) var(--corner),
+      var(--gold) bottom left / var(--corner) var(--corner-line),
+      var(--gold) bottom left / var(--corner-line) var(--corner),
+      var(--gold) bottom right / var(--corner) var(--corner-line),
+      var(--gold) bottom right / var(--corner-line) var(--corner);
+    background-repeat: no-repeat;
+  }
+}
+
+.info-popup__line {
+  margin: 0;
+}
+
+.info-popup__picture {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  margin-block-end: var(--space-2xs);
+  outline: 1px solid var(--trim-gold);
+  outline-offset: 2px;
+}
+
+/* A hero's popup holds the same hero box as the info box, at the info box's size. */
+.info-popup--hero {
+  inline-size: 13rem;
+  align-items: stretch;
+  padding: var(--space-sm);
+}
