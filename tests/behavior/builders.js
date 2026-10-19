@@ -7,12 +7,25 @@ const placeable = (entity) => ({
 })
 
 export const aHero = () =>
-  builder({ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }, (hero) => ({
-    ...placeable(hero),
-    withPrimarySkills(primarySkills) {
-      hero.primarySkills = primarySkills
-    }
-  }))
+  builder(
+    {
+      id: 'hero-1',
+      kind: 'HERO',
+      type: 'HERO',
+      tile: { x: 0, y: 0 },
+      army: [{ creature: 'SKELETON', count: 10 }]
+    },
+    (hero) => ({
+      ...placeable(hero),
+      withPrimarySkills(primarySkills) {
+        hero.primarySkills = primarySkills
+      },
+      // Up to seven slots in order; null leaves a slot empty.
+      withArmy(army) {
+        hero.army = army
+      }
+    })
+  )
 
 export const aMonster = () =>
   builder(

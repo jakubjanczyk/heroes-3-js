@@ -1,4 +1,5 @@
 import { findHero } from '../../../game/domain/entity-queries.js'
+import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
@@ -57,9 +58,9 @@ export const registerHeroPanelModule = defineModule(
       renderMovementPoints()
     }
 
-    function renderInfoBox(name, skills) {
+    function renderInfoBox(name, { skills, army }) {
       if (heroInfo) {
-        renderHeroBox(heroInfo, env.document, { name, skills })
+        renderHeroBox(heroInfo, env.document, { name, skills, army })
       }
     }
 
@@ -97,10 +98,11 @@ export const registerHeroPanelModule = defineModule(
             heroTile = hero?.tile ?? null
             const name = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
             renderHero(name)
-            renderInfoBox(
-              name,
-              getHeroPrimarySkills({ entity: hero, definitions: event.detail.definitions })
-            )
+            const { definitions } = event.detail
+            renderInfoBox(name, {
+              skills: getHeroPrimarySkills({ entity: hero, definitions }),
+              army: getHeroArmy({ entity: hero, definitions })
+            })
           }
         },
         {

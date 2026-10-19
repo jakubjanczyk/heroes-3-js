@@ -92,7 +92,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
   - [x] For now: the town's name (needs town ownership and buildings)
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
-  - [x] For now: the same box as the info box (portrait initial, name, primary skills, empty army slots); morale/luck, spell points and the army need 4.3 and later
+  - [x] For now: the same box as the info box (portrait initial, name, primary skills, the army with exact counts); morale/luck and spell points need later work
 - [x] Right-click on empty terrain shows the terrain name
 - [x] Popups look like H3 message boxes: brown leather background, player colour only in the gold-trimmed frame
 - [x] (Not in H3, touch screens) Long press (500 ms) opens the same popup above the finger; lifting the finger closes it, a short tap still moves as before
@@ -211,9 +211,10 @@ Heroes become characters with identity and progression.
 - [ ] Current XP and XP to next level shown in hero details
 
 ### 4.3 Hero Army
-- [ ] Hero carries up to 7 creature stacks
-- [ ] Each stack: creature type + count
-- [ ] Army displayed in hero panel (7 slots, creature icon + count per slot)
+- [x] Hero carries up to 7 creature stacks, each in its own slot; a scenario gives every hero an army
+- [x] Each stack: creature type + count
+  - [x] For now: Skeletons only (from `game/data/monsters.json`), with no creature stats
+- [x] Army displayed in the info box and the hero's right-click popup (7 slots, creature picture + exact count per slot; the map look until creature portraits)
 - [ ] Click on stack to see creature details (stats, abilities)
 - [ ] Drag-and-drop to reorder stacks within hero army
 - [ ] Split stack: divide one stack into two (right-click > split)
