@@ -107,22 +107,22 @@ const ATTACK_ROWS = [
 
 // Over anything else the hero can visit: a rearing horse.
 const VISIT_ROWS = [
-  '.........kk.....',
-  '........kBBk....',
-  '.......kBWBBk...',
-  '......kMBBBBBk..',
-  '.....kMBBBkkk...',
-  '....kMBBBBk.....',
-  '...kBkBBBBBk....',
-  '..kBk.kBBBBk....',
-  '..kk..kBBBBk....',
-  '......kBBBBk....',
-  '.....kBBBBBk....',
-  '....kBBkkBBk....',
-  '...kMk..kBk.....',
-  '..kMk...kBk.....',
-  '.kBk....kBBk....',
-  '.kk.....kkkk....'
+  '..........kk....',
+  '.........kBBk...',
+  '........kBWBBk..',
+  '.......kMBBBBBk.',
+  '......kMMBBkBBBk',
+  '......kMBBk.kkk.',
+  '.....kMBBBk.....',
+  '.....kMBBBBkkkk.',
+  '....kMBBBBBBBBBk',
+  '....kBBBBBBkkkBk',
+  '...kBBBBBbbbk.kk',
+  '..kBBBBBBkkkbk..',
+  '.kMBBBBBBk...k..',
+  'kMk.kBBkBk......',
+  'kMk.kBk.kBk.....',
+  '.k..kkk..kkk....'
 ]
 
 // The day number, white on a black patch in the bottom right corner.
