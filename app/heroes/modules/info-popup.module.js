@@ -4,6 +4,7 @@ import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
 import {
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_WORLD_READY,
@@ -33,6 +34,7 @@ export const registerInfoPopupModule = defineModule(
     const ownedMineIds = new Set()
 
     let definitions = {}
+    let levelUpSkills = []
     let popup = null
 
     function close() {
@@ -61,7 +63,7 @@ export const registerInfoPopupModule = defineModule(
       const box = document.createElement('div')
       renderHeroBox(box, document, {
         name: getEntityName({ entity, definitions }),
-        skills: getHeroPrimarySkills({ entity, definitions }),
+        skills: getHeroPrimarySkills({ entity, definitions, levelUpSkills }),
         army: getHeroArmy({ entity, definitions })
       })
       popup.appendChild(box)
@@ -96,7 +98,7 @@ export const registerInfoPopupModule = defineModule(
       const entity = mapObjects.getEntityAt(tile)
 
       popup = document.createElement('div')
-      popup.className = 'info-popup'
+      popup.className = 'info-popup message-box'
       popup.setAttribute('role', 'tooltip')
 
       if (entity?.kind === 'HERO') {
@@ -117,6 +119,7 @@ export const registerInfoPopupModule = defineModule(
             mapObjects.onWorldReady(event.detail)
             definitions = event.detail.definitions
             ownedMineIds.clear()
+            levelUpSkills = []
             close()
           }
         },
@@ -136,6 +139,12 @@ export const registerInfoPopupModule = defineModule(
           type: APP_FACT_MINE_CAPTURED,
           handler: (event) => {
             ownedMineIds.add(event.detail.entityId)
+          }
+        },
+        {
+          type: APP_FACT_HERO_LEVELED_UP,
+          handler: (event) => {
+            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
           }
         },
         {
@@ -160,6 +169,7 @@ export const registerInfoPopupModule = defineModule(
       APP_FACT_HERO_MOVED,
       APP_FACT_ENTITY_REMOVED,
       APP_FACT_MINE_CAPTURED,
+      APP_FACT_HERO_LEVELED_UP,
       APP_UI_TILE_INFO_REQUESTED,
       APP_UI_TILE_INFO_DISMISSED
     ],

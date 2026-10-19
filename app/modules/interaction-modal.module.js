@@ -14,16 +14,21 @@ export const registerInteractionModalModule = defineModule(
     const viewport = env.document?.querySelector('.viewport')
     const modalTransitionMs = config?.interactionModalTransitionMs ?? 260
     let activeModal = null
+    let isClosing = false
+    // Modals opened while one is showing wait their turn, e.g. one level-up popup per level.
+    const waitingModals = []
 
     function openModal(payload) {
-      if (!viewport || !env.document) {
-        return
+      waitingModals.push(payload)
+      if (!activeModal && !isClosing) {
+        showNextModal()
       }
+    }
 
-      if (activeModal) {
-        emit(APP_UI_INTERACTION_MODAL_CLOSED, {})
-        activeModal.remove()
-        activeModal = null
+    function showNextModal() {
+      const payload = waitingModals.shift()
+      if (!payload || !viewport || !env.document) {
+        return
       }
 
       const modalElement = createInteractionModalElement({
@@ -36,11 +41,18 @@ export const registerInteractionModalModule = defineModule(
 
       modalElement.addEventListener(
         INTERACTION_MODAL_CLOSED_EVENT,
-        () => {
+        (event) => {
           if (activeModal === modalElement) {
             activeModal = null
           }
-          emit(APP_UI_INTERACTION_MODAL_CLOSED, {})
+          // Modals opened in reaction to this one closing queue up behind those already waiting.
+          isClosing = true
+          try {
+            emit(APP_UI_INTERACTION_MODAL_CLOSED, { choice: event.detail?.choice ?? null })
+          } finally {
+            isClosing = false
+          }
+          showNextModal()
         },
         { once: true }
       )

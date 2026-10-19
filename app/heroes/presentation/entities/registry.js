@@ -3,13 +3,15 @@ import * as mine from './mine.js'
 import * as monster from './monster.js'
 import * as resource from './resource.js'
 import * as town from './town.js'
+import * as treasureChest from './treasure-chest.js'
 
 const presentationByKind = Object.freeze({
   HERO: hero,
   MINE: mine,
   MONSTER: monster,
   RESOURCE: resource,
-  TOWN: town
+  TOWN: town,
+  TREASURE_CHEST: treasureChest
 })
 
 export function getEntityPresentation(entity) {
