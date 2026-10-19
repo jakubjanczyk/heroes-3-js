@@ -20,6 +20,9 @@ export const aHero = () =>
       withPrimarySkills(primarySkills) {
         hero.primarySkills = primarySkills
       },
+      withExperience(experience) {
+        hero.experience = experience
+      },
       // Up to seven slots in order; null leaves a slot empty.
       withArmy(army) {
         hero.army = army
@@ -44,6 +47,19 @@ export const aTown = () =>
 
 export const aMine = () =>
   builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, placeable)
+
+// Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience.
+export const aTreasureChest = () =>
+  builder(
+    {
+      id: 'chest-1',
+      kind: 'TREASURE_CHEST',
+      type: 'TREASURE_CHEST',
+      tier: 2,
+      tile: { x: 1, y: 0 }
+    },
+    placeable
+  )
 
 export const aScenario = () =>
   builder(

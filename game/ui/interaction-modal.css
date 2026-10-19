@@ -1,6 +1,6 @@
 .interaction-modal {
   z-index: var(--z-ui-interaction-modal);
-  inline-size: min(28rem, calc(100% - (2 * var(--space-lg))));
+  inline-size: min(20rem, calc(100% - (2 * var(--space-lg))));
   max-inline-size: none;
   margin: auto;
   padding: 0;
@@ -15,8 +15,8 @@
     overlay var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete;
 
   &::backdrop {
-    background: color-mix(in oklab, var(--color-bg-deep) 72%, transparent);
-    backdrop-filter: blur(8px) saturate(1.1);
+    /* Heroes 3 leaves the map in view behind its messages; only dim it a little. */
+    background: rgb(0 0 0 / 0.25);
     opacity: 0;
     transition: opacity var(--interaction-modal-transition-duration, var(--duration-slow))
       var(--ease-standard);
@@ -47,14 +47,20 @@
   }
 }
 
+/*
+ * A Heroes 3 message box (message-box.css): a gold title, white text, the pictures to choose from
+ * and the checkmark OK button at the bottom.
+ */
 .interaction-modal__surface {
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-strong);
-  background: color-mix(in oklab, var(--color-panel-strong) 94%, var(--color-bg));
-  box-shadow:
-    0 1.5rem 3rem color-mix(in oklab, var(--color-shadow) 90%, transparent),
-    inset 0 1px 0 color-mix(in oklab, white 8%, transparent);
-  padding: var(--space-lg);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  font-size: var(--font-size-md);
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: white;
+  text-shadow:
+    1px 1px 0 black,
+    -1px 0 0 rgb(0 0 0 / 0.6);
   translate: 0 0;
   opacity: 1;
   transition:
@@ -77,37 +83,122 @@
 
 .interaction-modal__title {
   margin: 0;
-  font-size: var(--font-size-lg);
-  line-height: 1.2;
+  font: inherit;
+  font-weight: normal;
+  color: var(--hud-text-gold);
   text-wrap: balance;
 }
 
-.interaction-modal__message {
-  margin: var(--space-sm) 0 0;
-  font-size: var(--font-size-md);
-  line-height: 1.45;
-  color: var(--color-ink-soft);
+.interaction-modal__message,
+.interaction-modal__detail {
+  margin: var(--space-md) 0 0;
+  text-wrap: balance;
+}
+
+.interaction-modal__choices {
+  margin-top: var(--space-lg);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: var(--space-sm);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+/* "or" sits level with the bottom of the pictures, above their amounts. */
+.interaction-modal__choice-or {
+  margin-block-end: 1.6rem;
+}
+
+.interaction-modal__choice {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: normal;
+  font-size: var(--font-size-sm);
+  text-shadow: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+/* The frame (gold when picked, dotted when focused from the keyboard) is on the picture only,
+ * never around the amount under it, as in the game. */
+.interaction-modal__choice-picture {
+  inline-size: 4.5rem;
+  aspect-ratio: 36 / 42;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  background-color: #3a2618;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.6);
+  image-rendering: pixelated;
+
+  [aria-pressed="true"] > & {
+    outline-color: var(--trim-gold);
+  }
+
+  :focus-visible > & {
+    outline-style: dotted;
+    outline-color: var(--trim-gold-light);
+  }
 }
 
 .interaction-modal__actions {
   margin-top: var(--space-md);
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
+/* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
 .interaction-modal__ok-button {
   appearance: none;
-  border: 1px solid color-mix(in oklab, var(--color-accent) 30%, var(--color-border));
-  background: color-mix(in oklab, var(--color-panel-strong) 94%, transparent);
-  color: var(--color-ink-strong);
-  font-size: var(--font-size-sm);
-  line-height: 1;
-  padding: 0.6rem 0.95rem;
-  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  inline-size: 3.75rem;
+  block-size: 1.9rem;
+  padding: 0;
+  border: 1px solid black;
+  background: linear-gradient(180deg, #2c1a0e, #170d06);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 2px var(--trim-gold-dark),
+    inset 0 0 0 3px black;
   cursor: pointer;
 
+  &:active:not(:disabled) {
+    translate: 1px 1px;
+  }
+
+  &:disabled {
+    filter: grayscale(1) brightness(0.6);
+    cursor: default;
+  }
+
   &:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--color-accent) 72%, white 10%);
+    outline: 1px dotted var(--trim-gold-light);
     outline-offset: 2px;
   }
+}
+
+.interaction-modal__ok-check {
+  inline-size: 1.6rem;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(1px 1px 0 black);
 }

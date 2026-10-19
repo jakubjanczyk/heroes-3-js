@@ -3,6 +3,7 @@ import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
+  APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_WORLD_READY
@@ -21,6 +22,10 @@ export const registerHeroPanelModule = defineModule(
     let heroTile = null
     let movementBar = null
     let movementPoints = null
+    let hero = null
+    let heroName = DEFAULT_HERO_NAME
+    let definitions = {}
+    let levelUpSkills = []
 
     function centerOnHero() {
       if (heroTile) {
@@ -58,9 +63,13 @@ export const registerHeroPanelModule = defineModule(
       renderMovementPoints()
     }
 
-    function renderInfoBox(name, { skills, army }) {
+    function renderInfoBox() {
       if (heroInfo) {
-        renderHeroBox(heroInfo, env.document, { name, skills, army })
+        renderHeroBox(heroInfo, env.document, {
+          name: heroName,
+          skills: getHeroPrimarySkills({ entity: hero, definitions, levelUpSkills }),
+          army: getHeroArmy({ entity: hero, definitions })
+        })
       }
     }
 
@@ -94,15 +103,20 @@ export const registerHeroPanelModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            const hero = findHero(event.detail.scenario.entities)
+            hero = findHero(event.detail.scenario.entities)
             heroTile = hero?.tile ?? null
-            const name = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
-            renderHero(name)
-            const { definitions } = event.detail
-            renderInfoBox(name, {
-              skills: getHeroPrimarySkills({ entity: hero, definitions }),
-              army: getHeroArmy({ entity: hero, definitions })
-            })
+            heroName = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
+            definitions = event.detail.definitions
+            levelUpSkills = []
+            renderHero(heroName)
+            renderInfoBox()
+          }
+        },
+        {
+          type: APP_FACT_HERO_LEVELED_UP,
+          handler: (event) => {
+            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
+            renderInfoBox()
           }
         },
         {
@@ -124,7 +138,12 @@ export const registerHeroPanelModule = defineModule(
   {
     id: 'hero-panel',
     phase: 'view',
-    consumes: [APP_FACT_WORLD_READY, APP_FACT_HERO_MOVED, APP_FACT_MOVEMENT_POINTS_CHANGED],
+    consumes: [
+      APP_FACT_WORLD_READY,
+      APP_FACT_HERO_MOVED,
+      APP_FACT_MOVEMENT_POINTS_CHANGED,
+      APP_FACT_HERO_LEVELED_UP
+    ],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE]
   }
 )

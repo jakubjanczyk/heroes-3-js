@@ -4,6 +4,8 @@ export const INTERACTION_MODAL_CLOSED_EVENT = 'interaction-modal-closed'
 
 const INTERACTION_MODAL_TAG = 'interaction-modal'
 
+let nextTitleId = 1
+
 function showDialog(dialog) {
   if (typeof dialog?.showModal === 'function') {
     try {
@@ -35,13 +37,20 @@ function ensureModalContent(host) {
     return
   }
 
+  const titleId = `interaction-modal-title-${nextTitleId++}`
   host.innerHTML = `
-    <dialog class="interaction-modal" closedby="none">
-      <article class="interaction-modal__surface">
-        <h3 class="interaction-modal__title">Interaction</h3>
+    <dialog class="interaction-modal" closedby="none" aria-labelledby="${titleId}">
+      <article class="interaction-modal__surface message-box">
+        <h3 class="interaction-modal__title" id="${titleId}">Interaction</h3>
         <p class="interaction-modal__message"></p>
+        <div class="interaction-modal__details"></div>
+        <div class="interaction-modal__choices"></div>
         <div class="interaction-modal__actions">
-          <button class="interaction-modal__ok-button" type="button">OK</button>
+          <button class="interaction-modal__ok-button" type="button" aria-label="OK">
+            <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true">
+              <path d="M5 8.5 L9.5 13 L19 3" />
+            </svg>
+          </button>
         </div>
       </article>
     </dialog>
@@ -50,6 +59,8 @@ function ensureModalContent(host) {
   host._dialog = host.querySelector('dialog.interaction-modal')
   host._titleEl = host.querySelector('.interaction-modal__title')
   host._messageEl = host.querySelector('.interaction-modal__message')
+  host._detailsEl = host.querySelector('.interaction-modal__details')
+  host._choicesEl = host.querySelector('.interaction-modal__choices')
   host._surfaceEl = host.querySelector('.interaction-modal__surface')
   host._okButtonEl = host.querySelector('.interaction-modal__ok-button')
 
@@ -95,6 +106,72 @@ function ensureModalContent(host) {
   })
 }
 
+// Extra lines under the message, e.g. what a level-up gave ('+1 Defense').
+function renderDetails(host, details) {
+  const document = host.ownerDocument
+  host._detailsEl.replaceChildren(
+    ...details.map((detail) => {
+      const line = document.createElement('p')
+      line.className = 'interaction-modal__detail'
+      line.textContent = detail
+      return line
+    })
+  )
+}
+
+// Rewards to pick from, as in Heroes 3: a picture each with the amount under it and "or" between
+// them; the picked one gets a gold frame. OK stays disabled until one is picked.
+function renderChoices(host, choices) {
+  const document = host.ownerDocument
+  host._choice = null
+  host._choicesEl.hidden = choices.length === 0
+  host._okButtonEl.disabled = choices.length > 0
+
+  const buttons = choices.map(({ id, amount, label, picture }) => {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'interaction-modal__choice'
+    button.dataset.choice = id
+    button.setAttribute('aria-label', label)
+    button.setAttribute('aria-pressed', 'false')
+
+    const icon = document.createElement('span')
+    icon.className = 'interaction-modal__choice-picture'
+    icon.setAttribute('aria-hidden', 'true')
+    if (picture) {
+      icon.style.backgroundImage = `url('${picture}')`
+    }
+
+    const amountLabel = document.createElement('span')
+    amountLabel.className = 'interaction-modal__choice-amount'
+    amountLabel.textContent = String(amount)
+
+    button.append(icon, amountLabel)
+    button.addEventListener('click', (event) => {
+      event.stopPropagation()
+      host._choice = id
+      host._okButtonEl.disabled = false
+      for (const other of buttons) {
+        other.setAttribute('aria-pressed', String(other === button))
+      }
+    })
+    return button
+  })
+
+  host._choicesEl.replaceChildren(
+    ...buttons.flatMap((button, index) => {
+      if (index === 0) {
+        return [button]
+      }
+
+      const or = document.createElement('span')
+      or.className = 'interaction-modal__choice-or'
+      or.textContent = 'or'
+      return [or, button]
+    })
+  )
+}
+
 function applyTransitionMs(host) {
   setStyleVar(host._dialog, '--interaction-modal-transition-duration', `${host._transitionMs}ms`)
 }
@@ -124,6 +201,9 @@ function defineInteractionModalElement(window) {
       this._dialog = null
       this._titleEl = null
       this._messageEl = null
+      this._detailsEl = null
+      this._choicesEl = null
+      this._choice = null
       this._surfaceEl = null
       this._okButtonEl = null
       this._isClosing = false
@@ -171,7 +251,8 @@ function defineInteractionModalElement(window) {
         }
         this.dispatchEvent(
           new this.ownerDocument.defaultView.CustomEvent(INTERACTION_MODAL_CLOSED_EVENT, {
-            bubbles: true
+            bubbles: true,
+            detail: { choice: this._choice }
           })
         )
         this.remove()
@@ -198,7 +279,7 @@ function defineInteractionModalElement(window) {
       }, this._transitionMs)
     }
 
-    showInteraction({ title = 'Interaction', message = '' } = {}) {
+    showInteraction({ title = 'Interaction', message = '', details = [], choices = [] } = {}) {
       configureModalHost(this, { transitionMs: this._transitionMs })
       this._clearCloseTimer()
       this._isClosing = false
@@ -212,6 +293,9 @@ function defineInteractionModalElement(window) {
       if (this._messageEl) {
         this._messageEl.textContent = message
       }
+
+      renderDetails(this, details)
+      renderChoices(this, choices)
 
       showDialog(this._dialog)
     }

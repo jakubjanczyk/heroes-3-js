@@ -15,6 +15,9 @@ export const registerInteractionModule = defineModule(
     let entitiesById = new Map()
     let definitions = {}
     let factsOnModalClosed = []
+    // For a modal that asks the player to choose: what to emit for each choice, before
+    // factsOnModalClosed.
+    let eventsByChoice = {}
 
     function emitFacts(facts) {
       for (const fact of facts ?? []) {
@@ -31,6 +34,7 @@ export const registerInteractionModule = defineModule(
             entitiesById = new Map(world.scenario.entities.map((entity) => [entity.id, entity]))
             definitions = world.definitions ?? {}
             factsOnModalClosed = []
+            eventsByChoice = {}
           }
         },
         {
@@ -56,15 +60,17 @@ export const registerInteractionModule = defineModule(
 
             if (effects.modal) {
               factsOnModalClosed = effects.factsOnModalClosed ?? []
+              eventsByChoice = effects.eventsByChoice ?? {}
               emit(APP_UI_INTERACTION_MODAL_OPENED, effects.modal)
             }
           }
         },
         {
           type: APP_UI_INTERACTION_MODAL_CLOSED,
-          handler: () => {
-            const facts = factsOnModalClosed
+          handler: (event) => {
+            const facts = [...(eventsByChoice[event.detail?.choice] ?? []), ...factsOnModalClosed]
             factsOnModalClosed = []
+            eventsByChoice = {}
             emitFacts(facts)
           }
         }

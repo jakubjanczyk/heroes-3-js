@@ -45,7 +45,10 @@
   },
   "overrides": [
     {
-      "includes": ["app/heroes/presentation/homm3-resource-atlas.js"],
+      "includes": [
+        "app/heroes/presentation/homm3-resource-atlas.js",
+        "app/heroes/presentation/adventure-sprite-atlas.js"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
