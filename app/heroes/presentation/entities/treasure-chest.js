@@ -1,4 +1,4 @@
-import { getTreasureChestSpriteStyle } from '../treasure-chest-sprites.js'
+import { getTreasureChestSpriteStyle } from '../adventure-sprites.js'
 
 export function getEntityLayerStyle() {
   const { width, height, backgroundImage } = getTreasureChestSpriteStyle()

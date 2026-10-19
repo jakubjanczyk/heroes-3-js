@@ -12,7 +12,7 @@ import {
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED
 } from '../events.js'
-import { getExperiencePicture, getGoldPicture } from './presentation/chest-dialog-pictures.js'
+import { getChestExperiencePicture, getChestGoldPicture } from './presentation/adventure-sprites.js'
 
 // The Heroes 3 chest dialog's title and text.
 const TREASURE_CHEST_TITLE = 'Chest'
@@ -75,13 +75,13 @@ export const heroesOutcomeEffects = Object.freeze({
             id: 'gold',
             amount: gold,
             label: `${gold} gold`,
-            picture: getGoldPicture()
+            picture: getChestGoldPicture()
           },
           {
             id: 'experience',
             amount: experience,
             label: `${experience} experience`,
-            picture: getExperiencePicture()
+            picture: getChestExperiencePicture()
           }
         ]
       },
