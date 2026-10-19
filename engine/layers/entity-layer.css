@@ -40,3 +40,13 @@
 .entity--resource-collecting {
   opacity: 0;
 }
+
+.entity--treasure-chest {
+  border-radius: 3px 3px 2px 2px;
+  background:
+    linear-gradient(oklch(0.82 0.15 85), oklch(0.82 0.15 85)) center 38% / 100% 3px no-repeat,
+    linear-gradient(oklch(0.82 0.15 85), oklch(0.82 0.15 85)) center / 4px 100% no-repeat,
+    linear-gradient(oklch(0.5 0.1 55), oklch(0.36 0.08 50));
+  border: 2px solid oklch(0.72 0.13 80);
+  box-shadow: 0 0.2rem 0.6rem color-mix(in oklab, oklch(0.18 0.03 20) 92%, transparent);
+}

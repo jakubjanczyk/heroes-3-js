@@ -9,6 +9,7 @@ import {
   expectNoPreview,
   expectPreviewTargetAt,
   flushMicrotasks,
+  holdRightButtonOn,
   pointerOverTile,
   readGameData,
   setupMovementBehaviorApp,
@@ -32,10 +33,6 @@ async function setupApp(scenario) {
     loadGameOptions: scenario.withDefinitions(gameDefinitions).build(),
     appConfig: { fadeOutMsByKind: { MONSTER: 0 }, longPressMs: LONG_PRESS_MS }
   })
-}
-
-async function holdRightButtonOn(user, x, y) {
-  await user.pointer({ keys: '[MouseRight>]', ...pointerOverTile(x, y) })
 }
 
 async function releaseRightButton(user) {

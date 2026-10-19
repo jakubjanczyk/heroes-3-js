@@ -10,6 +10,7 @@ export const APP_COMMAND_CAMERA_PAN_BY = 'command.camera.panBy'
 export const APP_COMMAND_CAMERA_CENTER_ON_TILE = 'command.camera.centerOnTile'
 export const APP_COMMAND_END_TURN_REQUESTED = 'command.turn.end.requested'
 export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requested'
+export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experience.gain.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -27,6 +28,9 @@ export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
+export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
+export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
+export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -53,7 +57,10 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
-  APP_FACT_MINE_CAPTURED
+  APP_FACT_MINE_CAPTURED,
+  APP_FACT_TREASURE_CHEST_OPENED,
+  APP_FACT_HERO_EXPERIENCE_GAINED,
+  APP_FACT_HERO_LEVELED_UP
 ])
 
 export function shouldPersistFactEvent(type) {

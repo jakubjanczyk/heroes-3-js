@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { screen } from '@testing-library/dom'
-import { describe, expect, test } from 'vitest'
+import { describe, test } from 'vitest'
 
 import {
   closeInteractionModal,
   confirmTileClickByDispatch,
+  expectStatusBarText,
   flushMicrotasks,
   hoverTile,
   panCamera,
@@ -32,10 +33,6 @@ const gameDefinitions = {
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   mines: readGameData('mines.json')
-}
-
-function expectStatusBarText(text) {
-  expect(screen.getByRole('status', { name: 'Status bar' }).textContent).toBe(text)
 }
 
 async function setupApp(scenario, { viewportSize } = {}) {

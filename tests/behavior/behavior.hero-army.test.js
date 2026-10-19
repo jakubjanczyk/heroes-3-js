@@ -7,7 +7,7 @@ import {
   createMemoryEventLog,
   flushMicrotasks,
   getHeroInfoBox,
-  pointerOverTile,
+  holdRightButtonOn,
   readGameData,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
@@ -24,10 +24,6 @@ async function setupApp(scenario, options = {}) {
     loadGameOptions: scenario.withDefinitions(gameDefinitions).build(),
     ...options
   })
-}
-
-async function holdRightButtonOn(user, x, y) {
-  await user.pointer({ keys: '[MouseRight>]', ...pointerOverTile(x, y) })
 }
 
 const skeletons = (count) => ({ creature: 'SKELETON', count })

@@ -1,4 +1,5 @@
 import { describeMonsterGroup } from './monster-count.js'
+import { TREASURE_CHEST_NAME } from './treasure-chest.js'
 
 const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   MONSTER: 'monsters',
@@ -15,6 +16,9 @@ function capitalize(text) {
 export function getEntityName({ entity, definitions }) {
   if (entity.kind === 'HERO') {
     return definitions.hero.name
+  }
+  if (entity.kind === 'TREASURE_CHEST') {
+    return TREASURE_CHEST_NAME
   }
 
   const definition = definitions[DEFINITIONS_KEY_BY_KIND[entity.kind]][entity.type]

@@ -4,8 +4,9 @@ import { describe, expect, test } from 'vitest'
 
 import {
   getHeroInfoBox,
-  pointerOverTile,
+  holdRightButtonOn,
   readGameData,
+  readPrimarySkills,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
 import { aHero, aScenario } from './builders.js'
@@ -19,21 +20,6 @@ async function setupApp(scenario) {
   return setupMovementBehaviorApp({
     loadGameOptions: scenario.withDefinitions(gameDefinitions).build()
   })
-}
-
-async function holdRightButtonOn(user, x, y) {
-  await user.pointer({ keys: '[MouseRight>]', ...pointerOverTile(x, y) })
-}
-
-// Each skill is an icon named for screen readers, with its value under it.
-function readPrimarySkills(container) {
-  const list = within(container).getByRole('list', { name: 'Primary skills' })
-  return within(list)
-    .getAllByRole('listitem')
-    .map(
-      (item) =>
-        `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`
-    )
 }
 
 describe('hero primary skills behavior', () => {

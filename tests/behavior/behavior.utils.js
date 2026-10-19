@@ -592,3 +592,48 @@ export async function endTurns(user, count) {
     }
   }
 }
+
+export function getTreasureChestEntity(entityId = 'chest-1') {
+  return document.querySelector(`.entity--treasure-chest[data-entity-id="${entityId}"]`)
+}
+
+export function getTreasureChestDialog() {
+  return screen.getByRole('dialog', { name: 'Treasure Chest' })
+}
+
+// The rewards the chest dialog offers, as the player reads them, e.g. ['1500 gold', '1000 experience'].
+export function readTreasureChestChoices() {
+  return within(getTreasureChestDialog())
+    .getAllByRole('button', { name: /gold$|experience$/ })
+    .map((button) => button.getAttribute('aria-label'))
+}
+
+// Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.
+export async function takeFromTreasureChest(user, { x, y }, choice) {
+  confirmTileClickByDispatch(x, y)
+  await flushMicrotasks()
+  const dialog = getTreasureChestDialog()
+  await user.click(within(dialog).getByRole('button', { name: new RegExp(`${choice}$`) }))
+  await user.click(within(dialog).getByRole('button', { name: 'OK' }))
+  await flushMicrotasks()
+}
+
+// Holds the right mouse button down over a map tile, which opens the info popup.
+export async function holdRightButtonOn(user, x, y) {
+  await user.pointer({ keys: '[MouseRight>]', ...pointerOverTile(x, y) })
+}
+
+// Each skill is an icon named for screen readers, with its value under it.
+export function readPrimarySkills(container) {
+  const list = within(container).getByRole('list', { name: 'Primary skills' })
+  return within(list)
+    .getAllByRole('listitem')
+    .map(
+      (item) =>
+        `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`
+    )
+}
+
+export function expectStatusBarText(text) {
+  expect(screen.getByRole('status', { name: 'Status bar' }).textContent).toBe(text)
+}

@@ -5,6 +5,7 @@ import {
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_FACT_INCOME_COLLECTED,
   APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_PREVIEW_UPDATED
@@ -157,6 +158,15 @@ export const registerHudModule = defineModule(
             }
             renderResourceTotals()
           }
+        },
+        {
+          type: APP_FACT_TREASURE_CHEST_OPENED,
+          handler: (event) => {
+            for (const [resourceType, amount] of Object.entries(event.detail.resources ?? {})) {
+              addToResourceTotal(resourceType, amount)
+            }
+            renderResourceTotals()
+          }
         }
       ]
     }
@@ -169,7 +179,8 @@ export const registerHudModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_TURN_ENDED,
       APP_FACT_RESOURCE_COLLECTED,
-      APP_FACT_INCOME_COLLECTED
+      APP_FACT_INCOME_COLLECTED,
+      APP_FACT_TREASURE_CHEST_OPENED
     ],
     produces: [APP_COMMAND_MOVE_CONTINUE_REQUESTED, APP_COMMAND_END_TURN_REQUESTED]
   }

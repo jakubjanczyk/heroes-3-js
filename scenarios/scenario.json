@@ -512,6 +512,36 @@
       }
     },
     {
+      "id": "chest-1",
+      "kind": "TREASURE_CHEST",
+      "type": "TREASURE_CHEST",
+      "tier": 2,
+      "tile": {
+        "x": 8,
+        "y": 3
+      }
+    },
+    {
+      "id": "chest-2",
+      "kind": "TREASURE_CHEST",
+      "type": "TREASURE_CHEST",
+      "tier": 1,
+      "tile": {
+        "x": 2,
+        "y": 7
+      }
+    },
+    {
+      "id": "chest-3",
+      "kind": "TREASURE_CHEST",
+      "type": "TREASURE_CHEST",
+      "tier": 3,
+      "tile": {
+        "x": 9,
+        "y": 6
+      }
+    },
+    {
       "id": "resource-1",
       "kind": "RESOURCE",
       "type": "GOLD_PILE",

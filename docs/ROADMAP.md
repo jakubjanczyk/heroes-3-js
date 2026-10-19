@@ -204,11 +204,15 @@ Heroes become characters with identity and progression.
 
 ### 4.2 Hero Experience & Leveling
 - [ ] Heroes earn XP from: defeating monsters, visiting XP objects (Learning Stone, etc.)
-- [ ] XP thresholds per level (H3 formula: level N requires progressively more XP)
-- [ ] Level-up event: `fact.hero_leveled_up`
-- [ ] Level-up popup: choose +1 to one of two offered primary stats
-- [ ] Hero level displayed in hero panel and info screens
-- [ ] Current XP and XP to next level shown in hero details
+  - [x] For now: Treasure Chests (see 7.7)
+- [x] XP thresholds per level as in H3: 1000, 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500, 20600, then each step 20% more than the one before
+- [x] A scenario may set a hero's starting experience (default 0)
+- [x] Level-up facts: `fact.hero.experience.gained` and `fact.hero.leveledUp` (with the rolled primary skill, so a reload replays it)
+- [x] Level-up popup as in H3: "Hero is now a level 2 Knight." and the primary skill gained ("+1 Defense"), one popup per level
+- [x] The primary skill is not chosen: H3 rolls it by the hero class's chances (Knight: A35/D45/P10/K10 up to level 9, A30/D30/P20/K20 from level 10)
+- [ ] Choose one of two secondary skills on level-up (needs secondary skills, 4.7)
+- [ ] Hero level displayed in hero panel and info screens (H3 shows it on the hero screen only)
+- [ ] Current XP and XP to next level shown in hero details (hero screen)
 
 ### 4.3 Hero Army
 - [x] Hero carries up to 7 creature stacks, each in its own slot; a scenario gives every hero an army
@@ -546,6 +550,8 @@ Rich adventure map with meaningful locations.
 - [ ] Bonus tracking per hero per object with cooldown
 
 ### 7.7 Permanent Bonus Objects (One-Time)
+- [x] **Treasure Chest**: choose its gold or experience (1000 gold or 500 XP, 1500 or 1000, 2000 or 1500); the chest disappears
+  - [ ] Random tier when the scenario sets none (H3: 32% / 32% / 31%), and the 5% artifact chest (needs artifacts, 7.8)
 - [ ] **Learning Stone**: +1000 XP (one-time per hero)
 - [ ] **Tree of Knowledge**: level up for gold or gems (one-time per hero)
 - [ ] **Mercenary Camp / Marletto Tower / Star Axis / Garden of Revelation**: +1 to a primary stat permanently (one-time per hero)
