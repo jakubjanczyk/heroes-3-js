@@ -11,6 +11,7 @@ import {
   getMapCursor,
   holdMouseOverMap,
   hoverTile,
+  moveMouseOntoTile,
   readGameData,
   setupMovementBehaviorApp,
   waitMs
@@ -315,10 +316,10 @@ describe('adventure map cursor behavior', () => {
     })
 
     test('given the map is scrolling when the mouse moves onto the hero then the cursor is the hero helmet', async () => {
-      const { user } = await setupScrollableMap()
+      await setupScrollableMap()
       await holdMouseOverMap(5, 350)
 
-      await hoverTile(user, 30, 20)
+      moveMouseOntoTile(30, 20)
 
       expect(getMapCursor()).toBe('hero')
     })
