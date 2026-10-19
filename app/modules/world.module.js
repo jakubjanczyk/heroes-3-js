@@ -14,6 +14,7 @@ export const registerWorldModule = defineModule(
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
     const terrainTypes = config?.content?.terrainTypes
     const roadTypes = config?.content?.roadTypes
+    const primarySkills = config?.content?.primarySkills
     let hasStarted = false
 
     return {
@@ -28,7 +29,11 @@ export const registerWorldModule = defineModule(
             hasStarted = true
             void (async () => {
               try {
-                const { scenario, definitions } = await loadGame({ fetch: env.fetch, terrainTypes })
+                const { scenario, definitions } = await loadGame({
+                  fetch: env.fetch,
+                  terrainTypes,
+                  primarySkills
+                })
 
                 const { map, staticOccupancy } = buildWorld({
                   scenario,
