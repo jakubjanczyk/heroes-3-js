@@ -1,6 +1,0 @@
-{
-  "KNIGHT": {
-    "name": "Knight",
-    "primarySkills": { "attack": 2, "defense": 2, "power": 1, "knowledge": 1 }
-  }
-}
