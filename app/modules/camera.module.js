@@ -10,6 +10,7 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED,
+  APP_UI_MAP_EDGE_SCROLLED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED,
   APP_UI_SYSTEM_OPTIONS_CLOSED,
@@ -122,6 +123,10 @@ export const registerCameraModule = defineModule(
                 // null once the pointer is off the map.
                 onTileHover: (tile) => {
                   emit(APP_UI_TILE_HOVERED, { tile })
+                },
+                // null once edge scrolling stops.
+                onEdgeScroll: (direction) => {
+                  emit(APP_UI_MAP_EDGE_SCROLLED, { direction })
                 },
                 onTileInfoPress: (tile, pointer) => {
                   emit(APP_UI_TILE_INFO_REQUESTED, { tile, pointer })
@@ -241,6 +246,7 @@ export const registerCameraModule = defineModule(
       APP_COMMAND_CAMERA_PAN_BY,
       APP_COMMAND_TILE_CLICKED,
       APP_UI_CAMERA_UPDATED,
+      APP_UI_MAP_EDGE_SCROLLED,
       APP_UI_TILE_HOVERED,
       APP_UI_TILE_INFO_REQUESTED,
       APP_UI_TILE_INFO_DISMISSED,

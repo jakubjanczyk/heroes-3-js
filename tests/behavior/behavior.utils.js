@@ -649,3 +649,15 @@ export function getCursorOver(element) {
 export function getMapCursor() {
   return getCursorOver(document.querySelector('.effects-layer'))
 }
+
+// Keeps the mouse still over the map at screen point (x, y) for longer than edge scrolling
+// waits before it starts.
+export async function holdMouseOverMap(x, y) {
+  const viewport = document.querySelector('.viewport')
+  const effectsLayer = document.querySelector('.effects-layer')
+  viewport.dispatchEvent(new window.MouseEvent('mouseenter'))
+  effectsLayer.dispatchEvent(
+    new window.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y })
+  )
+  await waitMs(360)
+}

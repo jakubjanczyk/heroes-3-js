@@ -1,7 +1,11 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { resolveMovementRules } from '../../../game/domain/movement/movement-rules.js'
 import { countTravelDays } from '../../../game/domain/movement/travel-days.js'
-import { ADVENTURE_CURSOR, getAdventureCursor } from '../../../game/heroes/adventure-cursor.js'
+import {
+  ADVENTURE_CURSOR,
+  getAdventureCursor,
+  getScrollCursor
+} from '../../../game/heroes/adventure-cursor.js'
 import {
   APP_COMMAND_ROUTE_REQUESTED,
   APP_FACT_ENTITY_REMOVED,
@@ -9,13 +13,15 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_ROUTE_PLANNED,
   APP_FACT_WORLD_READY,
+  APP_UI_MAP_EDGE_SCROLLED,
   APP_UI_TILE_HOVERED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
 // The Heroes 3 cursor over the adventure map: what clicking the tile under the mouse would do,
-// and on which day the hero would get there. The map shows it through `data-cursor`.
+// and on which day the hero would get there. While the map scrolls from its edge, an arrow
+// pointing the way it scrolls takes its place. The map shows it through `data-cursor`.
 export const registerAdventureCursorModule = defineModule(
   ({ env, emit, config }) => {
     const viewport = env.document.querySelector('.viewport')
@@ -26,9 +32,16 @@ export const registerAdventureCursorModule = defineModule(
     let hoveredTile = null
     let remainingMovementPoints = config.maxMovementPoints
     let maxMovementPoints = config.maxMovementPoints
+    let tileCursor = ADVENTURE_CURSOR.ARROW
+    let scrollDirection = null
 
     function showCursor(cursor) {
-      viewport.dataset.cursor = cursor
+      tileCursor = cursor
+      render()
+    }
+
+    function render() {
+      viewport.dataset.cursor = scrollDirection ? getScrollCursor(scrollDirection) : tileCursor
     }
 
     // The cursor follows once the route to the tile is planned, unless the hero stands on it.
@@ -68,6 +81,7 @@ export const registerAdventureCursorModule = defineModule(
             mapObjects.onWorldReady(event.detail)
             map = event.detail.map
             hoveredTile = null
+            scrollDirection = null
             showCursor(ADVENTURE_CURSOR.ARROW)
           }
         },
@@ -101,6 +115,13 @@ export const registerAdventureCursorModule = defineModule(
           }
         },
         {
+          type: APP_UI_MAP_EDGE_SCROLLED,
+          handler: (event) => {
+            scrollDirection = event.detail.direction
+            render()
+          }
+        },
+        {
           type: APP_FACT_ROUTE_PLANNED,
           handler: (event) => {
             if (hoveredTile && sameTile(event.detail.tile, hoveredTile)) {
@@ -120,6 +141,7 @@ export const registerAdventureCursorModule = defineModule(
       APP_FACT_ENTITY_REMOVED,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_TILE_HOVERED,
+      APP_UI_MAP_EDGE_SCROLLED,
       APP_FACT_ROUTE_PLANNED
     ],
     produces: [APP_COMMAND_ROUTE_REQUESTED]

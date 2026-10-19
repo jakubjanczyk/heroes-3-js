@@ -33,6 +33,7 @@ export function attachCameraInput({
   map = null,
   onTileClick = null,
   onTileHover = null,
+  onEdgeScroll = null,
   onTileInfoPress = null,
   onTileInfoRelease = null,
   longPressMs = 500,
@@ -48,7 +49,8 @@ export function attachCameraInput({
     edgePanSpeed,
     now,
     requestAnimationFrame,
-    cancelAnimationFrame
+    cancelAnimationFrame,
+    onScrollDirectionChange: (direction) => onEdgeScroll?.(direction)
   })
 
   function getTileFromEventTarget(target) {

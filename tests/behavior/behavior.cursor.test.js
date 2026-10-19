@@ -9,6 +9,7 @@ import {
   flushMicrotasks,
   getCursorOver,
   getMapCursor,
+  holdMouseOverMap,
   hoverTile,
   readGameData,
   setupMovementBehaviorApp,
@@ -258,5 +259,68 @@ describe('adventure map cursor behavior', () => {
     await hoverTile(user, 1, 0)
 
     expect(getMapCursor()).toBe('move')
+  })
+
+  describe('edge scrolling', () => {
+    // 1000x700 map view over a 60x40 map, with the hero in the middle so it can scroll every way.
+    async function setupScrollableMap(hero = aHero().at(30, 20)) {
+      return setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(60, 40)
+          .withEntities(hero)
+          .withDefinitions(gameDefinitions)
+          .build(),
+        viewportSize: { width: 1000, height: 700 }
+      }).then(async (app) => {
+        await loadAppStyles()
+        return app
+      })
+    }
+
+    test.each([
+      { edge: 'top', x: 500, y: 5, cursor: 'scroll-n' },
+      { edge: 'top right corner', x: 995, y: 5, cursor: 'scroll-ne' },
+      { edge: 'right', x: 995, y: 350, cursor: 'scroll-e' },
+      { edge: 'bottom right corner', x: 995, y: 695, cursor: 'scroll-se' },
+      { edge: 'bottom', x: 500, y: 695, cursor: 'scroll-s' },
+      { edge: 'bottom left corner', x: 5, y: 695, cursor: 'scroll-sw' },
+      { edge: 'left', x: 5, y: 350, cursor: 'scroll-w' },
+      { edge: 'top left corner', x: 5, y: 5, cursor: 'scroll-nw' }
+    ])('given the mouse stays at the $edge of the map when the map scrolls then the cursor is $cursor', async ({
+      x,
+      y,
+      cursor
+    }) => {
+      await setupScrollableMap()
+
+      await holdMouseOverMap(x, y)
+
+      expect(getMapCursor()).toBe(cursor)
+    })
+
+    test('given the map is at its left border when the mouse stays at the left edge then the cursor is not a scroll arrow', async () => {
+      await setupScrollableMap(aHero().at(1, 20))
+
+      await holdMouseOverMap(5, 350)
+
+      expect(getMapCursor()).toBe('move')
+    })
+
+    test('given the map is at its top border when the mouse stays in the top left corner then the cursor points left only', async () => {
+      await setupScrollableMap(aHero().at(30, 1))
+
+      await holdMouseOverMap(5, 5)
+
+      expect(getMapCursor()).toBe('scroll-w')
+    })
+
+    test('given the map is scrolling when the mouse moves onto the hero then the cursor is the hero helmet', async () => {
+      const { user } = await setupScrollableMap()
+      await holdMouseOverMap(5, 350)
+
+      await hoverTile(user, 30, 20)
+
+      expect(getMapCursor()).toBe('hero')
+    })
   })
 })

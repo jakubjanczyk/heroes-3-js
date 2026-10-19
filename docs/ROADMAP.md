@@ -45,7 +45,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Hover over the hero: hero helmet cursor
 - [ ] Hover over own town: town cursor (needs town ownership)
 - [ ] Hover over another hero: exchange cursor (needs multiple heroes)
-- [ ] Scroll arrows at the map edges, while edge scrolling
+- [x] Scroll arrows at the map edges, while edge scrolling
 - [x] Cursor updates in real-time as mouse moves across tiles, and when the hero moves under a still mouse
 - [x] Cursor reflects whether tile is within current turn's movement range
 

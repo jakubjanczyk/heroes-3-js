@@ -1,7 +1,8 @@
 // Builds the Heroes 3 cursors in assets/cursors (game/ui/cursors.css) from the pixel art below:
 // rows of palette keys, '.' a transparent pixel. Each picture is drawn on a 16x16 grid and saved
 // twice as large, so the cursors keep the chunky pixels of the game. The horse, swords and
-// rearing horse also come numbered 2 to 4, for the day the hero would get there.
+// rearing horse also come numbered 2 to 4, for the day the hero would get there, and the edge
+// scrolling arrow comes in all eight directions.
 // Usage: node scripts/build-cursors.mjs [outDir]
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -125,6 +126,46 @@ const VISIT_ROWS = [
   '.k..kkk..kkk....'
 ]
 
+// While the map scrolls from its edge: a gold arrow pointing the way it scrolls. Drawn pointing
+// up and up-right; the other directions are these turned a quarter at a time.
+const SCROLL_N_ROWS = [
+  '.......kk.......',
+  '......kYYk......',
+  '.....kYGGYk.....',
+  '....kYGGGGYk....',
+  '...kYGGGGGGYk...',
+  '..kYGGGGGGGGYk..',
+  '.kYGGGGGGGGGGYk.',
+  'kkkkkYGGGGOkkkkk',
+  '....kYGGGGOk....',
+  '....kYGGGGOk....',
+  '....kYGGGGOk....',
+  '....kYGGGGOk....',
+  '....kYGGGGOk....',
+  '....kkkkkkkk....',
+  '................',
+  '................'
+]
+
+const SCROLL_NE_ROWS = [
+  '......kkkkkkkkkk',
+  '......kYYYYYYYYk',
+  '.......kYGGGGGOk',
+  '........kYGGGGOk',
+  '.......kYGGGGGOk',
+  '......kYGGGGGGOk',
+  '.....kYGGGkYGGOk',
+  '....kYGGGk.kYGOk',
+  '...kYGGGk...kYOk',
+  '..kYGGGk.....kOk',
+  '.kYGGGk.......kk',
+  'kYGGGk..........',
+  'kGGGk...........',
+  '.kGk............',
+  '..k.............',
+  '................'
+]
+
 // The day number, white on a black patch in the bottom right corner.
 const DIGIT_ROWS = {
   2: ['WWW', '..W', 'WWW', 'W..', 'WWW'],
@@ -155,6 +196,16 @@ function withDayNumber(rows, day) {
     }
     return row.slice(0, left) + patch.join('')
   })
+}
+
+// The picture turned a quarter clockwise.
+function turnClockwise(rows) {
+  return rows.map((_, y) =>
+    rows
+      .map((row) => row[y])
+      .reverse()
+      .join('')
+  )
 }
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
@@ -229,6 +280,20 @@ for (const [name, rows] of Object.entries({
   for (const day of [2, 3, 4]) {
     CURSORS[`${name}-${day}`] = withDayNumber(rows, day)
   }
+}
+
+let scrollN = SCROLL_N_ROWS
+let scrollNe = SCROLL_NE_ROWS
+for (const [straight, diagonal] of [
+  ['n', 'ne'],
+  ['e', 'se'],
+  ['s', 'sw'],
+  ['w', 'nw']
+]) {
+  CURSORS[`scroll-${straight}`] = scrollN
+  CURSORS[`scroll-${diagonal}`] = scrollNe
+  scrollN = turnClockwise(scrollN)
+  scrollNe = turnClockwise(scrollNe)
 }
 
 mkdirSync(OUTPUT_DIR, { recursive: true })
