@@ -287,7 +287,13 @@
       "tile": {
         "x": 3,
         "y": 3
-      }
+      },
+      "army": [
+        {
+          "creature": "SKELETON",
+          "count": 12
+        }
+      ]
     },
     {
       "id": "town-1",

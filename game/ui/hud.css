@@ -345,11 +345,33 @@
   }
 
   & .army-slot {
+    position: relative;
     grid-column: span 2;
     aspect-ratio: 1;
     background: #0d0f14;
     border: 1px solid #2a2d36;
     box-shadow: inset 0 0 0 1px black;
+  }
+
+  & .army-slot__creature {
+    position: absolute;
+    inset: 12%;
+    box-shadow: none;
+  }
+
+  & .army-slot__count {
+    position: absolute;
+    inset-inline-end: 2px;
+    inset-block-end: 0;
+    color: white;
+    font-size: var(--font-size-xs);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    text-shadow:
+      1px 1px 0 black,
+      -1px -1px 0 black,
+      1px -1px 0 black,
+      -1px 1px 0 black;
   }
 
   & .army-slot:nth-child(1) {
