@@ -13,4 +13,5 @@
 @import url("./game/ui/message-box.css") layer(ui);
 @import url("./game/ui/interaction-modal.css") layer(ui);
 @import url("./game/ui/info-popup.css") layer(ui);
+@import url("./game/ui/cursors.css") layer(ui);
 @import url("./app/modules/dev/bus-dev-panel.css") layer(ui);

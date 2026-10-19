@@ -1,0 +1,72 @@
+/* The Heroes 3 cursors (scripts/build-cursors.mjs): the arrow everywhere, and over the map what
+   clicking the tile under the mouse would do, numbered with the day the hero would get there. */
+body {
+  cursor:
+    url("../../assets/cursors/arrow.png") 0 0,
+    default;
+}
+.viewport[data-cursor="hero"] {
+  cursor:
+    url("../../assets/cursors/hero.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="move"] {
+  cursor:
+    url("../../assets/cursors/move.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="move-2"] {
+  cursor:
+    url("../../assets/cursors/move-2.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="move-3"] {
+  cursor:
+    url("../../assets/cursors/move-3.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="move-4"] {
+  cursor:
+    url("../../assets/cursors/move-4.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="attack"] {
+  cursor:
+    url("../../assets/cursors/attack.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="attack-2"] {
+  cursor:
+    url("../../assets/cursors/attack-2.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="attack-3"] {
+  cursor:
+    url("../../assets/cursors/attack-3.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="attack-4"] {
+  cursor:
+    url("../../assets/cursors/attack-4.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="visit"] {
+  cursor:
+    url("../../assets/cursors/visit.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="visit-2"] {
+  cursor:
+    url("../../assets/cursors/visit-2.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="visit-3"] {
+  cursor:
+    url("../../assets/cursors/visit-3.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="visit-4"] {
+  cursor:
+    url("../../assets/cursors/visit-4.png") 16 16,
+    pointer;
+}
