@@ -14,6 +14,8 @@ export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experien
 export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoCombat.requested'
 export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove.requested'
 export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
+export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
+export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -31,6 +33,9 @@ export const APP_FACT_BATTLE_ENDED = 'fact.battle.ended'
 export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
 export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
+export const APP_FACT_BATTLE_STACK_WAITED = 'fact.battle.stack.waited'
+export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
+export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
@@ -75,6 +80,9 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STACK_MOVED,
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_TURN_ENDED,
+  APP_FACT_BATTLE_STACK_WAITED,
+  APP_FACT_BATTLE_STACK_DEFENDED,
+  APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,

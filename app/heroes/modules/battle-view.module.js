@@ -11,7 +11,9 @@ import {
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
@@ -24,6 +26,12 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
+
+const COMMAND_BY_ACTION = {
+  'auto-combat': APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+  wait: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
+  defend: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED
+}
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
@@ -319,7 +327,15 @@ export const registerBattleViewModule = defineModule(
       }
 
       showMessages(battle.messages)
+      showActions(battle)
       describeHoveredHex()
+    }
+
+    function showActions({ canWait, canDefend, autoCombat }) {
+      const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
+      button('wait').disabled = !canWait
+      button('defend').disabled = !canDefend
+      button('auto-combat').setAttribute('aria-pressed', String(Boolean(autoCombat)))
     }
 
     function closeBattle() {
@@ -372,9 +388,10 @@ export const registerBattleViewModule = defineModule(
               return
             }
 
-            if (event.target.closest('[data-battle-action="auto-combat"]')) {
+            const action = event.target.closest('[data-battle-action]')?.dataset.battleAction
+            if (COMMAND_BY_ACTION[action]) {
               event.stopPropagation()
-              emit(APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED, {})
+              emit(COMMAND_BY_ACTION[action], {})
               return
             }
 
@@ -439,7 +456,9 @@ export const registerBattleViewModule = defineModule(
     produces: [
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED
     ]
