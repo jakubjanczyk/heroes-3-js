@@ -1,5 +1,3 @@
-// A battle between the hero's army and a monster: where each stack stands and whose turn it is.
-// Rows and columns count from 0. The state is a plain value; each function returns a new one.
 import { findHexPath, getReachableHexes, getStartHexes } from './battlefield.js'
 import { describeStack } from './hero-army.js'
 
@@ -29,8 +27,7 @@ export function createBattle({ heroArmy, monster, definitions }) {
   }
 }
 
-// Faster stacks act first. On a tie the attacker goes first, and within one army the earlier slot.
-// Sorting is stable and the attacker's stacks come first in slot order, so speed alone decides.
+// Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
 export function getTurnOrder(battle) {
   return [...battle.stacks].sort((a, b) => b.speed - a.speed)
 }
@@ -39,7 +36,6 @@ export function getActiveStack(battle) {
   return getTurnOrder(battle).find(({ id }) => !battle.actedStackIds.includes(id)) ?? null
 }
 
-// Once every stack has acted, a new round starts.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
   return {
@@ -75,8 +71,6 @@ export function getActiveStackReach(battle) {
   })
 }
 
-// The hexes the active stack goes through to get to `hex`, the last one being `hex`: a flying stack
-// goes straight there. Null when it cannot get there this turn.
 export function planActiveStackMove(battle, hex) {
   const stack = getActiveStack(battle)
   if (!stack || !getActiveStackReach(battle).some((reachable) => isSameHex(reachable, hex))) {

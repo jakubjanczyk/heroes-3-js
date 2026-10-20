@@ -111,7 +111,6 @@
     center / 100% 100% no-repeat;
 }
 
-/* As in the game, the hexes the active stack can move to are shaded darker. */
 .battlefield__hex--reachable {
   cursor: pointer;
   background:
@@ -139,7 +138,6 @@
   block-size: 130%;
 }
 
-/* The stack whose turn it is glows with a pulsing yellow outline, as in the game. */
 .battle-stack--active .battle-stack__creature {
   outline: 2px solid oklch(0.92 0.17 98);
   outline-offset: 1px;

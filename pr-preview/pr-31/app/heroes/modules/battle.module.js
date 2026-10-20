@@ -29,8 +29,7 @@ const DEFAULT_STEP_DELAY_MS = 180
 const sleepFor = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
-// The battle the hero is fighting. The player moves the active stack; the monster has no AI yet and
-// lets its turn pass. Auto combat wins the battle outright.
+// The battle the hero is fighting. Auto combat wins it outright.
 export const registerBattleModule = defineModule(
   ({ emit, config }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
@@ -53,7 +52,7 @@ export const registerBattleModule = defineModule(
       })
     }
 
-    // The monster has no AI yet: whenever its turn comes, it stays where it is.
+    // No AI yet: the monster lets its turn pass.
     function passEnemyTurns() {
       for (
         let stack = getActiveStack(battle);
@@ -64,8 +63,6 @@ export const registerBattleModule = defineModule(
       }
     }
 
-    // A walking stack goes hex by hex, a flying one straight there; each takes its time on screen
-    // before the next stack's turn.
     async function moveActiveStack(hex) {
       const path = planActiveStackMove(battle, hex)
       if (!path) {

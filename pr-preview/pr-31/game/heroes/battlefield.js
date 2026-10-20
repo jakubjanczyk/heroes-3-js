@@ -28,9 +28,7 @@ const isOnBattlefield = ({ row, column }) =>
 
 const hexKey = ({ row, column }) => `${row},${column}`
 
-// The top row and every second row under it sit half a hex to the right, so a hex on one of those
-// rows touches the hexes above and below it and the ones to their right; on the other rows, the
-// ones to their left.
+// Even rows sit half a hex to the right, so their diagonal neighbours are shifted right too.
 export function getHexNeighbours({ row, column }) {
   const diagonalShift = row % 2 === 0 ? 1 : -1
   return [
@@ -43,7 +41,6 @@ export function getHexNeighbours({ row, column }) {
   ].filter(isOnBattlefield)
 }
 
-// Hexes counted in steps as the crow flies, through cube coordinates.
 export function getHexDistance(from, to) {
   const toCube = ({ row, column }) => ({ q: column - (row + (row % 2)) / 2, r: row })
   const a = toCube(from)
@@ -53,8 +50,6 @@ export function getHexDistance(from, to) {
   return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2
 }
 
-// Breadth-first search over the free hexes: how many steps each one takes from `from`, and the
-// hex each was reached from.
 function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
   const steps = new Map([[hexKey(from), { hex: from, steps: 0, previous: null }]])
   const queue = [from]
@@ -77,8 +72,6 @@ function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
   return steps
 }
 
-// The shortest way a walking stack takes from `from` to `to` around the taken hexes, as the hexes
-// it steps on, or null when there is none.
 export function findHexPath({ from, to, isFree }) {
   const reached = walkFrom({ from, isFree })
   if (!reached.has(hexKey(to)) || hexKey(to) === hexKey(from)) {
@@ -92,8 +85,6 @@ export function findHexPath({ from, to, isFree }) {
   return path
 }
 
-// The free hexes a stack can move to: a walking stack within its speed in steps around the other
-// stacks, a flying one any free hex within its speed as the crow flies.
 export function getReachableHexes({ from, speed, flying, isFree }) {
   if (flying) {
     return Array.from({ length: BATTLEFIELD_ROWS }, (_, row) =>
