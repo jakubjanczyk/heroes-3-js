@@ -23,7 +23,7 @@ import {
   setupMovementBehaviorApp,
   winBattle
 } from './behavior.utils.js'
-import { aHero, aMonster, aScenario } from './builders.js'
+import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
 import { DIRT, GRASS, LAVA, ROUGH, SAND, SNOW, SUBTERRANEAN, SWAMP } from './terrain-codes.js'
 
 const HERO_NAME = 'Sir Christian'
@@ -215,7 +215,11 @@ describe('battle behavior', () => {
   })
 
   test('given battle is open when the player clicks Auto combat then the adventure map is back and the monster is defeated', async () => {
-    const { user } = await setupApp(aFight())
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(3)
+        .withEntities(aHero().withArmy(ARMY_THAT_WINS), aMonster().withStacks(1).at(1, 0))
+    )
     await attackMonsterAt(1, 0)
 
     await winBattle(user)

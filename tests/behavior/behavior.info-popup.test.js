@@ -16,7 +16,7 @@ import {
   waitMs,
   winBattle
 } from './behavior.utils.js'
-import { aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { ARMY_THAT_WINS, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
 
 const LONG_PRESS_MS = 20
@@ -181,7 +181,7 @@ describe('info popup behavior', () => {
 
     test('given a defeated monster when the player holds the right button on its tile then the popup shows the terrain name', async () => {
       const { user } = await setupApp(
-        aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0))
+        aScenario().withSize(3).withEntities(aHero().withArmy(ARMY_THAT_WINS), aMonster().at(1, 0))
       )
       await defeatMonsterAt(user, 1, 0)
 

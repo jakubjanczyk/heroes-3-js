@@ -46,6 +46,7 @@ function createStacks({ side, army, skills, definitions }) {
       strikes: abilities.includes('strikesTwice') ? 2 : 1,
       retaliationsPerRound,
       retaliationsLeft: retaliationsPerRound,
+      defenseBonus: 0,
       hex: startHexes[index]
     }
   })
@@ -58,6 +59,7 @@ export function createBattle({ heroArmy, heroSkills, monsterArmy, definitions })
       ...createStacks({ side: 'defender', army: monsterArmy, definitions })
     ],
     actedStackIds: [],
+    waitedStackIds: [],
     messages: [],
     definitions
   }
@@ -75,25 +77,67 @@ export function getTurnOrder(battle) {
   return livingStacks(battle).sort((a, b) => b.speed - a.speed)
 }
 
+// The stacks that waited act once every other stack has, the slowest first.
 export function getActiveStack(battle) {
-  return getTurnOrder(battle).find(({ id }) => !battle.actedStackIds.includes(id)) ?? null
+  const yetToAct = getTurnOrder(battle).filter(({ id }) => !battle.actedStackIds.includes(id))
+  return yetToAct.find(({ id }) => !battle.waitedStackIds.includes(id)) ?? yetToAct.at(-1) ?? null
+}
+
+export const hasWaited = (battle, stackId) => battle.waitedStackIds.includes(stackId)
+
+// A defending stack keeps its Defense bonus until its next turn starts.
+function startNextTurn(battle) {
+  const active = getActiveStack(battle)
+  if (!active?.defenseBonus) {
+    return battle
+  }
+
+  return {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === active.id
+        ? { ...stack, defense: stack.defense - stack.defenseBonus, defenseBonus: 0 }
+        : stack
+    )
+  }
 }
 
 // A new round also gives every stack its retaliations back.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
   if (livingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
-    return { ...battle, actedStackIds }
+    return startNextTurn({ ...battle, actedStackIds })
   }
 
-  return {
+  return startNextTurn({
     ...battle,
     actedStackIds: [],
+    waitedStackIds: [],
     stacks: battle.stacks.map((stack) => ({
       ...stack,
       retaliationsLeft: stack.retaliationsPerRound
     }))
+  })
+}
+
+export function waitStack(battle, stackId) {
+  return startNextTurn({ ...battle, waitedStackIds: [...battle.waitedStackIds, stackId] })
+}
+
+// +20% Defense, and at least 1 point (VCMI `BattleActionProcessor::doDefendAction`).
+export function defendStack(battle, stackId) {
+  const defended = {
+    ...battle,
+    stacks: battle.stacks.map((stack) => {
+      if (stack.id !== stackId) {
+        return stack
+      }
+
+      const defenseBonus = Math.max(1, Math.floor(stack.defense / 5))
+      return { ...stack, defense: stack.defense + defenseBonus, defenseBonus }
+    })
   }
+  return endTurn(defended, stackId)
 }
 
 export function moveStack(battle, stackId, hex) {

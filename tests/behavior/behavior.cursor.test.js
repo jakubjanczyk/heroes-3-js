@@ -16,7 +16,16 @@ import {
   waitMs,
   winBattle
 } from './behavior.utils.js'
-import { aHero, aMine, aMonster, aResource, aScenario, aTown, aTreasureChest } from './builders.js'
+import {
+  ARMY_THAT_WINS,
+  aHero,
+  aMine,
+  aMonster,
+  aResource,
+  aScenario,
+  aTown,
+  aTreasureChest
+} from './builders.js'
 import { GRASS, ROCK, WATER } from './terrain-codes.js'
 
 const gameDefinitions = {
@@ -237,7 +246,7 @@ describe('adventure map cursor behavior', () => {
 
   test('given a defeated monster when the mouse is over its tile then the cursor is the horse', async () => {
     const { user } = await setupApp(
-      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0))
+      aScenario().withSize(3).withEntities(aHero().withArmy(ARMY_THAT_WINS), aMonster().at(1, 0))
     )
     await moveHeroTo(1, 0)
     await winBattle(user)

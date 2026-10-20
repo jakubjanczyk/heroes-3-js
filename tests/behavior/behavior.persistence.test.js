@@ -22,10 +22,11 @@ import {
   expectTownPresent,
   flushMicrotasks,
   queryBattleScreen,
+  readGameData,
   setupMovementBehaviorApp,
   winBattle
 } from './behavior.utils.js'
-import { aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { ARMY_THAT_WINS, aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
 
 function createSession(scenario, appConfig = {}) {
   return {
@@ -41,7 +42,16 @@ async function reload(sessionOptions) {
   return session
 }
 
-const skeletonDefinitions = { monsters: { SKELETON: { name: 'Skeleton' } } }
+const monsters = readGameData('monsters.json')
+
+const aWinningHero = () => aHero().withArmy(ARMY_THAT_WINS)
+
+const aWinningFight = (width) =>
+  aScenario()
+    .withSize(width)
+    .withEntities(aWinningHero(), aMonster().at(1, 0))
+    .withDefinitions({ monsters })
+
 const goldDefinitions = { resources: { GOLD_PILE: { name: 'Gold pile', amount: 100 } } }
 const castleDefinitions = { towns: { CASTLE: { name: 'Castle' } } }
 
@@ -49,8 +59,8 @@ describe('session persistence behavior', () => {
   test('given hero moved and interactions resolved when app reloads then final world and HUD state are restored without replaying notifications', async () => {
     const session = createSession(
       aScenario()
-        .withEntities(aHero(), aMonster().at(1, 0), aResource().at(3, 0))
-        .withDefinitions({ ...skeletonDefinitions, ...goldDefinitions }),
+        .withEntities(aWinningHero(), aMonster().at(1, 0), aResource().at(3, 0))
+        .withDefinitions({ monsters, ...goldDefinitions }),
       { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0, RESOURCE: 0 } }
     )
 
@@ -293,10 +303,10 @@ describe('session persistence behavior', () => {
   })
 
   test('given monster is still fading out after the battle when app reloads then monster stays defeated', async () => {
-    const session = createSession(
-      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
-      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 1000 } }
-    )
+    const session = createSession(aWinningFight(3), {
+      interactionModalTransitionMs: 0,
+      fadeOutMsByKind: { MONSTER: 1000 }
+    })
 
     const firstSession = await setupMovementBehaviorApp(session)
 
@@ -441,10 +451,10 @@ describe('session persistence behavior', () => {
   })
 
   test('given monster was defeated before reload when app reloads then hero can path through that tile in restored world state', async () => {
-    const session = createSession(
-      aScenario().withSize(4).withEntities(aHero(), aMonster().at(1, 0)),
-      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
-    )
+    const session = createSession(aWinningFight(4), {
+      interactionModalTransitionMs: 0,
+      fadeOutMsByKind: { MONSTER: 0 }
+    })
 
     const firstSession = await setupMovementBehaviorApp(session)
 
@@ -471,10 +481,10 @@ describe('session persistence behavior', () => {
   })
 
   test('given battle was open at reload when player wins it after reload then the monster stays defeated after another reload', async () => {
-    const session = createSession(
-      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
-      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
-    )
+    const session = createSession(aWinningFight(3), {
+      interactionModalTransitionMs: 0,
+      fadeOutMsByKind: { MONSTER: 0 }
+    })
 
     await setupMovementBehaviorApp(session)
 

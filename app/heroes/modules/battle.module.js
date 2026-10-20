@@ -2,6 +2,7 @@ import { findHero } from '../../../game/domain/entity-queries.js'
 import {
   attackStack,
   createBattle,
+  defendStack,
   endTurn,
   getActiveStack,
   getAttackTargets,
@@ -10,9 +11,11 @@ import {
   getStackHexes,
   getStackReach,
   hasLivingStacks,
+  hasWaited,
   moveStack,
   planStackAttack,
-  planStackMove
+  planStackMove,
+  waitStack
 } from '../../../game/heroes/battle.js'
 import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
@@ -21,11 +24,16 @@ import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+  APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_BATTLE_STACK_ATTACKED,
+  APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_MOVED,
+  APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
@@ -47,8 +55,8 @@ const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStack
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
-// The battle the hero is fighting. The monster's stacks play by `battle-ai.js`; Auto combat wins
-// it outright.
+// The battle the hero is fighting. The monster's stacks play by `battle-ai.js`, and so do the
+// hero's while Auto combat is on.
 export const registerBattleModule = defineModule(
   ({ emit, config }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
@@ -62,6 +70,8 @@ export const registerBattleModule = defineModule(
     let isRestoring = false
     // A move or attack is saved as one fact; until the walk ends the battle is shown as before.
     let moving = null
+    let autoCombat = false
+    let passedTurns = 0
 
     function showBattle() {
       if (moving) {
@@ -77,12 +87,16 @@ export const registerBattleModule = defineModule(
           reachableHexes: [],
           attackTargets: [],
           messages: moving.battle.messages,
+          canWait: false,
+          canDefend: false,
+          autoCombat,
           stepDelayMs
         })
         return
       }
 
       const activeStack = getActiveStack(battle)
+      const canAct = isPlayersTurn()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
         stacks: withHexes(battle.stacks),
@@ -90,6 +104,9 @@ export const registerBattleModule = defineModule(
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
         attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],
         messages: battle.messages,
+        canWait: canAct && !hasWaited(battle, activeStack.id),
+        canDefend: canAct,
+        autoCombat,
         stepDelayMs
       })
     }
@@ -138,6 +155,7 @@ export const registerBattleModule = defineModule(
       }
 
       emit(APP_FACT_BATTLE_TURN_ENDED, { stackId: stack.id })
+      passedTurns += 1
       continueBattle()
     }
 
@@ -152,16 +170,24 @@ export const registerBattleModule = defineModule(
         return
       }
 
+      // No stack can get anywhere: the player takes over rather than the turns passing forever.
+      if (autoCombat && passedTurns >= battle.stacks.length) {
+        emit(APP_FACT_BATTLE_AUTO_COMBAT_CHANGED, { enabled: false })
+        return
+      }
+
       const stack = getActiveStack(battle)
-      if (stack.side === 'defender') {
+      if (stack.side === 'defender' || autoCombat) {
         playComputerTurn(stack)
       }
     }
 
-    const isPlayersTurn = () => getActiveStack(battle)?.side === 'attacker'
+    const isPlayersTurn = () =>
+      Boolean(battle) && !moving && !autoCombat && getActiveStack(battle)?.side === 'attacker'
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
+      passedTurns = 0
       moving = { stackId: stack.id, hex: stack.hex, battle }
       emit(fact, detail)
       for (const to of path) {
@@ -221,6 +247,7 @@ export const registerBattleModule = defineModule(
             levelUpSkills = []
             started = null
             battle = null
+            autoCombat = false
           }
         },
         {
@@ -306,17 +333,52 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_STACK_WAITED,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = waitStack(battle, event.detail.stackId)
+            showBattle()
+          }
+        },
+        {
+          type: APP_FACT_BATTLE_STACK_DEFENDED,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = defendStack(battle, event.detail.stackId)
+            showBattle()
+          }
+        },
+        {
+          type: APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            autoCombat = event.detail.enabled
+            passedTurns = 0
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_ENDED,
           handler: () => {
             started = null
             battle = null
             moving = null
+            autoCombat = false
           }
         },
         {
           type: APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
           handler: (event) => {
-            if (!battle || moving || !isPlayersTurn()) {
+            if (!isPlayersTurn()) {
               return
             }
 
@@ -326,7 +388,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
           handler: (event) => {
-            if (!battle || moving || !isPlayersTurn()) {
+            if (!isPlayersTurn()) {
               return
             }
 
@@ -334,13 +396,39 @@ export const registerBattleModule = defineModule(
           }
         },
         {
-          type: APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+          type: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
           handler: () => {
-            if (!started) {
+            const stack = isPlayersTurn() && getActiveStack(battle)
+            if (!stack || hasWaited(battle, stack.id)) {
               return
             }
 
-            winBattle()
+            emit(APP_FACT_BATTLE_STACK_WAITED, { stackId: stack.id })
+            continueBattle()
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
+          handler: () => {
+            if (!isPlayersTurn()) {
+              return
+            }
+
+            emit(APP_FACT_BATTLE_STACK_DEFENDED, { stackId: getActiveStack(battle).id })
+            continueBattle()
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+          handler: () => {
+            if (!battle) {
+              return
+            }
+
+            emit(APP_FACT_BATTLE_AUTO_COMBAT_CHANGED, { enabled: !autoCombat })
+            if (autoCombat && !moving) {
+              continueBattle()
+            }
           }
         }
       ]
@@ -359,9 +447,14 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_MOVED,
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_TURN_ENDED,
+      APP_FACT_BATTLE_STACK_WAITED,
+      APP_FACT_BATTLE_STACK_DEFENDED,
+      APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_ENDED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED
     ],
     produces: [
@@ -369,6 +462,9 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_MOVED,
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_TURN_ENDED,
+      APP_FACT_BATTLE_STACK_WAITED,
+      APP_FACT_BATTLE_STACK_DEFENDED,
+      APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_ENDED,
       APP_FACT_MONSTER_DEFEATED,
       APP_FACT_MONSTER_COUNT_CHANGED,

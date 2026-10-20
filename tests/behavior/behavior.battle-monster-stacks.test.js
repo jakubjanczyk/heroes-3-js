@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest'
 import {
   attackBattleHexFrom,
   attackMonsterAt,
+  clickBattleButton,
   clickResetSession,
   createMemoryEventLog,
   expectMonsterNotPresent,
@@ -15,7 +16,7 @@ import {
   readCombatMessages,
   readGameData,
   setupMovementBehaviorApp,
-  winBattle
+  waitForBattleToEnd
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -136,7 +137,8 @@ describe('battle monster stacks behavior', () => {
       const { envWindow } = windowThatReloadsNowhere()
       const first = await startBattle(scenario, { eventLog, envWindow })
       const firstStacks = readMonsterStacks()
-      await winBattle(first.user)
+      await clickBattleButton(first.user, 'Auto combat')
+      await waitForBattleToEnd()
       await clickResetSession(first.user)
       await flushMicrotasks()
 

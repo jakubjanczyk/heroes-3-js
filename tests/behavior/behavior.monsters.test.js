@@ -15,12 +15,17 @@ import {
   flushMicrotasks,
   getBattleScreen,
   queryBattleScreen,
+  readGameData,
   setupMovementBehaviorApp,
   waitMs,
   winBattle
 } from './behavior.utils.js'
-import { aHero, aMonster, aScenario } from './builders.js'
+import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
+
+const monsters = readGameData('monsters.json')
+
+const aWinningHero = () => aHero().withArmy(ARMY_THAT_WINS)
 
 describe('monster interaction behavior', () => {
   test('given scenario contains a monster when app boots then monster is rendered', async () => {
@@ -45,7 +50,11 @@ describe('monster interaction behavior', () => {
 
   test('given player confirms monster attack when movement finishes then the battle opens and the monster fades out once it is won', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster()).build(),
+      loadGameOptions: aScenario()
+        .withSize(4)
+        .withEntities(aWinningHero(), aMonster())
+        .withDefinitions({ monsters })
+        .build(),
       appConfig: { fadeOutMsByKind: { MONSTER: 20 } }
     })
 
@@ -76,7 +85,11 @@ describe('monster interaction behavior', () => {
 
   test('given monster is not adjacent when player confirms attack then hero stops on tile before monster and fight still costs one step', async () => {
     const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
+      loadGameOptions: aScenario()
+        .withSize(4)
+        .withEntities(aWinningHero(), aMonster().at(2, 0))
+        .withDefinitions({ monsters })
+        .build(),
       appConfig: { fadeOutMsByKind: { MONSTER: 20 } }
     })
 

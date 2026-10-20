@@ -409,17 +409,19 @@ See `docs/notes/2026-10-20-battle-attacks.md`.
 - [ ] Jousting (Cavaliers), hatred (Angels and Devils), luck, Offense and Armorer skills
 
 ### 5.7 Combat Actions (Wait, Defend, Retreat, Surrender)
-- [ ] **Wait**: skip current turn, act later in the round (after all others, at half-speed priority)
-- [ ] **Defend**: skip turn, +25% defense until next turn
+See `docs/notes/2026-10-20-wait-defend-auto-combat.md`.
+- [x] **Wait**: skip current turn, act again once every other stack has acted, the stacks that waited slowest first; once per round
+- [x] **Defend**: end the turn with +20% Defense (at least 1 point) until the stack's next turn
 - [ ] **Retreat**: hero flees battle, loses all creatures, hero survives
 - [ ] **Surrender**: pay gold to enemy to leave with army intact (gold cost = army value)
-- [ ] **Auto-combat**: AI controls your army to resolve battle quickly
-- [ ] Action buttons displayed during active stack's turn
+- [x] **Auto-combat**: the combat AI plays your stacks until the battle ends or you press it again
+- [x] Wait and Defend work only on your stack's turn: disabled while the monster acts, a stack moves or Auto combat plays
+- [ ] A defending stack shown as such (H3 shows it in the creature's info window)
 
 ### 5.7b Combat AI
 See `docs/notes/2026-10-20-combat-ai.md`.
 - [x] Enemy stacks act on their own, simply: go for the nearest stack (fewest hexes to a side of it; the earlier army slot on a tie) and attack it, or get as close as the turn allows. Shooters walk too until there are ranged attacks
-- [ ] Auto combat uses the same AI for the player's stacks
+- [x] Auto combat uses the same AI for the player's stacks
 - [ ] Smarter combat AI (later):
   - [ ] Pick the target by threat and value (damage it can deal, creatures it can kill, retaliation it would take), not only by distance
   - [ ] Shooters stay back and shoot (needs ranged attacks, 5.6), and go for enemy shooters
@@ -773,18 +775,23 @@ Visual and audio excellence. Last mile.
 - [ ] Separate SFX volume control
 
 ### 10.6 Keyboard Shortcuts
+A button lists its keys in `aria-keyshortcuts`; the screen on top takes the keys (`app/modules/keyboard-shortcuts.module.js`, see `docs/notes/2026-10-20-wait-defend-auto-combat.md`). A new shortcut is that attribute on its button.
+- [x] Shortcut mechanism: a key presses the enabled button that lists it, on the top screen only
 - [ ] `M` or click: move selected hero
 - [ ] `E` or button: end turn
 - [ ] `Space`: next hero with remaining movement
 - [ ] `H`: hero list
 - [ ] `T` / `K`: town list
-- [ ] `Arrow keys`: scroll map
+- [x] `Arrow keys`: scroll map (camera input, not a button)
 - [ ] `+`/`-`: zoom in/out
 - [ ] `Escape`: close current modal/panel/view
 - [ ] `Enter`: confirm dialog
 - [ ] `S`: spellbook (in combat and adventure map)
-- [ ] `W`: wait (in combat)
-- [ ] `D`: defend (in combat)
+- [x] `W`: wait (in combat)
+- [x] `D` or `Space`: defend (in combat)
+- [x] `A`: Auto combat
+- [ ] `R`: retreat, `S`: surrender (in combat, with those actions)
+- [ ] Adventure map buttons (end turn, next hero, move...) get their H3 keys
 - [ ] Number keys `1-7`: select creature stack in combat
 - [ ] Shortcuts shown in tooltip on hover over buttons
 
