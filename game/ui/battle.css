@@ -1,6 +1,6 @@
 /*
  * The Heroes 3 battle screen, laid over the whole adventure screen: the battlefield with its 15 by
- * 11 hexes, the heroes in the top corners and the combat bar with the status bar along the bottom.
+ * 11 hexes and an unmarked edge column past each side, the heroes in the top corners and the combat bar with the status bar along the bottom.
  * Nothing is taken from the game: the ground takes the colour of the terrain the battle is on.
  */
 .game-shell {
@@ -31,7 +31,7 @@
   box-shadow: inset 0 0 0 1px black;
 
   /* Pointy-top hexes: as tall as 2/√3 of their width, rows overlapping by a quarter. */
-  --hex-width: min(calc(100cqw / 16.5), calc(84cqh / 9.8));
+  --hex-width: min(calc(100cqw / 17.5), calc(84cqh / 9.8));
   --hex-height: calc(var(--hex-width) * 1.1547);
 }
 
@@ -87,7 +87,7 @@
   inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.25));
   inset-inline-start: 50%;
   translate: -50% 0;
-  inline-size: calc(var(--hex-width) * (15 + 0.5));
+  inline-size: calc(var(--hex-width) * (17 + 0.5));
 }
 
 .battlefield__row {
@@ -115,7 +115,6 @@
 }
 
 .battlefield__hex--reachable {
-  cursor: pointer;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.38)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
     center / 100% 100% no-repeat;
@@ -130,11 +129,29 @@
   }
 }
 
+.battlefield__hex--edge {
+  background: none;
+}
+
 /* A creature stands on its hex, taller than it, with its count in a purple box at its feet. */
 .battle-stack {
   position: absolute;
   inset: 0;
   z-index: 1;
+}
+
+/* A double-wide creature also covers the hex behind it: on the left for the attacker. */
+.battle-stack--double-wide.battle-stack--attacker {
+  inset-inline-start: -100%;
+}
+
+.battle-stack--double-wide.battle-stack--defender {
+  inset-inline-end: -100%;
+}
+
+.battle-stack__back-half {
+  position: absolute;
+  inset: 0;
 }
 
 .battle-stack__creature {
@@ -201,6 +218,14 @@
 
 .battle-stack--defender .battle-stack__count {
   inset-inline-end: 65%;
+}
+
+.battle-stack--double-wide.battle-stack--attacker .battle-stack__count {
+  inset-inline-start: 82%;
+}
+
+.battle-stack--double-wide.battle-stack--defender .battle-stack__count {
+  inset-inline-end: 82%;
 }
 
 .battle-bar {

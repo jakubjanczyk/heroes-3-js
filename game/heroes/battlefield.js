@@ -1,7 +1,9 @@
 // The Heroes 3 battlefield: 15 columns by 11 rows of hexes, the attacker on the left and the
-// defender on the right. Rows and columns count from 0 here.
+// defender on the right. Rows and columns count from 0 here. Past each side there is an edge
+// column, -1 and 15, where only the back half of a double-wide creature can stand.
 export const BATTLEFIELD_COLUMNS = 15
 export const BATTLEFIELD_ROWS = 11
+export const EDGE_COLUMNS = [-1, BATTLEFIELD_COLUMNS]
 
 // Where an army's stacks start, by how many stacks it has, as in Heroes 3 (VCMI
 // config/battleStartpos.json). Empty army slots take no place: three stacks stand as three.
@@ -23,15 +25,32 @@ export function getStartHexes({ side, stackCount }) {
   return (START_ROWS_BY_STACK_COUNT[stackCount] ?? []).map((row) => ({ row, column }))
 }
 
-const isOnBattlefield = ({ row, column }) =>
+export const isOnBattlefield = ({ row, column }) =>
   row >= 0 && row < BATTLEFIELD_ROWS && column >= 0 && column < BATTLEFIELD_COLUMNS
+
+export const isOnBattlefieldOrEdge = ({ row, column }) =>
+  row >= 0 && row < BATTLEFIELD_ROWS && column >= -1 && column <= BATTLEFIELD_COLUMNS
+
+// A double-wide creature stands on its hex and the one behind it: the attacker's back half is on
+// its left, the defender's on its right (VCMI `Unit::occupiedHex`).
+export function getOccupiedHexes({ hex, doubleWide, side }) {
+  if (!doubleWide) {
+    return [hex]
+  }
+
+  return [hex, { row: hex.row, column: hex.column + (side === 'attacker' ? -1 : 1) }]
+}
+
+export function getFrontHexFor({ hex, side }) {
+  return { row: hex.row, column: hex.column + (side === 'attacker' ? 1 : -1) }
+}
 
 export const hexKey = ({ row, column }) => `${row},${column}`
 
 export const isSameHex = (a, b) => a.row === b.row && a.column === b.column
 
 // Even rows sit half a hex to the right, so their diagonal neighbours are shifted right too.
-export function getHexNeighbours({ row, column }) {
+export function getHexNeighbours({ row, column }, { withEdges = false } = {}) {
   const diagonalShift = row % 2 === 0 ? 1 : -1
   return [
     { row, column: column - 1 },
@@ -40,10 +59,10 @@ export function getHexNeighbours({ row, column }) {
       { row: nextRow, column },
       { row: nextRow, column: column + diagonalShift }
     ])
-  ].filter(isOnBattlefield)
+  ].filter(withEdges ? isOnBattlefieldOrEdge : isOnBattlefield)
 }
 
-// Null off the battlefield.
+// Null past the edge columns.
 export function getHexNeighbourOnSide({ row, column }, side) {
   const leftColumn = row % 2 === 0 ? column : column - 1
   const neighbour = {
@@ -54,7 +73,7 @@ export function getHexNeighbourOnSide({ row, column }, side) {
     'bottom-left': { row: row + 1, column: leftColumn },
     'bottom-right': { row: row + 1, column: leftColumn + 1 }
   }[side]
-  return neighbour && isOnBattlefield(neighbour) ? neighbour : null
+  return neighbour && isOnBattlefieldOrEdge(neighbour) ? neighbour : null
 }
 
 // In hex widths and heights, in Heroes 3's order of sides (VCMI `BattleHex::EDir`), which

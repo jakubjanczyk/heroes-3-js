@@ -47,6 +47,13 @@ function assertMonsterCounts(scenario) {
     if (entity.kind === 'MONSTER' && !(Number.isInteger(entity.count) && entity.count > 0)) {
       throw new Error(`Monster ${entity.id} must have a count that is a positive whole number`)
     }
+
+    const { stacks } = entity
+    if (entity.kind === 'MONSTER' && stacks !== undefined) {
+      if (!(Number.isInteger(stacks) && stacks >= 1 && stacks <= 7)) {
+        throw new Error(`Monster ${entity.id} must split into 1 to 7 stacks`)
+      }
+    }
   }
 }
 
