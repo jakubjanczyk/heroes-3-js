@@ -285,15 +285,27 @@ function withOutline(pixels) {
   return pixels.map((row) => row.join(''))
 }
 
-// In battle, over an enemy the active stack can shoot: an arrow flying up to the right. It comes
-// broken in two when the shot does half damage for the distance.
-function drawShootArrow({ broken }) {
-  const pixels = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill('.'))
-  const gap = broken ? [7, 8] : []
+const emptyPixels = () => Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill('.'))
+
+// Red feathers at the tail, their bottom-left corner at (left, bottom).
+function drawFletching(pixels, { left, bottom }) {
+  for (const [x, y] of [
+    [0, -2],
+    [1, -2],
+    [2, 0],
+    [2, -1],
+    [1, -1],
+    [0, 0]
+  ]) {
+    pixels[bottom + y][left + x] = 'R'
+  }
+}
+
+// In battle, over an enemy the active stack can shoot: an arrow flying up to the right.
+function drawShootArrow() {
+  const pixels = emptyPixels()
   for (let x = 3; x <= 12; x += 1) {
-    if (!gap.includes(x)) {
-      pixels[15 - x][x] = 'B'
-    }
+    pixels[15 - x][x] = 'B'
   }
   // The head: a solid triangle pointing to the top-right corner.
   for (let y = 1; y <= 4; y += 1) {
@@ -301,16 +313,27 @@ function drawShootArrow({ broken }) {
       pixels[y][x] = 'S'
     }
   }
-  for (const [x, y] of [
-    [1, 12],
-    [2, 12],
-    [3, 14],
-    [3, 13],
-    [2, 13],
-    [1, 14]
-  ]) {
-    pixels[y][x] = 'R'
+  drawFletching(pixels, { left: 1, bottom: 14 })
+  return withOutline(pixels)
+}
+
+// When the shot does half damage for the distance: the arrow snapped in two, the head half bent
+// down at a right angle to the tail.
+function drawBrokenShootArrow() {
+  const pixels = emptyPixels()
+  for (let x = 3; x <= 6; x += 1) {
+    pixels[10 - x][x] = 'B'
   }
+  for (let x = 9; x <= 12; x += 1) {
+    pixels[x - 3][x] = 'B'
+  }
+  // The head: a solid triangle pointing down to the right.
+  for (let y = 8; y <= 11; y += 1) {
+    for (let x = 22 - y; x <= 14; x += 1) {
+      pixels[y][x] = 'S'
+    }
+  }
+  drawFletching(pixels, { left: 1, bottom: 9 })
   return withOutline(pixels)
 }
 
@@ -452,8 +475,8 @@ const CURSORS = {
   'battle-fly': BATTLE_FLY_ROWS,
   'battle-blocked': drawBlockedSign(),
   'battle-query': BATTLE_QUERY_ROWS,
-  'battle-shoot': drawShootArrow({ broken: false }),
-  'battle-shoot-penalty': drawShootArrow({ broken: true }),
+  'battle-shoot': drawShootArrow(),
+  'battle-shoot-penalty': drawBrokenShootArrow(),
   'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,
   'battle-attack-from-right': mirrorLeftToRight(BATTLE_ATTACK_FROM_LEFT_ROWS),
   'battle-attack-from-top-left': diagonalSword,

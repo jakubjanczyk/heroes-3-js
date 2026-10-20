@@ -21,7 +21,7 @@ Checked against VCMI where marked (`lib/constants/NumericConstants.h`, `lib/batt
 - `game/heroes/battle-damage.js` halves the damage when told to: `shotSequence` for the distance penalty, `strikeSequence` for a shooter's melee strikes and retaliations.
 - Clicking an enemy the shooter can shoot sends `command.battle.stackShoot.requested`. The battle module saves `fact.battle.stack.shot` with every shot's damage, so a reload replays the same damage and the same shots left.
 - The combat AI shoots the nearest enemy stack (fewest hexes to any of its hexes, the earlier army slot on a tie) whenever the stack can shoot, else plays as before. That covers a monster's shooters and the hero's under Auto combat.
-- `scripts/build-cursors.mjs` draws the arrow and the broken arrow (`battle-shoot`, `battle-shoot-penalty`); the hotspot is the middle.
+- `scripts/build-cursors.mjs` draws the arrow and the broken arrow, snapped in two with the head half at a right angle to the tail (`battle-shoot`, `battle-shoot-penalty`); the hotspot is the middle.
 
 ## Testing
 
