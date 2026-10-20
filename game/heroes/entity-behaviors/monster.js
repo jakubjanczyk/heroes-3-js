@@ -18,6 +18,7 @@ export const monsterBehavior = Object.freeze({
         entityId: entity.id,
         entityType: entity.type,
         count: entity.count,
+        stacks: entity.stacks,
         tile
       }
     }

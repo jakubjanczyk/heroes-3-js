@@ -45,8 +45,9 @@ async function setupApp(scenario, options = {}) {
 
 const skeletons = (count) => ({ creature: 'SKELETON', count })
 
-// A hero next to a monster, so a single step starts the battle.
-const aFight = () => aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0))
+// A hero next to a monster of one stack, so a single step starts the battle.
+const aFight = () =>
+  aScenario().withSize(3).withEntities(aHero(), aMonster().withStacks(1).at(1, 0))
 
 describe('battle behavior', () => {
   test('given hero attacks a monster when it reaches it then the battle screen opens', async () => {
@@ -160,7 +161,7 @@ describe('battle behavior', () => {
     await setupApp(
       aScenario()
         .withSize(3)
-        .withEntities(aHero(), aMonster().withType('PIKEMAN').withCount(37).at(1, 0))
+        .withEntities(aHero(), aMonster().withType('PIKEMAN').withCount(37).withStacks(1).at(1, 0))
     )
 
     await attackMonsterAt(1, 0)

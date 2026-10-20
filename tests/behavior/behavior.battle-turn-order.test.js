@@ -19,12 +19,13 @@ const gameDefinitions = { monsters: readGameData('monsters.json') }
 
 const stack = (creature, count) => ({ creature, count })
 
+// The monster stays one stack.
 const aFight = ({ army, monsterType = 'SKELETON', monsterCount = 10 }) =>
   aScenario()
     .withSize(3)
     .withEntities(
       aHero().withArmy(army),
-      aMonster().withType(monsterType).withCount(monsterCount).at(1, 0)
+      aMonster().withType(monsterType).withCount(monsterCount).withStacks(1).at(1, 0)
     )
     .withDefinitions(gameDefinitions)
 

@@ -43,7 +43,7 @@ export const heroesOutcomeEffects = Object.freeze({
     facts: [
       {
         type: APP_FACT_BATTLE_STARTED,
-        detail: { ...toEntityFactDetail(outcome), count: outcome.count }
+        detail: { ...toEntityFactDetail(outcome), count: outcome.count, stacks: outcome.stacks }
       }
     ]
   }),

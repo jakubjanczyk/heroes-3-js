@@ -39,13 +39,13 @@ function rollsInTurn(...values) {
   }
 }
 
-// The hero has no primary skills unless a test gives them some.
+// The hero has no primary skills unless a test gives them some, and the monster stays one stack.
 const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, hero = aHero() }) =>
   aScenario()
     .withSize(3)
     .withEntities(
       hero.withArmy(army),
-      aMonster().withType(monsterType).withCount(monsterCount).at(1, 0)
+      aMonster().withType(monsterType).withCount(monsterCount).withStacks(1).at(1, 0)
     )
     .withDefinitions({ monsters })
 

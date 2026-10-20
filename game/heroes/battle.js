@@ -45,11 +45,11 @@ function createStacks({ side, army, skills, definitions }) {
   })
 }
 
-export function createBattle({ heroArmy, heroSkills, monster, definitions }) {
+export function createBattle({ heroArmy, heroSkills, monsterArmy, definitions }) {
   return {
     stacks: [
       ...createStacks({ side: 'attacker', army: heroArmy ?? [], skills: heroSkills, definitions }),
-      ...createStacks({ side: 'defender', army: [monster], definitions })
+      ...createStacks({ side: 'defender', army: monsterArmy, definitions })
     ],
     actedStackIds: [],
     messages: [],

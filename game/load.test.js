@@ -175,6 +175,27 @@ describe('bootstrap', () => {
     )
   })
 
+  // A Heroes 3 map may set how many stacks a monster splits into: one to seven.
+  test.each([
+    0,
+    8,
+    2.5,
+    '3'
+  ])('loadGame rejects scenarios with a monster split into %j stacks', async (stacks) => {
+    const fetch = fakeFetchWithMonster({
+      id: 'monster-1',
+      kind: 'MONSTER',
+      type: 'SKELETON',
+      count: 12,
+      stacks,
+      tile: { x: 1, y: 0 }
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Monster monster-1 must split into 1 to 7 stacks'
+    )
+  })
+
   test.each([
     -5,
     2.5,

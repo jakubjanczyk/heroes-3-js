@@ -13,6 +13,7 @@ import {
   planStackMove
 } from '../../../game/heroes/battle.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
+import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
@@ -198,7 +199,16 @@ export const registerBattleModule = defineModule(
             battle = createBattle({
               heroArmy: hero?.army,
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
-              monster: { creature: started.entityType, count: started.count },
+              monsterArmy: splitMonster({
+                monster: {
+                  creature: started.entityType,
+                  count: started.count,
+                  stacks: started.stacks
+                },
+                heroArmy: hero?.army,
+                tile: started.tile,
+                definitions
+              }),
               definitions
             })
             showBattle()
