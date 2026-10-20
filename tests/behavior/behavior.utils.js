@@ -668,3 +668,51 @@ export async function holdMouseOverMap(x, y) {
   )
   await waitMs(360)
 }
+
+export function queryBattleScreen() {
+  return screen.queryByRole('dialog', { name: 'Battle' })
+}
+
+export function getBattleScreen() {
+  const battleScreen = queryBattleScreen()
+  expect(battleScreen).toBeTruthy()
+  return battleScreen
+}
+
+export function getBattlefield() {
+  return within(getBattleScreen()).getByRole('grid', { name: 'Battlefield' })
+}
+
+// Every creature stack on the battlefield as "<name> <count>" with its hex, rows and columns
+// counted from 1 as Heroes 3 players would: row 1 at the top, column 1 on the attacker's side.
+export function readBattleStacks() {
+  return within(getBattlefield())
+    .getAllByRole('gridcell')
+    .flatMap((hex) => {
+      const creature = within(hex).queryByRole('img')
+      if (!creature) {
+        return []
+      }
+
+      return [
+        {
+          stack: `${creature.getAttribute('aria-label')} ${hex.textContent.trim()}`,
+          row: Number(hex.closest('[role="row"]').getAttribute('aria-rowindex')),
+          column: Number(hex.getAttribute('aria-colindex'))
+        }
+      ]
+    })
+}
+
+export async function attackMonsterAt(x, y) {
+  confirmTileClickByDispatch(x, y)
+  await flushMicrotasks()
+  await waitMs()
+  await flushMicrotasks()
+}
+
+// Auto Combat stands in for the whole battle until stacks can act: the hero wins.
+export async function winBattle(user) {
+  await user.click(within(getBattleScreen()).getByRole('button', { name: 'Auto combat' }))
+  await flushMicrotasks()
+}

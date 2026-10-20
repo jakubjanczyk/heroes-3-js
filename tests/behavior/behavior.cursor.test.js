@@ -4,7 +4,6 @@ import { describe, expect, test } from 'vitest'
 
 import { loadAppStyles } from './app-styles.js'
 import {
-  closeInteractionModal,
   confirmTileClickByDispatch,
   flushMicrotasks,
   getCursorOver,
@@ -14,7 +13,8 @@ import {
   moveMouseOntoTile,
   readGameData,
   setupMovementBehaviorApp,
-  waitMs
+  waitMs,
+  winBattle
 } from './behavior.utils.js'
 import { aHero, aMine, aMonster, aResource, aScenario, aTown, aTreasureChest } from './builders.js'
 import { GRASS, ROCK, WATER } from './terrain-codes.js'
@@ -240,7 +240,7 @@ describe('adventure map cursor behavior', () => {
       aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0))
     )
     await moveHeroTo(1, 0)
-    await closeInteractionModal(user)
+    await winBattle(user)
     await waitMs()
     await flushMicrotasks()
 

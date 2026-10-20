@@ -342,14 +342,20 @@ See `docs/notes/2026-10-19-creature-database.md`.
 - [x] Monster count shown on hover and in the right-click popup (category, not exact number)
 - [ ] Monster aggression: some flee, some join, some fight (based on army strength ratio + Diplomacy)
 - [ ] Monster growth over time: count increases each week (optional, based on scenario settings)
-- [ ] Approaching a monster initiates combat (not instant defeat)
+- [x] Approaching a monster initiates combat (not instant defeat): the battle screen opens; Auto combat wins it for now (`docs/notes/2026-10-20-battle-screen.md`)
 - [ ] Weak monsters may offer to flee or join hero's army
 
 ### 5.3 Combat Grid & Layout
-- [ ] Combat takes place on a separate screen (hexagonal grid)
-- [ ] Grid size: 15 columns x 11 rows of hexagonal cells
-- [ ] Attacker units placed on left side, defender on right
-- [ ] Terrain background based on adventure map terrain where combat started
+See `docs/notes/2026-10-20-battle-screen.md`.
+- [x] Combat takes place on a separate screen (hexagonal grid)
+- [x] Grid size: 15 columns x 11 rows of hexagonal cells
+- [x] Attacker units placed on left side, defender on right, in the Heroes 3 start formation
+- [x] Terrain background based on adventure map terrain where combat started (the ground takes the terrain's colour)
+- [x] Attacking hero shown in the top-left corner (a placeholder figure)
+- [x] Combat bar as in H3: System options, Surrender, Retreat, Auto combat, message log, Cast spell, Wait, Defend, and the status bar (only Auto combat works yet)
+- [x] A battle open at reload is shown again
+- [ ] A neutral monster splits into several stacks, as in H3 (one stack for now)
+- [ ] Creature pictures on the battlefield (placeholders for now)
 - [ ] Obstacles on combat grid (random placement or scenario-defined)
 - [ ] Grid cells: passable, obstacle, wall (siege)
 - [ ] Hex coordinate system with neighbor calculation
@@ -396,6 +402,10 @@ See `docs/notes/2026-10-19-creature-database.md`.
 - [ ] **Surrender**: pay gold to enemy to leave with army intact (gold cost = army value)
 - [ ] **Auto-combat**: AI controls your army to resolve battle quickly
 - [ ] Action buttons displayed during active stack's turn
+
+### 5.7b Combat AI
+- [ ] Enemy stacks act on their own: simple at first (move to the nearest stack and attack it, shooters shoot)
+- [ ] Auto combat uses the same AI for the player's stacks
 
 ### 5.8 Combat Spells
 - [ ] Hero can cast one spell per combat round (instead of a stack acting)
@@ -799,52 +809,53 @@ Sprites and map authoring are intentionally late.
 20. Combat movement (5.5)
 21. Combat attacks (melee + ranged) (5.6)
 22. Combat actions: wait, defend, retreat (5.7)
-23. Combat resolution (5.9)
+23. Combat AI, kept simple (5.7b)
+24. Combat resolution (5.9)
 
 ### Phase 4 - "Towns & Economy"
-24. Town view screen (2.3)
-25. Town buildings system (6.1)
-26. Common buildings (6.2)
-27. Creature dwellings in town (6.3)
-28. Town garrison (6.4)
-29. Interaction modals upgrade (2.4)
+25. Town view screen (2.3)
+26. Town buildings system (6.1)
+27. Common buildings (6.2)
+28. Creature dwellings in town (6.3)
+29. Town garrison (6.4)
+30. Interaction modals upgrade (2.4)
 
 ### Phase 5 - "Living World"
-30. Fog of war (7.1)
-31. Multiple heroes (4.5)
-32. Hero secondary skills (4.7)
-33. Creature dwellings on map (7.4)
-34. Resource-generating objects (7.5)
-35. Permanent bonus objects (7.7)
-36. Stat-boosting objects (7.6)
-37. Artifacts on map (7.8)
-38. Obstacles & decorations (7.3)
+31. Fog of war (7.1)
+32. Multiple heroes (4.5)
+33. Hero secondary skills (4.7)
+34. Creature dwellings on map (7.4)
+35. Resource-generating objects (7.5)
+36. Permanent bonus objects (7.7)
+37. Stat-boosting objects (7.6)
+38. Artifacts on map (7.8)
+39. Obstacles & decorations (7.3)
 
 ### Phase 6 - "Real Competition"
-39. Player system (8.1)
-40. AI basics (8.3)
-41. AI decision making (8.4)
-42. Victory conditions (8.5)
-43. Combat spells (5.8)
-44. Hero magic (4.8)
-45. Siege combat (5.10)
-46. Town factions (6.5)
+40. Player system (8.1)
+41. AI basics (8.3)
+42. AI decision making (8.4)
+43. Victory conditions (8.5)
+44. Combat spells (5.8)
+45. Hero magic (4.8)
+46. Siege combat (5.10)
+47. Town factions (6.5)
 
 ### Phase 7 - "Polish & Reusability"
-47. Engine public API (9.3)
-48. Scenario format v2 (9.1)
-49. Multiple scenarios + selector (9.2)
-50. Keyboard shortcuts (10.6)
-51. Save/Load system (10.7)
-52. Sound effects (10.4)
-53. Music per context (10.5)
-54. Entity sprites (10.1)
-55. Terrain sprites (10.2)
-56. Animations (10.3)
-57. Map portals (7.9)
-58. Water & boats (7.10)
-59. Hot-seat multiplayer (8.2)
-60. Map editor (9.4)
+48. Engine public API (9.3)
+49. Scenario format v2 (9.1)
+50. Multiple scenarios + selector (9.2)
+51. Keyboard shortcuts (10.6)
+52. Save/Load system (10.7)
+53. Sound effects (10.4)
+54. Music per context (10.5)
+55. Entity sprites (10.1)
+56. Terrain sprites (10.2)
+57. Animations (10.3)
+58. Map portals (7.9)
+59. Water & boats (7.10)
+60. Hot-seat multiplayer (8.2)
+61. Map editor (9.4)
 
 ---
 

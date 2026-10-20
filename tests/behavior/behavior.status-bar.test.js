@@ -3,7 +3,7 @@ import { screen } from '@testing-library/dom'
 import { describe, test } from 'vitest'
 
 import {
-  closeInteractionModal,
+  attackMonsterAt,
   confirmTileClickByDispatch,
   expectStatusBarText,
   flushMicrotasks,
@@ -11,7 +11,8 @@ import {
   panCamera,
   readGameData,
   setupMovementBehaviorApp,
-  waitMs
+  waitMs,
+  winBattle
 } from './behavior.utils.js'
 import { aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import {
@@ -197,10 +198,8 @@ describe('status bar behavior', () => {
     const { user } = await setupApp(
       aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0))
     )
-    confirmTileClickByDispatch(1, 0)
-    await flushMicrotasks()
-    await waitMs()
-    await closeInteractionModal(user)
+    await attackMonsterAt(1, 0)
+    await winBattle(user)
     await waitMs()
     await flushMicrotasks()
 

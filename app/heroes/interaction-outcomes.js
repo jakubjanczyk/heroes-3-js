@@ -1,5 +1,5 @@
 import {
-  INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED,
+  INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   INTERACTION_OUTCOME_KIND_TOWN_VISITED,
   INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND
@@ -7,7 +7,7 @@ import {
 import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.js'
 import {
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
-  APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_BATTLE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED
@@ -39,9 +39,13 @@ function toEntityFactDetail(outcome) {
 }
 
 export const heroesOutcomeEffects = Object.freeze({
-  [INTERACTION_OUTCOME_KIND_MONSTER_DEFEATED]: (outcome) => ({
-    modal: toModal(outcome),
-    factsOnModalClosed: [{ type: APP_FACT_MONSTER_DEFEATED, detail: toEntityFactDetail(outcome) }]
+  [INTERACTION_OUTCOME_KIND_BATTLE_STARTED]: (outcome) => ({
+    facts: [
+      {
+        type: APP_FACT_BATTLE_STARTED,
+        detail: { ...toEntityFactDetail(outcome), count: outcome.count }
+      }
+    ]
   }),
   [INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED]: (outcome) => ({
     facts: [

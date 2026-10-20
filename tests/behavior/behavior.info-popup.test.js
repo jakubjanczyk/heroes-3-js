@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import {
-  closeInteractionModal,
+  attackMonsterAt,
   confirmTileClickByDispatch,
   expectHeroAt,
   expectNoPreview,
@@ -13,7 +13,8 @@ import {
   pointerOverTile,
   readGameData,
   setupMovementBehaviorApp,
-  waitMs
+  waitMs,
+  winBattle
 } from './behavior.utils.js'
 import { aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
@@ -77,10 +78,8 @@ function expectInfoPopupPicture(name) {
 }
 
 async function defeatMonsterAt(user, x, y) {
-  confirmTileClickByDispatch(x, y)
-  await flushMicrotasks()
-  await waitMs()
-  await closeInteractionModal(user)
+  await attackMonsterAt(x, y)
+  await winBattle(user)
   await waitMs()
   await flushMicrotasks()
 }
