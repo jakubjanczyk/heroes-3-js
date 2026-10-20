@@ -386,7 +386,7 @@ See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
 
 ### 5.6 Combat Attacks
 See `docs/notes/2026-10-20-battle-attacks.md`.
-- [x] Melee attack: click an enemy stack; the side of it under the mouse picks the hex to attack from, and the stack walks or flies there first
+- [x] Melee attack: click an enemy stack; the reachable side nearest the mouse picks the hex to attack from (on a touch screen a stack next to it attacks from where it stands), and the stack walks or flies there first
 - [x] Damage formula as in H3: attack above defense +5% a point (up to +300%), defense above attack -2.5% a point (up to -70%), rounded down, at least 1
 - [x] Attack stat = creature attack + hero Attack attribute
 - [x] Defense stat = creature defense + hero Defense attribute

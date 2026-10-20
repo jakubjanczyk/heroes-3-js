@@ -58,16 +58,36 @@ export function getHexNeighbourOnSide({ row, column }, side) {
   return neighbour && isOnBattlefield(neighbour) ? neighbour : null
 }
 
-// The side of a hex a point is on, from its offset to the hex's centre (y grows downwards):
-// six slices of 60 degrees, the right one centred on the horizontal.
-export function getHexSideAt({ x, y }) {
-  const degrees = (Math.atan2(-y, x) * 180) / Math.PI
-  if (degrees > 150 || degrees <= -150) return 'left'
-  if (degrees > 90) return 'top-left'
-  if (degrees > 30) return 'top-right'
-  if (degrees > -30) return 'right'
-  if (degrees > -90) return 'bottom-right'
-  return 'bottom-left'
+// Where the centre of the hex on each side lies from the hex's own centre, in hex widths and
+// heights, in Heroes 3's order of sides (VCMI `BattleHex::EDir`): on a tie the first one wins.
+const SIDE_OFFSETS = [
+  ['top-left', { x: -0.5, y: -0.75 }],
+  ['top-right', { x: 0.5, y: -0.75 }],
+  ['right', { x: 1, y: 0 }],
+  ['bottom-right', { x: 0.5, y: 0.75 }],
+  ['bottom-left', { x: -0.5, y: 0.75 }],
+  ['left', { x: -1, y: 0 }]
+]
+
+// Of the `sides` a stack could attack from, the one whose hex is nearest the point, given as an
+// offset from the hex's centre (y grows downwards), as Heroes 3 picks where to attack from
+// (VCMI `BattleFieldController::selectNearestDirection`).
+export function findNearestHexSide({ point, hexSize, sides }) {
+  let nearest = null
+  let nearestDistance = Number.POSITIVE_INFINITY
+  for (const [side, offset] of SIDE_OFFSETS) {
+    if (!sides.includes(side)) {
+      continue
+    }
+
+    const distance =
+      (offset.x * hexSize.width - point.x) ** 2 + (offset.y * hexSize.height - point.y) ** 2
+    if (distance < nearestDistance) {
+      nearest = side
+      nearestDistance = distance
+    }
+  }
+  return nearest
 }
 
 export function getHexDistance(from, to) {

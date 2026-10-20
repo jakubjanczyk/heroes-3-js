@@ -804,6 +804,14 @@ export async function attackBattleHexFrom(user, row, column, side) {
   await flushMicrotasks()
 }
 
+// Taps the given side of the stack on that hex with a finger, as on a phone.
+export async function tapBattleHexSide(user, row, column, side) {
+  await user.pointer({ ...pointerOnHexSide(row, column, side), keys: '[TouchA]' })
+  await flushMicrotasks()
+  await waitMs()
+  await flushMicrotasks()
+}
+
 // The combat message log, oldest line first.
 export function readCombatMessages() {
   return within(within(getBattleScreen()).getByRole('log', { name: 'Combat messages' }))

@@ -18,6 +18,7 @@ import {
   readCombatMessages,
   readGameData,
   setupMovementBehaviorApp,
+  tapBattleHexSide,
   winBattle
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -119,17 +120,20 @@ describe('battle attack behavior', () => {
       expect(readCombatMessages()[0]).toBe('The Angels do 175 damage. 17 Pikemen perish.')
     })
 
-    test('given that side of the monster is off the battlefield then clicking there does nothing and the stack stays active', async () => {
+    // As in Heroes 3, a side the stack cannot attack from gives way to the nearest side it can;
+    // on a tie the upper side wins.
+    test('given the side pointed at is off the battlefield then the stack attacks from the nearest side it can', async () => {
       const { user } = await startBattle(aFightOfTwoAngelsAndPikemen())
       await flyAngelsCloser(user)
 
       await attackMonsterFrom(user, 'right')
 
-      expect(readActiveStack()).toEqual(stackAt('Angels 2', 6, 5))
-      expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 50', 6, 15))
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([stackAt('Angels 2', 5, 15), stackAt('Pikemen 33', 6, 15)])
+      )
     })
 
-    test('given another stack stands on that side of the monster then clicking there does nothing and the stack stays active', async () => {
+    test('given another stack stands on the side pointed at then the stack attacks from the nearest side it can', async () => {
       // Both Angel stacks are as fast; the one in the first slot acts first.
       const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2), stack('ANGEL', 1)] }))
       await moveActiveStackTo(user, 6, 5)
@@ -138,8 +142,22 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'left')
 
-      expect(readActiveStack()).toEqual(stackAt('Angel 1', 6, 4))
-      expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 50', 6, 15))
+      // One Angel deals 87: 50, +75% for 20 Attack against 5 Defense.
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([stackAt('Angel 1', 5, 14), stackAt('Pikemen 42', 6, 15)])
+      )
+    })
+
+    test('given the stack stands next to the monster when the player taps any side of it on a touch screen then the stack attacks from where it stands', async () => {
+      const { user } = await startBattle(aFightOfTwoAngelsAndPikemen())
+      await flyAngelsCloser(user)
+      await moveActiveStackTo(user, 6, 14)
+
+      await tapBattleHexSide(user, MONSTER.row, MONSTER.column, 'top-right')
+
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([stackAt('Angels 2', 6, 14), stackAt('Pikemen 33', 6, 15)])
+      )
     })
 
     test('given a monster the stack cannot reach then clicking it does nothing', async () => {
