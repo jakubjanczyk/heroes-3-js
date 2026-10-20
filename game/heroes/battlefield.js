@@ -43,8 +43,7 @@ export function getHexNeighbours({ row, column }) {
   ].filter(isOnBattlefield)
 }
 
-// The hex next to `hex` on one of its six sides, or null off the battlefield. Sides are 'left',
-// 'right', 'top-left', 'top-right', 'bottom-left' and 'bottom-right'.
+// Null off the battlefield.
 export function getHexNeighbourOnSide({ row, column }, side) {
   const leftColumn = row % 2 === 0 ? column : column - 1
   const neighbour = {
@@ -58,8 +57,8 @@ export function getHexNeighbourOnSide({ row, column }, side) {
   return neighbour && isOnBattlefield(neighbour) ? neighbour : null
 }
 
-// Where the centre of the hex on each side lies from the hex's own centre, in hex widths and
-// heights, in Heroes 3's order of sides (VCMI `BattleHex::EDir`): on a tie the first one wins.
+// In hex widths and heights, in Heroes 3's order of sides (VCMI `BattleHex::EDir`), which
+// settles ties.
 const SIDE_OFFSETS = [
   ['top-left', { x: -0.5, y: -0.75 }],
   ['top-right', { x: 0.5, y: -0.75 }],
@@ -69,9 +68,7 @@ const SIDE_OFFSETS = [
   ['left', { x: -1, y: 0 }]
 ]
 
-// Of the `sides` a stack could attack from, the one whose hex is nearest the point, given as an
-// offset from the hex's centre (y grows downwards), as Heroes 3 picks where to attack from
-// (VCMI `BattleFieldController::selectNearestDirection`).
+// `point` is an offset from the hex's centre (VCMI `BattleFieldController::selectNearestDirection`).
 export function findNearestHexSide({ point, hexSize, sides }) {
   let nearest = null
   let nearestDistance = Number.POSITIVE_INFINITY

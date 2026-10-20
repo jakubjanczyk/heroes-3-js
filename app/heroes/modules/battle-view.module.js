@@ -39,8 +39,6 @@ export const registerBattleViewModule = defineModule(
     let shown = null
     let reachableKeys = new Set()
     let hoveredHex = null
-    // Where the mouse or finger is, so the side of a stack it points at picks where to attack
-    // from, and whether it is a finger.
     let pointer = null
     let pointerType = 'mouse'
     let messageLog = null
@@ -57,7 +55,6 @@ export const registerBattleViewModule = defineModule(
       return stack
     }
 
-    // A stack with no creatures left lies on its hex as a corpse, with no count.
     function drawStack(element, { name, count }) {
       const isDead = count === 0
       const label = isDead ? `Dead ${name}` : name
@@ -72,10 +69,8 @@ export const registerBattleViewModule = defineModule(
       return shown?.stacks.find((stack) => stack.count > 0 && isSameHex(stack.hex, hex))
     }
 
-    // The enemy stack on `hex` and the hex next to it the active stack attacks from: the side
-    // nearest where the mouse points, of those it can attack from. A finger cannot point at a
-    // side before it taps, so a stack already next to the target attacks from where it stands.
-    // Null when the active stack cannot attack it.
+    // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
+    // already next to the target attacks from where it stands.
     function findAttack(hex, hexElement) {
       const target = findLivingStackOn(hex)
       const attackTarget =

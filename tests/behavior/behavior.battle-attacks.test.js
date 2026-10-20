@@ -30,7 +30,6 @@ const stack = (creature, count) => ({ creature, count })
 // Every damage roll lands on the lowest damage, unless a test says otherwise.
 const LOWEST_ROLLS = () => 0
 
-// Rolls that go through the given values in turn, then start over.
 function rollsInTurn(...values) {
   let index = 0
   return () => {
@@ -40,7 +39,7 @@ function rollsInTurn(...values) {
   }
 }
 
-// The hero has no primary skills unless a test gives them some, so creature stats decide.
+// The hero has no primary skills unless a test gives them some.
 const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, hero = aHero() }) =>
   aScenario()
     .withSize(3)
@@ -60,9 +59,7 @@ async function startBattle(scenario, { random = LOWEST_ROLLS, eventLog } = {}) {
   return app
 }
 
-// With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6,
-// column 15. Next to the monster are row 6 column 14 (its left), rows 5 and 7 column 14 (top-left
-// and bottom-left) and rows 5 and 7 column 15 (top-right and bottom-right).
+// With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6, column 15.
 const MONSTER = { row: 6, column: 15 }
 
 async function attackMonsterFrom(user, side) {
@@ -71,7 +68,6 @@ async function attackMonsterFrom(user, side) {
 
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
-// Angels fly 12 hexes: from row 6 column 5 the whole left of the monster is in reach.
 async function flyAngelsCloser(user) {
   await moveActiveStackTo(user, 6, 5)
 }
@@ -80,8 +76,7 @@ async function flyAngelsCloser(user) {
 const aFightOfTwoAngelsAndPikemen = (overrides = {}) =>
   aFight({ army: [stack('ANGEL', 2)], ...overrides })
 
-// One Crusader walks up to 100 Pikemen in three turns and dies to their retaliation (80
-// damage against its 35 health). The Angel moves along the bottom so the rounds go by.
+// One Crusader walks up to 100 Pikemen and dies to their retaliation: 80 damage, 35 health.
 async function startBattleWithACrusaderCorpse(options) {
   const app = await startBattle(
     aFight({ army: [stack('CRUSADER', 1), stack('ANGEL', 1)], monsterCount: 100 }),
@@ -120,8 +115,6 @@ describe('battle attack behavior', () => {
       expect(readCombatMessages()[0]).toBe('The Angels do 175 damage. 17 Pikemen perish.')
     })
 
-    // As in Heroes 3, a side the stack cannot attack from gives way to the nearest side it can;
-    // on a tie the upper side wins.
     test('given the side pointed at is off the battlefield then the stack attacks from the nearest side it can', async () => {
       const { user } = await startBattle(aFightOfTwoAngelsAndPikemen())
       await flyAngelsCloser(user)
@@ -142,7 +135,6 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'left')
 
-      // One Angel deals 87: 50, +75% for 20 Attack against 5 Defense.
       expect(readBattleStacks()).toEqual(
         expect.arrayContaining([stackAt('Angel 1', 5, 14), stackAt('Pikemen 42', 6, 15)])
       )
@@ -238,7 +230,6 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'left')
 
-      // 100 damage, +75% for 20 Attack against 5 Defense.
       expect(readCombatMessages()[0]).toBe('The Angels do 175 damage. 17 Pikemen perish.')
     })
 
@@ -289,7 +280,6 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'left')
 
-      // 175 damage kills 17 Pikemen of 10 health each.
       expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 33', 6, 15))
     })
 
@@ -336,12 +326,10 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'left')
 
-      // 47 Pikemen are left and deal 47, -12.5% for 4 Attack against 9 Defense: 41 damage
-      // kills one Royal Griffin of 25 health.
+      // 47 Pikemen deal 41 (-12.5%): one Royal Griffin of 25 health dies.
       expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 9', 6, 14))
     })
 
-    // Angels act first, then Royal Griffins, then the Pikemen let their turn pass.
     async function bothStacksAttackInOneRound(user) {
       await moveActiveStackTo(user, 6, 5)
       await moveActiveStackTo(user, 7, 9)
@@ -366,7 +354,7 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'left')
 
-      // 15 Pikemen are left and deal 15, -40% for 4 Attack against 20 Defense.
+      // 15 Pikemen deal 15, -40% for 4 Attack against 20 Defense.
       expect(readCombatMessages().at(-1)).toBe('The Pikemen do 9 damage.')
     })
 
@@ -380,8 +368,7 @@ describe('battle attack behavior', () => {
 
       await bothStacksAttackInOneRound(user)
 
-      // 43 Griffins are left and deal 129, -2.5% for 8 Attack against 9 Defense: 125 damage
-      // kills 5 Royal Griffins.
+      // 43 Griffins deal 125 (-2.5%) on the second retaliation: 5 Royal Griffins die.
       expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 5', 7, 14))
     })
 
@@ -400,7 +387,7 @@ describe('battle attack behavior', () => {
 
       await attackMonsterFrom(user, 'bottom-left')
 
-      // 43 Royal Griffins are left and deal 129 at equal Attack and Defense: 5 of 10 die.
+      // 43 Royal Griffins deal 129 on the third retaliation: 5 of 10 die.
       expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 5', 7, 14))
     })
 
@@ -487,8 +474,7 @@ describe('battle attack behavior', () => {
       await flushMicrotasks()
       await attackMonsterFrom(reloaded.user, 'bottom-left')
 
-      // The top Pikeman has 5 health left, so 36 damage kills 4 of the 33, and the Pikemen
-      // already struck back this round.
+      // 36 damage on a top Pikeman with 5 health left kills 4, with no retaliation.
       expect(readBattleStacks()).toEqual(
         expect.arrayContaining([stackAt('Pikemen 29', 6, 15), stackAt('Royal Griffins 10', 7, 14)])
       )
@@ -519,7 +505,7 @@ describe('battle attack behavior', () => {
       heroClasses: readGameData('hero-classes.json')
     }
 
-    // 10 Pikemen have 100 health in all: a hero 100 short of level 2 gets there by killing them.
+    // 10 Pikemen have 100 health in all.
     const aFightForALevel = () =>
       aFightOfTwoAngelsAndPikemen({
         monsterCount: 10,

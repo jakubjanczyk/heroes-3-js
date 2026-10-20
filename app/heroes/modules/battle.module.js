@@ -39,8 +39,7 @@ const DEFAULT_STEP_DELAY_MS = 180
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
-// The battle the hero is fighting. The player's stacks move and attack; the battle is won when
-// the monster has no creatures left, or at once with Auto combat.
+// The battle the hero is fighting. Auto combat wins it outright.
 export const registerBattleModule = defineModule(
   ({ emit, config }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
@@ -52,8 +51,7 @@ export const registerBattleModule = defineModule(
     let started = null
     let battle = null
     let isRestoring = false
-    // A move or an attack is saved as one fact; until the stack gets where it is going the
-    // battle is shown as it was before, with the stack on its way.
+    // A move or attack is saved as one fact; until the walk ends the battle is shown as before.
     let moving = null
 
     function showBattle() {
@@ -93,8 +91,7 @@ export const registerBattleModule = defineModule(
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { amount: experience })
     }
 
-    // No AI yet: the monster lets its turn pass. With no hero stack left nothing happens
-    // until the AI can finish the battle.
+    // No AI yet: the monster lets its turn pass, and a battle with no hero stack left waits.
     function passEnemyTurns() {
       for (
         let stack = getActiveStack(battle);
@@ -114,7 +111,6 @@ export const registerBattleModule = defineModule(
       passEnemyTurns()
     }
 
-    // Saves the fact, then shows the stack walking `path` before the outcome.
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
       moving = { stackId: stack.id, hex: stack.hex, battle }

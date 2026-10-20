@@ -757,7 +757,6 @@ export function getBattleStatusBarText() {
   return within(getBattleScreen()).getByRole('status', { name: 'Battle status bar' }).textContent
 }
 
-// Where the mouse points within a hex picks the side a stack attacks from, as in Heroes 3.
 // jsdom lays nothing out, so the hex gets a size to point within.
 const HEX_SIZE = { width: 40, height: 46 }
 const POINTER_OFFSET_BY_SIDE = {
@@ -790,12 +789,10 @@ function pointerOnHexSide(row, column, side) {
   }
 }
 
-// side: 'left', 'right', 'top-left', 'top-right', 'bottom-left' or 'bottom-right'.
 export async function pointAtBattleHexSide(user, row, column, side) {
   await user.pointer(pointerOnHexSide(row, column, side))
 }
 
-// Clicks the given side of the stack on that hex: the active stack attacks it from that side.
 export async function attackBattleHexFrom(user, row, column, side) {
   const pointer = pointerOnHexSide(row, column, side)
   await user.pointer([pointer, { ...pointer, keys: '[MouseLeft]' }])
@@ -804,7 +801,6 @@ export async function attackBattleHexFrom(user, row, column, side) {
   await flushMicrotasks()
 }
 
-// Taps the given side of the stack on that hex with a finger, as on a phone.
 export async function tapBattleHexSide(user, row, column, side) {
   await user.pointer({ ...pointerOnHexSide(row, column, side), keys: '[TouchA]' })
   await flushMicrotasks()
@@ -812,7 +808,6 @@ export async function tapBattleHexSide(user, row, column, side) {
   await flushMicrotasks()
 }
 
-// The combat message log, oldest line first.
 export function readCombatMessages() {
   return within(within(getBattleScreen()).getByRole('log', { name: 'Combat messages' }))
     .queryAllByRole('paragraph')
