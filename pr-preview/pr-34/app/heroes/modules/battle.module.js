@@ -6,6 +6,7 @@ import {
   getActiveStack,
   getAttackTargets,
   getExperienceForWin,
+  getHeroArmyAfterBattle,
   getStackHexes,
   getStackReach,
   hasLivingStacks,
@@ -28,6 +29,7 @@ import {
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
@@ -95,7 +97,9 @@ export const registerBattleModule = defineModule(
     function winBattle() {
       const { entityId, entityType, tile } = started
       const experience = getExperienceForWin(battle)
+      const army = getHeroArmyAfterBattle(battle, hero?.army ?? [])
       emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'attacker' })
+      emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army })
       emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
       emit(APP_FACT_ENTITY_REMOVED, { entityId })
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { amount: experience })
@@ -226,6 +230,12 @@ export const registerBattleModule = defineModule(
             levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
           }
         },
+        {
+          type: APP_FACT_HERO_ARMY_CHANGED,
+          handler: (event) => {
+            hero = { ...hero, army: event.detail.army }
+          }
+        },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
         {
           type: APP_UI_RESTORE_COMPLETED,
@@ -343,6 +353,7 @@ export const registerBattleModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_LEVELED_UP,
+      APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
       APP_FACT_BATTLE_STARTED,
@@ -362,6 +373,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_ENDED,
       APP_FACT_MONSTER_DEFEATED,
       APP_FACT_MONSTER_COUNT_CHANGED,
+      APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_ENTITY_REMOVED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED
     ]
