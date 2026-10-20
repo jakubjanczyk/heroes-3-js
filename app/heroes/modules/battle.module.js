@@ -47,8 +47,8 @@ const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStack
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
-// The battle the hero is fighting. The monster's stacks act on their own (`battle-ai.js`); Auto
-// combat wins it outright.
+// The battle the hero is fighting. The monster's stacks play by `battle-ai.js`; Auto combat wins
+// it outright.
 export const registerBattleModule = defineModule(
   ({ emit, config }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
@@ -105,7 +105,6 @@ export const registerBattleModule = defineModule(
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { amount: experience })
     }
 
-    // The hero is lost and the monster stays on the map with the creatures it has left.
     function loseBattle() {
       const { entityId } = started
       const count = battle.stacks

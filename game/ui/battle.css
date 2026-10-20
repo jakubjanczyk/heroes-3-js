@@ -134,8 +134,7 @@
 }
 
 /* A creature stands on its hex, taller than it, with its count in a purple box at its feet. As in
- * Heroes 3, the mouse points at hexes, not at pictures: a creature reaching over the hexes around
- * its own does not take the mouse from them. */
+ * Heroes 3, the mouse points at hexes, not at the pictures reaching over them. */
 .battle-stack {
   position: absolute;
   inset: 0;
@@ -204,8 +203,7 @@
   z-index: 0;
 }
 
-/* A corpse lies flat and dark on its hex, under any stack standing on it: as wide as the creature
- * stood, a double-wide one across both its hexes, and low. */
+/* A corpse lies flat and dark on its hexes, under any stack standing on it. */
 .battle-stack--dead .battle-stack__creature {
   inset-block-end: 25%;
   block-size: 35%;

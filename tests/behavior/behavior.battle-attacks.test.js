@@ -342,7 +342,6 @@ describe('battle attack behavior', () => {
       expect(readCombatMessages()[1]).toBe('The Pikemen do 41 damage. One Royal Griffin perishes.')
     })
 
-    // The monster then attacks the Angels, the first of the two in the army.
     async function bothStacksAttackInOneRound(user, monster = PIKEMEN) {
       await moveActiveStackTo(user, 6, 5)
       await moveActiveStackTo(user, 7, 6)

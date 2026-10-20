@@ -277,7 +277,6 @@ export function getHeroInHeroList(heroName) {
   return within(getHeroList()).getByRole('button', { name: heroName })
 }
 
-// Each of the seven army slots as "<name> <count>", or '' when the slot is empty.
 export function readArmySlots(container) {
   const army = within(container).getByRole('list', { name: 'Army' })
   return within(army)

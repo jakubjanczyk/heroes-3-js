@@ -108,7 +108,6 @@ describe('battle combat AI behavior', () => {
 
       await moveActiveStackTo(user, 6, 2)
 
-      // Pikemen walk 4 hexes.
       expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 10', 6, 11))
     })
 
