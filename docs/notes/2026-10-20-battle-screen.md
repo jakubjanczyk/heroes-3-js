@@ -23,6 +23,6 @@ Roadmap 5.3, first step of combat: attacking a monster opens the battle screen i
 
 ## Not yet
 
-- Stacks acting: turn order, movement, attacks, the enemy's AI, Wait, Defend, Retreat, Surrender, spells.
+- Stacks acting: turn order and movement came next (`docs/notes/2026-10-20-battle-turns-and-movement.md`); attacks, the enemy's AI, Wait, Defend, Retreat, Surrender, spells.
 - Splitting a monster into several stacks, double-wide creatures taking two hexes, obstacles.
 - Creature pictures, the battle results window, experience from battles, losses.

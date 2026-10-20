@@ -111,6 +111,19 @@
     center / 100% 100% no-repeat;
 }
 
+.battlefield__hex--reachable {
+  cursor: pointer;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.38)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+
+  &:hover {
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.5)' stroke='rgba(255,236,120,0.95)' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+      center / 100% 100% no-repeat;
+  }
+}
+
 /* A creature stands on its hex, taller than it, with its count in a purple box at its feet. */
 .battle-stack {
   position: absolute;
@@ -123,6 +136,28 @@
   inset-inline: 15%;
   inset-block-end: 20%;
   block-size: 130%;
+}
+
+.battle-stack--active .battle-stack__creature {
+  outline: 2px solid oklch(0.92 0.17 98);
+  outline-offset: 1px;
+  animation: battle-stack-active 1s ease-in-out infinite alternate;
+}
+
+@keyframes battle-stack-active {
+  from {
+    outline-color: oklch(0.92 0.17 98);
+  }
+
+  to {
+    outline-color: oklch(0.7 0.12 80 / 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-stack--active .battle-stack__creature {
+    animation: none;
+  }
 }
 
 .battle-stack__count {

@@ -362,22 +362,26 @@ See `docs/notes/2026-10-20-battle-screen.md`.
 - [ ] Mouse hover highlights hex, shows movement/attack range
 
 ### 5.4 Combat Turn Order
-- [ ] Initiative based on creature speed stat
-- [ ] Faster creatures act first
-- [ ] Each stack acts once per round
-- [ ] Round ends when all stacks have acted, then new round starts
-- [ ] Current active stack highlighted
-- [ ] Turn order bar/queue display showing upcoming stacks
-- [ ] Ties in speed: attacker goes first
+See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
+- [x] Initiative based on creature speed stat
+- [x] Faster creatures act first
+- [x] Each stack acts once per round
+- [x] Round ends when all stacks have acted, then new round starts
+- [x] Current active stack highlighted
+- [ ] (Not in H3, optional extra) Turn order bar/queue display showing upcoming stacks
+- [x] Ties in speed: attacker goes first, then the earlier army slot
+- [x] The monster's turn passes (it stays where it is) until the combat AI (5.7b)
 
 ### 5.5 Combat Movement
-- [ ] Active stack can move up to its speed in hexes
-- [ ] Pathfinding on hex grid (avoid obstacles and other stacks)
-- [ ] Movement range highlighted (reachable hexes)
-- [ ] Flying creatures ignore ground obstacles, can move to any hex in range
+- [x] Active stack can move up to its speed in hexes
+- [x] Pathfinding on hex grid (around other stacks; obstacles when there are some)
+- [x] Movement range highlighted (reachable hexes)
+- [x] Flying creatures ignore ground obstacles, can move to any hex in range
 - [ ] Double-wide creatures (e.g. Cavalier) occupy 2 hexes
-- [ ] Click to move stack to hex
-- [ ] Movement animation (stack slides across hexes)
+- [x] Click to move stack to hex
+- [x] Movement animation (stack slides across hexes)
+- [x] Status bar over a reachable hex: "Move Skeletons here" / "Fly Angels here"
+- [ ] Battle cursors as in H3: walk, fly, forbidden
 
 ### 5.6 Combat Attacks
 - [ ] Melee attack: move adjacent to enemy stack, click to attack
