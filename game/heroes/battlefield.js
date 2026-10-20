@@ -22,3 +22,81 @@ export function getStartHexes({ side, stackCount }) {
   const column = START_COLUMN_BY_SIDE[side]
   return (START_ROWS_BY_STACK_COUNT[stackCount] ?? []).map((row) => ({ row, column }))
 }
+
+const isOnBattlefield = ({ row, column }) =>
+  row >= 0 && row < BATTLEFIELD_ROWS && column >= 0 && column < BATTLEFIELD_COLUMNS
+
+export const hexKey = ({ row, column }) => `${row},${column}`
+
+export const isSameHex = (a, b) => a.row === b.row && a.column === b.column
+
+// Even rows sit half a hex to the right, so their diagonal neighbours are shifted right too.
+export function getHexNeighbours({ row, column }) {
+  const diagonalShift = row % 2 === 0 ? 1 : -1
+  return [
+    { row, column: column - 1 },
+    { row, column: column + 1 },
+    ...[row - 1, row + 1].flatMap((nextRow) => [
+      { row: nextRow, column },
+      { row: nextRow, column: column + diagonalShift }
+    ])
+  ].filter(isOnBattlefield)
+}
+
+export function getHexDistance(from, to) {
+  const toCube = ({ row, column }) => ({ q: column - (row + (row % 2)) / 2, r: row })
+  const a = toCube(from)
+  const b = toCube(to)
+  const dq = a.q - b.q
+  const dr = a.r - b.r
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2
+}
+
+function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
+  const steps = new Map([[hexKey(from), { hex: from, steps: 0, previous: null }]])
+  const queue = [from]
+  while (queue.length > 0) {
+    const current = queue.shift()
+    const { steps: currentSteps } = steps.get(hexKey(current))
+    if (currentSteps >= maxSteps) {
+      continue
+    }
+
+    for (const next of getHexNeighbours(current)) {
+      if (steps.has(hexKey(next)) || !isFree(next)) {
+        continue
+      }
+
+      steps.set(hexKey(next), { hex: next, steps: currentSteps + 1, previous: current })
+      queue.push(next)
+    }
+  }
+  return steps
+}
+
+export function findHexPath({ from, to, isFree, maxSteps }) {
+  const reached = walkFrom({ from, isFree, maxSteps })
+  if (!reached.has(hexKey(to)) || isSameHex(to, from)) {
+    return null
+  }
+
+  const path = []
+  for (let hex = to; !isSameHex(hex, from); hex = reached.get(hexKey(hex)).previous) {
+    path.unshift(hex)
+  }
+  return path
+}
+
+export function getReachableHexes({ from, speed, flying, isFree }) {
+  if (flying) {
+    return Array.from({ length: BATTLEFIELD_ROWS }, (_, row) =>
+      Array.from({ length: BATTLEFIELD_COLUMNS }, (_, column) => ({ row, column }))
+    )
+      .flat()
+      .filter((hex) => !isSameHex(hex, from) && isFree(hex) && getHexDistance(from, hex) <= speed)
+  }
+
+  return [...walkFrom({ from, isFree, maxSteps: speed }).values()]
+    .filter(({ steps }) => steps > 0)
+    .map(({ hex }) => hex)
+}
