@@ -765,6 +765,17 @@ export async function hoverBattleHex(user, row, column) {
   await user.hover(getBattleHex(row, column))
 }
 
+// The hexes drawn lit up as under the mouse, with the bright outline of the app's stylesheet;
+// needs `loadAppStyles()`.
+const HIGHLIGHT_OUTLINE = "stroke='rgba(255,236,120,0.95)'"
+
+export function readHighlightedBattleHexes() {
+  return within(getBattlefield())
+    .getAllByRole('gridcell')
+    .filter((hex) => window.getComputedStyle(hex).backgroundImage.includes(HIGHLIGHT_OUTLINE))
+    .map(readHexPosition)
+}
+
 export function getBattleStatusBarText() {
   return within(getBattleScreen()).getByRole('status', { name: 'Battle status bar' }).textContent
 }

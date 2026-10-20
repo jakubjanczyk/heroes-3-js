@@ -362,7 +362,8 @@ See `docs/notes/2026-10-20-battle-screen.md` and `docs/notes/2026-10-20-monster-
 - [ ] Obstacles on combat grid (random placement or scenario-defined)
 - [ ] Grid cells: passable, obstacle, wall (siege)
 - [ ] Hex coordinate system with neighbor calculation
-- [ ] Mouse hover highlights hex, shows movement/attack range
+- [x] Mouse hover highlights the hex under it, as H3's cursor shadow: a hex the stack can move to, or every hex of an enemy it can attack or shoot (`docs/notes/2026-10-20-battle-hover-highlight.md`)
+- [ ] Hover shows a stack's movement/attack range
 
 ### 5.4 Combat Turn Order
 See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
