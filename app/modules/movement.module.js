@@ -123,6 +123,10 @@ export const registerMovementModule = defineModule(
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
             removedIds = applyEntityRemoved(removedIds, event.detail?.entityId)
+            // A hero lost in battle moves no more.
+            if (heroId && removedIds.has(heroId)) {
+              movement = null
+            }
           }
         },
         {

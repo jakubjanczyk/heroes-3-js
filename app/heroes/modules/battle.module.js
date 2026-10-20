@@ -6,6 +6,7 @@ import {
   getActiveStack,
   getAttackTargets,
   getExperienceForWin,
+  getHeroArmyAfterBattle,
   getStackHexes,
   getStackReach,
   hasLivingStacks,
@@ -13,6 +14,7 @@ import {
   planStackAttack,
   planStackMove
 } from '../../../game/heroes/battle.js'
+import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
@@ -27,7 +29,9 @@ import {
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_WORLD_READY,
   APP_UI_BATTLE_UPDATED,
@@ -43,7 +47,8 @@ const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStack
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
-// The battle the hero is fighting. Auto combat wins it outright.
+// The battle the hero is fighting. The monster's stacks play by `battle-ai.js`; Auto combat wins
+// it outright.
 export const registerBattleModule = defineModule(
   ({ emit, config }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
@@ -92,21 +97,48 @@ export const registerBattleModule = defineModule(
     function winBattle() {
       const { entityId, entityType, tile } = started
       const experience = getExperienceForWin(battle)
+      const army = getHeroArmyAfterBattle(battle, hero?.army ?? [])
       emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'attacker' })
+      emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army })
       emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
       emit(APP_FACT_ENTITY_REMOVED, { entityId })
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { amount: experience })
     }
 
-    // No AI yet: the monster lets its turn pass, and a battle with no hero stack left waits.
-    function passEnemyTurns() {
-      for (
-        let stack = getActiveStack(battle);
-        stack?.side === 'defender' && hasLivingStacks(battle, 'attacker');
-        stack = getActiveStack(battle)
-      ) {
-        emit(APP_FACT_BATTLE_TURN_ENDED, { stackId: stack.id })
+    function loseBattle() {
+      const { entityId } = started
+      const count = battle.stacks
+        .filter((stack) => stack.side === 'defender')
+        .reduce((sum, stack) => sum + stack.count, 0)
+      emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'defender' })
+      emit(APP_FACT_MONSTER_COUNT_CHANGED, { entityId, count })
+      emit(APP_FACT_ENTITY_REMOVED, { entityId: hero.id })
+    }
+
+    function playComputerTurn(stack) {
+      const plan = planComputerTurn(battle, stack, { random })
+      if (plan?.attack) {
+        void walkThenShow({
+          stack,
+          path: plan.attack.path,
+          fact: APP_FACT_BATTLE_STACK_ATTACKED,
+          detail: { stackId: stack.id, ...plan.attack }
+        })
+        return
       }
+
+      if (plan?.path) {
+        void walkThenShow({
+          stack,
+          path: plan.path,
+          fact: APP_FACT_BATTLE_STACK_MOVED,
+          detail: { stackId: stack.id, path: plan.path }
+        })
+        return
+      }
+
+      emit(APP_FACT_BATTLE_TURN_ENDED, { stackId: stack.id })
+      continueBattle()
     }
 
     function continueBattle() {
@@ -115,8 +147,18 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      passEnemyTurns()
+      if (!hasLivingStacks(battle, 'attacker')) {
+        loseBattle()
+        return
+      }
+
+      const stack = getActiveStack(battle)
+      if (stack.side === 'defender') {
+        playComputerTurn(stack)
+      }
     }
+
+    const isPlayersTurn = () => getActiveStack(battle)?.side === 'attacker'
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -187,6 +229,12 @@ export const registerBattleModule = defineModule(
             levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
           }
         },
+        {
+          type: APP_FACT_HERO_ARMY_CHANGED,
+          handler: (event) => {
+            hero = { ...hero, army: event.detail.army }
+          }
+        },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
         {
           type: APP_UI_RESTORE_COMPLETED,
@@ -219,7 +267,7 @@ export const registerBattleModule = defineModule(
             })
             showBattle()
             if (!isRestoring) {
-              passEnemyTurns()
+              continueBattle()
             }
           }
         },
@@ -268,7 +316,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
           handler: (event) => {
-            if (!battle || moving) {
+            if (!battle || moving || !isPlayersTurn()) {
               return
             }
 
@@ -278,7 +326,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
           handler: (event) => {
-            if (!battle || moving) {
+            if (!battle || moving || !isPlayersTurn()) {
               return
             }
 
@@ -304,6 +352,7 @@ export const registerBattleModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_LEVELED_UP,
+      APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
       APP_FACT_BATTLE_STARTED,
@@ -322,6 +371,8 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_ENDED,
       APP_FACT_MONSTER_DEFEATED,
+      APP_FACT_MONSTER_COUNT_CHANGED,
+      APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_ENTITY_REMOVED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED
     ]

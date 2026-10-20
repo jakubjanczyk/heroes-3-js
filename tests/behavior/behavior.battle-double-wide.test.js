@@ -23,7 +23,8 @@ const stack = (creature, count) => ({ creature, count })
 // Every damage roll lands on the lowest damage.
 const LOWEST_ROLLS = () => 0
 
-// Cavaliers, Champions and Royal Griffins are double-wide; Angels, Pikemen and Skeletons are not.
+// Cavaliers, Champions, Griffins and Royal Griffins are double-wide; Angels, Pikemen and
+// Skeletons are not.
 // The monster stays one stack.
 const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 10 }) =>
   aScenario()
@@ -48,14 +49,15 @@ const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 describe('battle double-wide creatures behavior', () => {
   test('given double-wide creatures on both sides when battle opens then each stands on two hexes with its back half behind it', async () => {
-    await startBattle(aFight({ army: [stack('CAVALIER', 5)], monsterType: 'CHAMPION' }))
+    // Griffins are slower than Cavaliers, so they have not moved yet.
+    await startBattle(aFight({ army: [stack('CAVALIER', 5)], monsterType: 'GRIFFIN' }))
 
     expect(readBattleStacks()).toEqual(
       expect.arrayContaining([
         stackAt('Cavaliers (back half)', 6, 0),
         stackAt('Cavaliers 5', 6, 1),
-        stackAt('Champions 10', 6, 15),
-        stackAt('Champions (back half)', 6, 16)
+        stackAt('Griffins 10', 6, 15),
+        stackAt('Griffins (back half)', 6, 16)
       ])
     )
   })
@@ -108,30 +110,31 @@ describe('battle double-wide creatures behavior', () => {
     const { user } = await startBattle(
       aFight({ army: [stack('ANGEL', 2)], monsterType: 'CHAMPION', monsterCount: 5 })
     )
-    await moveActiveStackTo(user, 6, 5)
+    // The Angels stay out of reach; the Champions walk 9 hexes, their back half to row 6, column 7.
+    await moveActiveStackTo(user, 6, 2)
 
-    await attackBattleHexFrom(user, 6, 16, 'top-left')
+    await attackBattleHexFrom(user, 6, 7, 'top-left')
 
     // 100 damage, +20% for 20 Attack against 16 Defense, against 100 health each.
     expect(readCombatMessages()[0]).toBe('The Angels do 120 damage. One Champion perishes.')
   })
 
   test('given the front half has no room on the side pointed at then a double-wide stack attacks with its back half there', async () => {
-    // Angels are faster than Royal Griffins; on 5,13 they leave no room for the back half of
-    // Royal Griffins standing on 5,14.
+    // Angels are faster than Royal Griffins; on 5,9 they leave no room for the back half of
+    // Royal Griffins standing on 5,10. The Pikemen walk up to row 6, column 11.
     const { user } = await startBattle(
       aFight({ army: [stack('ANGEL', 1), stack('ROYAL_GRIFFIN', 10)] })
     )
-    await moveActiveStackTo(user, 4, 8)
-    await moveActiveStackTo(user, 7, 8)
-    await moveActiveStackTo(user, 5, 13)
+    await moveActiveStackTo(user, 2, 2)
+    await moveActiveStackTo(user, 9, 5)
+    await moveActiveStackTo(user, 5, 9)
 
-    await attackBattleHexFrom(user, 6, 15, 'top-left')
+    await attackBattleHexFrom(user, 6, 11, 'top-left')
 
     expect(readBattleStacks()).toEqual(
       expect.arrayContaining([
-        stackAt('Royal Griffins (back half)', 5, 14),
-        stackAt('Royal Griffins 10', 5, 15)
+        stackAt('Royal Griffins (back half)', 5, 10),
+        stackAt('Royal Griffins 10', 5, 11)
       ])
     )
   })
