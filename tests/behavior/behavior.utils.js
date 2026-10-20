@@ -721,7 +721,6 @@ export function getBattleHex(row, column) {
     .find((hex) => hex.getAttribute('aria-colindex') === String(column))
 }
 
-// The stack whose turn it is, highlighted on the battlefield.
 export function readActiveStack() {
   const active = within(getBattlefield())
     .getAllByRole('gridcell')
@@ -734,7 +733,6 @@ export function readActiveStack() {
   }
 }
 
-// The hexes the active stack can move to: every other hex is marked as not available.
 export function readReachableHexes() {
   return within(getBattlefield())
     .getAllByRole('gridcell')
@@ -751,7 +749,6 @@ export async function clickBattleHex(user, row, column) {
   await flushMicrotasks()
 }
 
-// Clicks a hex and waits until the active stack has walked there.
 export async function moveActiveStackTo(user, row, column) {
   await clickBattleHex(user, row, column)
   await waitMs()
@@ -766,8 +763,7 @@ export function getBattleStatusBarText() {
   return within(getBattleScreen()).getByRole('status', { name: 'Battle status bar' }).textContent
 }
 
-// Notes each hex the stack named `stackName` stands on from now on, as the player would see it go
-// by, until the returned function is called; it returns the hexes in order.
+// Records the hexes the stack moves through, in order, until the returned function is called.
 export function recordStackHexes(stackName) {
   const battlefield = getBattlefield()
   const hexes = []

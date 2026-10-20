@@ -21,8 +21,6 @@ const DEFAULT_STEP_DELAY_MS = 180
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
-// It shows the battle as the battle module reports it: the active stack is highlighted, the hexes
-// it can move to are shaded, and clicking one of them moves it there.
 export const registerBattleViewModule = defineModule(
   ({ emit, env, config }) => {
     const document = env.document
@@ -58,7 +56,6 @@ export const registerBattleViewModule = defineModule(
       )
     }
 
-    // Heroes 3 names what clicking the hex would do: "Move Skeletons here", or "Fly" for flyers.
     function describeHex(hex) {
       const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
       if (!activeStack || !isReachable(hex)) {
@@ -69,7 +66,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function readHex(element) {
-      const hexElement = element?.closest?.('.battlefield__hex')
+      const hexElement = battleScreen && element?.closest?.('.battlefield__hex')
       if (!hexElement) {
         return null
       }
@@ -95,21 +92,6 @@ export const registerBattleViewModule = defineModule(
           return hex
         })
       })
-
-      grid.addEventListener('click', (event) => {
-        const hex = readHex(event.target)
-        if (hex) {
-          event.stopPropagation()
-          emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
-        }
-      })
-      grid.addEventListener('mouseover', (event) => {
-        const hex = readHex(event.target)
-        statusBar.textContent = hex ? describeHex(hex) : ''
-      })
-      grid.addEventListener('mouseleave', () => {
-        statusBar.textContent = ''
-      })
     }
 
     function openBattle(battle) {
@@ -129,19 +111,10 @@ export const registerBattleViewModule = defineModule(
       statusBar = battleScreen.querySelector('.battle-screen__status-bar')
       fillBattlefield(battleScreen.querySelector('.battlefield'))
 
-      battleScreen
-        .querySelector('[data-battle-action="auto-combat"]')
-        .addEventListener('click', (event) => {
-          event.stopPropagation()
-          emit(APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED, {})
-        })
-
       gameShell.append(battleScreen)
       emit(APP_UI_ADVENTURE_MAP_COVERED, {})
     }
 
-    // A stack that changes hex slides there from where it stood, taking as long per hex as the
-    // battle module waits between steps.
     function placeStack(element, from, to) {
       const hexElement = hexes[to.row][to.column]
       if (!from || isRestoring || typeof element.animate !== 'function') {
@@ -237,6 +210,42 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_FACT_BATTLE_ENDED,
           handler: closeBattle
+        }
+      ],
+      // Delegated from the game shell, so they outlive each battle screen and go with the module.
+      domSubscriptions: [
+        {
+          target: gameShell,
+          type: 'click',
+          handler: (event) => {
+            if (!battleScreen?.contains(event.target)) {
+              return
+            }
+
+            if (event.target.closest('[data-battle-action="auto-combat"]')) {
+              event.stopPropagation()
+              emit(APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED, {})
+              return
+            }
+
+            const hex = readHex(event.target)
+            if (hex) {
+              event.stopPropagation()
+              emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'mouseover',
+          handler: (event) => {
+            if (!battleScreen?.contains(event.target)) {
+              return
+            }
+
+            const hex = readHex(event.target)
+            statusBar.textContent = hex ? describeHex(hex) : ''
+          }
         }
       ],
       dispose: () => {

@@ -22,7 +22,6 @@ const gameDefinitions = { monsters: readGameData('monsters.json') }
 
 const stack = (creature, count) => ({ creature, count })
 
-// A hero with `army` next to a monster, so one step starts the battle.
 const aFight = ({ army, monsterType = 'SKELETON' }) =>
   aScenario()
     .withSize(3)
@@ -38,7 +37,6 @@ async function startBattle(scenario, { battleStepDelayMs = 0 } = {}) {
   return app
 }
 
-// Hexes given as the first and last column reached on each row, rows and columns counted from 1.
 const hexesByRow = (columnRangeByRow) =>
   Object.entries(columnRangeByRow).flatMap(([row, [first, last]]) =>
     Array.from({ length: last - first + 1 }, (_, index) => ({

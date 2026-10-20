@@ -11,7 +11,6 @@ const freeExcept =
     !taken.some((other) => other.row === row && other.column === column)
 
 describe('getHexNeighbours', () => {
-  // Rows count from 0 here: row 0 and every second row under it sit half a hex to the right.
   test('a hex on a shifted row touches the hexes below and above it and the ones to their right', () => {
     expect(sortHexes(getHexNeighbours(hex(4, 6)))).toEqual([
       hex(3, 6),

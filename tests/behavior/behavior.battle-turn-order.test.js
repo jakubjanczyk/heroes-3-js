@@ -17,7 +17,6 @@ const gameDefinitions = { monsters: readGameData('monsters.json') }
 
 const stack = (creature, count) => ({ creature, count })
 
-// A hero with `army` next to a monster of `monsterCount` `monsterType`, so one step starts the battle.
 const aFight = ({ army, monsterType = 'SKELETON', monsterCount = 10 }) =>
   aScenario()
     .withSize(3)
