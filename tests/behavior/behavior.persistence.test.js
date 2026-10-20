@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import {
   clickEndTurn,
   closeInteractionModal,
@@ -11,7 +11,6 @@ import {
   expectInteractionModalOpen,
   expectMonsterDefeating,
   expectMonsterNotPresent,
-  expectMonsterPresent,
   expectMovementPoints,
   expectNoPreview,
   expectPreviewNotOverLimitTargetAt,
@@ -22,7 +21,9 @@ import {
   expectResourceTotal,
   expectTownPresent,
   flushMicrotasks,
-  setupMovementBehaviorApp
+  queryBattleScreen,
+  setupMovementBehaviorApp,
+  winBattle
 } from './behavior.utils.js'
 import { aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
 
@@ -57,7 +58,7 @@ describe('session persistence behavior', () => {
 
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
-    await closeInteractionModal(firstSession.user)
+    await winBattle(firstSession.user)
     await flushMicrotasks()
 
     confirmTileClickByDispatch(3, 0)
@@ -186,30 +187,6 @@ describe('session persistence behavior', () => {
     expectNoPreview()
   })
 
-  test('given monster interaction modal is open when app reloads then monster remains and modal does not reopen', async () => {
-    const session = createSession(
-      aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
-      { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
-    )
-
-    await setupMovementBehaviorApp(session)
-
-    confirmTileClickByDispatch(1, 0)
-    await flushMicrotasks()
-
-    expectHeroAt(0, 0)
-    expectMovementPoints(1400)
-    expectMonsterPresent('monster-1')
-    expectInteractionModalOpen('Monster defeated')
-
-    await reload(session)
-
-    expectHeroAt(0, 0)
-    expectMovementPoints(1400)
-    expectMonsterPresent('monster-1')
-    expectInteractionModalClosed()
-  })
-
   test('given town modal is open when app reloads then visited town state is preserved without reopening modal', async () => {
     const session = createSession(
       aScenario()
@@ -315,7 +292,7 @@ describe('session persistence behavior', () => {
     expectResourceTotal('Gold pile', 100)
   })
 
-  test('given monster is still fading out after modal close when app reloads then monster stays defeated', async () => {
+  test('given monster is still fading out after the battle when app reloads then monster stays defeated', async () => {
     const session = createSession(
       aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
       { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 1000 } }
@@ -325,7 +302,7 @@ describe('session persistence behavior', () => {
 
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
-    await closeInteractionModal(firstSession.user)
+    await winBattle(firstSession.user)
     await flushMicrotasks()
 
     expectMonsterDefeating('monster-1')
@@ -473,7 +450,7 @@ describe('session persistence behavior', () => {
 
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
-    await closeInteractionModal(firstSession.user)
+    await winBattle(firstSession.user)
     await flushMicrotasks()
 
     expectMonsterNotPresent('monster-1')
@@ -493,7 +470,7 @@ describe('session persistence behavior', () => {
     expectMovementPoints(1100)
   })
 
-  test('given monster modal was open at reload when player attacks again after reload then the defeat resolves and stays after another reload', async () => {
+  test('given battle was open at reload when player wins it after reload then the monster stays defeated after another reload', async () => {
     const session = createSession(
       aScenario().withSize(3).withEntities(aHero(), aMonster().at(1, 0)),
       { interactionModalTransitionMs: 0, fadeOutMsByKind: { MONSTER: 0 } }
@@ -504,28 +481,18 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
 
-    expectInteractionModalOpen('Monster defeated')
-
     const secondSession = await reload(session)
 
-    expectInteractionModalClosed()
-    expectMonsterPresent('monster-1')
-    expectMovementPoints(1400)
-
-    confirmTileClickByDispatch(1, 0)
-    await flushMicrotasks()
-
-    expectInteractionModalOpen('Monster defeated')
-    await closeInteractionModal(secondSession.user)
-    await flushMicrotasks()
+    await winBattle(secondSession.user)
 
     expectMonsterNotPresent('monster-1')
-    expectMovementPoints(1300)
+    expectMovementPoints(1400)
 
     await reload(session)
 
+    expect(queryBattleScreen()).toBeNull()
     expectMonsterNotPresent('monster-1')
-    expectMovementPoints(1300)
+    expectMovementPoints(1400)
   })
 
   test('given town was visited before reload when hero leaves and re-enters after reload then the town modal opens again', async () => {

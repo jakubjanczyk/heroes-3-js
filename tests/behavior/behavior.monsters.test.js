@@ -1,13 +1,10 @@
 // @vitest-environment jsdom
-import { describe, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import {
   clickTile,
-  closeInteractionModal,
   confirmTileClickByDispatch,
   dispatchTileClick,
   expectHeroAt,
-  expectInteractionModalClosed,
-  expectInteractionModalOpen,
   expectMonsterAt,
   expectMonsterDefeating,
   expectMonsterNotPresent,
@@ -16,8 +13,11 @@ import {
   expectNoPreview,
   expectPreviewTargetAt,
   flushMicrotasks,
+  getBattleScreen,
+  queryBattleScreen,
   setupMovementBehaviorApp,
-  waitMs
+  waitMs,
+  winBattle
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
@@ -43,13 +43,10 @@ describe('monster interaction behavior', () => {
     expectHeroAt(0, 0)
   })
 
-  test('given player confirms monster attack when movement finishes then modal opens and monster disappears after modal close', async () => {
+  test('given player confirms monster attack when movement finishes then the battle opens and the monster fades out once it is won', async () => {
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster()).build(),
-      appConfig: {
-        interactionModalTransitionMs: 20,
-        fadeOutMsByKind: { MONSTER: 20 }
-      }
+      appConfig: { fadeOutMsByKind: { MONSTER: 20 } }
     })
 
     confirmTileClickByDispatch(1, 0)
@@ -59,22 +56,11 @@ describe('monster interaction behavior', () => {
     expectHeroAt(0, 0)
     expectMovementPoints(1400)
     expectMonsterPresent('monster-1')
-    expectInteractionModalOpen('Monster defeated')
+    expect(getBattleScreen()).toBeTruthy()
 
-    await clickTile(user, 2, 0)
-    await flushMicrotasks()
+    await winBattle(user)
 
-    expectNoPreview()
-    expectHeroAt(0, 0)
-
-    await closeInteractionModal(user)
-
-    expectInteractionModalOpen()
-
-    await waitMs(25)
-    await flushMicrotasks()
-
-    expectInteractionModalClosed()
+    expect(queryBattleScreen()).toBeNull()
     expectMonsterDefeating('monster-1')
 
     await waitMs(25)
@@ -91,10 +77,7 @@ describe('monster interaction behavior', () => {
   test('given monster is not adjacent when player confirms attack then hero stops on tile before monster and fight still costs one step', async () => {
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
-      appConfig: {
-        interactionModalTransitionMs: 20,
-        fadeOutMsByKind: { MONSTER: 20 }
-      }
+      appConfig: { fadeOutMsByKind: { MONSTER: 20 } }
     })
 
     confirmTileClickByDispatch(2, 0)
@@ -104,14 +87,14 @@ describe('monster interaction behavior', () => {
     expectMovementPoints(1300)
     expectMonsterPresent('monster-1')
 
-    await closeInteractionModal(user)
+    await winBattle(user)
     await waitMs(50)
     await flushMicrotasks()
 
     expectMonsterNotPresent('monster-1')
   })
 
-  test('given final step before monster resolves when movement is still animating then modal waits until hero fully reaches the last tile', async () => {
+  test('given final step before monster resolves when movement is still animating then the battle waits until hero fully reaches the last tile', async () => {
     await setupMovementBehaviorApp({
       loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
       movementStepDelayMs: 20,
@@ -126,16 +109,16 @@ describe('monster interaction behavior', () => {
     await flushMicrotasks()
 
     expectHeroAt(1, 0)
-    expectInteractionModalClosed()
+    expect(queryBattleScreen()).toBeNull()
     expectMonsterPresent('monster-1')
 
     await waitMs(25)
     await flushMicrotasks()
 
-    expectInteractionModalOpen('Monster defeated')
+    expect(getBattleScreen()).toBeTruthy()
   })
 
-  test('given default-speed movement when hero is still visually arriving before a monster then modal stays closed', async () => {
+  test('given default-speed movement when hero is still visually arriving before a monster then the battle does not open yet', async () => {
     await setupMovementBehaviorApp({
       loadGameOptions: aScenario().withSize(4).withEntities(aHero(), aMonster().at(2, 0)).build(),
       movementStepDelayMs: 220,
@@ -149,13 +132,13 @@ describe('monster interaction behavior', () => {
     await waitMs(250)
     await flushMicrotasks()
 
-    expectInteractionModalClosed()
+    expect(queryBattleScreen()).toBeNull()
     expectMonsterPresent('monster-1')
 
     await waitMs(220)
     await flushMicrotasks()
 
-    expectInteractionModalOpen('Monster defeated')
+    expect(getBattleScreen()).toBeTruthy()
   })
 
   test('given remaining points do not cover the step onto a monster when player confirms then hero stops next to it and the fight does not start', async () => {
@@ -173,7 +156,7 @@ describe('monster interaction behavior', () => {
     await waitMs()
 
     expectHeroAt(8, 0)
-    expectInteractionModalClosed()
+    expect(queryBattleScreen()).toBeNull()
     expectMonsterPresent('monster-1')
   })
 })

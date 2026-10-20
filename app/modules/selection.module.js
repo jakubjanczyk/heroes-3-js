@@ -13,6 +13,8 @@ import {
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_ROUTE_PLANNED,
   APP_FACT_WORLD_READY,
+  APP_UI_ADVENTURE_MAP_COVERED,
+  APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED,
@@ -32,6 +34,7 @@ export const registerSelectionModule = defineModule(
     let isMoving = false
     let isInteractionModalOpen = false
     let isSystemOptionsOpen = false
+    let isMapCovered = false
     let remainingMovementPoints = Number.POSITIVE_INFINITY
 
     function affordableStepCount() {
@@ -48,6 +51,7 @@ export const registerSelectionModule = defineModule(
         !isMoving &&
         !isInteractionModalOpen &&
         !isSystemOptionsOpen &&
+        !isMapCovered &&
         previewPath?.length >= 2 &&
         affordableStepCount() >= 1
       )
@@ -104,7 +108,13 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_COMMAND_TILE_CLICKED,
           handler: (event) => {
-            if (!isWorldReady || isMoving || isInteractionModalOpen || isSystemOptionsOpen) {
+            if (
+              !isWorldReady ||
+              isMoving ||
+              isInteractionModalOpen ||
+              isSystemOptionsOpen ||
+              isMapCovered
+            ) {
               return
             }
 
@@ -214,6 +224,18 @@ export const registerSelectionModule = defineModule(
           }
         },
         {
+          type: APP_UI_ADVENTURE_MAP_COVERED,
+          handler: () => {
+            isMapCovered = true
+          }
+        },
+        {
+          type: APP_UI_ADVENTURE_MAP_UNCOVERED,
+          handler: () => {
+            isMapCovered = false
+          }
+        },
+        {
           type: APP_FACT_PREVIEW_TARGET_SELECTED,
           handler: (event) => {
             const { tile, path } = event.detail ?? {}
@@ -253,6 +275,8 @@ export const registerSelectionModule = defineModule(
       APP_UI_INTERACTION_MODAL_CLOSED,
       APP_UI_SYSTEM_OPTIONS_OPENED,
       APP_UI_SYSTEM_OPTIONS_CLOSED,
+      APP_UI_ADVENTURE_MAP_COVERED,
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
       APP_FACT_PREVIEW_TARGET_SELECTED,
       APP_FACT_PREVIEW_CLEARED
     ],
