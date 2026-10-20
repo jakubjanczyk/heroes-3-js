@@ -13,6 +13,7 @@ import {
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
@@ -91,6 +92,12 @@ export const registerBattleViewModule = defineModule(
       )
     }
 
+    function findShot(hex) {
+      const target = findLivingStackOn(hex)
+      const shotTarget = target && shown.shotTargets.find(({ stackId }) => stackId === target.id)
+      return shotTarget ? { target, ...shotTarget } : null
+    }
+
     // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
     // already next to the target attacks from where it stands.
     function findAttack(hex, hexElement) {
@@ -143,6 +150,12 @@ export const registerBattleViewModule = defineModule(
         return ''
       }
 
+      const shot = findShot(hex)
+      if (shot) {
+        const shotsLeft = activeStack.shots === 1 ? '1 shot' : `${activeStack.shots} shots`
+        return `Shoot ${shot.target.name} (${shotsLeft} left, damage ${shot.damage.min}-${shot.damage.max})`
+      }
+
       if (findLivingStackOn(hex)) {
         const attack = findAttack(hex, hexElementAt(hex))
         return attack
@@ -166,6 +179,11 @@ export const registerBattleViewModule = defineModule(
         return 'query'
       }
 
+      const shot = stack && findShot(hex)
+      if (shot) {
+        return shot.distancePenalty ? 'shoot-penalty' : 'shoot'
+      }
+
       if (stack) {
         const attack = findAttack(hex, hexElementAt(hex))
         return attack ? `attack-from-${attack.side}` : 'blocked'
@@ -178,7 +196,37 @@ export const registerBattleViewModule = defineModule(
       return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
     }
 
+    // Heroes 3's cursor shadow: the hex under the mouse, or every hex of the enemy it would attack
+    // or shoot. Not after a tap, or the hex would stay lit once the finger is gone.
+    function findHighlightedHexes(hex) {
+      const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
+      if (!hex || !activeStack || shown.moving || pointerType === 'touch') {
+        return []
+      }
+
+      const target = findLivingStackOn(hex)
+      if (target) {
+        const canHit = findShot(hex) || findAttack(hex, hexElementAt(hex))
+        return canHit ? target.hexes : []
+      }
+
+      return isReachable(hex) ? [hex] : []
+    }
+
+    function highlightHexes(highlighted) {
+      for (const row of hexes) {
+        for (const hexElement of row) {
+          const hex = readHex(hexElement)
+          hexElement.classList.toggle(
+            'battlefield__hex--highlighted',
+            highlighted.some((option) => isSameHex(option, hex))
+          )
+        }
+      }
+    }
+
     function describeHoveredHex() {
+      highlightHexes(findHighlightedHexes(hoveredHex))
       statusBar.textContent = hoveredHex ? describeHex(hoveredHex) : ''
       const cursor = hoveredHex ? pickCursor(hoveredHex) : null
       if (cursor) {
@@ -407,6 +455,12 @@ export const registerBattleViewModule = defineModule(
               return
             }
 
+            const shot = findShot(hex)
+            if (shot) {
+              emit(APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED, { targetId: shot.target.id })
+              return
+            }
+
             const attack = findAttack(hex, hexElementAt(hex))
             if (attack) {
               emit(APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED, {
@@ -416,13 +470,13 @@ export const registerBattleViewModule = defineModule(
             }
           }
         },
-        {
+        ...['pointerdown', 'pointermove'].map((type) => ({
           target: gameShell,
-          type: 'pointerdown',
+          type,
           handler: (event) => {
             pointerType = event.pointerType || 'mouse'
           }
-        },
+        })),
         ...['mouseover', 'mousemove'].map((type) => ({
           target: gameShell,
           type,
@@ -458,6 +512,7 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED

@@ -1,4 +1,4 @@
-import { getDamageRange, strikeSequence, takeDamage } from './battle-damage.js'
+import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import {
   findHexPath,
   getFrontHexFor,
@@ -13,6 +13,10 @@ import {
   isSameHex
 } from './battlefield.js'
 import { describeStack } from './hero-army.js'
+
+// A shot at a target more than this many hexes away does half damage (VCMI
+// `GameConstants::BATTLE_SHOOTING_PENALTY_DISTANCE`).
+const SHOOTING_PENALTY_DISTANCE = 10
 
 // Griffins strike back twice a round and Royal Griffins every time; everyone else once.
 function getRetaliationsPerRound(abilities) {
@@ -30,6 +34,7 @@ function createStacks({ side, army, skills, definitions }) {
     const definition = definitions?.monsters?.[creature]
     const abilities = definition?.abilities ?? []
     const retaliationsPerRound = getRetaliationsPerRound(abilities)
+    const shooter = abilities.includes('ranged')
     return {
       id: `${side}-${slot}`,
       side,
@@ -47,6 +52,9 @@ function createStacks({ side, army, skills, definitions }) {
       retaliationsPerRound,
       retaliationsLeft: retaliationsPerRound,
       defenseBonus: 0,
+      shots: shooter ? (definition?.shots ?? 0) : 0,
+      shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
+      meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
       hex: startHexes[index]
     }
   })
@@ -290,13 +298,54 @@ export function getApproaches(battle, stack) {
     )
 }
 
+const livingEnemiesOf = (battle, stack) =>
+  livingStacks(battle).filter((other) => other.side !== stack.side)
+
+// A shooter with an enemy next to it can only fight hand to hand (VCMI
+// `CBattleInfoCallback::battleCanShoot`).
+export function canShoot(battle, stack) {
+  if (stack.shots === 0) {
+    return false
+  }
+
+  const enemies = livingEnemiesOf(battle, stack)
+  return !getHexesNextTo(stack).some((hex) => enemies.some((enemy) => coversHex(enemy, hex)))
+}
+
+// Measured from the shooter's hex to the nearest hex of the target (VCMI
+// `CBattleInfoCallback::battleHasDistancePenalty`).
+function hasDistancePenalty(stack, target) {
+  return getStackHexes(target).every(
+    (hex) => getHexDistance(stack.hex, hex) > SHOOTING_PENALTY_DISTANCE
+  )
+}
+
+export function getShotTargets(battle, stack) {
+  if (!canShoot(battle, stack)) {
+    return []
+  }
+
+  return livingEnemiesOf(battle, stack).map((target) => {
+    const distancePenalty = hasDistancePenalty(stack, target)
+    return {
+      stackId: target.id,
+      distancePenalty,
+      damage: getDamageRange({ attacker: stack, defender: target, halved: distancePenalty })
+    }
+  })
+}
+
+// A shooter that can shoot does not walk up to attack.
 export function getAttackTargets(battle, stack) {
-  return livingStacks(battle)
-    .filter((target) => target.side !== stack.side)
+  if (canShoot(battle, stack)) {
+    return []
+  }
+
+  return livingEnemiesOf(battle, stack)
     .map((target) => ({
       stackId: target.id,
       fromHexes: getHexesNextTo(target).filter((hex) => planAttackPosition(battle, stack, hex)),
-      damage: getDamageRange({ attacker: stack, defender: target })
+      damage: getDamageRange({ attacker: stack, defender: target, halved: stack.meleePenalty })
     }))
     .filter(({ fromHexes }) => fromHexes.length > 0)
 }
@@ -306,6 +355,7 @@ export function getAttackTargets(battle, stack) {
 export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
   const target = livingStacks(battle).find(({ id }) => id === targetId)
   const isNextToTarget =
+    !canShoot(battle, stack) &&
     target &&
     fromHex &&
     target.side !== stack.side &&
@@ -364,6 +414,36 @@ export function attackStack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
   const struck = strikes.reduce((current, strike) => applyStrike(current, strike, targetId), moved)
   return endTurn(struck, stackId)
+}
+
+// Every shot with its rolled damage, or null when the stack cannot shoot the target.
+export function planStackShot(battle, stack, { targetId, random }) {
+  const target = livingEnemiesOf(battle, stack).find(({ id }) => id === targetId)
+  if (!target || !canShoot(battle, stack)) {
+    return null
+  }
+
+  return {
+    strikes: shotSequence({
+      attacker: stack,
+      defender: target,
+      random,
+      halved: hasDistancePenalty(stack, target)
+    })
+  }
+}
+
+export function shootStack(battle, { stackId, strikes }) {
+  const shot = strikes.reduce((current, strike) => applyStrike(current, strike, null), battle)
+  return endTurn(
+    {
+      ...shot,
+      stacks: shot.stacks.map((stack) =>
+        stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
+      )
+    },
+    stackId
+  )
 }
 
 export function getHeroArmyAfterBattle(battle, heroArmy) {

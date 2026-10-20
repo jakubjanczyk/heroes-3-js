@@ -140,6 +140,17 @@ body {
     help;
 }
 
+.battlefield[data-cursor="shoot"] {
+  cursor:
+    url("../../assets/cursors/battle-shoot.png") 16 16,
+    crosshair;
+}
+.battlefield[data-cursor="shoot-penalty"] {
+  cursor:
+    url("../../assets/cursors/battle-shoot-penalty.png") 16 16,
+    crosshair;
+}
+
 /* The sword's tip, its hotspot, points into the enemy's hex from the side the stack attacks from. */
 .battlefield[data-cursor="attack-from-left"] {
   cursor:

@@ -8,6 +8,7 @@ import {
   getAttackTargets,
   getExperienceForWin,
   getHeroArmyAfterBattle,
+  getShotTargets,
   getStackHexes,
   getStackReach,
   hasLivingStacks,
@@ -15,6 +16,8 @@ import {
   moveStack,
   planStackAttack,
   planStackMove,
+  planStackShot,
+  shootStack,
   waitStack
 } from '../../../game/heroes/battle.js'
 import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
@@ -26,6 +29,7 @@ import {
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
@@ -33,6 +37,7 @@ import {
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_MOVED,
+  APP_FACT_BATTLE_STACK_SHOT,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_TURN_ENDED,
@@ -86,6 +91,7 @@ export const registerBattleModule = defineModule(
           moving: true,
           reachableHexes: [],
           attackTargets: [],
+          shotTargets: [],
           messages: moving.battle.messages,
           canWait: false,
           canDefend: false,
@@ -103,6 +109,7 @@ export const registerBattleModule = defineModule(
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
         attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],
+        shotTargets: activeStack ? getShotTargets(battle, activeStack) : [],
         messages: battle.messages,
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
@@ -134,6 +141,16 @@ export const registerBattleModule = defineModule(
 
     function playComputerTurn(stack) {
       const plan = planComputerTurn(battle, stack, { random })
+      if (plan?.shot) {
+        void walkThenShow({
+          stack,
+          path: [],
+          fact: APP_FACT_BATTLE_STACK_SHOT,
+          detail: { stackId: stack.id, ...plan.shot }
+        })
+        return
+      }
+
       if (plan?.attack) {
         void walkThenShow({
           stack,
@@ -237,6 +254,21 @@ export const registerBattleModule = defineModule(
       })
     }
 
+    function shootWithActiveStack({ targetId }) {
+      const stack = getActiveStack(battle)
+      const shot = stack && planStackShot(battle, stack, { targetId, random })
+      if (!shot) {
+        return
+      }
+
+      void walkThenShow({
+        stack,
+        path: [],
+        fact: APP_FACT_BATTLE_STACK_SHOT,
+        detail: { stackId: stack.id, targetId, strikes: shot.strikes }
+      })
+    }
+
     return {
       subscriptions: [
         {
@@ -322,6 +354,17 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_STACK_SHOT,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = shootStack(battle, event.detail)
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_TURN_ENDED,
           handler: (event) => {
             if (!battle) {
@@ -396,6 +439,16 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
+          handler: (event) => {
+            if (!isPlayersTurn()) {
+              return
+            }
+
+            shootWithActiveStack(event.detail)
+          }
+        },
+        {
           type: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
           handler: () => {
             const stack = isPlayersTurn() && getActiveStack(battle)
@@ -446,6 +499,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STARTED,
       APP_FACT_BATTLE_STACK_MOVED,
       APP_FACT_BATTLE_STACK_ATTACKED,
+      APP_FACT_BATTLE_STACK_SHOT,
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
@@ -453,6 +507,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_ENDED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED
@@ -461,6 +516,7 @@ export const registerBattleModule = defineModule(
       APP_UI_BATTLE_UPDATED,
       APP_FACT_BATTLE_STACK_MOVED,
       APP_FACT_BATTLE_STACK_ATTACKED,
+      APP_FACT_BATTLE_STACK_SHOT,
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
