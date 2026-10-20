@@ -31,5 +31,5 @@ VCMI rolls the damage in the stack's whole range after the modifiers, averaging 
 
 - The hero's army keeps the creatures it lost only for the battle: back on the map it is whole again.
 - If every hero stack dies the battle waits; the combat AI will finish it (5.7b), as the monster has no AI yet.
-- A monster is one stack, so a defender dying always ends the battle.
-- Ranged attacks, luck, jousting, hatred, battle cursors (the sword pointing at the side), attack and death animations.
+- A monster was one stack, so a defender dying always ended the battle, until it split into several (`docs/notes/2026-10-20-monster-stacks-double-wide-and-battle-cursors.md`, which also brought the sword cursor).
+- Ranged attacks, luck, jousting, hatred, attack and death animations.

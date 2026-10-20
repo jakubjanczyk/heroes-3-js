@@ -115,7 +115,6 @@
 }
 
 .battlefield__hex--reachable {
-  cursor: pointer;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.38)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
     center / 100% 100% no-repeat;

@@ -36,6 +36,7 @@ export const registerBattleViewModule = defineModule(
     let battleScreen = null
     let hexes = []
     let statusBar = null
+    let battlefield = null
     let stackElements = new Map()
     let shown = null
     let reachableKeys = new Set()
@@ -99,7 +100,10 @@ export const registerBattleViewModule = defineModule(
         attackTarget.fromHexes.some((option) => isSameHex(option, fromHex))
       const standingNextToIt = activeStack.hexes.find(canAttackFrom)
       if (pointerType === 'touch' && standingNextToIt) {
-        return { target, fromHex: standingNextToIt, damage: attackTarget.damage }
+        const side = HEX_SIDES.find((option) =>
+          isSameHex(getHexNeighbourOnSide(hex, option) ?? {}, standingNextToIt)
+        )
+        return { target, fromHex: standingNextToIt, side, damage: attackTarget.damage }
       }
 
       const box = hexElement.getBoundingClientRect()
@@ -115,7 +119,12 @@ export const registerBattleViewModule = defineModule(
         hexSize: { width: box.width, height: box.height },
         sides
       })
-      return { target, fromHex: getHexNeighbourOnSide(hex, side), damage: attackTarget.damage }
+      return {
+        target,
+        fromHex: getHexNeighbourOnSide(hex, side),
+        side,
+        damage: attackTarget.damage
+      }
     }
 
     function isReachable(hex) {
@@ -124,7 +133,7 @@ export const registerBattleViewModule = defineModule(
 
     function describeHex(hex) {
       const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
-      if (!activeStack) {
+      if (!activeStack || shown.moving) {
         return ''
       }
 
@@ -140,8 +149,39 @@ export const registerBattleViewModule = defineModule(
         : ''
     }
 
+    // The Heroes 3 battle cursor over `hex`: what clicking it would do. The arrow while a stack
+    // moves and off the battlefield's hexes.
+    function pickCursor(hex) {
+      const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
+      if (!activeStack || shown.moving) {
+        return null
+      }
+
+      const stack = findLivingStackOn(hex)
+      if (stack?.side === activeStack.side) {
+        return 'query'
+      }
+
+      if (stack) {
+        const attack = findAttack(hex, hexElementAt(hex))
+        return attack ? `attack-from-${attack.side}` : 'blocked'
+      }
+
+      if (isReachable(hex)) {
+        return activeStack.flying ? 'fly' : 'walk'
+      }
+
+      return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
+    }
+
     function describeHoveredHex() {
       statusBar.textContent = hoveredHex ? describeHex(hoveredHex) : ''
+      const cursor = hoveredHex ? pickCursor(hoveredHex) : null
+      if (cursor) {
+        battlefield.dataset.cursor = cursor
+      } else {
+        delete battlefield.dataset.cursor
+      }
     }
 
     function showMessages(messages) {
@@ -204,7 +244,8 @@ export const registerBattleViewModule = defineModule(
 
       statusBar = battleScreen.querySelector('.battle-screen__status-bar')
       messageLog = battleScreen.querySelector('.battle-bar__log')
-      fillBattlefield(battleScreen.querySelector('.battlefield'))
+      battlefield = battleScreen.querySelector('.battlefield')
+      fillBattlefield(battlefield)
 
       gameShell.append(battleScreen)
       emit(APP_UI_ADVENTURE_MAP_COVERED, {})
@@ -294,6 +335,7 @@ export const registerBattleViewModule = defineModule(
       battleScreen.remove()
       battleScreen = null
       hexes = []
+      battlefield = null
       stackElements = new Map()
       shown = null
       reachableKeys = new Set()

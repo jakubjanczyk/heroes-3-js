@@ -21,7 +21,7 @@ Roadmap 5.4 and 5.5: stacks take turns and the player moves them on the hex grid
 
 ## Not yet
 
-- Double-wide creatures (Griffins, Cavaliers...) take one hex for now.
+- Double-wide creatures (Griffins, Cavaliers...) took one hex until `docs/notes/2026-10-20-monster-stacks-double-wide-and-battle-cursors.md`.
 - Wait, Defend, the enemy's AI, the turn-order queue (not in the original game). Attacks came next: `docs/notes/2026-10-20-battle-attacks.md`.
-- Battle cursors (walk, fly, forbidden).
+- Battle cursors (walk, fly, forbidden) came with `docs/notes/2026-10-20-monster-stacks-double-wide-and-battle-cursors.md`.
 - Obstacles.

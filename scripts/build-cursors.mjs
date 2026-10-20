@@ -1,8 +1,8 @@
 // Builds the Heroes 3 cursors in assets/cursors (game/ui/cursors.css) from the pixel art below:
 // rows of palette keys, '.' a transparent pixel. Each picture is drawn on a 16x16 grid and saved
 // twice as large, so the cursors keep the chunky pixels of the game. The horse, swords and
-// rearing horse also come numbered 2 to 4, for the day the hero would get there, and the edge
-// scrolling arrow comes in all eight directions.
+// rearing horse also come numbered 2 to 4, for the day the hero would get there, the edge
+// scrolling arrow comes in all eight directions, and the battle's sword in all six sides of a hex.
 // Usage: node scripts/build-cursors.mjs [outDir]
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -166,6 +166,148 @@ const SCROLL_NE_ROWS = [
   '................'
 ]
 
+// In battle, over a hex the active stack can walk to: a boot.
+const BATTLE_WALK_ROWS = [
+  '................',
+  '....kkkkk.......',
+  '....kYYYk.......',
+  '....kBBBk.......',
+  '....kBBBk.......',
+  '....kBBBk.......',
+  '....kBBBk.......',
+  '....kBBBk.......',
+  '....kBBBBkk.....',
+  '....kBBBBBBkk...',
+  '....kBBBBBBBBk..',
+  '...kBBBBBBBBBBk.',
+  '...kbbbbbbbbbbk.',
+  '...kkkkkkkkkkkk.',
+  '................',
+  '................'
+]
+
+// In battle, over a hex the active stack can fly to: a white wing.
+const BATTLE_FLY_ROWS = [
+  '................',
+  '..........kk....',
+  '........kkWWk...',
+  '......kkWWWWk...',
+  '....kkWWWSWWk...',
+  '...kWWWSSWWWk...',
+  '..kWWSSWWWWk....',
+  '..kWSWWWWWk.....',
+  '.kWWWWWWkk......',
+  '.kSWWWkkWWk.....',
+  '.kWWkkWWWk......',
+  '..kkWWWSk.......',
+  '...kWWkk........',
+  '...kkk..........',
+  '................',
+  '................'
+]
+
+// In battle, over one of the player's own stacks: a question mark (clicking will show the
+// creature's details once there is a window for them).
+const BATTLE_QUERY_ROWS = [
+  '................',
+  '....kkkkkkk.....',
+  '...kYYYYYYYk....',
+  '..kYGkkkkkGYk...',
+  '..kYk.....kYk...',
+  '..kkk.....kYk...',
+  '.........kYGk...',
+  '........kYGk....',
+  '.......kYGk.....',
+  '.......kYk......',
+  '.......kYk......',
+  '.......kkk......',
+  '................',
+  '.......kkk......',
+  '.......kYk......',
+  '.......kkk......'
+]
+
+// In battle, over a sword attack: a sword pointing at the enemy from the side the stack attacks
+// from, its tip the hotspot. Drawn pointing right, from the left side.
+const BATTLE_ATTACK_FROM_LEFT_ROWS = [
+  '................',
+  '................',
+  '................',
+  '................',
+  '...k............',
+  '..kYk...........',
+  '..kGk.kkkkkkkk..',
+  'kkkGkkWWWWWWWWk.',
+  'kOOGOOSSSSSSSSSk',
+  'kkkGkkDDDDDDDDk.',
+  '..kGk.kkkkkkkk..',
+  '..kYk...........',
+  '...k............',
+  '................',
+  '................',
+  '................'
+]
+
+// The same sword pointing down and right, from the top left side: drawn pixel by pixel from the
+// pommel to the tip, then outlined.
+function drawDiagonalSword() {
+  const pixels = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill('.'))
+  for (let i = 0; i <= 3; i += 1) {
+    pixels[i][i] = i === 0 ? 'G' : 'O'
+  }
+  for (let x = 2; x <= 6; x += 1) {
+    pixels[8 - x][x] = 'Y'
+  }
+  for (let i = 5; i < GRID_SIZE; i += 1) {
+    pixels[i][i] = 'S'
+    if (i + 1 < GRID_SIZE) {
+      pixels[i][i + 1] = 'W'
+    }
+  }
+
+  const isDrawn = (x, y) => pixels[y]?.[x] !== undefined && !['.', 'k'].includes(pixels[y][x])
+  for (let y = 0; y < GRID_SIZE; y += 1) {
+    for (let x = 0; x < GRID_SIZE; x += 1) {
+      const touchesDrawn = [
+        [x - 1, y],
+        [x + 1, y],
+        [x, y - 1],
+        [x, y + 1]
+      ].some(([nextX, nextY]) => isDrawn(nextX, nextY))
+      if (pixels[y][x] === '.' && touchesDrawn) {
+        pixels[y][x] = 'k'
+      }
+    }
+  }
+  return pixels.map((row) => row.join(''))
+}
+
+// In battle, over a hex the active stack cannot reach: a red circle crossed out.
+function drawBlockedSign() {
+  const centre = (GRID_SIZE - 1) / 2
+  return Array.from({ length: GRID_SIZE }, (_, y) =>
+    Array.from({ length: GRID_SIZE }, (_, x) => {
+      const distance = Math.hypot(x - centre, y - centre)
+      if (distance > 7.6) {
+        return '.'
+      }
+
+      if (distance > 7 || (distance > 4.2 && distance <= 4.8)) {
+        return 'k'
+      }
+
+      if (distance > 4.8 || Math.abs(x - y) <= 1) {
+        return 'R'
+      }
+
+      return '.'
+    }).join('')
+  )
+}
+
+const mirrorLeftToRight = (rows) => rows.map((row) => [...row].reverse().join(''))
+const mirrorTopToBottom = (rows) => [...rows].reverse()
+
 // The day number, white on a black patch in the bottom right corner.
 const DIGIT_ROWS = {
   2: ['WWW', '..W', 'WWW', 'W..', 'WWW'],
@@ -270,7 +412,21 @@ function assertGrid(name, rows) {
   }
 }
 
-const CURSORS = { arrow: ARROW_ROWS, hero: HERO_ROWS }
+const diagonalSword = drawDiagonalSword()
+const CURSORS = {
+  arrow: ARROW_ROWS,
+  hero: HERO_ROWS,
+  'battle-walk': BATTLE_WALK_ROWS,
+  'battle-fly': BATTLE_FLY_ROWS,
+  'battle-blocked': drawBlockedSign(),
+  'battle-query': BATTLE_QUERY_ROWS,
+  'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,
+  'battle-attack-from-right': mirrorLeftToRight(BATTLE_ATTACK_FROM_LEFT_ROWS),
+  'battle-attack-from-top-left': diagonalSword,
+  'battle-attack-from-top-right': mirrorLeftToRight(diagonalSword),
+  'battle-attack-from-bottom-left': mirrorTopToBottom(diagonalSword),
+  'battle-attack-from-bottom-right': mirrorLeftToRight(mirrorTopToBottom(diagonalSword))
+}
 for (const [name, rows] of Object.entries({
   move: MOVE_ROWS,
   attack: ATTACK_ROWS,

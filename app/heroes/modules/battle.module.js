@@ -69,6 +69,7 @@ export const registerBattleModule = defineModule(
             )
           ),
           activeStackId: moving.stackId,
+          moving: true,
           reachableHexes: [],
           attackTargets: [],
           messages: moving.battle.messages,
