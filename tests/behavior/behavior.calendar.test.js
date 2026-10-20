@@ -4,15 +4,17 @@ import { describe, test } from 'vitest'
 import {
   clickEndTurn,
   closeInteractionModal,
-  createMemoryEventLog,
   endTurns,
   expectCalendarDate,
   expectInteractionModalClosed,
-  expectInteractionModalOpen,
+  expectInteractionModalOpen
+} from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
   flushMicrotasks,
   setupLinearMovementApp,
   setupMovementBehaviorApp
-} from './behavior.utils.js'
+} from './app.utils.js'
 import { aScenario } from './builders.js'
 
 describe('calendar behavior', () => {

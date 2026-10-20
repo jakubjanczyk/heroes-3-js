@@ -1,28 +1,31 @@
 // @vitest-environment jsdom
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-
-import { loadAppStyles } from './app-styles.js'
 import {
   attackMonsterAt,
   confirmTileClickByDispatch,
-  createMemoryEventLog,
   expectHeroAt,
-  expectInteractionModalClosed,
   expectMonsterNotPresent,
   expectMonsterPresent,
-  flushMicrotasks,
-  getBattlefield,
-  getBattleScreen,
   getMapViewCentreTile,
   getTerrainTile,
-  panCamera,
+  panCamera
+} from './adventure-map.utils.js'
+import { expectInteractionModalClosed } from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
+import {
+  getBattlefield,
+  getBattleScreen,
   queryBattleScreen,
   readBattleStacks,
-  readGameData,
-  setupMovementBehaviorApp,
   winBattle
-} from './behavior.utils.js'
+} from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
 import { DIRT, GRASS, LAVA, ROUGH, SAND, SNOW, SUBTERRANEAN, SWAMP } from './terrain-codes.js'
 

@@ -1,17 +1,15 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { loadAppStyles } from './app-styles.js'
 import {
   confirmMove,
   confirmTileClickByDispatch,
   expectHeroAt,
   expectNoPreview,
-  flushMicrotasks,
   getMapViewCentreTile,
-  getTerrainTile,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  getTerrainTile
+} from './adventure-map.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
 import { aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { ALL_TERRAINS, GRASS, SAND } from './terrain-codes.js'
 

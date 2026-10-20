@@ -4,19 +4,23 @@ import { describe, expect, test } from 'vitest'
 
 import {
   confirmTileClickByDispatch,
-  createMemoryEventLog,
-  expectResourceTotal,
-  expectStatusBarText,
-  flushMicrotasks,
-  getTreasureChestDialog,
   getTreasureChestEntity,
   holdRightButtonOn,
-  hoverTile,
-  readGameData,
+  hoverTile
+} from './adventure-map.utils.js'
+import {
+  expectResourceTotal,
+  expectStatusBarText,
+  getTreasureChestDialog,
   readTreasureChestChoices,
-  setupMovementBehaviorApp,
   takeFromTreasureChest
-} from './behavior.utils.js'
+} from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import { aHero, aScenario, aTreasureChest } from './builders.js'
 
 const gameDefinitions = {

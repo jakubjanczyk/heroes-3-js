@@ -2,17 +2,19 @@
 import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
+import { holdRightButtonOn } from './adventure-map.utils.js'
 import {
   closeInteractionModal,
+  getHeroInfoBox,
+  readPrimarySkills,
+  takeFromTreasureChest
+} from './adventure-panels.utils.js'
+import {
   createMemoryEventLog,
   flushMicrotasks,
-  getHeroInfoBox,
-  holdRightButtonOn,
   readGameData,
-  readPrimarySkills,
-  setupMovementBehaviorApp,
-  takeFromTreasureChest
-} from './behavior.utils.js'
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import { aHero, aScenario, aTreasureChest } from './builders.js'
 
 const gameDefinitions = {

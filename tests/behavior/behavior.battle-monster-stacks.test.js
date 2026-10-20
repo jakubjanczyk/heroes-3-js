@@ -2,22 +2,23 @@
 import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
+import { attackMonsterAt, expectMonsterNotPresent } from './adventure-map.utils.js'
+import { clickResetSession } from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import {
   attackBattleHexFrom,
-  attackMonsterAt,
   clickBattleButton,
-  clickResetSession,
-  createMemoryEventLog,
-  expectMonsterNotPresent,
-  flushMicrotasks,
   moveActiveStackTo,
   queryBattleScreen,
   readBattleStacks,
   readCombatMessages,
-  readGameData,
-  setupMovementBehaviorApp,
   waitForBattleToEnd
-} from './behavior.utils.js'
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')
@@ -204,6 +205,7 @@ describe('battle monster stacks behavior', () => {
       await attackThePikemenOnRow3(user)
 
       await attackBattleHexFrom(user, 5, 10, 'left')
+      await waitForBattleToEnd()
 
       expect(queryBattleScreen()).toBeNull()
       expectMonsterNotPresent('monster-1')
@@ -222,6 +224,7 @@ describe('battle monster stacks behavior', () => {
       await attackThePikemenOnRow3(user)
 
       await attackBattleHexFrom(user, 5, 10, 'left')
+      await waitForBattleToEnd()
 
       const levelUp = screen.getByRole('dialog', { name: 'Hero has gained a level.' })
       expect(within(levelUp).getByText('Hero is now a level 2 Knight.')).toBeTruthy()

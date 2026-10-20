@@ -1,11 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import {
-  flushMicrotasks,
-  getMusicToggleButton,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+import { getMusicToggleButton } from './adventure-panels.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
 
 describe('music behavior', () => {
   test('given tracks exist at boot then music toggle shows off state before any user action', async () => {

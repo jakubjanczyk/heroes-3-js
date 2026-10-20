@@ -2,19 +2,20 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import {
-  clickEndTurn,
   clickTile,
   confirmMove,
   confirmTileClickByDispatch,
   expectHasOverLimitTargetMarker,
   expectHeroAt,
-  expectMovementPoints,
-  expectPreviewTargetAt,
+  expectPreviewTargetAt
+} from './adventure-map.utils.js'
+import { clickEndTurn, expectMovementPoints } from './adventure-panels.utils.js'
+import {
   flushMicrotasks,
   setupLinearMovementApp,
   setupMovementBehaviorApp,
   waitMs
-} from './behavior.utils.js'
+} from './app.utils.js'
 import { aScenario } from './builders.js'
 
 describe('movement behavior', () => {

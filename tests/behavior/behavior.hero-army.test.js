@@ -2,16 +2,14 @@
 import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
+import { confirmMove, holdRightButtonOn } from './adventure-map.utils.js'
+import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
 import {
-  confirmMove,
   createMemoryEventLog,
   flushMicrotasks,
-  getHeroInfoBox,
-  holdRightButtonOn,
-  readArmySlots,
   readGameData,
   setupMovementBehaviorApp
-} from './behavior.utils.js'
+} from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 const gameDefinitions = {

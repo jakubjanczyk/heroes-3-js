@@ -2,12 +2,15 @@
 import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
+import { attackMonsterAt, expectMonsterNotPresent } from './adventure-map.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import {
   attackBattleHexFrom,
-  attackMonsterAt,
-  createMemoryEventLog,
-  expectMonsterNotPresent,
-  flushMicrotasks,
   getBattleStatusBarText,
   hoverBattleHex,
   moveActiveStackTo,
@@ -16,11 +19,10 @@ import {
   readActiveStack,
   readBattleStacks,
   readCombatMessages,
-  readGameData,
-  setupMovementBehaviorApp,
   tapBattleHexSide,
+  waitForBattleToEnd,
   winBattle
-} from './behavior.utils.js'
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')
@@ -472,6 +474,7 @@ describe('battle attack behavior', () => {
       await flyAngelsCloser(user)
 
       await attackPikemenFrom(user, 'left')
+      await waitForBattleToEnd()
 
       expect(queryBattleScreen()).toBeNull()
       expectMonsterNotPresent('monster-1')
@@ -542,6 +545,7 @@ describe('battle attack behavior', () => {
       await flyAngelsCloser(user)
 
       await attackPikemenFrom(user, 'left')
+      await waitForBattleToEnd()
 
       expect(within(queryLevelUpDialog()).getByText('Hero is now a level 2 Knight.')).toBeTruthy()
     })

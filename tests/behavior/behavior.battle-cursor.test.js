@@ -1,23 +1,26 @@
 // @vitest-environment jsdom
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-
-import { loadAppStyles } from './app-styles.js'
+import { attackMonsterAt } from './adventure-map.utils.js'
 import {
-  attackMonsterAt,
-  clickBattleButton,
-  clickBattleHex,
   flushMicrotasks,
-  getBattleHex,
-  getBattleScreen,
   getCursorOver,
-  hoverBattleHex,
-  moveActiveStackTo,
-  pointAtBattleHexSide,
   readGameData,
   setupMovementBehaviorApp,
   waitMs
-} from './behavior.utils.js'
+} from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
+import {
+  clickBattleButton,
+  clickBattleHex,
+  getBattleHex,
+  getBattleResults,
+  getBattleScreen,
+  hoverBattleHex,
+  moveActiveStackTo,
+  pointAtBattleHexSide,
+  waitForBattleResults
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')
@@ -204,5 +207,16 @@ describe('battle cursor behavior', () => {
     await moveActiveStackTo(user, 6, 8)
 
     expect(cursorOverHex(6, 8)).toBe('battle-query')
+  })
+
+  test('given the battle results window is open when the mouse is over OK then the cursor is the arrow', async () => {
+    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 10)], monsterCount: 1 }))
+    await clickBattleButton(user, 'Auto combat')
+    await waitForBattleResults()
+    const ok = within(getBattleResults()).getByRole('button', { name: 'OK' })
+
+    await user.hover(ok)
+
+    expect(getCursorOver(ok)).toBe('arrow')
   })
 })

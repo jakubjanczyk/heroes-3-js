@@ -1,15 +1,14 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
+import { confirmTileClickByDispatch } from './adventure-map.utils.js'
+import { endTurns, getResourceBarItems } from './adventure-panels.utils.js'
 import {
-  confirmTileClickByDispatch,
   createMemoryEventLog,
-  endTurns,
   flushMicrotasks,
-  getResourceBarItems,
   readGameData,
   setupMovementBehaviorApp
-} from './behavior.utils.js'
+} from './app.utils.js'
 import { aHero, aMine, aResource, aScenario } from './builders.js'
 
 const gameDefinitions = {

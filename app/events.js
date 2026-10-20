@@ -17,6 +17,8 @@ export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAt
 export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackShoot.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
 export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
+export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
+export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -30,6 +32,8 @@ export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected'
 export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared'
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended'
 export const APP_FACT_BATTLE_STARTED = 'fact.battle.started'
+// The battle is over and its results window is open; it ends when the player closes the window.
+export const APP_FACT_BATTLE_FINISHED = 'fact.battle.finished'
 export const APP_FACT_BATTLE_ENDED = 'fact.battle.ended'
 export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
 export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
@@ -78,6 +82,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_TURN_ENDED,
   APP_FACT_BATTLE_STARTED,
+  APP_FACT_BATTLE_FINISHED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_BATTLE_STACK_MOVED,
   APP_FACT_BATTLE_STACK_ATTACKED,

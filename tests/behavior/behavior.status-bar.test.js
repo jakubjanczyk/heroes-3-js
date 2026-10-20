@@ -5,15 +5,12 @@ import { describe, test } from 'vitest'
 import {
   attackMonsterAt,
   confirmTileClickByDispatch,
-  expectStatusBarText,
-  flushMicrotasks,
   hoverTile,
-  panCamera,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs,
-  winBattle
-} from './behavior.utils.js'
+  panCamera
+} from './adventure-map.utils.js'
+import { expectStatusBarText } from './adventure-panels.utils.js'
+import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import {
   DIRT,

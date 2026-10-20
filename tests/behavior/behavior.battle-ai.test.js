@@ -2,25 +2,30 @@
 import { describe, expect, test } from 'vitest'
 
 import {
-  attackBattleHexFrom,
   attackMonsterAt,
-  clickBattleHex,
-  createMemoryEventLog,
   expectMonsterPresent,
-  expectStatusBarText,
-  flushMicrotasks,
   getHeroEntity,
-  hoverTile,
+  hoverTile
+} from './adventure-map.utils.js'
+import { expectStatusBarText } from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
+import {
+  attackBattleHexFrom,
+  clickBattleHex,
   moveActiveStackTo,
   queryBattleScreen,
   readActiveStack,
   readBattleStacks,
   readCombatMessages,
-  readGameData,
   recordStackHexes,
-  setupMovementBehaviorApp,
-  waitMs
-} from './behavior.utils.js'
+  waitForBattleToEnd
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')
@@ -77,6 +82,7 @@ async function loseTheAngelToSwordsmen(user) {
   await moveActiveStackTo(user, 6, 5)
   // The Swordsmen walked to row 6, column 10.
   await attackBattleHexFrom(user, 6, 10, 'left')
+  await waitForBattleToEnd()
 }
 
 describe('battle combat AI behavior', () => {
@@ -224,6 +230,7 @@ describe('battle combat AI behavior', () => {
     async function loseTheSkeletonToSwordsmen() {
       const app = await startBattle(aFight({ army: [stack('SKELETON', 1)] }))
       await moveActiveStackTo(app.user, 6, 5)
+      await waitForBattleToEnd()
       return app
     }
 

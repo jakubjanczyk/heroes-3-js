@@ -5,6 +5,10 @@ body {
     url("../../assets/cursors/arrow.png") 0 0,
     default;
 }
+/* Browsers give buttons their own arrow; they keep the game's. */
+button {
+  cursor: inherit;
+}
 .viewport[data-cursor="hero"] {
   cursor:
     url("../../assets/cursors/hero.png") 16 16,

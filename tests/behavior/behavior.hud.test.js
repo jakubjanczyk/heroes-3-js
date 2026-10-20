@@ -6,20 +6,20 @@ import {
   confirmMove,
   confirmTileClickByDispatch,
   expectHeroAt,
-  expectMovementPoints,
   expectNoPreview,
-  flushMicrotasks,
+  getMapViewCentreTile,
+  panCamera
+} from './adventure-map.utils.js'
+import {
+  expectMovementPoints,
   getHeroInfoBox,
   getHeroInHeroList,
-  getMapViewCentreTile,
   getNextHeroButton,
   getResourceBarItems,
   openSystemOptions,
-  panCamera,
-  querySystemOptions,
-  readGameData,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  querySystemOptions
+} from './adventure-panels.utils.js'
+import { flushMicrotasks, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 const LARGE_VIEWPORT_SIZE = { width: 1000, height: 700 }

@@ -1,18 +1,14 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 import {
-  clickEndTurn,
   dispatchTileClick,
   expectHeroAt,
-  expectMovementPoints,
   expectNoPreview,
   expectPreviewDashAt,
-  expectPreviewTargetAt,
-  flushMicrotasks,
-  getHeroInfoBox,
-  setupLinearMovementApp,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  expectPreviewTargetAt
+} from './adventure-map.utils.js'
+import { clickEndTurn, expectMovementPoints, getHeroInfoBox } from './adventure-panels.utils.js'
+import { flushMicrotasks, setupLinearMovementApp, setupMovementBehaviorApp } from './app.utils.js'
 import { aScenario } from './builders.js'
 
 describe('tile click behavior', () => {
