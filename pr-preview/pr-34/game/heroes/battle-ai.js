@@ -1,9 +1,8 @@
 import { getApproaches, getFrontHexReach, planStackAttack } from './battle.js'
 import { getHexDistance } from './battlefield.js'
 
-// A first, simple combat AI for the stacks the player does not control: go for the nearest
-// enemy stack and attack it, or get as close to it as this turn allows. Shooters walk too until
-// there are ranged attacks. On a tie the enemy in the earlier army slot is picked.
+// A first, simple combat AI: go for the nearest enemy stack (the earlier army slot on a tie) and
+// attack it, or get as close as this turn allows.
 function findNearestApproach(battle, stack) {
   const approaches = getApproaches(battle, stack)
   if (approaches.length === 0) {
@@ -15,7 +14,6 @@ function findNearestApproach(battle, stack) {
   )
 }
 
-// A flyer lands on the hex in reach nearest its goal, if that gets it any closer.
 function planFlightToward(battle, stack, goal) {
   let nearest = null
   let nearestDistance = getHexDistance(stack.hex, goal)

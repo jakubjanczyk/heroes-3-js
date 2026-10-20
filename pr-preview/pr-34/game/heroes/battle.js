@@ -203,9 +203,7 @@ function getHexesNextTo(target) {
   return [...next.values()]
 }
 
-// The way for the stack's front half to `front`, however many turns it takes, and how many hexes
-// that is: a flyer's straight line, a walker's steps around the other stacks. Null when it cannot
-// get there.
+// However many turns it takes; null when the stack cannot get there.
 function findWayToFront(battle, stack, front) {
   if (isSameHex(stack.hex, front)) {
     return { way: [], distance: 0 }
@@ -224,8 +222,7 @@ function findWayToFront(battle, stack, front) {
   return way && { way, distance: way.length }
 }
 
-// Every hex next to a living enemy the stack can get to, however far, in the order of the enemy
-// stacks and then of the hexes around each.
+// Every hex next to a living enemy the stack can get to, in army slot order, which settles ties.
 export function getApproaches(battle, stack) {
   return livingStacks(battle)
     .filter((target) => target.side !== stack.side)
@@ -325,8 +322,6 @@ export function attackStack(battle, { stackId, targetId, path, strikes }) {
   return endTurn(struck, stackId)
 }
 
-// The hero's army as the battle leaves it: each stack with the creatures it has left, and an
-// empty slot where none are left.
 export function getHeroArmyAfterBattle(battle, heroArmy) {
   return heroArmy.map((slot, index) => {
     const stack = battle.stacks.find(({ id }) => id === `attacker-${index}`)

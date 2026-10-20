@@ -32,7 +32,6 @@ export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
 export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
-// A monster that won a battle stays on the map with the creatures it has left.
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
@@ -41,7 +40,6 @@ export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
-// The hero's army after a won battle: every slot, empty where a stack lost all its creatures.
 export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
