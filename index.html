@@ -223,6 +223,77 @@
       </div>
     </template>
 
+    <!--
+      The Heroes 3 town screen, over the adventure screen above the resource bar while the hero is
+      in a town: the town picture (drawn in CSS until there are sprites) and the panel under it.
+      The panel's left side keeps the places of what towns do not have yet (the Hall and Fort
+      icons, the daily income, the creatures to recruit) empty, and so is the town list.
+    -->
+    <template id="town-screen-template">
+      <section class="town-screen" role="dialog" aria-modal="true" aria-label="Town">
+        <div class="town-screen__view" aria-hidden="true">
+          <div class="town-screen__castle"></div>
+        </div>
+        <div class="town-panel">
+          <div class="town-panel__summary">
+            <div class="town-panel__picture" aria-hidden="true"></div>
+            <h2 class="town-panel__name"></h2>
+            <div class="town-panel__buildings" aria-hidden="true">
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame town-panel__frame--income"></span>
+            </div>
+            <div class="town-panel__growth" aria-hidden="true">
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+            </div>
+          </div>
+          <div class="town-panel__armies">
+            <div class="town-panel__row">
+              <div class="town-panel__hero" aria-hidden="true"></div>
+              <ul class="town-panel__slots" aria-label="Garrison">
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+              </ul>
+            </div>
+            <div class="town-panel__row">
+              <div class="town-panel__hero town-panel__hero--visiting" role="img"></div>
+              <ul class="town-panel__slots" aria-label="Visiting hero army">
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+                <li class="army-slot"></li>
+              </ul>
+            </div>
+          </div>
+          <div class="town-panel__side">
+            <div class="town-panel__town-list" aria-hidden="true">
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+              <span class="town-panel__frame"></span>
+            </div>
+            <button class="town-panel__leave" type="button" data-town-action="leave" aria-label="Leave town" aria-keyshortcuts="Enter Escape" title="Leave town (Enter)">
+              <svg class="town-panel__leave-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    </template>
+
     <script type="module" src="./main.js"></script>
   </body>
 </html>

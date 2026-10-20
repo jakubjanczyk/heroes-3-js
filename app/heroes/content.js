@@ -13,6 +13,8 @@ import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
+import { registerTownModule } from './modules/town.module.js'
+import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
 
@@ -28,6 +30,7 @@ export const heroesAppContent = Object.freeze({
     registerMinesModule,
     registerHeroLevelsModule,
     registerBattleModule,
+    registerTownModule,
     registerMineFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
@@ -37,6 +40,7 @@ export const heroesAppContent = Object.freeze({
     registerHeroPanelModule,
     registerSystemOptionsModule,
     registerBattleViewModule,
+    registerTownScreenViewModule,
     registerMusicModule
   ])
 })

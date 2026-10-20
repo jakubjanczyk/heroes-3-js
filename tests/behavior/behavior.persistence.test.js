@@ -11,14 +11,11 @@ import {
   expectPreviewOverLimitTargetAt,
   expectPreviewTargetAt,
   expectResourceCollecting,
-  expectResourceNotPresent,
-  expectTownPresent
+  expectResourceNotPresent
 } from './adventure-map.utils.js'
 import {
   clickEndTurn,
-  closeInteractionModal,
   expectInteractionModalClosed,
-  expectInteractionModalOpen,
   expectMovementPoints,
   expectResourceTotal
 } from './adventure-panels.utils.js'
@@ -30,6 +27,7 @@ import {
 } from './app.utils.js'
 import { queryBattleScreen, winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { enterTownAt, leaveTown, queryTownScreen } from './town-screen.utils.js'
 
 function createSession(scenario, appConfig = {}) {
   return {
@@ -198,33 +196,6 @@ describe('session persistence behavior', () => {
     expectHeroAt(3, 0)
     expectMovementPoints(1200)
     expectNoPreview()
-  })
-
-  test('given town modal is open when app reloads then visited town state is preserved without reopening modal', async () => {
-    const session = createSession(
-      aScenario()
-        .withSize(8, 7)
-        .withEntities(aHero().at(4, 5), aTown().at(4, 3))
-        .withDefinitions(castleDefinitions),
-      { interactionModalTransitionMs: 0 }
-    )
-
-    await setupMovementBehaviorApp(session)
-
-    confirmTileClickByDispatch(4, 3)
-    await flushMicrotasks()
-
-    expectHeroAt(4, 3)
-    expectMovementPoints(1300)
-    expectTownPresent('town-1')
-    expectInteractionModalOpen('Castle visited')
-
-    await reload(session)
-
-    expectHeroAt(4, 3)
-    expectMovementPoints(1300)
-    expectTownPresent('town-1')
-    expectInteractionModalClosed()
   })
 
   test('given resources are collected across sessions when app reloads multiple times then totals and removals stay cumulative', async () => {
@@ -508,7 +479,7 @@ describe('session persistence behavior', () => {
     expectMovementPoints(1400)
   })
 
-  test('given town was visited before reload when hero leaves and re-enters after reload then the town modal opens again', async () => {
+  test('given town was left before reload when hero leaves and re-enters after reload then the town screen opens again', async () => {
     const session = createSession(
       aScenario()
         .withSize(8, 7)
@@ -518,31 +489,16 @@ describe('session persistence behavior', () => {
     )
 
     const firstSession = await setupMovementBehaviorApp(session)
+    await enterTownAt(4, 3)
+    await leaveTown(firstSession.user)
 
-    confirmTileClickByDispatch(4, 3)
-    await flushMicrotasks()
-    expectInteractionModalOpen('Castle visited')
-    await closeInteractionModal(firstSession.user)
-    await flushMicrotasks()
-
-    expectHeroAt(4, 3)
-
-    const secondSession = await reload(session)
-
-    expectHeroAt(4, 3)
-    expectInteractionModalClosed()
-
+    await reload(session)
     confirmTileClickByDispatch(4, 4)
     await flushMicrotasks()
     expectHeroAt(4, 4)
-
     confirmTileClickByDispatch(4, 3)
     await flushMicrotasks()
 
-    expectInteractionModalOpen('Castle visited')
-    await closeInteractionModal(secondSession.user)
-    await flushMicrotasks()
-
-    expectHeroAt(4, 3)
+    expect(queryTownScreen()).toBeTruthy()
   })
 })

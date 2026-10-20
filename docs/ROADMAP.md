@@ -109,23 +109,27 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Validation: scenario loader validates entity metadata schema
 
 ### 2.3 Town View Screen
-- [ ] Entering a town opens a full-screen town view (replaces adventure map)
-- [ ] Town background image area (faction-specific later, placeholder for now)
-- [ ] Building slots displayed on town background (empty/built state)
-- [ ] Town name at top of screen
-- [ ] Garrison bar: up to 7 creature stacks displayed
-- [ ] Visiting hero army bar below garrison (when hero is in town)
-- [ ] "Exit" button returns to adventure map
-- [ ] Town view has its own event scope (town.command.*, town.fact.*)
-- [ ] Creatures available for recruitment panel
-- [ ] Gold/resource display within town view
+See `docs/notes/2026-10-20-town-screen.md`.
+- [x] Entering a town opens a full-screen town view (replaces adventure map); a town open at reload is shown again
+- [x] Town background image area (faction-specific later, placeholder for now): a castle drawn in CSS
+- [ ] Building slots displayed on town background (empty/built state) (needs town buildings, 6.1)
+- [x] Town name in the panel as in H3: the scenario's `name` for the town, else its type's name
+- [x] Garrison bar: up to 7 creature stacks displayed (empty until towns have garrisons, 6.4)
+- [x] Visiting hero army bar below garrison (when hero is in town), the hero's portrait placeholder first
+- [x] "Exit" button (✓, Enter or Escape) returns to adventure map
+- [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
+- [ ] Creatures available for recruitment panel (its place is kept empty; needs dwellings, 6.3)
+- [ ] Hall and Fort icons and the daily income in the panel (places kept empty; needs 6.2)
+- [ ] Town list on the panel's right side (needs town ownership)
+- [x] Gold/resource display within town view: the resource bar and date stay under the town screen
+- [ ] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
 
 ### 2.4 Interaction Modals Upgrade
 - [ ] Monster defeat modal: show creature name, count defeated, XP gained, any loot dropped
 - [ ] Resource pickup modal: show resource icon, type name, amount collected (e.g. "+500 Gold")
 - [ ] Resource pickup: brief floating number animation on map (optional, low priority)
 - [ ] Mine capture modal: show mine type, daily income, "Mine captured!" message
-- [ ] Town visit: redirect to town view screen instead of modal
+- [x] Town visit: redirect to town view screen instead of modal
 - [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
 - [ ] Dwelling visit modal: show available creatures, count, cost, recruit button
 
