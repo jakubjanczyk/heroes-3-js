@@ -1,7 +1,5 @@
 import { defineModule } from './shared/module-runtime.js'
 
-// The screen on top takes the keys: the last open dialog (System options, the battle...), or the
-// adventure screen's panel when none is open.
 const OPEN_DIALOGS = 'dialog[open], [role="dialog"][aria-modal="true"]'
 const ADVENTURE_PANEL = '.adventure-panel'
 
@@ -12,8 +10,8 @@ const pressesFocusedButton = (event) =>
   (event.key === ' ' || event.key === 'Enter') &&
   Boolean(event.target?.closest?.('button, input, select, textarea, a[href]'))
 
-// A key presses the button on the top screen whose `aria-keyshortcuts` lists it, unless the button
-// is disabled, so a shortcut does what a click does and only when a click would.
+// A key presses the enabled button listing it in `aria-keyshortcuts` on the top screen: the last
+// open dialog, else the adventure panel. So a shortcut works exactly when a click would.
 export const registerKeyboardShortcutsModule = defineModule(
   ({ env }) => {
     const document = env.document
