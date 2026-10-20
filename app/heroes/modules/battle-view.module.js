@@ -34,6 +34,7 @@ export const registerBattleViewModule = defineModule(
     let stackElements = new Map()
     let shown = null
     let reachableKeys = new Set()
+    let hoveredHex = null
     let isRestoring = false
 
     function cloneTemplate(id) {
@@ -62,6 +63,10 @@ export const registerBattleViewModule = defineModule(
       }
 
       return `${activeStack.flying ? 'Fly' : 'Move'} ${activeStack.name} here`
+    }
+
+    function describeHoveredHex() {
+      statusBar.textContent = hoveredHex ? describeHex(hoveredHex) : ''
     }
 
     function readHex(element) {
@@ -175,6 +180,8 @@ export const registerBattleViewModule = defineModule(
           hexElement.setAttribute('aria-disabled', String(!reachable))
         }
       }
+
+      describeHoveredHex()
     }
 
     function closeBattle() {
@@ -188,6 +195,7 @@ export const registerBattleViewModule = defineModule(
       stackElements = new Map()
       shown = null
       reachableKeys = new Set()
+      hoveredHex = null
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -244,8 +252,8 @@ export const registerBattleViewModule = defineModule(
               return
             }
 
-            const hex = readHex(event.target)
-            statusBar.textContent = hex ? describeHex(hex) : ''
+            hoveredHex = readHex(event.target)
+            describeHoveredHex()
           }
         }
       ],

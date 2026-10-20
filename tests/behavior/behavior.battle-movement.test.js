@@ -185,4 +185,15 @@ describe('battle movement behavior', () => {
 
     expect(getBattleStatusBarText()).toBe('')
   })
+
+  test('given the player hovers a hex when the stack moves onto it then the status bar is empty', async () => {
+    const { user } = await startBattle(
+      aFight({ army: [stack('SKELETON', 10)], monsterType: 'PIKEMAN' })
+    )
+    await hoverBattleHex(user, 6, 3)
+
+    await moveActiveStackTo(user, 6, 3)
+
+    expect(getBattleStatusBarText()).toBe('')
+  })
 })
