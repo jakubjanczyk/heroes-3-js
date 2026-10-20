@@ -19,6 +19,7 @@ import {
   readGameData,
   recordStackHexes,
   setupMovementBehaviorApp,
+  waitForBattleToEnd,
   waitMs
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -77,6 +78,7 @@ async function loseTheAngelToSwordsmen(user) {
   await moveActiveStackTo(user, 6, 5)
   // The Swordsmen walked to row 6, column 10.
   await attackBattleHexFrom(user, 6, 10, 'left')
+  await waitForBattleToEnd()
 }
 
 describe('battle combat AI behavior', () => {
@@ -224,6 +226,7 @@ describe('battle combat AI behavior', () => {
     async function loseTheSkeletonToSwordsmen() {
       const app = await startBattle(aFight({ army: [stack('SKELETON', 1)] }))
       await moveActiveStackTo(app.user, 6, 5)
+      await waitForBattleToEnd()
       return app
     }
 

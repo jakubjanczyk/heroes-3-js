@@ -330,3 +330,124 @@
   text-align: center;
   white-space: nowrap;
 }
+
+/* A window over the battle, as Heroes 3 shows its retreat question and the battle results. */
+.battle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-md);
+  overflow: auto;
+}
+
+.battle-overlay__window {
+  inline-size: min(26rem, 100%);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+}
+
+.battle-overlay__actions {
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.battle-overlay__cancel {
+  inline-size: 1.3rem;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2.6;
+  filter: drop-shadow(1px 1px 0 black);
+}
+
+.battle-retreat__question {
+  margin: 0;
+}
+
+/* The battle stays in view behind its results, darkened. */
+.battle-results {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.battle-results__sides {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.battle-results__side {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2xs);
+
+  & p {
+    margin: 0;
+  }
+}
+
+.battle-results__side--defender {
+  justify-items: end;
+}
+
+.battle-results__outcome {
+  padding: 1px var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+}
+
+.battle-results__message {
+  margin-top: var(--space-md);
+  padding: var(--space-sm);
+  border: 1px solid var(--trim-gold-dark);
+
+  & p {
+    margin: 0;
+  }
+
+  & p + p {
+    margin-top: var(--space-sm);
+  }
+}
+
+.battle-results__title {
+  margin: var(--space-md) 0 0;
+  font-size: var(--font-size-md);
+  color: var(--hud-text-gold);
+}
+
+.battle-results__heading {
+  margin: var(--space-sm) 0 var(--space-2xs);
+  font-size: var(--font-size-md);
+}
+
+.battle-results__creatures,
+.battle-results__none {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  min-block-size: 3rem;
+  margin: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  list-style: none;
+  align-items: center;
+}
+
+.battle-results__creature {
+  display: grid;
+  justify-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.battle-results__picture {
+  position: relative;
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+.battle-results__name-caption {
+  margin-top: var(--space-2xs);
+}

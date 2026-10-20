@@ -204,6 +204,7 @@ describe('battle monster stacks behavior', () => {
       await attackThePikemenOnRow3(user)
 
       await attackBattleHexFrom(user, 5, 10, 'left')
+      await waitForBattleToEnd()
 
       expect(queryBattleScreen()).toBeNull()
       expectMonsterNotPresent('monster-1')
@@ -222,6 +223,7 @@ describe('battle monster stacks behavior', () => {
       await attackThePikemenOnRow3(user)
 
       await attackBattleHexFrom(user, 5, 10, 'left')
+      await waitForBattleToEnd()
 
       const levelUp = screen.getByRole('dialog', { name: 'Hero has gained a level.' })
       expect(within(levelUp).getByText('Hero is now a level 2 Knight.')).toBeTruthy()

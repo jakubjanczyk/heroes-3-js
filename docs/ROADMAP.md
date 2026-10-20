@@ -412,11 +412,13 @@ See `docs/notes/2026-10-20-battle-attacks.md` and `docs/notes/2026-10-20-ranged-
 - [ ] Jousting (Cavaliers), hatred (Angels and Devils), luck, Offense and Armorer skills
 
 ### 5.7 Combat Actions (Wait, Defend, Retreat, Surrender)
-See `docs/notes/2026-10-20-wait-defend-auto-combat.md`.
+See `docs/notes/2026-10-20-wait-defend-auto-combat.md` and `docs/notes/2026-10-20-retreat-surrender-results.md`.
 - [x] **Wait**: skip current turn, act again once every other stack has acted, the stacks that waited slowest first; once per round
 - [x] **Defend**: end the turn with +20% Defense (at least 1 point) until the stack's next turn
-- [ ] **Retreat**: hero flees battle, loses all creatures, hero survives
+- [x] **Retreat** (R): asked first; the hero flees and loses the army. With no taverns yet the hero leaves the map, as when beaten
 - [ ] **Surrender**: pay gold to enemy to leave with army intact (gold cost = army value)
+  - [x] Disabled against neutral monsters, as in H3: only an enemy hero takes a surrender
+  - [ ] The surrender itself (needs enemy heroes)
 - [x] **Auto-combat**: the combat AI plays your stacks until the battle ends or you press it again
 - [x] Wait and Defend work only on your stack's turn: disabled while the monster acts, a stack moves or Auto combat plays
 - [ ] A defending stack shown as such (H3 shows it in the creature's info window)
@@ -451,16 +453,16 @@ See `docs/notes/2026-10-20-combat-ai.md`.
   - [x] XP awarded: the health of every enemy creature killed, as in H3 (Auto combat counts the whole monster)
   - [x] The hero's army keeps its losses after the battle: each stack keeps the creatures it has left, a stack with none leaves its slot empty
   - Loot: gold and/or resources dropped by neutral monsters
-  - Creature losses tallied and shown in summary
-  - "Victory" screen with stats
+  - [x] Creature losses tallied and shown in the results window, for both sides
+  - [x] Results window over the darkened battle: each side Victorious or Defeated, "A glorious victory!" and the experience gained; OK (Enter) closes it, and a level-up popup follows
 - [ ] **Defeat**: all your stacks destroyed
   - [x] Hero lost (removed from map)
   - [x] The monster stays on the map with the creatures it has left
   - If defending town: town captured by attacker
-  - "Defeat" screen
-- [ ] **Flee/Retreat**: hero escapes, army lost, hero goes to nearest town or removed
+  - [x] The results window: "Your forces suffer a bitter defeat, and ... abandons your cause"
+- [x] **Flee/Retreat**: hero escapes, army lost, hero removed (no taverns yet); the monster keeps what it has left
 - [ ] **Surrender**: hero keeps army, pays gold
-- [ ] Post-combat: return to adventure map, dead monsters removed, hero continues
+- [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
 - [ ] Combat at a fortified town includes walls

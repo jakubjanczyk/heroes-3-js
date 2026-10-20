@@ -19,6 +19,7 @@ import {
   readGameData,
   setupMovementBehaviorApp,
   tapBattleHexSide,
+  waitForBattleToEnd,
   winBattle
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -472,6 +473,7 @@ describe('battle attack behavior', () => {
       await flyAngelsCloser(user)
 
       await attackPikemenFrom(user, 'left')
+      await waitForBattleToEnd()
 
       expect(queryBattleScreen()).toBeNull()
       expectMonsterNotPresent('monster-1')
@@ -542,6 +544,7 @@ describe('battle attack behavior', () => {
       await flyAngelsCloser(user)
 
       await attackPikemenFrom(user, 'left')
+      await waitForBattleToEnd()
 
       expect(within(queryLevelUpDialog()).getByText('Hero is now a level 2 Knight.')).toBeTruthy()
     })

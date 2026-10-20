@@ -10,6 +10,8 @@ import {
 } from '../../../game/heroes/battlefield.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+  APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
+  APP_COMMAND_BATTLE_RETREAT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
@@ -31,7 +33,8 @@ const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-lef
 const COMMAND_BY_ACTION = {
   'auto-combat': APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   wait: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
-  defend: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED
+  defend: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
+  'close-results': APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED
 }
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
@@ -54,6 +57,8 @@ export const registerBattleViewModule = defineModule(
     let pointerType = 'mouse'
     let messageLog = null
     let isRestoring = false
+    let retreatDialog = null
+    let resultsWindow = null
 
     function cloneTemplate(id) {
       return document.getElementById(id).content.firstElementChild.cloneNode(true)
@@ -376,14 +381,100 @@ export const registerBattleViewModule = defineModule(
 
       showMessages(battle.messages)
       showActions(battle)
+      showResults(battle.results)
       describeHoveredHex()
     }
 
-    function showActions({ canWait, canDefend, autoCombat }) {
+    function showActions({ canWait, canDefend, canRetreat, autoCombat }) {
       const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
       button('wait').disabled = !canWait
       button('defend').disabled = !canDefend
+      button('retreat').disabled = !canRetreat
       button('auto-combat').setAttribute('aria-pressed', String(Boolean(autoCombat)))
+      if (!canRetreat) {
+        closeRetreatDialog()
+      }
+    }
+
+    function openRetreatDialog() {
+      if (retreatDialog || !shown?.canRetreat) {
+        return
+      }
+
+      retreatDialog = cloneTemplate('battle-retreat-template')
+      battleScreen.append(retreatDialog)
+      retreatDialog.querySelector('[data-battle-action="confirm-retreat"]').focus()
+    }
+
+    function closeRetreatDialog() {
+      retreatDialog?.remove()
+      retreatDialog = null
+    }
+
+    function fillCasualties(group, casualties) {
+      const list = group.querySelector('.battle-results__creatures')
+      if (casualties.length === 0) {
+        const none = document.createElement('p')
+        none.className = 'battle-results__none'
+        none.textContent = 'None'
+        list.replaceWith(none)
+        return
+      }
+
+      list.replaceChildren(
+        ...casualties.map(({ name, count }) => {
+          const slot = document.createElement('li')
+          slot.className = 'battle-results__creature'
+          const creature = document.createElement('div')
+          creature.className = 'battle-results__picture entity--monster'
+          creature.setAttribute('role', 'img')
+          creature.setAttribute('aria-label', name)
+          creature.title = name
+          // No creature pictures yet, so the name says which creature the stand-in is.
+          const caption = document.createElement('span')
+          caption.className = 'battle-results__name-caption'
+          caption.setAttribute('aria-hidden', 'true')
+          caption.textContent = name
+          const lost = document.createElement('span')
+          lost.className = 'battle-results__count'
+          lost.textContent = String(count)
+          slot.append(creature, caption, lost)
+          return slot
+        })
+      )
+    }
+
+    function fillSide(side, { name, outcome }) {
+      const group = resultsWindow.querySelector(`[aria-label="${side}"]`)
+      group.querySelector('.battle-results__name').textContent = name
+      group.querySelector('.battle-results__outcome').textContent = outcome
+    }
+
+    function showResults(results) {
+      if (!results || resultsWindow) {
+        return
+      }
+
+      resultsWindow = cloneTemplate('battle-results-template')
+      fillSide('Attacker', results.attacker)
+      fillSide('Defender', results.defender)
+      resultsWindow.querySelector('.battle-results__message').replaceChildren(
+        ...results.messages.map((message) => {
+          const line = document.createElement('p')
+          line.textContent = message
+          return line
+        })
+      )
+      fillCasualties(
+        resultsWindow.querySelector('[aria-label="Attacker casualties"]'),
+        results.casualties.attacker
+      )
+      fillCasualties(
+        resultsWindow.querySelector('[aria-label="Defender casualties"]'),
+        results.casualties.defender
+      )
+      battleScreen.append(resultsWindow)
+      resultsWindow.querySelector('[data-battle-action="close-results"]').focus()
     }
 
     function closeBattle() {
@@ -393,6 +484,8 @@ export const registerBattleViewModule = defineModule(
 
       battleScreen.remove()
       battleScreen = null
+      retreatDialog = null
+      resultsWindow = null
       hexes = []
       battlefield = null
       stackElements = new Map()
@@ -440,6 +533,26 @@ export const registerBattleViewModule = defineModule(
             if (COMMAND_BY_ACTION[action]) {
               event.stopPropagation()
               emit(COMMAND_BY_ACTION[action], {})
+              return
+            }
+
+            if (action === 'retreat') {
+              event.stopPropagation()
+              openRetreatDialog()
+              return
+            }
+
+            if (action === 'confirm-retreat' || action === 'cancel-retreat') {
+              event.stopPropagation()
+              closeRetreatDialog()
+              if (action === 'confirm-retreat') {
+                emit(APP_COMMAND_BATTLE_RETREAT_REQUESTED, {})
+              }
+              return
+            }
+
+            // The battlefield cannot be played behind a dialog.
+            if (retreatDialog || resultsWindow) {
               return
             }
 
@@ -509,6 +622,8 @@ export const registerBattleViewModule = defineModule(
     ],
     produces: [
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+      APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
+      APP_COMMAND_BATTLE_RETREAT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,

@@ -886,11 +886,72 @@ export async function pressKey(user, key) {
   await flushMicrotasks()
 }
 
-export async function waitForBattleToEnd() {
-  for (let attempt = 0; attempt < 200 && queryBattleScreen(); attempt += 1) {
+export function queryBattleResults() {
+  return screen.queryByRole('dialog', { name: 'Battle results' })
+}
+
+export function getBattleResults() {
+  const results = queryBattleResults()
+  expect(results).toBeTruthy()
+  return results
+}
+
+export async function waitForBattleResults() {
+  for (let attempt = 0; attempt < 200 && !queryBattleResults(); attempt += 1) {
     await flushMicrotasks()
     await waitMs()
   }
+  await flushMicrotasks()
+}
+
+// A side of the results window as it reads, e.g. ['Sir Christian', 'Victorious'].
+export function readBattleResultsSide(side) {
+  const group = within(getBattleResults()).getByRole('group', { name: side })
+  return [...group.children].map((line) => line.textContent.trim())
+}
+
+export function readBattleResultsMessage() {
+  const message = within(getBattleResults()).getByRole('group', { name: 'Battle outcome' })
+  return within(message)
+    .getAllByRole('paragraph')
+    .map((line) => line.textContent.trim())
+}
+
+// The creatures a side lost, e.g. ['Skeletons 2'], or ['None'].
+export function readBattleCasualties(side) {
+  const group = within(getBattleResults()).getByRole('group', { name: `${side} casualties` })
+  const creatures = within(group).queryAllByRole('listitem')
+  if (creatures.length === 0) {
+    return [within(group).getByRole('paragraph').textContent.trim()]
+  }
+
+  return creatures.map(
+    (slot) =>
+      `${within(slot).getByRole('img').getAttribute('aria-label')} ${slot.lastElementChild.textContent.trim()}`
+  )
+}
+
+export async function closeBattleResults(user) {
+  await user.click(within(getBattleResults()).getByRole('button', { name: 'OK' }))
+  await flushMicrotasks()
+}
+
+// Waits for the battle to be over and closes the results window, back to the adventure map.
+export async function waitForBattleToEnd() {
+  await waitForBattleResults()
+  within(getBattleResults()).getByRole('button', { name: 'OK' }).click()
+  await flushMicrotasks()
+}
+
+export function queryRetreatDialog() {
+  return screen.queryByRole('dialog', { name: 'Retreat' })
+}
+
+export async function retreat(user, { confirm = true } = {}) {
+  await clickBattleButton(user, 'Retreat')
+  await user.click(
+    within(queryRetreatDialog()).getByRole('button', { name: confirm ? 'OK' : 'Cancel' })
+  )
   await flushMicrotasks()
 }
 
