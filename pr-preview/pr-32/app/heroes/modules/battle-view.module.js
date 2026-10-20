@@ -1,9 +1,9 @@
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
+  findNearestHexSide,
   getHexDistance,
   getHexNeighbourOnSide,
-  getHexSideAt,
   hexKey,
   isSameHex
 } from '../../../game/heroes/battlefield.js'
@@ -22,6 +22,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
@@ -38,8 +39,10 @@ export const registerBattleViewModule = defineModule(
     let shown = null
     let reachableKeys = new Set()
     let hoveredHex = null
-    // Where the mouse is, so the side of a stack it points at picks where to attack from.
+    // Where the mouse or finger is, so the side of a stack it points at picks where to attack
+    // from, and whether it is a finger.
     let pointer = null
+    let pointerType = 'mouse'
     let messageLog = null
     let isRestoring = false
 
@@ -69,8 +72,10 @@ export const registerBattleViewModule = defineModule(
       return shown?.stacks.find((stack) => stack.count > 0 && isSameHex(stack.hex, hex))
     }
 
-    // The enemy stack on `hex` and the hex next to it the active stack would attack from, given
-    // the side of the hex the mouse points at; null when the active stack cannot attack it there.
+    // The enemy stack on `hex` and the hex next to it the active stack attacks from: the side
+    // nearest where the mouse points, of those it can attack from. A finger cannot point at a
+    // side before it taps, so a stack already next to the target attacks from where it stands.
+    // Null when the active stack cannot attack it.
     function findAttack(hex, hexElement) {
       const target = findLivingStackOn(hex)
       const attackTarget =
@@ -79,17 +84,27 @@ export const registerBattleViewModule = defineModule(
         return null
       }
 
-      const box = hexElement.getBoundingClientRect()
-      const side = getHexSideAt({
-        x: pointer.x - (box.left + box.width / 2),
-        y: pointer.y - (box.top + box.height / 2)
-      })
-      const fromHex = getHexNeighbourOnSide(hex, side)
-      if (!fromHex || !attackTarget.fromHexes.some((option) => isSameHex(option, fromHex))) {
-        return null
+      const activeStack = shown.stacks.find(({ id }) => id === shown.activeStackId)
+      const canAttackFrom = (fromHex) =>
+        attackTarget.fromHexes.some((option) => isSameHex(option, fromHex))
+      if (pointerType === 'touch' && canAttackFrom(activeStack.hex)) {
+        return { target, fromHex: activeStack.hex, damage: attackTarget.damage }
       }
 
-      return { target, fromHex, damage: attackTarget.damage }
+      const box = hexElement.getBoundingClientRect()
+      const sides = HEX_SIDES.filter((side) => {
+        const neighbour = getHexNeighbourOnSide(hex, side)
+        return neighbour && canAttackFrom(neighbour)
+      })
+      const side = findNearestHexSide({
+        point: {
+          x: pointer.x - (box.left + box.width / 2),
+          y: pointer.y - (box.top + box.height / 2)
+        },
+        hexSize: { width: box.width, height: box.height },
+        sides
+      })
+      return { target, fromHex: getHexNeighbourOnSide(hex, side), damage: attackTarget.damage }
     }
 
     function isReachable(hex) {
@@ -323,6 +338,13 @@ export const registerBattleViewModule = defineModule(
                 fromHex: attack.fromHex
               })
             }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'pointerdown',
+          handler: (event) => {
+            pointerType = event.pointerType || 'mouse'
           }
         },
         ...['mouseover', 'mousemove'].map((type) => ({
