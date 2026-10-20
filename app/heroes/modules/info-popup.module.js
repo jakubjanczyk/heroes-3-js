@@ -4,9 +4,11 @@ import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
 import {
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
+  APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
   APP_UI_TILE_INFO_REQUESTED
@@ -136,6 +138,18 @@ export const registerInfoPopupModule = defineModule(
           }
         },
         {
+          type: APP_FACT_HERO_ARMY_CHANGED,
+          handler: (event) => {
+            mapObjects.onHeroArmyChanged(event.detail.army)
+          }
+        },
+        {
+          type: APP_FACT_MONSTER_COUNT_CHANGED,
+          handler: (event) => {
+            mapObjects.onMonsterCountChanged(event.detail.entityId, event.detail.count)
+          }
+        },
+        {
           type: APP_FACT_MINE_CAPTURED,
           handler: (event) => {
             ownedMineIds.add(event.detail.entityId)
@@ -168,6 +182,8 @@ export const registerInfoPopupModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_MOVED,
       APP_FACT_ENTITY_REMOVED,
+      APP_FACT_MONSTER_COUNT_CHANGED,
+      APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_HERO_LEVELED_UP,
       APP_UI_TILE_INFO_REQUESTED,

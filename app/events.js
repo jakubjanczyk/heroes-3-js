@@ -32,6 +32,7 @@ export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
 export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
+export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
@@ -39,6 +40,7 @@ export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
+export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -74,12 +76,14 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
-  APP_FACT_HERO_LEVELED_UP
+  APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_HERO_ARMY_CHANGED
 ])
 
 export function shouldPersistFactEvent(type) {

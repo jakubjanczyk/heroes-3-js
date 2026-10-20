@@ -3,6 +3,7 @@ import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
+  APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
@@ -120,6 +121,13 @@ export const registerHeroPanelModule = defineModule(
           }
         },
         {
+          type: APP_FACT_HERO_ARMY_CHANGED,
+          handler: (event) => {
+            hero = { ...hero, army: event.detail.army }
+            renderInfoBox()
+          }
+        },
+        {
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
             heroTile = event.detail.to
@@ -142,7 +150,8 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_MOVED,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
-      APP_FACT_HERO_LEVELED_UP
+      APP_FACT_HERO_LEVELED_UP,
+      APP_FACT_HERO_ARMY_CHANGED
     ],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE]
   }

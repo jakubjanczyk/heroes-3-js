@@ -119,7 +119,7 @@ function canStandFor(battle, stack) {
     )
 }
 
-function getFrontHexReach(battle, stack) {
+export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
     speed: stack.speed,
@@ -203,6 +203,49 @@ function getHexesNextTo(target) {
   return [...next.values()]
 }
 
+// However many turns it takes; null when the stack cannot get there.
+function findWayToFront(battle, stack, front) {
+  if (isSameHex(stack.hex, front)) {
+    return { way: [], distance: 0 }
+  }
+
+  const isFree = canStandFor(battle, stack)
+  if (!isFree(front)) {
+    return null
+  }
+
+  if (stack.flying) {
+    return { way: [front], distance: getHexDistance(stack.hex, front) }
+  }
+
+  const way = findHexPath({ from: stack.hex, to: front, isFree })
+  return way && { way, distance: way.length }
+}
+
+// Every hex next to a living enemy the stack can get to, in army slot order, which settles ties.
+export function getApproaches(battle, stack) {
+  return livingStacks(battle)
+    .filter((target) => target.side !== stack.side)
+    .flatMap((target) =>
+      getHexesNextTo(target).flatMap((fromHex) => {
+        if (coversHex(stack, fromHex)) {
+          return [{ targetId: target.id, fromHex, way: [], distance: 0 }]
+        }
+
+        const fronts = stack.doubleWide
+          ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
+          : [fromHex]
+        const ways = fronts.map((front) => findWayToFront(battle, stack, front)).filter(Boolean)
+        if (ways.length === 0) {
+          return []
+        }
+
+        const nearest = ways.reduce((best, way) => (way.distance < best.distance ? way : best))
+        return [{ targetId: target.id, fromHex, ...nearest }]
+      })
+    )
+}
+
 export function getAttackTargets(battle, stack) {
   return livingStacks(battle)
     .filter((target) => target.side !== stack.side)
@@ -277,6 +320,13 @@ export function attackStack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
   const struck = strikes.reduce((current, strike) => applyStrike(current, strike, targetId), moved)
   return endTurn(struck, stackId)
+}
+
+export function getHeroArmyAfterBattle(battle, heroArmy) {
+  return heroArmy.map((slot, index) => {
+    const stack = battle.stacks.find(({ id }) => id === `attacker-${index}`)
+    return slot && stack?.count > 0 ? { creature: stack.creature, count: stack.count } : null
+  })
 }
 
 // The hero earns the health of every enemy creature killed.
