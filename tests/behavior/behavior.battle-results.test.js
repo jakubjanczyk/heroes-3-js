@@ -11,8 +11,7 @@ import {
   readArmySlots,
   readBattleStacks,
   readGameData,
-  setupMovementBehaviorApp,
-  winBattle
+  setupMovementBehaviorApp
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -96,17 +95,5 @@ describe('battle results behavior', () => {
 
     const heroStacks = readBattleStacks().filter(({ column }) => column === 1)
     expect(heroStacks.map(({ stack }) => stack)).toEqual(['Angels 2', 'Skeletons 8'])
-  })
-
-  test('given Auto combat wins the battle then the army keeps all its creatures', async () => {
-    const { user } = await startBattle(aFight())
-
-    await winBattle(user)
-
-    expect(readArmySlots(getHeroInfoBox()).slice(0, 3)).toEqual([
-      'Angels 2',
-      'Skeletons 10',
-      'Skeleton 1'
-    ])
   })
 })

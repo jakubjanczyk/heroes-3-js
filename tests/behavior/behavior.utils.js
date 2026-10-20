@@ -857,8 +857,37 @@ export async function attackMonsterAt(x, y) {
   await flushMicrotasks()
 }
 
-// Auto Combat stands in for the whole battle until stacks can act: the hero wins.
-export async function winBattle(user) {
-  await user.click(within(getBattleScreen()).getByRole('button', { name: 'Auto combat' }))
+export function getBattleButton(name) {
+  return within(getBattleScreen()).getByRole('button', { name })
+}
+
+// Wait, Defend, Auto combat...: lets the stacks the computer plays take their turns after it.
+export async function clickBattleButton(user, name) {
+  await user.click(getBattleButton(name))
   await flushMicrotasks()
+  await waitMs()
+  await flushMicrotasks()
+}
+
+export async function pressKey(user, key) {
+  await user.keyboard(key)
+  await flushMicrotasks()
+  await waitMs()
+  await flushMicrotasks()
+}
+
+// Lets the computer play the stacks until the battle screen closes.
+export async function waitForBattleToEnd() {
+  for (let attempt = 0; attempt < 200 && queryBattleScreen(); attempt += 1) {
+    await flushMicrotasks()
+    await waitMs()
+  }
+  await flushMicrotasks()
+}
+
+// Auto combat plays the battle out; the hero wins with an army that beats the monster, such as
+// `ARMY_THAT_WINS` against monsters of the game's data.
+export async function winBattle(user) {
+  await user.click(getBattleButton('Auto combat'))
+  await waitForBattleToEnd()
 }

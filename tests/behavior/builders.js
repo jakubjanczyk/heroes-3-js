@@ -30,6 +30,9 @@ export const aHero = () =>
     })
   )
 
+// With the game's creature data, ten Angels beat the monsters tests fight, often in one strike.
+export const ARMY_THAT_WINS = [{ creature: 'ANGEL', count: 10 }]
+
 export const aMonster = () =>
   builder(
     { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', count: 10, tile: { x: 1, y: 0 } },

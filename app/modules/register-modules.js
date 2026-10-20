@@ -2,6 +2,7 @@ import { registerCameraModule } from './camera.module.js'
 import { registerEntityViewModule } from './entity-view.module.js'
 import { registerInteractionModule } from './interaction.module.js'
 import { registerInteractionModalModule } from './interaction-modal.module.js'
+import { registerKeyboardShortcutsModule } from './keyboard-shortcuts.module.js'
 import { registerMovementModule } from './movement.module.js'
 import { registerPreviewViewModule } from './preview-view.module.js'
 import { registerSelectionModule } from './selection.module.js'
@@ -24,7 +25,8 @@ const CORE_MODULES = [
   registerEntityViewModule,
   registerPreviewViewModule,
   registerWorldViewModule,
-  registerInteractionModalModule
+  registerInteractionModalModule,
+  registerKeyboardShortcutsModule
 ]
 
 function getModuleId(meta, index) {
