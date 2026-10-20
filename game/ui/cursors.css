@@ -112,3 +112,62 @@ body {
     url("../../assets/cursors/scroll-nw.png") 0 0,
     move;
 }
+
+/* In battle: what clicking the hex under the mouse would do, the arrow while a stack moves. */
+.battle-hero {
+  cursor:
+    url("../../assets/cursors/hero.png") 16 16,
+    pointer;
+}
+.battlefield[data-cursor="walk"] {
+  cursor:
+    url("../../assets/cursors/battle-walk.png") 16 16,
+    pointer;
+}
+.battlefield[data-cursor="fly"] {
+  cursor:
+    url("../../assets/cursors/battle-fly.png") 16 16,
+    pointer;
+}
+.battlefield[data-cursor="blocked"] {
+  cursor:
+    url("../../assets/cursors/battle-blocked.png") 16 16,
+    not-allowed;
+}
+.battlefield[data-cursor="query"] {
+  cursor:
+    url("../../assets/cursors/battle-query.png") 16 16,
+    help;
+}
+
+/* The sword's tip, its hotspot, points into the enemy's hex from the side the stack attacks from. */
+.battlefield[data-cursor="attack-from-left"] {
+  cursor:
+    url("../../assets/cursors/battle-attack-from-left.png") 31 16,
+    crosshair;
+}
+.battlefield[data-cursor="attack-from-right"] {
+  cursor:
+    url("../../assets/cursors/battle-attack-from-right.png") 0 16,
+    crosshair;
+}
+.battlefield[data-cursor="attack-from-top-left"] {
+  cursor:
+    url("../../assets/cursors/battle-attack-from-top-left.png") 31 31,
+    crosshair;
+}
+.battlefield[data-cursor="attack-from-top-right"] {
+  cursor:
+    url("../../assets/cursors/battle-attack-from-top-right.png") 0 31,
+    crosshair;
+}
+.battlefield[data-cursor="attack-from-bottom-left"] {
+  cursor:
+    url("../../assets/cursors/battle-attack-from-bottom-left.png") 31 0,
+    crosshair;
+}
+.battlefield[data-cursor="attack-from-bottom-right"] {
+  cursor:
+    url("../../assets/cursors/battle-attack-from-bottom-right.png") 0 0,
+    crosshair;
+}

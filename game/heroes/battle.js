@@ -1,10 +1,15 @@
 import { getDamageRange, strikeSequence, takeDamage } from './battle-damage.js'
 import {
   findHexPath,
+  getFrontHexFor,
   getHexDistance,
   getHexNeighbours,
+  getOccupiedHexes,
   getReachableHexes,
   getStartHexes,
+  hexKey,
+  isOnBattlefield,
+  isOnBattlefieldOrEdge,
   isSameHex
 } from './battlefield.js'
 import { describeStack } from './hero-army.js'
@@ -32,6 +37,7 @@ function createStacks({ side, army, skills, definitions }) {
       initialCount: count,
       speed: definition?.speed ?? 0,
       flying: abilities.includes('flying'),
+      doubleWide: abilities.includes('doubleWide'),
       attack: (definition?.attack ?? 0) + (skills?.attack ?? 0),
       defense: (definition?.defense ?? 0) + (skills?.defense ?? 0),
       damage: definition?.damage ?? { min: 1, max: 1 },
@@ -45,11 +51,11 @@ function createStacks({ side, army, skills, definitions }) {
   })
 }
 
-export function createBattle({ heroArmy, heroSkills, monster, definitions }) {
+export function createBattle({ heroArmy, heroSkills, monsterArmy, definitions }) {
   return {
     stacks: [
       ...createStacks({ side: 'attacker', army: heroArmy ?? [], skills: heroSkills, definitions }),
-      ...createStacks({ side: 'defender', army: [monster], definitions })
+      ...createStacks({ side: 'defender', army: monsterArmy, definitions })
     ],
     actedStackIds: [],
     messages: [],
@@ -97,36 +103,104 @@ export function moveStack(battle, stackId, hex) {
   }
 }
 
-// Corpses lie on the ground: other stacks walk over them and stand on them.
-function isFreeFor(battle) {
-  return (hex) => !livingStacks(battle).some((stack) => isSameHex(stack.hex, hex))
+export function getStackHexes(stack, hex = stack.hex) {
+  return getOccupiedHexes({ hex, doubleWide: stack.doubleWide, side: stack.side })
 }
 
-export function getStackReach(battle, stack) {
+const coversHex = (stack, hex) => getStackHexes(stack).some((own) => isSameHex(own, hex))
+
+// Corpses lie on the ground: other stacks walk over them and stand on them.
+function canStandFor(battle, stack) {
+  const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
+  return (hex) =>
+    isOnBattlefield(hex) &&
+    getStackHexes(stack, hex).every(
+      (part) => isOnBattlefieldOrEdge(part) && !others.some((other) => coversHex(other, part))
+    )
+}
+
+function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
     speed: stack.speed,
     flying: stack.flying,
-    isFree: isFreeFor(battle)
+    isFree: canStandFor(battle, stack)
   })
 }
 
-// The hexes the stack goes through to get to `hex`, or null when it cannot get there this turn.
-export function planStackMove(battle, stack, hex) {
-  const isFree = isFreeFor(battle)
-  if (!isFree(hex)) {
+// A double-wide creature's back halves included, as the game shades them.
+export function getStackReach(battle, stack) {
+  const reach = new Map()
+  for (const front of getFrontHexReach(battle, stack)) {
+    for (const hex of getStackHexes(stack, front)) {
+      if (isOnBattlefield(hex) && !coversHex(stack, hex)) {
+        reach.set(hexKey(hex), hex)
+      }
+    }
+  }
+  return [...reach.values()]
+}
+
+function planPathToFront(battle, stack, front) {
+  if (isSameHex(stack.hex, front)) {
+    return []
+  }
+
+  const isFree = canStandFor(battle, stack)
+  if (!isFree(front)) {
     return null
   }
 
   if (stack.flying) {
-    return getHexDistance(stack.hex, hex) <= stack.speed ? [hex] : null
+    return getHexDistance(stack.hex, front) <= stack.speed ? [front] : null
   }
 
-  return findHexPath({ from: stack.hex, to: hex, isFree, maxSteps: stack.speed })
+  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: stack.speed })
 }
 
-function planPathTo(battle, stack, hex) {
-  return isSameHex(stack.hex, hex) ? [] : planStackMove(battle, stack, hex)
+// The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
+// puts its back half there instead (VCMI `BattleActionsController`).
+export function planStackMove(battle, stack, hex) {
+  if (coversHex(stack, hex)) {
+    return null
+  }
+
+  const path = planPathToFront(battle, stack, hex)
+  if (path || !stack.doubleWide) {
+    return path
+  }
+
+  return planPathToFront(battle, stack, getFrontHexFor({ hex, side: stack.side }))
+}
+
+// Stays when already on `fromHex`, else the front half goes there, else the back half (VCMI
+// `Unit::getAttackableHexes`).
+function planAttackPosition(battle, stack, fromHex) {
+  if (coversHex(stack, fromHex)) {
+    return []
+  }
+
+  const fronts = stack.doubleWide
+    ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
+    : [fromHex]
+  for (const front of fronts) {
+    const path = planPathToFront(battle, stack, front)
+    if (path) {
+      return path
+    }
+  }
+  return null
+}
+
+function getHexesNextTo(target) {
+  const own = getStackHexes(target)
+  const next = new Map()
+  for (const hex of own.flatMap((part) => getHexNeighbours(part, { withEdges: true }))) {
+    if (!own.some((part) => isSameHex(part, hex))) {
+      next.set(hexKey(hex), hex)
+    }
+  }
+  return [...next.values()]
 }
 
 export function getAttackTargets(battle, stack) {
@@ -134,19 +208,22 @@ export function getAttackTargets(battle, stack) {
     .filter((target) => target.side !== stack.side)
     .map((target) => ({
       stackId: target.id,
-      fromHexes: getHexNeighbours(target.hex).filter((hex) => planPathTo(battle, stack, hex)),
+      fromHexes: getHexesNextTo(target).filter((hex) => planAttackPosition(battle, stack, hex)),
       damage: getDamageRange({ attacker: stack, defender: target })
     }))
     .filter(({ fromHexes }) => fromHexes.length > 0)
 }
 
-// The way to `fromHex` and every strike with its rolled damage, or null when the stack cannot
-// attack the target from there.
+// The way there and every strike with its rolled damage, or null when the stack cannot attack
+// the target from `fromHex`.
 export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
   const target = livingStacks(battle).find(({ id }) => id === targetId)
   const isNextToTarget =
-    target && fromHex && target.side !== stack.side && getHexDistance(target.hex, fromHex) === 1
-  const path = isNextToTarget ? planPathTo(battle, stack, fromHex) : null
+    target &&
+    fromHex &&
+    target.side !== stack.side &&
+    getHexesNextTo(target).some((hex) => isSameHex(hex, fromHex))
+  const path = isNextToTarget ? planAttackPosition(battle, stack, fromHex) : null
   if (!path) {
     return null
   }

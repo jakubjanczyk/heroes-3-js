@@ -347,7 +347,7 @@ See `docs/notes/2026-10-19-creature-database.md`.
 - [ ] Weak monsters may offer to flee or join hero's army
 
 ### 5.3 Combat Grid & Layout
-See `docs/notes/2026-10-20-battle-screen.md`.
+See `docs/notes/2026-10-20-battle-screen.md` and `docs/notes/2026-10-20-monster-stacks-double-wide-and-battle-cursors.md`.
 - [x] Combat takes place on a separate screen (hexagonal grid)
 - [x] Grid size: 15 columns x 11 rows of hexagonal cells
 - [x] Attacker units placed on left side, defender on right, in the Heroes 3 start formation
@@ -355,7 +355,9 @@ See `docs/notes/2026-10-20-battle-screen.md`.
 - [x] Attacking hero shown in the top-left corner (a placeholder figure)
 - [x] Combat bar as in H3: System options, Surrender, Retreat, Auto combat, message log, Cast spell, Wait, Defend, and the status bar (only Auto combat works yet)
 - [x] A battle open at reload is shown again
-- [ ] A neutral monster splits into several stacks, as in H3 (one stack for now)
+- [x] A neutral monster splits into several stacks, as in H3: more the weaker the hero's army, one more or fewer by the monster's tile; a scenario may set the number
+- [ ] A split monster's middle stack is sometimes the upgraded creature, as in H3
+- [ ] Clicking your own stack shows its creature's details and clicking the hero the hero's (the ? and helmet cursors already show over them)
 - [ ] Creature pictures on the battlefield (placeholders for now)
 - [ ] Obstacles on combat grid (random placement or scenario-defined)
 - [ ] Grid cells: passable, obstacle, wall (siege)
@@ -378,11 +380,11 @@ See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
 - [x] Pathfinding on hex grid (around other stacks; obstacles when there are some)
 - [x] Movement range highlighted (reachable hexes)
 - [x] Flying creatures ignore ground obstacles, can move to any hex in range
-- [ ] Double-wide creatures (e.g. Cavalier) occupy 2 hexes
+- [x] Double-wide creatures (e.g. Cavalier) occupy 2 hexes, the back half behind them; edge columns past each side take only back halves
 - [x] Click to move stack to hex
 - [x] Movement animation (stack slides across hexes)
 - [x] Status bar over a reachable hex: "Move Skeletons here" / "Fly Angels here"
-- [ ] Battle cursors as in H3: walk, fly, forbidden
+- [x] Battle cursors as in H3: walk, fly, blocked, the sword from the side attacked from, ? over your own stacks, the helmet over the hero, the arrow while a stack moves
 
 ### 5.6 Combat Attacks
 See `docs/notes/2026-10-20-battle-attacks.md`.

@@ -6,6 +6,7 @@ import {
   getActiveStack,
   getAttackTargets,
   getExperienceForWin,
+  getStackHexes,
   getStackReach,
   hasLivingStacks,
   moveStack,
@@ -13,6 +14,7 @@ import {
   planStackMove
 } from '../../../game/heroes/battle.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
+import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
@@ -36,6 +38,8 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 
+const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
+
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
@@ -58,10 +62,13 @@ export const registerBattleModule = defineModule(
       if (moving) {
         emit(APP_UI_BATTLE_UPDATED, {
           tile: started.tile,
-          stacks: moving.battle.stacks.map((stack) =>
-            stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+          stacks: withHexes(
+            moving.battle.stacks.map((stack) =>
+              stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+            )
           ),
           activeStackId: moving.stackId,
+          moving: true,
           reachableHexes: [],
           attackTargets: [],
           messages: moving.battle.messages,
@@ -73,7 +80,7 @@ export const registerBattleModule = defineModule(
       const activeStack = getActiveStack(battle)
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
-        stacks: battle.stacks,
+        stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
         attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],
@@ -198,7 +205,16 @@ export const registerBattleModule = defineModule(
             battle = createBattle({
               heroArmy: hero?.army,
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
-              monster: { creature: started.entityType, count: started.count },
+              monsterArmy: splitMonster({
+                monster: {
+                  creature: started.entityType,
+                  count: started.count,
+                  stacks: started.stacks
+                },
+                heroArmy: hero?.army,
+                tile: started.tile,
+                definitions
+              }),
               definitions
             })
             showBattle()

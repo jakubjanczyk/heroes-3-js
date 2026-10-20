@@ -33,7 +33,13 @@ export const aHero = () =>
 export const aMonster = () =>
   builder(
     { id: 'monster-1', kind: 'MONSTER', type: 'SKELETON', count: 10, tile: { x: 1, y: 0 } },
-    placeable
+    (monster) => ({
+      ...placeable(monster),
+      // The number of stacks it splits into in battle, as a Heroes 3 map may set it.
+      withStacks(stacks) {
+        monster.stacks = stacks
+      }
+    })
   )
 
 export const aResource = () =>
