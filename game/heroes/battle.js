@@ -103,15 +103,13 @@ export function moveStack(battle, stackId, hex) {
   }
 }
 
-// The hexes a stack stands on: one, or two for a double-wide creature.
 export function getStackHexes(stack, hex = stack.hex) {
   return getOccupiedHexes({ hex, doubleWide: stack.doubleWide, side: stack.side })
 }
 
 const coversHex = (stack, hex) => getStackHexes(stack).some((own) => isSameHex(own, hex))
 
-// Whether the stack's front half can stand on `hex`, with its back half too. Corpses lie on the
-// ground: other stacks walk over them and stand on them.
+// Corpses lie on the ground: other stacks walk over them and stand on them.
 function canStandFor(battle, stack) {
   const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
   return (hex) =>
@@ -130,8 +128,7 @@ function getFrontHexReach(battle, stack) {
   })
 }
 
-// The hexes the stack can move onto: a double-wide creature's back half included, as the game
-// shades them.
+// A double-wide creature's back halves included, as the game shades them.
 export function getStackReach(battle, stack) {
   const reach = new Map()
   for (const front of getFrontHexReach(battle, stack)) {
@@ -161,9 +158,8 @@ function planPathToFront(battle, stack, front) {
   return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: stack.speed })
 }
 
-// The hexes the stack's front half goes through to get onto `hex`, or null when it cannot get
-// there this turn. A double-wide creature that cannot stand on `hex` puts its back half there
-// when it can (VCMI `BattleActionsController`, moving a stack).
+// The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
+// puts its back half there instead (VCMI `BattleActionsController`).
 export function planStackMove(battle, stack, hex) {
   if (coversHex(stack, hex)) {
     return null
@@ -177,8 +173,7 @@ export function planStackMove(battle, stack, hex) {
   return planPathToFront(battle, stack, getFrontHexFor({ hex, side: stack.side }))
 }
 
-// How the stack gets next to its target with a half of it on `fromHex`: it stays when it is
-// already there, else the front half goes there, else the back half (VCMI
+// Stays when already on `fromHex`, else the front half goes there, else the back half (VCMI
 // `Unit::getAttackableHexes`).
 function planAttackPosition(battle, stack, fromHex) {
   if (coversHex(stack, fromHex)) {
@@ -197,7 +192,6 @@ function planAttackPosition(battle, stack, fromHex) {
   return null
 }
 
-// The hexes next to the target, either half of it, that are not part of it.
 function getHexesNextTo(target) {
   const own = getStackHexes(target)
   const next = new Map()
@@ -221,7 +215,7 @@ export function getAttackTargets(battle, stack) {
 }
 
 // The way there and every strike with its rolled damage, or null when the stack cannot attack
-// the target with a half of it on `fromHex`.
+// the target from `fromHex`.
 export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
   const target = livingStacks(battle).find(({ id }) => id === targetId)
   const isNextToTarget =

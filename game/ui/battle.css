@@ -129,7 +129,6 @@
   }
 }
 
-/* Only the back half of a double-wide creature stands in the edge columns: they are not drawn. */
 .battlefield__hex--edge {
   background: none;
 }
@@ -150,7 +149,6 @@
   inset-inline-end: -100%;
 }
 
-/* Marks the hex behind a double-wide creature for screen readers; the creature is drawn over it. */
 .battle-stack__back-half {
   position: absolute;
   inset: 0;

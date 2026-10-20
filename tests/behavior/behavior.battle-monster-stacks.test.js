@@ -66,15 +66,12 @@ async function startBattle(scenario, { eventLog, envWindow } = {}) {
   return app
 }
 
-// The monster's stacks stand in the last column, top to bottom.
 const readMonsterStacks = () => readBattleStacks().filter(({ column }) => column === 15)
 
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 describe('battle monster stacks behavior', () => {
   describe('splitting', () => {
-    // Under half as strong: 7 stacks; under 2/3: 6; under as strong: 5; under 1.5 times: 4;
-    // under twice: 3; else 2.
     test.each([
       [0.45, 7, 6],
       [0.6, 6, 8],
@@ -154,7 +151,6 @@ describe('battle monster stacks behavior', () => {
     const aFightOfTwoAngelsAndTwoStacks = (overrides = {}) =>
       aFight({ army: [stack('ANGEL', 2)], stacks: 2, ...overrides })
 
-    // Within a flight of both monster stacks.
     async function flyAngelsCloser(user) {
       await moveActiveStackTo(user, 4, 12)
     }

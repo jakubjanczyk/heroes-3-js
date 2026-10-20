@@ -44,7 +44,6 @@ async function startBattle(scenario, { eventLog } = {}) {
   return app
 }
 
-// Columns 0 and 16 are the edge columns past each side of the battlefield.
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 describe('battle double-wide creatures behavior', () => {

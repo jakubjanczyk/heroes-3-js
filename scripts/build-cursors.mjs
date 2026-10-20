@@ -206,8 +206,7 @@ const BATTLE_FLY_ROWS = [
   '................'
 ]
 
-// In battle, over one of the player's own stacks: a question mark (clicking will show the
-// creature's details once there is a window for them).
+// In battle, over one of the player's own stacks: a question mark.
 const BATTLE_QUERY_ROWS = [
   '................',
   '....kkkkkkk.....',
@@ -227,8 +226,8 @@ const BATTLE_QUERY_ROWS = [
   '.......kkk......'
 ]
 
-// In battle, over a sword attack: a sword pointing at the enemy from the side the stack attacks
-// from, its tip the hotspot. Drawn pointing right, from the left side.
+// In battle, over an enemy the stack can attack: a sword pointing in from the side it attacks
+// from. Drawn pointing right, from the left side.
 const BATTLE_ATTACK_FROM_LEFT_ROWS = [
   '................',
   '................',
@@ -248,8 +247,7 @@ const BATTLE_ATTACK_FROM_LEFT_ROWS = [
   '................'
 ]
 
-// The same sword pointing down and right, from the top left side: drawn pixel by pixel from the
-// pommel to the tip, then outlined.
+// The same sword pointing down and right, from the top left side, then outlined.
 function drawDiagonalSword() {
   const pixels = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill('.'))
   for (let i = 0; i <= 3; i += 1) {

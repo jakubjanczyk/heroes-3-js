@@ -703,7 +703,6 @@ function describeBattleStack(creature) {
   return `${creature.getAttribute('aria-label')} ${creature.parentElement.textContent.trim()}`.trim()
 }
 
-// The edge column on the attacker's side is the grid's first column.
 function readHexPosition(hex) {
   return {
     row: Number(hex.closest('[role="row"]').getAttribute('aria-rowindex')),

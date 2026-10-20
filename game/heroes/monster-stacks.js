@@ -3,7 +3,6 @@ import { ARMY_SLOT_COUNT } from './hero-army.js'
 // A neutral monster splits into several stacks in battle, as in Heroes 3 (VCMI
 // `CGCreature::fight` and `getNumberOfStacks`, from the Heroes Community research).
 
-// An army's strength: each creature's AI value times its count.
 export function getArmyStrength(army, definitions) {
   return army
     .filter(Boolean)
@@ -24,8 +23,6 @@ function hashTile({ x, y, z = 0 }) {
   return (mixed >>> 16) & 0x7fff
 }
 
-// The weaker the hero's army against the monster, the more stacks; some tiles make one fewer or
-// one more.
 function countStacksByStrength({ heroStrength, monsterStrength, tile }) {
   const ratio = monsterStrength > 0 ? heroStrength / monsterStrength : Number.POSITIVE_INFINITY
   let stacks = 2
@@ -49,8 +46,7 @@ function countStacksByStrength({ heroStrength, monsterStrength, tile }) {
   return roll >= 80 ? stacks + 1 : stacks
 }
 
-// `monster.stacks` is the number a map sets; otherwise it comes from the armies' strength.
-// The creatures are shared out evenly, the first stacks taking one more when they don't divide.
+// `monster.stacks` is the number a map sets.
 export function splitMonster({ monster, heroArmy, tile, definitions }) {
   const { creature, count } = monster
   const wanted =

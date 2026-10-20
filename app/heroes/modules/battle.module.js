@@ -38,7 +38,6 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 
-// Every stack with the hexes it stands on: two for a double-wide creature.
 const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
 
 const sleep = (ms) =>
