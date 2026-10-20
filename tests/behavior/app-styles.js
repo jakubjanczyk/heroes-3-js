@@ -10,6 +10,9 @@ import nesting from 'postcss-nesting'
 const STYLES_PATH = join(import.meta.dirname, '../../styles.css')
 const STYLE_ELEMENT_ID = 'app-styles'
 
+// What browsers set that jsdom does not: Chrome's own stylesheet gives buttons the system arrow.
+const BROWSER_DEFAULTS_CSS = 'button { cursor: default; }'
+
 let appCssPromise = null
 
 // jsdom ignores @layer and nesting and does not resolve var(), so the real stylesheet is
@@ -34,6 +37,6 @@ export async function loadAppStyles() {
 
   const style = document.createElement('style')
   style.id = STYLE_ELEMENT_ID
-  style.textContent = await getAppCss()
+  style.textContent = `${BROWSER_DEFAULTS_CSS}\n${await getAppCss()}`
   document.head.appendChild(style)
 }

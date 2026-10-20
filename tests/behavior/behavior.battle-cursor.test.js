@@ -9,6 +9,7 @@ import {
   clickBattleHex,
   flushMicrotasks,
   getBattleHex,
+  getBattleResults,
   getBattleScreen,
   getCursorOver,
   hoverBattleHex,
@@ -16,6 +17,7 @@ import {
   pointAtBattleHexSide,
   readGameData,
   setupMovementBehaviorApp,
+  waitForBattleResults,
   waitMs
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -204,5 +206,16 @@ describe('battle cursor behavior', () => {
     await moveActiveStackTo(user, 6, 8)
 
     expect(cursorOverHex(6, 8)).toBe('battle-query')
+  })
+
+  test('given the battle results window is open when the mouse is over OK then the cursor is the arrow', async () => {
+    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 10)], monsterCount: 1 }))
+    await clickBattleButton(user, 'Auto combat')
+    await waitForBattleResults()
+    const ok = within(getBattleResults()).getByRole('button', { name: 'OK' })
+
+    await user.hover(ok)
+
+    expect(getCursorOver(ok)).toBe('arrow')
   })
 })
