@@ -13,6 +13,7 @@ export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requeste
 export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experience.gain.requested'
 export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoCombat.requested'
 export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove.requested'
+export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -28,6 +29,7 @@ export const APP_FACT_TURN_ENDED = 'fact.turn.ended'
 export const APP_FACT_BATTLE_STARTED = 'fact.battle.started'
 export const APP_FACT_BATTLE_ENDED = 'fact.battle.ended'
 export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
+export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
@@ -69,6 +71,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_BATTLE_STACK_MOVED,
+  APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
