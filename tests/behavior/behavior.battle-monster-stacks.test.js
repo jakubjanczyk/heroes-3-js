@@ -151,8 +151,15 @@ describe('battle monster stacks behavior', () => {
     const aFightOfTwoAngelsAndTwoStacks = (overrides = {}) =>
       aFight({ army: [stack('ANGEL', 2)], stacks: 2, ...overrides })
 
-    async function flyAngelsCloser(user) {
-      await moveActiveStackTo(user, 4, 12)
+    // The Angels stay out of reach; both stacks of Pikemen walk 4 hexes along their rows, to
+    // column 11.
+    async function waitForThePikemen(user) {
+      await moveActiveStackTo(user, 6, 2)
+    }
+
+    // The Pikemen on row 9 then walk 4 hexes toward the Angels, to row 5, column 10.
+    async function attackThePikemenOnRow3(user) {
+      await attackBattleHexFrom(user, 3, 11, 'left')
     }
 
     test('given the monster splits then each stack strikes back on its own', async () => {
@@ -163,14 +170,14 @@ describe('battle monster stacks behavior', () => {
           stacks: 2
         })
       )
-      await moveActiveStackTo(user, 3, 13)
-      await moveActiveStackTo(user, 9, 13)
-      await attackBattleHexFrom(user, 3, 15, 'left')
+      await moveActiveStackTo(user, 3, 2)
+      await moveActiveStackTo(user, 9, 2)
+      await attackBattleHexFrom(user, 3, 11, 'left')
 
-      await attackBattleHexFrom(user, 9, 15, 'left')
+      await attackBattleHexFrom(user, 9, 11, 'left')
 
       // 50 Pikemen deal 50, -40% for 4 Attack against 20 Defense.
-      expect(readCombatMessages()).toEqual([
+      expect(readCombatMessages().slice(0, 4)).toEqual([
         'The Angel does 87 damage. 8 Pikemen perish.',
         'The Pikemen do 25 damage.',
         'The Angel does 87 damage. 8 Pikemen perish.',
@@ -180,22 +187,21 @@ describe('battle monster stacks behavior', () => {
 
     test('given one monster stack dies while another still has creatures then the battle goes on', async () => {
       const { user } = await startBattle(aFightOfTwoAngelsAndTwoStacks())
-      await flyAngelsCloser(user)
+      await waitForThePikemen(user)
 
-      await attackBattleHexFrom(user, 3, 15, 'left')
+      await attackThePikemenOnRow3(user)
 
-      expect(readMonsterStacks()).toEqual([
-        stackAt('Dead Pikemen', 3, 15),
-        stackAt('Pikemen 5', 9, 15)
-      ])
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([stackAt('Dead Pikemen', 3, 11), stackAt('Pikemen 5', 5, 10)])
+      )
     })
 
     test('given the last monster stack dies then the battle ends and the monster is gone', async () => {
       const { user } = await startBattle(aFightOfTwoAngelsAndTwoStacks())
-      await flyAngelsCloser(user)
-      await attackBattleHexFrom(user, 3, 15, 'left')
+      await waitForThePikemen(user)
+      await attackThePikemenOnRow3(user)
 
-      await attackBattleHexFrom(user, 9, 15, 'left')
+      await attackBattleHexFrom(user, 5, 10, 'left')
 
       expect(queryBattleScreen()).toBeNull()
       expectMonsterNotPresent('monster-1')
@@ -210,10 +216,10 @@ describe('battle monster stacks behavior', () => {
           heroClasses: readGameData('hero-classes.json')
         })
       )
-      await flyAngelsCloser(user)
-      await attackBattleHexFrom(user, 3, 15, 'left')
+      await waitForThePikemen(user)
+      await attackThePikemenOnRow3(user)
 
-      await attackBattleHexFrom(user, 9, 15, 'left')
+      await attackBattleHexFrom(user, 5, 10, 'left')
 
       const levelUp = screen.getByRole('dialog', { name: 'Hero has gained a level.' })
       expect(within(levelUp).getByText('Hero is now a level 2 Knight.')).toBeTruthy()
@@ -221,10 +227,10 @@ describe('battle monster stacks behavior', () => {
 
     test('given a battle against several stacks when the page reloads then the stacks and their counts are as before', async () => {
       const eventLog = createMemoryEventLog()
-      const scenario = aFight({ army: [stack('ANGEL', 2)], monsterCount: 60, stacks: 2 })
+      const scenario = aFight({ army: [stack('ANGEL', 2)], monsterCount: 100, stacks: 2 })
       const { user } = await startBattle(scenario, { eventLog })
-      await flyAngelsCloser(user)
-      await attackBattleHexFrom(user, 3, 15, 'left')
+      await waitForThePikemen(user)
+      await attackThePikemenOnRow3(user)
 
       await setupMovementBehaviorApp({
         loadGameOptions: scenario.build(),
@@ -233,10 +239,10 @@ describe('battle monster stacks behavior', () => {
       })
       await flushMicrotasks()
 
-      expect(readMonsterStacks()).toEqual([
-        stackAt('Pikemen 13', 3, 15),
-        stackAt('Pikemen 30', 9, 15)
-      ])
+      // The Angels kill 17 of 50; the 33 left attack them and lose 18 to the retaliation.
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([stackAt('Pikemen 15', 3, 11), stackAt('Pikemen 50', 5, 10)])
+      )
     })
   })
 })

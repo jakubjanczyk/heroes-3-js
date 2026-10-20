@@ -4,7 +4,6 @@ import { describe, expect, test } from 'vitest'
 
 import { loadAppStyles } from './app-styles.js'
 import {
-  attackBattleHexFrom,
   attackMonsterAt,
   clickBattleHex,
   flushMicrotasks,
@@ -47,6 +46,13 @@ async function startBattle(scenario, { battleStepDelayMs = 0 } = {}) {
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6, column 15.
 const MONSTER = { row: 6, column: 15 }
 
+// Once the Angels fly to column 5, the Pikemen walk 4 hexes toward them, to column 11.
+const PIKEMEN_CLOSER = { row: 6, column: 11 }
+
+async function flyAngelsCloser(user) {
+  await moveActiveStackTo(user, 6, 5)
+}
+
 const cursorOverHex = (row, column) => getCursorOver(getBattleHex(row, column))
 
 describe('battle cursor behavior', () => {
@@ -67,16 +73,16 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse is over a corpse the active stack can reach then the cursor is the move cursor', async () => {
-    // Two Angels kill a stack of one Pikeman; the other stack keeps the battle going.
+    // One Pikeman walks up to the Angels, attacks them from row 4, column 13 and dies to their
+    // retaliation; the other stack keeps the battle going.
     const { user } = await startBattle(
       aFight({ army: [stack('ANGEL', 2)], monsterCount: 2, stacks: 2 })
     )
     await moveActiveStackTo(user, 4, 12)
-    await attackBattleHexFrom(user, 3, 15, 'left')
 
-    await hoverBattleHex(user, 3, 15)
+    await hoverBattleHex(user, 4, 13)
 
-    expect(cursorOverHex(3, 15)).toBe('battle-fly')
+    expect(cursorOverHex(4, 13)).toBe('battle-fly')
   })
 
   test('given the mouse is over a hex out of the active stack reach then the cursor is the blocked cursor', async () => {
@@ -103,11 +109,13 @@ describe('battle cursor behavior', () => {
     'bottom-right'
   ])('given the mouse points at the %s side of an enemy the stack can attack then the sword attacks from that side', async (side) => {
     const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2)] }))
-    await moveActiveStackTo(user, 6, 10)
+    await flyAngelsCloser(user)
 
-    await pointAtBattleHexSide(user, MONSTER.row, MONSTER.column, side)
+    await pointAtBattleHexSide(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column, side)
 
-    expect(cursorOverHex(MONSTER.row, MONSTER.column)).toBe(`battle-attack-from-${side}`)
+    expect(cursorOverHex(PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)).toBe(
+      `battle-attack-from-${side}`
+    )
   })
 
   test('given another stack stands on the side pointed at then the sword attacks from the nearest side the stack can reach', async () => {
@@ -115,11 +123,13 @@ describe('battle cursor behavior', () => {
     const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2), stack('ANGEL', 1)] }))
     await moveActiveStackTo(user, 6, 5)
     await moveActiveStackTo(user, 6, 4)
-    await moveActiveStackTo(user, 6, 14)
+    await moveActiveStackTo(user, 6, 10)
 
-    await pointAtBattleHexSide(user, MONSTER.row, MONSTER.column, 'left')
+    await pointAtBattleHexSide(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column, 'left')
 
-    expect(cursorOverHex(MONSTER.row, MONSTER.column)).toBe('battle-attack-from-top-left')
+    expect(cursorOverHex(PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)).toBe(
+      'battle-attack-from-top-left'
+    )
   })
 
   test('given the mouse is over one of the player own stacks then the cursor is the question mark', async () => {

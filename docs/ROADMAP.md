@@ -373,7 +373,7 @@ See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
 - [x] Current active stack highlighted
 - [ ] (Not in H3, optional extra) Turn order bar/queue display showing upcoming stacks
 - [x] Ties in speed: attacker goes first, then the earlier army slot
-- [x] The monster's turn passes (it stays where it is) until the combat AI (5.7b)
+- [x] The monster's stacks take their turns with the combat AI (5.7b)
 
 ### 5.5 Combat Movement
 - [x] Active stack can move up to its speed in hexes
@@ -417,8 +417,15 @@ See `docs/notes/2026-10-20-battle-attacks.md`.
 - [ ] Action buttons displayed during active stack's turn
 
 ### 5.7b Combat AI
-- [ ] Enemy stacks act on their own: simple at first (move to the nearest stack and attack it, shooters shoot)
+See `docs/notes/2026-10-20-combat-ai.md`.
+- [x] Enemy stacks act on their own, simply: go for the nearest stack (fewest hexes to a side of it; the earlier army slot on a tie) and attack it, or get as close as the turn allows. Shooters walk too until there are ranged attacks
 - [ ] Auto combat uses the same AI for the player's stacks
+- [ ] Smarter combat AI (later):
+  - [ ] Pick the target by threat and value (damage it can deal, creatures it can kill, retaliation it would take), not only by distance
+  - [ ] Shooters stay back and shoot (needs ranged attacks, 5.6), and go for enemy shooters
+  - [ ] Use Wait and Defend (5.7), e.g. wait for the enemy to come into reach rather than walk into a first strike
+  - [ ] Protect its own shooters and weak stacks; keep stacks together
+  - [ ] Cast spells when a hero leads the army (5.8)
 
 ### 5.8 Combat Spells
 - [ ] Hero can cast one spell per combat round (instead of a stack acting)
@@ -442,7 +449,8 @@ See `docs/notes/2026-10-20-battle-attacks.md`.
   - Creature losses tallied and shown in summary
   - "Victory" screen with stats
 - [ ] **Defeat**: all your stacks destroyed
-  - Hero lost (removed from map)
+  - [x] Hero lost (removed from map)
+  - [x] The monster stays on the map with the creatures it has left
   - If defending town: town captured by attacker
   - "Defeat" screen
 - [ ] **Flee/Retreat**: hero escapes, army lost, hero goes to nearest town or removed
@@ -855,22 +863,23 @@ Sprites and map authoring are intentionally late.
 45. Hero magic (4.8)
 46. Siege combat (5.10)
 47. Town factions (6.5)
+48. Smarter combat AI (5.7b)
 
 ### Phase 7 - "Polish & Reusability"
-48. Engine public API (9.3)
-49. Scenario format v2 (9.1)
-50. Multiple scenarios + selector (9.2)
-51. Keyboard shortcuts (10.6)
-52. Save/Load system (10.7)
-53. Sound effects (10.4)
-54. Music per context (10.5)
-55. Entity sprites (10.1)
-56. Terrain sprites (10.2)
-57. Animations (10.3)
-58. Map portals (7.9)
-59. Water & boats (7.10)
-60. Hot-seat multiplayer (8.2)
-61. Map editor (9.4)
+49. Engine public API (9.3)
+50. Scenario format v2 (9.1)
+51. Multiple scenarios + selector (9.2)
+52. Keyboard shortcuts (10.6)
+53. Save/Load system (10.7)
+54. Sound effects (10.4)
+55. Music per context (10.5)
+56. Entity sprites (10.1)
+57. Terrain sprites (10.2)
+58. Animations (10.3)
+59. Map portals (7.9)
+60. Water & boats (7.10)
+61. Hot-seat multiplayer (8.2)
+62. Map editor (9.4)
 
 ---
 

@@ -119,7 +119,7 @@ function canStandFor(battle, stack) {
     )
 }
 
-function getFrontHexReach(battle, stack) {
+export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
     speed: stack.speed,
@@ -201,6 +201,52 @@ function getHexesNextTo(target) {
     }
   }
   return [...next.values()]
+}
+
+// The way for the stack's front half to `front`, however many turns it takes, and how many hexes
+// that is: a flyer's straight line, a walker's steps around the other stacks. Null when it cannot
+// get there.
+function findWayToFront(battle, stack, front) {
+  if (isSameHex(stack.hex, front)) {
+    return { way: [], distance: 0 }
+  }
+
+  const isFree = canStandFor(battle, stack)
+  if (!isFree(front)) {
+    return null
+  }
+
+  if (stack.flying) {
+    return { way: [front], distance: getHexDistance(stack.hex, front) }
+  }
+
+  const way = findHexPath({ from: stack.hex, to: front, isFree })
+  return way && { way, distance: way.length }
+}
+
+// Every hex next to a living enemy the stack can get to, however far, in the order of the enemy
+// stacks and then of the hexes around each.
+export function getApproaches(battle, stack) {
+  return livingStacks(battle)
+    .filter((target) => target.side !== stack.side)
+    .flatMap((target) =>
+      getHexesNextTo(target).flatMap((fromHex) => {
+        if (coversHex(stack, fromHex)) {
+          return [{ targetId: target.id, fromHex, way: [], distance: 0 }]
+        }
+
+        const fronts = stack.doubleWide
+          ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
+          : [fromHex]
+        const ways = fronts.map((front) => findWayToFront(battle, stack, front)).filter(Boolean)
+        if (ways.length === 0) {
+          return []
+        }
+
+        const nearest = ways.reduce((best, way) => (way.distance < best.distance ? way : best))
+        return [{ targetId: target.id, fromHex, ...nearest }]
+      })
+    )
 }
 
 export function getAttackTargets(battle, stack) {

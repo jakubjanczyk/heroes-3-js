@@ -32,6 +32,8 @@ export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
 export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
+// A monster that won a battle stays on the map with the creatures it has left.
+export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
@@ -74,6 +76,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_MONSTER_DEFEATED,
+  APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_MINE_CAPTURED,

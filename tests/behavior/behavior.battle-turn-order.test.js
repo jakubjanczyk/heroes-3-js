@@ -45,16 +45,6 @@ describe('battle turn order behavior', () => {
     expect(readActiveStack()).toEqual({ stack: 'Marksmen 5', row: 9, column: 1 })
   })
 
-  test('given the monster is fastest when battle opens then it stays where it is and the hero stack is active', async () => {
-    // Angels have speed 12.
-    await startBattle(
-      aFight({ army: [stack('SKELETON', 10)], monsterType: 'ANGEL', monsterCount: 2 })
-    )
-
-    expect(readActiveStack()).toEqual({ stack: 'Skeletons 10', row: 6, column: 1 })
-    expect(readBattleStacks()).toContainEqual({ stack: 'Angels 2', row: 6, column: 15 })
-  })
-
   test('given a hero stack and the monster have the same speed then the hero stack acts first', async () => {
     await startBattle(aFight({ army: [stack('SKELETON', 10)], monsterType: 'PIKEMAN' }))
 
@@ -77,18 +67,6 @@ describe('battle turn order behavior', () => {
     await moveActiveStackTo(user, 9, 3)
 
     expect(readActiveStack()).toEqual({ stack: 'Skeletons 10', row: 3, column: 1 })
-  })
-
-  // Swordsmen have speed 5.
-  test('given the monster turn comes then it stays where it is and the next stack becomes active', async () => {
-    const { user } = await startBattle(
-      aFight({ army: [stack('ANGEL', 1), stack('SKELETON', 10)], monsterType: 'SWORDSMAN' })
-    )
-
-    await moveActiveStackTo(user, 3, 4)
-
-    expect(readActiveStack()).toEqual({ stack: 'Skeletons 10', row: 9, column: 1 })
-    expect(readBattleStacks()).toContainEqual({ stack: 'Swordsmen 10', row: 6, column: 15 })
   })
 
   test('given every stack has acted then a new round starts with the fastest stack active again', async () => {

@@ -5,12 +5,14 @@ import { getOccupantAt } from '../../game/domain/tile-occupant.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../game/footprint-utils.js'
 
 // Keeps track of what stands on each map tile, for views that describe a tile: the hero,
-// what is still on the map, and every tile of a mine's or town's footprint.
+// what is still on the map, how many creatures a monster has left, and every tile of a mine's
+// or town's footprint.
 export function createMapObjects() {
   let map = null
   let staticOccupancy = null
   let entitiesById = new Map()
   let removedIds = NO_REMOVED_ENTITIES
+  let monsterCounts = new Map()
   let hero = null
   let heroTile = null
 
@@ -20,6 +22,7 @@ export function createMapObjects() {
       staticOccupancy = world.staticOccupancy
       entitiesById = new Map(world.scenario.entities.map((entity) => [entity.id, entity]))
       removedIds = NO_REMOVED_ENTITIES
+      monsterCounts = new Map()
       hero = findHero(world.scenario.entities)
       heroTile = hero.tile
     },
@@ -29,12 +32,19 @@ export function createMapObjects() {
     onEntityRemoved(entityId) {
       removedIds = applyEntityRemoved(removedIds, entityId)
     },
+    onMonsterCountChanged(entityId, count) {
+      monsterCounts = new Map([...monsterCounts, [entityId, count]])
+    },
     getEntityAt(tile) {
-      if (sameTile(tile, heroTile)) {
+      if (hero && !removedIds.has(hero.id) && sameTile(tile, heroTile)) {
         return hero
       }
 
       const occupant = getOccupantAt({ tile, staticOccupancy, removedIds })
+      if (monsterCounts.has(occupant?.id)) {
+        return { ...occupant, count: monsterCounts.get(occupant.id) }
+      }
+
       if (occupant?.kind !== FOOTPRINT_BLOCKER_KIND) {
         return occupant
       }
