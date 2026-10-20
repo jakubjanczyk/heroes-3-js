@@ -50,14 +50,12 @@ export const registerBattleViewModule = defineModule(
       return document.getElementById(id).content.firstElementChild.cloneNode(true)
     }
 
-    // Edge columns included, from -1 to 15.
     function hexElementAt({ row, column }) {
       return hexes[row]?.[column + 1] ?? null
     }
 
-    // No creature pictures yet: a stack is drawn as monsters are on the map, with its count. A
-    // double-wide creature is drawn over both its hexes; its back half only marks the hex
-    // behind it, for screen readers.
+    // No creature pictures yet: a stack is drawn as monsters are on the map, with its count. The
+    // back half of a double-wide creature only marks its hex for screen readers.
     function createStack({ side, doubleWide }) {
       const stack = cloneTemplate('battle-stack-template')
       stack.classList.add(`battle-stack--${side}`)
@@ -149,8 +147,6 @@ export const registerBattleViewModule = defineModule(
         : ''
     }
 
-    // The Heroes 3 battle cursor over `hex`: what clicking it would do. The arrow while a stack
-    // moves and off the battlefield's hexes.
     function pickCursor(hex) {
       const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
       if (!activeStack || shown.moving) {
@@ -205,7 +201,6 @@ export const registerBattleViewModule = defineModule(
       return { row: Number(hexElement.dataset.row), column: Number(hexElement.dataset.column) }
     }
 
-    // Each row runs from the edge column on the attacker's side to the one on the defender's.
     function fillBattlefield(grid) {
       hexes = Array.from({ length: BATTLEFIELD_ROWS }, (_, row) => {
         const rowElement = document.createElement('div')

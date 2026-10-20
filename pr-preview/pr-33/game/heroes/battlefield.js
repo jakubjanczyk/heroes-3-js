@@ -41,7 +41,6 @@ export function getOccupiedHexes({ hex, doubleWide, side }) {
   return [hex, { row: hex.row, column: hex.column + (side === 'attacker' ? -1 : 1) }]
 }
 
-// The hex a double-wide creature's front half stands on when its back half is on `hex`.
 export function getFrontHexFor({ hex, side }) {
   return { row: hex.row, column: hex.column + (side === 'attacker' ? 1 : -1) }
 }
@@ -51,7 +50,6 @@ export const hexKey = ({ row, column }) => `${row},${column}`
 export const isSameHex = (a, b) => a.row === b.row && a.column === b.column
 
 // Even rows sit half a hex to the right, so their diagonal neighbours are shifted right too.
-// With `withEdges` the edge columns count too.
 export function getHexNeighbours({ row, column }, { withEdges = false } = {}) {
   const diagonalShift = row % 2 === 0 ? 1 : -1
   return [
