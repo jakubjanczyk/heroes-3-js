@@ -205,6 +205,7 @@ export async function setupMovementBehaviorApp({
       musicTracks,
       movementStepDelayMs,
       movementSleep,
+      battleStepDelayMs: 0,
       interactionModalTransitionMs: 0,
       ...appConfig
     }
@@ -702,6 +703,92 @@ export function readBattleStacks() {
         }
       ]
     })
+}
+
+function readHexPosition(hex) {
+  return {
+    row: Number(hex.closest('[role="row"]').getAttribute('aria-rowindex')),
+    column: Number(hex.getAttribute('aria-colindex'))
+  }
+}
+
+export function getBattleHex(row, column) {
+  const rowElement = within(getBattlefield())
+    .getAllByRole('row')
+    .find((element) => element.getAttribute('aria-rowindex') === String(row))
+  return within(rowElement)
+    .getAllByRole('gridcell')
+    .find((hex) => hex.getAttribute('aria-colindex') === String(column))
+}
+
+// The stack whose turn it is, highlighted on the battlefield.
+export function readActiveStack() {
+  const active = within(getBattlefield())
+    .getAllByRole('gridcell')
+    .filter((hex) => within(hex).queryByRole('img', { current: true }))
+  expect(active).toHaveLength(1)
+  const [hex] = active
+  return {
+    stack: `${within(hex).getByRole('img').getAttribute('aria-label')} ${hex.textContent.trim()}`,
+    ...readHexPosition(hex)
+  }
+}
+
+// The hexes the active stack can move to: every other hex is marked as not available.
+export function readReachableHexes() {
+  return within(getBattlefield())
+    .getAllByRole('gridcell')
+    .filter((hex) => hex.getAttribute('aria-disabled') !== 'true')
+    .map(readHexPosition)
+}
+
+export function isBattleHexReachable(row, column) {
+  return getBattleHex(row, column).getAttribute('aria-disabled') !== 'true'
+}
+
+export async function clickBattleHex(user, row, column) {
+  await user.click(getBattleHex(row, column))
+  await flushMicrotasks()
+}
+
+// Clicks a hex and waits until the active stack has walked there.
+export async function moveActiveStackTo(user, row, column) {
+  await clickBattleHex(user, row, column)
+  await waitMs()
+  await flushMicrotasks()
+}
+
+export async function hoverBattleHex(user, row, column) {
+  await user.hover(getBattleHex(row, column))
+}
+
+export function getBattleStatusBarText() {
+  return within(getBattleScreen()).getByRole('status', { name: 'Battle status bar' }).textContent
+}
+
+// Notes each hex the stack named `stackName` stands on from now on, as the player would see it go
+// by, until the returned function is called; it returns the hexes in order.
+export function recordStackHexes(stackName) {
+  const battlefield = getBattlefield()
+  const hexes = []
+  const note = () => {
+    const creature = within(battlefield).queryByRole('img', { name: stackName })
+    if (!creature) {
+      return
+    }
+
+    const position = readHexPosition(creature.closest('[role="gridcell"]'))
+    const last = hexes.at(-1)
+    if (last?.row !== position.row || last?.column !== position.column) {
+      hexes.push(position)
+    }
+  }
+  const observer = new window.MutationObserver(note)
+  observer.observe(battlefield, { childList: true, subtree: true })
+  return () => {
+    observer.disconnect()
+    return hexes
+  }
 }
 
 export async function attackMonsterAt(x, y) {
