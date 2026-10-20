@@ -444,7 +444,7 @@ See `docs/notes/2026-10-20-combat-ai.md`.
 - [ ] **Victory**: all enemy stacks destroyed or fled
   - [x] The battle ends when the monster has no creatures left
   - [x] XP awarded: the health of every enemy creature killed, as in H3 (Auto combat counts the whole monster)
-  - [ ] The hero's army keeps its losses after the battle
+  - [x] The hero's army keeps its losses after the battle: each stack keeps the creatures it has left, a stack with none leaves its slot empty
   - Loot: gold and/or resources dropped by neutral monsters
   - Creature losses tallied and shown in summary
   - "Victory" screen with stats

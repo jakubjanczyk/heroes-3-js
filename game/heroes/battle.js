@@ -325,6 +325,15 @@ export function attackStack(battle, { stackId, targetId, path, strikes }) {
   return endTurn(struck, stackId)
 }
 
+// The hero's army as the battle leaves it: each stack with the creatures it has left, and an
+// empty slot where none are left.
+export function getHeroArmyAfterBattle(battle, heroArmy) {
+  return heroArmy.map((slot, index) => {
+    const stack = battle.stacks.find(({ id }) => id === `attacker-${index}`)
+    return slot && stack?.count > 0 ? { creature: stack.creature, count: stack.count } : null
+  })
+}
+
 // The hero earns the health of every enemy creature killed.
 export function getExperienceForWin(battle) {
   return battle.stacks

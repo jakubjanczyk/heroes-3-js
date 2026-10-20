@@ -5,8 +5,8 @@ import { getOccupantAt } from '../../game/domain/tile-occupant.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../game/footprint-utils.js'
 
 // Keeps track of what stands on each map tile, for views that describe a tile: the hero,
-// what is still on the map, how many creatures a monster has left, and every tile of a mine's
-// or town's footprint.
+// what is still on the map, how many creatures a monster or the hero's army has left, and every
+// tile of a mine's or town's footprint.
 export function createMapObjects() {
   let map = null
   let staticOccupancy = null
@@ -31,6 +31,9 @@ export function createMapObjects() {
     },
     onEntityRemoved(entityId) {
       removedIds = applyEntityRemoved(removedIds, entityId)
+    },
+    onHeroArmyChanged(army) {
+      hero = { ...hero, army }
     },
     onMonsterCountChanged(entityId, count) {
       monsterCounts = new Map([...monsterCounts, [entityId, count]])

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen, within } from '@testing-library/dom'
+import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import {
@@ -8,6 +8,7 @@ import {
   flushMicrotasks,
   getHeroInfoBox,
   holdRightButtonOn,
+  readArmySlots,
   readGameData,
   setupMovementBehaviorApp
 } from './behavior.utils.js'
@@ -27,16 +28,6 @@ async function setupApp(scenario, options = {}) {
 }
 
 const skeletons = (count) => ({ creature: 'SKELETON', count })
-
-function readArmySlots(container) {
-  const army = within(container).getByRole('list', { name: 'Army' })
-  return within(army)
-    .getAllByRole('listitem')
-    .map((slot) => {
-      const creature = within(slot).queryByRole('img')
-      return creature ? `${creature.getAttribute('aria-label')} ${slot.textContent.trim()}` : ''
-    })
-}
 
 describe('hero army behavior', () => {
   describe('info box', () => {

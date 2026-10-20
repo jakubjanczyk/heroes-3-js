@@ -41,6 +41,8 @@ export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
+// The hero's army after a won battle: every slot, empty where a stack lost all its creatures.
+export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -82,7 +84,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
-  APP_FACT_HERO_LEVELED_UP
+  APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_HERO_ARMY_CHANGED
 ])
 
 export function shouldPersistFactEvent(type) {
