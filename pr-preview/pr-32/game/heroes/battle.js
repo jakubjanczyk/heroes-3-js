@@ -45,7 +45,6 @@ function createStacks({ side, army, skills, definitions }) {
   })
 }
 
-// `heroSkills` are the attacking hero's primary skills: Attack and Defense add to their stacks'.
 export function createBattle({ heroArmy, heroSkills, monster, definitions }) {
   return {
     stacks: [
@@ -66,7 +65,6 @@ export const hasLivingStacks = (battle, side) =>
   livingStacks(battle).some((stack) => stack.side === side)
 
 // Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
-// The dead get no turn.
 export function getTurnOrder(battle) {
   return livingStacks(battle).sort((a, b) => b.speed - a.speed)
 }
@@ -75,7 +73,7 @@ export function getActiveStack(battle) {
   return getTurnOrder(battle).find(({ id }) => !battle.actedStackIds.includes(id)) ?? null
 }
 
-// When every living stack has acted a new round starts, and each stack can strike back again.
+// A new round also gives every stack its retaliations back.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
   if (livingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
@@ -127,13 +125,10 @@ export function planStackMove(battle, stack, hex) {
   return findHexPath({ from: stack.hex, to: hex, isFree, maxSteps: stack.speed })
 }
 
-// The way to `hex`, empty when the stack already stands there, or null when it cannot get there.
 function planPathTo(battle, stack, hex) {
   return isSameHex(stack.hex, hex) ? [] : planStackMove(battle, stack, hex)
 }
 
-// The enemy stacks the stack can attack this turn: the hexes next to each that it can attack
-// from, and the damage it would deal.
 export function getAttackTargets(battle, stack) {
   return livingStacks(battle)
     .filter((target) => target.side !== stack.side)
@@ -145,8 +140,8 @@ export function getAttackTargets(battle, stack) {
     .filter(({ fromHexes }) => fromHexes.length > 0)
 }
 
-// The stack goes next to the target, on `fromHex`, and attacks it. Returns the way there and
-// every strike with its rolled damage, or null when it cannot attack the target from there.
+// The way to `fromHex` and every strike with its rolled damage, or null when the stack cannot
+// attack the target from there.
 export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
   const target = livingStacks(battle).find(({ id }) => id === targetId)
   const isNextToTarget =
@@ -159,7 +154,7 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
   return { path, strikes: strikeSequence({ attacker: stack, defender: target, random }) }
 }
 
-// "The Angels do 175 damage. 17 Pikemen perish." as the Heroes 3 combat log says it.
+// "The Angels do 175 damage. 17 Pikemen perish."
 function describeStrike({ attacker, damage, killed, nameFor }) {
   const dealt =
     attacker.count === 1
@@ -201,7 +196,6 @@ function applyStrike(battle, { attackerId, defenderId, damage }, retaliatorId) {
   }
 }
 
-// The stack walks `path` and the strikes land; its turn ends.
 export function attackStack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
   const struck = strikes.reduce((current, strike) => applyStrike(current, strike, targetId), moved)
