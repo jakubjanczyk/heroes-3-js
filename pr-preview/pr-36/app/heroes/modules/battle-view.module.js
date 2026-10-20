@@ -196,7 +196,37 @@ export const registerBattleViewModule = defineModule(
       return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
     }
 
+    // Heroes 3's cursor shadow: the hex under the mouse, or every hex of the enemy it would attack
+    // or shoot. Not after a tap, or the hex would stay lit once the finger is gone.
+    function findHighlightedHexes(hex) {
+      const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
+      if (!hex || !activeStack || shown.moving || pointerType === 'touch') {
+        return []
+      }
+
+      const target = findLivingStackOn(hex)
+      if (target) {
+        const canHit = findShot(hex) || findAttack(hex, hexElementAt(hex))
+        return canHit ? target.hexes : []
+      }
+
+      return isReachable(hex) ? [hex] : []
+    }
+
+    function highlightHexes(highlighted) {
+      for (const row of hexes) {
+        for (const hexElement of row) {
+          const hex = readHex(hexElement)
+          hexElement.classList.toggle(
+            'battlefield__hex--highlighted',
+            highlighted.some((option) => isSameHex(option, hex))
+          )
+        }
+      }
+    }
+
     function describeHoveredHex() {
+      highlightHexes(findHighlightedHexes(hoveredHex))
       statusBar.textContent = hoveredHex ? describeHex(hoveredHex) : ''
       const cursor = hoveredHex ? pickCursor(hoveredHex) : null
       if (cursor) {
@@ -440,13 +470,13 @@ export const registerBattleViewModule = defineModule(
             }
           }
         },
-        {
+        ...['pointerdown', 'pointermove'].map((type) => ({
           target: gameShell,
-          type: 'pointerdown',
+          type,
           handler: (event) => {
             pointerType = event.pointerType || 'mouse'
           }
-        },
+        })),
         ...['mouseover', 'mousemove'].map((type) => ({
           target: gameShell,
           type,
