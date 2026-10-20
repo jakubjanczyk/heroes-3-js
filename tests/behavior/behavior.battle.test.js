@@ -59,14 +59,14 @@ describe('battle behavior', () => {
     expectInteractionModalClosed()
   })
 
-  test('given battle opens then the battlefield is a grid of 15 columns by 11 rows of hexes', async () => {
+  test('given battle opens then the battlefield is a grid of 15 columns by 11 rows of hexes with an edge column past each side', async () => {
     await setupApp(aFight())
 
     await attackMonsterAt(1, 0)
 
     const rows = within(getBattlefield()).getAllByRole('row')
     expect(rows.map((row) => within(row).getAllByRole('gridcell').length)).toEqual(
-      new Array(11).fill(15)
+      new Array(11).fill(17)
     )
   })
 

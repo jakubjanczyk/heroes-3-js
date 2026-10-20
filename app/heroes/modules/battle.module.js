@@ -6,6 +6,7 @@ import {
   getActiveStack,
   getAttackTargets,
   getExperienceForWin,
+  getStackHexes,
   getStackReach,
   hasLivingStacks,
   moveStack,
@@ -37,6 +38,9 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 
+// Every stack with the hexes it stands on: two for a double-wide creature.
+const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
+
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
@@ -59,8 +63,10 @@ export const registerBattleModule = defineModule(
       if (moving) {
         emit(APP_UI_BATTLE_UPDATED, {
           tile: started.tile,
-          stacks: moving.battle.stacks.map((stack) =>
-            stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+          stacks: withHexes(
+            moving.battle.stacks.map((stack) =>
+              stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+            )
           ),
           activeStackId: moving.stackId,
           reachableHexes: [],
@@ -74,7 +80,7 @@ export const registerBattleModule = defineModule(
       const activeStack = getActiveStack(battle)
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
-        stacks: battle.stacks,
+        stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
         attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],

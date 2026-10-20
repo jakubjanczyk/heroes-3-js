@@ -1,6 +1,7 @@
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
+  EDGE_COLUMNS,
   findNearestHexSide,
   getHexDistance,
   getHexNeighbourOnSide,
@@ -48,14 +49,25 @@ export const registerBattleViewModule = defineModule(
       return document.getElementById(id).content.firstElementChild.cloneNode(true)
     }
 
-    // No creature pictures yet: a stack is drawn as monsters are on the map, with its count.
-    function createStack({ side }) {
-      const stack = cloneTemplate('battle-stack-template')
-      stack.classList.add(`battle-stack--${side}`)
-      return stack
+    // Edge columns included, from -1 to 15.
+    function hexElementAt({ row, column }) {
+      return hexes[row]?.[column + 1] ?? null
     }
 
-    function drawStack(element, { name, count }) {
+    // No creature pictures yet: a stack is drawn as monsters are on the map, with its count. A
+    // double-wide creature is drawn over both its hexes; its back half only marks the hex
+    // behind it, for screen readers.
+    function createStack({ side, doubleWide }) {
+      const stack = cloneTemplate('battle-stack-template')
+      stack.classList.add(`battle-stack--${side}`)
+      stack.classList.toggle('battle-stack--double-wide', Boolean(doubleWide))
+      const backHalf = document.createElement('div')
+      backHalf.className = 'battle-stack__back-half'
+      backHalf.setAttribute('role', 'img')
+      return { stack, backHalf }
+    }
+
+    function drawStack({ stack: element, backHalf }, { name, count }) {
       const isDead = count === 0
       const label = isDead ? `Dead ${name}` : name
       element.classList.toggle('battle-stack--dead', isDead)
@@ -63,10 +75,13 @@ export const registerBattleViewModule = defineModule(
       creature.setAttribute('aria-label', label)
       creature.title = label
       element.querySelector('.battle-stack__count').textContent = isDead ? '' : String(count)
+      backHalf.setAttribute('aria-label', `${name} (back half)`)
     }
 
     function findLivingStackOn(hex) {
-      return shown?.stacks.find((stack) => stack.count > 0 && isSameHex(stack.hex, hex))
+      return shown?.stacks.find(
+        (stack) => stack.count > 0 && stack.hexes.some((own) => isSameHex(own, hex))
+      )
     }
 
     // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
@@ -82,8 +97,9 @@ export const registerBattleViewModule = defineModule(
       const activeStack = shown.stacks.find(({ id }) => id === shown.activeStackId)
       const canAttackFrom = (fromHex) =>
         attackTarget.fromHexes.some((option) => isSameHex(option, fromHex))
-      if (pointerType === 'touch' && canAttackFrom(activeStack.hex)) {
-        return { target, fromHex: activeStack.hex, damage: attackTarget.damage }
+      const standingNextToIt = activeStack.hexes.find(canAttackFrom)
+      if (pointerType === 'touch' && standingNextToIt) {
+        return { target, fromHex: standingNextToIt, damage: attackTarget.damage }
       }
 
       const box = hexElement.getBoundingClientRect()
@@ -113,7 +129,7 @@ export const registerBattleViewModule = defineModule(
       }
 
       if (findLivingStackOn(hex)) {
-        const attack = findAttack(hex, hexes[hex.row][hex.column])
+        const attack = findAttack(hex, hexElementAt(hex))
         return attack
           ? `Attack ${attack.target.name} (damage ${attack.damage.min}-${attack.damage.max})`
           : ''
@@ -149,6 +165,7 @@ export const registerBattleViewModule = defineModule(
       return { row: Number(hexElement.dataset.row), column: Number(hexElement.dataset.column) }
     }
 
+    // Each row runs from the edge column on the attacker's side to the one on the defender's.
     function fillBattlefield(grid) {
       hexes = Array.from({ length: BATTLEFIELD_ROWS }, (_, row) => {
         const rowElement = document.createElement('div')
@@ -156,11 +173,13 @@ export const registerBattleViewModule = defineModule(
         rowElement.setAttribute('role', 'row')
         rowElement.setAttribute('aria-rowindex', String(row + 1))
         grid.append(rowElement)
-        return Array.from({ length: BATTLEFIELD_COLUMNS }, (_, column) => {
+        return Array.from({ length: BATTLEFIELD_COLUMNS + 2 }, (_, index) => {
+          const column = index - 1
           const hex = document.createElement('div')
           hex.className = 'battlefield__hex'
+          hex.classList.toggle('battlefield__hex--edge', EDGE_COLUMNS.includes(column))
           hex.setAttribute('role', 'gridcell')
-          hex.setAttribute('aria-colindex', String(column + 1))
+          hex.setAttribute('aria-colindex', String(index + 1))
           hex.dataset.row = String(row)
           hex.dataset.column = String(column)
           rowElement.append(hex)
@@ -192,7 +211,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function placeStack(element, from, to) {
-      const hexElement = hexes[to.row][to.column]
+      const hexElement = hexElementAt(to)
       if (!from || isRestoring || typeof element.animate !== 'function') {
         hexElement.append(element)
         return
@@ -224,17 +243,25 @@ export const registerBattleViewModule = defineModule(
       reachableKeys = new Set(battle.reachableHexes.map(hexKey))
 
       for (const stack of battle.stacks) {
-        let element = stackElements.get(stack.id)
-        if (!element) {
-          element = createStack(stack)
-          stackElements.set(stack.id, element)
+        let elements = stackElements.get(stack.id)
+        if (!elements) {
+          elements = createStack(stack)
+          stackElements.set(stack.id, elements)
         }
 
-        drawStack(element, stack)
+        drawStack(elements, stack)
+        const element = elements.stack
 
         const from = previous?.stacks.find(({ id }) => id === stack.id)?.hex
         if (!from || !isSameHex(from, stack.hex)) {
           placeStack(element, from, stack.hex)
+        }
+
+        const backHex = stack.count > 0 ? stack.hexes[1] : null
+        if (backHex) {
+          hexElementAt(backHex).append(elements.backHalf)
+        } else {
+          elements.backHalf.remove()
         }
 
         const isActive = stack.id === battle.activeStackId
@@ -326,7 +353,7 @@ export const registerBattleViewModule = defineModule(
               return
             }
 
-            const attack = findAttack(hex, hexes[hex.row][hex.column])
+            const attack = findAttack(hex, hexElementAt(hex))
             if (attack) {
               emit(APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED, {
                 targetId: attack.target.id,

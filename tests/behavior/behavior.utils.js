@@ -686,7 +686,9 @@ export function getBattlefield() {
 
 // Every creature stack on the battlefield as "<name> <count>" with its hex, rows and columns
 // counted from 1 as Heroes 3 players would: row 1 at the top, column 1 on the attacker's side.
-// A dead stack reads "Dead <name>" with no count; a living stack may stand on it.
+// Columns 0 and 16 are the edge columns past each side, where only back halves stand.
+// A dead stack reads "Dead <name>" with no count; a living stack may stand on it. The back half
+// of a double-wide creature reads "<name> (back half)".
 export function readBattleStacks() {
   return within(getBattlefield())
     .getAllByRole('gridcell')
@@ -701,10 +703,11 @@ function describeBattleStack(creature) {
   return `${creature.getAttribute('aria-label')} ${creature.parentElement.textContent.trim()}`.trim()
 }
 
+// The edge column on the attacker's side is the grid's first column.
 function readHexPosition(hex) {
   return {
     row: Number(hex.closest('[role="row"]').getAttribute('aria-rowindex')),
-    column: Number(hex.getAttribute('aria-colindex'))
+    column: Number(hex.getAttribute('aria-colindex')) - 1
   }
 }
 
@@ -714,7 +717,7 @@ export function getBattleHex(row, column) {
     .find((element) => element.getAttribute('aria-rowindex') === String(row))
   return within(rowElement)
     .getAllByRole('gridcell')
-    .find((hex) => hex.getAttribute('aria-colindex') === String(column))
+    .find((hex) => hex.getAttribute('aria-colindex') === String(column + 1))
 }
 
 export function readActiveStack() {
