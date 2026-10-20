@@ -3,9 +3,9 @@ import {
   createBattle,
   endTurn,
   getActiveStack,
-  getActiveStackReach,
+  getStackReach,
   moveStack,
-  planActiveStackMove
+  planStackMove
 } from '../../../game/heroes/battle.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import {
@@ -26,29 +26,43 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 
-const sleepFor = (ms) =>
+const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 
 // The battle the hero is fighting. Auto combat wins it outright.
 export const registerBattleModule = defineModule(
   ({ emit, config }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
-    const sleep = typeof config?.movementSleep === 'function' ? config.movementSleep : sleepFor
 
     let hero = null
     let definitions = {}
     let started = null
     let battle = null
     let isRestoring = false
-    let isStackMoving = false
+    // A move is saved as one fact; this is where the stack is shown while it walks there.
+    let moving = null
 
     function showBattle() {
-      const activeStack = isStackMoving ? null : getActiveStack(battle)
+      if (moving) {
+        emit(APP_UI_BATTLE_UPDATED, {
+          tile: started.tile,
+          stacks: battle.stacks.map((stack) =>
+            stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+          ),
+          activeStackId: moving.stackId,
+          reachableHexes: [],
+          stepDelayMs
+        })
+        return
+      }
+
+      const activeStack = getActiveStack(battle)
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
         stacks: battle.stacks,
-        activeStackId: getActiveStack(battle)?.id ?? null,
-        reachableHexes: activeStack ? getActiveStackReach(battle) : []
+        activeStackId: activeStack?.id ?? null,
+        reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
+        stepDelayMs
       })
     }
 
@@ -64,28 +78,28 @@ export const registerBattleModule = defineModule(
     }
 
     async function moveActiveStack(hex) {
-      const path = planActiveStackMove(battle, hex)
+      const stack = getActiveStack(battle)
+      const path = stack && planStackMove(battle, stack, hex)
       if (!path) {
         return
       }
 
       const movingBattle = started
-      const stackId = getActiveStack(battle).id
-      isStackMoving = true
-      try {
-        for (const to of path) {
-          const from = battle.stacks.find(({ id }) => id === stackId).hex
-          emit(APP_FACT_BATTLE_STACK_MOVED, { stackId, to })
-          await sleep(stepDelayMs * getHexDistance(from, to))
-          if (started !== movingBattle) {
-            return
-          }
+      moving = { stackId: stack.id, hex: stack.hex }
+      emit(APP_FACT_BATTLE_STACK_MOVED, { stackId: stack.id, path })
+      for (const to of path) {
+        const from = moving.hex
+        moving.hex = to
+        showBattle()
+        await sleep(stepDelayMs * getHexDistance(from, to))
+        if (started !== movingBattle) {
+          moving = null
+          return
         }
-      } finally {
-        isStackMoving = false
       }
 
-      emit(APP_FACT_BATTLE_TURN_ENDED, { stackId })
+      moving = null
+      showBattle()
       passEnemyTurns()
     }
 
@@ -101,7 +115,15 @@ export const registerBattleModule = defineModule(
           }
         },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
-        { type: APP_UI_RESTORE_COMPLETED, handler: () => (isRestoring = false) },
+        {
+          type: APP_UI_RESTORE_COMPLETED,
+          handler: () => {
+            isRestoring = false
+            if (battle) {
+              passEnemyTurns()
+            }
+          }
+        },
         {
           type: APP_FACT_BATTLE_STARTED,
           handler: (event) => {
@@ -124,7 +146,8 @@ export const registerBattleModule = defineModule(
               return
             }
 
-            battle = moveStack(battle, event.detail.stackId, event.detail.to)
+            const { stackId, path } = event.detail
+            battle = endTurn(moveStack(battle, stackId, path.at(-1)), stackId)
             showBattle()
           }
         },
@@ -144,12 +167,13 @@ export const registerBattleModule = defineModule(
           handler: () => {
             started = null
             battle = null
+            moving = null
           }
         },
         {
           type: APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
           handler: (event) => {
-            if (!battle || isStackMoving) {
+            if (!battle || moving) {
               return
             }
 

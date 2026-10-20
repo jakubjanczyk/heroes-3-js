@@ -3,13 +3,15 @@ import { describe, expect, test } from 'vitest'
 
 import {
   attackMonsterAt,
+  clickBattleHex,
   createMemoryEventLog,
   flushMicrotasks,
   moveActiveStackTo,
   readActiveStack,
   readBattleStacks,
   readGameData,
-  setupMovementBehaviorApp
+  setupMovementBehaviorApp,
+  waitMs
 } from './behavior.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -117,5 +119,22 @@ describe('battle turn order behavior', () => {
       { stack: 'Skeletons 10', row: 9, column: 1 }
     ])
     expect(readActiveStack()).toEqual({ stack: 'Skeletons 10', row: 9, column: 1 })
+  })
+
+  test('given a stack is moving when the page reloads then it stands where it was going and the next stack is active', async () => {
+    const eventLog = createMemoryEventLog()
+    const scenario = aFight({ army: [stack('SKELETON', 10), stack('PIKEMAN', 3)] })
+    const { user } = await startBattle(scenario, {
+      eventLog,
+      appConfig: { battleStepDelayMs: 30 }
+    })
+    await clickBattleHex(user, 3, 5)
+    await waitMs(40)
+
+    await setupMovementBehaviorApp({ loadGameOptions: scenario.build(), eventLog })
+    await flushMicrotasks()
+
+    expect(readBattleStacks()).toContainEqual({ stack: 'Skeletons 10', row: 3, column: 5 })
+    expect(readActiveStack()).toEqual({ stack: 'Pikemen 3', row: 9, column: 1 })
   })
 })
