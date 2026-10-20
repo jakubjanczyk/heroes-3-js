@@ -340,6 +340,26 @@
       }
     },
     {
+      "id": "monster-19",
+      "kind": "MONSTER",
+      "type": "SKELETON",
+      "count": 12,
+      "tile": {
+        "x": 6,
+        "y": 2
+      }
+    },
+    {
+      "id": "monster-20",
+      "kind": "MONSTER",
+      "type": "GRIFFIN",
+      "count": 4,
+      "tile": {
+        "x": 1,
+        "y": 1
+      }
+    },
+    {
       "id": "monster-1",
       "kind": "MONSTER",
       "type": "ANGEL",

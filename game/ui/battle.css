@@ -79,6 +79,9 @@
 }
 
 .battlefield {
+  /* Taps on hexes do not flash the browser's tap highlight. */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   position: absolute;
   /* Below the sky, and in the middle of the field when it is taller than the hexes need. */
   inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.25));
@@ -117,10 +120,13 @@
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.38)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
     center / 100% 100% no-repeat;
 
-  &:hover {
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.5)' stroke='rgba(255,236,120,0.95)' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
-      center / 100% 100% no-repeat;
+  /* Only with a mouse: on a touch screen the tapped hex would stay lit after the stack left. */
+  @media (hover: hover) {
+    &:hover {
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.5)' stroke='rgba(255,236,120,0.95)' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+        center / 100% 100% no-repeat;
+    }
   }
 }
 
@@ -172,6 +178,21 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   text-align: center;
+}
+
+.battle-stack--dead {
+  z-index: 0;
+}
+
+/* A corpse lies flat and dark on its hex, under any stack standing on it. */
+.battle-stack--dead .battle-stack__creature {
+  block-size: 60%;
+  filter: grayscale(1) brightness(0.45);
+  transform: rotate(90deg);
+}
+
+.battle-stack--dead .battle-stack__count {
+  display: none;
 }
 
 .battle-stack--attacker .battle-stack__count {
@@ -243,6 +264,10 @@
   font-size: var(--font-size-sm);
   line-height: 1.2;
   text-align: center;
+}
+
+.battle-bar__message {
+  margin: 0;
 }
 
 .battle-bar__scroll {

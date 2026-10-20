@@ -1,12 +1,15 @@
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
+  findNearestHexSide,
   getHexDistance,
+  getHexNeighbourOnSide,
   hexKey,
   isSameHex
 } from '../../../game/heroes/battlefield.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
@@ -19,6 +22,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
@@ -35,6 +39,9 @@ export const registerBattleViewModule = defineModule(
     let shown = null
     let reachableKeys = new Set()
     let hoveredHex = null
+    let pointer = null
+    let pointerType = 'mouse'
+    let messageLog = null
     let isRestoring = false
 
     function cloneTemplate(id) {
@@ -42,14 +49,57 @@ export const registerBattleViewModule = defineModule(
     }
 
     // No creature pictures yet: a stack is drawn as monsters are on the map, with its count.
-    function createStack({ name, count, side }) {
+    function createStack({ side }) {
       const stack = cloneTemplate('battle-stack-template')
       stack.classList.add(`battle-stack--${side}`)
-      const creature = stack.querySelector('.battle-stack__creature')
-      creature.setAttribute('aria-label', name)
-      creature.title = name
-      stack.querySelector('.battle-stack__count').textContent = String(count)
       return stack
+    }
+
+    function drawStack(element, { name, count }) {
+      const isDead = count === 0
+      const label = isDead ? `Dead ${name}` : name
+      element.classList.toggle('battle-stack--dead', isDead)
+      const creature = element.querySelector('.battle-stack__creature')
+      creature.setAttribute('aria-label', label)
+      creature.title = label
+      element.querySelector('.battle-stack__count').textContent = isDead ? '' : String(count)
+    }
+
+    function findLivingStackOn(hex) {
+      return shown?.stacks.find((stack) => stack.count > 0 && isSameHex(stack.hex, hex))
+    }
+
+    // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
+    // already next to the target attacks from where it stands.
+    function findAttack(hex, hexElement) {
+      const target = findLivingStackOn(hex)
+      const attackTarget =
+        target && shown.attackTargets.find(({ stackId }) => stackId === target.id)
+      if (!attackTarget || !pointer) {
+        return null
+      }
+
+      const activeStack = shown.stacks.find(({ id }) => id === shown.activeStackId)
+      const canAttackFrom = (fromHex) =>
+        attackTarget.fromHexes.some((option) => isSameHex(option, fromHex))
+      if (pointerType === 'touch' && canAttackFrom(activeStack.hex)) {
+        return { target, fromHex: activeStack.hex, damage: attackTarget.damage }
+      }
+
+      const box = hexElement.getBoundingClientRect()
+      const sides = HEX_SIDES.filter((side) => {
+        const neighbour = getHexNeighbourOnSide(hex, side)
+        return neighbour && canAttackFrom(neighbour)
+      })
+      const side = findNearestHexSide({
+        point: {
+          x: pointer.x - (box.left + box.width / 2),
+          y: pointer.y - (box.top + box.height / 2)
+        },
+        hexSize: { width: box.width, height: box.height },
+        sides
+      })
+      return { target, fromHex: getHexNeighbourOnSide(hex, side), damage: attackTarget.damage }
     }
 
     function isReachable(hex) {
@@ -58,15 +108,36 @@ export const registerBattleViewModule = defineModule(
 
     function describeHex(hex) {
       const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
-      if (!activeStack || !isReachable(hex)) {
+      if (!activeStack) {
         return ''
       }
 
-      return `${activeStack.flying ? 'Fly' : 'Move'} ${activeStack.name} here`
+      if (findLivingStackOn(hex)) {
+        const attack = findAttack(hex, hexes[hex.row][hex.column])
+        return attack
+          ? `Attack ${attack.target.name} (damage ${attack.damage.min}-${attack.damage.max})`
+          : ''
+      }
+
+      return isReachable(hex)
+        ? `${activeStack.flying ? 'Fly' : 'Move'} ${activeStack.name} here`
+        : ''
     }
 
     function describeHoveredHex() {
       statusBar.textContent = hoveredHex ? describeHex(hoveredHex) : ''
+    }
+
+    function showMessages(messages) {
+      messageLog.replaceChildren(
+        ...messages.map((message) => {
+          const line = document.createElement('p')
+          line.className = 'battle-bar__message'
+          line.textContent = message
+          return line
+        })
+      )
+      messageLog.scrollTop = messageLog.scrollHeight
     }
 
     function readHex(element) {
@@ -113,6 +184,7 @@ export const registerBattleViewModule = defineModule(
       heroFigure.title = heroName
 
       statusBar = battleScreen.querySelector('.battle-screen__status-bar')
+      messageLog = battleScreen.querySelector('.battle-bar__log')
       fillBattlefield(battleScreen.querySelector('.battlefield'))
 
       gameShell.append(battleScreen)
@@ -158,6 +230,8 @@ export const registerBattleViewModule = defineModule(
           stackElements.set(stack.id, element)
         }
 
+        drawStack(element, stack)
+
         const from = previous?.stacks.find(({ id }) => id === stack.id)?.hex
         if (!from || !isSameHex(from, stack.hex)) {
           placeStack(element, from, stack.hex)
@@ -181,6 +255,7 @@ export const registerBattleViewModule = defineModule(
         }
       }
 
+      showMessages(battle.messages)
       describeHoveredHex()
     }
 
@@ -196,6 +271,8 @@ export const registerBattleViewModule = defineModule(
       shown = null
       reachableKeys = new Set()
       hoveredHex = null
+      pointer = null
+      messageLog = null
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -238,24 +315,46 @@ export const registerBattleViewModule = defineModule(
             }
 
             const hex = readHex(event.target)
-            if (hex) {
-              event.stopPropagation()
+            if (!hex) {
+              return
+            }
+
+            event.stopPropagation()
+            pointer = { x: event.clientX, y: event.clientY }
+            if (!findLivingStackOn(hex)) {
               emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
+              return
+            }
+
+            const attack = findAttack(hex, hexes[hex.row][hex.column])
+            if (attack) {
+              emit(APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED, {
+                targetId: attack.target.id,
+                fromHex: attack.fromHex
+              })
             }
           }
         },
         {
           target: gameShell,
-          type: 'mouseover',
+          type: 'pointerdown',
+          handler: (event) => {
+            pointerType = event.pointerType || 'mouse'
+          }
+        },
+        ...['mouseover', 'mousemove'].map((type) => ({
+          target: gameShell,
+          type,
           handler: (event) => {
             if (!battleScreen?.contains(event.target)) {
               return
             }
 
+            pointer = { x: event.clientX, y: event.clientY }
             hoveredHex = readHex(event.target)
             describeHoveredHex()
           }
-        }
+        }))
       ],
       dispose: () => {
         battleScreen?.remove()
@@ -275,6 +374,7 @@ export const registerBattleViewModule = defineModule(
     ],
     produces: [
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED

@@ -43,6 +43,50 @@ export function getHexNeighbours({ row, column }) {
   ].filter(isOnBattlefield)
 }
 
+// Null off the battlefield.
+export function getHexNeighbourOnSide({ row, column }, side) {
+  const leftColumn = row % 2 === 0 ? column : column - 1
+  const neighbour = {
+    left: { row, column: column - 1 },
+    right: { row, column: column + 1 },
+    'top-left': { row: row - 1, column: leftColumn },
+    'top-right': { row: row - 1, column: leftColumn + 1 },
+    'bottom-left': { row: row + 1, column: leftColumn },
+    'bottom-right': { row: row + 1, column: leftColumn + 1 }
+  }[side]
+  return neighbour && isOnBattlefield(neighbour) ? neighbour : null
+}
+
+// In hex widths and heights, in Heroes 3's order of sides (VCMI `BattleHex::EDir`), which
+// settles ties.
+const SIDE_OFFSETS = [
+  ['top-left', { x: -0.5, y: -0.75 }],
+  ['top-right', { x: 0.5, y: -0.75 }],
+  ['right', { x: 1, y: 0 }],
+  ['bottom-right', { x: 0.5, y: 0.75 }],
+  ['bottom-left', { x: -0.5, y: 0.75 }],
+  ['left', { x: -1, y: 0 }]
+]
+
+// `point` is an offset from the hex's centre (VCMI `BattleFieldController::selectNearestDirection`).
+export function findNearestHexSide({ point, hexSize, sides }) {
+  let nearest = null
+  let nearestDistance = Number.POSITIVE_INFINITY
+  for (const [side, offset] of SIDE_OFFSETS) {
+    if (!sides.includes(side)) {
+      continue
+    }
+
+    const distance =
+      (offset.x * hexSize.width - point.x) ** 2 + (offset.y * hexSize.height - point.y) ** 2
+    if (distance < nearestDistance) {
+      nearest = side
+      nearestDistance = distance
+    }
+  }
+  return nearest
+}
+
 export function getHexDistance(from, to) {
   const toCube = ({ row, column }) => ({ q: column - (row + (row % 2)) / 2, r: row })
   const a = toCube(from)
