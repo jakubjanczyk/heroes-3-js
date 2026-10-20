@@ -71,7 +71,6 @@ export const registerBattleModule = defineModule(
     // A move or attack is saved as one fact; until the walk ends the battle is shown as before.
     let moving = null
     let autoCombat = false
-    // Turns the computer let pass in a row; a whole round of them and Auto combat gives up.
     let passedTurns = 0
 
     function showBattle() {
@@ -183,7 +182,6 @@ export const registerBattleModule = defineModule(
       }
     }
 
-    // A hero stack is active, no stack is moving and Auto combat is off.
     const isPlayersTurn = () =>
       Boolean(battle) && !moving && !autoCombat && getActiveStack(battle)?.side === 'attacker'
 
@@ -420,7 +418,6 @@ export const registerBattleModule = defineModule(
             continueBattle()
           }
         },
-        // Pressed again, it hands the hero's next stack back to the player.
         {
           type: APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
           handler: () => {

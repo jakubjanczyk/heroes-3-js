@@ -25,7 +25,6 @@ import { SWAMP } from './terrain-codes.js'
 
 const monsters = readGameData('monsters.json')
 
-// A hero that wins the battle against the monster with Auto combat.
 const aWinningHero = () => aHero().withArmy(ARMY_THAT_WINS)
 
 describe('monster interaction behavior', () => {

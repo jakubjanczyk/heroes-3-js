@@ -44,7 +44,6 @@ async function reload(sessionOptions) {
 
 const monsters = readGameData('monsters.json')
 
-// A hero that wins the battle against the monster next to it with Auto combat.
 const aWinningHero = () => aHero().withArmy(ARMY_THAT_WINS)
 
 const aWinningFight = (width) =>

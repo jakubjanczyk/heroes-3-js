@@ -861,7 +861,6 @@ export function getBattleButton(name) {
   return within(getBattleScreen()).getByRole('button', { name })
 }
 
-// Wait, Defend, Auto combat...: lets the stacks the computer plays take their turns after it.
 export async function clickBattleButton(user, name) {
   await user.click(getBattleButton(name))
   await flushMicrotasks()
@@ -876,7 +875,6 @@ export async function pressKey(user, key) {
   await flushMicrotasks()
 }
 
-// Lets the computer play the stacks until the battle screen closes.
 export async function waitForBattleToEnd() {
   for (let attempt = 0; attempt < 200 && queryBattleScreen(); attempt += 1) {
     await flushMicrotasks()
