@@ -21,11 +21,19 @@ import {
   waitStack
 } from '../../../game/heroes/battle.js'
 import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
+import {
+  BATTLE_OUTCOME_LOST,
+  BATTLE_OUTCOME_RETREATED,
+  BATTLE_OUTCOME_WON,
+  describeBattleResults
+} from '../../../game/heroes/battle-results.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+  APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
+  APP_COMMAND_BATTLE_RETREAT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
@@ -34,6 +42,7 @@ import {
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_ENDED,
+  APP_FACT_BATTLE_FINISHED,
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_MOVED,
@@ -54,6 +63,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
+const DEFAULT_HERO_NAME = 'Hero'
 
 const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
 
@@ -77,6 +87,20 @@ export const registerBattleModule = defineModule(
     let moving = null
     let autoCombat = false
     let passedTurns = 0
+    // How the battle went, once it is over and its results window waits for the player.
+    let outcome = null
+
+    function describeResults() {
+      const heroName = definitions.hero?.name ?? DEFAULT_HERO_NAME
+      const experience = outcome === BATTLE_OUTCOME_WON ? getExperienceForWin(battle) : 0
+      return describeBattleResults({
+        battle,
+        outcome,
+        heroName,
+        monster: { creature: started.entityType, count: started.count },
+        experience
+      })
+    }
 
     function showBattle() {
       if (moving) {
@@ -95,13 +119,15 @@ export const registerBattleModule = defineModule(
           messages: moving.battle.messages,
           canWait: false,
           canDefend: false,
+          canRetreat: false,
+          results: null,
           autoCombat,
           stepDelayMs
         })
         return
       }
 
-      const activeStack = getActiveStack(battle)
+      const activeStack = outcome ? null : getActiveStack(battle)
       const canAct = isPlayersTurn()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
@@ -113,6 +139,8 @@ export const registerBattleModule = defineModule(
         messages: battle.messages,
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
+        canRetreat: canAct,
+        results: outcome ? describeResults() : null,
         autoCombat,
         stepDelayMs
       })
@@ -129,6 +157,7 @@ export const registerBattleModule = defineModule(
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { amount: experience })
     }
 
+    // Beaten or retreated: the hero leaves the map and the monster keeps what it has left.
     function loseBattle() {
       const { entityId } = started
       const count = battle.stacks
@@ -176,14 +205,26 @@ export const registerBattleModule = defineModule(
       continueBattle()
     }
 
-    function continueBattle() {
-      if (!hasLivingStacks(battle, 'defender')) {
+    function closeResults() {
+      if (outcome === BATTLE_OUTCOME_WON) {
         winBattle()
+      } else {
+        loseBattle()
+      }
+    }
+
+    function continueBattle() {
+      if (outcome) {
+        return
+      }
+
+      if (!hasLivingStacks(battle, 'defender')) {
+        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
         return
       }
 
       if (!hasLivingStacks(battle, 'attacker')) {
-        loseBattle()
+        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_LOST })
         return
       }
 
@@ -200,7 +241,11 @@ export const registerBattleModule = defineModule(
     }
 
     const isPlayersTurn = () =>
-      Boolean(battle) && !moving && !autoCombat && getActiveStack(battle)?.side === 'attacker'
+      Boolean(battle) &&
+      !outcome &&
+      !moving &&
+      !autoCombat &&
+      getActiveStack(battle)?.side === 'attacker'
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -280,6 +325,7 @@ export const registerBattleModule = defineModule(
             started = null
             battle = null
             autoCombat = false
+            outcome = null
           }
         },
         {
@@ -410,12 +456,25 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_FINISHED,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            outcome = event.detail.outcome
+            autoCombat = false
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_ENDED,
           handler: () => {
             started = null
             battle = null
             moving = null
             autoCombat = false
+            outcome = null
           }
         },
         {
@@ -472,9 +531,27 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+          handler: () => {
+            if (!isPlayersTurn()) {
+              return
+            }
+
+            emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_RETREATED })
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
+          handler: () => {
+            if (outcome) {
+              closeResults()
+            }
+          }
+        },
+        {
           type: APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
           handler: () => {
-            if (!battle) {
+            if (!battle || outcome) {
               return
             }
 
@@ -504,13 +581,16 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+      APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
-      APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED
+      APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+      APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+      APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED
     ],
     produces: [
       APP_UI_BATTLE_UPDATED,
@@ -521,6 +601,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+      APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_FACT_MONSTER_DEFEATED,
       APP_FACT_MONSTER_COUNT_CHANGED,

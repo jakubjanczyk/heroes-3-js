@@ -118,8 +118,8 @@
 
     <!--
       The Heroes 3 battle screen, laid over the adventure screen when a battle starts. The hexes
-      and stacks are added for each battle. Icons are stand-ins for the game's; only Auto combat,
-      Wait and Defend work so far. `aria-keyshortcuts` gives a button its keys (keyboard-shortcuts.module.js).
+      and stacks are added for each battle. Icons are stand-ins for the game's; Retreat, Auto combat,
+      Wait and Defend work so far, and Surrender only against an enemy hero, which there is none of yet. `aria-keyshortcuts` gives a button its keys (keyboard-shortcuts.module.js).
     -->
     <template id="battle-screen-template">
       <section class="battle-screen" role="dialog" aria-modal="true" aria-label="Battle">
@@ -133,10 +133,10 @@
           <button class="battle-button" type="button" aria-label="System options" title="System options (not available yet)" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
           </button>
-          <button class="battle-button" type="button" aria-label="Surrender" title="Surrender (not available yet)" disabled>
+          <button class="battle-button" type="button" aria-label="Surrender" title="Neutral creatures do not accept surrender" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3M6 4h11l-3 4 3 4H6"/></svg>
           </button>
-          <button class="battle-button" type="button" aria-label="Retreat" title="Retreat (not available yet)" disabled>
+          <button class="battle-button" type="button" data-battle-action="retreat" aria-label="Retreat" aria-keyshortcuts="R" title="Retreat (R)" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4a2 2 0 1 0 0 .1M9 21l3-7 3 3v4M12 14l-1-5 4 2 3-1M11 9l-4 3"/></svg>
           </button>
           <button class="battle-button" type="button" data-battle-action="auto-combat" aria-label="Auto combat" aria-keyshortcuts="A" aria-pressed="false" title="Auto combat (A)">
@@ -159,6 +159,60 @@
         </div>
         <div class="battle-screen__status-bar" role="status" aria-label="Battle status bar"></div>
       </section>
+    </template>
+
+    <!-- Asked before the hero runs from the battle, as in Heroes 3. -->
+    <template id="battle-retreat-template">
+      <div class="battle-overlay" role="dialog" aria-modal="true" aria-label="Retreat">
+        <div class="battle-overlay__window battle-retreat message-box">
+          <p class="battle-retreat__question">Are you sure you want to retreat?</p>
+          <div class="battle-overlay__actions">
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="confirm-retreat" aria-label="OK" aria-keyshortcuts="Enter">
+              <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="cancel-retreat" aria-label="Cancel" aria-keyshortcuts="Escape">
+              <svg class="battle-overlay__cancel" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M6.5 17.5 17.5 6.5" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!--
+      The Heroes 3 results window over the darkened battle: each side with its outcome, what
+      became of the hero and the creatures each side lost. No pictures yet: stand-ins for the
+      portraits and the creatures.
+    -->
+    <template id="battle-results-template">
+      <div class="battle-overlay battle-results" role="dialog" aria-modal="true" aria-label="Battle results">
+        <div class="battle-overlay__window battle-results__window message-box">
+          <div class="battle-results__sides">
+            <div class="battle-results__side" role="group" aria-label="Attacker">
+              <p class="battle-results__name"></p>
+              <p class="battle-results__outcome"></p>
+            </div>
+            <div class="battle-results__side battle-results__side--defender" role="group" aria-label="Defender">
+              <p class="battle-results__name"></p>
+              <p class="battle-results__outcome"></p>
+            </div>
+          </div>
+          <div class="battle-results__message" role="group" aria-label="Battle outcome"></div>
+          <h2 class="battle-results__title">Battlefield Casualties</h2>
+          <div class="battle-results__casualties" role="group" aria-label="Attacker casualties">
+            <h3 class="battle-results__heading">Attacker</h3>
+            <ul class="battle-results__creatures"></ul>
+          </div>
+          <div class="battle-results__casualties" role="group" aria-label="Defender casualties">
+            <h3 class="battle-results__heading">Defender</h3>
+            <ul class="battle-results__creatures"></ul>
+          </div>
+          <div class="battle-overlay__actions">
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="close-results" aria-label="OK" aria-keyshortcuts="Enter">
+              <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </template>
 
     <!-- A creature stack on a battlefield hex: the creature (a stand-in for its picture) and its count. -->
