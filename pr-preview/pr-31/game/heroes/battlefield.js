@@ -26,7 +26,9 @@ export function getStartHexes({ side, stackCount }) {
 const isOnBattlefield = ({ row, column }) =>
   row >= 0 && row < BATTLEFIELD_ROWS && column >= 0 && column < BATTLEFIELD_COLUMNS
 
-const hexKey = ({ row, column }) => `${row},${column}`
+export const hexKey = ({ row, column }) => `${row},${column}`
+
+export const isSameHex = (a, b) => a.row === b.row && a.column === b.column
 
 // Even rows sit half a hex to the right, so their diagonal neighbours are shifted right too.
 export function getHexNeighbours({ row, column }) {
@@ -72,14 +74,14 @@ function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
   return steps
 }
 
-export function findHexPath({ from, to, isFree }) {
-  const reached = walkFrom({ from, isFree })
-  if (!reached.has(hexKey(to)) || hexKey(to) === hexKey(from)) {
+export function findHexPath({ from, to, isFree, maxSteps }) {
+  const reached = walkFrom({ from, isFree, maxSteps })
+  if (!reached.has(hexKey(to)) || isSameHex(to, from)) {
     return null
   }
 
   const path = []
-  for (let hex = to; hexKey(hex) !== hexKey(from); hex = reached.get(hexKey(hex)).previous) {
+  for (let hex = to; !isSameHex(hex, from); hex = reached.get(hexKey(hex)).previous) {
     path.unshift(hex)
   }
   return path
@@ -91,9 +93,7 @@ export function getReachableHexes({ from, speed, flying, isFree }) {
       Array.from({ length: BATTLEFIELD_COLUMNS }, (_, column) => ({ row, column }))
     )
       .flat()
-      .filter(
-        (hex) => hexKey(hex) !== hexKey(from) && isFree(hex) && getHexDistance(from, hex) <= speed
-      )
+      .filter((hex) => !isSameHex(hex, from) && isFree(hex) && getHexDistance(from, hex) <= speed)
   }
 
   return [...walkFrom({ from, isFree, maxSteps: speed }).values()]

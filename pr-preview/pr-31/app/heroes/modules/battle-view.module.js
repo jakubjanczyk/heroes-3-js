@@ -1,7 +1,9 @@
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
-  getHexDistance
+  getHexDistance,
+  hexKey,
+  isSameHex
 } from '../../../game/heroes/battlefield.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
@@ -17,15 +19,13 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
-const DEFAULT_STEP_DELAY_MS = 180
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
 export const registerBattleViewModule = defineModule(
-  ({ emit, env, config }) => {
+  ({ emit, env }) => {
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
-    const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
     let map = null
     let heroName = DEFAULT_HERO_NAME
     let battleScreen = null
@@ -33,6 +33,7 @@ export const registerBattleViewModule = defineModule(
     let statusBar = null
     let stackElements = new Map()
     let shown = null
+    let reachableKeys = new Set()
     let isRestoring = false
 
     function cloneTemplate(id) {
@@ -51,9 +52,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function isReachable(hex) {
-      return (shown?.reachableHexes ?? []).some(
-        ({ row, column }) => row === hex.row && column === hex.column
-      )
+      return reachableKeys.has(hexKey(hex))
     }
 
     function describeHex(hex) {
@@ -130,7 +129,7 @@ export const registerBattleViewModule = defineModule(
           { translate: `${before.left - after.left}px ${before.top - after.top}px` },
           { translate: '0 0' }
         ],
-        { duration: stepDelayMs * getHexDistance(from, to), easing: 'linear' }
+        { duration: shown.stepDelayMs * getHexDistance(from, to), easing: 'linear' }
       )
     }
 
@@ -145,6 +144,7 @@ export const registerBattleViewModule = defineModule(
 
       const previous = shown
       shown = battle
+      reachableKeys = new Set(battle.reachableHexes.map(hexKey))
 
       for (const stack of battle.stacks) {
         let element = stackElements.get(stack.id)
@@ -154,7 +154,7 @@ export const registerBattleViewModule = defineModule(
         }
 
         const from = previous?.stacks.find(({ id }) => id === stack.id)?.hex
-        if (!from || from.row !== stack.hex.row || from.column !== stack.hex.column) {
+        if (!from || !isSameHex(from, stack.hex)) {
           placeStack(element, from, stack.hex)
         }
 
@@ -187,6 +187,7 @@ export const registerBattleViewModule = defineModule(
       hexes = []
       stackElements = new Map()
       shown = null
+      reachableKeys = new Set()
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 

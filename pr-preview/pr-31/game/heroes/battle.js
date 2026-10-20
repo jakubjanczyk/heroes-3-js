@@ -1,4 +1,10 @@
-import { findHexPath, getReachableHexes, getStartHexes } from './battlefield.js'
+import {
+  findHexPath,
+  getHexDistance,
+  getReachableHexes,
+  getStartHexes,
+  isSameHex
+} from './battlefield.js'
 import { describeStack } from './hero-army.js'
 
 function createStacks({ side, army, definitions }) {
@@ -51,18 +57,11 @@ export function moveStack(battle, stackId, hex) {
   }
 }
 
-const isSameHex = (a, b) => a.row === b.row && a.column === b.column
-
 function isFreeFor(battle) {
   return (hex) => !battle.stacks.some((stack) => isSameHex(stack.hex, hex))
 }
 
-export function getActiveStackReach(battle) {
-  const stack = getActiveStack(battle)
-  if (!stack) {
-    return []
-  }
-
+export function getStackReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
     speed: stack.speed,
@@ -71,15 +70,16 @@ export function getActiveStackReach(battle) {
   })
 }
 
-export function planActiveStackMove(battle, hex) {
-  const stack = getActiveStack(battle)
-  if (!stack || !getActiveStackReach(battle).some((reachable) => isSameHex(reachable, hex))) {
+// The hexes the stack goes through to get to `hex`, or null when it cannot get there this turn.
+export function planStackMove(battle, stack, hex) {
+  const isFree = isFreeFor(battle)
+  if (!isFree(hex)) {
     return null
   }
 
   if (stack.flying) {
-    return [hex]
+    return getHexDistance(stack.hex, hex) <= stack.speed ? [hex] : null
   }
 
-  return findHexPath({ from: stack.hex, to: hex, isFree: isFreeFor(battle) })
+  return findHexPath({ from: stack.hex, to: hex, isFree, maxSteps: stack.speed })
 }
