@@ -43,6 +43,33 @@ export function getHexNeighbours({ row, column }) {
   ].filter(isOnBattlefield)
 }
 
+// The hex next to `hex` on one of its six sides, or null off the battlefield. Sides are 'left',
+// 'right', 'top-left', 'top-right', 'bottom-left' and 'bottom-right'.
+export function getHexNeighbourOnSide({ row, column }, side) {
+  const leftColumn = row % 2 === 0 ? column : column - 1
+  const neighbour = {
+    left: { row, column: column - 1 },
+    right: { row, column: column + 1 },
+    'top-left': { row: row - 1, column: leftColumn },
+    'top-right': { row: row - 1, column: leftColumn + 1 },
+    'bottom-left': { row: row + 1, column: leftColumn },
+    'bottom-right': { row: row + 1, column: leftColumn + 1 }
+  }[side]
+  return neighbour && isOnBattlefield(neighbour) ? neighbour : null
+}
+
+// The side of a hex a point is on, from its offset to the hex's centre (y grows downwards):
+// six slices of 60 degrees, the right one centred on the horizontal.
+export function getHexSideAt({ x, y }) {
+  const degrees = (Math.atan2(-y, x) * 180) / Math.PI
+  if (degrees > 150 || degrees <= -150) return 'left'
+  if (degrees > 90) return 'top-left'
+  if (degrees > 30) return 'top-right'
+  if (degrees > -30) return 'right'
+  if (degrees > -90) return 'bottom-right'
+  return 'bottom-left'
+}
+
 export function getHexDistance(from, to) {
   const toCube = ({ row, column }) => ({ q: column - (row + (row % 2)) / 2, r: row })
   const a = toCube(from)

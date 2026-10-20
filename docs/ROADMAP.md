@@ -201,14 +201,15 @@ Heroes become characters with identity and progression.
 - [x] A scenario may set any of them per hero, like the H3 editor's "Customize primary skills"; values below the H3 minimums (A0/D0/P1/K1) are rejected
 - [x] Stats displayed in the info box (H3 layout: portrait, name, four icons with values) and the hero's right-click popup
 - [ ] Stats shown in the hero screen (needs a hero screen)
-- [ ] Attack: increases creature damage dealt in combat
-- [ ] Defense: reduces creature damage taken in combat
+- [x] Attack: increases creature damage dealt in combat (`docs/notes/2026-10-20-battle-attacks.md`)
+- [x] Defense: reduces creature damage taken in combat
 - [ ] Power: increases spell damage/duration
 - [ ] Knowledge: determines max mana (Knowledge * 10)
 
 ### 4.2 Hero Experience & Leveling
 - [ ] Heroes earn XP from: defeating monsters, visiting XP objects (Learning Stone, etc.)
   - [x] For now: Treasure Chests (see 7.7)
+  - [x] Winning a battle: the health of every enemy creature killed (see 5.9)
 - [x] XP thresholds per level as in H3: 1000, 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500, 20600, then each step 20% more than the one before
 - [x] A scenario may set a hero's starting experience (default 0)
 - [x] Level-up facts: `fact.hero.experience.gained` and `fact.hero.leveledUp` (with the rolled primary skill, so a reload replays it)
@@ -384,20 +385,26 @@ See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
 - [ ] Battle cursors as in H3: walk, fly, forbidden
 
 ### 5.6 Combat Attacks
-- [ ] Melee attack: move adjacent to enemy stack, click to attack
-- [ ] Damage formula: `base_damage * count * (1 + 0.05 * (attack - defense))` (simplified H3 formula)
-- [ ] Attack stat = creature attack + hero Attack attribute
-- [ ] Defense stat = creature defense + hero Defense attribute
-- [ ] Damage range: random between creature min and max damage per unit
-- [ ] Casualties calculated: total damage / creature max health = units killed, remainder tracked
-- [ ] Retaliation: defending stack counter-attacks once per round (unless ability prevents it)
+See `docs/notes/2026-10-20-battle-attacks.md`.
+- [x] Melee attack: click an enemy stack; the side of it under the mouse picks the hex to attack from, and the stack walks or flies there first
+- [x] Damage formula as in H3: attack above defense +5% a point (up to +300%), defense above attack -2.5% a point (up to -70%), rounded down, at least 1
+- [x] Attack stat = creature attack + hero Attack attribute
+- [x] Defense stat = creature defense + hero Defense attribute
+- [x] Damage roll as in H3: one roll per creature up to 10 creatures; a bigger stack rolls 10 times, times count / 10
+- [x] Casualties: the damage goes to the wounded top creature first, then whole creatures; the leftover wounds the next
+- [x] Retaliation: defending stack strikes back once per round (Griffins twice, Royal Griffins every time); a dead stack does not
+- [x] Crusaders strike twice: attack, retaliation, attack again
+- [x] Combat log as in H3: "The Angels do 175 damage. 17 Pikemen perish." (wording not checked against the game's text files)
+- [x] Status bar over an enemy: "Attack Pikemen (damage 18-36)" (wording not checked against the game's text files)
 - [ ] Ranged attack: ranged creatures can attack from distance
 - [ ] Ranged: limited ammo (shots per battle, usually 12-24)
 - [ ] Ranged: half damage if adjacent enemy (melee penalty)
 - [ ] Ranged: half damage beyond half grid distance (distance penalty)
 - [ ] Ranged: blocked by obstacles/walls in line of fire
 - [ ] Attack animation: brief visual for attack, damage number shown
-- [ ] Death animation: stack at 0 units removed from grid
+- [x] A stack at 0 units stays on its hex as a corpse: it gets no turn, and other stacks can stand on it
+- [ ] Death animation
+- [ ] Jousting (Cavaliers), hatred (Angels and Devils), luck, Offense and Armorer skills
 
 ### 5.7 Combat Actions (Wait, Defend, Retreat, Surrender)
 - [ ] **Wait**: skip current turn, act later in the round (after all others, at half-speed priority)
@@ -426,7 +433,9 @@ See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
 
 ### 5.9 Combat Resolution
 - [ ] **Victory**: all enemy stacks destroyed or fled
-  - XP awarded (based on defeated army AI value)
+  - [x] The battle ends when the monster has no creatures left
+  - [x] XP awarded: the health of every enemy creature killed, as in H3 (Auto combat counts the whole monster)
+  - [ ] The hero's army keeps its losses after the battle
   - Loot: gold and/or resources dropped by neutral monsters
   - Creature losses tallied and shown in summary
   - "Victory" screen with stats

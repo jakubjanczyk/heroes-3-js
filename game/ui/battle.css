@@ -174,6 +174,21 @@
   text-align: center;
 }
 
+.battle-stack--dead {
+  z-index: 0;
+}
+
+/* A corpse lies flat and dark on its hex, under any stack standing on it. */
+.battle-stack--dead .battle-stack__creature {
+  block-size: 60%;
+  filter: grayscale(1) brightness(0.45);
+  transform: rotate(90deg);
+}
+
+.battle-stack--dead .battle-stack__count {
+  display: none;
+}
+
 .battle-stack--attacker .battle-stack__count {
   inset-inline-start: 65%;
 }
@@ -243,6 +258,10 @@
   font-size: var(--font-size-sm);
   line-height: 1.2;
   text-align: center;
+}
+
+.battle-bar__message {
+  margin: 0;
 }
 
 .battle-bar__scroll {

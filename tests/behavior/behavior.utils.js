@@ -686,23 +686,19 @@ export function getBattlefield() {
 
 // Every creature stack on the battlefield as "<name> <count>" with its hex, rows and columns
 // counted from 1 as Heroes 3 players would: row 1 at the top, column 1 on the attacker's side.
+// A dead stack reads "Dead <name>" with no count; a living stack may stand on it.
 export function readBattleStacks() {
   return within(getBattlefield())
     .getAllByRole('gridcell')
-    .flatMap((hex) => {
-      const creature = within(hex).queryByRole('img')
-      if (!creature) {
-        return []
-      }
+    .flatMap((hex) =>
+      within(hex)
+        .queryAllByRole('img')
+        .map((creature) => ({ stack: describeBattleStack(creature), ...readHexPosition(hex) }))
+    )
+}
 
-      return [
-        {
-          stack: `${creature.getAttribute('aria-label')} ${hex.textContent.trim()}`,
-          row: Number(hex.closest('[role="row"]').getAttribute('aria-rowindex')),
-          column: Number(hex.getAttribute('aria-colindex'))
-        }
-      ]
-    })
+function describeBattleStack(creature) {
+  return `${creature.getAttribute('aria-label')} ${creature.parentElement.textContent.trim()}`.trim()
 }
 
 function readHexPosition(hex) {
@@ -722,14 +718,12 @@ export function getBattleHex(row, column) {
 }
 
 export function readActiveStack() {
-  const active = within(getBattlefield())
-    .getAllByRole('gridcell')
-    .filter((hex) => within(hex).queryByRole('img', { current: true }))
+  const active = within(getBattlefield()).getAllByRole('img', { current: true })
   expect(active).toHaveLength(1)
-  const [hex] = active
+  const [creature] = active
   return {
-    stack: `${within(hex).getByRole('img').getAttribute('aria-label')} ${hex.textContent.trim()}`,
-    ...readHexPosition(hex)
+    stack: describeBattleStack(creature),
+    ...readHexPosition(creature.closest('[role="gridcell"]'))
   }
 }
 
@@ -761,6 +755,60 @@ export async function hoverBattleHex(user, row, column) {
 
 export function getBattleStatusBarText() {
   return within(getBattleScreen()).getByRole('status', { name: 'Battle status bar' }).textContent
+}
+
+// Where the mouse points within a hex picks the side a stack attacks from, as in Heroes 3.
+// jsdom lays nothing out, so the hex gets a size to point within.
+const HEX_SIZE = { width: 40, height: 46 }
+const POINTER_OFFSET_BY_SIDE = {
+  right: { x: 15, y: 0 },
+  left: { x: -15, y: 0 },
+  'top-right': { x: 8, y: -14 },
+  'top-left': { x: -8, y: -14 },
+  'bottom-right': { x: 8, y: 14 },
+  'bottom-left': { x: -8, y: 14 }
+}
+
+function pointerOnHexSide(row, column, side) {
+  const hex = getBattleHex(row, column)
+  hex.getBoundingClientRect = () => ({
+    left: 0,
+    top: 0,
+    right: HEX_SIZE.width,
+    bottom: HEX_SIZE.height,
+    x: 0,
+    y: 0,
+    ...HEX_SIZE
+  })
+  const offset = POINTER_OFFSET_BY_SIDE[side]
+  return {
+    target: hex,
+    coords: {
+      clientX: HEX_SIZE.width / 2 + offset.x,
+      clientY: HEX_SIZE.height / 2 + offset.y
+    }
+  }
+}
+
+// side: 'left', 'right', 'top-left', 'top-right', 'bottom-left' or 'bottom-right'.
+export async function pointAtBattleHexSide(user, row, column, side) {
+  await user.pointer(pointerOnHexSide(row, column, side))
+}
+
+// Clicks the given side of the stack on that hex: the active stack attacks it from that side.
+export async function attackBattleHexFrom(user, row, column, side) {
+  const pointer = pointerOnHexSide(row, column, side)
+  await user.pointer([pointer, { ...pointer, keys: '[MouseLeft]' }])
+  await flushMicrotasks()
+  await waitMs()
+  await flushMicrotasks()
+}
+
+// The combat message log, oldest line first.
+export function readCombatMessages() {
+  return within(within(getBattleScreen()).getByRole('log', { name: 'Combat messages' }))
+    .queryAllByRole('paragraph')
+    .map((line) => line.textContent)
 }
 
 // Records the hexes the stack moves through, in order, until the returned function is called.
