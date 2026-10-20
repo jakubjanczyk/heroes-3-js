@@ -61,6 +61,50 @@ describe('battle damage', () => {
     expect(dealt).toBe(expected)
   })
 
+  test.each([
+    { name: 'rounded down', damage: 3, expected: 1 },
+    { name: 'at least 1', damage: 1, expected: 1 }
+  ])('halved damage is $name', ({ damage, expected }) => {
+    const dealt = rollDamage({
+      attacker: aStack({ damage: { min: damage, max: damage } }),
+      defender: aStack(),
+      random: LOWEST_ROLLS,
+      halved: true
+    })
+
+    expect(dealt).toBe(expected)
+  })
+
+  // Halved after the attack bonus, not before: 21 x 0.5 = 10.5, where 10 x 0.5 x 1.05 = 5.25.
+  test('the halving applies to the damage after attack and defense', () => {
+    const dealt = rollDamage({
+      attacker: aStack({ count: 10, attack: 1, damage: { min: 2, max: 2 } }),
+      defender: aStack(),
+      random: LOWEST_ROLLS,
+      halved: true
+    })
+
+    expect(dealt).toBe(10)
+  })
+
+  // The attack kills one of the 5 defenders; the 4 left strike back for 40.
+  test.each([
+    { name: 'a shooter strikes back at half damage', meleePenalty: true, expected: 20 },
+    {
+      name: 'a shooter with no melee penalty strikes back at full damage',
+      meleePenalty: false,
+      expected: 40
+    }
+  ])('$name', ({ meleePenalty, expected }) => {
+    const strikes = strikeSequence({
+      attacker: aStack({ id: 'attacker' }),
+      defender: aStack({ id: 'defender', count: 5, meleePenalty }),
+      random: LOWEST_ROLLS
+    })
+
+    expect(strikes[1]).toEqual({ attackerId: 'defender', defenderId: 'attacker', damage: expected })
+  })
+
   test('the damage range for the status bar applies the same modifiers', () => {
     // 5 creatures deal 5-15, -10% for 4 more defense than attack: 4.5-13.5, rounded down.
     const range = getDamageRange({

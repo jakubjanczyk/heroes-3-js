@@ -263,6 +263,11 @@ function drawDiagonalSword() {
     }
   }
 
+  return withOutline(pixels)
+}
+
+// Every empty pixel next to the picture turns black.
+function withOutline(pixels) {
   const isDrawn = (x, y) => pixels[y]?.[x] !== undefined && !['.', 'k'].includes(pixels[y][x])
   for (let y = 0; y < GRID_SIZE; y += 1) {
     for (let x = 0; x < GRID_SIZE; x += 1) {
@@ -278,6 +283,35 @@ function drawDiagonalSword() {
     }
   }
   return pixels.map((row) => row.join(''))
+}
+
+// In battle, over an enemy the active stack can shoot: an arrow flying up to the right. It comes
+// broken in two when the shot does half damage for the distance.
+function drawShootArrow({ broken }) {
+  const pixels = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill('.'))
+  const gap = broken ? [7, 8] : []
+  for (let x = 3; x <= 12; x += 1) {
+    if (!gap.includes(x)) {
+      pixels[15 - x][x] = 'B'
+    }
+  }
+  // The head: a solid triangle pointing to the top-right corner.
+  for (let y = 1; y <= 4; y += 1) {
+    for (let x = 10 + y; x <= 14; x += 1) {
+      pixels[y][x] = 'S'
+    }
+  }
+  for (const [x, y] of [
+    [1, 12],
+    [2, 12],
+    [3, 14],
+    [3, 13],
+    [2, 13],
+    [1, 14]
+  ]) {
+    pixels[y][x] = 'R'
+  }
+  return withOutline(pixels)
 }
 
 // In battle, over a hex the active stack cannot reach: a red circle crossed out.
@@ -418,6 +452,8 @@ const CURSORS = {
   'battle-fly': BATTLE_FLY_ROWS,
   'battle-blocked': drawBlockedSign(),
   'battle-query': BATTLE_QUERY_ROWS,
+  'battle-shoot': drawShootArrow({ broken: false }),
+  'battle-shoot-penalty': drawShootArrow({ broken: true }),
   'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,
   'battle-attack-from-right': mirrorLeftToRight(BATTLE_ATTACK_FROM_LEFT_ROWS),
   'battle-attack-from-top-left': diagonalSword,

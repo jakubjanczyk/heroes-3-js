@@ -13,6 +13,7 @@ import {
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
@@ -91,6 +92,12 @@ export const registerBattleViewModule = defineModule(
       )
     }
 
+    function findShot(hex) {
+      const target = findLivingStackOn(hex)
+      const shotTarget = target && shown.shotTargets.find(({ stackId }) => stackId === target.id)
+      return shotTarget ? { target, ...shotTarget } : null
+    }
+
     // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
     // already next to the target attacks from where it stands.
     function findAttack(hex, hexElement) {
@@ -143,6 +150,12 @@ export const registerBattleViewModule = defineModule(
         return ''
       }
 
+      const shot = findShot(hex)
+      if (shot) {
+        const shotsLeft = activeStack.shots === 1 ? '1 shot' : `${activeStack.shots} shots`
+        return `Shoot ${shot.target.name} (${shotsLeft} left, damage ${shot.damage.min}-${shot.damage.max})`
+      }
+
       if (findLivingStackOn(hex)) {
         const attack = findAttack(hex, hexElementAt(hex))
         return attack
@@ -164,6 +177,11 @@ export const registerBattleViewModule = defineModule(
       const stack = findLivingStackOn(hex)
       if (stack?.side === activeStack.side) {
         return 'query'
+      }
+
+      const shot = stack && findShot(hex)
+      if (shot) {
+        return shot.distancePenalty ? 'shoot-penalty' : 'shoot'
       }
 
       if (stack) {
@@ -407,6 +425,12 @@ export const registerBattleViewModule = defineModule(
               return
             }
 
+            const shot = findShot(hex)
+            if (shot) {
+              emit(APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED, { targetId: shot.target.id })
+              return
+            }
+
             const attack = findAttack(hex, hexElementAt(hex))
             if (attack) {
               emit(APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED, {
@@ -458,6 +482,7 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED

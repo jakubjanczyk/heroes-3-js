@@ -387,7 +387,7 @@ See `docs/notes/2026-10-20-battle-turns-and-movement.md`.
 - [x] Battle cursors as in H3: walk, fly, blocked, the sword from the side attacked from, ? over your own stacks, the helmet over the hero, the arrow while a stack moves
 
 ### 5.6 Combat Attacks
-See `docs/notes/2026-10-20-battle-attacks.md`.
+See `docs/notes/2026-10-20-battle-attacks.md` and `docs/notes/2026-10-20-ranged-attacks.md`.
 - [x] Melee attack: click an enemy stack; the reachable side nearest the mouse picks the hex to attack from (on a touch screen a stack next to it attacks from where it stands), and the stack walks or flies there first
 - [x] Damage formula as in H3: attack above defense +5% a point (up to +300%), defense above attack -2.5% a point (up to -70%), rounded down, at least 1
 - [x] Attack stat = creature attack + hero Attack attribute
@@ -398,11 +398,13 @@ See `docs/notes/2026-10-20-battle-attacks.md`.
 - [x] Crusaders strike twice: attack, retaliation, attack again
 - [x] Combat log as in H3: "The Angels do 175 damage. 17 Pikemen perish." (wording not checked against the game's text files)
 - [x] Status bar over an enemy: "Attack Pikemen (damage 18-36)" (wording not checked against the game's text files)
-- [ ] Ranged attack: ranged creatures can attack from distance
-- [ ] Ranged: limited ammo (shots per battle, usually 12-24)
-- [ ] Ranged: half damage if adjacent enemy (melee penalty)
-- [ ] Ranged: half damage beyond half grid distance (distance penalty)
-- [ ] Ranged: blocked by obstacles/walls in line of fire
+- [x] Ranged attack: a shooter with shots and no enemy next to it shoots any enemy stack, wherever it is, and the target does not strike back
+- [x] Ranged: limited ammo (12 shots a battle, 24 once upgraded); Marksmen shoot twice and use a shot each time
+- [x] Ranged: a shooter attacking in melee (an enemy next to it, or no shots left) does half damage, its retaliation too; Zealots do not (melee penalty)
+- [x] Ranged: half damage at a target more than 10 hexes away (distance penalty)
+- [x] Status bar over a target: "Shoot Pikemen (12 shots left, damage 21-31)"; the cursor is an arrow, broken when the distance penalty applies
+- [ ] Ranged: blocked by castle walls in line of fire (in H3 only walls block a shot: siege, 5.10)
+- [ ] Shots left shown in the creature's info window (needs the window) and the Ammo Cart
 - [ ] Attack animation: brief visual for attack, damage number shown
 - [x] A stack at 0 units stays on its hex as a corpse: it gets no turn, and other stacks can stand on it
 - [ ] Death animation
@@ -420,11 +422,11 @@ See `docs/notes/2026-10-20-wait-defend-auto-combat.md`.
 
 ### 5.7b Combat AI
 See `docs/notes/2026-10-20-combat-ai.md`.
-- [x] Enemy stacks act on their own, simply: go for the nearest stack (fewest hexes to a side of it; the earlier army slot on a tie) and attack it, or get as close as the turn allows. Shooters walk too until there are ranged attacks
+- [x] Enemy stacks act on their own, simply: go for the nearest stack (fewest hexes to a side of it; the earlier army slot on a tie) and attack it, or get as close as the turn allows. A shooter that can shoot shoots the nearest enemy stack instead
 - [x] Auto combat uses the same AI for the player's stacks
 - [ ] Smarter combat AI (later):
   - [ ] Pick the target by threat and value (damage it can deal, creatures it can kill, retaliation it would take), not only by distance
-  - [ ] Shooters stay back and shoot (needs ranged attacks, 5.6), and go for enemy shooters
+  - [ ] Shooters stay back rather than stand still, and go for enemy shooters
   - [ ] Use Wait and Defend (5.7), e.g. wait for the enemy to come into reach rather than walk into a first strike
   - [ ] Protect its own shooters and weak stacks; keep stacks together
   - [ ] Cast spells when a hero leads the army (5.8)

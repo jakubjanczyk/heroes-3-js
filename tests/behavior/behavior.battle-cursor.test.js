@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { loadAppStyles } from './app-styles.js'
 import {
   attackMonsterAt,
+  clickBattleButton,
   clickBattleHex,
   flushMicrotasks,
   getBattleHex,
@@ -24,12 +25,12 @@ const monsters = readGameData('monsters.json')
 const stack = (creature, count) => ({ creature, count })
 
 // Skeletons walk 4 hexes and Angels fly 12. The monster stays one stack.
-const aFight = ({ army, monsterCount = 50, stacks = 1 }) =>
+const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, stacks = 1 }) =>
   aScenario()
     .withSize(3)
     .withEntities(
       aHero().withArmy(army),
-      aMonster().withType('PIKEMAN').withCount(monsterCount).withStacks(stacks).at(1, 0)
+      aMonster().withType(monsterType).withCount(monsterCount).withStacks(stacks).at(1, 0)
     )
     .withDefinitions({ monsters })
 
@@ -130,6 +131,40 @@ describe('battle cursor behavior', () => {
     expect(cursorOverHex(PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)).toBe(
       'battle-attack-from-top-left'
     )
+  })
+
+  describe('shooting', () => {
+    // Archers and Pikemen are as fast: once the Archers wait, the Pikemen walk to column 11, 10
+    // hexes from them.
+    test('given the mouse is over a monster the active shooter can shoot then the cursor is the shoot arrow', async () => {
+      const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }))
+      await clickBattleButton(user, 'Wait')
+
+      await hoverBattleHex(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)
+
+      expect(cursorOverHex(PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)).toBe('battle-shoot')
+    })
+
+    test('given the monster is more than 10 hexes away then the cursor is the broken arrow', async () => {
+      const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }))
+
+      await hoverBattleHex(user, MONSTER.row, MONSTER.column)
+
+      expect(cursorOverHex(MONSTER.row, MONSTER.column)).toBe('battle-shoot-penalty')
+    })
+
+    // The Swordsman (speed 5) walks to column 10, the Archers to column 5, and the Swordsman next
+    // to them, to column 6.
+    test('given an enemy stands next to the shooter then the cursor over that enemy is the sword', async () => {
+      const { user } = await startBattle(
+        aFight({ army: [stack('ARCHER', 10)], monsterType: 'SWORDSMAN', monsterCount: 1 })
+      )
+      await moveActiveStackTo(user, 6, 5)
+
+      await pointAtBattleHexSide(user, 6, 6, 'left')
+
+      expect(cursorOverHex(6, 6)).toBe('battle-attack-from-left')
+    })
   })
 
   test('given the mouse is over one of the player own stacks then the cursor is the question mark', async () => {
