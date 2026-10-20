@@ -2,28 +2,28 @@
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
+import { attackMonsterAt, getHeroEntity, hoverTile } from './adventure-map.utils.js'
+import { expectStatusBarText } from './adventure-panels.utils.js'
 import {
-  attackMonsterAt,
+  createMemoryEventLog,
+  flushMicrotasks,
+  pressKey,
+  readGameData,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
+import {
   clickBattleButton,
   clickBattleHex,
   closeBattleResults,
-  createMemoryEventLog,
-  expectStatusBarText,
-  flushMicrotasks,
   getBattleButton,
-  getHeroEntity,
-  hoverTile,
   moveActiveStackTo,
-  pressKey,
   queryRetreatDialog,
   readActiveStack,
   readBattleResultsMessage,
   readBattleResultsSide,
-  readGameData,
-  retreat,
-  setupMovementBehaviorApp,
-  waitMs
-} from './behavior.utils.js'
+  retreat
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const HERO_NAME = 'Sir Christian'

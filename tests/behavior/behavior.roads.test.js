@@ -1,19 +1,17 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { loadAppStyles } from './app-styles.js'
 import {
   confirmMove,
   dispatchTileClick,
   expectHeroAt,
-  expectMovementPoints,
   expectPreviewOverLimitDashAt,
   expectPreviewOverLimitTargetAt,
-  flushMicrotasks,
   getPreviewOverLimitDashAt,
-  getRoadOn,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  getRoadOn
+} from './adventure-map.utils.js'
+import { expectMovementPoints } from './adventure-panels.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
 import { aHero, aScenario } from './builders.js'
 import {
   ALL_ROADS,

@@ -1,31 +1,34 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 import {
-  clickEndTurn,
-  closeInteractionModal,
   confirmTileClickByDispatch,
-  createMemoryEventLog,
   dispatchTileClick,
   expectHeroAt,
-  expectInteractionModalClosed,
-  expectInteractionModalOpen,
   expectMonsterDefeating,
   expectMonsterNotPresent,
-  expectMovementPoints,
   expectNoPreview,
   expectPreviewNotOverLimitTargetAt,
   expectPreviewOverLimitTargetAt,
   expectPreviewTargetAt,
   expectResourceCollecting,
   expectResourceNotPresent,
-  expectResourceTotal,
-  expectTownPresent,
+  expectTownPresent
+} from './adventure-map.utils.js'
+import {
+  clickEndTurn,
+  closeInteractionModal,
+  expectInteractionModalClosed,
+  expectInteractionModalOpen,
+  expectMovementPoints,
+  expectResourceTotal
+} from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
   flushMicrotasks,
-  queryBattleScreen,
   readGameData,
-  setupMovementBehaviorApp,
-  winBattle
-} from './behavior.utils.js'
+  setupMovementBehaviorApp
+} from './app.utils.js'
+import { queryBattleScreen, winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
 
 function createSession(scenario, appConfig = {}) {

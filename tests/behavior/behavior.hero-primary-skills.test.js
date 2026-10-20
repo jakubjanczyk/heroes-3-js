@@ -2,13 +2,9 @@
 import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
-import {
-  getHeroInfoBox,
-  holdRightButtonOn,
-  readGameData,
-  readPrimarySkills,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+import { holdRightButtonOn } from './adventure-map.utils.js'
+import { getHeroInfoBox, readPrimarySkills } from './adventure-panels.utils.js'
+import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 const gameDefinitions = {

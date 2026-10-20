@@ -5,18 +5,18 @@ import {
   confirmTileClickByDispatch,
   dispatchTileClick,
   expectHeroAt,
-  expectInteractionModalClosed,
-  expectMovementPoints,
   expectNoPreview,
   expectResourceAt,
   expectResourceCollecting,
   expectResourceNotPresent,
-  expectResourcePresent,
-  expectResourceTotal,
-  flushMicrotasks,
-  setupMovementBehaviorApp,
-  waitMs
-} from './behavior.utils.js'
+  expectResourcePresent
+} from './adventure-map.utils.js'
+import {
+  expectInteractionModalClosed,
+  expectMovementPoints,
+  expectResourceTotal
+} from './adventure-panels.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { aHero, aResource, aScenario } from './builders.js'
 
 const goldDefinitions = { resources: { GOLD_PILE: { name: 'Gold pile', amount: 100 } } }

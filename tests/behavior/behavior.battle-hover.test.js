@@ -1,16 +1,14 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
+import { attackMonsterAt } from './adventure-map.utils.js'
+import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import {
-  attackMonsterAt,
   hoverBattleHex,
   moveActiveStackTo,
-  readGameData,
   readHighlightedBattleHexes,
-  setupMovementBehaviorApp,
   tapBattleHexSide
-} from './behavior.utils.js'
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')

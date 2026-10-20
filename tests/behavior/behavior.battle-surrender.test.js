@@ -1,12 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import {
-  attackMonsterAt,
-  getBattleButton,
-  readGameData,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+import { attackMonsterAt } from './adventure-map.utils.js'
+import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import { getBattleButton } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 describe('battle surrender behavior', () => {

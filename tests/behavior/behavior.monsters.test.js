@@ -9,17 +9,12 @@ import {
   expectMonsterDefeating,
   expectMonsterNotPresent,
   expectMonsterPresent,
-  expectMovementPoints,
   expectNoPreview,
-  expectPreviewTargetAt,
-  flushMicrotasks,
-  getBattleScreen,
-  queryBattleScreen,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs,
-  winBattle
-} from './behavior.utils.js'
+  expectPreviewTargetAt
+} from './adventure-map.utils.js'
+import { expectMovementPoints } from './adventure-panels.utils.js'
+import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { getBattleScreen, queryBattleScreen, winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
 

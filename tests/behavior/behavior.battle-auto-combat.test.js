@@ -1,25 +1,24 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
+import { attackMonsterAt, expectMonsterNotPresent, getHeroEntity } from './adventure-map.utils.js'
+import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
 import {
-  attackMonsterAt,
-  clickBattleButton,
   createMemoryEventLog,
-  expectMonsterNotPresent,
   flushMicrotasks,
-  getHeroEntity,
-  getHeroInfoBox,
   pressKey,
-  queryBattleScreen,
-  readActiveStack,
-  readArmySlots,
-  readBattleStacks,
-  readCombatMessages,
   readGameData,
   setupMovementBehaviorApp,
-  waitForBattleToEnd,
   waitMs
-} from './behavior.utils.js'
+} from './app.utils.js'
+import {
+  clickBattleButton,
+  queryBattleScreen,
+  readActiveStack,
+  readBattleStacks,
+  readCombatMessages,
+  waitForBattleToEnd
+} from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')

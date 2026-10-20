@@ -2,21 +2,18 @@
 import { describe, expect, test } from 'vitest'
 
 import {
-  clickEndTurn,
   confirmTileClickByDispatch,
   dispatchTileClick,
   expectHeroAt,
-  expectMovementPoints,
   expectPreviewDashAt,
   expectPreviewNotOverLimitTargetAt,
   expectPreviewOverLimitDashAt,
   expectPreviewTargetAt,
-  flushMicrotasks,
   getPreviewOverLimitDashAt,
-  getPreviewTargetAt,
-  setupLinearMovementApp,
-  waitMs
-} from './behavior.utils.js'
+  getPreviewTargetAt
+} from './adventure-map.utils.js'
+import { clickEndTurn, expectMovementPoints } from './adventure-panels.utils.js'
+import { flushMicrotasks, setupLinearMovementApp, waitMs } from './app.utils.js'
 
 describe('end turn behavior', () => {
   test('given hero has spent movement points when player clicks End turn then movement points reset to 1500', async () => {

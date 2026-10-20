@@ -1,12 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import {
-  confirmTileClickByDispatch,
-  createMemoryEventLog,
-  expectHeroAt,
-  flushMicrotasks,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+import { confirmTileClickByDispatch, expectHeroAt } from './adventure-map.utils.js'
+import { createMemoryEventLog, flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 const aPanScenario = () => aScenario().withSize(60, 40).withEntities(aHero().at(20, 15))

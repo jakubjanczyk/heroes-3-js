@@ -8,14 +8,11 @@ import {
   expectHeroAt,
   expectNoPreview,
   expectPreviewTargetAt,
-  flushMicrotasks,
   holdRightButtonOn,
-  pointerOverTile,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs,
-  winBattle
-} from './behavior.utils.js'
+  pointerOverTile
+} from './adventure-map.utils.js'
+import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
 

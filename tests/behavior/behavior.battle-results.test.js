@@ -1,29 +1,29 @@
 // @vitest-environment jsdom
 import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-
+import { attackMonsterAt } from './adventure-map.utils.js'
+import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  pressKey,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import {
   attackBattleHexFrom,
-  attackMonsterAt,
   clickBattleButton,
   closeBattleResults,
-  createMemoryEventLog,
-  flushMicrotasks,
   getBattleResults,
-  getHeroInfoBox,
   moveActiveStackTo,
-  pressKey,
   queryBattleScreen,
-  readArmySlots,
   readBattleCasualties,
   readBattleResultsMessage,
   readBattleResultsSide,
   readBattleStacks,
-  readGameData,
-  setupMovementBehaviorApp,
   waitForBattleResults
-} from './behavior.utils.js'
+} from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
 
 const HERO_NAME = 'Sir Christian'

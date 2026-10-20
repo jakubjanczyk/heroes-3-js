@@ -2,26 +2,30 @@
 import { describe, expect, test } from 'vitest'
 
 import {
-  attackBattleHexFrom,
   attackMonsterAt,
-  clickBattleHex,
-  createMemoryEventLog,
   expectMonsterPresent,
-  expectStatusBarText,
-  flushMicrotasks,
   getHeroEntity,
-  hoverTile,
+  hoverTile
+} from './adventure-map.utils.js'
+import { expectStatusBarText } from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
+import {
+  attackBattleHexFrom,
+  clickBattleHex,
   moveActiveStackTo,
   queryBattleScreen,
   readActiveStack,
   readBattleStacks,
   readCombatMessages,
-  readGameData,
   recordStackHexes,
-  setupMovementBehaviorApp,
-  waitForBattleToEnd,
-  waitMs
-} from './behavior.utils.js'
+  waitForBattleToEnd
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')

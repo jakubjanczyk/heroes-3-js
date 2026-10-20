@@ -1,23 +1,26 @@
 // @vitest-environment jsdom
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-
-import { loadAppStyles } from './app-styles.js'
 import {
   confirmTileClickByDispatch,
-  createMemoryEventLog,
   dispatchTileClick,
-  endTurns,
   expectHeroAt,
-  expectInteractionModalClosed,
   expectMineAt,
   expectMinePresent,
-  expectNoPreview,
-  expectResourceTotal,
+  expectNoPreview
+} from './adventure-map.utils.js'
+import {
+  endTurns,
+  expectInteractionModalClosed,
+  expectResourceTotal
+} from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
   flushMicrotasks,
   readGameData,
   setupMovementBehaviorApp
-} from './behavior.utils.js'
+} from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
 import { aHero, aMine, aResource, aScenario } from './builders.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'

@@ -1,16 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
+import { confirmTileClickByDispatch, expectHeroAt } from './adventure-map.utils.js'
 import {
   clickResetSession,
-  confirmTileClickByDispatch,
-  createMemoryEventLog,
   endTurns,
   expectCalendarDate,
-  expectHeroAt,
-  expectMovementPoints,
-  flushMicrotasks,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  expectMovementPoints
+} from './adventure-panels.utils.js'
+import { createMemoryEventLog, flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
 import { aScenario } from './builders.js'
 
 function createWindowWithReloadSpy(baseWindow = window) {

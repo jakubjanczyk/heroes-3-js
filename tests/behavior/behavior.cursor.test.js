@@ -1,21 +1,22 @@
 // @vitest-environment jsdom
 import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-
-import { loadAppStyles } from './app-styles.js'
 import {
   confirmTileClickByDispatch,
-  flushMicrotasks,
-  getCursorOver,
   getMapCursor,
   holdMouseOverMap,
   hoverTile,
-  moveMouseOntoTile,
+  moveMouseOntoTile
+} from './adventure-map.utils.js'
+import {
+  flushMicrotasks,
+  getCursorOver,
   readGameData,
   setupMovementBehaviorApp,
-  waitMs,
-  winBattle
-} from './behavior.utils.js'
+  waitMs
+} from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
+import { winBattle } from './battle.utils.js'
 import {
   ARMY_THAT_WINS,
   aHero,

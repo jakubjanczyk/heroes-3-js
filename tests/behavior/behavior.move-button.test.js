@@ -1,19 +1,15 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
+import { confirmMove, dispatchTileClick, expectHeroAt } from './adventure-map.utils.js'
+import { clickEndTurn, expectMovementPoints, getMoveButton } from './adventure-panels.utils.js'
 import {
-  clickEndTurn,
-  confirmMove,
   createMemoryEventLog,
-  dispatchTileClick,
-  expectHeroAt,
-  expectMovementPoints,
   flushMicrotasks,
-  getMoveButton,
   setupLinearMovementApp,
   setupMovementBehaviorApp,
   waitMs
-} from './behavior.utils.js'
+} from './app.utils.js'
 import { aScenario } from './builders.js'
 
 async function clickMove(user) {

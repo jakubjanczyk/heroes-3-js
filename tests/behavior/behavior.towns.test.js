@@ -2,21 +2,21 @@
 import { describe, expect, test } from 'vitest'
 
 import {
-  closeInteractionModal,
   confirmTileClickByDispatch,
   dispatchTileClick,
   expectHeroAt,
-  expectInteractionModalOpen,
-  expectMovementPoints,
   expectNoPreview,
   expectPreviewTargetAt,
   expectTownAt,
   expectTownPresent,
-  flushMicrotasks,
-  getPreviewTargetAt,
-  setupMovementBehaviorApp,
-  waitMs
-} from './behavior.utils.js'
+  getPreviewTargetAt
+} from './adventure-map.utils.js'
+import {
+  closeInteractionModal,
+  expectInteractionModalOpen,
+  expectMovementPoints
+} from './adventure-panels.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 
 const aCastleScenario = (hero) =>

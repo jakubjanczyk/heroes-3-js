@@ -2,19 +2,16 @@
 import { describe, expect, test } from 'vitest'
 
 import {
-  clickEndTurn,
   confirmMove,
   dispatchTileClick,
   expectHeroAt,
-  expectMovementPoints,
   expectPreviewOverLimitDashAt,
   expectPreviewOverLimitTargetAt,
   expectPreviewTargetAt,
-  flushMicrotasks,
-  getMoveButton,
-  getPreviewOverLimitDashAt,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  getPreviewOverLimitDashAt
+} from './adventure-map.utils.js'
+import { clickEndTurn, expectMovementPoints, getMoveButton } from './adventure-panels.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 import { DIRT, GRASS, LAVA, ROCK, ROUGH, SAND, SNOW, SUBTERRANEAN, SWAMP } from './terrain-codes.js'
 

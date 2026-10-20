@@ -1,25 +1,26 @@
 // @vitest-environment jsdom
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-
+import { attackMonsterAt } from './adventure-map.utils.js'
+import {
+  flushMicrotasks,
+  getCursorOver,
+  readGameData,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import {
-  attackMonsterAt,
   clickBattleButton,
   clickBattleHex,
-  flushMicrotasks,
   getBattleHex,
   getBattleResults,
   getBattleScreen,
-  getCursorOver,
   hoverBattleHex,
   moveActiveStackTo,
   pointAtBattleHexSide,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitForBattleResults,
-  waitMs
-} from './behavior.utils.js'
+  waitForBattleResults
+} from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')

@@ -5,7 +5,6 @@ import {
   confirmTileClickByDispatch,
   dispatchTileClick,
   expectHeroAt,
-  expectMovementPoints,
   expectNoPreview,
   expectPreviewCornerAt,
   expectPreviewDashAt,
@@ -13,15 +12,14 @@ import {
   expectPreviewOverLimitDashAt,
   expectPreviewOverLimitTargetAt,
   expectPreviewTargetAt,
-  flushMicrotasks,
   getPreviewCornerAt,
   getPreviewDashAt,
   getPreviewOverLimitDashAt,
   getPreviewSvg,
-  getPreviewTargetAt,
-  setupLinearMovementApp,
-  setupMovementBehaviorApp
-} from './behavior.utils.js'
+  getPreviewTargetAt
+} from './adventure-map.utils.js'
+import { expectMovementPoints } from './adventure-panels.utils.js'
+import { flushMicrotasks, setupLinearMovementApp, setupMovementBehaviorApp } from './app.utils.js'
 import { aScenario } from './builders.js'
 
 describe('path preview behavior', () => {
