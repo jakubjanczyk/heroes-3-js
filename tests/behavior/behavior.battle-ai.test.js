@@ -175,6 +175,32 @@ describe('battle combat AI behavior', () => {
       )
     })
 
+    // The Swordsman (speed 5) walks to column 6, 9 hexes from the Archers: 10 Archers do 20, -15%
+    // for 6 Attack against 12 Defense.
+    test('given the monster is a shooter with shots and no hero stack next to it then it shoots the nearest hero stack instead of moving', async () => {
+      const { user } = await startBattle(
+        aFight({ army: [stack('SWORDSMAN', 1)], monsterType: 'ARCHER' })
+      )
+
+      await moveActiveStackTo(user, 6, 6)
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Archers 10', 6, 15))
+      expect(readCombatMessages()[0]).toBe('The Archers do 17 damage.')
+    })
+
+    // The Angel flies 12 hexes: the Archers shoot it on its way, then it lands next to them.
+    // 10 Archers do 20, -35% for 6 Attack against 20 Defense: 13, halved in melee: 6.
+    test('given an enemy stands next to a monster shooter then it attacks it in melee', async () => {
+      const { user } = await startBattle(
+        aFight({ army: [stack('ANGEL', 1)], monsterType: 'ARCHER' })
+      )
+      await moveActiveStackTo(user, 6, 8)
+
+      await moveActiveStackTo(user, 6, 14)
+
+      expect(readCombatMessages()[1]).toBe('The Archers do 6 damage.')
+    })
+
     test('given the monster is moving then clicking the battlefield does nothing', async () => {
       const { user } = await startBattle(
         aFight({ army: [stack('ANGEL', 1)], monsterType: 'PIKEMAN' }),

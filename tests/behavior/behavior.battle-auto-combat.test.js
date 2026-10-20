@@ -14,6 +14,7 @@ import {
   readActiveStack,
   readArmySlots,
   readBattleStacks,
+  readCombatMessages,
   readGameData,
   setupMovementBehaviorApp,
   waitForBattleToEnd,
@@ -68,6 +69,17 @@ describe('battle Auto combat behavior', () => {
     await clickBattleButton(user, 'Auto combat')
 
     expect(readBattleStacks()).not.toContainEqual(stackAt('Angel 1', 6, 1))
+  })
+
+  // 10 Archers do 20, +5% for 6 Attack against 5 Defense: 21, halved for the 14 hexes away: 10.
+  test("given Auto combat is on then the hero's shooters shoot", async () => {
+    const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }), {
+      appConfig: { battleStepDelayMs: 30 }
+    })
+
+    await clickBattleButton(user, 'Auto combat')
+
+    expect(readCombatMessages()[0]).toBe('The Archers do 10 damage. One Pikeman perishes.')
   })
 
   test('given Auto combat with a stronger army then the battle is won and the monster is gone', async () => {
