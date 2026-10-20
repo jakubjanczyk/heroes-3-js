@@ -9,6 +9,8 @@ import {
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_WORLD_READY,
+  APP_UI_ADVENTURE_MAP_COVERED,
+  APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_CAMERA_UPDATED,
   APP_UI_MAP_EDGE_SCROLLED,
   APP_UI_RESTORE_COMPLETED,
@@ -33,6 +35,7 @@ export const registerCameraModule = defineModule(
     let map = null
     let detachCameraInput = null
     let isSystemOptionsOpen = false
+    let isMapCovered = false
 
     function centerOn(tile) {
       if (!camera || !tile) {
@@ -99,8 +102,9 @@ export const registerCameraModule = defineModule(
 
             const inputCamera = {
               moveBy(dx, dy) {
-                // Arrow keys and edge scrolling must not move the map behind the System options popup.
-                if (isSystemOptionsOpen) {
+                // Arrow keys and edge scrolling must not move the map behind the System options popup
+                // or a screen covering it, such as the battle.
+                if (isSystemOptionsOpen || isMapCovered) {
                   return
                 }
 
@@ -163,6 +167,18 @@ export const registerCameraModule = defineModule(
           type: APP_UI_SYSTEM_OPTIONS_CLOSED,
           handler: () => {
             isSystemOptionsOpen = false
+          }
+        },
+        {
+          type: APP_UI_ADVENTURE_MAP_COVERED,
+          handler: () => {
+            isMapCovered = true
+          }
+        },
+        {
+          type: APP_UI_ADVENTURE_MAP_UNCOVERED,
+          handler: () => {
+            isMapCovered = false
           }
         },
         {
@@ -236,6 +252,8 @@ export const registerCameraModule = defineModule(
       APP_UI_RESTORE_COMPLETED,
       APP_UI_SYSTEM_OPTIONS_OPENED,
       APP_UI_SYSTEM_OPTIONS_CLOSED,
+      APP_UI_ADVENTURE_MAP_COVERED,
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
       APP_COMMAND_CAMERA_PAN_BY,
       APP_COMMAND_CAMERA_CENTER_ON_TILE,
       APP_FACT_MOVE_STARTED,

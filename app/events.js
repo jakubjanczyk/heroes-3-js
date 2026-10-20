@@ -11,6 +11,7 @@ export const APP_COMMAND_CAMERA_CENTER_ON_TILE = 'command.camera.centerOnTile'
 export const APP_COMMAND_END_TURN_REQUESTED = 'command.turn.end.requested'
 export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requested'
 export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experience.gain.requested'
+export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoCombat.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -23,6 +24,8 @@ export const APP_FACT_ENTITY_REMOVED = 'fact.entity.removed'
 export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected'
 export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared'
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended'
+export const APP_FACT_BATTLE_STARTED = 'fact.battle.started'
+export const APP_FACT_BATTLE_ENDED = 'fact.battle.ended'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
@@ -47,6 +50,9 @@ export const APP_UI_RESTORE_COMPLETED = 'ui.restore.completed'
 export const APP_UI_MUSIC_STATE_CHANGED = 'ui.music.state.changed'
 export const APP_UI_SYSTEM_OPTIONS_OPENED = 'ui.systemOptions.opened'
 export const APP_UI_SYSTEM_OPTIONS_CLOSED = 'ui.systemOptions.closed'
+// A screen such as the battle covers the adventure map, which ignores the player until it closes.
+export const APP_UI_ADVENTURE_MAP_COVERED = 'ui.adventureMap.covered'
+export const APP_UI_ADVENTURE_MAP_UNCOVERED = 'ui.adventureMap.uncovered'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
@@ -55,6 +61,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_TURN_ENDED,
+  APP_FACT_BATTLE_STARTED,
+  APP_FACT_BATTLE_ENDED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
