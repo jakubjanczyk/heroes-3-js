@@ -13,7 +13,7 @@ Roadmap 5.3, first step of combat: attacking a monster opens the battle screen i
 
 ## What we do
 
-- When the hero reaches a monster, `fact.battle.started` is saved with the monster's id, type, count and tile, and the battle screen covers the whole adventure screen (`app/heroes/modules/battle-view.module.js`, `game/ui/battle.css`).
+- When the hero reaches a monster, `fact.battle.started` is saved with the monster's id, type, count and tile, and the battle screen covers the whole adventure screen. Its markup is the `#battle-screen-template` in `index.html`; `app/heroes/modules/battle-view.module.js` adds the 165 hexes and the stacks for each battle, and `game/ui/battle.css` styles it.
 - The ground takes the colour of the monster's tile on the map (it reuses the terrain's CSS class), under a sky and a treeline drawn in CSS.
 - The hero is a placeholder figure with a banner in the player's colour; stacks are drawn as monsters are on the map, with their count in the purple box. Each hex is a cell of an ARIA grid, so players with a screen reader, and the tests, can tell which stack stands where.
 - The start formation is in `game/heroes/battlefield.js`. The monster is one stack for now, on row 6 of the last column.

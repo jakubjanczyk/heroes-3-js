@@ -116,6 +116,59 @@
       </ul>
     </template>
 
+    <!--
+      The Heroes 3 battle screen, laid over the adventure screen when a battle starts. The hexes
+      and stacks are added for each battle. Icons are stand-ins for the game's; only Auto combat
+      works yet.
+    -->
+    <template id="battle-screen-template">
+      <section class="battle-screen" role="dialog" aria-modal="true" aria-label="Battle">
+        <div class="battle-screen__field">
+          <div class="battle-screen__ground" aria-label="Battlefield ground"></div>
+          <div class="battle-screen__sky" aria-hidden="true"></div>
+          <div class="battle-hero battle-hero--attacker" role="img"></div>
+          <div class="battlefield" role="grid" aria-label="Battlefield" aria-rowcount="11" aria-colcount="15"></div>
+        </div>
+        <div class="battle-bar">
+          <button class="battle-button" type="button" aria-label="System options" title="System options (not available yet)" disabled>
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
+          </button>
+          <button class="battle-button" type="button" aria-label="Surrender" title="Surrender (not available yet)" disabled>
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3M6 4h11l-3 4 3 4H6"/></svg>
+          </button>
+          <button class="battle-button" type="button" aria-label="Retreat" title="Retreat (not available yet)" disabled>
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4a2 2 0 1 0 0 .1M9 21l3-7 3 3v4M12 14l-1-5 4 2 3-1M11 9l-4 3"/></svg>
+          </button>
+          <button class="battle-button" type="button" data-battle-action="auto-combat" aria-label="Auto combat" title="Auto combat">
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20M3 15l6 6M15 21l6-6"/></svg>
+          </button>
+          <div class="battle-bar__log" role="log" aria-label="Combat messages"></div>
+          <div class="battle-bar__scroll" aria-hidden="true">
+            <span class="battle-bar__arrow battle-bar__arrow--up"></span>
+            <span class="battle-bar__arrow battle-bar__arrow--down"></span>
+          </div>
+          <button class="battle-button" type="button" aria-label="Cast spell" title="Cast spell (not available yet)" disabled>
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H5zM19 4h-4a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h4z"/></svg>
+          </button>
+          <button class="battle-button" type="button" aria-label="Wait" title="Wait (not available yet)" disabled>
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v2l-4 7 4 7v2H6v-2l4-7-4-7z"/></svg>
+          </button>
+          <button class="battle-button" type="button" aria-label="Defend" title="Defend (not available yet)" disabled>
+            <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>
+          </button>
+        </div>
+        <div class="battle-screen__status-bar" role="status" aria-label="Battle status bar"></div>
+      </section>
+    </template>
+
+    <!-- A creature stack on a battlefield hex: the creature (a stand-in for its picture) and its count. -->
+    <template id="battle-stack-template">
+      <div class="battle-stack">
+        <div class="battle-stack__creature entity--monster" role="img"></div>
+        <span class="battle-stack__count"></span>
+      </div>
+    </template>
+
     <script type="module" src="./main.js"></script>
   </body>
 </html>
