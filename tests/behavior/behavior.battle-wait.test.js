@@ -1,22 +1,15 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { attackMonsterAt } from './adventure-map.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  pressKey,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
+import { createMemoryEventLog, pressKey, readGameData, waitMs } from './app.utils.js'
 import {
   clickBattleButton,
   clickBattleHex,
   getBattleButton,
   moveActiveStackTo,
   readActiveStack,
-  readBattleStacks
+  readBattleStacks,
+  reloadBattle,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -41,26 +34,6 @@ const aFight = ({ army }) =>
 const anAngelAndSkeletons = () => aFight({ army: [stack('ANGEL', 1), stack('SKELETON', 10)] })
 
 const anAngel = () => aFight({ army: [stack('ANGEL', 1)] })
-
-async function startBattle(scenario, { eventLog, appConfig = {} } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: () => 0, ...appConfig }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
-
-async function reload(scenario, eventLog) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: () => 0 }
-  })
-  await flushMicrotasks()
-  return app
-}
 
 describe('battle Wait behavior', () => {
   test('given a hero stack is active when the player clicks Wait then the next stack in the turn order becomes active', async () => {
@@ -127,7 +100,7 @@ describe('battle Wait behavior', () => {
     const first = await startBattle(scenario, { eventLog })
     await clickBattleButton(first.user, 'Wait')
 
-    const { user } = await reload(scenario, eventLog)
+    const { user } = await reloadBattle(scenario, { eventLog: eventLog })
 
     expect(readActiveStack()).toEqual(stackAt('Skeletons 10', 9, 1))
     await moveActiveStackTo(user, 9, 2)

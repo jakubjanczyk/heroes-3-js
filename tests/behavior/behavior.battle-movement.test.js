@@ -1,8 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { attackMonsterAt } from './adventure-map.utils.js'
-import { readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { readGameData, waitMs } from './app.utils.js'
 import {
   clickBattleHex,
   getBattleStatusBarText,
@@ -12,7 +10,8 @@ import {
   readActiveStack,
   readBattleStacks,
   readReachableHexes,
-  recordStackHexes
+  recordStackHexes,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -25,15 +24,6 @@ const aFight = ({ army, monsterType = 'SKELETON' }) =>
     .withSize(3)
     .withEntities(aHero().withArmy(army), aMonster().withType(monsterType).at(1, 0))
     .withDefinitions(gameDefinitions)
-
-async function startBattle(scenario, { battleStepDelayMs = 0 } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    appConfig: { battleStepDelayMs }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
 
 const hexesByRow = (columnRangeByRow) =>
   Object.entries(columnRangeByRow).flatMap(([row, [first, last]]) =>

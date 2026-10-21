@@ -1,15 +1,7 @@
 // @vitest-environment jsdom
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-import { attackMonsterAt } from './adventure-map.utils.js'
-import {
-  flushMicrotasks,
-  getCursorOver,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
-import { loadAppStyles } from './app-styles.js'
+import { flushMicrotasks, getCursorOver, readGameData, waitMs } from './app.utils.js'
 import {
   clickBattleButton,
   clickBattleHex,
@@ -19,6 +11,7 @@ import {
   hoverBattleHex,
   moveActiveStackTo,
   pointAtBattleHexSide,
+  startBattleWithStyles,
   waitForBattleResults
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -37,16 +30,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, stacks = 1 }
     )
     .withDefinitions({ monsters })
 
-async function startBattle(scenario, { battleStepDelayMs = 0 } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    appConfig: { random: () => 0, battleStepDelayMs }
-  })
-  await loadAppStyles()
-  await attackMonsterAt(1, 0)
-  return app
-}
-
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6, column 15.
 const MONSTER = { row: 6, column: 15 }
 
@@ -61,7 +44,7 @@ const cursorOverHex = (row, column) => getCursorOver(getBattleHex(row, column))
 
 describe('battle cursor behavior', () => {
   test('given the mouse is over a hex the active walking stack can reach then the cursor is the walk cursor', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }))
 
     await hoverBattleHex(user, 6, 4)
 
@@ -69,7 +52,7 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse is over a hex the active flying stack can reach then the cursor is the fly cursor', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('ANGEL', 2)] }))
 
     await hoverBattleHex(user, 6, 10)
 
@@ -79,7 +62,7 @@ describe('battle cursor behavior', () => {
   test('given the mouse is over a corpse the active stack can reach then the cursor is the move cursor', async () => {
     // One Pikeman walks up to the Angels, attacks them from row 4, column 13 and dies to their
     // retaliation; the other stack keeps the battle going.
-    const { user } = await startBattle(
+    const { user } = await startBattleWithStyles(
       aFight({ army: [stack('ANGEL', 2)], monsterCount: 2, stacks: 2 })
     )
     await moveActiveStackTo(user, 4, 12)
@@ -90,7 +73,7 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse is over a hex out of the active stack reach then the cursor is the blocked cursor', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }))
 
     await hoverBattleHex(user, 6, 10)
 
@@ -98,7 +81,7 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse is over an enemy the active stack cannot reach then the cursor is the blocked cursor', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }))
 
     await hoverBattleHex(user, MONSTER.row, MONSTER.column)
 
@@ -112,7 +95,7 @@ describe('battle cursor behavior', () => {
     'bottom-left',
     'bottom-right'
   ])('given the mouse points at the %s side of an enemy the stack can attack then the sword attacks from that side', async (side) => {
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('ANGEL', 2)] }))
     await flyAngelsCloser(user)
 
     await pointAtBattleHexSide(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column, side)
@@ -124,7 +107,9 @@ describe('battle cursor behavior', () => {
 
   test('given another stack stands on the side pointed at then the sword attacks from the nearest side the stack can reach', async () => {
     // Both Angel stacks are as fast; the one in the first slot acts first.
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2), stack('ANGEL', 1)] }))
+    const { user } = await startBattleWithStyles(
+      aFight({ army: [stack('ANGEL', 2), stack('ANGEL', 1)] })
+    )
     await moveActiveStackTo(user, 6, 5)
     await moveActiveStackTo(user, 6, 4)
     await moveActiveStackTo(user, 6, 10)
@@ -140,7 +125,7 @@ describe('battle cursor behavior', () => {
     // Archers and Pikemen are as fast: once the Archers wait, the Pikemen walk to column 11, 10
     // hexes from them.
     test('given the mouse is over a monster the active shooter can shoot then the cursor is the shoot arrow', async () => {
-      const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }))
+      const { user } = await startBattleWithStyles(aFight({ army: [stack('ARCHER', 10)] }))
       await clickBattleButton(user, 'Wait')
 
       await hoverBattleHex(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)
@@ -149,7 +134,7 @@ describe('battle cursor behavior', () => {
     })
 
     test('given the monster is more than 10 hexes away then the cursor is the broken arrow', async () => {
-      const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }))
+      const { user } = await startBattleWithStyles(aFight({ army: [stack('ARCHER', 10)] }))
 
       await hoverBattleHex(user, MONSTER.row, MONSTER.column)
 
@@ -159,7 +144,7 @@ describe('battle cursor behavior', () => {
     // The Swordsman (speed 5) walks to column 10, the Archers to column 5, and the Swordsman next
     // to them, to column 6.
     test('given an enemy stands next to the shooter then the cursor over that enemy is the sword', async () => {
-      const { user } = await startBattle(
+      const { user } = await startBattleWithStyles(
         aFight({ army: [stack('ARCHER', 10)], monsterType: 'SWORDSMAN', monsterCount: 1 })
       )
       await moveActiveStackTo(user, 6, 5)
@@ -171,7 +156,9 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse is over one of the player own stacks then the cursor is the question mark', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10), stack('ANGEL', 1)] }))
+    const { user } = await startBattleWithStyles(
+      aFight({ army: [stack('SKELETON', 10), stack('ANGEL', 1)] })
+    )
 
     await hoverBattleHex(user, 3, 1)
 
@@ -179,7 +166,7 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse is over the hero then the cursor is the hero helmet', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }))
     const hero = within(getBattleScreen()).getByRole('img', { name: 'Hero' })
 
     await user.hover(hero)
@@ -188,7 +175,7 @@ describe('battle cursor behavior', () => {
   })
 
   test('given a stack is moving then the cursor over the battlefield is the arrow', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }), {
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }), {
       battleStepDelayMs: 30
     })
 
@@ -201,7 +188,9 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the mouse stays on the hex a stack moved to when the next stack gets the turn then the cursor changes without the mouse moving', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2), stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(
+      aFight({ army: [stack('ANGEL', 2), stack('SKELETON', 10)] })
+    )
     await hoverBattleHex(user, 6, 8)
 
     await moveActiveStackTo(user, 6, 8)
@@ -210,7 +199,9 @@ describe('battle cursor behavior', () => {
   })
 
   test('given the battle results window is open when the mouse is over OK then the cursor is the arrow', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 10)], monsterCount: 1 }))
+    const { user } = await startBattleWithStyles(
+      aFight({ army: [stack('ANGEL', 10)], monsterCount: 1 })
+    )
     await clickBattleButton(user, 'Auto combat')
     await waitForBattleResults()
     const ok = within(getBattleResults()).getByRole('button', { name: 'OK' })

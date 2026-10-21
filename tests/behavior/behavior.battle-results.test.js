@@ -22,6 +22,7 @@ import {
   readBattleResultsMessage,
   readBattleResultsSide,
   readBattleStacks,
+  startBattle,
   waitForBattleResults
 } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
@@ -37,8 +38,6 @@ const gameDefinitions = {
 const stack = (creature, count) => ({ creature, count })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // The hero stands on (0, 0), the 2 Swordsmen on (1, 0) and another monster on (0, 1).
 const aFight = ({ experience = 0 } = {}) =>
   aScenario()
@@ -51,16 +50,6 @@ const aFight = ({ experience = 0 } = {}) =>
       aMonster().withId('monster-2').withType('PIKEMAN').withCount(10).withStacks(1).at(0, 1)
     )
     .withDefinitions(gameDefinitions)
-
-async function startBattle(scenario, { eventLog } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 } }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
 
 // The Angels stay back while the Swordsmen walk up and kill 2 of the 10 Skeletons. The lone
 // Skeleton attacks them and dies to their retaliation, then the Angels kill both Swordsmen.

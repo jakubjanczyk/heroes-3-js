@@ -1,14 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { attackMonsterAt } from './adventure-map.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
+import { createMemoryEventLog, flushMicrotasks, readGameData, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleButton,
@@ -17,7 +9,9 @@ import {
   hoverBattleHex,
   moveActiveStackTo,
   readBattleStacks,
-  readCombatMessages
+  readCombatMessages,
+  reloadBattle,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -26,8 +20,6 @@ const monsters = readGameData('monsters.json')
 const stack = (creature, count) => ({ creature, count })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // The monster stays one stack unless a test says otherwise. It stands on map tile (1, 0).
 const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, monsterStacks = 1 }) =>
   aScenario()
@@ -37,26 +29,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, monsterStack
       aMonster().withType(monsterType).withCount(monsterCount).withStacks(monsterStacks).at(1, 0)
     )
     .withDefinitions({ monsters })
-
-async function startBattle(scenario, { eventLog } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 } }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
-
-async function reload(scenario, eventLog) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS }
-  })
-  await flushMicrotasks()
-  return app
-}
 
 async function shootAt(user, row, column) {
   await clickBattleHex(user, row, column)
@@ -234,7 +206,7 @@ describe('battle ranged attack behavior', () => {
       const { user: firstUser } = await startBattle(scenario, { eventLog })
       await shootAt(firstUser, PIKEMEN_AT_START.row, PIKEMEN_AT_START.column)
 
-      const { user } = await reload(scenario, eventLog)
+      const { user } = await reloadBattle(scenario, { eventLog: eventLog })
       await hoverBattleHex(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)
 
       expect(getBattleStatusBarText()).toBe('Shoot Pikemen (11 shots left, damage 21-31)')

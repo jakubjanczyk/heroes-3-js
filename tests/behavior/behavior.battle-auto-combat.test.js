@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import { attackMonsterAt, expectMonsterNotPresent, getHeroEntity } from './adventure-map.utils.js'
+import { expectMonsterNotPresent, getHeroEntity } from './adventure-map.utils.js'
 import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
@@ -13,10 +13,12 @@ import {
 } from './app.utils.js'
 import {
   clickBattleButton,
+  LOWEST_ROLLS,
   queryBattleScreen,
   readActiveStack,
   readBattleStacks,
   readCombatMessages,
+  startBattle,
   waitForBattleToEnd
 } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aScenario } from './builders.js'
@@ -28,8 +30,6 @@ const stack = (creature, count) => ({ creature, count })
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // The monster is one stack on row 6, column 15.
 const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 10 }) =>
   aScenario()
@@ -43,16 +43,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 10 }) =>
 // The Angel starts on row 6, column 1, out of the Pikemen's reach: it flies up to them, takes
 // their attack and kills 8 of them striking back.
 const anAngelAgainstPikemen = () => aFight({ army: [stack('ANGEL', 1)] })
-
-async function startBattle(scenario, { eventLog, appConfig = {} } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 }, ...appConfig }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
 
 async function playAutoCombat(user) {
   await clickBattleButton(user, 'Auto combat')

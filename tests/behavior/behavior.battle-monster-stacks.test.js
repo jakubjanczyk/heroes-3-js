@@ -2,7 +2,7 @@
 import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
-import { attackMonsterAt, expectMonsterNotPresent } from './adventure-map.utils.js'
+import { expectMonsterNotPresent } from './adventure-map.utils.js'
 import { clickResetSession } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
@@ -13,10 +13,12 @@ import {
 import {
   attackBattleHexFrom,
   clickBattleButton,
+  LOWEST_ROLLS,
   moveActiveStackTo,
   queryBattleScreen,
   readBattleStacks,
   readCombatMessages,
+  startBattle,
   waitForBattleToEnd
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -26,8 +28,6 @@ const monsters = readGameData('monsters.json')
 const stack = (creature, count) => ({ creature, count })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // Heroes 3 shifts the number of stacks by one on some tiles: on (1, 0) it keeps it, on (5, 0)
 // it makes one fewer and on (0, 1) one more. The hero stands next to the monster.
 const TILE_KEEPING_THE_COUNT = { monster: [1, 0], hero: [0, 0] }
@@ -54,18 +54,6 @@ const aFight = ({
       stacks ? monster.withStacks(stacks) : monster
     )
     .withDefinitions({ monsters, hero: readGameData('hero.json') })
-}
-
-async function startBattle(scenario, { eventLog, envWindow } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    envWindow,
-    appConfig: { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 } }
-  })
-  const { tile } = scenario.build().entities.find(({ kind }) => kind === 'MONSTER')
-  await attackMonsterAt(tile.x, tile.y)
-  return app
 }
 
 const readMonsterStacks = () => readBattleStacks().filter(({ column }) => column === 15)

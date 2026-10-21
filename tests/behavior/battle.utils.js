@@ -4,7 +4,58 @@
 import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
-import { flushMicrotasks, waitMs } from './app.utils.js'
+import { attackMonsterAt } from './adventure-map.utils.js'
+import { flushMicrotasks, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { loadAppStyles } from './app-styles.js'
+
+// Every damage roll comes out at the bottom of its range.
+export const LOWEST_ROLLS = () => 0
+
+function battleAppConfig({ random, battleStepDelayMs, appConfig }) {
+  return {
+    random,
+    fadeOutMsByKind: { MONSTER: 0 },
+    ...(battleStepDelayMs === undefined ? {} : { battleStepDelayMs }),
+    ...appConfig
+  }
+}
+
+// Starts the app on `scenario` and attacks its monster, so the battle screen is open. Damage
+// rolls are the lowest unless `random` says otherwise, and a beaten monster leaves the map at once.
+export async function startBattle(
+  scenario,
+  { random = LOWEST_ROLLS, battleStepDelayMs, appConfig = {}, eventLog, envWindow, withStyles } = {}
+) {
+  const loadGameOptions = scenario.build()
+  const app = await setupMovementBehaviorApp({
+    loadGameOptions,
+    eventLog,
+    envWindow,
+    appConfig: battleAppConfig({ random, battleStepDelayMs, appConfig })
+  })
+  if (withStyles) {
+    await loadAppStyles()
+  }
+
+  const { tile } = loadGameOptions.entities.find(({ kind }) => kind === 'MONSTER')
+  await attackMonsterAt(tile.x, tile.y)
+  return app
+}
+
+// For tests that read the battle screen's layout or cursors, which need the app's styles.
+export const startBattleWithStyles = (scenario, options) =>
+  startBattle(scenario, { ...options, withStyles: true })
+
+// Opens the app again on the same saved session, as a page reload does.
+export async function reloadBattle(scenario, { random = LOWEST_ROLLS, eventLog } = {}) {
+  const app = await setupMovementBehaviorApp({
+    loadGameOptions: scenario.build(),
+    eventLog,
+    appConfig: battleAppConfig({ random, appConfig: {} })
+  })
+  await flushMicrotasks()
+  return app
+}
 
 export function queryBattleScreen() {
   return screen.queryByRole('dialog', { name: 'Battle' })

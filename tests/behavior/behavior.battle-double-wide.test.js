@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { attackMonsterAt } from './adventure-map.utils.js'
 import {
   createMemoryEventLog,
   flushMicrotasks,
@@ -14,7 +12,8 @@ import {
   moveActiveStackTo,
   readActiveStack,
   readBattleStacks,
-  readCombatMessages
+  readCombatMessages,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -23,8 +22,6 @@ const monsters = readGameData('monsters.json')
 const stack = (creature, count) => ({ creature, count })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // Cavaliers, Champions, Griffins and Royal Griffins are double-wide; Angels, Pikemen and
 // Skeletons are not.
 // The monster stays one stack.
@@ -36,16 +33,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 10 }) =>
       aMonster().withType(monsterType).withCount(monsterCount).withStacks(1).at(1, 0)
     )
     .withDefinitions({ monsters })
-
-async function startBattle(scenario, { eventLog } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
 
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 

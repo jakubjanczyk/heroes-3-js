@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { attackMonsterAt } from './adventure-map.utils.js'
 import {
   createMemoryEventLog,
   flushMicrotasks,
@@ -13,7 +11,8 @@ import {
   clickBattleHex,
   moveActiveStackTo,
   readActiveStack,
-  readBattleStacks
+  readBattleStacks,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -30,12 +29,6 @@ const aFight = ({ army, monsterType = 'SKELETON', monsterCount = 10 }) =>
       aMonster().withType(monsterType).withCount(monsterCount).withStacks(1).at(1, 0)
     )
     .withDefinitions(gameDefinitions)
-
-async function startBattle(scenario, options = {}) {
-  const app = await setupMovementBehaviorApp({ loadGameOptions: scenario.build(), ...options })
-  await attackMonsterAt(1, 0)
-  return app
-}
 
 describe('battle turn order behavior', () => {
   test('given battle opens then the fastest stack is the active one and is highlighted', async () => {

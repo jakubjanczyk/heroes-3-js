@@ -2,7 +2,7 @@
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
-import { attackMonsterAt, getHeroEntity, hoverTile } from './adventure-map.utils.js'
+import { getHeroEntity, hoverTile } from './adventure-map.utils.js'
 import { expectStatusBarText } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
@@ -22,7 +22,8 @@ import {
   readActiveStack,
   readBattleResultsMessage,
   readBattleResultsSide,
-  retreat
+  retreat,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -38,8 +39,6 @@ const stack = (creature, count) => ({ creature, count })
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // One Angel (speed 12) against 20 Swordsmen (speed 5) on row 6, column 15: the Angel goes first.
 const aFight = ({ army = [stack('ANGEL', 1)], monsterCount = 20 } = {}) =>
   aScenario()
@@ -49,16 +48,6 @@ const aFight = ({ army = [stack('ANGEL', 1)], monsterCount = 20 } = {}) =>
       aMonster().withType('SWORDSMAN').withCount(monsterCount).withStacks(1).at(1, 0)
     )
     .withDefinitions(gameDefinitions)
-
-async function startBattle(scenario, { eventLog, appConfig = {} } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 }, ...appConfig }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
 
 function getRetreatDialog() {
   const dialog = queryRetreatDialog()

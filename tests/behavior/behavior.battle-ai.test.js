@@ -8,13 +8,7 @@ import {
   hoverTile
 } from './adventure-map.utils.js'
 import { expectStatusBarText } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
+import { createMemoryEventLog, flushMicrotasks, readGameData, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleHex,
@@ -24,6 +18,8 @@ import {
   readBattleStacks,
   readCombatMessages,
   recordStackHexes,
+  reloadBattle,
+  startBattle,
   waitForBattleToEnd
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -35,8 +31,6 @@ const stack = (creature, count) => ({ creature, count })
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // The monster stays one stack unless a test says otherwise. It stands on map tile (1, 0).
 const aFight = ({ army, monsterType = 'SWORDSMAN', monsterCount = 10, monsterStacks = 1 }) =>
   aScenario()
@@ -46,26 +40,6 @@ const aFight = ({ army, monsterType = 'SWORDSMAN', monsterCount = 10, monsterSta
       aMonster().withType(monsterType).withCount(monsterCount).withStacks(monsterStacks).at(1, 0)
     )
     .withDefinitions({ monsters })
-
-async function startBattle(scenario, { eventLog, appConfig = {} } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 }, ...appConfig }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
-
-async function reload(scenario, eventLog) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS }
-  })
-  await flushMicrotasks()
-  return app
-}
 
 // Swordsmen (speed 5) start on row 6, column 15; the Angel (speed 12) goes first and stops 5
 // hexes from them.
@@ -273,7 +247,7 @@ describe('battle combat AI behavior', () => {
       const { user } = await startBattle(scenario, { eventLog })
       await flyAngelWithinSwordsmenReach(user)
 
-      await reload(scenario, eventLog)
+      await reloadBattle(scenario, { eventLog: eventLog })
 
       expect(readBattleStacks()).toEqual([stackAt('Angel 1', 6, 9), stackAt('Swordsmen 8', 6, 10)])
     })
@@ -288,7 +262,7 @@ describe('battle combat AI behavior', () => {
       await clickBattleHex(user, 6, 2)
       await waitMs(60)
 
-      await reload(scenario, eventLog)
+      await reloadBattle(scenario, { eventLog: eventLog })
 
       expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 10', 6, 11))
       expect(readActiveStack()).toEqual(stackAt('Angel 1', 6, 2))
@@ -300,7 +274,7 @@ describe('battle combat AI behavior', () => {
       const { user } = await startBattle(scenario, { eventLog })
       await loseTheAngelToSwordsmen(user)
 
-      const reloaded = await reload(scenario, eventLog)
+      const reloaded = await reloadBattle(scenario, { eventLog: eventLog })
       await hoverTile(reloaded.user, 1, 0)
 
       expect(getHeroEntity()).toBeNull()

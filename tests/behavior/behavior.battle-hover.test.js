@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import { attackMonsterAt } from './adventure-map.utils.js'
-import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
-import { loadAppStyles } from './app-styles.js'
+import { readGameData } from './app.utils.js'
 import {
   hoverBattleHex,
   moveActiveStackTo,
   readHighlightedBattleHexes,
+  startBattleWithStyles,
   tapBattleHexSide
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -25,16 +24,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50 }) =>
     )
     .withDefinitions({ monsters })
 
-async function startBattle(scenario) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    appConfig: { random: () => 0, fadeOutMsByKind: { MONSTER: 0 } }
-  })
-  await loadAppStyles()
-  await attackMonsterAt(1, 0)
-  return app
-}
-
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6,
 // column 15. Once the Angels fly to column 5, the Pikemen walk 4 hexes toward them, to column 11.
 const MONSTER = { row: 6, column: 15 }
@@ -42,7 +31,7 @@ const PIKEMEN_CLOSER = { row: 6, column: 11 }
 
 describe('battle hover highlight behavior', () => {
   test('given the mouse is over an enemy the active stack can attack then only the enemy hex is highlighted', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('ANGEL', 2)] }))
     await moveActiveStackTo(user, 6, 5)
 
     await hoverBattleHex(user, PIKEMEN_CLOSER.row, PIKEMEN_CLOSER.column)
@@ -51,7 +40,7 @@ describe('battle hover highlight behavior', () => {
   })
 
   test('given the mouse is over an enemy the active stack can shoot then the enemy hex is highlighted', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('ARCHER', 10)] }))
 
     await hoverBattleHex(user, MONSTER.row, MONSTER.column)
 
@@ -60,7 +49,7 @@ describe('battle hover highlight behavior', () => {
 
   // Cavaliers (speed 7) go first and stand on row 6, columns 8 and 9.
   test('given the mouse is over a double-wide enemy then both its hexes are highlighted', async () => {
-    const { user } = await startBattle(
+    const { user } = await startBattleWithStyles(
       aFight({ army: [stack('ARCHER', 10)], monsterType: 'CAVALIER', monsterCount: 2 })
     )
 
@@ -73,7 +62,7 @@ describe('battle hover highlight behavior', () => {
   })
 
   test('given the mouse is over an enemy the active stack cannot reach then no hex is highlighted', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }))
 
     await hoverBattleHex(user, MONSTER.row, MONSTER.column)
 
@@ -81,7 +70,7 @@ describe('battle hover highlight behavior', () => {
   })
 
   test('given the mouse moves off the enemy then its hex is no longer highlighted', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ARCHER', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('ARCHER', 10)] }))
     await hoverBattleHex(user, MONSTER.row, MONSTER.column)
 
     await hoverBattleHex(user, 1, 10)
@@ -90,7 +79,7 @@ describe('battle hover highlight behavior', () => {
   })
 
   test('given the mouse is over a hex the stack can move to then that hex is highlighted', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('SKELETON', 10)] }))
+    const { user } = await startBattleWithStyles(aFight({ army: [stack('SKELETON', 10)] }))
 
     await hoverBattleHex(user, 6, 3)
 
@@ -100,7 +89,9 @@ describe('battle hover highlight behavior', () => {
   // Both Angel stacks fly closer; the first then attacks the Pikemen with a tap, and the second
   // gets the turn with the Pikemen still in its reach.
   test('given the player taps an enemy on a touch screen then its hex is not highlighted for the next stack', async () => {
-    const { user } = await startBattle(aFight({ army: [stack('ANGEL', 2), stack('ANGEL', 1)] }))
+    const { user } = await startBattleWithStyles(
+      aFight({ army: [stack('ANGEL', 2), stack('ANGEL', 1)] })
+    )
     await moveActiveStackTo(user, 6, 5)
     await moveActiveStackTo(user, 6, 4)
 

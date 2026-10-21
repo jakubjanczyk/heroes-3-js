@@ -1,22 +1,15 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-
-import { attackMonsterAt } from './adventure-map.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  pressKey,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
+import { createMemoryEventLog, pressKey, readGameData, waitMs } from './app.utils.js'
 import {
   clickBattleButton,
   clickBattleHex,
   getBattleButton,
   moveActiveStackTo,
   readActiveStack,
-  readCombatMessages
+  readCombatMessages,
+  reloadBattle,
+  startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
 
@@ -27,8 +20,6 @@ const stack = (creature, count) => ({ creature, count })
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 // Every damage roll lands on the lowest damage.
-const LOWEST_ROLLS = () => 0
-
 // The monster is one stack on row 6, column 15.
 const aFight = ({ army, monsterType = 'SWORDSMAN', monsterCount = 10 }) =>
   aScenario()
@@ -38,26 +29,6 @@ const aFight = ({ army, monsterType = 'SWORDSMAN', monsterCount = 10 }) =>
       aMonster().withType(monsterType).withCount(monsterCount).withStacks(1).at(1, 0)
     )
     .withDefinitions({ monsters })
-
-async function startBattle(scenario, { eventLog, appConfig = {} } = {}) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS, ...appConfig }
-  })
-  await attackMonsterAt(1, 0)
-  return app
-}
-
-async function reload(scenario, eventLog) {
-  const app = await setupMovementBehaviorApp({
-    loadGameOptions: scenario.build(),
-    eventLog,
-    appConfig: { random: LOWEST_ROLLS }
-  })
-  await flushMicrotasks()
-  return app
-}
 
 // The Angel (speed 12) acts first, then the Skeletons (speed 4, ahead of the Pikemen on a tie).
 const anAngelAndSkeletons = () =>
@@ -142,7 +113,7 @@ describe('battle Defend behavior', () => {
     await clickBattleButton(first.user, 'Defend')
     await clickBattleButton(first.user, 'Defend')
 
-    const { user } = await reload(scenario, eventLog)
+    const { user } = await reloadBattle(scenario, { eventLog: eventLog })
     await clickBattleButton(user, 'Defend')
 
     expect(readCombatMessages().slice(2)).toEqual([
