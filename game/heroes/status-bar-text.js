@@ -12,10 +12,14 @@ function capitalize(text) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-// The name of a map object; monsters go by their plural name ("Skeletons").
+// The name of a map object; monsters go by their plural name ("Skeletons"), and a town the
+// scenario names by its own name ("Whitemoon").
 export function getEntityName({ entity, definitions }) {
   if (entity.kind === 'HERO') {
     return definitions.hero.name
+  }
+  if (entity.kind === 'TOWN' && entity.name) {
+    return entity.name
   }
   if (entity.kind === 'TREASURE_CHEST') {
     return TREASURE_CHEST_NAME

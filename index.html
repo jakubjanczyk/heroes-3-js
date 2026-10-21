@@ -62,13 +62,7 @@
                   <svg class="adventure-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v2l-4 7 4 7v2H6v-2l4-7-4-7z"/></svg>
                 </button>
             </div>
-            <div class="town-list" aria-label="Towns">
-              <span class="town-list__slot"></span>
-              <span class="town-list__slot"></span>
-              <span class="town-list__slot"></span>
-              <span class="town-list__slot"></span>
-              <span class="town-list__slot"></span>
-            </div>
+            <ul class="town-list" id="town-list" aria-label="Towns"></ul>
           </div>
           <section class="info-box hero-box" id="hero-info" aria-label="Hero info"></section>
         </aside>
@@ -106,6 +100,23 @@
         </li>
       </ul>
       <ul class="hero-box__army" aria-label="Army">
+        <li class="army-slot"></li>
+        <li class="army-slot"></li>
+        <li class="army-slot"></li>
+        <li class="army-slot"></li>
+        <li class="army-slot"></li>
+        <li class="army-slot"></li>
+        <li class="army-slot"></li>
+      </ul>
+    </template>
+
+    <!--
+      The Heroes 3 town box, cloned into the info box and the right-click popup of the player's own
+      town. The town's picture, its Fort and Hall and its income come with buildings.
+    -->
+    <template id="town-box-template">
+      <h2 class="town-box__name"></h2>
+      <ul class="town-box__garrison" aria-label="Garrison">
         <li class="army-slot"></li>
         <li class="army-slot"></li>
         <li class="army-slot"></li>
@@ -225,7 +236,7 @@
 
     <!--
       The empty frames keep the places of what towns do not have yet, as laid out in Heroes 3: the
-      Hall and Fort icons, the daily income, the creatures to recruit and the town list.
+      Hall and Fort icons, the daily income and the creatures to recruit.
     -->
     <template id="town-screen-template">
       <section class="town-screen" role="dialog" aria-modal="true" aria-label="Town">
@@ -279,11 +290,7 @@
             </div>
           </div>
           <div class="town-panel__side">
-            <div class="town-panel__town-list" aria-hidden="true">
-              <span class="town-panel__frame"></span>
-              <span class="town-panel__frame"></span>
-              <span class="town-panel__frame"></span>
-            </div>
+            <ul class="town-panel__town-list" aria-label="Towns"></ul>
             <button class="town-panel__leave" type="button" data-town-action="leave" aria-label="Leave town" aria-keyshortcuts="Enter Escape" title="Leave town (Enter)">
               <svg class="town-panel__leave-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>

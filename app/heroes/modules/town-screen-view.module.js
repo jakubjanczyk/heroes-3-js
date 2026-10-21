@@ -1,5 +1,6 @@
 import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
+  APP_COMMAND_TOWN_OPEN_REQUESTED,
   APP_FACT_TOWN_LEFT,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -7,6 +8,9 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
+import { renderTownList } from '../presentation/town-list.js'
+
+const NO_ARMY = []
 
 export const registerTownScreenViewModule = defineModule(
   ({ emit, env }) => {
@@ -21,7 +25,25 @@ export const registerTownScreenViewModule = defineModule(
       })
     }
 
-    function showTown({ name, garrison, visitingHero }) {
+    function showVisitingHero(visitingHero) {
+      const hero = townScreen.querySelector('.town-panel__hero--visiting')
+      const name = visitingHero?.name ?? ''
+      if (name) {
+        hero.setAttribute('role', 'img')
+        hero.setAttribute('aria-label', name)
+      } else {
+        hero.removeAttribute('role')
+        hero.removeAttribute('aria-label')
+      }
+      hero.title = name
+      hero.textContent = name.charAt(0)
+      fillSlots(
+        townScreen.querySelector('[aria-label="Visiting hero army"]'),
+        visitingHero?.army ?? NO_ARMY
+      )
+    }
+
+    function showTown({ entityId, name, garrison, visitingHero, ownedTowns }) {
       if (!gameShell) {
         return
       }
@@ -35,12 +57,12 @@ export const registerTownScreenViewModule = defineModule(
       }
 
       townScreen.querySelector('.town-panel__name').textContent = name
-      const hero = townScreen.querySelector('.town-panel__hero--visiting')
-      hero.setAttribute('aria-label', visitingHero.name)
-      hero.title = visitingHero.name
-      hero.textContent = visitingHero.name.charAt(0)
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
-      fillSlots(townScreen.querySelector('[aria-label="Visiting hero army"]'), visitingHero.army)
+      showVisitingHero(visitingHero)
+      renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
+        towns: ownedTowns,
+        selectedTownId: entityId
+      })
     }
 
     function closeTown() {
@@ -70,6 +92,12 @@ export const registerTownScreenViewModule = defineModule(
             event.stopPropagation()
             if (event.target.closest('[data-town-action="leave"]')) {
               emit(APP_COMMAND_TOWN_LEAVE_REQUESTED, {})
+              return
+            }
+
+            const town = event.target.closest('.town-list__town')
+            if (town) {
+              emit(APP_COMMAND_TOWN_OPEN_REQUESTED, { entityId: town.dataset.entityId })
             }
           }
         }
@@ -86,6 +114,7 @@ export const registerTownScreenViewModule = defineModule(
     consumes: [APP_UI_TOWN_UPDATED, APP_FACT_TOWN_LEFT],
     produces: [
       APP_COMMAND_TOWN_LEAVE_REQUESTED,
+      APP_COMMAND_TOWN_OPEN_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED
     ]

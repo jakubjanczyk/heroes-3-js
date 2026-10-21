@@ -54,6 +54,11 @@ button {
     url("../../assets/cursors/attack-4.png") 16 16,
     pointer;
 }
+.viewport[data-cursor="castle"] {
+  cursor:
+    url("../../assets/cursors/castle.png") 16 16,
+    pointer;
+}
 .viewport[data-cursor="visit"] {
   cursor:
     url("../../assets/cursors/visit.png") 16 16,

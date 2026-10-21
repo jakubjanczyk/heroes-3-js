@@ -256,9 +256,35 @@
   }
 }
 
-.town-list__slot {
-  background: #0d0f14;
-  border: 1px solid #1d2028;
+.town-list__item {
+  display: grid;
+}
+
+.town-list__town {
+  appearance: none;
+  padding: 0;
+  border: 1px solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #4a5b73, #1a2230);
+  color: var(--hud-text-gold);
+  font:
+    700 1.1rem / 1 Georgia,
+    "Times New Roman",
+    serif;
+  text-shadow: 0 1px 0 black;
+
+  &:hover {
+    border-color: var(--trim-gold-light);
+  }
+
+  &[aria-pressed="true"] {
+    outline: 2px solid var(--trim-gold-light);
+    outline-offset: -2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--trim-gold-light);
+    outline-offset: -2px;
+  }
 }
 
 /* Info box: the selected hero (a hero box) at the bottom of the panel. */
@@ -372,6 +398,50 @@
 
   & .army-slot:nth-child(1) {
     grid-column: 2 / span 2;
+  }
+}
+
+/* Town box, shared by the info box and the own town's right-click popup: the name over the
+   garrison's seven slots in a row. */
+.town-box {
+  display: grid;
+  align-content: start;
+  gap: var(--space-xs);
+
+  & .town-box__name {
+    margin: 0;
+    padding: 0 var(--space-2xs);
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--hud-text-gold);
+    text-shadow: 0 1px 0 black;
+    background: #0d0f14;
+    border: 1px solid #2a2d36;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  & .town-box__garrison {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .army-slot {
+    position: relative;
+    aspect-ratio: 1;
+    background: #0d0f14;
+    border: 1px solid #2a2d36;
+    box-shadow: inset 0 0 0 1px black;
+  }
+
+  & .army-slot__creature {
+    position: absolute;
+    inset: 12%;
   }
 }
 

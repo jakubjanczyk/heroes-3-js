@@ -17,7 +17,7 @@
   filter: var(--mine-tint, none);
 }
 
-.mine-flag {
+.owner-flag {
   position: absolute;
   inset-block-start: 4px;
   inset-inline-start: 4px;

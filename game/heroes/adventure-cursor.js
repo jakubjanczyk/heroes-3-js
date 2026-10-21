@@ -2,6 +2,7 @@
 export const ADVENTURE_CURSOR = Object.freeze({
   ARROW: 'arrow',
   HERO: 'hero',
+  CASTLE: 'castle',
   MOVE: 'move',
   ATTACK: 'attack',
   VISIT: 'visit'
