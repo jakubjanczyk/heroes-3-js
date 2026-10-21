@@ -8,8 +8,6 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
 
-// The Heroes 3 town screen, cloned from `#town-screen-template` in index.html: the town picture
-// and the panel under it with the garrison and the visiting hero. The resource bar stays below.
 export const registerTownScreenViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document

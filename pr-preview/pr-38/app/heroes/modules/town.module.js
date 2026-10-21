@@ -13,7 +13,6 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
-// The town the hero is in, from entering it until the player leaves. Towns have no garrison yet.
 export const registerTownModule = defineModule(
   ({ emit }) => {
     let townsById = new Map()
@@ -25,6 +24,7 @@ export const registerTownModule = defineModule(
     function showTown() {
       emit(APP_UI_TOWN_UPDATED, {
         name: getTownName({ entity: townsById.get(openTownId), definitions }),
+        // Towns have no garrison yet.
         garrison: new Array(ARMY_SLOT_COUNT).fill(null),
         visitingHero: { name: heroName, army: getHeroArmy({ entity: hero, definitions }) }
       })

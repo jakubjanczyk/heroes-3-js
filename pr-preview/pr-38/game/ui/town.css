@@ -1,8 +1,4 @@
-/*
- * The Heroes 3 town screen, over the map, the status bar and the adventure panel; the resource
- * bar stays under it as in the game. The town picture is drawn here until there are sprites:
- * sky, far hills, a castle on a hill and the green in front of it.
- */
+/* As in Heroes 3, the resource bar stays visible under the town screen. */
 .town-screen {
   grid-row: 1 / span 2;
   grid-column: 1 / -1;
@@ -47,7 +43,6 @@
     linear-gradient(180deg, oklch(0.6 0.1 245), oklch(0.85 0.05 230) 60%);
 }
 
-/* The castle on its hill, in the middle of the picture. */
 .town-screen__castle {
   position: absolute;
   inset-inline: 30%;
@@ -246,7 +241,6 @@
   filter: drop-shadow(1px 1px 0 black);
 }
 
-/* On a phone the panel takes the armies first, with the town's summary and the side under them. */
 @media (width < 48rem) {
   .town-panel {
     grid-template-columns: minmax(0, 1fr) auto;

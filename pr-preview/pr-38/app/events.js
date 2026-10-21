@@ -46,7 +46,6 @@ export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.chang
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
-// The hero entered the town and its town screen is open, until the town is left.
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
 export const APP_FACT_TOWN_LEFT = 'fact.town.left'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
@@ -76,7 +75,6 @@ export const APP_UI_ADVENTURE_MAP_COVERED = 'ui.adventureMap.covered'
 export const APP_UI_ADVENTURE_MAP_UNCOVERED = 'ui.adventureMap.uncovered'
 // The battle as the player sees it: where the stacks stand, whose turn it is and where it can go.
 export const APP_UI_BATTLE_UPDATED = 'ui.battle.updated'
-// The town screen as the player sees it: the town's name, its garrison and the visiting hero.
 export const APP_UI_TOWN_UPDATED = 'ui.town.updated'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
