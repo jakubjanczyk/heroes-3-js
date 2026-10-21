@@ -120,7 +120,8 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] "Exit" button (✓, Enter or Escape) returns to adventure map
 - [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
 - [ ] Creatures available for recruitment panel (its place is kept empty; needs dwellings, 6.3)
-- [ ] Hall and Fort icons and the daily income in the panel (places kept empty; needs 6.2)
+- [x] Hall icon in the panel opens the Hall (6.1)
+- [ ] Hall and Fort icons showing the town's level, and the daily income in the panel (places kept empty; needs 6.2)
 - [x] Town list on the panel's right side: the owned towns, the open one framed; clicking one switches to it
 - [x] Gold/resource display within town view: the resource bar and date stay under the town screen
 - [x] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
@@ -501,13 +502,19 @@ See `docs/notes/2026-10-20-combat-ai.md`.
 Towns as economic and military hubs.
 
 ### 6.1 Town Buildings System
-- [ ] Each town has a set of building slots
-- [ ] Build one building per day per town
-- [ ] Buildings have resource costs (gold + materials)
-- [ ] Buildings have prerequisites (tech tree)
-- [ ] Build button: select building, confirm cost, construction completes instantly (start of day)
+See `docs/notes/2026-10-21-town-buildings.md`.
+- [x] Each town has a set of building slots: the Hall, opened from the town screen's Hall icon, in H3's rows (Castle so far)
+- [x] Build one building per day per town
+- [x] Buildings have resource costs (gold + materials), shown in the building window
+- [ ] Building checks the player can afford it and spends the cost (needs 3.4)
+- [x] Buildings have prerequisites (tech tree, from VCMI); the window lists the missing ones
+- [x] Build button: select building, construction completes instantly; the Hall closes back to the town screen
+- [x] A scenario can start a town with buildings (`"buildings": [...]`); every town has its Village Hall
+- [x] Shipyard only in a town with water next to it; one Capitol per player
 - [ ] Built buildings visually appear on town view background
-- [ ] Building info on hover: name, description, cost, prerequisites, effect
+- [ ] Building pictures and descriptions in the Hall and the building window
+- [ ] Building info on hover in the status bar, and on right-click (H3 shows the window without Build)
+- [ ] Other factions' buildings and Hall layouts (shared buildings are in `game/data/buildings.json`)
 
 ### 6.2 Common Buildings (all factions)
 - [ ] **Village Hall** (built-in) -> Town Hall -> City Hall -> Capitol

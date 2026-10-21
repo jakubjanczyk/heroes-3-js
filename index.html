@@ -236,7 +236,7 @@
 
     <!--
       The empty frames keep the places of what towns do not have yet, as laid out in Heroes 3: the
-      Hall and Fort icons, the daily income and the creatures to recruit.
+      Fort icon, the daily income and the creatures to recruit. The Hall icon opens the Hall.
     -->
     <template id="town-screen-template">
       <section class="town-screen" role="dialog" aria-modal="true" aria-label="Town">
@@ -247,10 +247,10 @@
           <div class="town-panel__summary">
             <div class="town-panel__picture" aria-hidden="true"></div>
             <h2 class="town-panel__name"></h2>
-            <div class="town-panel__buildings" aria-hidden="true">
-              <span class="town-panel__frame"></span>
-              <span class="town-panel__frame"></span>
-              <span class="town-panel__frame town-panel__frame--income"></span>
+            <div class="town-panel__buildings">
+              <button class="town-panel__frame town-panel__hall" type="button" data-town-action="hall" aria-label="Hall" title="Hall"></button>
+              <span class="town-panel__frame" aria-hidden="true"></span>
+              <span class="town-panel__frame town-panel__frame--income" aria-hidden="true"></span>
             </div>
             <div class="town-panel__growth" aria-hidden="true">
               <span class="town-panel__frame"></span>
@@ -295,6 +295,48 @@
               <svg class="town-panel__leave-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
           </div>
+        </div>
+      </section>
+    </template>
+
+    <!--
+      The Hall, where a town builds: rows of building slots, each a picture (a stand-in for now) over
+      a bar whose colour says whether the building stands, can be built, or why not.
+    -->
+    <template id="town-hall-template">
+      <section class="town-hall" role="dialog" aria-modal="true" aria-label="Hall">
+        <h2 class="town-hall__title"></h2>
+        <div class="town-hall__rows"></div>
+        <button class="town-hall__close" type="button" data-hall-action="close" aria-label="Close" aria-keyshortcuts="Enter Escape" title="Close (Enter)">
+          <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+        </button>
+      </section>
+    </template>
+
+    <template id="town-hall-slot-template">
+      <li class="town-hall__slot">
+        <button class="town-hall__building" type="button">
+          <span class="town-hall__picture" aria-hidden="true"></span>
+          <span class="town-hall__name"></span>
+        </button>
+        <span class="town-hall__status visually-hidden"></span>
+      </li>
+    </template>
+
+    <!-- A building picked in the Hall: what it costs, what it still needs, and Build. -->
+    <template id="building-window-template">
+      <section class="building-window message-box" role="dialog" aria-modal="true">
+        <h3 class="building-window__name"></h3>
+        <div class="building-window__picture town-hall__picture" aria-hidden="true"></div>
+        <p class="building-window__note"></p>
+        <ul class="building-window__cost" aria-label="Cost"></ul>
+        <div class="building-window__buttons">
+          <button class="building-window__button" type="button" data-building-action="build" aria-label="Build" aria-keyshortcuts="Enter" title="Build (Enter)">
+            <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+          </button>
+          <button class="building-window__button" type="button" data-building-action="cancel" aria-label="Cancel" aria-keyshortcuts="Escape" title="Cancel (Escape)">
+            <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
+          </button>
         </div>
       </section>
     </template>
