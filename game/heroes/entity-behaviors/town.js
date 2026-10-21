@@ -4,6 +4,14 @@ import {
 } from '../interaction-kinds.js'
 import { getEntityName } from './shared.js'
 
+// A Heroes 3 map names each town; one the scenario leaves unnamed goes by its type's name.
+export function getTownName({ entity, definitions = {} }) {
+  return (
+    entity?.name ??
+    getEntityName({ entity, definitions, definitionsKey: 'towns', defaultName: 'Town' })
+  )
+}
+
 export const townBehavior = Object.freeze({
   kind: 'TOWN',
   // Tiles around the entry tile that the town's building covers.
@@ -27,25 +35,12 @@ export const townBehavior = Object.freeze({
     requiresSteppingIntoTarget: true,
     definitionsKey: 'towns',
     defaultName: 'Town',
-    modalVerb: 'visited',
-    resolveArrivalOutcome({ entity, definitions = {}, tile }) {
-      const townName = getEntityName({
-        entity,
-        definitions,
-        definitionsKey: 'towns',
-        defaultName: 'Town'
-      })
-
+    resolveArrivalOutcome({ entity, tile }) {
       return {
         kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
         entityId: entity.id,
         entityType: entity.type,
-        tile,
-        townName,
-        modal: {
-          title: 'Interaction',
-          message: `${townName} visited`
-        }
+        tile
       }
     }
   })
