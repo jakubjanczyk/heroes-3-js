@@ -15,8 +15,8 @@ export function getHeroInHeroList(heroName) {
   return within(getHeroList()).getByRole('button', { name: heroName })
 }
 
-export function readArmySlots(container) {
-  const army = within(container).getByRole('list', { name: 'Army' })
+export function readArmySlots(container, listName = 'Army') {
+  const army = within(container).getByRole('list', { name: listName })
   return within(army)
     .getAllByRole('listitem')
     .map((slot) => {

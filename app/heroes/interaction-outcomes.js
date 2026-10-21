@@ -20,16 +20,6 @@ const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +
   'distribute it to the peasants for experience. Which do you choose?'
 
-function toModal(outcome) {
-  return {
-    interactionKind: outcome.kind,
-    entityId: outcome.entityId,
-    entityType: outcome.entityType,
-    title: outcome.modal.title,
-    message: outcome.modal.message
-  }
-}
-
 function toEntityFactDetail(outcome) {
   return {
     entityId: outcome.entityId,
@@ -56,8 +46,7 @@ export const heroesOutcomeEffects = Object.freeze({
     ]
   }),
   [INTERACTION_OUTCOME_KIND_TOWN_VISITED]: (outcome) => ({
-    facts: [{ type: APP_FACT_TOWN_VISITED, detail: toEntityFactDetail(outcome) }],
-    modal: toModal(outcome)
+    facts: [{ type: APP_FACT_TOWN_VISITED, detail: toEntityFactDetail(outcome) }]
   }),
   // The player picks the gold or the experience; nothing happens until they confirm with OK.
   [INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND]: (outcome) => {

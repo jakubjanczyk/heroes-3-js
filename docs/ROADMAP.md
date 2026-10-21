@@ -43,7 +43,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Hover over resource or treasure chest: rearing horse (visit) cursor
 - [x] Hover over mine entrance: rearing horse (visit) cursor; the mine body shows the arrow
 - [x] Hover over the hero: hero helmet cursor
-- [ ] Hover over own town: town cursor (needs town ownership)
+- [ ] Hover over own town: town cursor (needs town ownership, 2.3b)
 - [ ] Hover over another hero: exchange cursor (needs multiple heroes)
 - [x] Scroll arrows at the map edges, while edge scrolling
 - [x] Cursor updates in real-time as mouse moves across tiles, and when the hero moves under a still mouse
@@ -67,7 +67,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Minimap shows terrain colors matching terrain types
 - [x] Object colours as in H3: hero in player colour; towns and mines neutral grey until owned. Monsters and resources are not shown (H3 does not show them either)
 - [x] Owned mines in the owner's player colour
-- [ ] Owned towns in the owner's player colour (needs town ownership)
+- [ ] Owned towns in the owner's player colour (needs town ownership, 2.3b)
 - [x] Click on minimap to move camera to that location
 - [x] Drag on minimap to pan camera
 - [x] Current viewport rectangle shown on minimap
@@ -109,23 +109,39 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [ ] Validation: scenario loader validates entity metadata schema
 
 ### 2.3 Town View Screen
-- [ ] Entering a town opens a full-screen town view (replaces adventure map)
-- [ ] Town background image area (faction-specific later, placeholder for now)
-- [ ] Building slots displayed on town background (empty/built state)
-- [ ] Town name at top of screen
-- [ ] Garrison bar: up to 7 creature stacks displayed
-- [ ] Visiting hero army bar below garrison (when hero is in town)
-- [ ] "Exit" button returns to adventure map
-- [ ] Town view has its own event scope (town.command.*, town.fact.*)
-- [ ] Creatures available for recruitment panel
-- [ ] Gold/resource display within town view
+See `docs/notes/2026-10-20-town-screen.md`.
+- [x] Entering a town opens a full-screen town view (replaces adventure map); a town open at reload is shown again
+- [x] Town background image area (faction-specific later, placeholder for now): a castle drawn in CSS
+- [ ] Building slots displayed on town background (empty/built state) (needs town buildings, 6.1)
+- [x] Town name in the panel as in H3: the scenario's `name` for the town, else its type's name
+- [x] Garrison bar: up to 7 creature stacks displayed (empty until towns have garrisons, 6.4)
+- [x] Visiting hero army bar below garrison (when hero is in town), the hero's portrait placeholder first
+- [x] "Exit" button (✓, Enter or Escape) returns to adventure map
+- [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
+- [ ] Creatures available for recruitment panel (its place is kept empty; needs dwellings, 6.3)
+- [ ] Hall and Fort icons and the daily income in the panel (places kept empty; needs 6.2)
+- [ ] Town list on the panel's right side (needs town ownership, 2.3b)
+- [x] Gold/resource display within town view: the resource bar and date stay under the town screen
+- [ ] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
+
+### 2.3b Town Ownership & Town List
+Heroes 3 lets the player open their own towns from the sidebar or the map, with no hero inside.
+- [ ] Entering a neutral town captures it: a flag in the player's colour on the town, as mines have (3.3)
+- [ ] Owned towns in the player's colour on the minimap (1.4)
+- [ ] Owned towns fill the sidebar town list (1.3), in the order they were taken
+- [ ] Clicking a town in the list selects it and shows its town info box in place of the hero's (2.1)
+- [ ] Clicking the selected town again, or double-clicking it, opens its town screen
+- [ ] Clicking an owned town on the map opens its town screen; the town cursor shows over it (1.2)
+- [ ] A town opened without a hero shows an empty visiting hero row; leaving returns to the map
+- [ ] The town list on the town screen's panel switches between owned towns (2.3)
+- [ ] Ownership persisted in the event log; an open town screen is shown again after reload
 
 ### 2.4 Interaction Modals Upgrade
 - [ ] Monster defeat modal: show creature name, count defeated, XP gained, any loot dropped
 - [ ] Resource pickup modal: show resource icon, type name, amount collected (e.g. "+500 Gold")
 - [ ] Resource pickup: brief floating number animation on map (optional, low priority)
 - [ ] Mine capture modal: show mine type, daily income, "Mine captured!" message
-- [ ] Town visit: redirect to town view screen instead of modal
+- [x] Town visit: redirect to town view screen instead of modal
 - [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
 - [ ] Dwelling visit modal: show available creatures, count, cost, recruit button
 
@@ -159,7 +175,7 @@ Core game loop - resources flow, time passes.
 ### 3.2 Resource Income System
 - [x] At the start of each new day (after end turn), income is calculated and applied
 - [x] Income source: owned mines (daily amounts as in H3, in `game/data/mines.json`)
-- [ ] Income source: owned towns (needs town ownership)
+- [ ] Income source: owned towns (needs town ownership, 2.3b)
 - [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
@@ -849,49 +865,50 @@ Sprites and map authoring are intentionally late.
 
 ### Phase 4 - "Towns & Economy"
 25. Town view screen (2.3)
-26. Town buildings system (6.1)
-27. Common buildings (6.2)
-28. Creature dwellings in town (6.3)
-29. Town garrison (6.4)
-30. Interaction modals upgrade (2.4)
+26. Town ownership & town list (2.3b)
+27. Town buildings system (6.1)
+28. Common buildings (6.2)
+29. Creature dwellings in town (6.3)
+30. Town garrison (6.4)
+31. Interaction modals upgrade (2.4)
 
 ### Phase 5 - "Living World"
-31. Fog of war (7.1)
-32. Multiple heroes (4.5)
-33. Hero secondary skills (4.7)
-34. Creature dwellings on map (7.4)
-35. Resource-generating objects (7.5)
-36. Permanent bonus objects (7.7)
-37. Stat-boosting objects (7.6)
-38. Artifacts on map (7.8)
-39. Obstacles & decorations (7.3)
+32. Fog of war (7.1)
+33. Multiple heroes (4.5)
+34. Hero secondary skills (4.7)
+35. Creature dwellings on map (7.4)
+36. Resource-generating objects (7.5)
+37. Permanent bonus objects (7.7)
+38. Stat-boosting objects (7.6)
+39. Artifacts on map (7.8)
+40. Obstacles & decorations (7.3)
 
 ### Phase 6 - "Real Competition"
-40. Player system (8.1)
-41. AI basics (8.3)
-42. AI decision making (8.4)
-43. Victory conditions (8.5)
-44. Combat spells (5.8)
-45. Hero magic (4.8)
-46. Siege combat (5.10)
-47. Town factions (6.5)
-48. Smarter combat AI (5.7b)
+41. Player system (8.1)
+42. AI basics (8.3)
+43. AI decision making (8.4)
+44. Victory conditions (8.5)
+45. Combat spells (5.8)
+46. Hero magic (4.8)
+47. Siege combat (5.10)
+48. Town factions (6.5)
+49. Smarter combat AI (5.7b)
 
 ### Phase 7 - "Polish & Reusability"
-49. Engine public API (9.3)
-50. Scenario format v2 (9.1)
-51. Multiple scenarios + selector (9.2)
-52. Keyboard shortcuts (10.6)
-53. Save/Load system (10.7)
-54. Sound effects (10.4)
-55. Music per context (10.5)
-56. Entity sprites (10.1)
-57. Terrain sprites (10.2)
-58. Animations (10.3)
-59. Map portals (7.9)
-60. Water & boats (7.10)
-61. Hot-seat multiplayer (8.2)
-62. Map editor (9.4)
+50. Engine public API (9.3)
+51. Scenario format v2 (9.1)
+52. Multiple scenarios + selector (9.2)
+53. Keyboard shortcuts (10.6)
+54. Save/Load system (10.7)
+55. Sound effects (10.4)
+56. Music per context (10.5)
+57. Entity sprites (10.1)
+58. Terrain sprites (10.2)
+59. Animations (10.3)
+60. Map portals (7.9)
+61. Water & boats (7.10)
+62. Hot-seat multiplayer (8.2)
+63. Map editor (9.4)
 
 ---
 

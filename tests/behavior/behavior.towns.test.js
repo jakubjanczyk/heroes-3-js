@@ -11,13 +11,9 @@ import {
   expectTownPresent,
   getPreviewTargetAt
 } from './adventure-map.utils.js'
-import {
-  closeInteractionModal,
-  expectInteractionModalOpen,
-  expectMovementPoints
-} from './adventure-panels.utils.js'
 import { flushMicrotasks, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
+import { enterTownAt, leaveTown } from './town-screen.utils.js'
 
 const aCastleScenario = (hero) =>
   aScenario()
@@ -81,54 +77,22 @@ describe('town interaction behavior', () => {
     }
   })
 
-  test('given player confirms move to town entry when movement resolves then hero steps into town tile and town remains', async () => {
+  test('given player confirms move to town entry when the hero leaves the town screen then hero stands on the entry tile and town remains', async () => {
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: aCastleScenario(aHero().at(4, 5)).build(),
       appConfig: {
         interactionModalTransitionMs: 0
       }
     })
+    await enterTownAt(4, 3)
 
-    confirmTileClickByDispatch(4, 3)
-    await flushMicrotasks()
+    await leaveTown(user)
 
     expectHeroAt(4, 3)
-    expectMovementPoints(1300)
-    expectInteractionModalOpen('Castle visited')
-
-    await closeInteractionModal(user)
-    await flushMicrotasks()
-
     expectTownPresent('town-1')
   })
 
-  test('given hero leaves and re-enters the same town in one session then the town modal opens again', async () => {
-    const { user } = await setupMovementBehaviorApp({
-      loadGameOptions: aCastleScenario(aHero().at(4, 5)).build(),
-      appConfig: {
-        interactionModalTransitionMs: 0
-      }
-    })
-
-    confirmTileClickByDispatch(4, 3)
-    await flushMicrotasks()
-    expectInteractionModalOpen('Castle visited')
-
-    await closeInteractionModal(user)
-    await flushMicrotasks()
-
-    confirmTileClickByDispatch(4, 4)
-    await flushMicrotasks()
-    expectHeroAt(4, 4)
-
-    confirmTileClickByDispatch(4, 3)
-    await flushMicrotasks()
-
-    expectHeroAt(4, 3)
-    expectInteractionModalOpen('Castle visited')
-  })
-
-  test('given hero steps onto a town tile when modal has not opened yet then the preview target is already cleared', async () => {
+  test('given hero steps onto a town tile when the town screen has not opened yet then the preview target is already cleared', async () => {
     await setupMovementBehaviorApp({
       loadGameOptions: aCastleScenario(aHero().at(4, 5)).build(),
       movementStepDelayMs: 20,
@@ -143,27 +107,5 @@ describe('town interaction behavior', () => {
 
     expectHeroAt(4, 3)
     expect(getPreviewTargetAt(4, 3)).toBeFalsy()
-  })
-
-  test('given default-speed movement when hero is still visually arriving on a town tile then modal stays closed', async () => {
-    await setupMovementBehaviorApp({
-      loadGameOptions: aCastleScenario(aHero().at(4, 4)).build(),
-      movementStepDelayMs: 220,
-      appConfig: {
-        interactionModalTransitionMs: 0
-      }
-    })
-
-    confirmTileClickByDispatch(4, 3)
-    await waitMs(250)
-    await flushMicrotasks()
-
-    expectHeroAt(4, 3)
-    expect(getPreviewTargetAt(4, 3)).toBeFalsy()
-
-    await waitMs(220)
-    await flushMicrotasks()
-
-    expectInteractionModalOpen('Castle visited')
   })
 })

@@ -17,7 +17,7 @@ export function renderHeroBox(container, document, { name, skills, army }) {
   const slots = box.querySelectorAll('.army-slot')
   army.forEach((stack, index) => {
     if (stack) {
-      slots[index].append(renderStack(document, stack))
+      slots[index].append(renderArmyStack(document, stack))
     }
   })
 
@@ -26,7 +26,7 @@ export function renderHeroBox(container, document, { name, skills, army }) {
 }
 
 // No creature portraits yet: the creature is pictured as monsters are drawn on the map.
-function renderStack(document, { name, count }) {
+export function renderArmyStack(document, { name, count }) {
   const stack = document.createDocumentFragment()
 
   const picture = document.createElement('div')
