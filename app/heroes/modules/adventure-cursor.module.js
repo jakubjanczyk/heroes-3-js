@@ -51,8 +51,6 @@ export const registerAdventureCursorModule = defineModule(
       viewport.dataset.cursor = scrollDirection ? getScrollCursor(scrollDirection) : tileCursor
     }
 
-    // Clicking the player's own town opens it, but its entrance only while the town is selected:
-    // with the hero selected, the hero walks in.
     function opensTown(entity) {
       return (
         isTown(entity) &&
@@ -61,8 +59,7 @@ export const registerAdventureCursorModule = defineModule(
       )
     }
 
-    // The cursor follows once the route to the tile is planned, unless the hero stands on it,
-    // clicking it opens a town, or a town is selected so that the hero does not move.
+    // The cursor follows once the route to the tile is planned, unless the hero stands on it.
     function updateCursor() {
       if (!hoveredTile) {
         showCursor(ADVENTURE_CURSOR.ARROW)

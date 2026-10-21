@@ -37,7 +37,6 @@ export const registerSelectionModule = defineModule(
     let isInteractionModalOpen = false
     let isSystemOptionsOpen = false
     let isMapCovered = false
-    // The hero moves only while it is selected rather than a town.
     let isTownSelected = false
     let remainingMovementPoints = Number.POSITIVE_INFINITY
 

@@ -42,8 +42,8 @@ export const registerTownModule = defineModule(
     let heroName = DEFAULT_HERO_NAME
     let openTownId = null
     let selectedTownId = null
-    // Clicks on the map count only while nothing covers it and the hero stands still, as for
-    // moving the hero.
+    // As for moving the hero, map clicks count only while nothing covers the map and the hero
+    // stands still.
     const mapBlockers = new Set()
 
     function nameOf(townId) {

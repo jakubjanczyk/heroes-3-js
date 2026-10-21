@@ -167,7 +167,6 @@
   text-shadow: 0 1px 0 black;
 }
 
-/* A town opened with no hero in it leaves the hero's place empty. */
 .town-panel__hero--visiting:empty {
   background: #0d0f14;
 }

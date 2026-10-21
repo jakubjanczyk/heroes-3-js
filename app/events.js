@@ -20,7 +20,6 @@ export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDe
 export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
-// Opens the town screen of a town the player owns, with or without a hero in it.
 export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
@@ -80,8 +79,7 @@ export const APP_UI_ADVENTURE_MAP_UNCOVERED = 'ui.adventureMap.uncovered'
 // The battle as the player sees it: where the stacks stand, whose turn it is and where it can go.
 export const APP_UI_BATTLE_UPDATED = 'ui.battle.updated'
 export const APP_UI_TOWN_UPDATED = 'ui.town.updated'
-// What the adventure panel has selected: a town from the town list, or the hero again. With a town
-// selected, clicking the map does not move the hero.
+// With a town selected instead of the hero, clicking the map does not move the hero.
 export const APP_UI_TOWN_SELECTED = 'ui.town.selected'
 export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
 

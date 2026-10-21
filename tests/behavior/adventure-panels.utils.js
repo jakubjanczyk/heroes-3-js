@@ -168,7 +168,6 @@ export function readTreasureChestChoices() {
     .map((button) => button.getAttribute('aria-label'))
 }
 
-// Picks 'gold' or 'experience' in the open chest dialog and confirms with OK.
 export async function takeFromTreasureChestDialog(user, choice) {
   const dialog = getTreasureChestDialog()
   await user.click(within(dialog).getByRole('button', { name: new RegExp(`${choice}$`) }))
