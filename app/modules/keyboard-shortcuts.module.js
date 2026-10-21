@@ -3,7 +3,13 @@ import { defineModule } from './shared/module-runtime.js'
 const OPEN_DIALOGS = 'dialog[open], [role="dialog"][aria-modal="true"]'
 const ADVENTURE_PANEL = '.adventure-panel'
 
-const keyName = (key) => (key === ' ' ? 'Space' : key.length === 1 ? key.toUpperCase() : key)
+function keyName(key) {
+  if (key === ' ') {
+    return 'Space'
+  }
+
+  return key.length === 1 ? key.toUpperCase() : key
+}
 
 // Space and Enter already press a focused button.
 const pressesFocusedButton = (event) =>

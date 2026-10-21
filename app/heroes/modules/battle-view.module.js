@@ -149,23 +149,33 @@ export const registerBattleViewModule = defineModule(
       return reachableKeys.has(hexKey(hex))
     }
 
-    function describeHex(hex) {
+    // The stack the player is moving, while it stands still waiting for an order.
+    function findIdleActiveStack() {
       const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
-      if (!activeStack || shown.moving) {
-        return ''
-      }
+      return activeStack && !shown.moving ? activeStack : null
+    }
 
+    function describeStackHex(hex, activeStack) {
       const shot = findShot(hex)
       if (shot) {
         const shotsLeft = activeStack.shots === 1 ? '1 shot' : `${activeStack.shots} shots`
         return `Shoot ${shot.target.name} (${shotsLeft} left, damage ${shot.damage.min}-${shot.damage.max})`
       }
 
+      const attack = findAttack(hex, hexElementAt(hex))
+      return attack
+        ? `Attack ${attack.target.name} (damage ${attack.damage.min}-${attack.damage.max})`
+        : ''
+    }
+
+    function describeHex(hex) {
+      const activeStack = findIdleActiveStack()
+      if (!activeStack) {
+        return ''
+      }
+
       if (findLivingStackOn(hex)) {
-        const attack = findAttack(hex, hexElementAt(hex))
-        return attack
-          ? `Attack ${attack.target.name} (damage ${attack.damage.min}-${attack.damage.max})`
-          : ''
+        return describeStackHex(hex, activeStack)
       }
 
       return isReachable(hex)
@@ -173,25 +183,29 @@ export const registerBattleViewModule = defineModule(
         : ''
     }
 
-    function pickCursor(hex) {
-      const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
-      if (!activeStack || shown.moving) {
-        return null
-      }
-
-      const stack = findLivingStackOn(hex)
-      if (stack?.side === activeStack.side) {
+    function pickStackCursor(hex, stack, activeStack) {
+      if (stack.side === activeStack.side) {
         return 'query'
       }
 
-      const shot = stack && findShot(hex)
+      const shot = findShot(hex)
       if (shot) {
         return shot.distancePenalty ? 'shoot-penalty' : 'shoot'
       }
 
+      const attack = findAttack(hex, hexElementAt(hex))
+      return attack ? `attack-from-${attack.side}` : 'blocked'
+    }
+
+    function pickCursor(hex) {
+      const activeStack = findIdleActiveStack()
+      if (!activeStack) {
+        return null
+      }
+
+      const stack = findLivingStackOn(hex)
       if (stack) {
-        const attack = findAttack(hex, hexElementAt(hex))
-        return attack ? `attack-from-${attack.side}` : 'blocked'
+        return pickStackCursor(hex, stack, activeStack)
       }
 
       if (isReachable(hex)) {
@@ -204,8 +218,7 @@ export const registerBattleViewModule = defineModule(
     // Heroes 3's cursor shadow: the hex under the mouse, or every hex of the enemy it would attack
     // or shoot. Not after a tap, or the hex would stay lit once the finger is gone.
     function findHighlightedHexes(hex) {
-      const activeStack = shown?.stacks.find(({ id }) => id === shown.activeStackId)
-      if (!hex || !activeStack || shown.moving || pointerType === 'touch') {
+      if (!hex || !findIdleActiveStack() || pointerType === 'touch') {
         return []
       }
 
@@ -326,6 +339,35 @@ export const registerBattleViewModule = defineModule(
       )
     }
 
+    function showStack(stack, { from, isActive }) {
+      let elements = stackElements.get(stack.id)
+      if (!elements) {
+        elements = createStack(stack)
+        stackElements.set(stack.id, elements)
+      }
+
+      drawStack(elements, stack)
+      const element = elements.stack
+      if (!from || !isSameHex(from, stack.hex)) {
+        placeStack(element, from, stack.hex)
+      }
+
+      const backHex = stack.count > 0 ? stack.hexes[1] : null
+      if (backHex) {
+        hexElementAt(backHex).append(elements.backHalf)
+      } else {
+        elements.backHalf.remove()
+      }
+
+      element.classList.toggle('battle-stack--active', isActive)
+      const creature = element.querySelector('.battle-stack__creature')
+      if (isActive) {
+        creature.setAttribute('aria-current', 'true')
+      } else {
+        creature.removeAttribute('aria-current')
+      }
+    }
+
     function showBattle(battle) {
       if (!gameShell) {
         return
@@ -340,35 +382,10 @@ export const registerBattleViewModule = defineModule(
       reachableKeys = new Set(battle.reachableHexes.map(hexKey))
 
       for (const stack of battle.stacks) {
-        let elements = stackElements.get(stack.id)
-        if (!elements) {
-          elements = createStack(stack)
-          stackElements.set(stack.id, elements)
-        }
-
-        drawStack(elements, stack)
-        const element = elements.stack
-
-        const from = previous?.stacks.find(({ id }) => id === stack.id)?.hex
-        if (!from || !isSameHex(from, stack.hex)) {
-          placeStack(element, from, stack.hex)
-        }
-
-        const backHex = stack.count > 0 ? stack.hexes[1] : null
-        if (backHex) {
-          hexElementAt(backHex).append(elements.backHalf)
-        } else {
-          elements.backHalf.remove()
-        }
-
-        const isActive = stack.id === battle.activeStackId
-        element.classList.toggle('battle-stack--active', isActive)
-        const creature = element.querySelector('.battle-stack__creature')
-        if (isActive) {
-          creature.setAttribute('aria-current', 'true')
-        } else {
-          creature.removeAttribute('aria-current')
-        }
+        showStack(stack, {
+          from: previous?.stacks.find(({ id }) => id === stack.id)?.hex,
+          isActive: stack.id === battle.activeStackId
+        })
       }
 
       for (const row of hexes) {
@@ -497,6 +514,41 @@ export const registerBattleViewModule = defineModule(
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
+    function pressBattleButton(action) {
+      if (COMMAND_BY_ACTION[action]) {
+        emit(COMMAND_BY_ACTION[action], {})
+      } else if (action === 'retreat') {
+        openRetreatDialog()
+      } else if (action === 'confirm-retreat' || action === 'cancel-retreat') {
+        closeRetreatDialog()
+        if (action === 'confirm-retreat') {
+          emit(APP_COMMAND_BATTLE_RETREAT_REQUESTED, {})
+        }
+      }
+    }
+
+    // A click on a hex: move there, or shoot or attack the enemy standing on it.
+    function orderActiveStackTo(hex) {
+      if (!findLivingStackOn(hex)) {
+        emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
+        return
+      }
+
+      const shot = findShot(hex)
+      if (shot) {
+        emit(APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED, { targetId: shot.target.id })
+        return
+      }
+
+      const attack = findAttack(hex, hexElementAt(hex))
+      if (attack) {
+        emit(APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED, {
+          targetId: attack.target.id,
+          fromHex: attack.fromHex
+        })
+      }
+    }
+
     return {
       subscriptions: [
         {
@@ -530,56 +582,18 @@ export const registerBattleViewModule = defineModule(
             }
 
             const action = event.target.closest('[data-battle-action]')?.dataset.battleAction
-            if (COMMAND_BY_ACTION[action]) {
+            if (action) {
               event.stopPropagation()
-              emit(COMMAND_BY_ACTION[action], {})
-              return
-            }
-
-            if (action === 'retreat') {
-              event.stopPropagation()
-              openRetreatDialog()
-              return
-            }
-
-            if (action === 'confirm-retreat' || action === 'cancel-retreat') {
-              event.stopPropagation()
-              closeRetreatDialog()
-              if (action === 'confirm-retreat') {
-                emit(APP_COMMAND_BATTLE_RETREAT_REQUESTED, {})
-              }
+              pressBattleButton(action)
               return
             }
 
             // The battlefield cannot be played behind a dialog.
-            if (retreatDialog || resultsWindow) {
-              return
-            }
-
-            const hex = readHex(event.target)
-            if (!hex) {
-              return
-            }
-
-            event.stopPropagation()
-            pointer = { x: event.clientX, y: event.clientY }
-            if (!findLivingStackOn(hex)) {
-              emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
-              return
-            }
-
-            const shot = findShot(hex)
-            if (shot) {
-              emit(APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED, { targetId: shot.target.id })
-              return
-            }
-
-            const attack = findAttack(hex, hexElementAt(hex))
-            if (attack) {
-              emit(APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED, {
-                targetId: attack.target.id,
-                fromHex: attack.fromHex
-              })
+            const hex = !retreatDialog && !resultsWindow && readHex(event.target)
+            if (hex) {
+              event.stopPropagation()
+              pointer = { x: event.clientX, y: event.clientY }
+              orderActiveStackTo(hex)
             }
           }
         },

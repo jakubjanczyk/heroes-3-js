@@ -40,6 +40,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - 2-space indentation
   - single quotes
   - semicolons as needed
+  - cognitive complexity of at most 15 per function, and no nested ternaries; split a function rather than silencing the rule
 - Prefer descriptive names (`movementPointsMax`, `screenToTile`) over abbreviations.
 - Comments only for what the code can't say: why something is done, a non-obvious rule or edge case, or where a Heroes 3 rule comes from (e.g. VCMI). Don't add a comment that restates the code, the function or variable name, or the test name; rename instead. Not every function, variable or test helper needs one.
 - In tests, a comment is worth it when it explains how an expected value is worked out (damage numbers, positions), not to narrate the steps.

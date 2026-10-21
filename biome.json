@@ -33,6 +33,17 @@
       "recommended": true,
       "suspicious": {
         "noConsole": "off"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        }
+      },
+      "style": {
+        "noNestedTernary": "error"
       }
     }
   },

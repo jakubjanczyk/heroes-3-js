@@ -1,3 +1,5 @@
+const MODULE_PHASES = ['domain', 'view']
+
 function noop() {}
 
 function isFunction(value) {
@@ -32,7 +34,7 @@ function toEventTypes(value) {
 
 function normalizeModuleMeta(meta) {
   const id = typeof meta?.id === 'string' && meta.id.length > 0 ? meta.id : null
-  const phase = meta?.phase === 'view' ? 'view' : meta?.phase === 'domain' ? 'domain' : null
+  const phase = MODULE_PHASES.includes(meta?.phase) ? meta.phase : null
 
   return Object.freeze({
     id,
