@@ -246,12 +246,14 @@ export const registerSelectionModule = defineModule(
           type: APP_UI_TOWN_SELECTED,
           handler: () => {
             isTownSelected = true
+            emitPreview()
           }
         },
         {
           type: APP_UI_HERO_SELECTED,
           handler: () => {
             isTownSelected = false
+            emitPreview()
           }
         },
         {

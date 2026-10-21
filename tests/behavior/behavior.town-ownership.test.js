@@ -9,6 +9,8 @@ import {
   getTownFlag
 } from './adventure-map.utils.js'
 import {
+  getHeroInHeroList,
+  getMoveButton,
   getTownInfoBox,
   getTownInTownList,
   readArmySlots,
@@ -161,6 +163,29 @@ describe('town ownership behavior', () => {
       await flushMicrotasks()
 
       expectHeroAt(4, 5)
+    })
+
+    test('disables Move hero when the player selects a town while the hero has a route', async () => {
+      const { user } = await setupApp(
+        aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() })
+      )
+      await clickTile(user, 8, 5)
+
+      await user.click(getTownInTownList('Whitemoon'))
+
+      expect(getMoveButton().disabled).toBe(true)
+    })
+
+    test('enables Move hero again when the player selects the hero in the hero list', async () => {
+      const { user } = await setupApp(
+        aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() })
+      )
+      await clickTile(user, 8, 5)
+      await user.click(getTownInTownList('Whitemoon'))
+
+      await user.click(getHeroInHeroList(HERO_NAME))
+
+      expect(getMoveButton().disabled).toBe(false)
     })
 
     test('opens the town screen when the player clicks the selected town in the list again', async () => {
