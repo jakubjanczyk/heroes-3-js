@@ -1,5 +1,5 @@
 import { heroesContent } from '../../game/heroes/content.js'
-import { heroesOutcomeEffects } from './interaction-outcomes.js'
+import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcomes.js'
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
@@ -21,6 +21,7 @@ import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entiti
 export const heroesAppContent = Object.freeze({
   ...heroesContent,
   outcomeEffects: heroesOutcomeEffects,
+  outcomeEvents: heroesOutcomeEvents,
   entityPresentation: Object.freeze({
     getEntityStyle: getEntityLayerStyle,
     getFadeOutSpec: getEntityFadeOutSpec

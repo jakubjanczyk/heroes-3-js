@@ -81,6 +81,10 @@ export const registerInteractionModule = defineModule(
     id: 'interaction',
     phase: 'domain',
     consumes: [APP_FACT_WORLD_READY, APP_FACT_MOVE_FINISHED, APP_UI_INTERACTION_MODAL_CLOSED],
-    produces: [APP_UI_INTERACTION_MODAL_OPENED, APP_FACT_ENTITY_REMOVED]
+    produces: (config) => [
+      APP_UI_INTERACTION_MODAL_OPENED,
+      APP_FACT_ENTITY_REMOVED,
+      ...(config?.content?.outcomeEvents ?? [])
+    ]
   }
 )

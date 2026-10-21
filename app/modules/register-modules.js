@@ -15,7 +15,7 @@ const PHASE_ORDER = Object.freeze({
   view: 1
 })
 
-const CORE_MODULES = [
+export const CORE_MODULES = [
   registerWorldModule,
   registerMovementModule,
   registerInteractionModule,
@@ -46,6 +46,8 @@ function getModulePhase(meta, id) {
   throw new Error(`Invalid module metadata: module "${id}" has unsupported phase "${phase}"`)
 }
 
+const isEventTypeList = (value) => Array.isArray(value) || typeof value === 'function'
+
 function assertModuleMetadata(modules) {
   const seenIds = new Set()
 
@@ -61,9 +63,9 @@ function assertModuleMetadata(modules) {
 
     seenIds.add(id)
 
-    if (!Array.isArray(meta?.consumes) || !Array.isArray(meta?.produces)) {
+    if (!isEventTypeList(meta?.consumes) || !isEventTypeList(meta?.produces)) {
       throw new Error(
-        `Invalid module metadata: module "${id}" must define consumes and produces arrays`
+        `Invalid module metadata: module "${id}" must define consumes and produces as arrays or functions of config`
       )
     }
   }

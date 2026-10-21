@@ -28,6 +28,15 @@ function toEntityFactDetail(outcome) {
   }
 }
 
+// Every event the outcomes below can emit, declared so the interaction module may emit them.
+export const heroesOutcomeEvents = Object.freeze([
+  APP_FACT_BATTLE_STARTED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_TOWN_VISITED,
+  APP_FACT_TREASURE_CHEST_OPENED,
+  APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED
+])
+
 export const heroesOutcomeEffects = Object.freeze({
   [INTERACTION_OUTCOME_KIND_BATTLE_STARTED]: (outcome) => ({
     facts: [

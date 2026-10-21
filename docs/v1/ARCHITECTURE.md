@@ -41,7 +41,7 @@ app/
   heroes/                    Heroes content, picked in boot-app.js as config.content
     content.js               heroesAppContent
     interaction-outcomes.js  outcome kind -> facts and modal
-    modules/                 turn, hud, hero-panel, system-options, music, minimap-view
+    modules/                 turn, battle, town, mines, hud, ... (see the table in section 6)
     presentation/            entity styles, fade-outs, resource sprites
   ui/
     interaction-modal.element.js
@@ -55,6 +55,7 @@ Core code (`app/` outside `app/heroes/`, `game/` outside `game/heroes/`, `engine
 
 - `entityBehaviors`: list of `{ kind, arrivalInteraction?, footprintOffsets? }` (game rules per entity kind)
 - `outcomeEffects`: map from outcome kind to `{ facts?, modal?, factsOnModalClosed? }`
+- `outcomeEvents`: every event type the outcome effects can emit; the interaction module declares them in its `produces`
 - `entityPresentation`: `{ getEntityStyle({ entity, map }), getFadeOutSpec({ entityKind }) }`
 - `modules`: extra modules the game registers next to the core ones
 
@@ -179,35 +180,47 @@ sequenceDiagram
 
 ## 6) Module responsibilities
 
-Quick matrix:
+What each module listens to and emits, generated from its declared `consumes`/`produces` by `node scripts/module-contracts.mjs`. The runtime throws when a module emits or listens to an event it did not declare, and `tests/architecture/module-contracts.test.js` fails when this table is out of date.
 
-| Module | Subscribes | Emits | Owns mutable state | Owns DOM |
+<!-- module-contracts:start -->
+| Module | Source | Phase | Consumes | Produces |
 |---|---|---|---|---|
-| `world.module` | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` | `hasStarted` | none |
-| `turn.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended` | `turnState` (assigned only in fact handlers), `isMoving` | none |
-| `movement.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.route.requested`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `heroTile`, `removedIds`, `movement`, `heroId`, `remainingMovementPoints`, `isMoveCommandInProgress` | none |
-| `interaction.module` | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.monster.defeated`, `fact.resource.collected`, `fact.town.visited`, `fact.entity.removed` | `entitiesById` (static), `factsOnModalClosed` | none |
-| `selection.module` | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `command.move.continue.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.route.requested`, `command.move.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` | `requestedTile`, `previewPath`, `previewTarget`, `isMoving`, `isInteractionModalOpen`, `isSystemOptionsOpen`, `remainingMovementPoints` | none |
-| `camera.module` | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.world.motion.updated` | `camera`, `map`, `isSystemOptionsOpen` | queries `.viewport`, `.world` |
-| `terrain-view.module` | `fact.world.ready` | none | none | queries `.terrain-layer` |
-| `entity-view.module` | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `ui.restore.started`, `ui.restore.completed` | none | `removedIds`, `isRestoring`, `fadeOutTimers` | queries `.entity-layer` |
-| `preview-view.module` | `fact.world.ready`, `ui.preview.updated` | none | `map` | queries `.effects-layer` |
-| `world-view.module` | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none | none | queries `.world` |
-| `minimap-view.module` | `fact.world.ready`, `ui.camera.updated` | `command.camera.centerOnTile` | `map`, `towns`, `lastCameraUpdate` | queries `#minimap-*` |
-| `interaction-modal.module` | `ui.interaction.modal.opened` | `ui.interaction.modal.closed` | `activeModal` | queries `.viewport`; mounts custom element |
-| `hud.module` | `ui.preview.updated`, `fact.world.ready`, `fact.turn.ended`, `fact.resource.collected`, `fact.income.collected` | `command.move.continue.requested`, `command.turn.end.requested` | `resourceTypeOrder`, `resourceNamesByType`, `resourceTotalsByType` | queries `.ui-layer`, `#resource-bar-list`, `#calendar-status`, `#move-hero-button`, `#end-turn-button` |
-| `hero-panel.module` | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed` | `command.camera.centerOnTile` | `heroTile`, `movementPoints` | queries `#hero-list`, `#hero-info-name`, `#next-hero-button` |
-| `system-options.module` | `ui.music.state.changed` | `command.music.toggle.requested`, `command.session.reset.requested`, `ui.systemOptions.opened`, `ui.systemOptions.closed` | `isMusicEnabled`, `dialog` | queries `#system-options-button`, `.game-shell`; mounts the System options `<dialog>` |
-| `music.module` | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` | `musicPlayer`, `hasInitialized` | none |
+| `world` | core | domain | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` |
+| `movement` | core | domain | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.route.requested`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` |
+| `interaction` | core | domain | `fact.world.ready`, `fact.move.finished`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.entity.removed`, `fact.battle.started`, `fact.resource.collected`, `fact.town.visited`, `fact.treasureChest.opened`, `command.hero.experience.gain.requested` |
+| `selection` | core | domain | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `command.move.continue.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `command.route.requested`, `ui.preview.updated`, `fact.preview.target.selected`, `fact.preview.cleared` |
+| `camera` | core | domain | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.map.edgeScrolled`, `ui.tile.hovered`, `ui.tile.info.requested`, `ui.tile.info.dismissed`, `ui.world.motion.updated` |
+| `terrain-view` | core | view | `fact.world.ready` | none |
+| `entity-view` | core | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `ui.restore.started`, `ui.restore.completed` | none |
+| `preview-view` | core | view | `fact.world.ready`, `ui.preview.updated` | none |
+| `world-view` | core | view | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none |
+| `interaction-modal` | core | view | `ui.interaction.modal.opened`, `ui.notice.opened` | `ui.interaction.modal.closed` |
+| `keyboard-shortcuts` | core | view | none | none |
+| `turn` | heroes | domain | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended`, `ui.notice.opened` |
+| `mines` | heroes | domain | `fact.world.ready`, `fact.move.finished`, `fact.mine.captured`, `fact.turn.ended` | `fact.mine.captured`, `fact.income.collected` |
+| `hero-levels` | heroes | domain | `fact.world.ready`, `fact.hero.experience.gained`, `command.hero.experience.gain.requested` | `fact.hero.experience.gained`, `fact.hero.leveledUp`, `ui.notice.opened` |
+| `battle` | heroes | domain | `fact.world.ready`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.restore.started`, `ui.restore.completed`, `fact.battle.started`, `fact.battle.stack.moved`, `fact.battle.stack.attacked`, `fact.battle.stack.shot`, `fact.battle.turn.ended`, `fact.battle.stack.waited`, `fact.battle.stack.defended`, `fact.battle.autoCombat.changed`, `fact.battle.finished`, `fact.battle.ended`, `command.battle.stackMove.requested`, `command.battle.stackAttack.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `command.battle.stackDefend.requested`, `command.battle.autoCombat.requested`, `command.battle.retreat.requested`, `command.battle.resultsClose.requested` | `ui.battle.updated`, `fact.battle.stack.moved`, `fact.battle.stack.attacked`, `fact.battle.stack.shot`, `fact.battle.turn.ended`, `fact.battle.stack.waited`, `fact.battle.stack.defended`, `fact.battle.autoCombat.changed`, `fact.battle.finished`, `fact.battle.ended`, `fact.monster.defeated`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.entity.removed`, `command.hero.experience.gain.requested` |
+| `town` | heroes | domain | `fact.world.ready`, `fact.hero.army.changed`, `fact.town.visited`, `command.town.leave.requested`, `fact.town.left` | `ui.town.updated`, `fact.town.left` |
+| `mine-flag-view` | heroes | view | `fact.mine.captured` | none |
+| `minimap-view` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.mine.captured`, `ui.camera.updated` | `command.camera.centerOnTile` |
+| `hud` | heroes | view | `ui.preview.updated`, `fact.world.ready`, `fact.turn.ended`, `fact.resource.collected`, `fact.income.collected`, `fact.treasureChest.opened` | `command.move.continue.requested`, `command.turn.end.requested` |
+| `status-bar` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `ui.tile.hovered` | none |
+| `adventure-cursor` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `ui.tile.hovered`, `ui.map.edgeScrolled`, `fact.route.planned` | `command.route.requested` |
+| `info-popup` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.mine.captured`, `fact.hero.leveledUp`, `ui.tile.info.requested`, `ui.tile.info.dismissed` | none |
+| `hero-panel` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed`, `fact.hero.leveledUp`, `fact.hero.army.changed` | `command.camera.centerOnTile` |
+| `system-options` | heroes | view | `ui.music.state.changed` | `command.music.toggle.requested`, `command.session.reset.requested`, `ui.systemOptions.opened`, `ui.systemOptions.closed` |
+| `battle-view` | heroes | view | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.battle.updated`, `fact.battle.ended` | `command.battle.autoCombat.requested`, `command.battle.resultsClose.requested`, `command.battle.retreat.requested`, `command.battle.stackAttack.requested`, `command.battle.stackDefend.requested`, `command.battle.stackMove.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
+| `town-screen-view` | heroes | view | `ui.town.updated`, `fact.town.left` | `command.town.leave.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
+| `music` | heroes | view | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` |
+<!-- module-contracts:end -->
 
 ### 6.1 Domain-first vs view modules
 
 Runtime modules are intentionally split into two categories:
 
-- domain/control modules: `world`, `turn`, `movement`, `interaction`, `selection`, `camera`, `music`
-- view/projection modules: `terrain-view`, `entity-view`, `preview-view`, `world-view`, `minimap-view`, `interaction-modal`, `hud`, `hero-panel`, `system-options`
+- domain/control modules and view/projection modules; each module's `phase` is in the table above.
 
-`register-modules.js` registers the core modules plus the game's `config.content.modules` (for Heroes: turn, hud, hero-panel, system-options, music, minimap-view), domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
+`register-modules.js` registers the core modules plus the game's `config.content.modules`, domain modules first, then view modules, which keeps event flow intuitive and avoids a bootstrap god-object.
 
 Route selection vs. movement:
 

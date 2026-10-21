@@ -21,24 +21,13 @@ function resolveTarget(target, runtime) {
 }
 
 function toEventTypeList(value) {
-  const values = toList(value)
-  const seen = new Set()
-  const types = []
+  return Object.freeze([...new Set(toList(value))])
+}
 
-  for (const candidate of values) {
-    if (typeof candidate !== 'string' || candidate.length < 1) {
-      continue
-    }
-
-    if (seen.has(candidate)) {
-      continue
-    }
-
-    seen.add(candidate)
-    types.push(candidate)
-  }
-
-  return Object.freeze(types)
+// `consumes` and `produces` are lists of event types, or functions of `config` for a module whose
+// events depend on the content, such as the facts an interaction outcome emits.
+function toEventTypes(value) {
+  return isFunction(value) ? value : toEventTypeList(value)
 }
 
 function normalizeModuleMeta(meta) {
@@ -48,13 +37,19 @@ function normalizeModuleMeta(meta) {
   return Object.freeze({
     id,
     phase,
-    consumes: toEventTypeList(meta?.consumes),
-    produces: toEventTypeList(meta?.produces)
+    consumes: toEventTypes(meta?.consumes),
+    produces: toEventTypes(meta?.produces)
   })
 }
 
-export function createModuleRuntime({ bus, env, config }) {
+function resolveEventTypes(eventTypes, config) {
+  return new Set(isFunction(eventTypes) ? eventTypes(config) : eventTypes)
+}
+
+export function createModuleRuntime({ bus, env, config }, meta = normalizeModuleMeta()) {
   const disposers = []
+  const consumes = resolveEventTypes(meta.consumes, config)
+  const produces = resolveEventTypes(meta.produces, config)
 
   function registerDisposer(disposer) {
     if (!isFunction(disposer)) {
@@ -66,6 +61,10 @@ export function createModuleRuntime({ bus, env, config }) {
   }
 
   function on(type, handler, options) {
+    if (!consumes.has(type)) {
+      throw new Error(`Module "${meta.id}" listens to "${type}" without declaring it in consumes`)
+    }
+
     bus.addEventListener(type, handler, options)
 
     if (isFunction(bus.removeEventListener)) {
@@ -90,6 +89,10 @@ export function createModuleRuntime({ bus, env, config }) {
   }
 
   function emit(type, detail, options) {
+    if (!produces.has(type)) {
+      throw new Error(`Module "${meta.id}" emits "${type}" without declaring it in produces`)
+    }
+
     bus.emit(type, detail, options)
   }
 
@@ -114,11 +117,17 @@ export function createModuleRuntime({ bus, env, config }) {
   }
 }
 
+function assertSubscription(meta, type, handler) {
+  if (typeof type !== 'string' || !isFunction(handler)) {
+    throw new Error(`Module "${meta.id}" has a subscription without an event type or handler`)
+  }
+}
+
 export function defineModule(setup, meta = {}) {
   const moduleMeta = normalizeModuleMeta(meta)
 
   const registerModule = (runtime) => {
-    const moduleRuntime = createModuleRuntime(runtime)
+    const moduleRuntime = createModuleRuntime(runtime, moduleMeta)
     const moduleDefinition = setup(moduleRuntime)
 
     if (isFunction(moduleDefinition)) {
@@ -126,27 +135,14 @@ export function defineModule(setup, meta = {}) {
     }
 
     if (isObject(moduleDefinition)) {
-      for (const entry of toList(moduleDefinition.subscriptions)) {
-        const type = entry?.type
-        const handler = entry?.handler
-        const options = entry?.options
-        if (typeof type !== 'string' || !isFunction(handler)) {
-          continue
-        }
-
+      for (const { type, handler, options } of toList(moduleDefinition.subscriptions)) {
+        assertSubscription(moduleMeta, type, handler)
         moduleRuntime.on(type, handler, options)
       }
 
-      for (const entry of toList(moduleDefinition.domSubscriptions)) {
-        const type = entry?.type
-        const handler = entry?.handler
-        const options = entry?.options
-        if (typeof type !== 'string' || !isFunction(handler)) {
-          continue
-        }
-
-        const target = resolveTarget(entry?.target, moduleRuntime)
-        moduleRuntime.onDom(target, type, handler, options)
+      for (const { type, handler, options, target } of toList(moduleDefinition.domSubscriptions)) {
+        assertSubscription(moduleMeta, type, handler)
+        moduleRuntime.onDom(resolveTarget(target, moduleRuntime), type, handler, options)
       }
 
       moduleRuntime.registerDisposer(moduleDefinition.dispose)
