@@ -20,9 +20,8 @@ import { renderTownBox } from '../presentation/town-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
-// The hero list with its movement bar, the info box below it and the Next hero button. The info
-// box shows the selected hero, or the town selected in the town list. As in Heroes 3, the hero is
-// selected again when a new day starts, and when the player leaves a town the hero is in.
+// The hero list with its movement bar, the info box below it and the Next hero button. As in
+// Heroes 3, the hero is selected again on a new day and on leaving a town it is in.
 export const registerHeroPanelModule = defineModule(
   ({ emit, env }) => {
     const heroList = env.document?.getElementById('hero-list')

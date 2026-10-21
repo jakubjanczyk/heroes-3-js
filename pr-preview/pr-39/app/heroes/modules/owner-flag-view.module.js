@@ -6,7 +6,6 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
-// The player's flag on the mines and towns the player owns.
 export const registerOwnerFlagViewModule = defineModule(
   ({ env }) => {
     const entityLayer = env.document?.querySelector('.entity-layer')

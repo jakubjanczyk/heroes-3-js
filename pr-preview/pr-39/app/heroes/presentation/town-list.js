@@ -1,5 +1,4 @@
-// Fills a town list, on the adventure panel or the town screen, with a button for each town the
-// player owns: the town's initial until there are town pictures, framed when it is selected.
+// Each town is shown by its initial until there are town pictures.
 export function renderTownList(list, document, { towns, selectedTownId }) {
   list.replaceChildren(
     ...towns.map(({ entityId, name }) => {

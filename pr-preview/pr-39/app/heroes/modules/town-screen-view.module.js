@@ -25,7 +25,6 @@ export const registerTownScreenViewModule = defineModule(
       })
     }
 
-    // A town opened with no hero in it shows an empty place for the hero and no army.
     function showVisitingHero(visitingHero) {
       const hero = townScreen.querySelector('.town-panel__hero--visiting')
       const name = visitingHero?.name ?? ''

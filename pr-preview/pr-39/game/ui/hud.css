@@ -256,7 +256,6 @@
   }
 }
 
-/* The town's initial until there are town pictures; the selected town gets a gold frame. */
 .town-list__item {
   display: grid;
 }
