@@ -307,6 +307,8 @@
       "id": "town-1",
       "kind": "TOWN",
       "type": "CASTLE",
+      "name": "Whitemoon",
+      "owner": "red",
       "tile": {
         "x": 10,
         "y": 10

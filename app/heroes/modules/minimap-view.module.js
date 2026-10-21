@@ -2,10 +2,12 @@ import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js'
 import { clamp } from '../../../engine/math-utils.js'
 import { findHero, isMine, isTown } from '../../../game/domain/entity-queries.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
+import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
+  APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED
 } from '../../events.js'
@@ -34,6 +36,7 @@ export const registerMinimapViewModule = defineModule(
     let ownedMineIds = new Set()
     let mineTilesByMineId = new Map()
     let towns = []
+    const ownedTowns = createOwnedTowns()
     let heroMarker = null
     let isDragging = false
     let lastCameraUpdate = null
@@ -107,7 +110,9 @@ export const registerMinimapViewModule = defineModule(
 
       for (const town of towns) {
         const marker = createElement('div')
-        marker.className = 'minimap-town-marker'
+        marker.className = ownedTowns.has(town.id)
+          ? 'minimap-town-marker minimap-town-marker--player'
+          : 'minimap-town-marker'
         marker.dataset.entityId = town.id
         placeMarker(marker, town.tile)
         minimapTowns.appendChild(marker)
@@ -256,6 +261,7 @@ export const registerMinimapViewModule = defineModule(
             entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
             ownedMineIds = new Set()
             towns = entities.filter(isTown)
+            ownedTowns.onWorldReady(entities)
 
             if (minimapMap && map?.width > 0 && map?.height > 0) {
               setStyleVar(minimapMap, '--minimap-columns', String(map.width))
@@ -294,6 +300,13 @@ export const registerMinimapViewModule = defineModule(
           }
         },
         {
+          type: APP_FACT_TOWN_CAPTURED,
+          handler: (event) => {
+            ownedTowns.onTownCaptured(event.detail.entityId)
+            renderTowns()
+          }
+        },
+        {
           type: APP_UI_CAMERA_UPDATED,
           handler: (event) => {
             lastCameraUpdate = event.detail
@@ -310,6 +323,7 @@ export const registerMinimapViewModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_MOVED,
       APP_FACT_MINE_CAPTURED,
+      APP_FACT_TOWN_CAPTURED,
       APP_UI_CAMERA_UPDATED
     ],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE]

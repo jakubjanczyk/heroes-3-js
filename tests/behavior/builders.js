@@ -56,6 +56,9 @@ export const aTown = () =>
     ...placeable(town),
     named(name) {
       town.name = name
+    },
+    ownedByPlayer() {
+      town.owner = 'red'
     }
   }))
 

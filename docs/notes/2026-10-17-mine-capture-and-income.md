@@ -13,7 +13,7 @@ Roadmap 3.2 and 3.3.
 
 - `app/heroes/modules/mines.module.js` owns the state: it emits `fact.mine.captured` (persisted) when a move ends on a mine not owned yet, and on each `fact.turn.ended` emits `fact.income.collected` with the total per resource type.
 - `fact.income.collected` is not persisted. It follows from the persisted captures and turn ends, so replaying the log on reload pays the same income in the same order.
-- The flag is added by `mine-flag-view.module.js`. The mine-type tint moved from the mine element to its `::before` layer, so the CSS `filter` does not tint the flag too.
+- The flag is added by `owner-flag-view.module.js` (`mine-flag-view` before towns could be owned). The mine-type tint moved from the mine element to its `::before` layer, so the CSS `filter` does not tint the flag too.
 - The player red and neutral grey are now shared `:root` variables (`--player-red`, `--neutral-grey`).
 
 ## Not yet

@@ -21,6 +21,7 @@ export function renderHeroBox(container, document, { name, skills, army }) {
     }
   })
 
+  container.classList.remove('town-box')
   container.classList.add('hero-box')
   container.replaceChildren(box)
 }

@@ -29,6 +29,12 @@ export function getTownEntity(entityId = 'town-1') {
   return document.querySelector(`.entity--town[data-entity-id="${entityId}"]`)
 }
 
+export function getTownFlag(entityId = 'town-1') {
+  return (
+    getTownEntity(entityId)?.querySelector('[role="img"][aria-label="Red player flag"]') ?? null
+  )
+}
+
 export function getMineEntity(entityId = 'mine-1') {
   return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`)
 }

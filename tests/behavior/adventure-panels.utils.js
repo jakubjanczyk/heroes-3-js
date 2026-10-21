@@ -25,6 +25,28 @@ export function readArmySlots(container, listName = 'Army') {
     })
 }
 
+function getAdventurePanel() {
+  return screen.getByRole('complementary', { name: 'UI' })
+}
+
+function getTownList() {
+  return within(getAdventurePanel()).getByRole('list', { name: 'Towns' })
+}
+
+export function getTownInTownList(townName) {
+  return within(getTownList()).getByRole('button', { name: townName })
+}
+
+export function readTownList() {
+  return within(getTownList())
+    .queryAllByRole('button')
+    .map((town) => town.getAttribute('aria-label'))
+}
+
+export function getTownInfoBox() {
+  return screen.getByRole('region', { name: 'Town info' })
+}
+
 export function getHeroInfoBox() {
   return screen.getByRole('region', { name: 'Hero info' })
 }
@@ -146,14 +168,18 @@ export function readTreasureChestChoices() {
     .map((button) => button.getAttribute('aria-label'))
 }
 
-// Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.
-export async function takeFromTreasureChest(user, { x, y }, choice) {
-  confirmTileClickByDispatch(x, y)
-  await flushMicrotasks()
+export async function takeFromTreasureChestDialog(user, choice) {
   const dialog = getTreasureChestDialog()
   await user.click(within(dialog).getByRole('button', { name: new RegExp(`${choice}$`) }))
   await user.click(within(dialog).getByRole('button', { name: 'OK' }))
   await flushMicrotasks()
+}
+
+// Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.
+export async function takeFromTreasureChest(user, { x, y }, choice) {
+  confirmTileClickByDispatch(x, y)
+  await flushMicrotasks()
+  await takeFromTreasureChestDialog(user, choice)
 }
 
 // Each skill is an icon named for screen readers, with its value under it.

@@ -64,6 +64,11 @@
     box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
   }
 
+  & .minimap-town-marker--player {
+    background: var(--player-red);
+    border-color: color-mix(in oklab, black 58%, var(--player-red));
+  }
+
   & .minimap-hero-marker {
     position: absolute;
     inset-inline-start: var(--minimap-marker-x, 0%);

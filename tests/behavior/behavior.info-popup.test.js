@@ -11,6 +11,7 @@ import {
   holdRightButtonOn,
   pointerOverTile
 } from './adventure-map.utils.js'
+import { readArmySlots } from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
@@ -166,6 +167,20 @@ describe('info popup behavior', () => {
       await holdRightButtonOn(user, 2, 2)
 
       expectInfoPopupLines(['Castle'])
+    })
+
+    test("given the player's own town when the player holds the right button on it then the popup shows its name and garrison", async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(5, 4)
+          .withEntities(aHero().at(0, 3), aTown().named('Whitemoon').ownedByPlayer().at(2, 2))
+      )
+
+      await holdRightButtonOn(user, 2, 2)
+
+      const popup = queryInfoPopup()
+      expect(within(popup).getByRole('heading').textContent).toBe('Whitemoon')
+      expect(readArmySlots(popup, 'Garrison')).toEqual(new Array(7).fill(''))
     })
 
     test('given an empty tile when the player holds the right button on it then the popup shows the terrain name', async () => {

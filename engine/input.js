@@ -79,8 +79,13 @@ export function attachCameraInput({
     camera.moveBy(delta[0], delta[1])
   }
 
-  // The map tile under the pointer, or null when it is off the map.
+  // The map tile under the pointer, or null when it is off the map. A dialog shown over the map
+  // (and its backdrop, whose events go to the dialog) hides the map, so the pointer is off it there.
   function getTileAtPointer(event) {
+    if (event?.target?.closest?.('dialog')) {
+      return null
+    }
+
     const targetTile = getTileFromEventTarget(event?.target)
     if (targetTile && map.inBounds(targetTile)) {
       return targetTile

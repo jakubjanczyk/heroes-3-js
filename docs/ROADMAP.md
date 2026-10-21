@@ -43,7 +43,8 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Hover over resource or treasure chest: rearing horse (visit) cursor
 - [x] Hover over mine entrance: rearing horse (visit) cursor; the mine body shows the arrow
 - [x] Hover over the hero: hero helmet cursor
-- [ ] Hover over own town: town cursor (needs town ownership, 2.3b)
+- [x] Hover over own town: castle cursor; its entrance keeps the rearing horse while the hero is selected (2.3b)
+- [x] With a town selected in the town list, the map shows the arrow: the hero does not move
 - [ ] Hover over another hero: exchange cursor (needs multiple heroes)
 - [x] Scroll arrows at the map edges, while edge scrolling
 - [x] Cursor updates in real-time as mouse moves across tiles, and when the hero moves under a still mouse
@@ -67,7 +68,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Minimap shows terrain colors matching terrain types
 - [x] Object colours as in H3: hero in player colour; towns and mines neutral grey until owned. Monsters and resources are not shown (H3 does not show them either)
 - [x] Owned mines in the owner's player colour
-- [ ] Owned towns in the owner's player colour (needs town ownership, 2.3b)
+- [x] Owned towns in the owner's player colour
 - [x] Click on minimap to move camera to that location
 - [x] Drag on minimap to pan camera
 - [x] Current viewport rectangle shown on minimap
@@ -94,7 +95,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [x] Resource: resource name only; the amount stays hidden until it is picked up
 - [x] Mine: mine name, and the owner's colour on the next line ("(Red)") once owned
 - [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
-  - [x] For now: the town's name (needs town ownership and buildings)
+  - [x] For now: the player's own town gets the town box (name and the empty garrison); other towns their name. Fort and Hall need buildings (6.2)
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
   - [x] For now: the same box as the info box (portrait initial, name, primary skills, the army with exact counts); morale/luck and spell points need later work
 - [x] Right-click on empty terrain shows the terrain name
@@ -120,21 +121,22 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
 - [ ] Creatures available for recruitment panel (its place is kept empty; needs dwellings, 6.3)
 - [ ] Hall and Fort icons and the daily income in the panel (places kept empty; needs 6.2)
-- [ ] Town list on the panel's right side (needs town ownership, 2.3b)
+- [x] Town list on the panel's right side: the owned towns, the open one framed; clicking one switches to it
 - [x] Gold/resource display within town view: the resource bar and date stay under the town screen
-- [ ] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
+- [x] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
 
 ### 2.3b Town Ownership & Town List
-Heroes 3 lets the player open their own towns from the sidebar or the map, with no hero inside.
-- [ ] Entering a neutral town captures it: a flag in the player's colour on the town, as mines have (3.3)
-- [ ] Owned towns in the player's colour on the minimap (1.4)
-- [ ] Owned towns fill the sidebar town list (1.3), in the order they were taken
-- [ ] Clicking a town in the list selects it and shows its town info box in place of the hero's (2.1)
-- [ ] Clicking the selected town again, or double-clicking it, opens its town screen
-- [ ] Clicking an owned town on the map opens its town screen; the town cursor shows over it (1.2)
-- [ ] A town opened without a hero shows an empty visiting hero row; leaving returns to the map
-- [ ] The town list on the town screen's panel switches between owned towns (2.3)
-- [ ] Ownership persisted in the event log; an open town screen is shown again after reload
+Heroes 3 lets the player open their own towns from the sidebar or the map, with no hero inside. See `docs/notes/2026-10-21-town-ownership.md`.
+- [x] A scenario can give a town to the player (`"owner": "red"`); the demo scenario starts with Whitemoon
+- [x] Entering a neutral town captures it: a flag in the player's colour on the town, as mines have (3.3). No siege yet: towns have no defenders (5.10)
+- [x] Owned towns in the player's colour on the minimap (1.4)
+- [x] Owned towns fill the sidebar town list (1.3), in the order they were taken
+- [x] Clicking a town in the list selects it, centres the map on it and shows its town info box in place of the hero's (2.1); clicking the hero in the hero list, or Next hero, selects the hero again
+- [x] Clicking the selected town again, or double-clicking it, opens its town screen
+- [x] Clicking an owned town on the map opens its town screen; the town cursor shows over it (1.2)
+- [x] A town opened without a hero shows an empty visiting hero row; leaving returns to the map
+- [x] The town list on the town screen's panel switches between owned towns (2.3)
+- [x] Ownership persisted in the event log; an open town screen is shown again after reload
 
 ### 2.4 Interaction Modals Upgrade
 - [ ] Monster defeat modal: show creature name, count defeated, XP gained, any loot dropped
@@ -175,7 +177,7 @@ Core game loop - resources flow, time passes.
 ### 3.2 Resource Income System
 - [x] At the start of each new day (after end turn), income is calculated and applied
 - [x] Income source: owned mines (daily amounts as in H3, in `game/data/mines.json`)
-- [ ] Income source: owned towns (needs town ownership, 2.3b)
+- [ ] Income source: owned towns (towns can be owned now, 2.3b; the gold comes from the Village Hall and its upgrades, 6.2)
 - [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
@@ -481,6 +483,7 @@ See `docs/notes/2026-10-20-combat-ai.md`.
 - [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
+- [ ] Entering a town that has defenders (a garrison, 6.4, or later an enemy hero) starts a battle; the town is captured only if the hero wins. Until then entering a neutral town captures it straight away (2.3b)
 - [ ] Combat at a fortified town includes walls
 - [ ] Wall segments with health points (can be destroyed by catapult)
 - [ ] Gate: main entry point, can be attacked/destroyed
@@ -739,7 +742,13 @@ Making the engine reusable. Enables portfolio and custom scenarios.
 - [ ] Theming: CSS custom properties for colors, borders, fonts
 - [ ] Lifecycle: start, pause, resume, destroy
 
-### 9.4 Map Editor (stretch)
+### 9.4 Quieter Event Bus
+Moving the mouse across a few tiles sends dozens of events. For each new tile there are three: `ui.tile.hovered`, then `command.route.requested` and `fact.route.planned` (with the whole path), sent so the cursor can count the days to the tile. The cursor asks again after every hero step and every change to movement points. None of these describe something that happened in the game, and they swamp the bus events panel.
+- [ ] The cursor plans the route to the hovered tile itself: the route planning in `game/systems/movement-system.js` becomes a shared helper used by both the movement module and the cursor, which already tracks the hero's tile, the map and what is still on it
+- [ ] A hover sends only `ui.tile.hovered`, once per tile; `command.route.requested` / `fact.route.planned` stay for clicks
+- [ ] `fact.route.planned` is not saved, so it is not a fact: rename it (e.g. `ui.route.planned`) or drop it once only clicks use it
+
+### 9.5 Map Editor (stretch)
 - [ ] Visual in-browser tile editor
 - [ ] Paint terrain types
 - [ ] Place entities with properties
@@ -908,7 +917,8 @@ Sprites and map authoring are intentionally late.
 60. Map portals (7.9)
 61. Water & boats (7.10)
 62. Hot-seat multiplayer (8.2)
-63. Map editor (9.4)
+63. Map editor (9.5)
+64. Quieter event bus (9.4): no route events on hover
 
 ---
 
