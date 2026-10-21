@@ -96,91 +96,121 @@ export function createMovementSystem({
     return path && path.length >= 2 ? path : null
   }
 
+  // What stands on `toTile` for the moving hero: nothing, an entity the arrival plan interacts
+  // with, or an entity that blocks the hero from ending its route there.
+  function resolveArrival(hero, toTile, arrivalPlan) {
+    const occupant = occupancy.getAt(toTile)
+    if (!occupant || occupant.id === hero.id) {
+      return { blocked: false, interaction: null }
+    }
+
+    if (occupant.id !== toEntityIdOrNull(arrivalPlan?.entityId)) {
+      return { blocked: true, interaction: null }
+    }
+
+    return {
+      blocked: false,
+      interaction: {
+        entityId: occupant.id,
+        kind: arrivalPlan.movementInteractionKind,
+        stopBeforeTarget: arrivalPlan.stopBeforeTarget
+      }
+    }
+  }
+
+  // The selected route when it still leads from the hero to `toTile`, else a fresh one.
+  function routeFor(hero, toTile, plannedPath) {
+    if (isValidPlannedPath(plannedPath, hero.tile, toTile, map)) {
+      return plannedPath
+    }
+
+    const path = findRoute(hero, toTile)
+    return path && path.length >= 2 ? path : null
+  }
+
+  // The steps the hero takes towards `toTile` today, or null when it can't set off.
+  function planMove(toTile, plannedPath, arrivalPlan) {
+    const hero = getHero()
+    if (!hero) {
+      return null
+    }
+
+    const path = routeFor(hero, toTile, plannedPath)
+    if (!path) {
+      return null
+    }
+
+    const totalStepCount = path.length - 1
+    const stepCharges = getStepCharges(path).slice(0, totalStepCount)
+    const cappedStepCount = stepCharges.length
+    if (cappedStepCount < 1) {
+      return null
+    }
+
+    const reachesTarget = cappedStepCount === totalStepCount
+    const arrival = resolveArrival(hero, toTile, arrivalPlan)
+    // A hero can only end its route on another entity's tile by interacting with it.
+    if (reachesTarget && arrival.blocked) {
+      return null
+    }
+
+    const interaction = reachesTarget ? arrival.interaction : null
+    return {
+      hero,
+      path,
+      stepCharges,
+      cappedStepCount,
+      interaction,
+      executedStepCount: interaction?.stopBeforeTarget ? cappedStepCount - 1 : cappedStepCount
+    }
+  }
+
+  // Walks the planned steps and returns the tile the hero ends on.
+  async function walk({ hero, path, stepCharges, executedStepCount }, onTileReached) {
+    let currentTile = { x: hero.tile.x, y: hero.tile.y }
+    for (let stepIndex = 0; stepIndex < executedStepCount; stepIndex += 1) {
+      const stepTile = path[stepIndex + 1]
+      const stepFromTile = currentTile
+      await sleep(stepDelayMs)
+      currentTile = { x: stepTile.x, y: stepTile.y }
+      onTileReached(currentTile)
+      onStep({ hero, from: stepFromTile, to: stepTile })
+      spendMovementPoints(stepCharges[stepIndex])
+    }
+
+    if (executedStepCount > 0) {
+      await sleep(getFinalSettleDelayMs(stepDelayMs))
+    }
+  }
+
   async function moveHeroTo(toTile, { path: plannedPath = null, arrivalPlan = null } = {}) {
     if (isMoving) {
       return false
     }
 
-    const hero = getHero()
-    if (!hero) {
+    const plan = planMove(toTile, plannedPath, arrivalPlan)
+    if (!plan) {
       return false
     }
 
-    const path = isValidPlannedPath(plannedPath, hero.tile, toTile, map)
-      ? plannedPath
-      : findRoute(hero, toTile)
-
-    if (!path || path.length < 2) {
-      return false
-    }
-    const totalStepCount = path.length - 1
-    const stepCharges = getStepCharges(path).slice(0, totalStepCount)
-    const cappedStepCount = stepCharges.length
-    if (cappedStepCount < 1) {
-      return false
-    }
-
-    const destinationOccupant = occupancy.getAt(toTile)
-    const normalizedArrivalPlan =
-      destinationOccupant &&
-      destinationOccupant.id !== hero.id &&
-      destinationOccupant.id === toEntityIdOrNull(arrivalPlan?.entityId) &&
-      typeof arrivalPlan?.movementInteractionKind === 'string' &&
-      arrivalPlan.movementInteractionKind.length > 0
-        ? {
-            entityId: destinationOccupant.id,
-            movementInteractionKind: arrivalPlan.movementInteractionKind,
-            stopBeforeTarget: Boolean(arrivalPlan.stopBeforeTarget)
-          }
-        : null
-
-    const didTriggerArrivalInteraction =
-      Boolean(normalizedArrivalPlan) && cappedStepCount === totalStepCount
-    if (
-      destinationOccupant &&
-      destinationOccupant.id !== hero.id &&
-      !didTriggerArrivalInteraction &&
-      cappedStepCount === totalStepCount
-    ) {
-      return false
-    }
-
-    const executedStepCount = didTriggerArrivalInteraction
-      ? normalizedArrivalPlan.stopBeforeTarget
-        ? Math.max(0, cappedStepCount - 1)
-        : cappedStepCount
-      : cappedStepCount
-
-    const movementInteractionKind = didTriggerArrivalInteraction
-      ? normalizedArrivalPlan.movementInteractionKind
-      : null
-
+    const { hero, path, stepCharges, cappedStepCount, interaction, executedStepCount } = plan
     const fromTile = { x: hero.tile.x, y: hero.tile.y }
-    let currentTile = { x: hero.tile.x, y: hero.tile.y }
-    const reachedTile = path[executedStepCount]
+    let currentTile = fromTile
     isMoving = true
     onMoveStart({
       hero,
       from: fromTile,
       targetTile: toTile,
-      reachedTile,
+      reachedTile: path[executedStepCount],
       cappedStepCount
     })
     try {
-      for (let stepIndex = 0; stepIndex < executedStepCount; stepIndex += 1) {
-        const stepTile = path[stepIndex + 1]
-        const stepFromTile = { x: currentTile.x, y: currentTile.y }
-        await sleep(stepDelayMs)
-        currentTile = { x: stepTile.x, y: stepTile.y }
-        onStep({ hero, from: stepFromTile, to: stepTile })
-        spendMovementPoints(stepCharges[stepIndex])
-      }
+      await walk(plan, (tile) => {
+        currentTile = tile
+      })
 
-      if (executedStepCount > 0) {
-        await sleep(getFinalSettleDelayMs(stepDelayMs))
-      }
-
-      if (didTriggerArrivalInteraction && normalizedArrivalPlan.stopBeforeTarget) {
+      // Stopping before the entity still costs the last step's movement points.
+      if (interaction?.stopBeforeTarget) {
         spendMovementPoints(stepCharges[cappedStepCount - 1])
       }
     } finally {
@@ -191,12 +221,8 @@ export function createMovementSystem({
         targetTile: toTile,
         reachedTile: currentTile,
         cappedStepCount,
-        interaction: movementInteractionKind
-          ? {
-              kind: movementInteractionKind,
-              entityId: normalizedArrivalPlan.entityId,
-              targetTile: toTile
-            }
+        interaction: interaction
+          ? { kind: interaction.kind, entityId: interaction.entityId, targetTile: toTile }
           : null
       })
     }

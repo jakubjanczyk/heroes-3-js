@@ -121,6 +121,29 @@ function heapPop(heap, toTile) {
   }
 }
 
+// The destination may be impassable or blocked: the route ends on it to interact.
+function canEnter(tile, { map, toTile, isBlocked }) {
+  return (
+    map.inBounds(tile) && (sameTile(tile, toTile) || (map.isPassable(tile) && !isBlocked(tile)))
+  )
+}
+
+function stepTo(current, next, { order, getStepCost }) {
+  const dirX = next.x - current.tile.x
+  const dirY = next.y - current.tile.y
+  const isStart = current.dirX === 0 && current.dirY === 0
+  const keepsDirection = current.dirX === dirX && current.dirY === dirY
+  return {
+    key: stateKey(next, dirX, dirY),
+    tile: next,
+    dirX,
+    dirY,
+    cost: current.cost + getStepCost(current.tile, next),
+    turns: current.turns + (isStart || keepsDirection ? 0 : 1),
+    order
+  }
+}
+
 // Cheapest route by `getStepCost(from, to)`; among equally cheap routes, the one with fewest turns.
 export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () => 1 }) {
   if (!map.inBounds(fromTile) || !map.inBounds(toTile)) {
@@ -135,6 +158,10 @@ export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () =>
     return null
   }
 
+  return searchRoute({ fromTile, toTile, map, isBlocked, getStepCost })
+}
+
+function searchRoute({ fromTile, toTile, map, isBlocked, getStepCost }) {
   const startState = {
     key: stateKey(fromTile, 0, 0),
     tile: fromTile,
@@ -160,34 +187,11 @@ export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () =>
     }
 
     for (const next of getNeighbors(current.tile)) {
-      if (!map.inBounds(next)) {
-        continue
-      }
-      if (!map.isPassable(next) && !sameTile(next, toTile)) {
-        continue
-      }
-      if (isBlocked(next) && !sameTile(next, toTile)) {
+      if (!canEnter(next, { map, toTile, isBlocked })) {
         continue
       }
 
-      const dirX = next.x - current.tile.x
-      const dirY = next.y - current.tile.y
-      const turns =
-        current.turns +
-        (current.dirX === 0 && current.dirY === 0
-          ? 0
-          : current.dirX === dirX && current.dirY === dirY
-            ? 0
-            : 1)
-      const nextState = {
-        key: stateKey(next, dirX, dirY),
-        tile: next,
-        dirX,
-        dirY,
-        cost: current.cost + getStepCost(current.tile, next),
-        turns,
-        order: nextStateOrder
-      }
+      const nextState = stepTo(current, next, { order: nextStateOrder, getStepCost })
       nextStateOrder += 1
       const bestKnown = bestByState.get(nextState.key) ?? null
       if (!isBetterCost({ cost: nextState.cost, turns: nextState.turns }, bestKnown)) {

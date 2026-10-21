@@ -148,6 +148,58 @@ function createSvgNode(createElement, tagName) {
   return createElement(tagName)
 }
 
+// A corner curve on each tile where the path turns and a dash on every other tile up to the
+// target; steps past `maxAffordableSteps` are drawn over the limit.
+function appendPathSegments(
+  svg,
+  path,
+  { makeElement, map, origin, dashLength, maxAffordableSteps }
+) {
+  const points = path.map((tile) => getTileCenter({ map, tile, origin }))
+  const isOverLimit = (index) => index > maxAffordableSteps
+  const markTile = (node, index) => {
+    setAttr(node, 'data-x', path[index].x)
+    setAttr(node, 'data-y', path[index].y)
+    svg.appendChild(node)
+  }
+
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const [previous, current, next] = [points[i - 1], points[i], points[i + 1]]
+    const corner = createCornerCurve(
+      makeElement,
+      previous,
+      current,
+      next,
+      isOverLimit(i),
+      dashLength
+    )
+    const node =
+      corner ?? createDashLine(makeElement, previous, current, current, isOverLimit(i), dashLength)
+    markTile(node, i)
+  }
+}
+
+function createTargetMarker(tile, className, { makeElement, map, origin }) {
+  const center = getTileCenter({ map, tile, origin })
+  const halfSize = getTargetHalfSize(map)
+  const target = createSvgNode(makeElement, 'g')
+  setClass(target, 'path-preview-target')
+  setAttr(target, 'data-x', tile.x)
+  setAttr(target, 'data-y', tile.y)
+
+  for (const direction of [1, -1]) {
+    const slash = createSvgNode(makeElement, 'line')
+    setClass(slash, className)
+    setAttr(slash, 'x1', center.x - direction * halfSize)
+    setAttr(slash, 'y1', center.y - halfSize)
+    setAttr(slash, 'x2', center.x + direction * halfSize)
+    setAttr(slash, 'y2', center.y + halfSize)
+    target.appendChild(slash)
+  }
+
+  return target
+}
+
 export function renderPathPreviewLayer({
   container,
   map,
@@ -171,76 +223,18 @@ export function renderPathPreviewLayer({
   const height = container.clientHeight ?? 0
   const origin = getMapCenteredOrigin({ width, height, map })
   const dashLength = getDashLength(map)
-  const targetHalfSize = getTargetHalfSize(map)
   const svg = createSvgNode(makeElement, 'svg')
   setClass(svg, 'path-preview-svg')
   setAttr(svg, 'viewBox', `0 0 ${width} ${height}`)
 
+  const segment = { makeElement, map, origin, dashLength, maxAffordableSteps }
   if (hasPath) {
-    const points = path.map((tile) => getTileCenter({ map, tile, origin }))
-    const targetIndex = points.length - 1
-    const turnIndices = new Set()
-    for (let i = 1; i < points.length - 1; i += 1) {
-      const corner = createCornerCurve(
-        makeElement,
-        points[i - 1],
-        points[i],
-        points[i + 1],
-        i > maxAffordableSteps,
-        dashLength
-      )
-      if (corner) {
-        setAttr(corner, 'data-x', path[i].x)
-        setAttr(corner, 'data-y', path[i].y)
-        turnIndices.add(i)
-        svg.appendChild(corner)
-      }
-    }
-    for (let i = 1; i < points.length; i += 1) {
-      if (i === targetIndex) {
-        continue
-      }
-      if (turnIndices.has(i)) {
-        continue
-      }
-      const dash = createDashLine(
-        makeElement,
-        points[i - 1],
-        points[i],
-        points[i],
-        i > maxAffordableSteps,
-        dashLength
-      )
-      setAttr(dash, 'data-x', path[i].x)
-      setAttr(dash, 'data-y', path[i].y)
-      svg.appendChild(dash)
-    }
+    appendPathSegments(svg, path, segment)
   }
 
   if (effectiveTarget) {
-    const center = getTileCenter({ map, tile: effectiveTarget, origin })
-    const target = createSvgNode(makeElement, 'g')
-    setClass(target, 'path-preview-target')
-    setAttr(target, 'data-x', effectiveTarget.x)
-    setAttr(target, 'data-y', effectiveTarget.y)
-
-    const slashA = createSvgNode(makeElement, 'line')
-    setClass(slashA, classWithOverLimit('path-preview-target-line', isTargetOverLimit))
-    setAttr(slashA, 'x1', center.x - targetHalfSize)
-    setAttr(slashA, 'y1', center.y - targetHalfSize)
-    setAttr(slashA, 'x2', center.x + targetHalfSize)
-    setAttr(slashA, 'y2', center.y + targetHalfSize)
-    target.appendChild(slashA)
-
-    const slashB = createSvgNode(makeElement, 'line')
-    setClass(slashB, classWithOverLimit('path-preview-target-line', isTargetOverLimit))
-    setAttr(slashB, 'x1', center.x + targetHalfSize)
-    setAttr(slashB, 'y1', center.y - targetHalfSize)
-    setAttr(slashB, 'x2', center.x - targetHalfSize)
-    setAttr(slashB, 'y2', center.y + targetHalfSize)
-    target.appendChild(slashB)
-
-    svg.appendChild(target)
+    const className = classWithOverLimit('path-preview-target-line', isTargetOverLimit)
+    svg.appendChild(createTargetMarker(effectiveTarget, className, segment))
   }
 
   container.appendChild(svg)

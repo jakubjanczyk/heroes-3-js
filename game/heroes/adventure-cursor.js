@@ -22,6 +22,14 @@ export function getScrollCursor(direction) {
 // Cursors from the 4th day on all show 4, as in Heroes 3.
 const LAST_NUMBERED_DAY = 4
 
+function cursorActionFor(entity) {
+  if (!entity) {
+    return ADVENTURE_CURSOR.MOVE
+  }
+
+  return entity.kind === 'MONSTER' ? ADVENTURE_CURSOR.ATTACK : ADVENTURE_CURSOR.VISIT
+}
+
 // The cursor over a map tile: the helmet over the hero; else, when the hero has a route there,
 // the swords for a monster, the rearing horse for anything else it can visit and the horse for
 // an empty tile, numbered with the day it gets there when that is not today; else the arrow.
@@ -33,10 +41,6 @@ export function getAdventureCursor({ entity, travelDays }) {
     return ADVENTURE_CURSOR.ARROW
   }
 
-  const action = !entity
-    ? ADVENTURE_CURSOR.MOVE
-    : entity.kind === 'MONSTER'
-      ? ADVENTURE_CURSOR.ATTACK
-      : ADVENTURE_CURSOR.VISIT
+  const action = cursorActionFor(entity)
   return travelDays === 1 ? action : `${action}-${Math.min(travelDays, LAST_NUMBERED_DAY)}`
 }

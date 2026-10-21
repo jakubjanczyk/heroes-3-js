@@ -27,12 +27,23 @@ function getRetaliationsPerRound(abilities) {
   return abilities.includes('twoRetaliations') ? 2 : 1
 }
 
+// Stats for a creature missing from the definitions.
+const UNKNOWN_CREATURE = Object.freeze({
+  speed: 0,
+  attack: 0,
+  defense: 0,
+  damage: { min: 1, max: 1 },
+  health: 1,
+  shots: 0,
+  abilities: []
+})
+
 function createStacks({ side, army, skills, definitions }) {
   const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
   const startHexes = getStartHexes({ side, stackCount: stacks.length })
   return stacks.map(({ creature, count, slot }, index) => {
-    const definition = definitions?.monsters?.[creature]
-    const abilities = definition?.abilities ?? []
+    const definition = { ...UNKNOWN_CREATURE, ...definitions?.monsters?.[creature] }
+    const { abilities } = definition
     const retaliationsPerRound = getRetaliationsPerRound(abilities)
     const shooter = abilities.includes('ranged')
     return {
@@ -40,19 +51,19 @@ function createStacks({ side, army, skills, definitions }) {
       side,
       ...describeStack({ creature, count }, definitions),
       initialCount: count,
-      speed: definition?.speed ?? 0,
+      speed: definition.speed,
       flying: abilities.includes('flying'),
       doubleWide: abilities.includes('doubleWide'),
-      attack: (definition?.attack ?? 0) + (skills?.attack ?? 0),
-      defense: (definition?.defense ?? 0) + (skills?.defense ?? 0),
-      damage: definition?.damage ?? { min: 1, max: 1 },
-      health: definition?.health ?? 1,
-      topHealth: definition?.health ?? 1,
+      attack: definition.attack + (skills?.attack ?? 0),
+      defense: definition.defense + (skills?.defense ?? 0),
+      damage: definition.damage,
+      health: definition.health,
+      topHealth: definition.health,
       strikes: abilities.includes('strikesTwice') ? 2 : 1,
       retaliationsPerRound,
       retaliationsLeft: retaliationsPerRound,
       defenseBonus: 0,
-      shots: shooter ? (definition?.shots ?? 0) : 0,
+      shots: shooter ? definition.shots : 0,
       shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
       meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
       hex: startHexes[index]
