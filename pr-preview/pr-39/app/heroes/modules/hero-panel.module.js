@@ -1,4 +1,5 @@
-import { findHero } from '../../../game/domain/entity-queries.js'
+import { sameTile } from '../../../engine/tile-utils.js'
+import { findHero, isTown } from '../../../game/domain/entity-queries.js'
 import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
@@ -7,6 +8,8 @@ import {
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_TOWN_LEFT,
+  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_HERO_SELECTED,
   APP_UI_TOWN_SELECTED
@@ -18,7 +21,8 @@ import { renderTownBox } from '../presentation/town-box.js'
 const DEFAULT_HERO_NAME = 'Hero'
 
 // The hero list with its movement bar, the info box below it and the Next hero button. The info
-// box shows the selected hero, or the town selected in the town list.
+// box shows the selected hero, or the town selected in the town list. As in Heroes 3, the hero is
+// selected again when a new day starts, and when the player leaves a town the hero is in.
 export const registerHeroPanelModule = defineModule(
   ({ emit, env }) => {
     const heroList = env.document?.getElementById('hero-list')
@@ -32,6 +36,7 @@ export const registerHeroPanelModule = defineModule(
     let definitions = {}
     let levelUpSkills = []
     let isHeroSelected = true
+    let townTilesById = new Map()
 
     function selectHero() {
       if (!isHeroSelected) {
@@ -39,7 +44,10 @@ export const registerHeroPanelModule = defineModule(
         renderInfoBox()
         emit(APP_UI_HERO_SELECTED, {})
       }
+    }
 
+    function selectAndCenterOnHero() {
+      selectHero()
       if (heroTile) {
         emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile: heroTile })
       }
@@ -61,7 +69,7 @@ export const registerHeroPanelModule = defineModule(
       portrait.textContent = name.charAt(0)
       portrait.addEventListener('click', (event) => {
         event.stopPropagation()
-        selectHero()
+        selectAndCenterOnHero()
       })
 
       movementBar = env.document.createElement('div')
@@ -108,7 +116,7 @@ export const registerHeroPanelModule = defineModule(
           type: 'click',
           handler: (event) => {
             event?.stopPropagation?.()
-            selectHero()
+            selectAndCenterOnHero()
           }
         }
       ],
@@ -117,6 +125,9 @@ export const registerHeroPanelModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             hero = findHero(event.detail.scenario.entities)
+            townTilesById = new Map(
+              event.detail.scenario.entities.filter(isTown).map((town) => [town.id, town.tile])
+            )
             heroTile = hero?.tile ?? null
             heroName = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
             definitions = event.detail.definitions
@@ -154,6 +165,16 @@ export const registerHeroPanelModule = defineModule(
             }
           }
         },
+        { type: APP_FACT_TURN_ENDED, handler: selectAndCenterOnHero },
+        {
+          type: APP_FACT_TOWN_LEFT,
+          handler: (event) => {
+            const townTile = townTilesById.get(event.detail.entityId)
+            if (heroTile && townTile && sameTile(heroTile, townTile)) {
+              selectHero()
+            }
+          }
+        },
         {
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
@@ -179,7 +200,9 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_FACT_HERO_LEVELED_UP,
       APP_FACT_HERO_ARMY_CHANGED,
-      APP_UI_TOWN_SELECTED
+      APP_UI_TOWN_SELECTED,
+      APP_FACT_TURN_ENDED,
+      APP_FACT_TOWN_LEFT
     ],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE, APP_UI_HERO_SELECTED]
   }
