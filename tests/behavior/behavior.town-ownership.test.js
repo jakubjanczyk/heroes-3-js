@@ -166,9 +166,7 @@ describe('town ownership behavior', () => {
     })
 
     test('disables Move hero when the player selects a town while the hero has a route', async () => {
-      const { user } = await setupApp(
-        aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() })
-      )
+      const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() }))
       await clickTile(user, 8, 5)
 
       await user.click(getTownInTownList('Whitemoon'))
@@ -177,9 +175,7 @@ describe('town ownership behavior', () => {
     })
 
     test('enables Move hero again when the player selects the hero in the hero list', async () => {
-      const { user } = await setupApp(
-        aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() })
-      )
+      const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() }))
       await clickTile(user, 8, 5)
       await user.click(getTownInTownList('Whitemoon'))
 
