@@ -20,6 +20,8 @@ export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDe
 export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
+// Opens the town screen of a town the player owns, with or without a hero in it.
+export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -47,7 +49,9 @@ export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
+export const APP_FACT_TOWN_OPENED = 'fact.town.opened'
 export const APP_FACT_TOWN_LEFT = 'fact.town.left'
+export const APP_FACT_TOWN_CAPTURED = 'fact.town.captured'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
@@ -76,6 +80,10 @@ export const APP_UI_ADVENTURE_MAP_UNCOVERED = 'ui.adventureMap.uncovered'
 // The battle as the player sees it: where the stacks stand, whose turn it is and where it can go.
 export const APP_UI_BATTLE_UPDATED = 'ui.battle.updated'
 export const APP_UI_TOWN_UPDATED = 'ui.town.updated'
+// What the adventure panel has selected: a town from the town list, or the hero again. With a town
+// selected, clicking the map does not move the hero.
+export const APP_UI_TOWN_SELECTED = 'ui.town.selected'
+export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
@@ -98,7 +106,9 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
+  APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_LEFT,
+  APP_FACT_TOWN_CAPTURED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,

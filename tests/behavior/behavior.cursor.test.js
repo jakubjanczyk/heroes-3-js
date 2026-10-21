@@ -8,6 +8,7 @@ import {
   hoverTile,
   moveMouseOntoTile
 } from './adventure-map.utils.js'
+import { getTownInTownList } from './adventure-panels.utils.js'
 import {
   flushMicrotasks,
   getCursorOver,
@@ -206,6 +207,39 @@ describe('adventure map cursor behavior', () => {
     const { user } = await setupApp(scenario())
 
     await hoverTile(user, x, y)
+
+    expect(getMapCursor()).toBe('arrow')
+  })
+
+  test("given the building of the player's own town when the mouse is over it then the cursor is the castle", async () => {
+    const { user } = await setupApp(
+      aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), aTown().ownedByPlayer().at(2, 2))
+    )
+
+    await hoverTile(user, 0, 1)
+
+    expect(getMapCursor()).toBe('castle')
+  })
+
+  test("given the entrance of the player's own town when the mouse is over it then the cursor is the rearing horse", async () => {
+    const { user } = await setupApp(
+      aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), aTown().ownedByPlayer().at(2, 2))
+    )
+
+    await hoverTile(user, 2, 2)
+
+    expect(getMapCursor()).toBe('visit')
+  })
+
+  test('given a town is selected in the town list when the mouse is over an empty tile then the cursor is the arrow', async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(5, 4)
+        .withEntities(aHero().at(0, 3), aTown().named('Whitemoon').ownedByPlayer().at(2, 2))
+    )
+    await user.click(getTownInTownList('Whitemoon'))
+
+    await hoverTile(user, 4, 3)
 
     expect(getMapCursor()).toBe('arrow')
   })

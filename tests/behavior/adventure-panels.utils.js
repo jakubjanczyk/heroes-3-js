@@ -25,6 +25,28 @@ export function readArmySlots(container, listName = 'Army') {
     })
 }
 
+function getAdventurePanel() {
+  return screen.getByRole('complementary', { name: 'UI' })
+}
+
+function getTownList() {
+  return within(getAdventurePanel()).getByRole('list', { name: 'Towns' })
+}
+
+export function getTownInTownList(townName) {
+  return within(getTownList()).getByRole('button', { name: townName })
+}
+
+export function readTownList() {
+  return within(getTownList())
+    .queryAllByRole('button')
+    .map((town) => town.getAttribute('aria-label'))
+}
+
+export function getTownInfoBox() {
+  return screen.getByRole('region', { name: 'Town info' })
+}
+
 export function getHeroInfoBox() {
   return screen.getByRole('region', { name: 'Hero info' })
 }

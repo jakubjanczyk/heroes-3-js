@@ -38,6 +38,20 @@ export function getVisitingHero(heroName) {
   return within(getTownScreen()).getByRole('img', { name: heroName })
 }
 
+function getTownScreenTownList() {
+  return within(getTownScreen()).getByRole('list', { name: 'Towns' })
+}
+
+export function readTownScreenTownList() {
+  return within(getTownScreenTownList())
+    .queryAllByRole('button')
+    .map((town) => town.getAttribute('aria-label'))
+}
+
+export function getTownInTownScreenList(townName) {
+  return within(getTownScreenTownList()).getByRole('button', { name: townName })
+}
+
 export async function leaveTown(user) {
   await user.click(within(getTownScreen()).getByRole('button', { name: 'Leave town' }))
   await flushMicrotasks()

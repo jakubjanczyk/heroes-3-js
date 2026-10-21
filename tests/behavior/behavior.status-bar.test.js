@@ -160,6 +160,16 @@ describe('status bar behavior', () => {
     expectStatusBarText('Castle')
   })
 
+  test('given the scenario names a town when the mouse is over it then the status bar shows that name', async () => {
+    const { user } = await setupApp(
+      aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), aTown().named('Whitemoon').at(2, 2))
+    )
+
+    await hoverTile(user, 2, 2)
+
+    expectStatusBarText('Whitemoon')
+  })
+
   test("given the hero when the mouse is over it then the status bar shows the hero's name", async () => {
     const { user } = await setupApp(aScenario().withSize(3).withEntities(aHero().at(1, 0)))
 

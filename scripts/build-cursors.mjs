@@ -126,6 +126,26 @@ const VISIT_ROWS = [
   '.k..kkk..kkk....'
 ]
 
+// Over the player's own town: a castle with a red flag, as Heroes 3 shows it.
+const CASTLE_ROWS = [
+  '.......kR.......',
+  '.......kRRk.....',
+  '.......kRk......',
+  '.......k........',
+  '.k.k.kkkkk.k.k..',
+  '.kkkk.kSSk.kkkk.',
+  '.kSDk.kSDk.kSDk.',
+  '.kSDkkkSDkkkSDk.',
+  '.kSSSSSSSSSSSDk.',
+  '.kSWSSSSSSSWSDk.',
+  '.kSSSSSkkSSSSDk.',
+  '.kSSSSkbbkSSSDk.',
+  '.kSSSkbbbbkSSDk.',
+  '.kSDSkbbbbkSDDk.',
+  '.kDDDkbbbbkDDDk.',
+  '.kkkkkkkkkkkkkk.'
+]
+
 // While the map scrolls from its edge: a gold arrow pointing the way it scrolls. Drawn pointing
 // up and up-right; the other directions are these turned a quarter at a time.
 const SCROLL_N_ROWS = [
@@ -471,6 +491,7 @@ const diagonalSword = drawDiagonalSword()
 const CURSORS = {
   arrow: ARROW_ROWS,
   hero: HERO_ROWS,
+  castle: CASTLE_ROWS,
   'battle-walk': BATTLE_WALK_ROWS,
   'battle-fly': BATTLE_FLY_ROWS,
   'battle-blocked': drawBlockedSign(),

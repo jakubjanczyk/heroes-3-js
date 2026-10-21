@@ -7,13 +7,14 @@ import { registerHeroLevelsModule } from './modules/hero-levels.module.js'
 import { registerHeroPanelModule } from './modules/hero-panel.module.js'
 import { registerHudModule } from './modules/hud.module.js'
 import { registerInfoPopupModule } from './modules/info-popup.module.js'
-import { registerMineFlagViewModule } from './modules/mine-flag-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
+import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTownModule } from './modules/town.module.js'
+import { registerTownListModule } from './modules/town-list.module.js'
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
@@ -32,13 +33,14 @@ export const heroesAppContent = Object.freeze({
     registerHeroLevelsModule,
     registerBattleModule,
     registerTownModule,
-    registerMineFlagViewModule,
+    registerOwnerFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
     registerStatusBarModule,
     registerAdventureCursorModule,
     registerInfoPopupModule,
     registerHeroPanelModule,
+    registerTownListModule,
     registerSystemOptionsModule,
     registerBattleViewModule,
     registerTownScreenViewModule,

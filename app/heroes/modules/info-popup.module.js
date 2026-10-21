@@ -1,7 +1,8 @@
-import { getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
+import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
@@ -9,6 +10,7 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_MONSTER_COUNT_CHANGED,
+  APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
   APP_UI_TILE_INFO_REQUESTED
@@ -16,6 +18,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
+import { renderTownBox } from '../presentation/town-box.js'
 
 const PLAYER_COLOR_NAME = 'Red'
 const SCREEN_MARGIN_PX = 8
@@ -34,6 +37,7 @@ export const registerInfoPopupModule = defineModule(
     const host = document.querySelector('.game-shell') ?? document.body
     const mapObjects = createMapObjects()
     const ownedMineIds = new Set()
+    const ownedTowns = createOwnedTowns()
 
     let definitions = {}
     let levelUpSkills = []
@@ -67,6 +71,18 @@ export const registerInfoPopupModule = defineModule(
         name: getEntityName({ entity, definitions }),
         skills: getHeroPrimarySkills({ entity, definitions, levelUpSkills }),
         army: getHeroArmy({ entity, definitions })
+      })
+      popup.appendChild(box)
+    }
+
+    // As in Heroes 3, the player's own town gets the same box as the info box.
+    function fillTownBox(entity) {
+      popup.classList.add('info-popup--town')
+      const box = document.createElement('div')
+      renderTownBox(box, document, {
+        name: getEntityName({ entity, definitions }),
+        // Towns have no garrison yet.
+        garrison: new Array(ARMY_SLOT_COUNT).fill(null)
       })
       popup.appendChild(box)
     }
@@ -105,6 +121,8 @@ export const registerInfoPopupModule = defineModule(
 
       if (entity?.kind === 'HERO') {
         fillHeroBox(entity)
+      } else if (entity?.kind === 'TOWN' && ownedTowns.has(entity.id)) {
+        fillTownBox(entity)
       } else {
         fillLines(entity, tile)
       }
@@ -121,6 +139,7 @@ export const registerInfoPopupModule = defineModule(
             mapObjects.onWorldReady(event.detail)
             definitions = event.detail.definitions
             ownedMineIds.clear()
+            ownedTowns.onWorldReady(event.detail.scenario.entities)
             levelUpSkills = []
             close()
           }
@@ -156,6 +175,12 @@ export const registerInfoPopupModule = defineModule(
           }
         },
         {
+          type: APP_FACT_TOWN_CAPTURED,
+          handler: (event) => {
+            ownedTowns.onTownCaptured(event.detail.entityId)
+          }
+        },
+        {
           type: APP_FACT_HERO_LEVELED_UP,
           handler: (event) => {
             levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
@@ -185,6 +210,7 @@ export const registerInfoPopupModule = defineModule(
       APP_FACT_MONSTER_COUNT_CHANGED,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_MINE_CAPTURED,
+      APP_FACT_TOWN_CAPTURED,
       APP_FACT_HERO_LEVELED_UP,
       APP_UI_TILE_INFO_REQUESTED,
       APP_UI_TILE_INFO_DISMISSED

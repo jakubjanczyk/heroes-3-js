@@ -28,6 +28,5 @@ Roadmap 2.3, the first step of Phase 4: stepping onto a town's entrance opens th
 
 - Buildings, on the picture and in the panel (6.1, 6.2), and recruiting (6.3).
 - The garrison and moving creatures between the rows (6.4).
-- Capturing a neutral town, and the town list (both need town ownership).
-- The map's status bar and right-click popup still show the type's name, not the town's own.
+- Capturing a neutral town, the town list and the town's own name on the map came with town ownership (`2026-10-21-town-ownership.md`).
 - Saves from before this change: a town visited and never left shows its town screen again after a reload, as there was no "left" fact then. Leaving it once fixes it.

@@ -26,8 +26,9 @@
   outline-offset: 2px;
 }
 
-/* A hero's popup holds the same hero box as the info box, at the info box's size. */
-.info-popup--hero {
+/* A hero's or own town's popup holds the same box as the info box, at the info box's size. */
+.info-popup--hero,
+.info-popup--town {
   inline-size: 13rem;
   align-items: stretch;
   padding: var(--space-sm);

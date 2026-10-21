@@ -276,6 +276,15 @@ describe('minimap behavior', () => {
       expect(backgroundOf(getTownDots()[0])).toBe(NEUTRAL_GREY)
     })
 
+    test('given the player owns a town when the minimap renders then its marker is in the player colour', async () => {
+      await loadAppStyles()
+      await setupApp(
+        aScenario().withSize(8, 7).withEntities(aHero(), aTown().ownedByPlayer().at(4, 3)).build()
+      )
+
+      expect(backgroundOf(getTownDots()[0])).toBe(PLAYER_RED)
+    })
+
     test('given towns when the minimap renders then town markers appear at town coordinates', async () => {
       await setupApp(
         aScenario()

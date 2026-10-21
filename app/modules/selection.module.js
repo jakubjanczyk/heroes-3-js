@@ -15,11 +15,13 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_HERO_SELECTED,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED,
   APP_UI_SYSTEM_OPTIONS_CLOSED,
-  APP_UI_SYSTEM_OPTIONS_OPENED
+  APP_UI_SYSTEM_OPTIONS_OPENED,
+  APP_UI_TOWN_SELECTED
 } from '../events.js'
 import { defineModule } from './shared/module-runtime.js'
 
@@ -35,6 +37,8 @@ export const registerSelectionModule = defineModule(
     let isInteractionModalOpen = false
     let isSystemOptionsOpen = false
     let isMapCovered = false
+    // The hero moves only while it is selected rather than a town.
+    let isTownSelected = false
     let remainingMovementPoints = Number.POSITIVE_INFINITY
 
     function affordableStepCount() {
@@ -52,6 +56,7 @@ export const registerSelectionModule = defineModule(
         !isInteractionModalOpen &&
         !isSystemOptionsOpen &&
         !isMapCovered &&
+        !isTownSelected &&
         previewPath?.length >= 2 &&
         affordableStepCount() >= 1
       )
@@ -93,6 +98,7 @@ export const registerSelectionModule = defineModule(
           handler: (event) => {
             map = event.detail.map
             isWorldReady = true
+            isTownSelected = false
             resetPreview()
           }
         },
@@ -113,7 +119,8 @@ export const registerSelectionModule = defineModule(
               isMoving ||
               isInteractionModalOpen ||
               isSystemOptionsOpen ||
-              isMapCovered
+              isMapCovered ||
+              isTownSelected
             ) {
               return
             }
@@ -236,6 +243,18 @@ export const registerSelectionModule = defineModule(
           }
         },
         {
+          type: APP_UI_TOWN_SELECTED,
+          handler: () => {
+            isTownSelected = true
+          }
+        },
+        {
+          type: APP_UI_HERO_SELECTED,
+          handler: () => {
+            isTownSelected = false
+          }
+        },
+        {
           type: APP_FACT_PREVIEW_TARGET_SELECTED,
           handler: (event) => {
             const { tile, path } = event.detail ?? {}
@@ -277,6 +296,8 @@ export const registerSelectionModule = defineModule(
       APP_UI_SYSTEM_OPTIONS_CLOSED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_TOWN_SELECTED,
+      APP_UI_HERO_SELECTED,
       APP_FACT_PREVIEW_TARGET_SELECTED,
       APP_FACT_PREVIEW_CLEARED
     ],

@@ -167,6 +167,11 @@
   text-shadow: 0 1px 0 black;
 }
 
+/* A town opened with no hero in it leaves the hero's place empty. */
+.town-panel__hero--visiting:empty {
+  background: #0d0f14;
+}
+
 .town-panel__slots {
   grid-column: 2 / -1;
   display: grid;
@@ -207,8 +212,13 @@
 
 .town-panel__town-list {
   display: grid;
-  grid-auto-rows: minmax(0, 1fr);
+  grid-auto-rows: minmax(2rem, auto);
+  align-content: start;
   gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
 }
 
 .town-panel__leave {
@@ -254,10 +264,6 @@
 
   .town-panel__buildings,
   .town-panel__growth {
-    display: none;
-  }
-
-  .town-panel__town-list {
     display: none;
   }
 }
