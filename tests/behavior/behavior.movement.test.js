@@ -129,7 +129,7 @@ describe('movement behavior', () => {
     })
 
     confirmTileClickByDispatch(2, 0)
-    await flushMicrotasks(3)
+    await flushMicrotasks()
 
     await clickEndTurn(user)
     expectMovementPoints(1500)

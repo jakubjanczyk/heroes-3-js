@@ -405,12 +405,7 @@ Panel styles are in `app/modules/dev/bus-dev-panel.css`.
 
 End-to-end behavior scenarios live in `tests/behavior/*` and boot the real module graph.
 
-Important deterministic controls used by tests:
-
-- `config.movementStepDelayMs`
-- `config.movementSleep`
-
-These allow movement timing to be deterministic without reintroducing boot-level dependency wiring.
+Behavior tests run on Vitest fake timers (`tests/behavior/fake-timers.setup.js`), so movement steps, battle steps and fade-outs advance only when a test calls `waitMs(ms)`. `config.movementStepDelayMs` and `config.battleStepDelayMs` set how long each step takes.
 
 ### 10.2 Unit tests (only where behavior tests can't reach)
 

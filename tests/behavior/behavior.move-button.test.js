@@ -71,7 +71,7 @@ describe('move button behavior', () => {
     dispatchTileClick(3, 0)
     await flushMicrotasks()
     await user.click(getMoveButton())
-    await flushMicrotasks(3)
+    await flushMicrotasks()
 
     expect(getMoveButton().disabled).toBe(true)
 

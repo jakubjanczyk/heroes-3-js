@@ -53,8 +53,9 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - Keep tests deterministic (no network, no wall-clock dependencies unless mocked).
 - For new features, start by adding behavior coverage in `tests/behavior/` for that feature before implementation work.
 - Behavior tests drive the app only the way a player can (clicks, keys, reloads) and assert on what is visible. They must not emit or listen to bus events, nor read the saved event log; prove persistence by reloading and checking what the player sees.
+- Behavior tests run on a fake clock (`tests/behavior/fake-timers.setup.js`, the `behavior` Vitest project). Let time pass with `waitMs(ms)`, never a real `setTimeout`, so a check partway through a walk or fade always lands at the same moment.
 - Build test scenarios with the builders in `tests/behavior/builders.js` (`aScenario()`, `aHero()`, `aMonster()`, ...), based on `@jjanczyk/object-builder`; change only what matters for the test case.
-- Shared behavior test helpers are split by screen: `app.utils.js` (starting the app, waiting, reloads), `adventure-map.utils.js`, `adventure-panels.utils.js` (hero box, resource bar, buttons, dialogs), `battle.utils.js` and `town-screen.utils.js`, all in `tests/behavior/`. Put a new helper in the file for the screen it drives.
+- Shared behavior test helpers are split by screen: `app.utils.js` (starting the app, waiting, reloads), `adventure-map.utils.js`, `adventure-panels.utils.js` (hero box, resource bar, buttons, dialogs), `battle.utils.js` (including `startBattle` and `reloadBattle`) and `town-screen.utils.js`, all in `tests/behavior/`. Put a new helper in the file for the screen it drives.
 - Behavior tests are the main safety net. Add a unit test only when it catches something a behavior test can't, for example:
   - subtle algorithms (pathfinding)
   - storage and browser APIs behavior tests don't use (IndexedDB event log, native dialog quirks, music)

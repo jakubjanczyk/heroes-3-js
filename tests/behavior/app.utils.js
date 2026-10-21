@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import userEvent from '@testing-library/user-event'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 
 import { bootApp } from '../../app/boot-app.js'
 import { aScenario } from './builders.js'
@@ -85,16 +85,15 @@ export function createLoadGame({
   }
 }
 
-export async function flushMicrotasks(times = 30) {
-  for (let i = 0; i < times; i += 1) {
-    await Promise.resolve()
-  }
+// setImmediate is left real by the fake clock and runs only once the microtask queue is empty,
+// so every promise chain already started settles, without moving the clock.
+export async function flushMicrotasks() {
+  await new Promise((resolve) => setImmediate(resolve))
 }
 
+// Moves the fake clock (see fake-timers.setup.js) on by `ms`, running every timer due on the way.
 export async function waitMs(ms = 0) {
-  await new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
+  await vi.advanceTimersByTimeAsync(ms)
 }
 
 function createJsonResponse(value) {
@@ -193,7 +192,7 @@ export async function setupMovementBehaviorApp({
     })
   }
 
-  const user = userEvent.setup()
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
   const world = await bootApp({
     fetch,

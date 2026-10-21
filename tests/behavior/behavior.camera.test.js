@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 import { confirmTileClickByDispatch, expectHeroAt } from './adventure-map.utils.js'
-import { createMemoryEventLog, flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 const aPanScenario = () => aScenario().withSize(60, 40).withEntities(aHero().at(20, 15))
@@ -76,9 +81,7 @@ describe('camera behavior', () => {
         clientY: 10
       })
     )
-    await new Promise((resolve) => {
-      setTimeout(resolve, 360)
-    })
+    await waitMs(360)
     window.dispatchEvent(
       new window.MouseEvent('mousemove', {
         clientX: 10,
