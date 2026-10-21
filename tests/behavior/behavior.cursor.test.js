@@ -6,9 +6,15 @@ import {
   getMapCursor,
   holdMouseOverMap,
   hoverTile,
-  moveMouseOntoTile
+  moveMouseOntoTile,
+  pointerOverTile
 } from './adventure-map.utils.js'
-import { getTownInTownList } from './adventure-panels.utils.js'
+import {
+  expectStatusBarText,
+  getTownInTownList,
+  getTreasureChestDialog,
+  takeFromTreasureChestDialog
+} from './adventure-panels.utils.js'
 import {
   flushMicrotasks,
   getCursorOver,
@@ -304,6 +310,48 @@ describe('adventure map cursor behavior', () => {
     await hoverTile(user, 1, 0)
 
     expect(getMapCursor()).toBe('move')
+  })
+
+  describe('with a dialog open over the map', () => {
+    // Stepping onto the chest opens its dialog; the dialog lies over the map, tile (4, 2) under it.
+    async function openChestDialog() {
+      const app = await setupApp(
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 1), aTreasureChest().at(1, 1))
+      )
+      await moveHeroTo(1, 1)
+      return app
+    }
+
+    async function hoverDialogOverTile(user, x, y) {
+      const { coords } = pointerOverTile(x, y)
+      await user.pointer({ target: getTreasureChestDialog(), coords })
+    }
+
+    test('given the chest dialog is open when the mouse is over the dialog then the cursor is the arrow', async () => {
+      const { user } = await openChestDialog()
+
+      await hoverDialogOverTile(user, 4, 2)
+
+      expect(getCursorOver(getTreasureChestDialog())).toBe('arrow')
+    })
+
+    test('given the chest dialog is open when the mouse is over the dialog then the status bar is empty', async () => {
+      const { user } = await openChestDialog()
+
+      await hoverDialogOverTile(user, 4, 2)
+
+      expectStatusBarText('')
+    })
+
+    test('given the chest dialog was closed when the mouse is over a tile then the cursor shows the route again', async () => {
+      const { user } = await openChestDialog()
+      await hoverDialogOverTile(user, 4, 2)
+      await takeFromTreasureChestDialog(user, 'gold')
+
+      await hoverTile(user, 4, 2)
+
+      expect(getMapCursor()).toBe('move')
+    })
   })
 
   describe('edge scrolling', () => {

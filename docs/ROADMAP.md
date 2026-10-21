@@ -742,7 +742,13 @@ Making the engine reusable. Enables portfolio and custom scenarios.
 - [ ] Theming: CSS custom properties for colors, borders, fonts
 - [ ] Lifecycle: start, pause, resume, destroy
 
-### 9.4 Map Editor (stretch)
+### 9.4 Quieter Event Bus
+Moving the mouse across a few tiles sends dozens of events. For each new tile there are three: `ui.tile.hovered`, then `command.route.requested` and `fact.route.planned` (with the whole path), sent so the cursor can count the days to the tile. The cursor asks again after every hero step and every change to movement points. None of these describe something that happened in the game, and they swamp the bus events panel.
+- [ ] The cursor plans the route to the hovered tile itself: the route planning in `game/systems/movement-system.js` becomes a shared helper used by both the movement module and the cursor, which already tracks the hero's tile, the map and what is still on it
+- [ ] A hover sends only `ui.tile.hovered`, once per tile; `command.route.requested` / `fact.route.planned` stay for clicks
+- [ ] `fact.route.planned` is not saved, so it is not a fact: rename it (e.g. `ui.route.planned`) or drop it once only clicks use it
+
+### 9.5 Map Editor (stretch)
 - [ ] Visual in-browser tile editor
 - [ ] Paint terrain types
 - [ ] Place entities with properties
@@ -911,7 +917,8 @@ Sprites and map authoring are intentionally late.
 60. Map portals (7.9)
 61. Water & boats (7.10)
 62. Hot-seat multiplayer (8.2)
-63. Map editor (9.4)
+63. Map editor (9.5)
+64. Quieter event bus (9.4): no route events on hover
 
 ---
 

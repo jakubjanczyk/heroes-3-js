@@ -168,14 +168,19 @@ export function readTreasureChestChoices() {
     .map((button) => button.getAttribute('aria-label'))
 }
 
-// Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.
-export async function takeFromTreasureChest(user, { x, y }, choice) {
-  confirmTileClickByDispatch(x, y)
-  await flushMicrotasks()
+// Picks 'gold' or 'experience' in the open chest dialog and confirms with OK.
+export async function takeFromTreasureChestDialog(user, choice) {
   const dialog = getTreasureChestDialog()
   await user.click(within(dialog).getByRole('button', { name: new RegExp(`${choice}$`) }))
   await user.click(within(dialog).getByRole('button', { name: 'OK' }))
   await flushMicrotasks()
+}
+
+// Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.
+export async function takeFromTreasureChest(user, { x, y }, choice) {
+  confirmTileClickByDispatch(x, y)
+  await flushMicrotasks()
+  await takeFromTreasureChestDialog(user, choice)
 }
 
 // Each skill is an icon named for screen readers, with its value under it.
