@@ -9,6 +9,7 @@ import {
   getTownFlag
 } from './adventure-map.utils.js'
 import {
+  clickEndTurn,
   getHeroInHeroList,
   getMoveButton,
   getTownInfoBox,
@@ -184,6 +185,17 @@ describe('town ownership behavior', () => {
       expect(getMoveButton().disabled).toBe(false)
     })
 
+    test('moves the hero when the player clicks the map after a new day starts with a town selected', async () => {
+      const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() }))
+      await user.click(getTownInTownList('Whitemoon'))
+
+      await clickEndTurn(user)
+      confirmTileClickByDispatch(8, 5)
+      await flushMicrotasks()
+
+      expectHeroAt(8, 5)
+    })
+
     test('opens the town screen when the player clicks the selected town in the list again', async () => {
       const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() }))
       await user.click(getTownInTownList('Whitemoon'))
@@ -241,6 +253,20 @@ describe('town ownership behavior', () => {
       await user.dblClick(getTownInTownList('Whitemoon'))
 
       expect(getVisitingHero(HERO_NAME)).toBeTruthy()
+    })
+  })
+
+  describe('leaving a town', () => {
+    test('moves the hero when the player clicks the map after leaving a town opened from the list with the hero in it', async () => {
+      const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() }))
+      await captureTownAt(WHITEMOON_ENTRANCE, user)
+      await user.dblClick(getTownInTownList('Whitemoon'))
+
+      await leaveTown(user)
+      confirmTileClickByDispatch(4, 5)
+      await flushMicrotasks()
+
+      expectHeroAt(4, 5)
     })
   })
 

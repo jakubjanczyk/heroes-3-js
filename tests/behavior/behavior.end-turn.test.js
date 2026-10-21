@@ -9,11 +9,19 @@ import {
   expectPreviewNotOverLimitTargetAt,
   expectPreviewOverLimitDashAt,
   expectPreviewTargetAt,
+  getMapViewCentreTile,
   getPreviewOverLimitDashAt,
-  getPreviewTargetAt
+  getPreviewTargetAt,
+  panCamera
 } from './adventure-map.utils.js'
 import { clickEndTurn, expectMovementPoints } from './adventure-panels.utils.js'
-import { flushMicrotasks, setupLinearMovementApp, waitMs } from './app.utils.js'
+import {
+  flushMicrotasks,
+  setupLinearMovementApp,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
+import { aHero, aScenario } from './builders.js'
 
 describe('end turn behavior', () => {
   test('given hero has spent movement points when player clicks End turn then movement points reset to 1500', async () => {
@@ -167,5 +175,17 @@ describe('end turn behavior', () => {
     expectMovementPoints(1500)
     await clickEndTurn(user)
     expectMovementPoints(1500)
+  })
+
+  test('given the player panned away from the hero when a new day starts then the map is centred on the hero', async () => {
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: aScenario().withSize(60, 40).withEntities(aHero().at(20, 15)).build(),
+      viewportSize: { width: 1000, height: 700 }
+    })
+    panCamera('ArrowRight', 20)
+
+    await clickEndTurn(user)
+
+    expect(getMapViewCentreTile()).toEqual({ x: 20, y: 15 })
   })
 })
