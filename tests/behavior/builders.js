@@ -54,7 +54,6 @@ export const aResource = () =>
 export const aTown = () =>
   builder({ id: 'town-1', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 } }, (town) => ({
     ...placeable(town),
-    // A town's own name, as Heroes 3 maps give each town one; without it the type's name shows.
     named(name) {
       town.name = name
     }

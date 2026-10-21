@@ -1,5 +1,3 @@
-// The town screen in behavior tests: entering a town, the panel under the town picture and leaving.
-
 import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
@@ -17,7 +15,6 @@ export function getTownScreen() {
   return townScreen
 }
 
-// Walks the hero onto the town's entrance and checks the town screen opened.
 export async function enterTownAt(x, y) {
   confirmTileClickByDispatch(x, y)
   await flushMicrotasks()
