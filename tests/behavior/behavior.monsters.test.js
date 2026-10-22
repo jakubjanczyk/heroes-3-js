@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 import {
   attackMonsterAt,
@@ -6,6 +7,7 @@ import {
   confirmTileClickByDispatch,
   dispatchTileClick,
   expectHeroAt,
+  expectMinePresent,
   expectMonsterAt,
   expectMonsterDefeating,
   expectMonsterNotPresent,
@@ -15,9 +17,12 @@ import {
   expectResourcePresent
 } from './adventure-map.utils.js'
 import {
+  closeInteractionModal,
   expectMovementPoints,
   expectResourceTotal,
-  getTreasureChestDialog
+  getTreasureChestDialog,
+  queryLevelUpPopup,
+  readTownList
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
@@ -30,9 +35,11 @@ import { getBattleScreen, queryBattleScreen, winBattle } from './battle.utils.js
 import {
   ARMY_THAT_WINS,
   aHero,
+  aMine,
   aMonster,
   aResource,
   aScenario,
+  aTown,
   aTreasureChest
 } from './builders.js'
 import { SWAMP } from './terrain-codes.js'
@@ -262,11 +269,15 @@ describe('tiles a monster guards', () => {
   })
 
   describe('a tile two monsters guard', () => {
-    const aTileTwoMonstersGuard = () =>
+    const aTileTwoMonstersGuard = (hero = aWinningHero()) =>
       aScenario()
         .withSize(4, 2)
-        .withEntities(aWinningHero(), aMonster().at(3, 0), aMonster().withId('monster-2').at(3, 1))
-        .withDefinitions({ monsters })
+        .withEntities(hero, aMonster().at(3, 0), aMonster().withId('monster-2').at(3, 1))
+        .withDefinitions({
+          monsters,
+          hero: readGameData('hero.json'),
+          heroClasses: readGameData('hero-classes.json')
+        })
 
     test('given a tile two monsters guard when the hero won the first battle there then the second battle starts', async () => {
       const { user } = await setupMovementBehaviorApp({
@@ -279,6 +290,31 @@ describe('tiles a monster guards', () => {
       expect(getBattleScreen()).toBeTruthy()
       expectMonsterDefeating('monster-1')
       expectMonsterPresent('monster-2')
+    })
+
+    test('given the hero goes up a level in the first of two battles when its results close then the level-up popup shows before the second battle', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aTileTwoMonstersGuard(aWinningHero().withExperience(950)).build()
+      })
+      await moveHeroTo(2, 0)
+
+      await winBattle(user)
+
+      expect(queryLevelUpPopup()).toBeTruthy()
+      expect(queryBattleScreen()).toBeNull()
+    })
+
+    test('given the level-up popup between two battles when the player closes it then the second battle starts', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aTileTwoMonstersGuard(aWinningHero().withExperience(950)).build()
+      })
+      await moveHeroTo(2, 0)
+      await winBattle(user)
+
+      await closeInteractionModal(user)
+      await flushMicrotasks()
+
+      expect(getBattleScreen()).toBeTruthy()
     })
 
     test('given the page reloads during the first of two battles when the hero wins it then the second battle starts', async () => {
@@ -295,6 +331,44 @@ describe('tiles a monster guards', () => {
 
       expect(getBattleScreen()).toBeTruthy()
       expectMonsterPresent('monster-2')
+    })
+  })
+
+  describe("a monster next to a building's entrance", () => {
+    test("given a monster guards a mine's entrance when the hero won the battle there then the mine is the player's", async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(8, 3)
+          .withEntities(aWinningHero().at(2, 2), aMine().at(2, 1), aMonster().at(3, 2))
+          .withDefinitions({ monsters, mines: readGameData('mines.json') })
+          .build()
+      })
+      await moveHeroTo(2, 1)
+
+      await winBattle(user)
+
+      expect(
+        within(expectMinePresent()).queryByRole('img', { name: 'Red player flag' })
+      ).not.toBeNull()
+    })
+
+    test("given a monster guards a town's entrance when the hero won the battle there then the town is the player's", async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(8, 5)
+          .withEntities(
+            aWinningHero().at(2, 3),
+            aTown().named('Whitemoon').at(3, 2),
+            aMonster().at(4, 3)
+          )
+          .withDefinitions({ monsters })
+          .build()
+      })
+      await moveHeroTo(3, 2)
+
+      await winBattle(user)
+
+      expect(readTownList()).toEqual(['Whitemoon'])
     })
   })
 

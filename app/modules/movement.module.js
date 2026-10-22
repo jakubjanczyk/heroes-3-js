@@ -35,7 +35,8 @@ export const registerMovementModule = defineModule(
     let heroTile = null
     let removedIds = NO_REMOVED_ENTITIES
     let guards = []
-    let guardedTiles = indexGuardedTiles([])
+    let map = null
+    let guardedTiles = indexGuardedTiles([], map)
     let remainingMovementPoints = Number.POSITIVE_INFINITY
     let isMoveCommandInProgress = false
 
@@ -44,7 +45,10 @@ export const registerMovementModule = defineModule(
     }
 
     function indexGuards() {
-      guardedTiles = indexGuardedTiles(guards.filter((guard) => !removedIds.has(guard.id)))
+      guardedTiles = indexGuardedTiles(
+        guards.filter((guard) => !removedIds.has(guard.id)),
+        map
+      )
     }
 
     return {
@@ -58,6 +62,7 @@ export const registerMovementModule = defineModule(
             heroId = hero?.id ?? null
             heroTile = hero?.tile ?? null
             removedIds = NO_REMOVED_ENTITIES
+            map = world.map
             guards = world.scenario.entities.filter(entityBehaviors.guardsSurroundings)
             indexGuards()
 

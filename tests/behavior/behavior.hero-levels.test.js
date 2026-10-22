@@ -6,6 +6,7 @@ import { holdRightButtonOn } from './adventure-map.utils.js'
 import {
   closeInteractionModal,
   getHeroInfoBox,
+  queryLevelUpPopup,
   readPrimarySkills,
   takeFromTreasureChest
 } from './adventure-panels.utils.js'
@@ -52,13 +53,9 @@ const twoTier1Chests = [
   aTreasureChest().withId('chest-2').withTier(1).at(3, 0)
 ]
 
-function queryLevelUpDialog() {
-  return screen.queryByRole('dialog', { name: 'Hero has gained a level.' })
-}
-
 // What the level-up popup says, e.g. ['Hero is now a level 2 Knight.', '+1 Defense'].
 function readLevelUpDialog() {
-  const dialog = queryLevelUpDialog()
+  const dialog = queryLevelUpPopup()
   expect(dialog).toBeTruthy()
   return within(dialog)
     .getAllByRole('paragraph')
@@ -108,7 +105,7 @@ describe('hero level behavior', () => {
 
     await takeFromTreasureChest(user, firstChest, 'experience')
 
-    expect(queryLevelUpDialog()).toBeNull()
+    expect(queryLevelUpPopup()).toBeNull()
   })
 
   test('given a hero took 500 experience from one chest when they take 500 more from another then they reach level 2', async () => {

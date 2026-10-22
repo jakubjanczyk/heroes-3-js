@@ -1,11 +1,13 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import {
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_INTERACTION_REACHED,
   APP_FACT_INTERACTIONS_QUEUED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_NOTICE_OPENED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED
 } from '../events.js'
@@ -27,6 +29,8 @@ export const registerInteractionModule = defineModule(
     // factsOnModalClosed.
     let eventsByChoice = {}
     let queuedInteractions = []
+    let isNextInteractionDue = false
+    let openModalCount = 0
     let isRestoring = false
 
     function emitFacts(facts) {
@@ -47,17 +51,27 @@ export const registerInteractionModule = defineModule(
         tile: interaction.targetTile ?? fallbackTile
       })
       const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects)
-      if (!effects) {
-        return
-      }
+      emitFacts(effects?.facts)
 
-      emitFacts(effects.facts)
-
-      if (effects.modal) {
+      if (effects?.modal) {
         factsOnModalClosed = effects.factsOnModalClosed ?? []
         eventsByChoice = effects.eventsByChoice ?? {}
         emit(APP_UI_INTERACTION_MODAL_OPENED, effects.modal)
       }
+      emit(APP_FACT_INTERACTION_REACHED, { kind: interaction.kind, entityId: entity.id })
+    }
+
+    // The next queued interaction waits for every popup to close, e.g. a level-up won in the
+    // battle before it. The queue left after it is saved first, so a restore knows it happened.
+    function resolveNextWhenFree() {
+      if (!isNextInteractionDue || openModalCount > 0 || isRestoring) {
+        return
+      }
+
+      isNextInteractionDue = false
+      const [next, ...rest] = queuedInteractions
+      emit(APP_FACT_INTERACTIONS_QUEUED, { interactions: rest })
+      resolve(next)
     }
 
     return {
@@ -71,10 +85,18 @@ export const registerInteractionModule = defineModule(
             factsOnModalClosed = []
             eventsByChoice = {}
             queuedInteractions = []
+            isNextInteractionDue = false
+            openModalCount = 0
           }
         },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
-        { type: APP_UI_RESTORE_COMPLETED, handler: () => (isRestoring = false) },
+        {
+          type: APP_UI_RESTORE_COMPLETED,
+          handler: () => {
+            isRestoring = false
+            resolveNextWhenFree()
+          }
+        },
         {
           type: APP_FACT_MOVE_FINISHED,
           handler: (event) => {
@@ -90,26 +112,28 @@ export const registerInteractionModule = defineModule(
           type: APP_FACT_INTERACTIONS_QUEUED,
           handler: (event) => {
             queuedInteractions = [...event.detail.interactions]
+            isNextInteractionDue = false
           }
         },
-        // The facts the next interaction emits are in the saved log, so a restore only skips it.
+        // What the resume event sets off (a level-up, ...) runs first.
         ...resumeEventTypes(config).map((type) => ({
           type,
           handler: () => {
-            const [next, ...rest] = queuedInteractions
-            queuedInteractions = rest
-            if (next && !isRestoring) {
-              resolve(next)
-            }
+            isNextInteractionDue = queuedInteractions.length > 0
+            queueMicrotask(resolveNextWhenFree)
           }
         })),
+        { type: APP_UI_INTERACTION_MODAL_OPENED, handler: () => (openModalCount += 1) },
+        { type: APP_UI_NOTICE_OPENED, handler: () => (openModalCount += 1) },
         {
           type: APP_UI_INTERACTION_MODAL_CLOSED,
           handler: (event) => {
+            openModalCount = Math.max(0, openModalCount - 1)
             const facts = [...(eventsByChoice[event.detail?.choice] ?? []), ...factsOnModalClosed]
             factsOnModalClosed = []
             eventsByChoice = {}
             emitFacts(facts)
+            resolveNextWhenFree()
           }
         }
       ]
@@ -125,12 +149,15 @@ export const registerInteractionModule = defineModule(
       APP_FACT_MOVE_FINISHED,
       APP_FACT_INTERACTIONS_QUEUED,
       ...resumeEventTypes(config),
+      APP_UI_INTERACTION_MODAL_OPENED,
+      APP_UI_NOTICE_OPENED,
       APP_UI_INTERACTION_MODAL_CLOSED
     ],
     produces: (config) => [
       APP_UI_INTERACTION_MODAL_OPENED,
       APP_FACT_ENTITY_REMOVED,
       APP_FACT_INTERACTIONS_QUEUED,
+      APP_FACT_INTERACTION_REACHED,
       ...(config?.content?.outcomeEvents ?? [])
     ]
   }

@@ -11,13 +11,23 @@ const SURROUNDING_OFFSETS = [
   [1, 1]
 ]
 
+function isWater(map, tile) {
+  return map?.getTerrainType(tile)?.isWater === true
+}
+
 // The guards of each tile around them, in the order `guards` lists them, which is the order
-// their battles are fought in.
-export function indexGuardedTiles(guards) {
+// their battles are fought in. As in Heroes 3, a guard on land does not guard water, nor the
+// other way round.
+export function indexGuardedTiles(guards, map) {
   const guardsByTile = new Map()
   for (const guard of guards) {
     for (const [dx, dy] of SURROUNDING_OFFSETS) {
-      const key = tileKey({ x: guard.tile.x + dx, y: guard.tile.y + dy })
+      const tile = { x: guard.tile.x + dx, y: guard.tile.y + dy }
+      if (isWater(map, tile) !== isWater(map, guard.tile)) {
+        continue
+      }
+
+      const key = tileKey(tile)
       guardsByTile.set(key, [...(guardsByTile.get(key) ?? []), guard])
     }
   }
