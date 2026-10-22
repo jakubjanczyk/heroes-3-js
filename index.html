@@ -300,17 +300,20 @@
     </template>
 
     <!--
-      The Hall, where a town builds: rows of building slots, each a picture (a stand-in for now) over
-      a bar whose colour says whether the building stands, can be built, or why not.
+      The Hall, where a town builds: a window over the darkened town screen, with rows of building
+      slots, each a picture (a stand-in for now) over a bar whose colour says whether the building
+      stands, can be built, or why not.
     -->
     <template id="town-hall-template">
-      <section class="town-hall" role="dialog" aria-modal="true" aria-label="Hall">
-        <h2 class="town-hall__title"></h2>
-        <div class="town-hall__rows"></div>
-        <button class="town-hall__close" type="button" data-hall-action="close" aria-label="Close" aria-keyshortcuts="Enter Escape" title="Close (Enter)">
-          <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
-        </button>
-      </section>
+      <div class="town-hall-backdrop">
+        <section class="town-hall" role="dialog" aria-modal="true" aria-label="Hall">
+          <h2 class="town-hall__title"></h2>
+          <div class="town-hall__rows"></div>
+          <button class="town-hall__close" type="button" data-hall-action="close" aria-label="Close" aria-keyshortcuts="Enter Escape" title="Close (Enter)">
+            <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+          </button>
+        </section>
+      </div>
     </template>
 
     <template id="town-hall-slot-template">
