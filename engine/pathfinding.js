@@ -145,7 +145,15 @@ function stepTo(current, next, { order, getStepCost }) {
 }
 
 // Cheapest route by `getStepCost(from, to)`; among equally cheap routes, the one with fewest turns.
-export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () => 1 }) {
+// `canLeave(from, to)` says whether a route that got to `from` may go on to `to`.
+export function findPath({
+  fromTile,
+  toTile,
+  map,
+  isBlocked,
+  getStepCost = () => 1,
+  canLeave = () => true
+}) {
   if (!map.inBounds(fromTile) || !map.inBounds(toTile)) {
     return null
   }
@@ -158,10 +166,10 @@ export function findPath({ fromTile, toTile, map, isBlocked, getStepCost = () =>
     return null
   }
 
-  return searchRoute({ fromTile, toTile, map, isBlocked, getStepCost })
+  return searchRoute({ fromTile, toTile, map, isBlocked, getStepCost, canLeave })
 }
 
-function searchRoute({ fromTile, toTile, map, isBlocked, getStepCost }) {
+function searchRoute({ fromTile, toTile, map, isBlocked, getStepCost, canLeave }) {
   const startState = {
     key: stateKey(fromTile, 0, 0),
     tile: fromTile,
@@ -187,7 +195,7 @@ function searchRoute({ fromTile, toTile, map, isBlocked, getStepCost }) {
     }
 
     for (const next of getNeighbors(current.tile)) {
-      if (!canEnter(next, { map, toTile, isBlocked })) {
+      if (!canEnter(next, { map, toTile, isBlocked }) || !canLeave(current.tile, next)) {
         continue
       }
 

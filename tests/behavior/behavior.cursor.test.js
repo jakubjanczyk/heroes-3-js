@@ -34,7 +34,7 @@ import {
   aTown,
   aTreasureChest
 } from './builders.js'
-import { GRASS, ROCK, WATER } from './terrain-codes.js'
+import { GRASS, ROCK, SWAMP, WATER } from './terrain-codes.js'
 
 const gameDefinitions = {
   hero: readGameData('hero.json'),
@@ -153,6 +153,38 @@ describe('adventure map cursor behavior', () => {
     await hoverTile(user, 20, 0)
 
     expect(getMapCursor()).toBe('attack-2')
+  })
+
+  test('given a tile next to a monster when the mouse is over it then the cursor is the crossed swords', async () => {
+    const { user } = await setupApp(
+      aScenario().withSize(4).withEntities(aHero(), aMonster().at(3, 0))
+    )
+
+    await hoverTile(user, 2, 0)
+
+    expect(getMapCursor()).toBe('attack')
+  })
+
+  test('given a tile next to a monster 2 days away when the mouse is over it then the swords show 2', async () => {
+    const { user } = await setupApp(aLongRow().withEntities(aHero(), aMonster().at(21, 0)))
+
+    await hoverTile(user, 20, 0)
+
+    expect(getMapCursor()).toBe('attack-2')
+  })
+
+  test('given the step onto a monster is out of reach today but the tile next to it is not when the mouse is over the monster then the swords show no day', async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(10)
+        .withTiles(new Array(10).fill(SWAMP))
+        .withEntities(aHero(), aMonster().at(9, 0))
+    )
+
+    // 8 swamp steps cost 1400 of 1500: the hero gets next to the monster today.
+    await hoverTile(user, 9, 0)
+
+    expect(getMapCursor()).toBe('attack')
   })
 
   test.each([

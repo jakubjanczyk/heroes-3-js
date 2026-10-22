@@ -113,6 +113,11 @@ export function expectInteractionModalClosed() {
   expect(getInteractionModal()).toBeFalsy()
 }
 
+// A hero the scenario leaves unnamed is called 'Hero'.
+export function queryLevelUpPopup(heroName = 'Hero') {
+  return screen.queryByRole('dialog', { name: `${heroName} has gained a level.` })
+}
+
 export async function closeInteractionModal(user) {
   const okButton = getInteractionModalOkButton()
   expect(okButton).toBeTruthy()

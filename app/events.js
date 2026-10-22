@@ -27,6 +27,10 @@ export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
 export const APP_FACT_MOVE_STARTED = 'fact.move.started'
 export const APP_FACT_MOVE_FINISHED = 'fact.move.finished'
+// What the hero still does where it stopped once the interaction under way is over.
+export const APP_FACT_INTERACTIONS_QUEUED = 'fact.interactions.queued'
+// The hero interacts with an entity now: right as it stops, or once what was queued before is over.
+export const APP_FACT_INTERACTION_REACHED = 'fact.interaction.reached'
 export const APP_FACT_HERO_MOVED = 'fact.hero.moved'
 export const APP_FACT_ROUTE_PLANNED = 'fact.route.planned'
 export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.changed'
@@ -92,6 +96,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_PREVIEW_CLEARED,
+  APP_FACT_INTERACTIONS_QUEUED,
   APP_FACT_TURN_ENDED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_FINISHED,

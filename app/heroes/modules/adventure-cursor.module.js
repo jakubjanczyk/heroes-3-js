@@ -83,17 +83,18 @@ export const registerAdventureCursorModule = defineModule(
       emit(APP_COMMAND_ROUTE_REQUESTED, { tile: hoveredTile })
     }
 
-    function showCursorForRoute(path) {
+    function showCursorForRoute(path, pathToBattle) {
       const travelDays = path
         ? countTravelDays({
             map,
-            path,
+            path: pathToBattle ?? path,
             chargeSteps: movementRules.chargeSteps,
             remainingMovementPoints,
             maxMovementPoints
           })
         : null
-      showCursor(getAdventureCursor({ entity: mapObjects.getEntityAt(hoveredTile), travelDays }))
+      const entity = mapObjects.getEntityAt(hoveredTile)
+      showCursor(getAdventureCursor({ entity, travelDays, attacks: Boolean(pathToBattle) }))
     }
 
     return {
@@ -159,7 +160,7 @@ export const registerAdventureCursorModule = defineModule(
               return
             }
 
-            showCursorForRoute(event.detail.path)
+            showCursorForRoute(event.detail.path, event.detail.pathToBattle)
           }
         },
         {

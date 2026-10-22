@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
-import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 import { attackMonsterAt } from './adventure-map.utils.js'
-import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
+import { getHeroInfoBox, queryLevelUpPopup, readArmySlots } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
   flushMicrotasks,
@@ -78,10 +77,6 @@ const aFightWith = (army) =>
       aMonster().withType('SWORDSMAN').withCount(2).withStacks(1).at(1, 0)
     )
     .withDefinitions(gameDefinitions)
-
-function queryLevelUpPopup() {
-  return screen.queryByRole('dialog', { name: `${HERO_NAME} has gained a level.` })
-}
 
 describe('battle results behavior', () => {
   test('given the hero wins a battle then the battle stays on screen, darkened, behind a results window', async () => {
@@ -178,11 +173,11 @@ describe('battle results behavior', () => {
   test('given the hero went up a level in the battle then the level-up popup opens after the results window closes', async () => {
     const { user } = await startBattle(aFight({ experience: 950 }))
     await winLosingSkeletons(user)
-    expect(queryLevelUpPopup()).toBeNull()
+    expect(queryLevelUpPopup(HERO_NAME)).toBeNull()
 
     await closeBattleResults(user)
 
-    expect(queryLevelUpPopup()).toBeTruthy()
+    expect(queryLevelUpPopup(HERO_NAME)).toBeTruthy()
   })
 
   test('given the hero won a battle after losing creatures then the army shows the count each stack ended the battle with', async () => {
