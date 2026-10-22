@@ -1,6 +1,6 @@
 # Town buildings (2026-10-21)
 
-Roadmap 6.1: the Hall, where a town builds. This change doesn't look at resources: costs are shown, but any building whose requirements are met can be built, and nothing is spent (3.4 comes next).
+Roadmap 6.1: the Hall, where a town builds. This change doesn't look at resources: costs are shown, but any building whose requirements are met can be built, and nothing is spent. Paying for buildings came next: `2026-10-22-spending-resources.md`.
 
 ## How Heroes 3 does it
 
@@ -20,7 +20,6 @@ Roadmap 6.1: the Hall, where a town builds. This change doesn't look at resource
 
 ## Not yet
 
-- Checking and spending resources (3.4), and red bars for buildings the player can't afford.
 - What buildings do: income from the halls (6.2), creature growth and recruiting (6.3), the Fort in town combat (5.10).
 - Built buildings drawn on the town picture, building pictures and descriptions, status bar text on hover, right-click info.
 - Other factions' buildings and Hall layouts.

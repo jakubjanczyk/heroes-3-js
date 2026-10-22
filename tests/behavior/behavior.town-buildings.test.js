@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import { clickEndTurn, getTownInTownList } from './adventure-panels.utils.js'
+import { clickEndTurn, expectResourceTotal, getTownInTownList } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
   flushMicrotasks,
@@ -38,7 +38,8 @@ const gameDefinitions = {
 
 // Two towns side by side, their entrances at (4, 3) and (12, 3); each building covers the two
 // tiles either side of its entrance and the rows above. The hero starts two tiles below the
-// first entrance.
+// first entrance. The player starts with Heroes 3's Normal resources, enough for any building here,
+// unless a test says otherwise.
 const WHITEMOON_ENTRANCE = { x: 4, y: 3 }
 const MAP_WIDTH = 16
 const MAP_HEIGHT = 7
@@ -51,6 +52,7 @@ const aTownScenario = ({ whitemoon = aWhitemoon(), kirkwall = aKirkwall() } = {}
     .withSize(MAP_WIDTH, MAP_HEIGHT)
     .withEntities(aHero().at(4, 5), whitemoon, kirkwall)
     .withDefinitions(gameDefinitions)
+    .withoutStartingResources()
 
 async function setupApp(scenario, options = {}) {
   return setupMovementBehaviorApp({ loadGameOptions: scenario.build(), ...options })
@@ -314,6 +316,89 @@ describe('town buildings behavior', () => {
       await openHall(user)
 
       expect(readHall()[0][2]).toBe('Tavern')
+    })
+  })
+  describe('paying for buildings', () => {
+    // The Tavern costs 5 Wood and 500 Gold, the Blacksmith 5 Wood and 1000 Gold.
+    test("takes a building's cost off the player's resources when the player builds it", async () => {
+      const { user } = await setupAppInWhitemoon(
+        aTownScenario().withStartingResources({ WOOD_PILE: 20, GOLD_PILE: 2000 })
+      )
+
+      await buildInTown(user, 'Tavern')
+
+      expectResourceTotal('Wood', 15)
+      expectResourceTotal('Gold', 1500)
+    })
+
+    test('can build when the player has exactly what the building costs', async () => {
+      const { user } = await setupAppInWhitemoon(
+        aTownScenario().withStartingResources({ WOOD_PILE: 5, GOLD_PILE: 500 })
+      )
+
+      await buildInTown(user, 'Tavern')
+
+      await openHall(user)
+      expect(readHall()[0][2]).toBe('Brotherhood of the Sword')
+    })
+
+    test('shows a building the player cannot afford as one that cannot be built for lack of resources', async () => {
+      const { user } = await setupAppInWhitemoon(
+        aTownScenario().withStartingResources({ WOOD_PILE: 5, GOLD_PILE: 499 })
+      )
+
+      await openHall(user)
+
+      expect(readHallStatus('Tavern')).toBe('Not enough resources')
+    })
+
+    test('disables Build when the player cannot afford the building', async () => {
+      const { user } = await setupAppInWhitemoon(
+        aTownScenario().withStartingResources({ WOOD_PILE: 5, GOLD_PILE: 499 })
+      )
+      await openHall(user)
+
+      const tavern = await openBuildingWindow(user, 'Tavern')
+
+      expect(getBuildButton(tavern).disabled).toBe(true)
+    })
+
+    test('marks the resources the player is short of in the building window', async () => {
+      const { user } = await setupAppInWhitemoon(
+        aTownScenario().withStartingResources({ WOOD_PILE: 5, GOLD_PILE: 499 })
+      )
+      await openHall(user)
+
+      const tavern = await openBuildingWindow(user, 'Tavern')
+
+      expect(readBuildingCost(tavern)).toEqual(['5 Wood', '500 Gold (not enough)'])
+    })
+
+    test('shows a building as unaffordable in another town once building has spent the resources', async () => {
+      const { user } = await setupAppInWhitemoon(
+        aTownScenario().withStartingResources({ WOOD_PILE: 10, GOLD_PILE: 1000 })
+      )
+      // Leaves 5 Wood and 500 Gold, short of the Blacksmith's 1000 Gold.
+      await buildInTown(user, 'Tavern')
+
+      await user.click(getTownInTownScreenList('Kirkwall'))
+      await flushMicrotasks()
+      await openHall(user)
+
+      expect(readHallStatus('Blacksmith')).toBe('Not enough resources')
+    })
+
+    test('keeps the resources spent after a reload', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aTownScenario().withStartingResources({ WOOD_PILE: 20, GOLD_PILE: 2000 })
+      const { user } = await setupAppInWhitemoon(scenario, { eventLog })
+      await buildInTown(user, 'Tavern')
+
+      await setupApp(scenario, { eventLog })
+      await flushMicrotasks()
+
+      expectResourceTotal('Wood', 15)
+      expectResourceTotal('Gold', 1500)
     })
   })
 })

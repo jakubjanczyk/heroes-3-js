@@ -196,11 +196,15 @@ Core game loop - resources flow, time passes.
 - [x] Mine income only from owned mines
 
 ### 3.4 Resource Spending Framework
-- [ ] `canAfford(costs)` utility: checks if player has enough resources
-- [ ] `spendResources(costs)` with event: `fact.resources_spent` with reason
-- [ ] Insufficient resources: UI shows which resources are missing (red highlight)
-- [ ] Resource costs defined as `{ gold: N, wood: N, ore: N, ... }` objects
-- [ ] Used by: town building construction, creature recruitment, hero recruitment
+See `docs/notes/2026-10-22-spending-resources.md`.
+- [x] `canAfford(totals, cost)` utility: checks if player has enough resources (`game/heroes/treasury.js`)
+- [x] Spending emits `fact.resources.spent` with the resources and a reason (persisted)
+- [x] Insufficient resources: the building window marks the resources the player is short of in red; the Hall shows the building's bar red ("Not enough resources")
+- [x] Resource costs defined as objects by resource type, as `startingResources` (`{ GOLD_PILE: 500, WOOD_PILE: 5 }`)
+- [ ] Used by:
+  - [x] Town building construction
+  - [ ] Creature recruitment (6.3)
+  - [ ] Hero recruitment (4.5)
 
 ### 3.5 Starting Resources & Configuration
 - [ ] Scenario JSON defines starting resources per player
@@ -506,7 +510,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [x] Each town has a set of building slots: the Hall, opened from the town screen's Hall icon, in H3's rows (Castle so far)
 - [x] Build one building per day per town
 - [x] Buildings have resource costs (gold + materials), shown in the building window
-- [ ] Building checks the player can afford it and spends the cost (needs 3.4)
+- [x] Building checks the player can afford it and spends the cost (3.4)
 - [x] Buildings have prerequisites (tech tree, from VCMI); the window lists the missing ones
 - [x] Build button: select building, construction completes instantly; the Hall closes back to the town screen
 - [x] A scenario can start a town with buildings (`"buildings": [...]`); every town has its Village Hall

@@ -1,4 +1,5 @@
 import { townBehavior } from './entity-behaviors/town.js'
+import { canAfford, isShortOf } from './treasury.js'
 
 // Every town starts with its Village Hall, as in Heroes 3.
 const STARTING_BUILDINGS = ['VILLAGE_HALL']
@@ -9,7 +10,8 @@ export const BUILDING_STATUS = Object.freeze({
   MISSING_REQUIREMENTS: 'missingRequirements',
   BUILT_TODAY: 'builtToday',
   NEEDS_WATER: 'needsWater',
-  ONE_PER_PLAYER: 'onePerPlayer'
+  ONE_PER_PLAYER: 'onePerPlayer',
+  NOT_ENOUGH_RESOURCES: 'notEnoughResources'
 })
 
 // What a town type can build: the buildings every town has (buildings.json) with the town type's
@@ -73,8 +75,9 @@ export function missingRequirements(building, built) {
 }
 
 // town: { built, hasBuiltToday, isNextToWater }; builtElsewhere(buildingId) says whether another
-// town of the player has it.
-export function buildingStatus({ buildingId, building, town, builtElsewhere }) {
+// town of the player has it; treasury is the player's resources by type. As in Heroes 3, a
+// building shows as short of resources only once nothing else stops it.
+export function buildingStatus({ buildingId, building, town, builtElsewhere, treasury }) {
   if (town.built.has(buildingId)) {
     return BUILDING_STATUS.BUILT
   }
@@ -90,6 +93,9 @@ export function buildingStatus({ buildingId, building, town, builtElsewhere }) {
   if (missingRequirements(building, town.built).length > 0) {
     return BUILDING_STATUS.MISSING_REQUIREMENTS
   }
+  if (!canAfford(treasury, building.cost)) {
+    return BUILDING_STATUS.NOT_ENOUGH_RESOURCES
+  }
   return BUILDING_STATUS.BUILDABLE
 }
 
@@ -98,17 +104,18 @@ function slotBuildingId(chain, built) {
   return chain.find((buildingId) => !built.has(buildingId)) ?? chain.at(-1)
 }
 
-function describeCost(cost = {}, resources = {}) {
+function describeCost(cost = {}, resources = {}, treasury = {}) {
   return Object.keys(resources)
     .filter((resourceType) => cost[resourceType] > 0)
     .map((resourceType) => ({
       resource: resources[resourceType].name ?? resourceType,
-      amount: cost[resourceType]
+      amount: cost[resourceType],
+      isShort: isShortOf(treasury, cost, resourceType)
     }))
 }
 
 // The Hall as the player sees it: its title (the town's hall building) and its rows of slots.
-export function describeHall({ catalogue, town, builtElsewhere, resources }) {
+export function describeHall({ catalogue, town, builtElsewhere, resources, treasury }) {
   const { buildings, hall } = catalogue
   const nameOf = (buildingId) => buildings[buildingId]?.name ?? buildingId
   const hallChain = hall[0]?.[0] ?? []
@@ -122,8 +129,8 @@ export function describeHall({ catalogue, town, builtElsewhere, resources }) {
         return {
           buildingId,
           name: nameOf(buildingId),
-          status: buildingStatus({ buildingId, building, town, builtElsewhere }),
-          cost: describeCost(building.cost, resources),
+          status: buildingStatus({ buildingId, building, town, builtElsewhere, treasury }),
+          cost: describeCost(building.cost, resources, treasury),
           missingRequirements: missingRequirements(building, town.built).map(nameOf)
         }
       })

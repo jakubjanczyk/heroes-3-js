@@ -55,6 +55,7 @@ export const APP_FACT_TOWN_CAPTURED = 'fact.town.captured'
 export const APP_FACT_TOWN_BUILDING_BUILT = 'fact.town.building.built'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
+export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
@@ -110,6 +111,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_BUILDING_BUILT,
+  APP_FACT_RESOURCES_SPENT,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
