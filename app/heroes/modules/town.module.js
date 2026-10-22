@@ -2,19 +2,30 @@ import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
+import {
+  BUILDING_STATUS,
+  buildingStatus,
+  createTownBuildings,
+  describeHall,
+  isTownNextToWater,
+  townBuildingsCatalogue
+} from '../../../game/heroes/town-buildings.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import {
   APP_COMMAND_TILE_CLICKED,
+  APP_COMMAND_TOWN_BUILD_REQUESTED,
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
+  APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_VISITED,
+  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -35,7 +46,9 @@ export const registerTownModule = defineModule(
   ({ emit }) => {
     const mapObjects = createMapObjects()
     const ownedTowns = createOwnedTowns()
+    const townBuildings = createTownBuildings()
     let townsById = new Map()
+    let townIdsNextToWater = new Set()
     let definitions = {}
     let hero = null
     let heroTile = null
@@ -50,6 +63,44 @@ export const registerTownModule = defineModule(
       return getTownName({ entity: townsById.get(townId), definitions })
     }
 
+    function buildingsOf(townId) {
+      return {
+        built: townBuildings.builtIn(townId),
+        hasBuiltToday: townBuildings.hasBuiltToday(townId),
+        isNextToWater: townIdsNextToWater.has(townId)
+      }
+    }
+
+    // Some buildings, the Capitol, a player may have in one town only.
+    function builtElsewhere(townId) {
+      return (buildingId) =>
+        ownedTowns
+          .ids()
+          .some(
+            (otherTownId) =>
+              otherTownId !== townId && townBuildings.builtIn(otherTownId).has(buildingId)
+          )
+    }
+
+    function catalogueOf(townId) {
+      return townBuildingsCatalogue(definitions, townsById.get(townId)?.type)
+    }
+
+    function build({ entityId, buildingId }) {
+      const building = catalogueOf(entityId).buildings[buildingId]
+      const status =
+        building &&
+        buildingStatus({
+          buildingId,
+          building,
+          town: buildingsOf(entityId),
+          builtElsewhere: builtElsewhere(entityId)
+        })
+      if (ownedTowns.has(entityId) && status === BUILDING_STATUS.BUILDABLE) {
+        emit(APP_FACT_TOWN_BUILDING_BUILT, { entityId, buildingId })
+      }
+    }
+
     function showTown() {
       const town = townsById.get(openTownId)
       const heroIsInTown = hero && heroTile && sameTile(heroTile, town.tile)
@@ -61,7 +112,13 @@ export const registerTownModule = defineModule(
         visitingHero: heroIsInTown
           ? { name: heroName, army: getHeroArmy({ entity: hero, definitions }) }
           : null,
-        ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) }))
+        ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
+        hall: describeHall({
+          catalogue: catalogueOf(openTownId),
+          town: buildingsOf(openTownId),
+          builtElsewhere: builtElsewhere(openTownId),
+          resources: definitions.resources
+        })
       })
     }
 
@@ -98,7 +155,12 @@ export const registerTownModule = defineModule(
             const { scenario } = event.detail
             mapObjects.onWorldReady(event.detail)
             ownedTowns.onWorldReady(scenario.entities)
-            townsById = new Map(scenario.entities.filter(isTown).map((town) => [town.id, town]))
+            const towns = scenario.entities.filter(isTown)
+            townsById = new Map(towns.map((town) => [town.id, town]))
+            townBuildings.onWorldReady(towns)
+            townIdsNextToWater = new Set(
+              towns.filter((town) => isTownNextToWater(town, event.detail.map)).map(({ id }) => id)
+            )
             definitions = event.detail.definitions ?? {}
             hero = findHero(scenario.entities)
             heroTile = hero?.tile ?? null
@@ -198,7 +260,18 @@ export const registerTownModule = defineModule(
           handler: () => {
             openTownId = null
           }
-        }
+        },
+        { type: APP_COMMAND_TOWN_BUILD_REQUESTED, handler: (event) => build(event.detail) },
+        {
+          type: APP_FACT_TOWN_BUILDING_BUILT,
+          handler: (event) => {
+            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
+            if (openTownId) {
+              showTown()
+            }
+          }
+        },
+        { type: APP_FACT_TURN_ENDED, handler: () => townBuildings.onTurnEnded() }
       ]
     }
   },
@@ -225,10 +298,14 @@ export const registerTownModule = defineModule(
       APP_FACT_TOWN_VISITED,
       APP_FACT_TOWN_OPENED,
       APP_COMMAND_TOWN_LEAVE_REQUESTED,
-      APP_FACT_TOWN_LEFT
+      APP_FACT_TOWN_LEFT,
+      APP_COMMAND_TOWN_BUILD_REQUESTED,
+      APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_TURN_ENDED
     ],
     produces: [
       APP_UI_TOWN_UPDATED,
+      APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_OPENED,
       APP_FACT_TOWN_LEFT,
       APP_FACT_TOWN_CAPTURED
