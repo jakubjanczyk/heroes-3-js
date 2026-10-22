@@ -119,7 +119,7 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Visiting hero army bar below garrison (when hero is in town), the hero's portrait placeholder first
 - [x] "Exit" button (✓, Enter or Escape) returns to adventure map
 - [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
-- [ ] Creatures available for recruitment panel, with their weekly growth (6.3.2, 6.3.3)
+- [x] Creatures available for recruitment panel, with their weekly growth (6.3.2, 6.3.3)
 - [x] Hall icon in the panel opens the Hall (6.1)
 - [x] The town's daily gold in the panel
 - [ ] Hall and Fort icons showing the town's level in the panel, as the town box does (the Hall icon is always the same, the Fort's place is kept empty)
@@ -204,7 +204,7 @@ See `docs/notes/2026-10-22-spending-resources.md`.
 - [x] Resource costs defined as objects by resource type, as `startingResources` (`{ GOLD_PILE: 500, WOOD_PILE: 5 }`)
 - [ ] Used by:
   - [x] Town building construction
-  - [ ] Creature recruitment (6.3.3)
+  - [x] Creature recruitment (6.3.3)
   - [ ] Hero recruitment (4.5)
 
 ### 3.5 Starting Resources & Configuration
@@ -547,10 +547,11 @@ How Heroes 3 does it:
 - Growth arrives at the start of each week (with the "New week" popup). Unbought creatures pile up from week to week, in neutral towns too, so a captured town keeps what built up.
 - A dwelling that stands at the start of the game, or has just been built, has one week of creatures to buy straight away.
 - Bonuses: Citadel +50%, Castle +100% (the Fort gives none); horde buildings add a flat number (Griffin Bastion: +3 Griffins).
-- Recruits go to the town's garrison; with no room there, to the visiting hero; with no room in either, recruiting is refused. No hero is needed, and there is no daily limit.
+- Recruits go to the town's garrison only, never to the visiting hero; with no room there, Recruit says "There is no room in the garrison for this army." and the window stays open (VCMI's `CRecruitmentWindow::buy`). No hero is needed, and there is no daily limit.
 - The panel (bottom left of the town screen) shows each built tier's creature with its weekly growth ("+14"), in a row of 4 and a row of 3; an unbuilt tier's slot is empty. Clicking a creature opens its recruit window.
 - The Fort window, opened from the Fort icon or the fort on the town picture, exists only once a Fort is built; its title is the fort's name (Fort, Citadel, Castle). Tiers 1-6 in two columns and tier 7 centred below: each card has the plural creature name over the dwelling's picture, the dwelling's name and "Available: N", the creature's picture, and Attack, Defense, Damage, Health, Speed and Growth. Clicking a card opens the recruit window over it; the ✓ closes it.
-- The recruit window: "Recruit <plural>" as its title; both creatures for an upgraded dwelling, the selected one framed in red and the upgraded one selected first; boxes for Cost Per Troop (a column per resource), Available, Recruit and Total Cost; a slider with arrow buttons; Max, Recruit (greyed out at 0) and Cancel. The slider starts at 1 when one can be bought and afforded, otherwise at 0.
+- The recruit window: "Recruit <plural>" as its title; both creatures for an upgraded dwelling, the selected one framed in red and the upgraded one selected first; boxes for Cost Per Troop (a column per resource), Available, Recruit and Total Cost; a slider with arrow buttons, going no higher than the player can afford; Max, Recruit (greyed out at 0) and Cancel. The slider starts at 1 when one can be bought and afforded, otherwise at 0.
+- A dwelling built during the game has one week of its creature's own growth straight away; the Citadel's and Castle's bonus counts from the next week (VCMI).
 
 Stages, one PR each, done in this order:
 
@@ -565,15 +566,17 @@ Stages, one PR each, done in this order:
 - [x] The town screen's panel shows each built tier's creature and its weekly growth (2.3)
 
 #### 6.3.3 Recruit window, opened from the panel
-- [ ] Each dwelling keeps the creatures available to buy; the recruit window is the first place the player sees that number, so it comes with this stage
-- [ ] Dwellings standing at the start of the game have one week of creatures
-- [ ] Growth at the start of each week, piling up, in neutral towns too (`fact.week_started`, 3.1)
-- [ ] Recruit window: title, Cost Per Troop, Available, Recruit, Total Cost, slider with arrows, Max, Recruit, Cancel
-- [ ] Slider starts at 1 when one can be bought and afforded, else 0; Recruit greyed out at 0
-- [ ] Upgraded dwelling: both creatures shown, upgraded one selected first, sharing the pool
-- [ ] Recruiting spends the resources (`fact.resources.spent`, 3.4) and lowers what is available; persisted
-- [ ] A dwelling built today has one week of creatures straight away
-- [ ] Recruits go to the garrison, else the visiting hero, else recruiting is refused for lack of room
+- [x] Each dwelling keeps the creatures available to buy; the recruit window is the first place the player sees that number, so it comes with this stage
+- [x] Dwellings standing at the start of the game have one week of creatures
+- [x] Growth at the start of each week, piling up, in neutral towns too (worked out from the turn ends, as income is; no `fact.week_started` yet, 3.1)
+- [x] Recruit window: title, Cost Per Troop, Available, Recruit, Total Cost, slider with arrows, Max, Recruit, Cancel
+- [x] Slider starts at 1 when one can be bought and afforded, else 0; Recruit greyed out at 0
+- [x] Upgraded dwelling: both creatures shown, upgraded one selected first, sharing the pool
+- [x] Recruiting spends the resources (`fact.resources.spent`, 3.4) and lowers what is available; persisted
+- [x] A dwelling built today has one week of creatures straight away
+- [x] Recruits go to the garrison only; with no room there, recruiting is refused with "There is no room in the garrison for this army."
+- [x] The slider goes no higher than the player can afford; Max picks as many as are available and affordable; Enter recruits, Escape cancels
+- [x] The town box and right-click popup show the recruits in the garrison; see `docs/notes/2026-10-22-creature-recruitment.md`
 
 #### 6.3.4 Fort window
 - [ ] The Fort icon opens the Fort window once a Fort is built

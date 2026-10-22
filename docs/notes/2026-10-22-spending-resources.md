@@ -18,4 +18,4 @@ Roadmap 3.4, and the last rule of 6.1: a building costs resources, the player mu
 
 ## Not yet
 
-- Creature recruitment (6.3) and hero recruitment (4.5) paying through the same treasury.
+- Hero recruitment (4.5) paying through the same treasury. Creature recruitment does (`docs/notes/2026-10-22-creature-recruitment.md`).

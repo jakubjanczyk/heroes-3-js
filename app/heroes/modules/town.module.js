@@ -1,6 +1,11 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
-import { describeCreatureGrowth } from '../../../game/heroes/creature-growth.js'
+import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
+import {
+  addToGarrison,
+  describeTownCreatures,
+  weeklyGrowthByTier
+} from '../../../game/heroes/creature-recruitment.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
@@ -20,6 +25,7 @@ import {
   APP_COMMAND_TOWN_BUILD_REQUESTED,
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
+  APP_COMMAND_TOWN_RECRUIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_MOVED,
   APP_FACT_INCOME_COLLECTED,
@@ -30,6 +36,8 @@ import {
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_CAPTURED,
+  APP_FACT_TOWN_CREATURES_RECRUITED,
+  APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_VISITED,
@@ -43,6 +51,7 @@ import {
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_SYSTEM_OPTIONS_CLOSED,
   APP_UI_SYSTEM_OPTIONS_OPENED,
+  APP_UI_TOWN_MESSAGE_OPENED,
   APP_UI_TOWN_SELECTED,
   APP_UI_TOWN_UPDATED
 } from '../../events.js'
@@ -50,6 +59,7 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+const NO_ROOM_IN_GARRISON = 'There is no room in the garrison for this army.'
 
 export const registerTownModule = defineModule(
   ({ emit }) => {
@@ -59,6 +69,9 @@ export const registerTownModule = defineModule(
     const treasury = createTreasury()
     let townsById = new Map()
     let townIdsNextToWater = new Set()
+    // By town: the creatures each tier's dwelling has to buy, and the garrison they join.
+    const availableByTown = new Map()
+    const garrisons = new Map()
     let definitions = {}
     let hero = null
     let heroTile = null
@@ -103,6 +116,76 @@ export const registerTownModule = defineModule(
       })
     }
 
+    function weeklyGrowthOf(townId) {
+      return weeklyGrowthByTier({
+        buildings: catalogueOf(townId).buildings,
+        built: townBuildings.builtIn(townId),
+        monsters: definitions.monsters
+      })
+    }
+
+    function creaturesOf(townId) {
+      return describeTownCreatures({
+        buildings: catalogueOf(townId).buildings,
+        built: townBuildings.builtIn(townId),
+        monsters: definitions.monsters,
+        resources: definitions.resources,
+        available: availableByTown.get(townId) ?? [],
+        treasury: treasury.totals()
+      })
+    }
+
+    // As in Heroes 3, every town's dwellings, neutral towns' too, add a week of creatures at the
+    // start of each week, on top of those left unbought. Like income, it follows from the turn ends.
+    function growCreatures() {
+      for (const townId of townsById.keys()) {
+        const growth = weeklyGrowthOf(townId)
+        availableByTown.set(
+          townId,
+          growth.map((amount, index) => (availableByTown.get(townId)?.[index] ?? 0) + amount)
+        )
+      }
+    }
+
+    // A dwelling just built has a week of its creature's own growth (VCMI: no Citadel or Castle
+    // bonus until the next week); its upgrade keeps the creatures already there.
+    function stockNewDwelling(townId, building) {
+      const creature = definitions.monsters?.[building?.creature]
+      if (!creature || building.upgrades) {
+        return
+      }
+
+      const available = [...(availableByTown.get(townId) ?? [])]
+      available[creature.tier - 1] = creature.growth
+      availableByTown.set(townId, available)
+    }
+
+    function recruit({ entityId, tier, creature, count }) {
+      const recruitable = creaturesOf(entityId)[tier - 1]?.recruits.find(
+        (recruit) => recruit.creature === creature
+      )
+      if (!ownedTowns.has(entityId) || !recruitable || count < 1 || count > recruitable.maxCount) {
+        return
+      }
+
+      const garrison = addToGarrison(garrisons.get(entityId), creature, count)
+      if (!garrison) {
+        emit(APP_UI_TOWN_MESSAGE_OPENED, { message: NO_ROOM_IN_GARRISON })
+        return
+      }
+
+      const cost = definitions.monsters[creature].cost
+      emit(APP_FACT_RESOURCES_SPENT, {
+        resources: Object.fromEntries(
+          Object.entries(cost).map(([resourceType, amount]) => [resourceType, amount * count])
+        ),
+        reason: 'town.recruit',
+        entityId
+      })
+      emit(APP_FACT_TOWN_CREATURES_RECRUITED, { entityId, tier, creature, count })
+      emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId, garrison })
+    }
+
     // Income follows from the persisted captures, buildings and turn ends, so it is not logged
     // itself: replaying the log pays it again in the same order.
     function collectIncome() {
@@ -140,17 +223,13 @@ export const registerTownModule = defineModule(
       emit(APP_UI_TOWN_UPDATED, {
         entityId: openTownId,
         name: nameOf(openTownId),
-        garrison: getTownGarrison({ entity: town, definitions }),
+        garrison: getTownGarrison({ entity: { garrison: garrisons.get(openTownId) }, definitions }),
         visitingHero: heroIsInTown
           ? { name: heroName, army: getHeroArmy({ entity: hero, definitions }) }
           : null,
         ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
         goldIncome: incomeOf(openTownId).GOLD_PILE ?? 0,
-        creatureGrowth: describeCreatureGrowth({
-          buildings: catalogueOf(openTownId).buildings,
-          built: townBuildings.builtIn(openTownId),
-          monsters: definitions.monsters
-        }),
+        creatures: creaturesOf(openTownId),
         hall: describeHall({
           catalogue: catalogueOf(openTownId),
           town: buildingsOf(openTownId),
@@ -202,9 +281,16 @@ export const registerTownModule = defineModule(
             )
             definitions = event.detail.definitions ?? {}
             treasury.onWorldReady(startingResourcesOf(scenario))
+            garrisons.clear()
+            availableByTown.clear()
+            for (const town of towns) {
+              garrisons.set(town.id, town.garrison ?? [])
+            }
             hero = findHero(scenario.entities)
             heroTile = hero?.tile ?? null
             heroName = definitions.hero?.name ?? DEFAULT_HERO_NAME
+            // The dwellings standing at the start of the game have a week of creatures.
+            growCreatures()
             openTownId = null
             selectedTownId = null
             mapBlockers.clear()
@@ -307,10 +393,31 @@ export const registerTownModule = defineModule(
           }
         },
         { type: APP_COMMAND_TOWN_BUILD_REQUESTED, handler: (event) => build(event.detail) },
+        { type: APP_COMMAND_TOWN_RECRUIT_REQUESTED, handler: (event) => recruit(event.detail) },
+        {
+          type: APP_FACT_TOWN_CREATURES_RECRUITED,
+          handler: (event) => {
+            const { entityId, tier, count } = event.detail
+            const available = [...(availableByTown.get(entityId) ?? [])]
+            available[tier - 1] = Math.max(0, (available[tier - 1] ?? 0) - count)
+            availableByTown.set(entityId, available)
+          }
+        },
+        {
+          type: APP_FACT_TOWN_GARRISON_CHANGED,
+          handler: (event) => {
+            garrisons.set(event.detail.entityId, event.detail.garrison)
+            if (openTownId) {
+              showTown()
+            }
+          }
+        },
         {
           type: APP_FACT_TOWN_BUILDING_BUILT,
           handler: (event) => {
-            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
+            const { entityId, buildingId } = event.detail
+            townBuildings.onBuildingBuilt(entityId, buildingId)
+            stockNewDwelling(entityId, catalogueOf(entityId).buildings[buildingId])
             if (openTownId) {
               showTown()
             }
@@ -318,9 +425,12 @@ export const registerTownModule = defineModule(
         },
         {
           type: APP_FACT_TURN_ENDED,
-          handler: () => {
+          handler: (event) => {
             townBuildings.onTurnEnded()
             collectIncome()
+            if (calendarDateOfTurn(event.detail.turnNumber).day === 1) {
+              growCreatures()
+            }
           }
         },
         {
@@ -368,7 +478,10 @@ export const registerTownModule = defineModule(
       APP_COMMAND_TOWN_LEAVE_REQUESTED,
       APP_FACT_TOWN_LEFT,
       APP_COMMAND_TOWN_BUILD_REQUESTED,
+      APP_COMMAND_TOWN_RECRUIT_REQUESTED,
       APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_TOWN_CREATURES_RECRUITED,
+      APP_FACT_TOWN_GARRISON_CHANGED,
       APP_FACT_TURN_ENDED,
       APP_FACT_RESOURCE_COLLECTED,
       APP_FACT_INCOME_COLLECTED,
@@ -379,6 +492,9 @@ export const registerTownModule = defineModule(
       APP_UI_TOWN_UPDATED,
       APP_FACT_RESOURCES_SPENT,
       APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_TOWN_CREATURES_RECRUITED,
+      APP_FACT_TOWN_GARRISON_CHANGED,
+      APP_UI_TOWN_MESSAGE_OPENED,
       APP_FACT_TOWN_OPENED,
       APP_FACT_TOWN_LEFT,
       APP_FACT_TOWN_CAPTURED,

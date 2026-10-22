@@ -17,4 +17,4 @@ Roadmap 6.3.1: a town holds creatures of its own, apart from the visiting hero's
 ## Not yet
 
 - Neutral towns with a garrison that defends them, once sieges exist (6.4, 5.10).
-- Recruits joining the garrison (6.3.3) and moving creatures between the garrison and the visiting hero (6.3.6).
+- Moving creatures between the garrison and the visiting hero (6.3.6). Recruits already join the garrison (6.3.3).

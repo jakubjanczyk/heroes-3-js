@@ -18,6 +18,7 @@ import {
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_CAPTURED,
+  APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
   APP_UI_TILE_INFO_REQUESTED
@@ -193,6 +194,11 @@ export const registerInfoPopupModule = defineModule(
           }
         },
         {
+          type: APP_FACT_TOWN_GARRISON_CHANGED,
+          handler: (event) =>
+            mapObjects.onTownGarrisonChanged(event.detail.entityId, event.detail.garrison)
+        },
+        {
           type: APP_FACT_TOWN_BUILDING_BUILT,
           handler: (event) => {
             townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
@@ -230,6 +236,7 @@ export const registerInfoPopupModule = defineModule(
       APP_FACT_MINE_CAPTURED,
       APP_FACT_TOWN_CAPTURED,
       APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_TOWN_GARRISON_CHANGED,
       APP_FACT_HERO_LEVELED_UP,
       APP_UI_TILE_INFO_REQUESTED,
       APP_UI_TILE_INFO_DISMISSED

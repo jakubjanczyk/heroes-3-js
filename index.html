@@ -351,6 +351,66 @@
       </section>
     </template>
 
+    <!--
+      A dwelling's recruit window, over the darkened town screen: its creatures, the upgraded one
+      chosen first; what one costs, how many are available, how many to recruit and what they cost;
+      the slider, and Max, Recruit and Cancel.
+    -->
+    <template id="recruit-window-template">
+      <div class="town-hall-backdrop">
+        <section class="recruit-window message-box" role="dialog" aria-modal="true" tabindex="-1">
+          <h3 class="recruit-window__title"></h3>
+          <div class="recruit-window__creatures" role="group" aria-label="Creatures"></div>
+          <div class="recruit-window__boxes">
+            <div class="recruit-window__box">
+              <span class="recruit-window__label">Cost Per Troop</span>
+              <ul class="recruit-window__cost" aria-label="Cost per troop"></ul>
+            </div>
+            <div class="recruit-window__box">
+              <span class="recruit-window__label">Available</span>
+              <span class="recruit-window__available" aria-label="Available"></span>
+            </div>
+            <div class="recruit-window__box" aria-hidden="true">
+              <span class="recruit-window__label">Recruit</span>
+              <span class="recruit-window__count"></span>
+            </div>
+            <div class="recruit-window__box">
+              <span class="recruit-window__label">Total Cost</span>
+              <ul class="recruit-window__total" aria-label="Total cost"></ul>
+            </div>
+          </div>
+          <div class="recruit-window__slider-row">
+            <button class="recruit-window__arrow" type="button" data-recruit-action="fewer" aria-label="Fewer" title="Fewer">&#9664;</button>
+            <input class="recruit-window__slider" type="range" min="0" max="0" step="1" value="0" aria-label="Number to recruit" />
+            <button class="recruit-window__arrow" type="button" data-recruit-action="more" aria-label="More" title="More">&#9654;</button>
+          </div>
+          <div class="building-window__buttons">
+            <button class="building-window__button recruit-window__max" type="button" data-recruit-action="max" aria-label="Max" title="Max">Max</button>
+            <button class="building-window__button" type="button" data-recruit-action="recruit" aria-label="Recruit" aria-keyshortcuts="Enter" title="Recruit (Enter)">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+            <button class="building-window__button" type="button" data-recruit-action="cancel" aria-label="Cancel" aria-keyshortcuts="Escape" title="Cancel (Escape)">
+              <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <!-- A message over the town screen, with OK, such as there being no room for recruits. -->
+    <template id="town-message-template">
+      <div class="town-hall-backdrop town-message-backdrop">
+        <section class="town-message message-box" role="alertdialog" aria-modal="true" aria-label="Message" tabindex="-1">
+          <p class="town-message__text"></p>
+          <div class="building-window__buttons">
+            <button class="building-window__button" type="button" data-town-message-action="close" aria-label="OK" aria-keyshortcuts="Enter Escape" title="OK (Enter)">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
     <script type="module" src="./main.js"></script>
   </body>
 </html>

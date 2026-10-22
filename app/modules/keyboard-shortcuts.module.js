@@ -1,6 +1,7 @@
 import { defineModule } from './shared/module-runtime.js'
 
-const OPEN_DIALOGS = 'dialog[open], [role="dialog"][aria-modal="true"]'
+const OPEN_DIALOGS =
+  'dialog[open], [role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"]'
 const ADVENTURE_PANEL = '.adventure-panel'
 
 function keyName(key) {
