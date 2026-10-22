@@ -1,0 +1,239 @@
+import { isTown } from '../../../game/domain/entity-queries.js'
+import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
+import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
+import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { getEntityName } from '../../../game/heroes/status-bar-text.js'
+import {
+  createTownBuildings,
+  describeTownBox,
+  townBuildingsCatalogue
+} from '../../../game/heroes/town-buildings.js'
+import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import {
+  APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_HERO_MOVED,
+  APP_FACT_MINE_CAPTURED,
+  APP_FACT_MONSTER_COUNT_CHANGED,
+  APP_FACT_TOWN_BUILDING_BUILT,
+  APP_FACT_TOWN_CAPTURED,
+  APP_FACT_WORLD_READY,
+  APP_UI_TILE_INFO_DISMISSED,
+  APP_UI_TILE_INFO_REQUESTED
+} from '../../events.js'
+import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createMapObjects } from '../map-objects.js'
+import { renderHeroBox } from '../presentation/hero-box.js'
+import { renderTownBox } from '../presentation/town-box.js'
+
+const PLAYER_COLOR_NAME = 'Red'
+const SCREEN_MARGIN_PX = 8
+// Keeps a popup opened by a finger clear of the fingertip.
+const FINGER_GAP_PX = 48
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), Math.max(min, max))
+}
+
+// The Heroes 3 right-click popup: shows what is on a tile while the right button (or a finger
+// on a long press) is held, and closes on release.
+export const registerInfoPopupModule = defineModule(
+  ({ env }) => {
+    const document = env.document
+    const host = document.querySelector('.game-shell') ?? document.body
+    const mapObjects = createMapObjects()
+    const ownedMineIds = new Set()
+    const ownedTowns = createOwnedTowns()
+    const townBuildings = createTownBuildings()
+
+    let definitions = {}
+    let levelUpSkills = []
+    let popup = null
+
+    function close() {
+      popup?.remove()
+      popup = null
+    }
+
+    // Centred on the mouse as in Heroes 3; above a finger so the finger does not cover it.
+    function place({ clientX, clientY, pointerType }) {
+      const { width, height } = popup.getBoundingClientRect()
+      const isTouch = pointerType === 'touch'
+      let top = isTouch ? clientY - height - FINGER_GAP_PX : clientY - height / 2
+      if (isTouch && top < SCREEN_MARGIN_PX) {
+        top = clientY + FINGER_GAP_PX
+      }
+      const left = clientX - width / 2
+
+      const window = env.window
+      popup.style.left = `${clamp(left, SCREEN_MARGIN_PX, window.innerWidth - width - SCREEN_MARGIN_PX)}px`
+      popup.style.top = `${clamp(top, SCREEN_MARGIN_PX, window.innerHeight - height - SCREEN_MARGIN_PX)}px`
+    }
+
+    // As in Heroes 3, a hero gets the same box as the info box.
+    function fillHeroBox(entity) {
+      popup.classList.add('info-popup--hero')
+      const box = document.createElement('div')
+      renderHeroBox(box, document, {
+        name: getEntityName({ entity, definitions }),
+        skills: getHeroPrimarySkills({ entity, definitions, levelUpSkills }),
+        army: getHeroArmy({ entity, definitions })
+      })
+      popup.appendChild(box)
+    }
+
+    // As in Heroes 3, the player's own town gets the same box as the info box.
+    function fillTownBox(entity) {
+      popup.classList.add('info-popup--town')
+      const box = document.createElement('div')
+      renderTownBox(box, document, {
+        name: getEntityName({ entity, definitions }),
+        ...describeTownBox({
+          catalogue: townBuildingsCatalogue(definitions, entity.type),
+          built: townBuildings.builtIn(entity.id)
+        }),
+        garrison: getTownGarrison({ entity, definitions })
+      })
+      popup.appendChild(box)
+    }
+
+    function fillLines(entity, tile) {
+      // No creature portraits yet: the monster is pictured as it is drawn on the map.
+      if (entity?.kind === 'MONSTER') {
+        const picture = document.createElement('div')
+        picture.className = 'info-popup__picture entity--monster'
+        picture.setAttribute('role', 'img')
+        picture.setAttribute('aria-label', getEntityName({ entity, definitions }))
+        popup.appendChild(picture)
+      }
+
+      const lines = getInfoPopupLines({
+        entity,
+        terrainName: mapObjects.getTerrainName(tile),
+        definitions,
+        ownerColorName: entity && ownedMineIds.has(entity.id) ? PLAYER_COLOR_NAME : null
+      })
+      for (const line of lines) {
+        const text = document.createElement('p')
+        text.className = 'info-popup__line'
+        text.textContent = line
+        popup.appendChild(text)
+      }
+    }
+
+    function open(tile, pointer) {
+      close()
+      const entity = mapObjects.getEntityAt(tile)
+
+      popup = document.createElement('div')
+      popup.className = 'info-popup message-box'
+      popup.setAttribute('role', 'tooltip')
+
+      if (entity?.kind === 'HERO') {
+        fillHeroBox(entity)
+      } else if (entity?.kind === 'TOWN' && ownedTowns.has(entity.id)) {
+        fillTownBox(entity)
+      } else {
+        fillLines(entity, tile)
+      }
+
+      host.appendChild(popup)
+      place(pointer ?? {})
+    }
+
+    return {
+      subscriptions: [
+        {
+          type: APP_FACT_WORLD_READY,
+          handler: (event) => {
+            mapObjects.onWorldReady(event.detail)
+            definitions = event.detail.definitions
+            ownedMineIds.clear()
+            ownedTowns.onWorldReady(event.detail.scenario.entities)
+            townBuildings.onWorldReady(event.detail.scenario.entities.filter(isTown))
+            levelUpSkills = []
+            close()
+          }
+        },
+        {
+          type: APP_FACT_HERO_MOVED,
+          handler: (event) => {
+            mapObjects.onHeroMoved(event.detail.to)
+          }
+        },
+        {
+          type: APP_FACT_ENTITY_REMOVED,
+          handler: (event) => {
+            mapObjects.onEntityRemoved(event.detail.entityId)
+          }
+        },
+        {
+          type: APP_FACT_HERO_ARMY_CHANGED,
+          handler: (event) => {
+            mapObjects.onHeroArmyChanged(event.detail.army)
+          }
+        },
+        {
+          type: APP_FACT_MONSTER_COUNT_CHANGED,
+          handler: (event) => {
+            mapObjects.onMonsterCountChanged(event.detail.entityId, event.detail.count)
+          }
+        },
+        {
+          type: APP_FACT_MINE_CAPTURED,
+          handler: (event) => {
+            ownedMineIds.add(event.detail.entityId)
+          }
+        },
+        {
+          type: APP_FACT_TOWN_CAPTURED,
+          handler: (event) => {
+            ownedTowns.onTownCaptured(event.detail.entityId)
+          }
+        },
+        {
+          type: APP_FACT_TOWN_BUILDING_BUILT,
+          handler: (event) => {
+            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
+          }
+        },
+        {
+          type: APP_FACT_HERO_LEVELED_UP,
+          handler: (event) => {
+            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
+          }
+        },
+        {
+          type: APP_UI_TILE_INFO_REQUESTED,
+          handler: (event) => {
+            open(event.detail.tile, event.detail.pointer)
+          }
+        },
+        {
+          type: APP_UI_TILE_INFO_DISMISSED,
+          handler: close
+        }
+      ],
+      dispose: close
+    }
+  },
+  {
+    id: 'info-popup',
+    phase: 'view',
+    consumes: [
+      APP_FACT_WORLD_READY,
+      APP_FACT_HERO_MOVED,
+      APP_FACT_ENTITY_REMOVED,
+      APP_FACT_MONSTER_COUNT_CHANGED,
+      APP_FACT_HERO_ARMY_CHANGED,
+      APP_FACT_MINE_CAPTURED,
+      APP_FACT_TOWN_CAPTURED,
+      APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_HERO_LEVELED_UP,
+      APP_UI_TILE_INFO_REQUESTED,
+      APP_UI_TILE_INFO_DISMISSED
+    ],
+    produces: []
+  }
+)
