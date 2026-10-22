@@ -557,7 +557,7 @@ Stages, one PR each, done in this order:
 - [ ] **Stage 1: town garrison holds creatures** (6.4)
   - [ ] A scenario can start a town with a garrison (`"garrison": [...]`, as a hero's army)
   - [ ] The garrison is shown in the town screen's top row, the town box (2.1) and the right-click popup
-  - [ ] The garrison stays with the town when it is captured
+  - [ ] Open question for whoever picks this up: in H3 a garrisoned town is taken only by winning a siege (5.10), which doesn't exist yet. Either allow a garrison only in the player's own towns for now, or let entering a neutral town capture it with its garrison
 - [ ] **Stage 2: weekly growth**
   - [ ] Dwellings in the data say which creature they make; horde buildings say what they add (Griffin Bastion +3)
   - [ ] Dwellings standing at the start of the game have one week of creatures
