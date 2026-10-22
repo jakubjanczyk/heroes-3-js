@@ -3,11 +3,17 @@ import { findHero, isTown } from '../../../game/domain/entity-queries.js'
 import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
+  createTownBuildings,
+  describeTownBox,
+  townBuildingsCatalogue
+} from '../../../game/heroes/town-buildings.js'
+import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
@@ -35,7 +41,9 @@ export const registerHeroPanelModule = defineModule(
     let definitions = {}
     let levelUpSkills = []
     let isHeroSelected = true
-    let townTilesById = new Map()
+    let townsById = new Map()
+    const townBuildings = createTownBuildings()
+    let selectedTown = null
 
     function selectHero() {
       if (!isHeroSelected) {
@@ -93,6 +101,24 @@ export const registerHeroPanelModule = defineModule(
       }
     }
 
+    function renderSelectedTown() {
+      if (!heroInfo || !selectedTown) {
+        return
+      }
+
+      const town = townsById.get(selectedTown.entityId)
+      heroInfo.setAttribute('aria-label', 'Town info')
+      renderTownBox(heroInfo, env.document, {
+        name: selectedTown.name,
+        ...describeTownBox({
+          catalogue: townBuildingsCatalogue(definitions, town?.type),
+          built: townBuildings.builtIn(selectedTown.entityId)
+        }),
+        // Towns have no garrison yet.
+        garrison: new Array(ARMY_SLOT_COUNT).fill(null)
+      })
+    }
+
     function renderMovementPoints() {
       if (!movementPoints) {
         return
@@ -124,9 +150,10 @@ export const registerHeroPanelModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             hero = findHero(event.detail.scenario.entities)
-            townTilesById = new Map(
-              event.detail.scenario.entities.filter(isTown).map((town) => [town.id, town.tile])
-            )
+            const towns = event.detail.scenario.entities.filter(isTown)
+            townsById = new Map(towns.map((town) => [town.id, town]))
+            townBuildings.onWorldReady(towns)
+            selectedTown = null
             heroTile = hero?.tile ?? null
             heroName = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
             definitions = event.detail.definitions
@@ -154,13 +181,16 @@ export const registerHeroPanelModule = defineModule(
           type: APP_UI_TOWN_SELECTED,
           handler: (event) => {
             isHeroSelected = false
-            if (heroInfo) {
-              heroInfo.setAttribute('aria-label', 'Town info')
-              // Towns have no garrison yet.
-              renderTownBox(heroInfo, env.document, {
-                name: event.detail.name,
-                garrison: new Array(ARMY_SLOT_COUNT).fill(null)
-              })
+            selectedTown = { entityId: event.detail.entityId, name: event.detail.name }
+            renderSelectedTown()
+          }
+        },
+        {
+          type: APP_FACT_TOWN_BUILDING_BUILT,
+          handler: (event) => {
+            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
+            if (!isHeroSelected && selectedTown?.entityId === event.detail.entityId) {
+              renderSelectedTown()
             }
           }
         },
@@ -168,7 +198,7 @@ export const registerHeroPanelModule = defineModule(
         {
           type: APP_FACT_TOWN_LEFT,
           handler: (event) => {
-            const townTile = townTilesById.get(event.detail.entityId)
+            const townTile = townsById.get(event.detail.entityId)?.tile
             if (heroTile && townTile && sameTile(heroTile, townTile)) {
               selectHero()
             }
@@ -200,6 +230,7 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_HERO_LEVELED_UP,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_TOWN_SELECTED,
+      APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TURN_ENDED,
       APP_FACT_TOWN_LEFT
     ],

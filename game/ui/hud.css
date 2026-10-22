@@ -401,14 +401,97 @@
   }
 }
 
-/* Town box, shared by the info box and the own town's right-click popup: the name over the
-   garrison's seven slots in a row. */
+/* Town box, shared by the info box and the own town's right-click popup as in Heroes 3: the
+   town's picture, its name over the Hall and Fort icons and the daily gold, then the garrison's
+   seven slots in a row. */
 .town-box {
   display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas:
+    "picture name name"
+    "picture buildings income"
+    "garrison garrison garrison";
   align-content: start;
   gap: var(--space-xs);
 
+  & .town-box__picture {
+    grid-area: picture;
+    aspect-ratio: 1;
+    border: 1px solid var(--trim-gold-dark);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 18V8h2V6h2v2h2V4h2v4h2V6h2v2h2v10z' fill='rgb(222,220,212)'/%3E%3C/svg%3E")
+      50% 70% / 80% no-repeat,
+      linear-gradient(180deg, oklch(0.6 0.1 245), oklch(0.5 0.11 135) 75%);
+  }
+
+  & .town-box__buildings {
+    grid-area: buildings;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  & .town-box__hall,
+  & .town-box__fort,
+  & .town-box__income {
+    min-block-size: 1.75rem;
+    background-color: #0d0f14;
+    border: 1px solid #2a2d36;
+  }
+
+  /* In place of the Heroes 3 pictures: the hall's roof and the fort's towers tell the level. */
+  & .town-box__hall,
+  & .town-box__fort {
+    background-position: 50% 55%;
+    background-size: auto 70%;
+    background-repeat: no-repeat;
+  }
+
+  & .town-box__hall {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(150,110,70)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__hall[data-level="2"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(196,92,60)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__hall[data-level="3"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(70,110,190)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__hall[data-level="4"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(230,190,70)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__fort {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M3 15V6h2v2h2V6h2v2h2V6h2v2h2V6h2v9z' fill='rgb(170,165,155)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__fort[data-level="0"] {
+    opacity: 0.35;
+    filter: grayscale(1);
+  }
+
+  & .town-box__fort[data-level="2"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M1 15V6h2v2h2V6h2v2h1V2h4v6h1V6h2v2h2V6h2v9z' fill='rgb(185,180,170)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__fort[data-level="3"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M1 15V3h3v3h3V5h2V1h2v4h2v1h3V3h3v12z' fill='rgb(205,200,190)'/%3E%3C/svg%3E");
+  }
+
+  & .town-box__income {
+    grid-area: income;
+    display: grid;
+    place-items: center;
+    color: var(--hud-text-gold);
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 0 black;
+  }
+
   & .town-box__name {
+    grid-area: name;
     margin: 0;
     padding: 0 var(--space-2xs);
     font-size: var(--font-size-md);
@@ -423,6 +506,7 @@
   }
 
   & .town-box__garrison {
+    grid-area: garrison;
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 2px;
@@ -778,6 +862,29 @@
     & .army-slot,
     & .army-slot:nth-child(1) {
       grid-column: auto;
+    }
+  }
+
+  /* As for the hero, no room for the picture: the name, then the icons and gold, then the garrison. */
+  .info-box.town-box {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-areas:
+      "name name"
+      "buildings income"
+      "garrison garrison";
+
+    & .town-box__picture {
+      display: none;
+    }
+
+    & .town-box__name {
+      font-size: var(--font-size-sm);
+    }
+
+    & .town-box__hall,
+    & .town-box__fort,
+    & .town-box__income {
+      min-block-size: 1.25rem;
     }
   }
 }

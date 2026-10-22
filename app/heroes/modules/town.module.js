@@ -11,6 +11,7 @@ import {
   isTownNextToWater,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
+import { dailyIncomeOfTown, sumIncomes } from '../../../game/heroes/town-income.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import { createTreasury } from '../../../game/heroes/treasury.js'
 import {
@@ -93,6 +94,22 @@ export const registerTownModule = defineModule(
       return townBuildingsCatalogue(definitions, townsById.get(townId)?.type)
     }
 
+    function incomeOf(townId) {
+      return dailyIncomeOfTown({
+        buildings: catalogueOf(townId).buildings,
+        built: townBuildings.builtIn(townId)
+      })
+    }
+
+    // Income follows from the persisted captures, buildings and turn ends, so it is not logged
+    // itself: replaying the log pays it again in the same order.
+    function collectIncome() {
+      const income = sumIncomes(ownedTowns.ids().map(incomeOf))
+      if (Object.keys(income).length > 0) {
+        emit(APP_FACT_INCOME_COLLECTED, { income }, { log: false })
+      }
+    }
+
     function build({ entityId, buildingId }) {
       const building = catalogueOf(entityId).buildings[buildingId]
       const status =
@@ -127,6 +144,7 @@ export const registerTownModule = defineModule(
           ? { name: heroName, army: getHeroArmy({ entity: hero, definitions }) }
           : null,
         ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
+        goldIncome: incomeOf(openTownId).GOLD_PILE ?? 0,
         hall: describeHall({
           catalogue: catalogueOf(openTownId),
           town: buildingsOf(openTownId),
@@ -287,7 +305,13 @@ export const registerTownModule = defineModule(
             }
           }
         },
-        { type: APP_FACT_TURN_ENDED, handler: () => townBuildings.onTurnEnded() },
+        {
+          type: APP_FACT_TURN_ENDED,
+          handler: () => {
+            townBuildings.onTurnEnded()
+            collectIncome()
+          }
+        },
         {
           type: APP_FACT_RESOURCE_COLLECTED,
           handler: (event) => treasury.add({ [event.detail.entityType]: event.detail.amount })
@@ -345,7 +369,8 @@ export const registerTownModule = defineModule(
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_OPENED,
       APP_FACT_TOWN_LEFT,
-      APP_FACT_TOWN_CAPTURED
+      APP_FACT_TOWN_CAPTURED,
+      APP_FACT_INCOME_COLLECTED
     ]
   }
 )
