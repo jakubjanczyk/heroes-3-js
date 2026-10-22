@@ -40,6 +40,14 @@ export const registerMovementModule = defineModule(
       getAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds })
     }
 
+    function planArrival(targetTile) {
+      return buildArrivalPlan({ occupancy, entityBehaviors, targetTile, movingEntityId: heroId })
+    }
+
+    function endsInAttack(path) {
+      return planArrival(path[path.length - 1])?.isAttack === true
+    }
+
     return {
       subscriptions: [
         {
@@ -69,7 +77,8 @@ export const registerMovementModule = defineModule(
                 movementRules.chargeSteps({
                   map: world.map,
                   path,
-                  remainingMovementPoints
+                  remainingMovementPoints,
+                  endsInAttack: endsInAttack(path)
                 }),
               spendMovementPoints: (amount) => {
                 emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
@@ -143,9 +152,11 @@ export const registerMovementModule = defineModule(
           type: APP_COMMAND_ROUTE_REQUESTED,
           handler: (event) => {
             const tile = event.detail?.tile
+            const path = tile ? (movement?.planRoute(tile) ?? null) : null
             emit(APP_FACT_ROUTE_PLANNED, {
               tile,
-              path: tile ? (movement?.planRoute(tile) ?? null) : null
+              path,
+              endsInAttack: path ? endsInAttack(path) : false
             })
           }
         },
@@ -157,12 +168,7 @@ export const registerMovementModule = defineModule(
             }
 
             const { targetTile, path } = event.detail
-            const arrivalPlan = buildArrivalPlan({
-              occupancy,
-              entityBehaviors,
-              targetTile,
-              movingEntityId: heroId
-            })
+            const arrivalPlan = planArrival(targetTile)
 
             isMoveCommandInProgress = true
 

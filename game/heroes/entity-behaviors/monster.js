@@ -10,6 +10,7 @@ export const monsterBehavior = Object.freeze({
     movementInteractionKind: MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
     outcomeKind: INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
     requiresSteppingIntoTarget: false,
+    isAttack: true,
     definitionsKey: 'monsters',
     defaultName: 'Monster',
     resolveArrivalOutcome({ entity, tile }) {

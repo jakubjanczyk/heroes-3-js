@@ -10,7 +10,8 @@ const ONE_POINT_PER_STEP = Object.freeze({
 
 // `stepCost({ map, from, to })` is what the route search minimises.
 // `chargeSteps({ map, path, remainingMovementPoints })` lists what each step of `path` the hero
-// can still take today costs; steps beyond it wait for another day.
+// can still take today costs; steps beyond it wait for another day. `endsInAttack` says the last
+// step attacks what stands on the last tile.
 export function resolveMovementRules(rules) {
   return {
     stepCost: rules?.stepCost ?? ONE_POINT_PER_STEP.stepCost,

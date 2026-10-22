@@ -6,7 +6,8 @@ export function countTravelDays({
   path,
   chargeSteps,
   remainingMovementPoints,
-  maxMovementPoints
+  maxMovementPoints,
+  endsInAttack = false
 }) {
   let day = 1
   let pathLeft = path
@@ -16,7 +17,8 @@ export function countTravelDays({
     const stepsTaken = chargeSteps({
       map,
       path: pathLeft,
-      remainingMovementPoints: pointsLeft
+      remainingMovementPoints: pointsLeft,
+      endsInAttack
     }).length
     if (stepsTaken === pathLeft.length - 1) {
       return day

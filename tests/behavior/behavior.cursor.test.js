@@ -34,7 +34,7 @@ import {
   aTown,
   aTreasureChest
 } from './builders.js'
-import { GRASS, ROCK, WATER } from './terrain-codes.js'
+import { GRASS, ROCK, SWAMP, WATER } from './terrain-codes.js'
 
 const gameDefinitions = {
   hero: readGameData('hero.json'),
@@ -153,6 +153,20 @@ describe('adventure map cursor behavior', () => {
     await hoverTile(user, 20, 0)
 
     expect(getMapCursor()).toBe('attack-2')
+  })
+
+  test('given a monster just out of reach of the points left when the mouse is over it then the swords show no days', async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(10)
+        .withTiles(new Array(10).fill(SWAMP))
+        .withEntities(aHero(), aMonster().at(9, 0))
+    )
+
+    // 8 swamp steps cost 1400 of 1500; the hero attacks with the 100 left.
+    await hoverTile(user, 9, 0)
+
+    expect(getMapCursor()).toBe('attack')
   })
 
   test.each([

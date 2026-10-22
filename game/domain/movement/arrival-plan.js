@@ -23,6 +23,7 @@ export function buildArrivalPlan({ occupancy, targetTile, movingEntityId, entity
   return {
     entityId: destinationEntityId,
     movementInteractionKind: interaction.movementInteractionKind,
-    stopBeforeTarget: !interaction.requiresSteppingIntoTarget
+    stopBeforeTarget: !interaction.requiresSteppingIntoTarget,
+    isAttack: interaction.isAttack === true
   }
 }
