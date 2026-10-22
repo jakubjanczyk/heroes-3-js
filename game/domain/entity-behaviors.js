@@ -9,6 +9,10 @@ export function createEntityBehaviors(behaviors = []) {
     return behaviorByKind.get(entity?.kind)?.footprintOffsets ?? []
   }
 
+  function guardsSurroundings(entity) {
+    return behaviorByKind.get(entity?.kind)?.guardsSurroundings === true
+  }
+
   function isArrivalInteractionEntity(entity) {
     return getArrivalInteraction(entity) !== null
   }
@@ -25,6 +29,7 @@ export function createEntityBehaviors(behaviors = []) {
   return Object.freeze({
     getArrivalInteraction,
     getFootprintOffsets,
+    guardsSurroundings,
     isArrivalInteractionEntity,
     resolveArrivalOutcome
   })

@@ -12,5 +12,5 @@ export const heroesTerrainTypes = deepFreeze({
   6: { name: 'rough', passable: true, movementCost: 125 },
   7: { name: 'subterranean', passable: true, movementCost: 100 },
   8: { name: 'lava', passable: true, movementCost: 100 },
-  9: { name: 'water', passable: false }
+  9: { name: 'water', passable: false, isWater: true }
 })

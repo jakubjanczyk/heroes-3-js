@@ -2,8 +2,8 @@ import { isMine } from '../../../game/domain/entity-queries.js'
 import { dailyIncomeOfMines } from '../../../game/heroes/mine-income.js'
 import {
   APP_FACT_INCOME_COLLECTED,
+  APP_FACT_INTERACTION_REACHED,
   APP_FACT_MINE_CAPTURED,
-  APP_FACT_MOVE_FINISHED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY
 } from '../../events.js'
@@ -27,9 +27,9 @@ export const registerMinesModule = defineModule(
           }
         },
         {
-          type: APP_FACT_MOVE_FINISHED,
+          type: APP_FACT_INTERACTION_REACHED,
           handler: (event) => {
-            const mine = minesById.get(event.detail.interaction?.entityId)
+            const mine = minesById.get(event.detail.entityId)
             if (!mine || ownedMineIds.has(mine.id)) {
               return
             }
@@ -67,7 +67,7 @@ export const registerMinesModule = defineModule(
     phase: 'domain',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_MOVE_FINISHED,
+      APP_FACT_INTERACTION_REACHED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_TURN_ENDED
     ],

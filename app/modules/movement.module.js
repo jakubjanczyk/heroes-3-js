@@ -1,6 +1,7 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { findHero } from '../../game/domain/entity-queries.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
+import { indexGuardedTiles } from '../../game/domain/movement/guards.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
 import { applyEntityRemoved, NO_REMOVED_ENTITIES } from '../../game/domain/removed-entities.js'
 import { getOccupantAt } from '../../game/domain/tile-occupant.js'
@@ -33,11 +34,21 @@ export const registerMovementModule = defineModule(
     let heroId = null
     let heroTile = null
     let removedIds = NO_REMOVED_ENTITIES
+    let guards = []
+    let map = null
+    let guardedTiles = indexGuardedTiles([], map)
     let remainingMovementPoints = Number.POSITIVE_INFINITY
     let isMoveCommandInProgress = false
 
     const occupancy = {
       getAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds })
+    }
+
+    function indexGuards() {
+      guardedTiles = indexGuardedTiles(
+        guards.filter((guard) => !removedIds.has(guard.id)),
+        map
+      )
     }
 
     return {
@@ -51,6 +62,9 @@ export const registerMovementModule = defineModule(
             heroId = hero?.id ?? null
             heroTile = hero?.tile ?? null
             removedIds = NO_REMOVED_ENTITIES
+            map = world.map
+            guards = world.scenario.entities.filter(entityBehaviors.guardsSurroundings)
+            indexGuards()
 
             if (!heroId) {
               movement = null
@@ -62,6 +76,7 @@ export const registerMovementModule = defineModule(
               map: world.map,
               occupancy,
               entityBehaviors,
+              getGuardsAt: (tile) => guardedTiles.getGuardsAt(tile),
               ...(movementSleep ? { sleep: movementSleep } : {}),
               stepDelayMs,
               getStepCost: (from, to) => movementRules.stepCost({ map: world.map, from, to }),
@@ -83,15 +98,18 @@ export const registerMovementModule = defineModule(
                   targetTile
                 })
               },
-              onMoveFinish: ({ hero, targetTile, reachedTile, interaction }) => {
+              onMoveFinish: ({ hero, targetTile, reachedTile, interactions }) => {
                 const detail = {
                   moved: true,
                   heroId: hero?.id,
                   targetTile,
                   reachedTile
                 }
+                // What the hero does where it stopped, and what follows once the first is over.
+                const [interaction, ...queuedInteractions] = interactions
                 if (interaction) {
                   detail.interaction = interaction
+                  detail.queuedInteractions = queuedInteractions
                 }
 
                 emit(APP_FACT_MOVE_FINISHED, detail)
@@ -123,6 +141,7 @@ export const registerMovementModule = defineModule(
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
             removedIds = applyEntityRemoved(removedIds, event.detail?.entityId)
+            indexGuards()
             // A hero lost in battle moves no more.
             if (heroId && removedIds.has(heroId)) {
               movement = null
@@ -143,9 +162,11 @@ export const registerMovementModule = defineModule(
           type: APP_COMMAND_ROUTE_REQUESTED,
           handler: (event) => {
             const tile = event.detail?.tile
+            const path = tile ? (movement?.planRoute(tile) ?? null) : null
             emit(APP_FACT_ROUTE_PLANNED, {
               tile,
-              path: tile ? (movement?.planRoute(tile) ?? null) : null
+              path,
+              pathToBattle: path ? movement.getPathToBattle(path) : null
             })
           }
         },

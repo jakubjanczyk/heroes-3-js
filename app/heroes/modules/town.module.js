@@ -22,6 +22,7 @@ import {
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_MOVED,
   APP_FACT_INCOME_COLLECTED,
+  APP_FACT_INTERACTION_REACHED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -220,9 +221,14 @@ export const registerTownModule = defineModule(
         { type: APP_FACT_MOVE_STARTED, handler: blockMap('moving') },
         {
           type: APP_FACT_MOVE_FINISHED,
-          handler: (event) => {
+          handler: () => {
             mapBlockers.delete('moving')
-            const town = townsById.get(event.detail.interaction?.entityId)
+          }
+        },
+        {
+          type: APP_FACT_INTERACTION_REACHED,
+          handler: (event) => {
+            const town = townsById.get(event.detail.entityId)
             if (town && !ownedTowns.has(town.id)) {
               emit(APP_FACT_TOWN_CAPTURED, { entityId: town.id })
             }
@@ -340,6 +346,7 @@ export const registerTownModule = defineModule(
       APP_FACT_HERO_MOVED,
       APP_FACT_MOVE_STARTED,
       APP_FACT_MOVE_FINISHED,
+      APP_FACT_INTERACTION_REACHED,
       APP_FACT_TOWN_CAPTURED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,

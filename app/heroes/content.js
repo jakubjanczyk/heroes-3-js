@@ -1,4 +1,5 @@
 import { heroesContent } from '../../game/heroes/content.js'
+import { APP_FACT_MONSTER_DEFEATED } from '../events.js'
 import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcomes.js'
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
@@ -24,6 +25,8 @@ export const heroesAppContent = Object.freeze({
   ...heroesContent,
   outcomeEffects: heroesOutcomeEffects,
   outcomeEvents: heroesOutcomeEvents,
+  // The next of the hero's queued interactions waits for the battle under way to be won.
+  queuedInteractionsResumeOn: APP_FACT_MONSTER_DEFEATED,
   entityPresentation: Object.freeze({
     getEntityStyle: getEntityLayerStyle,
     getFadeOutSpec: getEntityFadeOutSpec

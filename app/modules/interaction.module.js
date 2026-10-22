@@ -1,13 +1,23 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import {
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_INTERACTION_REACHED,
+  APP_FACT_INTERACTIONS_QUEUED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_WORLD_READY,
   APP_UI_INTERACTION_MODAL_CLOSED,
-  APP_UI_INTERACTION_MODAL_OPENED
+  APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_NOTICE_OPENED,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED
 } from '../events.js'
 import { getInteractionEffects } from './shared/interaction-outcomes.js'
 import { defineModule } from './shared/module-runtime.js'
+
+function resumeEventTypes(config) {
+  const type = config?.content?.queuedInteractionsResumeOn
+  return type ? [type] : []
+}
 
 export const registerInteractionModule = defineModule(
   ({ emit, config }) => {
@@ -18,11 +28,50 @@ export const registerInteractionModule = defineModule(
     // For a modal that asks the player to choose: what to emit for each choice, before
     // factsOnModalClosed.
     let eventsByChoice = {}
+    let queuedInteractions = []
+    let isNextInteractionDue = false
+    let openModalCount = 0
+    let isRestoring = false
 
     function emitFacts(facts) {
       for (const fact of facts ?? []) {
         emit(fact.type, fact.detail)
       }
+    }
+
+    function resolve(interaction, fallbackTile) {
+      const entity = entitiesById.get(interaction?.entityId)
+      if (!entity) {
+        return
+      }
+
+      const outcome = entityBehaviors.resolveArrivalOutcome({
+        entity,
+        definitions,
+        tile: interaction.targetTile ?? fallbackTile
+      })
+      const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects)
+      emitFacts(effects?.facts)
+
+      if (effects?.modal) {
+        factsOnModalClosed = effects.factsOnModalClosed ?? []
+        eventsByChoice = effects.eventsByChoice ?? {}
+        emit(APP_UI_INTERACTION_MODAL_OPENED, effects.modal)
+      }
+      emit(APP_FACT_INTERACTION_REACHED, { kind: interaction.kind, entityId: entity.id })
+    }
+
+    // The next queued interaction waits for every popup to close, e.g. a level-up won in the
+    // battle before it. The queue left after it is saved first, so a restore knows it happened.
+    function resolveNextWhenFree() {
+      if (!isNextInteractionDue || openModalCount > 0 || isRestoring) {
+        return
+      }
+
+      isNextInteractionDue = false
+      const [next, ...rest] = queuedInteractions
+      emit(APP_FACT_INTERACTIONS_QUEUED, { interactions: rest })
+      resolve(next)
     }
 
     return {
@@ -35,43 +84,56 @@ export const registerInteractionModule = defineModule(
             definitions = world.definitions ?? {}
             factsOnModalClosed = []
             eventsByChoice = {}
+            queuedInteractions = []
+            isNextInteractionDue = false
+            openModalCount = 0
+          }
+        },
+        { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
+        {
+          type: APP_UI_RESTORE_COMPLETED,
+          handler: () => {
+            isRestoring = false
+            resolveNextWhenFree()
           }
         },
         {
           type: APP_FACT_MOVE_FINISHED,
           handler: (event) => {
-            const interaction = event.detail.interaction
-            const entity = entitiesById.get(interaction?.entityId)
-            if (!entity) {
-              return
+            const { interaction, queuedInteractions: queued = [], targetTile } = event.detail
+            queuedInteractions = []
+            if (queued.length > 0) {
+              emit(APP_FACT_INTERACTIONS_QUEUED, { interactions: queued })
             }
-
-            const outcome = entityBehaviors.resolveArrivalOutcome({
-              entity,
-              definitions,
-              tile: interaction.targetTile ?? event.detail.targetTile
-            })
-            const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects)
-            if (!effects) {
-              return
-            }
-
-            emitFacts(effects.facts)
-
-            if (effects.modal) {
-              factsOnModalClosed = effects.factsOnModalClosed ?? []
-              eventsByChoice = effects.eventsByChoice ?? {}
-              emit(APP_UI_INTERACTION_MODAL_OPENED, effects.modal)
-            }
+            resolve(interaction, targetTile)
           }
         },
         {
+          type: APP_FACT_INTERACTIONS_QUEUED,
+          handler: (event) => {
+            queuedInteractions = [...event.detail.interactions]
+            isNextInteractionDue = false
+          }
+        },
+        // What the resume event sets off (a level-up, ...) runs first.
+        ...resumeEventTypes(config).map((type) => ({
+          type,
+          handler: () => {
+            isNextInteractionDue = queuedInteractions.length > 0
+            queueMicrotask(resolveNextWhenFree)
+          }
+        })),
+        { type: APP_UI_INTERACTION_MODAL_OPENED, handler: () => (openModalCount += 1) },
+        { type: APP_UI_NOTICE_OPENED, handler: () => (openModalCount += 1) },
+        {
           type: APP_UI_INTERACTION_MODAL_CLOSED,
           handler: (event) => {
+            openModalCount = Math.max(0, openModalCount - 1)
             const facts = [...(eventsByChoice[event.detail?.choice] ?? []), ...factsOnModalClosed]
             factsOnModalClosed = []
             eventsByChoice = {}
             emitFacts(facts)
+            resolveNextWhenFree()
           }
         }
       ]
@@ -80,10 +142,22 @@ export const registerInteractionModule = defineModule(
   {
     id: 'interaction',
     phase: 'domain',
-    consumes: [APP_FACT_WORLD_READY, APP_FACT_MOVE_FINISHED, APP_UI_INTERACTION_MODAL_CLOSED],
+    consumes: (config) => [
+      APP_FACT_WORLD_READY,
+      APP_UI_RESTORE_STARTED,
+      APP_UI_RESTORE_COMPLETED,
+      APP_FACT_MOVE_FINISHED,
+      APP_FACT_INTERACTIONS_QUEUED,
+      ...resumeEventTypes(config),
+      APP_UI_INTERACTION_MODAL_OPENED,
+      APP_UI_NOTICE_OPENED,
+      APP_UI_INTERACTION_MODAL_CLOSED
+    ],
     produces: (config) => [
       APP_UI_INTERACTION_MODAL_OPENED,
       APP_FACT_ENTITY_REMOVED,
+      APP_FACT_INTERACTIONS_QUEUED,
+      APP_FACT_INTERACTION_REACHED,
       ...(config?.content?.outcomeEvents ?? [])
     ]
   }
