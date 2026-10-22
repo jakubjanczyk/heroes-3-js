@@ -14,6 +14,7 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_TOWN_BUILDING_BUILT,
+  APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
@@ -185,6 +186,16 @@ export const registerHeroPanelModule = defineModule(
           }
         },
         {
+          type: APP_FACT_TOWN_GARRISON_CHANGED,
+          handler: (event) => {
+            const { entityId, garrison } = event.detail
+            townsById.set(entityId, { ...townsById.get(entityId), garrison })
+            if (!isHeroSelected && selectedTown?.entityId === entityId) {
+              renderSelectedTown()
+            }
+          }
+        },
+        {
           type: APP_FACT_TOWN_BUILDING_BUILT,
           handler: (event) => {
             townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
@@ -230,6 +241,7 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_TOWN_SELECTED,
       APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_TOWN_GARRISON_CHANGED,
       APP_FACT_TURN_ENDED,
       APP_FACT_TOWN_LEFT
     ],
