@@ -79,6 +79,7 @@ export function createLoadGame({
       monsters: {},
       resources: {},
       towns: {},
+      buildings: {},
       mines: {},
       ...definitions
     }
@@ -120,6 +121,8 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
     ['/game/data/resources.json', definitions.resources ?? {}],
     ['./game/data/towns.json', definitions.towns ?? {}],
     ['/game/data/towns.json', definitions.towns ?? {}],
+    ['./game/data/buildings.json', definitions.buildings ?? {}],
+    ['/game/data/buildings.json', definitions.buildings ?? {}],
     ['./game/data/mines.json', definitions.mines ?? {}],
     ['/game/data/mines.json', definitions.mines ?? {}],
     ['./assets/music/tracks.json', musicTracks],

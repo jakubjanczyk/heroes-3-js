@@ -84,6 +84,22 @@ function assertHeroPrimarySkills(scenario, primarySkills = []) {
   }
 }
 
+// A town can have the buildings every town has (buildings.json) and its town type's own
+// (`buildings` of its type in towns.json).
+function assertTownBuildings(scenario, definitions) {
+  for (const entity of scenario.entities ?? []) {
+    if (entity.kind !== 'TOWN') continue
+
+    const ownBuildings = definitions.towns?.[entity.type]?.buildings ?? {}
+    const unknownBuilding = (entity.buildings ?? []).find(
+      (buildingId) => !(definitions.buildings?.[buildingId] || ownBuildings[buildingId])
+    )
+    if (unknownBuilding) {
+      throw new Error(`Town ${entity.id} has an unknown building ${unknownBuilding}`)
+    }
+  }
+}
+
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') return url
   if (url.startsWith('//')) return url
@@ -106,15 +122,17 @@ export async function loadGame({
   const normalizedScenarioUrl = normalizeStaticUrl(scenarioUrl)
   const normalizedDataBaseUrl = normalizeStaticUrl(dataBaseUrl)
 
-  const [scenario, hero, heroClasses, monsters, resources, towns, mines] = await Promise.all([
-    fetchJson(fetch, normalizedScenarioUrl),
-    fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
-    fetchJson(fetch, `${normalizedDataBaseUrl}/hero-classes.json`),
-    fetchJson(fetch, `${normalizedDataBaseUrl}/monsters.json`),
-    fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
-    fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
-    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`)
-  ])
+  const [scenario, hero, heroClasses, monsters, resources, towns, buildings, mines] =
+    await Promise.all([
+      fetchJson(fetch, normalizedScenarioUrl),
+      fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
+      fetchJson(fetch, `${normalizedDataBaseUrl}/hero-classes.json`),
+      fetchJson(fetch, `${normalizedDataBaseUrl}/monsters.json`),
+      fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
+      fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
+      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/buildings.json`),
+      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`)
+    ])
 
   const map = createMap(scenario.terrain, terrainTypes)
   assertKnownTerrainCodes(scenario.terrain, map)
@@ -123,15 +141,8 @@ export async function loadGame({
   assertStartingResources(scenario)
   assertHeroPrimarySkills(scenario, primarySkills)
 
-  return {
-    scenario,
-    definitions: {
-      hero,
-      heroClasses,
-      monsters,
-      resources,
-      towns,
-      mines
-    }
-  }
+  const definitions = { hero, heroClasses, monsters, resources, towns, buildings, mines }
+  assertTownBuildings(scenario, definitions)
+
+  return { scenario, definitions }
 }

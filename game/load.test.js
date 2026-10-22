@@ -56,6 +56,7 @@ describe('bootstrap', () => {
       monsters: { SKELETON: { name: 'Skeleton' } },
       resources: { GOLD_PILE: { name: 'Gold Pile', amount: 100 } },
       towns: { CASTLE: { name: 'Castle' } },
+      buildings: { TAVERN: { name: 'Tavern', cost: { GOLD_PILE: 500 } } },
       mines: { GOLD_MINE: { name: 'Gold mine' } }
     }
 
@@ -66,6 +67,7 @@ describe('bootstrap', () => {
       './game/data/monsters.json': definitions.monsters,
       './game/data/resources.json': definitions.resources,
       './game/data/towns.json': definitions.towns,
+      './game/data/buildings.json': definitions.buildings,
       './game/data/mines.json': definitions.mines
     })
 
@@ -230,6 +232,29 @@ describe('bootstrap', () => {
     await expect(
       loadGame({ fetch, terrainTypes: TERRAIN_TYPES, primarySkills: PRIMARY_SKILLS })
     ).rejects.toThrow(`Hero hero must have ${skill} as a whole number of at least ${minimum}`)
+  })
+
+  test('loadGame rejects scenarios with a town building its town type does not have', async () => {
+    const fetch = createFakeFetch({
+      './scenarios/scenario.json': {
+        meta: { id: 'demo', name: 'Demo', width: 2, height: 1 },
+        terrain: { width: 2, height: 1, tiles: [0, 0] },
+        entities: [
+          { id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+          { id: 'town', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 }, buildings: ['TAVRN'] }
+        ]
+      },
+      './game/data/hero.json': { id: 'HERO', name: 'Hero' },
+      './game/data/hero-classes.json': {},
+      './game/data/monsters.json': {},
+      './game/data/resources.json': {},
+      './game/data/towns.json': { CASTLE: { name: 'Castle', buildings: {} } },
+      './game/data/buildings.json': { TAVERN: { name: 'Tavern', cost: { GOLD_PILE: 500 } } }
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Town town has an unknown building TAVRN'
+    )
   })
 })
 

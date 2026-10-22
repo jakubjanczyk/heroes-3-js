@@ -59,6 +59,10 @@ export const aTown = () =>
     },
     ownedByPlayer() {
       town.owner = 'red'
+    },
+    // Building ids, as in the town's `buildings` in game/data; the Village Hall always stands.
+    withBuildings(buildings) {
+      town.buildings = buildings
     }
   }))
 

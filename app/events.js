@@ -21,6 +21,7 @@ export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requ
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
 export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
+export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -51,6 +52,7 @@ export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
 export const APP_FACT_TOWN_OPENED = 'fact.town.opened'
 export const APP_FACT_TOWN_LEFT = 'fact.town.left'
 export const APP_FACT_TOWN_CAPTURED = 'fact.town.captured'
+export const APP_FACT_TOWN_BUILDING_BUILT = 'fact.town.building.built'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
@@ -107,6 +109,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_CAPTURED,
+  APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
