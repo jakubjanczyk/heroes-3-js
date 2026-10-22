@@ -29,12 +29,16 @@
   "CITADEL": {
     "name": "Citadel",
     "cost": { "ORE_PILE": 5, "GOLD_PILE": 2500 },
-    "requires": ["FORT"]
+    "requires": ["FORT"],
+    "upgrades": "FORT",
+    "creatureGrowthPercent": 50
   },
   "CASTLE": {
     "name": "Castle",
     "cost": { "WOOD_PILE": 10, "ORE_PILE": 10, "GOLD_PILE": 5000 },
-    "requires": ["CITADEL"]
+    "requires": ["CITADEL"],
+    "upgrades": "CITADEL",
+    "creatureGrowthPercent": 100
   },
   "TAVERN": { "name": "Tavern", "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 } },
   "MARKETPLACE": { "name": "Marketplace", "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 } },
