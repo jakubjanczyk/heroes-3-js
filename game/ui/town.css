@@ -131,6 +131,9 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .town-panel__armies {
@@ -201,6 +204,17 @@
     -1px -1px 0 black,
     1px -1px 0 black,
     -1px 1px 0 black;
+}
+
+/* As in Heroes 3, the weekly growth sits under the creature, centred. */
+.creature-growth .army-slot__creature {
+  inset: 6% 20% 32%;
+}
+
+.creature-growth .army-slot__count {
+  inset-inline: 0;
+  inset-block-end: 4%;
+  text-align: center;
 }
 
 .town-panel__side {

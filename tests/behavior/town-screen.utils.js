@@ -35,6 +35,12 @@ export function readGarrison() {
   return readArmySlots(getTownScreen(), 'Garrison')
 }
 
+// Seven slots, one per creature tier: "<creature plural> +<weekly growth>", or '' when the town
+// has no dwelling of that tier.
+export function readCreatureGrowth() {
+  return readArmySlots(getTownScreen(), 'Creature growth')
+}
+
 export function readVisitingHeroArmy() {
   return readArmySlots(getTownScreen(), 'Visiting hero army')
 }

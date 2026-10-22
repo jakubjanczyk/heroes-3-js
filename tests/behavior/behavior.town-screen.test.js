@@ -27,6 +27,7 @@ import {
   getVisitingHero,
   leaveTown,
   queryTownScreen,
+  readCreatureGrowth,
   readGarrison,
   readTownIncome,
   readTownName,
@@ -203,6 +204,107 @@ describe('town screen behavior', () => {
       await buildInTown(user, 'Town Hall')
 
       expect(readTownIncome()).toBe('1000')
+    })
+  })
+
+  describe('creatures panel', () => {
+    const enterTownWithBuildings = async (buildings) => {
+      await setupApp(aTownVisit({ town: aTown().withBuildings(buildings) }))
+      await enterTownAt(4, 3)
+    }
+
+    test('given a town with no dwellings then the panel shows seven empty creature slots', async () => {
+      await enterTownWithBuildings([])
+
+      expect(readCreatureGrowth()).toEqual(EMPTY_SLOTS)
+    })
+
+    test('given a town with a Fort and a Guardhouse then the first slot shows Pikemen growing 14 a week', async () => {
+      await enterTownWithBuildings(['FORT', 'GUARDHOUSE'])
+
+      expect(readCreatureGrowth()).toEqual(['Pikemen +14', '', '', '', '', '', ''])
+    })
+
+    test('given a town with an Upg. Guardhouse then the first slot shows Halberdiers', async () => {
+      await enterTownWithBuildings(['FORT', 'GUARDHOUSE', 'UPG_GUARDHOUSE'])
+
+      expect(readCreatureGrowth()).toEqual(['Halberdiers +14', '', '', '', '', '', ''])
+    })
+
+    test('given dwellings of tiers 1, 2 and 4 then those slots show their creatures and the others stay empty', async () => {
+      await enterTownWithBuildings([
+        'FORT',
+        'BLACKSMITH',
+        'GUARDHOUSE',
+        'ARCHERS_TOWER',
+        'BARRACKS'
+      ])
+
+      expect(readCreatureGrowth()).toEqual([
+        'Pikemen +14',
+        'Archers +9',
+        '',
+        'Swordsmen +4',
+        '',
+        '',
+        ''
+      ])
+    })
+
+    // Heroes 3: a Citadel adds half of a dwelling's growth, a Castle all of it, rounded down.
+    test.each([
+      ['Citadel', ['FORT', 'CITADEL'], 'Pikemen +21'],
+      ['Castle', ['FORT', 'CITADEL', 'CASTLE'], 'Pikemen +28']
+    ])('given a Guardhouse and a %s then Pikemen grow faster', async (_, fortChain, expected) => {
+      await enterTownWithBuildings([...fortChain, 'GUARDHOUSE'])
+
+      expect(readCreatureGrowth()[0]).toBe(expected)
+    })
+
+    test('given a Griffin Tower and a Griffin Bastion then Griffins grow 3 more a week', async () => {
+      await enterTownWithBuildings(['FORT', 'GRIFFIN_TOWER', 'GRIFFIN_BASTION'])
+
+      expect(readCreatureGrowth()[2]).toBe('Griffins +10')
+    })
+
+    // 7 from the dwelling, 7 more from the Castle and 3 from the Bastion: the Castle doubles only
+    // the dwelling's own growth, as in VCMI.
+    test('given a Griffin Tower, a Griffin Bastion and a Castle then the Bastion adds its 3 on top', async () => {
+      await enterTownWithBuildings([
+        'FORT',
+        'CITADEL',
+        'CASTLE',
+        'GRIFFIN_TOWER',
+        'GRIFFIN_BASTION'
+      ])
+
+      expect(readCreatureGrowth()[2]).toBe('Griffins +17')
+    })
+
+    test('shows Pikemen right after the player builds a Guardhouse', async () => {
+      const { user } = await setupApp(
+        aTownVisit({ town: aTown().ownedByPlayer().withBuildings(['FORT']) }).withStartingResources(
+          { ORE_PILE: 10, GOLD_PILE: 500 }
+        )
+      )
+      await enterTownAt(4, 3)
+
+      await buildInTown(user, 'Guardhouse')
+
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +14')
+    })
+
+    test('shows the higher growth right after the player builds a Citadel', async () => {
+      const { user } = await setupApp(
+        aTownVisit({
+          town: aTown().ownedByPlayer().withBuildings(['FORT', 'GUARDHOUSE'])
+        }).withStartingResources({ ORE_PILE: 5, GOLD_PILE: 2500 })
+      )
+      await enterTownAt(4, 3)
+
+      await buildInTown(user, 'Citadel')
+
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +21')
     })
   })
 

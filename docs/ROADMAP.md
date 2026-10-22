@@ -170,7 +170,7 @@ Core game loop - resources flow, time passes.
 ### 3.1 Day/Week/Month Cycle
 - [x] End turn advances day counter by 1
 - [x] Day counter persisted in event log (derived from the persisted turn number)
-- [ ] Week = 7 days. New week triggers `fact.week_started` event (for creature growth, 6.3.2)
+- [ ] Week = 7 days. New week triggers `fact.week_started` event (for creature growth, 6.3.3)
 - [ ] Month = 4 weeks (28 days). New month triggers `fact.month_started` event (same)
 - [x] "New Week" notification popup at start of each week (a new month shows the same popup; no separate month popup)
 - [x] Current date displayed in HUD: "Month: 1, Week: 2, Day: 3"
@@ -560,13 +560,14 @@ Stages, one PR each, done in this order:
 - [x] Only the player's own towns may start with a garrison for now: in H3 a garrisoned town is taken only by winning a siege (5.10), which doesn't exist yet. Neutral garrisons come with sieges (6.4)
 
 #### 6.3.2 Weekly growth
-- [ ] Dwellings in the data say which creature they make; horde buildings say what they add (Griffin Bastion +3)
-- [ ] Dwellings standing at the start of the game have one week of creatures
-- [ ] Growth at the start of each week, piling up, in neutral towns too (`fact.week_started`, 3.1)
-- [ ] Citadel +50%, Castle +100%, horde buildings' flat bonus
-- [ ] The town screen's panel shows each built tier's creature and its weekly growth (2.3)
+- [x] Dwellings in the data say which creature they make; horde buildings say what they add (Griffin Bastion +3)
+- [x] Citadel +50%, Castle +100%, horde buildings' flat bonus; see `docs/notes/2026-10-22-creature-growth.md`
+- [x] The town screen's panel shows each built tier's creature and its weekly growth (2.3)
 
 #### 6.3.3 Recruit window, opened from the panel
+- [ ] Each dwelling keeps the creatures available to buy; the recruit window is the first place the player sees that number, so it comes with this stage
+- [ ] Dwellings standing at the start of the game have one week of creatures
+- [ ] Growth at the start of each week, piling up, in neutral towns too (`fact.week_started`, 3.1)
 - [ ] Recruit window: title, Cost Per Troop, Available, Recruit, Total Cost, slider with arrows, Max, Recruit, Cancel
 - [ ] Slider starts at 1 when one can be bought and afforded, else 0; Recruit greyed out at 0
 - [ ] Upgraded dwelling: both creatures shown, upgraded one selected first, sharing the pool

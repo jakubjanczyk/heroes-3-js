@@ -25,6 +25,17 @@ export const registerTownScreenViewModule = defineModule(
       })
     }
 
+    function showCreatureGrowth(creatureGrowth) {
+      townScreen.querySelectorAll('.creature-growth').forEach((slot, index) => {
+        const tier = creatureGrowth[index]
+        slot.replaceChildren(
+          ...(tier
+            ? [renderArmyStack(document, { name: tier.name, count: `+${tier.growth}` })]
+            : [])
+        )
+      })
+    }
+
     function showVisitingHero(visitingHero) {
       const hero = townScreen.querySelector('.town-panel__hero--visiting')
       const name = visitingHero?.name ?? ''
@@ -43,7 +54,15 @@ export const registerTownScreenViewModule = defineModule(
       )
     }
 
-    function showTown({ entityId, name, garrison, visitingHero, ownedTowns, goldIncome }) {
+    function showTown({
+      entityId,
+      name,
+      garrison,
+      visitingHero,
+      ownedTowns,
+      goldIncome,
+      creatureGrowth
+    }) {
       if (!gameShell) {
         return
       }
@@ -59,6 +78,7 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelector('.town-panel__name').textContent = name
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
+      showCreatureGrowth(creatureGrowth)
       showVisitingHero(visitingHero)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
