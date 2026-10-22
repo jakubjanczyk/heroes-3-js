@@ -1,5 +1,5 @@
 import { isTown } from '../../../game/domain/entity-queries.js'
-import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
@@ -93,8 +93,7 @@ export const registerInfoPopupModule = defineModule(
           catalogue: townBuildingsCatalogue(definitions, entity.type),
           built: townBuildings.builtIn(entity.id)
         }),
-        // Towns have no garrison yet.
-        garrison: new Array(ARMY_SLOT_COUNT).fill(null)
+        garrison: getTownGarrison({ entity, definitions })
       })
       popup.appendChild(box)
     }

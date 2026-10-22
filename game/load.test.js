@@ -256,7 +256,35 @@ describe('bootstrap', () => {
       'Town town has an unknown building TAVRN'
     )
   })
+
+  test('loadGame rejects scenarios with a garrison in a town the player does not own', async () => {
+    const fetch = fakeFetchWithTown({ garrison: [{ creature: 'SKELETON', count: 5 }] })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Town town has a garrison but the player does not own it'
+    )
+  })
+
+  test('loadGame rejects scenarios with a town garrison of more than 7 stacks', async () => {
+    const fetch = fakeFetchWithTown({
+      owner: 'red',
+      garrison: new Array(8).fill({ creature: 'SKELETON', count: 5 })
+    })
+
+    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
+      'Town town must have a garrison of at most 7 stacks'
+    )
+  })
 })
+
+function fakeFetchWithTown(townFields) {
+  return fakeFetchWithScenario({
+    entities: [
+      { id: 'hero', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } },
+      { id: 'town', kind: 'TOWN', type: 'CASTLE', tile: { x: 1, y: 0 }, ...townFields }
+    ]
+  })
+}
 
 function fakeFetchWithHero(heroFields) {
   return fakeFetchWithScenario({
