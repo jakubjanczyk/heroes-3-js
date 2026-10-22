@@ -1,7 +1,7 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
-import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
 import {
   BUILDING_STATUS,
@@ -139,8 +139,7 @@ export const registerTownModule = defineModule(
       emit(APP_UI_TOWN_UPDATED, {
         entityId: openTownId,
         name: nameOf(openTownId),
-        // Towns have no garrison yet.
-        garrison: new Array(ARMY_SLOT_COUNT).fill(null),
+        garrison: getTownGarrison({ entity: town, definitions }),
         visitingHero: heroIsInTown
           ? { name: heroName, army: getHeroArmy({ entity: hero, definitions }) }
           : null,

@@ -309,6 +309,7 @@
       "type": "CASTLE",
       "name": "Whitemoon",
       "owner": "red",
+      "garrison": [{ "creature": "PIKEMAN", "count": 12 }, { "creature": "ARCHER", "count": 6 }],
       "tile": {
         "x": 10,
         "y": 10

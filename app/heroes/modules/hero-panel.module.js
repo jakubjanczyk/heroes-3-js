@@ -1,6 +1,6 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
-import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   createTownBuildings,
@@ -114,8 +114,7 @@ export const registerHeroPanelModule = defineModule(
           catalogue: townBuildingsCatalogue(definitions, town?.type),
           built: townBuildings.builtIn(selectedTown.entityId)
         }),
-        // Towns have no garrison yet.
-        garrison: new Array(ARMY_SLOT_COUNT).fill(null)
+        garrison: getTownGarrison({ entity: town, definitions })
       })
     }
 
