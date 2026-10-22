@@ -113,13 +113,13 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Entering a town opens a full-screen town view (replaces adventure map); a town open at reload is shown again
 - [x] Town background image area (faction-specific later, placeholder for now): a castle drawn in CSS
-- [ ] Building slots displayed on town background (empty/built state) (needs town buildings, 6.1)
+- [ ] Building slots displayed on town background (empty/built state) (6.3, stage 5)
 - [x] Town name in the panel as in H3: the scenario's `name` for the town, else its type's name
 - [x] Garrison bar: up to 7 creature stacks displayed (empty until towns have garrisons, 6.4)
 - [x] Visiting hero army bar below garrison (when hero is in town), the hero's portrait placeholder first
 - [x] "Exit" button (✓, Enter or Escape) returns to adventure map
 - [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
-- [ ] Creatures available for recruitment panel (its place is kept empty; needs dwellings, 6.3)
+- [ ] Creatures available for recruitment panel, with their weekly growth (6.3, stages 2 and 3)
 - [x] Hall icon in the panel opens the Hall (6.1)
 - [x] The town's daily gold in the panel
 - [ ] Hall and Fort icons showing the town's level in the panel, as the town box does (the Hall icon is always the same, the Fort's place is kept empty)
@@ -147,7 +147,7 @@ Heroes 3 lets the player open their own towns from the sidebar or the map, with 
 - [ ] Mine capture modal: show mine type, daily income, "Mine captured!" message
 - [x] Town visit: redirect to town view screen instead of modal
 - [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
-- [ ] Dwelling visit modal: show available creatures, count, cost, recruit button
+- [ ] Dwelling visit modal: show available creatures, count, cost, recruit button (reuses the recruit window, 6.3 stage 3)
 
 ### 2.5 Status Bar
 As in H3: a one-line status bar between the map and the resource bar. Text only, no icons, no amounts or income.
@@ -170,7 +170,7 @@ Core game loop - resources flow, time passes.
 ### 3.1 Day/Week/Month Cycle
 - [x] End turn advances day counter by 1
 - [x] Day counter persisted in event log (derived from the persisted turn number)
-- [ ] Week = 7 days. New week triggers `fact.week_started` event (add when something reacts to it, e.g. creature growth)
+- [ ] Week = 7 days. New week triggers `fact.week_started` event (for creature growth, 6.3 stage 2)
 - [ ] Month = 4 weeks (28 days). New month triggers `fact.month_started` event (same)
 - [x] "New Week" notification popup at start of each week (a new month shows the same popup; no separate month popup)
 - [x] Current date displayed in HUD: "Month: 1, Week: 2, Day: 3"
@@ -204,7 +204,7 @@ See `docs/notes/2026-10-22-spending-resources.md`.
 - [x] Resource costs defined as objects by resource type, as `startingResources` (`{ GOLD_PILE: 500, WOOD_PILE: 5 }`)
 - [ ] Used by:
   - [x] Town building construction
-  - [ ] Creature recruitment (6.3)
+  - [ ] Creature recruitment (6.3, stage 3)
   - [ ] Hero recruitment (4.5)
 
 ### 3.5 Starting Resources & Configuration
@@ -516,7 +516,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [x] Build button: select building, construction completes instantly; the Hall closes back to the town screen
 - [x] A scenario can start a town with buildings (`"buildings": [...]`); every town has its Village Hall
 - [x] Shipyard only in a town with water next to it; one Capitol per player
-- [ ] Built buildings visually appear on town view background
+- [ ] Built buildings visually appear on town view background (6.3, stage 5)
 - [ ] Building pictures and descriptions in the Hall and the building window
 - [ ] Building info on hover in the status bar, and on right-click (H3 shows the window without Build)
 - [ ] Other factions' buildings and Hall layouts (shared buildings are in `game/data/buildings.json`)
@@ -530,9 +530,9 @@ See `docs/notes/2026-10-21-town-buildings.md`.
   - Income: 500 / 1000 / 2000 / 4000 gold per day
   - Only one Capitol across all towns
 - [ ] **Fort** -> Citadel -> Castle
-  - Fort: basic walls in siege, +50% creature growth
-  - Citadel: moat + tower, +50% creature growth (stacks with Fort)
-  - Castle: 2 towers, +50% creature growth (stacks)
+  - Fort: basic walls in siege, no creature growth bonus; opens the Fort window (6.3, stage 4)
+  - Citadel: moat + tower, +50% creature growth
+  - Castle: 2 towers, +100% creature growth (replaces the Citadel's +50%, doesn't add to it)
 - [ ] **Tavern**: recruit heroes, +1 morale to visiting hero
 - [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count)
 - [ ] **Resource Silo**: provides +1 of a specific resource per day (faction-dependent)
@@ -542,18 +542,56 @@ See `docs/notes/2026-10-21-town-buildings.md`.
   - Higher tiers require lower tiers built first
 
 ### 6.3 Creature Dwellings in Town
-- [ ] One dwelling per creature tier (7 total per faction)
-- [ ] Dwelling produces creatures weekly (growth rate per creature type)
-- [ ] Accumulated creatures shown in town recruitment panel
-- [ ] Recruit button: spend gold (+ sometimes resources) to add creatures to garrison/hero army
-- [ ] Upgraded dwelling: unlocks upgraded creature variant, costs more to build
+How Heroes 3 does it:
+- Each dwelling makes one creature tier (7 per faction). Its upgrade makes the upgraded creature recruitable too, from the same pool.
+- Growth arrives at the start of each week (with the "New week" popup). Unbought creatures pile up from week to week, in neutral towns too, so a captured town keeps what built up.
+- A dwelling that stands at the start of the game, or has just been built, has one week of creatures to buy straight away.
+- Bonuses: Citadel +50%, Castle +100% (the Fort gives none); horde buildings add a flat number (Griffin Bastion: +3 Griffins).
+- Recruits go to the town's garrison; with no room there, to the visiting hero; with no room in either, recruiting is refused. No hero is needed, and there is no daily limit.
+- The panel (bottom left of the town screen) shows each built tier's creature with its weekly growth ("+14"), in a row of 4 and a row of 3; an unbuilt tier's slot is empty. Clicking a creature opens its recruit window.
+- The Fort window, opened from the Fort icon or the fort on the town picture, exists only once a Fort is built; its title is the fort's name (Fort, Citadel, Castle). Tiers 1-6 in two columns and tier 7 centred below: each card has the plural creature name over the dwelling's picture, the dwelling's name and "Available: N", the creature's picture, and Attack, Defense, Damage, Health, Speed and Growth. Clicking a card opens the recruit window over it; the ✓ closes it.
+- The recruit window: "Recruit <plural>" as its title; both creatures for an upgraded dwelling, the selected one framed in red and the upgraded one selected first; boxes for Cost Per Troop (a column per resource), Available, Recruit and Total Cost; a slider with arrow buttons; Max, Recruit (greyed out at 0) and Cancel. The slider starts at 1 when one can be bought and afforded, otherwise at 0.
+
+Stages, one PR each, done in this order:
+
+- [ ] **Stage 1: town garrison holds creatures** (6.4)
+  - [ ] A scenario can start a town with a garrison (`"garrison": [...]`, as a hero's army)
+  - [ ] The garrison is shown in the town screen's top row, the town box (2.1) and the right-click popup
+  - [ ] The garrison stays with the town when it is captured
+- [ ] **Stage 2: weekly growth**
+  - [ ] Dwellings in the data say which creature they make; horde buildings say what they add (Griffin Bastion +3)
+  - [ ] Dwellings standing at the start of the game have one week of creatures
+  - [ ] Growth at the start of each week, piling up, in neutral towns too (`fact.week_started`, 3.1)
+  - [ ] Citadel +50%, Castle +100%, horde buildings' flat bonus
+  - [ ] The town screen's panel shows each built tier's creature and its weekly growth (2.3)
+- [ ] **Stage 3: recruit window, opened from the panel**
+  - [ ] Recruit window: title, Cost Per Troop, Available, Recruit, Total Cost, slider with arrows, Max, Recruit, Cancel
+  - [ ] Slider starts at 1 when one can be bought and afforded, else 0; Recruit greyed out at 0
+  - [ ] Upgraded dwelling: both creatures shown, upgraded one selected first, sharing the pool
+  - [ ] Recruiting spends the resources (`fact.resources.spent`, 3.4) and lowers what is available; persisted
+  - [ ] A dwelling built today has one week of creatures straight away
+  - [ ] Recruits go to the garrison, else the visiting hero, else recruiting is refused for lack of room
+- [ ] **Stage 4: Fort window**
+  - [ ] The Fort icon opens the Fort window once a Fort is built
+  - [ ] Seven cards with the creature, dwelling, available count and stats, as above
+  - [ ] Clicking a card opens the recruit window over it; recruiting goes back to the Fort window with the new numbers
+- [ ] **Stage 5: buildings on the town picture** (6.1, 2.3)
+  - [ ] Built buildings drawn on the town picture as stand-ins; a chain shows only its highest building (Castle replaces Citadel and Fort)
+  - [ ] Hovering a building highlights it and shows its name in the status bar
+  - [ ] Clicking a dwelling opens its recruit window, the fort the Fort window, the hall the Hall
+- [ ] **Stage 6: moving creatures between garrison and visiting hero** (6.4)
+
+Later:
+- [ ] Upgrading creatures already in an army (Upg. dwelling + Hill Fort)
+- [ ] "Week of the X" (+5 growth) and plague weeks
 - [ ] External dwellings on map also produce creatures (see M7)
+- [ ] Growth from external dwellings the player owns and the Grail
 
 ### 6.4 Town Garrison
-- [ ] Town has its own garrison (7 creature stacks, independent of visiting hero)
-- [ ] Garrison defends town if attacked while no hero is present
-- [ ] Visiting hero can exchange creatures with garrison (drag-and-drop between rows)
-- [ ] Garrison shown in town view as a row of 7 slots
+- [ ] Town has its own garrison (7 creature stacks, independent of visiting hero) (6.3, stage 1)
+- [ ] Garrison defends town if attacked while no hero is present (5.10)
+- [ ] Visiting hero can exchange creatures with garrison (drag-and-drop between rows) (6.3, stage 6)
+- [ ] Garrison shown in town view as a row of 7 slots (6.3, stage 1)
 
 ### 6.5 Town Factions
 - [ ] Each faction has unique buildings, creatures, and town view
