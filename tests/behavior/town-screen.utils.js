@@ -25,6 +25,11 @@ export function readTownName() {
   return within(getTownScreen()).getByRole('heading').textContent
 }
 
+// The gold the town earns a day, as the panel shows it.
+export function readTownIncome() {
+  return within(getTownScreen()).getByLabelText('Daily income').textContent
+}
+
 // Seven slots, each "<creature> <count>" or '' when empty.
 export function readGarrison() {
   return readArmySlots(getTownScreen(), 'Garrison')

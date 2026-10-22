@@ -1,7 +1,13 @@
+import { isTown } from '../../../game/domain/entity-queries.js'
 import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getEntityName } from '../../../game/heroes/status-bar-text.js'
+import {
+  createTownBuildings,
+  describeTownBox,
+  townBuildingsCatalogue
+} from '../../../game/heroes/town-buildings.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -10,6 +16,7 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_MONSTER_COUNT_CHANGED,
+  APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
@@ -38,6 +45,7 @@ export const registerInfoPopupModule = defineModule(
     const mapObjects = createMapObjects()
     const ownedMineIds = new Set()
     const ownedTowns = createOwnedTowns()
+    const townBuildings = createTownBuildings()
 
     let definitions = {}
     let levelUpSkills = []
@@ -81,6 +89,10 @@ export const registerInfoPopupModule = defineModule(
       const box = document.createElement('div')
       renderTownBox(box, document, {
         name: getEntityName({ entity, definitions }),
+        ...describeTownBox({
+          catalogue: townBuildingsCatalogue(definitions, entity.type),
+          built: townBuildings.builtIn(entity.id)
+        }),
         // Towns have no garrison yet.
         garrison: new Array(ARMY_SLOT_COUNT).fill(null)
       })
@@ -140,6 +152,7 @@ export const registerInfoPopupModule = defineModule(
             definitions = event.detail.definitions
             ownedMineIds.clear()
             ownedTowns.onWorldReady(event.detail.scenario.entities)
+            townBuildings.onWorldReady(event.detail.scenario.entities.filter(isTown))
             levelUpSkills = []
             close()
           }
@@ -181,6 +194,12 @@ export const registerInfoPopupModule = defineModule(
           }
         },
         {
+          type: APP_FACT_TOWN_BUILDING_BUILT,
+          handler: (event) => {
+            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
+          }
+        },
+        {
           type: APP_FACT_HERO_LEVELED_UP,
           handler: (event) => {
             levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
@@ -211,6 +230,7 @@ export const registerInfoPopupModule = defineModule(
       APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_TOWN_CAPTURED,
+      APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_HERO_LEVELED_UP,
       APP_UI_TILE_INFO_REQUESTED,
       APP_UI_TILE_INFO_DISMISSED

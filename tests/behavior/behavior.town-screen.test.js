@@ -22,11 +22,13 @@ import {
 } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
+  buildInTown,
   enterTownAt,
   getVisitingHero,
   leaveTown,
   queryTownScreen,
   readGarrison,
+  readTownIncome,
   readTownName,
   readVisitingHeroArmy
 } from './town-screen.utils.js'
@@ -37,7 +39,8 @@ const gameDefinitions = {
   hero: { name: HERO_NAME },
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
-  towns: { CASTLE: { name: 'Castle' } }
+  towns: readGameData('towns.json'),
+  buildings: readGameData('buildings.json')
 }
 
 // The town's entrance is at (4, 3), its buildings cover the tiles above and beside it; the hero
@@ -170,6 +173,27 @@ describe('town screen behavior', () => {
       expect(queryTownScreen()).toBeTruthy()
       expectResourceTotal('Gold', 4000)
       expectCalendarDate({ month: 1, week: 1, day: 1 })
+    })
+
+    test("shows the town's daily income, 500 gold with its Village Hall", async () => {
+      await setupApp(aTownVisit())
+
+      await enterTownAt(4, 3)
+
+      expect(readTownIncome()).toBe('500')
+    })
+
+    test('shows the higher income right after the player builds a Town Hall', async () => {
+      const { user } = await setupApp(
+        aTownVisit({
+          town: aTown().ownedByPlayer().withBuildings(['TAVERN'])
+        }).withStartingResources({ GOLD_PILE: 2500 })
+      )
+      await enterTownAt(4, 3)
+
+      await buildInTown(user, 'Town Hall')
+
+      expect(readTownIncome()).toBe('1000')
     })
   })
 

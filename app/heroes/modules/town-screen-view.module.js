@@ -43,7 +43,7 @@ export const registerTownScreenViewModule = defineModule(
       )
     }
 
-    function showTown({ entityId, name, garrison, visitingHero, ownedTowns }) {
+    function showTown({ entityId, name, garrison, visitingHero, ownedTowns, goldIncome }) {
       if (!gameShell) {
         return
       }
@@ -57,6 +57,7 @@ export const registerTownScreenViewModule = defineModule(
       }
 
       townScreen.querySelector('.town-panel__name').textContent = name
+      townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
       showVisitingHero(visitingHero)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {

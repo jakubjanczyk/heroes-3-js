@@ -267,6 +267,15 @@
   }
 }
 
+.town-panel__income {
+  display: grid;
+  place-items: center;
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 black;
+}
+
 /* As in Heroes 3, the Hall is a window over the darkened town screen, just big enough for its rows. */
 .town-hall-backdrop {
   position: absolute;
