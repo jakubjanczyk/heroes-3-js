@@ -108,7 +108,7 @@ export const registerTownHallViewModule = defineModule(
       openBuildingId = buildingId
       if (!buildingWindow) {
         buildingWindow = cloneTemplate('building-window-template')
-        hall.append(buildingWindow)
+        hall.querySelector('.town-hall').append(buildingWindow)
       }
       renderBuildingWindow()
     }

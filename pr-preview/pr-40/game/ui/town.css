@@ -267,20 +267,32 @@
   }
 }
 
-/* As in Heroes 3, the Hall takes the whole town screen until it is closed. */
-.town-hall {
+/* As in Heroes 3, the Hall is a window over the darkened town screen, just big enough for its rows. */
+.town-hall-backdrop {
   position: absolute;
   inset: 0;
   z-index: 1;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  place-items: center;
+  padding: var(--space-xs);
+  background: rgb(0 0 0 / 0.6);
+}
+
+.town-hall {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-block-size: 100%;
+  max-inline-size: 100%;
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    0 0.5rem 1.5rem rgb(0 0 0 / 0.6);
   background:
     radial-gradient(circle at 20% 30%, rgb(255 214 160 / 0.08), transparent 30%),
     radial-gradient(circle at 75% 65%, rgb(0 0 0 / 0.25), transparent 35%),
     radial-gradient(circle at 45% 85%, rgb(255 214 160 / 0.06), transparent 30%),
     linear-gradient(160deg, #4a2c18, #2a170c 60%, #3b2414);
   border: 2px solid var(--trim-gold-dark);
-  box-shadow: inset 0 0 0 1px var(--trim-gold);
   color: var(--hud-text);
   font-family: Georgia, "Times New Roman", serif;
   text-shadow: 0 1px 0 black;
@@ -299,8 +311,8 @@
 .town-hall__rows {
   display: grid;
   align-content: space-evenly;
-  gap: var(--space-2xs);
-  padding: var(--space-2xs) var(--space-xs) 3.5rem;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md) 0;
   overflow: auto;
 }
 
@@ -308,7 +320,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-2xs) clamp(0.5rem, 3vw, 2.5rem);
+  gap: var(--space-2xs) clamp(0.5rem, 2vw, 1.5rem);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -431,9 +443,8 @@
 }
 
 .town-hall__close {
-  position: absolute;
-  inset-inline-end: var(--space-xs);
-  inset-block-end: var(--space-xs);
+  justify-self: end;
+  margin: var(--space-2xs) var(--space-xs) var(--space-xs);
 }
 
 .town-hall__check,
@@ -515,6 +526,18 @@
   /* Only the Hall icon is left, beside the town's name. */
   .town-panel__buildings {
     grid-template-columns: 1fr;
+  }
+
+  .town-hall {
+    inline-size: 100%;
+  }
+
+  .town-hall__rows {
+    padding-inline: var(--space-2xs);
+  }
+
+  .town-hall__slot {
+    inline-size: 6rem;
   }
 
   .town-panel__buildings > :not(.town-panel__hall),
