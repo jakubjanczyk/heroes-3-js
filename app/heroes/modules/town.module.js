@@ -1,5 +1,6 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
+import { describeCreatureGrowth } from '../../../game/heroes/creature-growth.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
@@ -145,6 +146,11 @@ export const registerTownModule = defineModule(
           : null,
         ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
         goldIncome: incomeOf(openTownId).GOLD_PILE ?? 0,
+        creatureGrowth: describeCreatureGrowth({
+          buildings: catalogueOf(openTownId).buildings,
+          built: townBuildings.builtIn(openTownId),
+          monsters: definitions.monsters
+        }),
         hall: describeHall({
           catalogue: catalogueOf(openTownId),
           town: buildingsOf(openTownId),

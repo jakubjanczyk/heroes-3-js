@@ -20,47 +20,60 @@
       "GRIFFIN_BASTION": {
         "name": "Griffin Bastion",
         "cost": { "GOLD_PILE": 1000 },
-        "requires": ["GRIFFIN_TOWER"]
+        "requires": ["GRIFFIN_TOWER"],
+        "horde": { "tier": 3, "amount": 3 }
       },
       "GUARDHOUSE": {
         "name": "Guardhouse",
         "cost": { "ORE_PILE": 10, "GOLD_PILE": 500 },
-        "requires": ["FORT"]
+        "requires": ["FORT"],
+        "creature": "PIKEMAN"
       },
       "UPG_GUARDHOUSE": {
         "name": "Upg. Guardhouse",
         "cost": { "ORE_PILE": 5, "GOLD_PILE": 1000 },
-        "requires": ["GUARDHOUSE"]
+        "requires": ["GUARDHOUSE"],
+        "creature": "HALBERDIER",
+        "upgrades": "GUARDHOUSE"
       },
       "ARCHERS_TOWER": {
         "name": "Archers' Tower",
         "cost": { "WOOD_PILE": 5, "ORE_PILE": 5, "GOLD_PILE": 1000 },
-        "requires": ["GUARDHOUSE"]
+        "requires": ["GUARDHOUSE"],
+        "creature": "ARCHER"
       },
       "UPG_ARCHERS_TOWER": {
         "name": "Upg. Archers' Tower",
         "cost": { "WOOD_PILE": 5, "ORE_PILE": 5, "GOLD_PILE": 1000 },
-        "requires": ["ARCHERS_TOWER"]
+        "requires": ["ARCHERS_TOWER"],
+        "creature": "MARKSMAN",
+        "upgrades": "ARCHERS_TOWER"
       },
       "GRIFFIN_TOWER": {
         "name": "Griffin Tower",
         "cost": { "ORE_PILE": 5, "GOLD_PILE": 1000 },
-        "requires": ["BARRACKS"]
+        "requires": ["BARRACKS"],
+        "creature": "GRIFFIN"
       },
       "UPG_GRIFFIN_TOWER": {
         "name": "Upg. Griffin Tower",
         "cost": { "ORE_PILE": 5, "GOLD_PILE": 1000 },
-        "requires": ["GRIFFIN_TOWER"]
+        "requires": ["GRIFFIN_TOWER"],
+        "creature": "ROYAL_GRIFFIN",
+        "upgrades": "GRIFFIN_TOWER"
       },
       "BARRACKS": {
         "name": "Barracks",
         "cost": { "ORE_PILE": 5, "GOLD_PILE": 2000 },
-        "requires": ["BLACKSMITH", "GUARDHOUSE"]
+        "requires": ["BLACKSMITH", "GUARDHOUSE"],
+        "creature": "SWORDSMAN"
       },
       "UPG_BARRACKS": {
         "name": "Upg. Barracks",
         "cost": { "ORE_PILE": 5, "CRYSTAL_PILE": 5, "GOLD_PILE": 2000 },
-        "requires": ["BARRACKS"]
+        "requires": ["BARRACKS"],
+        "creature": "CRUSADER",
+        "upgrades": "BARRACKS"
       },
       "MONASTERY": {
         "name": "Monastery",
@@ -73,7 +86,8 @@
           "GEMS_PILE": 2,
           "GOLD_PILE": 3000
         },
-        "requires": ["MAGE_GUILD_1", "BARRACKS"]
+        "requires": ["MAGE_GUILD_1", "BARRACKS"],
+        "creature": "MONK"
       },
       "UPG_MONASTERY": {
         "name": "Upg. Monastery",
@@ -86,17 +100,22 @@
           "GEMS_PILE": 2,
           "GOLD_PILE": 1000
         },
-        "requires": ["MONASTERY"]
+        "requires": ["MONASTERY"],
+        "creature": "ZEALOT",
+        "upgrades": "MONASTERY"
       },
       "TRAINING_GROUNDS": {
         "name": "Training Grounds",
         "cost": { "WOOD_PILE": 20, "GOLD_PILE": 5000 },
-        "requires": ["STABLES"]
+        "requires": ["STABLES"],
+        "creature": "CAVALIER"
       },
       "UPG_TRAINING_GROUNDS": {
         "name": "Upg. Training Grounds",
         "cost": { "WOOD_PILE": 10, "GOLD_PILE": 3000 },
-        "requires": ["TRAINING_GROUNDS"]
+        "requires": ["TRAINING_GROUNDS"],
+        "creature": "CHAMPION",
+        "upgrades": "TRAINING_GROUNDS"
       },
       "PORTAL_OF_GLORY": {
         "name": "Portal of Glory",
@@ -107,7 +126,8 @@
           "GEMS_PILE": 10,
           "GOLD_PILE": 20000
         },
-        "requires": ["MONASTERY"]
+        "requires": ["MONASTERY"],
+        "creature": "ANGEL"
       },
       "UPG_PORTAL_OF_GLORY": {
         "name": "Upg. Portal of Glory",
@@ -118,7 +138,9 @@
           "GEMS_PILE": 10,
           "GOLD_PILE": 20000
         },
-        "requires": ["PORTAL_OF_GLORY"]
+        "requires": ["PORTAL_OF_GLORY"],
+        "creature": "ARCHANGEL",
+        "upgrades": "PORTAL_OF_GLORY"
       }
     },
     "hall": [
