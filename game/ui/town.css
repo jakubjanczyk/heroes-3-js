@@ -338,7 +338,8 @@
 }
 
 .town-hall__slot--missingRequirements,
-.town-hall__slot--builtToday {
+.town-hall__slot--builtToday,
+.town-hall__slot--notEnoughResources {
   --status-color: #8e1b12;
 }
 
@@ -393,6 +394,7 @@
 .town-hall__slot--built::after,
 .town-hall__slot--missingRequirements::after,
 .town-hall__slot--builtToday::after,
+.town-hall__slot--notEnoughResources::after,
 .town-hall__slot--needsWater::after,
 .town-hall__slot--onePerPlayer::after {
   position: absolute;
@@ -411,6 +413,7 @@
 
 .town-hall__slot--missingRequirements::after,
 .town-hall__slot--builtToday::after,
+.town-hall__slot--notEnoughResources::after,
 .town-hall__slot--needsWater::after,
 .town-hall__slot--onePerPlayer::after {
   content: "✗";
@@ -505,6 +508,10 @@
   list-style: none;
   font-size: var(--font-size-sm);
   font-variant-numeric: tabular-nums;
+}
+
+.building-window__cost-item--short {
+  color: #ff4a3a;
 }
 
 .building-window__buttons {
