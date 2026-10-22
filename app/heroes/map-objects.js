@@ -5,16 +5,21 @@ import { getOccupantAt } from '../../game/domain/tile-occupant.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../game/footprint-utils.js'
 
 // Keeps track of what stands on each map tile, for views that describe a tile: the hero,
-// what is still on the map, how many creatures a monster or the hero's army has left, and every
-// tile of a mine's or town's footprint.
+// what is still on the map, how many creatures a monster or the hero's army has left, what a
+// town's garrison holds, and every tile of a mine's or town's footprint.
 export function createMapObjects() {
   let map = null
   let staticOccupancy = null
   let entitiesById = new Map()
   let removedIds = NO_REMOVED_ENTITIES
   let monsterCounts = new Map()
+  let garrisons = new Map()
   let hero = null
   let heroTile = null
+
+  function withGarrison(entity) {
+    return garrisons.has(entity?.id) ? { ...entity, garrison: garrisons.get(entity.id) } : entity
+  }
 
   return {
     onWorldReady(world) {
@@ -23,6 +28,7 @@ export function createMapObjects() {
       entitiesById = new Map(world.scenario.entities.map((entity) => [entity.id, entity]))
       removedIds = NO_REMOVED_ENTITIES
       monsterCounts = new Map()
+      garrisons = new Map()
       hero = findHero(world.scenario.entities)
       heroTile = hero.tile
     },
@@ -38,6 +44,9 @@ export function createMapObjects() {
     onMonsterCountChanged(entityId, count) {
       monsterCounts = new Map([...monsterCounts, [entityId, count]])
     },
+    onTownGarrisonChanged(entityId, garrison) {
+      garrisons = new Map([...garrisons, [entityId, garrison]])
+    },
     getEntityAt(tile) {
       if (hero && !removedIds.has(hero.id) && sameTile(tile, heroTile)) {
         return hero
@@ -49,10 +58,12 @@ export function createMapObjects() {
       }
 
       if (occupant?.kind !== FOOTPRINT_BLOCKER_KIND) {
-        return occupant
+        return withGarrison(occupant)
       }
 
-      return removedIds.has(occupant.ownerId) ? null : entitiesById.get(occupant.ownerId)
+      return removedIds.has(occupant.ownerId)
+        ? null
+        : withGarrison(entitiesById.get(occupant.ownerId))
     },
     getTerrainName(tile) {
       return map.getTerrainType(tile).name

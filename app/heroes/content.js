@@ -17,6 +17,7 @@ import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTownModule } from './modules/town.module.js'
 import { registerTownHallViewModule } from './modules/town-hall-view.module.js'
 import { registerTownListModule } from './modules/town-list.module.js'
+import { registerTownRecruitViewModule } from './modules/town-recruit-view.module.js'
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
@@ -49,6 +50,7 @@ export const heroesAppContent = Object.freeze({
     registerBattleViewModule,
     registerTownScreenViewModule,
     registerTownHallViewModule,
+    registerTownRecruitViewModule,
     registerMusicModule
   ])
 })

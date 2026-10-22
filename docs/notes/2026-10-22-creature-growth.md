@@ -17,4 +17,4 @@ Roadmap 6.3.2: the town screen's panel shows the creatures a town's dwellings ma
 
 ## Not yet
 
-- The creatures available to buy, the week of creatures a dwelling starts with, and growth piling up each week: none of it shows before the recruit window, so it comes with 6.3.3.
+- Nothing left here: the creatures available to buy and growth piling up came with the recruit window (`docs/notes/2026-10-22-creature-recruitment.md`).

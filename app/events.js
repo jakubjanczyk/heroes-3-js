@@ -22,6 +22,7 @@ export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.result
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
 export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
 export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
+export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'
@@ -57,6 +58,9 @@ export const APP_FACT_TOWN_OPENED = 'fact.town.opened'
 export const APP_FACT_TOWN_LEFT = 'fact.town.left'
 export const APP_FACT_TOWN_CAPTURED = 'fact.town.captured'
 export const APP_FACT_TOWN_BUILDING_BUILT = 'fact.town.building.built'
+// Creatures bought from a town's dwelling, leaving fewer there to buy.
+export const APP_FACT_TOWN_CREATURES_RECRUITED = 'fact.town.creatures.recruited'
+export const APP_FACT_TOWN_GARRISON_CHANGED = 'fact.town.garrison.changed'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_INCOME_COLLECTED = 'fact.income.collected'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
@@ -89,6 +93,8 @@ export const APP_UI_TOWN_UPDATED = 'ui.town.updated'
 // With a town selected instead of the hero, clicking the map does not move the hero.
 export const APP_UI_TOWN_SELECTED = 'ui.town.selected'
 export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
+// A message box over the town screen, such as there being no room in the garrison for recruits.
+export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
@@ -116,6 +122,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_BUILDING_BUILT,
+  APP_FACT_TOWN_CREATURES_RECRUITED,
+  APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TREASURE_CHEST_OPENED,

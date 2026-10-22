@@ -25,14 +25,23 @@ export const registerTownScreenViewModule = defineModule(
       })
     }
 
-    function showCreatureGrowth(creatureGrowth) {
+    // Each tier's creature and weekly growth; clicking it opens its recruit window.
+    function showCreatures(creatures) {
       townScreen.querySelectorAll('.creature-growth').forEach((slot, index) => {
-        const tier = creatureGrowth[index]
-        slot.replaceChildren(
-          ...(tier
-            ? [renderArmyStack(document, { name: tier.name, count: `+${tier.growth}` })]
-            : [])
-        )
+        const tier = creatures[index]
+        if (!tier) {
+          slot.replaceChildren()
+          return
+        }
+
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'creature-growth__recruit'
+        button.dataset.recruitTier = String(index + 1)
+        button.setAttribute('aria-label', `Recruit ${tier.name}`)
+        button.title = `Recruit ${tier.name}`
+        button.append(renderArmyStack(document, { name: tier.name, count: `+${tier.growth}` }))
+        slot.replaceChildren(button)
       })
     }
 
@@ -61,7 +70,7 @@ export const registerTownScreenViewModule = defineModule(
       visitingHero,
       ownedTowns,
       goldIncome,
-      creatureGrowth
+      creatures
     }) {
       if (!gameShell) {
         return
@@ -78,7 +87,7 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelector('.town-panel__name').textContent = name
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
-      showCreatureGrowth(creatureGrowth)
+      showCreatures(creatures)
       showVisitingHero(visitingHero)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,

@@ -24,6 +24,136 @@
   visibility: hidden;
 }
 
+/* The recruit window, as in Heroes 3: the dwelling's creatures side by side, four boxes (cost per
+   troop, available, recruit, total cost), the slider between its arrows, then Max, Recruit and
+   Cancel. */
+.recruit-window,
+.town-message {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-sm);
+  inline-size: min(30rem, calc(100% - 2rem));
+  padding: var(--space-md);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.recruit-window__title {
+  margin: 0;
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-lg);
+}
+
+.recruit-window__creatures {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.recruit-window__creature {
+  appearance: none;
+  inline-size: 5.5rem;
+  aspect-ratio: 58 / 64;
+  padding: 0;
+  border: 2px solid var(--trim-gold-dark);
+  cursor: inherit;
+
+  display: grid;
+  align-items: end;
+
+  &[aria-pressed="true"] {
+    border-color: #e0402f;
+  }
+}
+
+.recruit-window__creature-name {
+  padding: var(--space-2xs);
+  background: rgb(0 0 0 / 0.55);
+  color: white;
+  font-size: var(--font-size-xs);
+}
+
+.recruit-window__boxes {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: var(--space-xs);
+  align-items: stretch;
+}
+
+.recruit-window__box {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-inline-size: 4.5rem;
+  padding: var(--space-2xs) var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.recruit-window__label {
+  color: var(--hud-text-gold);
+  white-space: nowrap;
+}
+
+.recruit-window__cost,
+.recruit-window__total {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+}
+
+.recruit-window__slider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  inline-size: 70%;
+}
+
+.recruit-window__slider {
+  flex: 1;
+  accent-color: var(--trim-gold);
+}
+
+.recruit-window__arrow {
+  appearance: none;
+  inline-size: 1.5rem;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid var(--trim-gold-dark);
+  background: #170d06;
+  color: var(--trim-gold);
+  font-size: var(--font-size-xs);
+  cursor: inherit;
+}
+
+.recruit-window__max {
+  color: var(--trim-gold);
+  font-weight: bold;
+}
+
+.town-message-backdrop {
+  z-index: 2;
+}
+
+.town-message__text {
+  margin: 0;
+  text-align: center;
+}
+
+@media (width < 36rem) {
+  .recruit-window__boxes {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+
 @media (width < 48rem) and (orientation: portrait) {
   .game-shell:has(.town-screen) .adventure-panel {
     display: none;
@@ -215,6 +345,21 @@
   inset-inline: 0;
   inset-block-end: 4%;
   text-align: center;
+}
+
+/* The whole slot is the button that opens the creature's recruit window. */
+.creature-growth__recruit {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: inherit;
+}
+
+.creature-growth {
+  position: relative;
 }
 
 .town-panel__side {
