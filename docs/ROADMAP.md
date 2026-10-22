@@ -515,6 +515,10 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [ ] Building pictures and descriptions in the Hall and the building window
 - [ ] Building info on hover in the status bar, and on right-click (H3 shows the window without Build)
 - [ ] Other factions' buildings and Hall layouts (shared buildings are in `game/data/buildings.json`)
+- [ ] A faction can drop a shared building it doesn't have (`"SHIPYARD": null` for Inferno and Dungeon), so a scenario can't give it one
+- [ ] Buildings that upgrade themselves: a horde building (Griffin Bastion) upgrades when its dwelling is upgraded, as in VCMI's `mode: auto` (matters once buildings have effects, 6.3)
+- [ ] Unit test checking the data files: every `requires` and Hall entry names a building that exists
+- Requirements are all-of lists; VCMI's data for all eight original factions needs nothing else (no "A or B" requirements)
 
 ### 6.2 Common Buildings (all factions)
 - [ ] **Village Hall** (built-in) -> Town Hall -> City Hall -> Capitol
