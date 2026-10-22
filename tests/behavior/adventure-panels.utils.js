@@ -47,6 +47,17 @@ export function getTownInfoBox() {
   return screen.getByRole('region', { name: 'Town info' })
 }
 
+// The town box's Hall and Fort icons, by the building each shows, and the gold the town earns a day.
+export function readTownBox(container) {
+  const buildings = within(container).getByRole('group', { name: 'Buildings' })
+  return {
+    buildings: within(buildings)
+      .getAllByRole('img')
+      .map((icon) => icon.getAttribute('aria-label')),
+    income: within(container).getByLabelText('Daily income').textContent
+  }
+}
+
 export function getHeroInfoBox() {
   return screen.getByRole('region', { name: 'Hero info' })
 }

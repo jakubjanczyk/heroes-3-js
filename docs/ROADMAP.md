@@ -94,7 +94,7 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 - [x] Monster: the creature's picture (its map look until sprites), then count category and plural name, as on hover ("Pack of Skeletons"); never the exact number
 - [x] Resource: resource name only; the amount stays hidden until it is picked up
 - [x] Mine: mine name, and the owner's colour on the next line ("(Red)") once owned
-- [ ] Town: town info box (name, fort/hall level, garrison) for own towns; name only for others
+- [x] Town: town info box (picture, name, Hall and Fort icons, daily gold, garrison) for own towns; name only for others; see `docs/notes/2026-10-22-town-income.md`
   - [x] For now: the player's own town gets the town box (name and the empty garrison); other towns their name. Fort and Hall need buildings (6.2)
 - [ ] Hero: hero info box (portrait, name, primary stats A/D/P/K, morale/luck, army)
   - [x] For now: the same box as the info box (portrait initial, name, primary skills, the army with exact counts); morale/luck and spell points need later work
@@ -121,7 +121,8 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Town view has its own events (`command.town.leave.requested`, `fact.town.visited`, `fact.town.left`)
 - [ ] Creatures available for recruitment panel (its place is kept empty; needs dwellings, 6.3)
 - [x] Hall icon in the panel opens the Hall (6.1)
-- [ ] Hall and Fort icons showing the town's level, and the daily income in the panel (places kept empty; needs 6.2)
+- [x] The town's daily gold in the panel
+- [ ] Hall and Fort icons showing the town's level in the panel, as the town box does (the Hall icon is always the same, the Fort's place is kept empty)
 - [x] Town list on the panel's right side: the owned towns, the open one framed; clicking one switches to it
 - [x] Gold/resource display within town view: the resource bar and date stay under the town screen
 - [x] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
@@ -178,7 +179,7 @@ Core game loop - resources flow, time passes.
 ### 3.2 Resource Income System
 - [x] At the start of each new day (after end turn), income is calculated and applied
 - [x] Income source: owned mines (daily amounts as in H3, in `game/data/mines.json`)
-- [ ] Income source: owned towns (towns can be owned now, 2.3b; the gold comes from the Village Hall and its upgrades, 6.2)
+- [x] Income source: owned towns, from their highest hall (6.2); see `docs/notes/2026-10-22-town-income.md`
 - [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
@@ -525,7 +526,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - Requirements are all-of lists; VCMI's data for all eight original factions needs nothing else (no "A or B" requirements)
 
 ### 6.2 Common Buildings (all factions)
-- [ ] **Village Hall** (built-in) -> Town Hall -> City Hall -> Capitol
+- [x] **Village Hall** (built-in) -> Town Hall -> City Hall -> Capitol
   - Income: 500 / 1000 / 2000 / 4000 gold per day
   - Only one Capitol across all towns
 - [ ] **Fort** -> Citadel -> Castle

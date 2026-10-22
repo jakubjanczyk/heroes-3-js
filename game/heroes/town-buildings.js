@@ -1,8 +1,12 @@
 import { townBehavior } from './entity-behaviors/town.js'
+import { dailyIncomeOfTown } from './town-income.js'
 import { canAfford, isShortOf } from './treasury.js'
 
 // Every town starts with its Village Hall, as in Heroes 3.
 const STARTING_BUILDINGS = ['VILLAGE_HALL']
+// Every faction has the same halls and forts.
+const HALL_CHAIN = ['VILLAGE_HALL', 'TOWN_HALL', 'CITY_HALL', 'CAPITOL']
+const FORT_CHAIN = ['FORT', 'CITADEL', 'CASTLE']
 
 export const BUILDING_STATUS = Object.freeze({
   BUILT: 'built',
@@ -135,5 +139,20 @@ export function describeHall({ catalogue, town, builtElsewhere, resources, treas
         }
       })
     )
+  }
+}
+
+// The town box, as in Heroes 3: the town's highest hall and fort, each with its level in the
+// chain (a fort of level 0, with no name, when the town has none), and the gold it earns a day.
+export function describeTownBox({ catalogue, built }) {
+  const { buildings } = catalogue
+  const nameOf = (buildingId) => buildings[buildingId]?.name ?? buildingId
+  const hallLevel = Math.max(1, HALL_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1)
+  const fortLevel = FORT_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1
+
+  return {
+    hall: { name: nameOf(HALL_CHAIN[hallLevel - 1]), level: hallLevel },
+    fort: { name: fortLevel > 0 ? nameOf(FORT_CHAIN[fortLevel - 1]) : null, level: fortLevel },
+    goldIncome: dailyIncomeOfTown({ buildings, built }).GOLD_PILE ?? 0
   }
 }

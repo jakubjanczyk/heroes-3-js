@@ -1,20 +1,26 @@
 {
-  "VILLAGE_HALL": { "name": "Village Hall", "cost": {} },
+  "VILLAGE_HALL": { "name": "Village Hall", "cost": {}, "income": { "GOLD_PILE": 500 } },
   "TOWN_HALL": {
     "name": "Town Hall",
     "cost": { "GOLD_PILE": 2500 },
-    "requires": ["VILLAGE_HALL", "TAVERN"]
+    "requires": ["VILLAGE_HALL", "TAVERN"],
+    "upgrades": "VILLAGE_HALL",
+    "income": { "GOLD_PILE": 1000 }
   },
   "CITY_HALL": {
     "name": "City Hall",
     "cost": { "GOLD_PILE": 5000 },
-    "requires": ["TOWN_HALL", "MAGE_GUILD_1", "MARKETPLACE", "BLACKSMITH"]
+    "requires": ["TOWN_HALL", "MAGE_GUILD_1", "MARKETPLACE", "BLACKSMITH"],
+    "upgrades": "TOWN_HALL",
+    "income": { "GOLD_PILE": 2000 }
   },
   "CAPITOL": {
     "name": "Capitol",
     "cost": { "GOLD_PILE": 10000 },
     "requires": ["CITY_HALL", "CASTLE"],
-    "onePerPlayer": true
+    "onePerPlayer": true,
+    "upgrades": "CITY_HALL",
+    "income": { "GOLD_PILE": 4000 }
   },
   "FORT": {
     "name": "Fort",
