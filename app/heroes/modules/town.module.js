@@ -2,6 +2,7 @@ import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { ARMY_SLOT_COUNT, getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
 import {
   BUILDING_STATUS,
   buildingStatus,
@@ -11,6 +12,7 @@ import {
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { createTreasury } from '../../../game/heroes/treasury.js'
 import {
   APP_COMMAND_TILE_CLICKED,
   APP_COMMAND_TOWN_BUILD_REQUESTED,
@@ -18,13 +20,17 @@ import {
   APP_COMMAND_TOWN_OPEN_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_MOVED,
+  APP_FACT_INCOME_COLLECTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCES_SPENT,
   APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_VISITED,
+  APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
@@ -47,6 +53,7 @@ export const registerTownModule = defineModule(
     const mapObjects = createMapObjects()
     const ownedTowns = createOwnedTowns()
     const townBuildings = createTownBuildings()
+    const treasury = createTreasury()
     let townsById = new Map()
     let townIdsNextToWater = new Set()
     let definitions = {}
@@ -94,9 +101,16 @@ export const registerTownModule = defineModule(
           buildingId,
           building,
           town: buildingsOf(entityId),
-          builtElsewhere: builtElsewhere(entityId)
+          builtElsewhere: builtElsewhere(entityId),
+          treasury: treasury.totals()
         })
       if (ownedTowns.has(entityId) && status === BUILDING_STATUS.BUILDABLE) {
+        emit(APP_FACT_RESOURCES_SPENT, {
+          resources: { ...building.cost },
+          reason: 'town.building',
+          entityId,
+          buildingId
+        })
         emit(APP_FACT_TOWN_BUILDING_BUILT, { entityId, buildingId })
       }
     }
@@ -117,7 +131,8 @@ export const registerTownModule = defineModule(
           catalogue: catalogueOf(openTownId),
           town: buildingsOf(openTownId),
           builtElsewhere: builtElsewhere(openTownId),
-          resources: definitions.resources
+          resources: definitions.resources,
+          treasury: treasury.totals()
         })
       })
     }
@@ -162,6 +177,7 @@ export const registerTownModule = defineModule(
               towns.filter((town) => isTownNextToWater(town, event.detail.map)).map(({ id }) => id)
             )
             definitions = event.detail.definitions ?? {}
+            treasury.onWorldReady(startingResourcesOf(scenario))
             hero = findHero(scenario.entities)
             heroTile = hero?.tile ?? null
             heroName = definitions.hero?.name ?? DEFAULT_HERO_NAME
@@ -271,7 +287,23 @@ export const registerTownModule = defineModule(
             }
           }
         },
-        { type: APP_FACT_TURN_ENDED, handler: () => townBuildings.onTurnEnded() }
+        { type: APP_FACT_TURN_ENDED, handler: () => townBuildings.onTurnEnded() },
+        {
+          type: APP_FACT_RESOURCE_COLLECTED,
+          handler: (event) => treasury.add({ [event.detail.entityType]: event.detail.amount })
+        },
+        {
+          type: APP_FACT_INCOME_COLLECTED,
+          handler: (event) => treasury.add(event.detail.income)
+        },
+        {
+          type: APP_FACT_TREASURE_CHEST_OPENED,
+          handler: (event) => treasury.add(event.detail.resources)
+        },
+        {
+          type: APP_FACT_RESOURCES_SPENT,
+          handler: (event) => treasury.spend(event.detail.resources)
+        }
       ]
     }
   },
@@ -301,10 +333,15 @@ export const registerTownModule = defineModule(
       APP_FACT_TOWN_LEFT,
       APP_COMMAND_TOWN_BUILD_REQUESTED,
       APP_FACT_TOWN_BUILDING_BUILT,
-      APP_FACT_TURN_ENDED
+      APP_FACT_TURN_ENDED,
+      APP_FACT_RESOURCE_COLLECTED,
+      APP_FACT_INCOME_COLLECTED,
+      APP_FACT_TREASURE_CHEST_OPENED,
+      APP_FACT_RESOURCES_SPENT
     ],
     produces: [
       APP_UI_TOWN_UPDATED,
+      APP_FACT_RESOURCES_SPENT,
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_OPENED,
       APP_FACT_TOWN_LEFT,

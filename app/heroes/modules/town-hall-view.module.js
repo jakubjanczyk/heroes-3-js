@@ -12,7 +12,8 @@ const STATUS_TEXT = {
   missingRequirements: () => 'Requirements not met',
   builtToday: () => 'Already built here today',
   needsWater: () => 'Needs water nearby',
-  onePerPlayer: (buildingName) => `Only one ${buildingName} per player`
+  onePerPlayer: (buildingName) => `Only one ${buildingName} per player`,
+  notEnoughResources: () => 'Not enough resources'
 }
 
 function statusText(slot) {
@@ -64,6 +65,20 @@ export const registerTownHallViewModule = defineModule(
       return list
     }
 
+    // A resource the player is short of shows in red, and says so to a screen reader.
+    function renderCostItem({ resource, amount, isShort }) {
+      const item = document.createElement('li')
+      item.textContent = `${amount} ${resource}`
+      if (isShort) {
+        item.classList.add('building-window__cost-item--short')
+        const note = document.createElement('span')
+        note.className = 'visually-hidden'
+        note.textContent = ' (not enough)'
+        item.append(note)
+      }
+      return item
+    }
+
     function renderBuildingWindow() {
       const slot = town.hall.rows.flat().find(({ buildingId }) => buildingId === openBuildingId)
       if (!slot) {
@@ -74,13 +89,9 @@ export const registerTownHallViewModule = defineModule(
       buildingWindow.setAttribute('aria-label', slot.name)
       buildingWindow.querySelector('.building-window__name').textContent = slot.name
       buildingWindow.querySelector('.building-window__note').textContent = buildingNote(slot)
-      buildingWindow.querySelector('.building-window__cost').replaceChildren(
-        ...slot.cost.map(({ resource, amount }) => {
-          const item = document.createElement('li')
-          item.textContent = `${amount} ${resource}`
-          return item
-        })
-      )
+      buildingWindow
+        .querySelector('.building-window__cost')
+        .replaceChildren(...slot.cost.map(renderCostItem))
       buildingWindow.querySelector('[data-building-action="build"]').disabled =
         slot.status !== 'buildable'
     }
