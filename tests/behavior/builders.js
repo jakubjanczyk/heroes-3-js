@@ -63,6 +63,10 @@ export const aTown = () =>
     // Building ids, as in the town's `buildings` in game/data; the Village Hall always stands.
     withBuildings(buildings) {
       town.buildings = buildings
+    },
+    // Seven slots at most, as a hero's army; null leaves a slot empty.
+    withGarrison(garrison) {
+      town.garrison = garrison
     }
   }))
 

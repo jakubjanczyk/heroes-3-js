@@ -7,9 +7,17 @@ export function describeStack({ creature, count }, definitions) {
   return { creature, count, name: name ?? creature }
 }
 
-export function getHeroArmy({ entity, definitions }) {
+function describeSlots(stacks, definitions) {
   return Array.from({ length: ARMY_SLOT_COUNT }, (_, index) => {
-    const stack = entity?.army?.[index]
+    const stack = stacks?.[index]
     return stack ? describeStack(stack, definitions) : null
   })
+}
+
+export function getHeroArmy({ entity, definitions }) {
+  return describeSlots(entity?.army, definitions)
+}
+
+export function getTownGarrison({ entity, definitions }) {
+  return describeSlots(entity?.garrison, definitions)
 }

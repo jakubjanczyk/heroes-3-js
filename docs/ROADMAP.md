@@ -555,9 +555,9 @@ How Heroes 3 does it:
 Stages, one PR each, done in this order:
 
 #### 6.3.1 Town garrison holds creatures (6.4)
-- [ ] A scenario can start a town with a garrison (`"garrison": [...]`, as a hero's army)
-- [ ] The garrison is shown in the town screen's top row, the town box (2.1) and the right-click popup
-- [ ] Open question for whoever picks this up: in H3 a garrisoned town is taken only by winning a siege (5.10), which doesn't exist yet. Either allow a garrison only in the player's own towns for now, or let entering a neutral town capture it with its garrison
+- [x] A scenario can start a town with a garrison (`"garrison": [...]`, as a hero's army); see `docs/notes/2026-10-22-town-garrison.md`
+- [x] The garrison is shown in the town screen's top row, the town box (2.1) and the right-click popup
+- [x] Only the player's own towns may start with a garrison for now: in H3 a garrisoned town is taken only by winning a siege (5.10), which doesn't exist yet. Neutral garrisons come with sieges (6.4)
 
 #### 6.3.2 Weekly growth
 - [ ] Dwellings in the data say which creature they make; horde buildings say what they add (Griffin Bastion +3)
@@ -594,10 +594,11 @@ Stages, one PR each, done in this order:
 - [ ] Growth from external dwellings the player owns and the Grail
 
 ### 6.4 Town Garrison
-- [ ] Town has its own garrison (7 creature stacks, independent of visiting hero) (6.3.1)
+- [x] Town has its own garrison (7 creature stacks, independent of visiting hero) (6.3.1)
 - [ ] Garrison defends town if attacked while no hero is present (5.10)
+- [ ] A scenario can give a neutral town a garrison that defends it; capturing the town means winning that battle (5.10). Until sieges exist, only the player's own towns may start with a garrison (6.3.1)
 - [ ] Visiting hero can exchange creatures with garrison (drag-and-drop between rows) (6.3.6)
-- [ ] Garrison shown in town view as a row of 7 slots (6.3.1)
+- [x] Garrison shown in town view as a row of 7 slots (6.3.1)
 
 ### 6.5 Town Factions
 - [ ] Each faction has unique buildings, creatures, and town view

@@ -100,6 +100,21 @@ function assertTownBuildings(scenario, definitions) {
   }
 }
 
+// Until sieges exist (5.10) nothing can take a garrisoned town, so only the player's own towns
+// may start with one.
+function assertTownGarrisons(scenario) {
+  for (const entity of scenario.entities ?? []) {
+    if (entity.kind !== 'TOWN' || !entity.garrison) continue
+
+    if (!entity.owner) {
+      throw new Error(`Town ${entity.id} has a garrison but the player does not own it`)
+    }
+    if (entity.garrison.length > 7) {
+      throw new Error(`Town ${entity.id} must have a garrison of at most 7 stacks`)
+    }
+  }
+}
+
 function normalizeStaticUrl(url) {
   if (typeof url !== 'string') return url
   if (url.startsWith('//')) return url
@@ -140,6 +155,7 @@ export async function loadGame({
   assertMonsterCounts(scenario)
   assertStartingResources(scenario)
   assertHeroPrimarySkills(scenario, primarySkills)
+  assertTownGarrisons(scenario)
 
   const definitions = { hero, heroClasses, monsters, resources, towns, buildings, mines }
   assertTownBuildings(scenario, definitions)

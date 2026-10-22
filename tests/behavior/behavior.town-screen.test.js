@@ -165,6 +165,15 @@ describe('town screen behavior', () => {
       expect(readGarrison()).toEqual(EMPTY_SLOTS)
     })
 
+    test('given a town with a garrison when the hero enters it then the garrison row shows its stacks in their slots', async () => {
+      const garrison = [{ creature: 'PIKEMAN', count: 20 }, null, { creature: 'ARCHER', count: 8 }]
+      await setupApp(aTownVisit({ town: aTown().ownedByPlayer().withGarrison(garrison) }))
+
+      await enterTownAt(4, 3)
+
+      expect(readGarrison()).toEqual(['Pikemen 20', '', 'Archers 8', '', '', '', ''])
+    })
+
     test('given player has resources when the hero enters a town then the resources and the date still show along the bottom', async () => {
       await setupApp(aTownVisit().withStartingResources({ GOLD_PILE: 4000 }))
 

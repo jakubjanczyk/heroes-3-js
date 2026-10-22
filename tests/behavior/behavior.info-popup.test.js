@@ -173,14 +173,21 @@ describe('info popup behavior', () => {
       const { user } = await setupApp(
         aScenario()
           .withSize(5, 4)
-          .withEntities(aHero().at(0, 3), aTown().named('Whitemoon').ownedByPlayer().at(2, 2))
+          .withEntities(
+            aHero().at(0, 3),
+            aTown()
+              .named('Whitemoon')
+              .ownedByPlayer()
+              .withGarrison([null, { creature: 'SWORDSMAN', count: 5 }])
+              .at(2, 2)
+          )
       )
 
       await holdRightButtonOn(user, 2, 2)
 
       const popup = queryInfoPopup()
       expect(within(popup).getByRole('heading').textContent).toBe('Whitemoon')
-      expect(readArmySlots(popup, 'Garrison')).toEqual(new Array(7).fill(''))
+      expect(readArmySlots(popup, 'Garrison')).toEqual(['', 'Swordsmen 5', '', '', '', '', ''])
     })
 
     test('given an empty tile when the player holds the right button on it then the popup shows the terrain name', async () => {

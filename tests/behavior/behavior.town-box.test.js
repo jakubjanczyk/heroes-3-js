@@ -3,12 +3,18 @@ import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import { holdRightButtonOn } from './adventure-map.utils.js'
-import { getTownInfoBox, getTownInTownList, readTownBox } from './adventure-panels.utils.js'
+import {
+  getTownInfoBox,
+  getTownInTownList,
+  readArmySlots,
+  readTownBox
+} from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import { buildInTown, leaveTown } from './town-screen.utils.js'
 
 const gameDefinitions = {
+  monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json')
@@ -68,6 +74,24 @@ describe('town box behavior', () => {
     await selectTown(user, 'Whitemoon')
 
     expect(readTownBox(getTownInfoBox())).toEqual({ buildings, income })
+  })
+
+  test("shows the town's garrison in the info box", async () => {
+    const { user } = await setupApp(
+      aTownScenario(aWhitemoon().withGarrison([{ creature: 'GRIFFIN', count: 1 }]))
+    )
+
+    await selectTown(user, 'Whitemoon')
+
+    expect(readArmySlots(getTownInfoBox(), 'Garrison')).toEqual([
+      'Griffin 1',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ])
   })
 
   test("shows the hall, fort and daily income in the right-click popup of the player's own town", async () => {
