@@ -33,7 +33,6 @@ export const registerSelectionModule = defineModule(
     let requestedTile = null
     let previewPath = null
     let previewTarget = null
-    let previewEndsInAttack = false
     let isMoving = false
     let isInteractionModalOpen = false
     let isSystemOptionsOpen = false
@@ -46,12 +45,7 @@ export const registerSelectionModule = defineModule(
         return 0
       }
 
-      return movementRules.chargeSteps({
-        map,
-        path: previewPath,
-        remainingMovementPoints,
-        endsInAttack: previewEndsInAttack
-      }).length
+      return movementRules.chargeSteps({ map, path: previewPath, remainingMovementPoints }).length
     }
 
     function canMove() {
@@ -87,7 +81,6 @@ export const registerSelectionModule = defineModule(
     function resetPreview() {
       previewPath = null
       previewTarget = null
-      previewEndsInAttack = false
       emitPreview()
     }
 
@@ -150,7 +143,7 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_FACT_ROUTE_PLANNED,
           handler: (event) => {
-            const { tile, path, endsInAttack } = event.detail ?? {}
+            const { tile, path } = event.detail ?? {}
             if (!requestedTile || !sameTile(requestedTile, tile)) {
               return
             }
@@ -161,7 +154,7 @@ export const registerSelectionModule = defineModule(
               return
             }
 
-            emit(APP_FACT_PREVIEW_TARGET_SELECTED, { tile, path, endsInAttack })
+            emit(APP_FACT_PREVIEW_TARGET_SELECTED, { tile, path })
           }
         },
         {
@@ -265,7 +258,7 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_FACT_PREVIEW_TARGET_SELECTED,
           handler: (event) => {
-            const { tile, path, endsInAttack } = event.detail ?? {}
+            const { tile, path } = event.detail ?? {}
             // Saves from before routes were stored in this fact carry no path; drop those.
             if (!tile || !Array.isArray(path) || path.length < 2) {
               resetPreview()
@@ -274,7 +267,6 @@ export const registerSelectionModule = defineModule(
 
             previewTarget = tile
             previewPath = [...path]
-            previewEndsInAttack = endsInAttack === true
             emitPreview()
           }
         },

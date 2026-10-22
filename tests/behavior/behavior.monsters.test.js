@@ -149,7 +149,7 @@ describe('monster interaction behavior', () => {
     expect(getBattleScreen()).toBeTruthy()
   })
 
-  test('given remaining points fall short of the step onto a monster when player confirms then the hero attacks it with the points left', async () => {
+  test('given remaining points do not cover the step onto a monster when player confirms then hero stops next to it and the fight does not start', async () => {
     await setupMovementBehaviorApp({
       loadGameOptions: aScenario()
         .withSize(10)
@@ -158,27 +158,12 @@ describe('monster interaction behavior', () => {
         .build()
     })
 
-    // 8 swamp steps cost 1400 of 1500; the attack step from the 8th tile would cost 175.
+    // 8 swamp steps cost 1400; the attack step from the 8th tile would cost 175 more.
     confirmTileClickByDispatch(9, 0)
     await flushMicrotasks()
     await waitMs()
 
     expectHeroAt(8, 0)
-    expect(getBattleScreen()).toBeTruthy()
-    expectMovementPoints(0)
-  })
-
-  test('given hero has no points left next to a monster when player confirms then the fight does not start', async () => {
-    await setupMovementBehaviorApp({
-      loadGameOptions: aScenario().withSize(17).withEntities(aHero(), aMonster().at(16, 0)).build()
-    })
-
-    // 15 grass steps use all 1500 points, leaving the hero next to the monster.
-    confirmTileClickByDispatch(16, 0)
-    await flushMicrotasks()
-    await waitMs()
-
-    expectHeroAt(15, 0)
     expect(queryBattleScreen()).toBeNull()
     expectMonsterPresent('monster-1')
   })
