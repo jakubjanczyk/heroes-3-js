@@ -3,8 +3,15 @@ export const ARMY_SLOT_COUNT = 7
 // A creature stack with the name the game shows for its count: "Skeleton" for one, else "Skeletons".
 export function describeStack({ creature, count }, definitions) {
   const definition = definitions?.monsters?.[creature]
-  const name = count === 1 ? definition?.name : (definition?.namePlural ?? definition?.name)
-  return { creature, count, name: name ?? creature, singularName: definition?.name ?? creature }
+  const singularName = definition?.name ?? creature
+  const pluralName = definition?.namePlural ?? singularName
+  return {
+    creature,
+    count,
+    name: count === 1 ? singularName : pluralName,
+    singularName,
+    pluralName
+  }
 }
 
 function describeSlots(stacks, definitions) {

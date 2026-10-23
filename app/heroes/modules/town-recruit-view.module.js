@@ -37,7 +37,7 @@ export const registerTownRecruitViewModule = defineModule(
     }
 
     function slider() {
-      return recruitWindow.querySelector('.recruit-window__slider')
+      return recruitWindow.querySelector('.count-slider__range')
     }
 
     function renderCost(list, cost, count) {
@@ -61,14 +61,14 @@ export const registerTownRecruitViewModule = defineModule(
     function renderChoice(recruit) {
       const choice = document.createElement('button')
       choice.type = 'button'
-      choice.className = 'recruit-window__creature entity--monster'
+      choice.className = 'creature-picture recruit-window__creature entity--monster'
       choice.dataset.recruitCreature = recruit.creature
       choice.setAttribute('aria-label', recruit.name)
       choice.title = recruit.name
       choice.setAttribute('aria-pressed', String(recruit.creature === chosenCreature))
       // Until creatures have pictures, the name tells the plain and upgraded creature apart.
       const caption = document.createElement('span')
-      caption.className = 'recruit-window__creature-name'
+      caption.className = 'creature-picture__name'
       caption.textContent = recruit.name
       choice.append(caption)
       return choice
@@ -85,7 +85,7 @@ export const registerTownRecruitViewModule = defineModule(
 
       const title = `Recruit ${recruit.name}`
       recruitWindow.querySelector('.recruit-window').setAttribute('aria-label', title)
-      recruitWindow.querySelector('.recruit-window__title').textContent = title
+      recruitWindow.querySelector('.window-title').textContent = title
       recruitWindow
         .querySelector('.recruit-window__creatures')
         .replaceChildren(...tier.recruits.map(renderChoice))
