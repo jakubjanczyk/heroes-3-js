@@ -14,7 +14,10 @@ export default defineConfig({
         test: {
           name: 'behavior',
           include: ['tests/behavior/**/*.test.js'],
-          setupFiles: ['tests/behavior/fake-timers.setup.js']
+          // Test files share a worker, its loaded modules and its jsdom page instead of starting
+          // afresh, which halves the run; reset-page.setup.js keeps each test on a page of its own.
+          isolate: false,
+          setupFiles: ['tests/behavior/fake-timers.setup.js', 'tests/behavior/reset-page.setup.js']
         }
       }
     ]

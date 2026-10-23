@@ -40,3 +40,7 @@ export async function loadAppStyles() {
   style.textContent = `${BROWSER_DEFAULTS_CSS}\n${await getAppCss()}`
   document.head.appendChild(style)
 }
+
+export function unloadAppStyles() {
+  document.getElementById(STYLE_ELEMENT_ID)?.remove()
+}

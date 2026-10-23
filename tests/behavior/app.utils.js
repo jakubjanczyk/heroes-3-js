@@ -163,6 +163,15 @@ export function setViewportSize(width, height) {
   })
 }
 
+let runningApp = null
+
+// A reload or the next test leaves the page, so the app on it stops listening to the window: an
+// app left running answers every key press and pointer move of the ones started after it.
+export function stopRunningApp() {
+  runningApp?.dispose()
+  runningApp = null
+}
+
 export async function setupMovementBehaviorApp({
   loadGameOptions,
   viewportSize,
@@ -173,6 +182,7 @@ export async function setupMovementBehaviorApp({
   eventLog,
   envWindow
 } = {}) {
+  stopRunningApp()
   mountAppTemplate()
   if (viewportSize) {
     setViewportSize(viewportSize.width, viewportSize.height)
@@ -212,6 +222,7 @@ export async function setupMovementBehaviorApp({
       ...appConfig
     }
   })
+  runningApp = world
 
   return { user, world }
 }

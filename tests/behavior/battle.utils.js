@@ -78,12 +78,11 @@ export function getBattlefield() {
 // of a double-wide creature reads "<name> (back half)".
 export function readBattleStacks() {
   return within(getBattlefield())
-    .getAllByRole('gridcell')
-    .flatMap((hex) =>
-      within(hex)
-        .queryAllByRole('img')
-        .map((creature) => ({ stack: describeBattleStack(creature), ...readHexPosition(hex) }))
-    )
+    .queryAllByRole('img')
+    .map((creature) => ({
+      stack: describeBattleStack(creature),
+      ...readHexPosition(creature.closest('[role="gridcell"]'))
+    }))
 }
 
 function describeBattleStack(creature) {
