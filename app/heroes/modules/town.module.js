@@ -20,6 +20,7 @@ import {
 } from '../../../game/heroes/town-buildings.js'
 import { dailyIncomeOfTown, sumIncomes } from '../../../game/heroes/town-income.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { describeTownPicture } from '../../../game/heroes/town-picture.js'
 import { createTreasury } from '../../../game/heroes/treasury.js'
 import {
   APP_COMMAND_TILE_CLICKED,
@@ -236,6 +237,11 @@ export const registerTownModule = defineModule(
           built: townBuildings.builtIn(openTownId),
           monsters: definitions.monsters,
           available: availableByTown.get(openTownId) ?? []
+        }),
+        picture: describeTownPicture({
+          ...catalogueOf(openTownId),
+          built: townBuildings.builtIn(openTownId),
+          monsters: definitions.monsters
         }),
         hall: describeHall({
           catalogue: catalogueOf(openTownId),

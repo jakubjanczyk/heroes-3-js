@@ -167,6 +167,43 @@
         ["TRAINING_GROUNDS", "UPG_TRAINING_GROUNDS"],
         ["PORTAL_OF_GLORY", "UPG_PORTAL_OF_GLORY"]
       ]
-    ]
+    ],
+    "picture": {
+      "VILLAGE_HALL": { "x": 58, "y": 150, "z": 1 },
+      "TOWN_HALL": { "x": 58, "y": 150, "z": 1 },
+      "CITY_HALL": { "x": 58, "y": 150, "z": 1 },
+      "CAPITOL": { "x": 58, "y": 150, "z": 1 },
+      "FORT": { "x": 590, "y": 30, "z": -5 },
+      "CITADEL": { "x": 590, "y": 30, "z": -5 },
+      "CASTLE": { "x": 590, "y": 30, "z": -5 },
+      "TAVERN": { "x": 0, "y": 250, "z": 3 },
+      "BROTHERHOOD_OF_THE_SWORD": { "x": 0, "y": 180, "z": 2 },
+      "BLACKSMITH": { "x": 228, "y": 262, "z": 3 },
+      "MARKETPLACE": { "x": 410, "y": 282, "z": 3 },
+      "RESOURCE_SILO": { "x": 528, "y": 228, "z": 0 },
+      "MAGE_GUILD_1": { "x": 716, "y": 120, "z": 1 },
+      "MAGE_GUILD_2": { "x": 716, "y": 120, "z": 1 },
+      "MAGE_GUILD_3": { "x": 716, "y": 120, "z": 1 },
+      "MAGE_GUILD_4": { "x": 716, "y": 120, "z": 1 },
+      "MAGE_GUILD_5": { "x": 716, "y": 120, "z": 1 },
+      "SHIPYARD": { "x": 478, "y": 178, "z": -3 },
+      "LIGHTHOUSE": { "x": 556, "y": 96, "z": -4 },
+      "STABLES": { "x": 410, "y": 200, "z": 0 },
+      "GRIFFIN_BASTION": { "x": 66, "y": 118, "z": -1 },
+      "GUARDHOUSE": { "x": 300, "y": 88, "z": -2 },
+      "UPG_GUARDHOUSE": { "x": 300, "y": 88, "z": -2 },
+      "ARCHERS_TOWER": { "x": 368, "y": 104, "z": -1 },
+      "UPG_ARCHERS_TOWER": { "x": 368, "y": 104, "z": -1 },
+      "GRIFFIN_TOWER": { "x": 80, "y": 30, "z": -2 },
+      "UPG_GRIFFIN_TOWER": { "x": 80, "y": 30, "z": -2 },
+      "BARRACKS": { "x": 222, "y": 92, "z": -2 },
+      "UPG_BARRACKS": { "x": 222, "y": 92, "z": -2 },
+      "MONASTERY": { "x": 594, "y": 182, "z": 0 },
+      "UPG_MONASTERY": { "x": 594, "y": 182, "z": 0 },
+      "TRAINING_GROUNDS": { "x": 196, "y": 196, "z": 0 },
+      "UPG_TRAINING_GROUNDS": { "x": 196, "y": 196, "z": 0 },
+      "PORTAL_OF_GLORY": { "x": 380, "y": 4, "z": -3 },
+      "UPG_PORTAL_OF_GLORY": { "x": 380, "y": 4, "z": -3 }
+    }
   }
 }

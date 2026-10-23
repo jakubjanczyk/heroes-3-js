@@ -15,7 +15,7 @@ function keyName(key) {
 // Space and Enter already press a focused button.
 const pressesFocusedButton = (event) =>
   (event.key === ' ' || event.key === 'Enter') &&
-  Boolean(event.target?.closest?.('button, input, select, textarea, a[href]'))
+  Boolean(event.target?.closest?.('button, [role="button"], input, select, textarea, a[href]'))
 
 // A key presses the enabled button listing it in `aria-keyshortcuts` on the top screen: the last
 // open dialog, else the adventure panel. So a shortcut works exactly when a click would.
