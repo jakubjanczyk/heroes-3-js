@@ -241,14 +241,14 @@
     </template>
 
     <!--
-      Laid out as in Heroes 3. The Hall icon opens the Hall; the Fort icon, shown once the town has a
-      Fort, opens the Fort window; the last frame shows the gold the town earns a day.
+      Laid out as in Heroes 3. The picture shows the town's buildings, drawn by town-screen-view; the
+      status bar under the panel names the one under the mouse. The Hall icon opens the Hall; the Fort
+      icon, shown once the town has a Fort, opens the Fort window; the last frame shows the gold the
+      town earns a day.
     -->
     <template id="town-screen-template">
       <section class="town-screen" role="dialog" aria-modal="true" aria-label="Town">
-        <div class="town-screen__view" aria-hidden="true">
-          <div class="town-screen__castle"></div>
-        </div>
+        <div class="town-screen__view" role="group" aria-label="Town picture"></div>
         <div class="town-panel">
           <div class="town-panel__summary">
             <div class="town-panel__picture" aria-hidden="true"></div>
@@ -304,6 +304,7 @@
             </button>
           </div>
         </div>
+        <div class="town-screen__status-bar" role="status" aria-label="Town status bar"></div>
       </section>
     </template>
 

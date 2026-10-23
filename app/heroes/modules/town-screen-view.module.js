@@ -7,10 +7,23 @@ import {
   APP_UI_TOWN_UPDATED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { CASTLE_BUILDING_ART, castleBackgroundArt } from '../presentation/castle-town-art.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
 import { renderTownList } from '../presentation/town-list.js'
 
 const NO_ARMY = []
+const SVG_NS = 'http://www.w3.org/2000/svg'
+// The size of a Heroes 3 town picture, which the town's `picture` data places buildings on.
+const PICTURE_VIEW_BOX = '0 0 800 374'
+
+// For a building the art has no drawing of yet.
+function placeholderArt() {
+  return '<rect width="40" height="40" fill="#e6e2d6" stroke="#2a221c"/>'
+}
+
+function buildingAt(target) {
+  return target?.closest?.('.town-building') ?? null
+}
 
 export const registerTownScreenViewModule = defineModule(
   ({ emit, env }) => {
@@ -54,6 +67,45 @@ export const registerTownScreenViewModule = defineModule(
       icon.dataset.level = String(fort?.level ?? 0)
     }
 
+    function createPicture() {
+      const picture = document.createElementNS(SVG_NS, 'svg')
+      picture.setAttribute('class', 'town-screen__picture')
+      picture.setAttribute('viewBox', PICTURE_VIEW_BOX)
+      picture.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+      picture.innerHTML = `<g aria-hidden="true">${castleBackgroundArt()}</g><g class="town-screen__buildings"></g>`
+      return picture
+    }
+
+    // What a building opens is marked as on the panel's buttons, so the Hall, Fort and recruit
+    // windows open from the picture as from the panel.
+    function renderBuilding({ buildingId, name, x, y, action }) {
+      const building = document.createElementNS(SVG_NS, 'g')
+      building.setAttribute('class', 'town-building')
+      building.setAttribute('role', 'button')
+      building.setAttribute('tabindex', '0')
+      building.setAttribute('aria-label', name)
+      building.setAttribute('transform', `translate(${x} ${y})`)
+      if (action?.opens === 'recruit') {
+        building.setAttribute('data-recruit-tier', String(action.tier))
+      } else if (action) {
+        building.setAttribute('data-town-action', action.opens)
+      }
+      building.innerHTML = (CASTLE_BUILDING_ART[buildingId] ?? placeholderArt)()
+      return building
+    }
+
+    function showPicture(picture) {
+      const view = townScreen.querySelector('.town-screen__view')
+      if (!view.firstElementChild) {
+        view.append(createPicture())
+      }
+      view.querySelector('.town-screen__buildings').replaceChildren(...picture.map(renderBuilding))
+    }
+
+    function showStatus(text) {
+      townScreen.querySelector('.town-screen__status-bar').textContent = text
+    }
+
     function showVisitingHero(visitingHero) {
       const hero = townScreen.querySelector('.town-panel__hero--visiting')
       const name = visitingHero?.name ?? ''
@@ -80,7 +132,8 @@ export const registerTownScreenViewModule = defineModule(
       ownedTowns,
       goldIncome,
       creatures,
-      fort
+      fort,
+      picture
     }) {
       if (!gameShell) {
         return
@@ -97,6 +150,7 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelector('.town-panel__name').textContent = name
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
+      showPicture(picture)
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
@@ -122,6 +176,47 @@ export const registerTownScreenViewModule = defineModule(
         { type: APP_FACT_TOWN_LEFT, handler: closeTown }
       ],
       domSubscriptions: [
+        {
+          target: gameShell,
+          type: 'mouseover',
+          handler: (event) => {
+            if (townScreen?.contains(event.target)) {
+              showStatus(buildingAt(event.target)?.getAttribute('aria-label') ?? '')
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'mouseout',
+          handler: (event) => {
+            const building = buildingAt(event.target)
+            if (building && buildingAt(event.relatedTarget) !== building) {
+              showStatus('')
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'focusin',
+          handler: (event) => {
+            const building = buildingAt(event.target)
+            if (building && townScreen?.contains(building)) {
+              showStatus(building.getAttribute('aria-label'))
+            }
+          }
+        },
+        {
+          // The buildings are SVG, which Enter and Space don't press as they do a button.
+          target: gameShell,
+          type: 'keydown',
+          handler: (event) => {
+            const building = buildingAt(event.target)
+            if (building && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault()
+              building.dispatchEvent(new env.window.MouseEvent('click', { bubbles: true }))
+            }
+          }
+        },
         {
           target: gameShell,
           type: 'click',

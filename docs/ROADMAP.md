@@ -112,8 +112,8 @@ As in H3, the popup is shown only while the right mouse button is held down and 
 ### 2.3 Town View Screen
 See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Entering a town opens a full-screen town view (replaces adventure map); a town open at reload is shown again
-- [x] Town background image area (faction-specific later, placeholder for now): a castle drawn in CSS
-- [ ] Building slots displayed on town background (empty/built state) (6.3.5)
+- [x] Town background image area (faction-specific later, placeholder for now): the Castle's land and sky drawn in SVG
+- [x] The buildings standing drawn on the town picture, as SVG stand-ins laid out after the H3 Castle (6.3.5)
 - [x] Town name in the panel as in H3: the scenario's `name` for the town, else its type's name
 - [x] Garrison bar: up to 7 creature stacks displayed (empty until towns have garrisons, 6.4)
 - [x] Visiting hero army bar below garrison (when hero is in town), the hero's portrait placeholder first
@@ -517,9 +517,10 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [x] Build button: select building, construction completes instantly; the Hall closes back to the town screen
 - [x] A scenario can start a town with buildings (`"buildings": [...]`); every town has its Village Hall
 - [x] Shipyard only in a town with water next to it; one Capitol per player
-- [ ] Built buildings visually appear on town view background (6.3.5)
+- [x] Built buildings visually appear on town view background (6.3.5); see `docs/notes/2026-10-23-town-picture.md`
 - [ ] Building pictures and descriptions in the Hall and the building window
-- [ ] Building info on hover in the status bar, and on right-click (H3 shows the window without Build)
+- [x] Building name on hover in the town screen's status bar (6.3.5)
+- [ ] Right-clicking a building on the town picture shows its info: picture, name and description (H3 shows the building window without Build)
 - [ ] Other factions' buildings and Hall layouts (shared buildings are in `game/data/buildings.json`)
 - [ ] A faction can drop a shared building it doesn't have (`"SHIPYARD": null` for Inferno and Dungeon), so a scenario can't give it one
 - [ ] Buildings that upgrade themselves: a horde building (Griffin Bastion) upgrades when its dwelling is upgraded, as in VCMI's `mode: auto` (matters once buildings have effects, 6.3)
@@ -585,9 +586,12 @@ Stages, one PR each, done in this order:
 - [x] Clicking a card opens the recruit window over it; recruiting goes back to the Fort window with the new numbers
 
 #### 6.3.5 Buildings on the town picture (6.1, 2.3)
-- [ ] Built buildings drawn on the town picture as stand-ins; a chain shows only its highest building (Castle replaces Citadel and Fort)
-- [ ] Hovering a building highlights it and shows its name in the status bar
-- [ ] Clicking a dwelling opens its recruit window, the fort the Fort window, the hall the Hall
+- [x] Built buildings drawn on the town picture as stand-ins; a chain shows only its highest building (Castle replaces Citadel and Fort); see `docs/notes/2026-10-23-town-picture.md`
+- [x] Hovering a building highlights it and shows its name in the status bar
+- [x] Clicking a dwelling opens its recruit window, the fort the Fort window, the hall the Hall
+- [ ] Clicking the other buildings opens their screens as they come: Tavern (4.5), Marketplace and Resource Silo, Mage Guild (4.8), Blacksmith, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
+- [ ] Right-click info on a building (6.1)
+- [ ] A building just built fades in, as in H3
 
 #### 6.3.6 Moving creatures between garrison and visiting hero (6.4)
 - [ ] Swap, merge and split stacks between the garrison row and the visiting hero row
