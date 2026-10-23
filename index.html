@@ -251,7 +251,8 @@
 
     <!--
       Laid out as in Heroes 3. The picture shows the town's buildings, drawn by town-screen-view; the
-      status bar under the panel names the one under the mouse. The Hall icon opens the Hall; the Fort
+      status bar under the panel names what is under the mouse (a building, a panel icon
+      or creature, an army slot's action). The Hall icon opens the Hall; the Fort
       icon, shown once the town has a Fort, opens the Fort window; the last frame shows the gold the
       town earns a day.
     -->
@@ -283,7 +284,7 @@
           <div class="town-panel__armies">
             <div class="town-panel__row">
               <div class="town-panel__hero" aria-hidden="true"></div>
-              <ul class="town-panel__slots" aria-label="Garrison">
+              <ul class="town-panel__slots" aria-label="Garrison" data-army="garrison">
                 <li class="army-slot"></li>
                 <li class="army-slot"></li>
                 <li class="army-slot"></li>
@@ -295,7 +296,7 @@
             </div>
             <div class="town-panel__row">
               <div class="town-panel__hero town-panel__hero--visiting" role="img"></div>
-              <ul class="town-panel__slots" aria-label="Visiting hero army">
+              <ul class="town-panel__slots" aria-label="Visiting hero army" data-army="hero">
                 <li class="army-slot"></li>
                 <li class="army-slot"></li>
                 <li class="army-slot"></li>
@@ -308,7 +309,7 @@
           </div>
           <div class="town-panel__side">
             <ul class="town-panel__town-list" aria-label="Towns"></ul>
-            <button class="town-panel__leave" type="button" data-town-action="leave" aria-label="Leave town" aria-keyshortcuts="Enter Escape" title="Leave town (Enter)">
+            <button class="town-panel__leave" type="button" data-town-action="leave" data-status="Leave town" aria-label="Leave town" aria-keyshortcuts="Enter Escape" title="Leave town (Enter)">
               <svg class="town-panel__leave-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
           </div>

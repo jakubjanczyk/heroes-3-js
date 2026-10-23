@@ -1,5 +1,6 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
+import { moveStack } from '../../../game/heroes/army-exchange.js'
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import {
   addToGarrison,
@@ -15,6 +16,7 @@ import {
   buildingStatus,
   createTownBuildings,
   describeHall,
+  describeTownBox,
   isTownNextToWater,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
@@ -28,6 +30,7 @@ import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
   APP_COMMAND_TOWN_RECRUIT_REQUESTED,
+  APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_MOVED,
   APP_FACT_INCOME_COLLECTED,
@@ -219,18 +222,47 @@ export const registerTownModule = defineModule(
       }
     }
 
+    function isHeroIn(townId) {
+      return Boolean(hero && heroTile && sameTile(heroTile, townsById.get(townId).tile))
+    }
+
+    // Between the open town's garrison and its visiting hero, or within either.
+    function moveStackInTown({ from, to }) {
+      if (!openTownId) {
+        return
+      }
+
+      const armies = { garrison: garrisons.get(openTownId) }
+      if (isHeroIn(openTownId)) {
+        armies.hero = hero.army
+      }
+      const moved = moveStack(armies, from, to)
+      if (!moved) {
+        return
+      }
+
+      if (moved.hero !== armies.hero) {
+        emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army: moved.hero })
+      }
+      if (moved.garrison !== armies.garrison) {
+        emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId: openTownId, garrison: moved.garrison })
+      }
+    }
+
     function showTown() {
-      const town = townsById.get(openTownId)
-      const heroIsInTown = hero && heroTile && sameTile(heroTile, town.tile)
       emit(APP_UI_TOWN_UPDATED, {
         entityId: openTownId,
         name: nameOf(openTownId),
         garrison: getTownGarrison({ entity: { garrison: garrisons.get(openTownId) }, definitions }),
-        visitingHero: heroIsInTown
+        visitingHero: isHeroIn(openTownId)
           ? { name: heroName, army: getHeroArmy({ entity: hero, definitions }) }
           : null,
         ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
         goldIncome: incomeOf(openTownId).GOLD_PILE ?? 0,
+        hallName: describeTownBox({
+          catalogue: catalogueOf(openTownId),
+          built: townBuildings.builtIn(openTownId)
+        }).hall.name,
         creatures: creaturesOf(openTownId),
         fort: describeFort({
           buildings: catalogueOf(openTownId).buildings,
@@ -313,6 +345,9 @@ export const registerTownModule = defineModule(
           type: APP_FACT_HERO_ARMY_CHANGED,
           handler: (event) => {
             hero = { ...hero, army: event.detail.army }
+            if (openTownId) {
+              showTown()
+            }
           }
         },
         {
@@ -408,6 +443,10 @@ export const registerTownModule = defineModule(
         { type: APP_COMMAND_TOWN_BUILD_REQUESTED, handler: (event) => build(event.detail) },
         { type: APP_COMMAND_TOWN_RECRUIT_REQUESTED, handler: (event) => recruit(event.detail) },
         {
+          type: APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
+          handler: (event) => moveStackInTown(event.detail)
+        },
+        {
           type: APP_FACT_TOWN_CREATURES_RECRUITED,
           handler: (event) => {
             const { entityId, tier, count } = event.detail
@@ -492,6 +531,7 @@ export const registerTownModule = defineModule(
       APP_FACT_TOWN_LEFT,
       APP_COMMAND_TOWN_BUILD_REQUESTED,
       APP_COMMAND_TOWN_RECRUIT_REQUESTED,
+      APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_CREATURES_RECRUITED,
       APP_FACT_TOWN_GARRISON_CHANGED,
@@ -503,6 +543,7 @@ export const registerTownModule = defineModule(
     ],
     produces: [
       APP_UI_TOWN_UPDATED,
+      APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_RESOURCES_SPENT,
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_CREATURES_RECRUITED,
