@@ -148,11 +148,26 @@ export function describeTownBox({ catalogue, built }) {
   const { buildings } = catalogue
   const nameOf = (buildingId) => buildings[buildingId]?.name ?? buildingId
   const hallLevel = Math.max(1, HALL_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1)
-  const fortLevel = FORT_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1
 
   return {
     hall: { name: nameOf(HALL_CHAIN[hallLevel - 1]), level: hallLevel },
-    fort: { name: fortLevel > 0 ? nameOf(FORT_CHAIN[fortLevel - 1]) : null, level: fortLevel },
+    fort: { name: fortNameOf({ buildings, built }), level: fortLevelOf(built) },
     goldIncome: dailyIncomeOfTown({ buildings, built }).GOLD_PILE ?? 0
   }
+}
+
+// 1 for a Fort, 2 for a Citadel, 3 for a Castle, 0 for none.
+export function fortLevelOf(built) {
+  return FORT_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1
+}
+
+// The town's highest fort: Fort, Citadel or Castle; null when it has none.
+export function fortNameOf({ buildings, built }) {
+  const fortLevel = fortLevelOf(built)
+  if (fortLevel === 0) {
+    return null
+  }
+
+  const buildingId = FORT_CHAIN[fortLevel - 1]
+  return buildings[buildingId]?.name ?? buildingId
 }

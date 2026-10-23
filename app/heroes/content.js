@@ -15,6 +15,7 @@ import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTownModule } from './modules/town.module.js'
+import { registerTownFortViewModule } from './modules/town-fort-view.module.js'
 import { registerTownHallViewModule } from './modules/town-hall-view.module.js'
 import { registerTownListModule } from './modules/town-list.module.js'
 import { registerTownRecruitViewModule } from './modules/town-recruit-view.module.js'
@@ -50,6 +51,7 @@ export const heroesAppContent = Object.freeze({
     registerBattleViewModule,
     registerTownScreenViewModule,
     registerTownHallViewModule,
+    registerTownFortViewModule,
     registerTownRecruitViewModule,
     registerMusicModule
   ])

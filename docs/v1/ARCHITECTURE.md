@@ -213,6 +213,7 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | `battle-view` | heroes | view | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.battle.updated`, `fact.battle.ended` | `command.battle.autoCombat.requested`, `command.battle.resultsClose.requested`, `command.battle.retreat.requested`, `command.battle.stackAttack.requested`, `command.battle.stackDefend.requested`, `command.battle.stackMove.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
 | `town-screen-view` | heroes | view | `ui.town.updated`, `fact.town.left` | `command.town.leave.requested`, `command.town.open.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
 | `town-hall-view` | heroes | view | `ui.town.updated`, `fact.town.building.built`, `fact.town.left` | `command.town.build.requested` |
+| `town-fort-view` | heroes | view | `ui.town.updated`, `fact.town.left` | none |
 | `town-recruit-view` | heroes | view | `ui.town.updated`, `fact.town.creatures.recruited`, `ui.town.message.opened`, `fact.town.left` | `command.town.recruit.requested` |
 | `music` | heroes | view | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` |
 <!-- module-contracts:end -->
