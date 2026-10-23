@@ -299,6 +299,9 @@
             </div>
           </div>
           <div class="town-panel__side">
+            <button class="town-panel__split" type="button" data-status="Split" aria-label="Split" aria-pressed="false" title="Split" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 V12 M12 12 L5 5 M12 12 L19 5 M5 5 h4 M5 5 v4 M19 5 h-4 M19 5 v4" /></svg>
+            </button>
             <ul class="town-panel__town-list" aria-label="Towns"></ul>
             <button class="town-panel__leave" type="button" data-town-action="leave" data-status="Leave town" aria-label="Leave town" aria-keyshortcuts="Enter Escape" title="Leave town (Enter)">
               <svg class="town-panel__leave-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
@@ -391,7 +394,7 @@
     <template id="recruit-window-template">
       <div class="town-hall-backdrop">
         <section class="recruit-window message-box" role="dialog" aria-modal="true" tabindex="-1">
-          <h3 class="recruit-window__title"></h3>
+          <h3 class="window-title"></h3>
           <div class="recruit-window__creatures" role="group" aria-label="Creatures"></div>
           <div class="recruit-window__boxes">
             <div class="recruit-window__box">
@@ -411,10 +414,10 @@
               <ul class="recruit-window__total" aria-label="Total cost"></ul>
             </div>
           </div>
-          <div class="recruit-window__slider-row">
-            <button class="recruit-window__arrow" type="button" data-recruit-action="fewer" aria-label="Fewer" title="Fewer">&#9664;</button>
-            <input class="recruit-window__slider" type="range" min="0" max="0" step="1" value="0" aria-label="Number to recruit" />
-            <button class="recruit-window__arrow" type="button" data-recruit-action="more" aria-label="More" title="More">&#9654;</button>
+          <div class="count-slider">
+            <button class="count-slider__arrow" type="button" data-recruit-action="fewer" aria-label="Fewer" title="Fewer">&#9664;</button>
+            <input class="count-slider__range" type="range" min="0" max="0" step="1" value="0" aria-label="Number to recruit" />
+            <button class="count-slider__arrow" type="button" data-recruit-action="more" aria-label="More" title="More">&#9654;</button>
           </div>
           <div class="building-window__buttons">
             <button class="building-window__button recruit-window__max" type="button" data-recruit-action="max" aria-label="Max" title="Max">Max</button>
@@ -422,6 +425,39 @@
               <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
             <button class="building-window__button" type="button" data-recruit-action="cancel" aria-label="Cancel" aria-keyshortcuts="Escape" title="Cancel (Escape)">
+              <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <!--
+      The split window, as in Heroes 3: the creature twice, a slider sharing the creatures between
+      the framed stack (left) and the clicked slot (right), and a box for each count to type in.
+    -->
+    <template id="split-window-template">
+      <div class="town-hall-backdrop">
+        <section class="split-window message-box" role="dialog" aria-modal="true" tabindex="-1">
+          <h3 class="window-title"></h3>
+          <div class="split-window__creatures" aria-hidden="true">
+            <div class="creature-picture entity--monster"><span class="creature-picture__name"></span></div>
+            <div class="creature-picture entity--monster"><span class="creature-picture__name"></span></div>
+          </div>
+          <div class="count-slider split-window__slider">
+            <button class="count-slider__arrow" type="button" data-split-action="fewer" aria-label="Fewer" title="Fewer">&#9664;</button>
+            <input class="count-slider__range" type="range" min="0" max="0" step="1" value="0" aria-label="Split" />
+            <button class="count-slider__arrow" type="button" data-split-action="more" aria-label="More" title="More">&#9654;</button>
+          </div>
+          <div class="split-window__counts">
+            <input class="split-window__count" type="text" inputmode="numeric" autocomplete="off" data-split-side="left" aria-label="Left stack" />
+            <input class="split-window__count" type="text" inputmode="numeric" autocomplete="off" data-split-side="right" aria-label="Right stack" />
+          </div>
+          <div class="split-window__buttons">
+            <button class="building-window__button" type="button" data-split-action="split" aria-label="OK" aria-keyshortcuts="Enter" title="OK (Enter)">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+            <button class="building-window__button" type="button" data-split-action="cancel" aria-label="Cancel" aria-keyshortcuts="Escape" title="Cancel (Escape)">
               <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
             </button>
           </div>

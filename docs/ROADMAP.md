@@ -252,7 +252,7 @@ Heroes become characters with identity and progression.
 - [x] Army displayed in the info box and the hero's right-click popup (7 slots, creature picture + exact count per slot; the map look until creature portraits)
 - [ ] Click on stack to see creature details (stats, abilities)
 - [ ] Drag-and-drop to reorder stacks within hero army
-- [ ] Split stack: divide one stack into two (right-click > split)
+- [ ] Split stack: divide one stack into two (in town: 6.3.6; the hero screen and army exchange still to come)
 - [ ] Merge stacks: drag same creature type together to combine
 - [ ] Army strength estimate (sum of AI values) shown in hero info
 
@@ -596,9 +596,9 @@ Stages, one PR each, done in this order:
 
 #### 6.3.6 Moving creatures between garrison and visiting hero (6.4)
 - [x] Click a stack, then a slot: it moves onto an empty slot, merges into the same creature, swaps with another; between the rows or within one; see `docs/notes/2026-10-23-garrison-exchange.md`
-- [x] The hero's army is never left empty: its last stack can only swap
+- [x] The hero's army is never left empty: its last stack moved to the garrison leaves one creature behind, and merged into the same creature there opens the split window
 - [x] Hovering a slot says what a click does in the status bar, in H3's words ("Select Pikeman (in garrison)", "Exchange Pikeman with Archer", "Move Pikeman")
-- [ ] Split a stack (Shift+click onto an empty slot or a stack of the same creature, then pick the counts)
+- [x] Split a stack (Shift+click, or the Split button, onto an empty slot or a stack of the same creature, then pick the counts); see `docs/notes/2026-10-23-stack-splitting.md`
 
 #### 6.3 later
 - [ ] Upgrading creatures already in an army (Upg. dwelling + Hill Fort)

@@ -1,6 +1,6 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { findHero, isTown } from '../../../game/domain/entity-queries.js'
-import { moveStack } from '../../../game/heroes/army-exchange.js'
+import { moveStack, splitStack } from '../../../game/heroes/army-exchange.js'
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import {
   addToGarrison,
@@ -31,6 +31,7 @@ import {
   APP_COMMAND_TOWN_OPEN_REQUESTED,
   APP_COMMAND_TOWN_RECRUIT_REQUESTED,
   APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
+  APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_MOVED,
   APP_FACT_INCOME_COLLECTED,
@@ -226,8 +227,9 @@ export const registerTownModule = defineModule(
       return Boolean(hero && heroTile && sameTile(heroTile, townsById.get(townId).tile))
     }
 
-    // Between the open town's garrison and its visiting hero, or within either.
-    function moveStackInTown({ from, to }) {
+    // Between the open town's garrison and its visiting hero, or within either. `rearrange` is the
+    // army-exchange rule applied to the armies, returning them changed or null.
+    function rearrangeArmiesInTown(rearrange) {
       if (!openTownId) {
         return
       }
@@ -236,16 +238,16 @@ export const registerTownModule = defineModule(
       if (isHeroIn(openTownId)) {
         armies.hero = hero.army
       }
-      const moved = moveStack(armies, from, to)
-      if (!moved) {
+      const changed = rearrange(armies)
+      if (!changed) {
         return
       }
 
-      if (moved.hero !== armies.hero) {
-        emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army: moved.hero })
+      if (changed.hero !== armies.hero) {
+        emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army: changed.hero })
       }
-      if (moved.garrison !== armies.garrison) {
-        emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId: openTownId, garrison: moved.garrison })
+      if (changed.garrison !== armies.garrison) {
+        emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId: openTownId, garrison: changed.garrison })
       }
     }
 
@@ -444,7 +446,13 @@ export const registerTownModule = defineModule(
         { type: APP_COMMAND_TOWN_RECRUIT_REQUESTED, handler: (event) => recruit(event.detail) },
         {
           type: APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
-          handler: (event) => moveStackInTown(event.detail)
+          handler: ({ detail: { from, to } }) =>
+            rearrangeArmiesInTown((armies) => moveStack(armies, from, to))
+        },
+        {
+          type: APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
+          handler: ({ detail: { from, to, count } }) =>
+            rearrangeArmiesInTown((armies) => splitStack(armies, from, to, count))
         },
         {
           type: APP_FACT_TOWN_CREATURES_RECRUITED,
@@ -532,6 +540,7 @@ export const registerTownModule = defineModule(
       APP_COMMAND_TOWN_BUILD_REQUESTED,
       APP_COMMAND_TOWN_RECRUIT_REQUESTED,
       APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
+      APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_CREATURES_RECRUITED,
       APP_FACT_TOWN_GARRISON_CHANGED,
