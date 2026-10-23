@@ -1,0 +1,91 @@
+.app {
+  min-block-size: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--shell-padding);
+}
+
+/*
+ * The Heroes 3 adventure screen: map on the left with the status bar under it, the panel on the
+ * right, resources along the bottom.
+ */
+.game-shell {
+  inline-size: min(100%, 112rem);
+  block-size: calc(100dvh - (2 * var(--shell-padding)));
+  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--adventure-panel-width);
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "map panel"
+    "status panel"
+    "resources resources";
+}
+
+.adventure-frame {
+  grid-area: map;
+  min-inline-size: 0;
+  min-block-size: 0;
+  display: grid;
+}
+
+.viewport {
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: clip;
+  background: black;
+  isolation: isolate;
+  /* A long press opens the info popup, not the browser's callout or a text selection. */
+  -webkit-touch-callout: none;
+  user-select: none;
+  /* A tap places the move marker; the browser's tap highlight would flash the whole map. */
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-viewport-visibility="hidden"] {
+    visibility: hidden;
+  }
+
+  &[data-restoring="true"] {
+    & .entity--hero,
+    & .world {
+      transition: none;
+    }
+  }
+}
+
+.world {
+  position: absolute;
+  inset: 0;
+
+  &[data-follow-hero="true"] {
+    transition: transform var(--camera-step-duration, var(--duration-medium)) linear;
+    will-change: transform;
+  }
+}
+
+.ui-layer {
+  grid-area: panel;
+  min-inline-size: 0;
+  min-block-size: 0;
+  pointer-events: auto;
+  container: sidebar / inline-size;
+}
+
+@media (width < 48rem), (height < 32rem) {
+  .app {
+    --shell-padding: 0.25rem;
+  }
+}
+
+@media (width < 48rem) and (orientation: portrait) {
+  .game-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
+    grid-template-areas:
+      "map"
+      "status"
+      "resources"
+      "panel";
+  }
+}
