@@ -4,7 +4,7 @@ export const ARMY_SLOT_COUNT = 7
 export function describeStack({ creature, count }, definitions) {
   const definition = definitions?.monsters?.[creature]
   const name = count === 1 ? definition?.name : (definition?.namePlural ?? definition?.name)
-  return { creature, count, name: name ?? creature }
+  return { creature, count, name: name ?? creature, singularName: definition?.name ?? creature }
 }
 
 function describeSlots(stacks, definitions) {

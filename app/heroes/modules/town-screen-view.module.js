@@ -1,6 +1,9 @@
+import { describeSlotHover } from '../../../game/heroes/army-exchange.js'
+import { describeAvailableCreatures } from '../../../game/heroes/creature-recruitment.js'
 import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
+  APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
   APP_FACT_TOWN_LEFT,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -25,11 +28,30 @@ function buildingAt(target) {
   return target?.closest?.('.town-building') ?? null
 }
 
+// The panel's icons, buttons and creatures, which name themselves in the status bar.
+function statusSourceAt(target) {
+  return target?.closest?.('[data-status]') ?? null
+}
+
+function armySlotAt(target) {
+  return target?.closest?.('.town-panel__slots > .army-slot') ?? null
+}
+
+function slotPosition(slot) {
+  const list = slot.parentElement
+  return { army: list.dataset.army, slot: [...list.children].indexOf(slot) }
+}
+
 export const registerTownScreenViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let townScreen = null
+    // The garrison or visiting hero stack framed for moving, as `{ army, slot }`.
+    let selectedStack = null
+    let hoveredSlot = null
+    // The stacks shown, by army, for the status bar's texts; no `hero` without a visiting hero.
+    let armies = {}
 
     function fillSlots(list, army) {
       list.querySelectorAll('.army-slot').forEach((slot, index) => {
@@ -43,10 +65,12 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelectorAll('.creature-growth').forEach((slot, index) => {
         const tier = creatures[index]
         if (!tier) {
+          slot.removeAttribute('data-status')
           slot.replaceChildren()
           return
         }
 
+        slot.dataset.status = describeAvailableCreatures(tier)
         const button = document.createElement('button')
         button.type = 'button'
         button.className = 'creature-growth__recruit'
@@ -64,6 +88,7 @@ export const registerTownScreenViewModule = defineModule(
       icon.hidden = !fort
       icon.setAttribute('aria-label', fort?.name ?? '')
       icon.title = fort?.name ?? ''
+      icon.dataset.status = fort?.name ?? ''
       icon.dataset.level = String(fort?.level ?? 0)
     }
 
@@ -102,6 +127,45 @@ export const registerTownScreenViewModule = defineModule(
       view.querySelector('.town-screen__buildings').replaceChildren(...picture.map(renderBuilding))
     }
 
+    function selectStack(stack) {
+      selectedStack = stack
+      for (const list of townScreen.querySelectorAll('.town-panel__slots')) {
+        for (const [index, slot] of [...list.children].entries()) {
+          if (list.dataset.army === stack?.army && index === stack?.slot) {
+            slot.setAttribute('aria-current', 'true')
+          } else {
+            slot.removeAttribute('aria-current')
+          }
+        }
+      }
+      if (hoveredSlot) {
+        showSlotStatus(hoveredSlot)
+      }
+    }
+
+    function showSlotStatus(slot) {
+      hoveredSlot = slot
+      showStatus(describeSlotHover(armies, selectedStack, slotPosition(slot)))
+    }
+
+    // As in Heroes 3: the first click frames a stack, the second moves it onto the clicked slot
+    // (or unframes it, clicked again). A move the town refuses leaves the stack framed.
+    function clickArmySlot(slot) {
+      const clicked = slotPosition(slot)
+      if (!selectedStack) {
+        if (slot.querySelector('.army-slot__creature')) {
+          selectStack(clicked)
+        }
+        return
+      }
+
+      if (selectedStack.army === clicked.army && selectedStack.slot === clicked.slot) {
+        selectStack(null)
+        return
+      }
+      emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, { from: selectedStack, to: clicked })
+    }
+
     function showStatus(text) {
       townScreen.querySelector('.town-screen__status-bar').textContent = text
     }
@@ -112,9 +176,11 @@ export const registerTownScreenViewModule = defineModule(
       if (name) {
         hero.setAttribute('role', 'img')
         hero.setAttribute('aria-label', name)
+        hero.dataset.status = name
       } else {
         hero.removeAttribute('role')
         hero.removeAttribute('aria-label')
+        hero.removeAttribute('data-status')
       }
       hero.title = name
       hero.textContent = name.charAt(0)
@@ -131,6 +197,7 @@ export const registerTownScreenViewModule = defineModule(
       visitingHero,
       ownedTowns,
       goldIncome,
+      hallName,
       creatures,
       fort,
       picture
@@ -149,15 +216,21 @@ export const registerTownScreenViewModule = defineModule(
 
       townScreen.querySelector('.town-panel__name').textContent = name
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
+      townScreen.querySelector('.town-panel__hall').dataset.status = hallName
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
       showPicture(picture)
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
+      armies = visitingHero ? { garrison, hero: visitingHero.army } : { garrison }
+      selectStack(null)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
         selectedTownId: entityId
       })
+      for (const town of townScreen.querySelectorAll('.town-list__town')) {
+        town.dataset.status = town.getAttribute('aria-label')
+      }
     }
 
     function closeTown() {
@@ -167,6 +240,8 @@ export const registerTownScreenViewModule = defineModule(
 
       townScreen.remove()
       townScreen = null
+      selectedStack = null
+      hoveredSlot = null
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -180,9 +255,17 @@ export const registerTownScreenViewModule = defineModule(
           target: gameShell,
           type: 'mouseover',
           handler: (event) => {
-            if (townScreen?.contains(event.target)) {
-              showStatus(buildingAt(event.target)?.getAttribute('aria-label') ?? '')
+            if (!townScreen?.contains(event.target)) {
+              return
             }
+
+            const slot = armySlotAt(event.target)
+            if (slot) {
+              showSlotStatus(slot)
+              return
+            }
+            const named = buildingAt(event.target)?.getAttribute('aria-label')
+            showStatus(named ?? statusSourceAt(event.target)?.dataset.status ?? '')
           }
         },
         {
@@ -191,6 +274,15 @@ export const registerTownScreenViewModule = defineModule(
           handler: (event) => {
             const building = buildingAt(event.target)
             if (building && buildingAt(event.relatedTarget) !== building) {
+              showStatus('')
+            }
+            const slot = armySlotAt(event.target)
+            if (slot && armySlotAt(event.relatedTarget) !== slot) {
+              hoveredSlot = null
+              showStatus('')
+            }
+            const source = statusSourceAt(event.target)
+            if (source && statusSourceAt(event.relatedTarget) !== source) {
               showStatus('')
             }
           }
@@ -231,6 +323,12 @@ export const registerTownScreenViewModule = defineModule(
               return
             }
 
+            const armySlot = armySlotAt(event.target)
+            if (armySlot) {
+              clickArmySlot(armySlot)
+              return
+            }
+
             const town = event.target.closest('.town-list__town')
             if (town) {
               emit(APP_COMMAND_TOWN_OPEN_REQUESTED, { entityId: town.dataset.entityId })
@@ -251,6 +349,7 @@ export const registerTownScreenViewModule = defineModule(
     produces: [
       APP_COMMAND_TOWN_LEAVE_REQUESTED,
       APP_COMMAND_TOWN_OPEN_REQUESTED,
+      APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED
     ]

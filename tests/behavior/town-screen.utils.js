@@ -366,3 +366,60 @@ export async function clickBuildingOnPicture(user, buildingName) {
 export function readTownStatusBar() {
   return within(getTownScreen()).getByRole('status', { name: 'Town status bar' }).textContent
 }
+
+function getArmySlotInTown(listName, slot) {
+  const army = within(getTownScreen()).getByRole('list', { name: listName })
+  return within(army).getAllByRole('listitem')[slot - 1]
+}
+
+// Slots count from 1, as the player sees them from the left.
+export async function clickGarrisonSlot(user, slot) {
+  await user.click(getArmySlotInTown('Garrison', slot))
+  await flushMicrotasks()
+}
+
+export async function clickVisitingHeroSlot(user, slot) {
+  await user.click(getArmySlotInTown('Visiting hero army', slot))
+  await flushMicrotasks()
+}
+
+// The framed stack, as "<row> <slot>" ("Garrison 2"), or null when none is.
+export function readSelectedStack() {
+  const selected = ['Garrison', 'Visiting hero army'].flatMap((listName) => {
+    const slots = within(getTownScreen()).getByRole('list', { name: listName }).children
+    const index = [...slots].findIndex((slot) => slot.getAttribute('aria-current') === 'true')
+    return index >= 0 ? [`${listName} ${index + 1}`] : []
+  })
+  return selected[0] ?? null
+}
+
+export async function hoverGarrisonSlot(user, slot) {
+  await user.hover(getArmySlotInTown('Garrison', slot))
+}
+
+export async function hoverVisitingHeroSlot(user, slot) {
+  await user.hover(getArmySlotInTown('Visiting hero army', slot))
+}
+
+export async function unhoverGarrisonSlot(user, slot) {
+  await user.unhover(getArmySlotInTown('Garrison', slot))
+}
+
+export function getHallIcon() {
+  return within(getTownScreen()).getByRole('button', { name: 'Hall' })
+}
+
+export function getLeaveTownButton() {
+  return within(getTownScreen()).getByRole('button', { name: 'Leave town' })
+}
+
+// The creature panel's slot for a tier, 1 to 7.
+export function getCreatureSlot(tier) {
+  return within(getCreatureGrowthPanel()).getAllByRole('listitem')[tier - 1]
+}
+
+// The frame left of the visiting hero's army, with the hero's portrait or empty without a hero.
+export function getVisitingHeroFrame() {
+  return within(getTownScreen()).getByRole('list', { name: 'Visiting hero army' })
+    .previousElementSibling
+}
