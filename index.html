@@ -6,6 +6,166 @@
     <title>Heroes 3 JS</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="./styles.css" />
+    <!-- Starts the game data downloads with the page instead of after all the JS has run. -->
+    <link rel="preload" href="./scenarios/scenario.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/hero.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/hero-classes.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/monsters.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/resources.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/towns.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/buildings.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/mines.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./styles/base.css" as="style" />
+    <link rel="preload" href="./styles/elements/app-shell.css" as="style" />
+    <link rel="preload" href="./engine/layers/layer-containers.css" as="style" />
+    <link rel="preload" href="./engine/layers/terrain-layer.css" as="style" />
+    <link rel="preload" href="./engine/layers/entity-layer.css" as="style" />
+    <link rel="preload" href="./engine/layers/path-preview-layer.css" as="style" />
+    <link rel="preload" href="./game/ui/terrain.css" as="style" />
+    <link rel="preload" href="./game/ui/entities.css" as="style" />
+    <link rel="preload" href="./game/ui/hud.css" as="style" />
+    <link rel="preload" href="./game/ui/minimap.css" as="style" />
+    <link rel="preload" href="./game/ui/message-box.css" as="style" />
+    <link rel="preload" href="./game/ui/interaction-modal.css" as="style" />
+    <link rel="preload" href="./game/ui/info-popup.css" as="style" />
+    <link rel="preload" href="./game/ui/cursors.css" as="style" />
+    <link rel="preload" href="./game/ui/battle.css" as="style" />
+    <link rel="preload" href="./game/ui/town.css" as="style" />
+    <link rel="preload" href="./app/modules/dev/bus-dev-panel.css" as="style" />
+    <link rel="modulepreload" href="./app/boot-app.js" />
+    <link rel="modulepreload" href="./engine/bus.js" />
+    <link rel="modulepreload" href="./engine/eventlog.js" />
+    <link rel="modulepreload" href="./engine/db.js" />
+    <link rel="modulepreload" href="./app/boot-lifecycle.js" />
+    <link rel="modulepreload" href="./app/events.js" />
+    <link rel="modulepreload" href="./app/heroes/content.js" />
+    <link rel="modulepreload" href="./game/heroes/content.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/mine.js" />
+    <link rel="modulepreload" href="./game/heroes/interaction-kinds.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/shared.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/monster.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/resource.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/town.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/treasure-chest.js" />
+    <link rel="modulepreload" href="./game/heroes/treasure-chest.js" />
+    <link rel="modulepreload" href="./game/heroes/movement-rules.js" />
+    <link rel="modulepreload" href="./game/heroes/primary-skills.js" />
+    <link rel="modulepreload" href="./game/heroes/road-types.js" />
+    <link rel="modulepreload" href="./engine/deep-freeze.js" />
+    <link rel="modulepreload" href="./game/heroes/terrain-types.js" />
+    <link rel="modulepreload" href="./app/heroes/interaction-outcomes.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/adventure-sprites.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/adventure-sprite-atlas.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/atlas-sprites.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/adventure-cursor.module.js" />
+    <link rel="modulepreload" href="./engine/tile-utils.js" />
+    <link rel="modulepreload" href="./game/domain/entity-behaviors.js" />
+    <link rel="modulepreload" href="./game/domain/entity-queries.js" />
+    <link rel="modulepreload" href="./game/domain/movement/movement-rules.js" />
+    <link rel="modulepreload" href="./game/domain/movement/travel-days.js" />
+    <link rel="modulepreload" href="./game/heroes/adventure-cursor.js" />
+    <link rel="modulepreload" href="./game/heroes/town-ownership.js" />
+    <link rel="modulepreload" href="./game/systems/hero-routes.js" />
+    <link rel="modulepreload" href="./game/domain/movement/guards.js" />
+    <link rel="modulepreload" href="./game/domain/removed-entities.js" />
+    <link rel="modulepreload" href="./game/domain/value-objects/entity-id.js" />
+    <link rel="modulepreload" href="./game/domain/string-utils.js" />
+    <link rel="modulepreload" href="./game/domain/tile-occupant.js" />
+    <link rel="modulepreload" href="./game/systems/movement-system.js" />
+    <link rel="modulepreload" href="./engine/pathfinding.js" />
+    <link rel="modulepreload" href="./app/modules/shared/module-runtime.js" />
+    <link rel="modulepreload" href="./app/heroes/map-objects.js" />
+    <link rel="modulepreload" href="./game/footprint-utils.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/battle.module.js" />
+    <link rel="modulepreload" href="./game/heroes/battle.js" />
+    <link rel="modulepreload" href="./game/heroes/battle-damage.js" />
+    <link rel="modulepreload" href="./game/heroes/battlefield.js" />
+    <link rel="modulepreload" href="./game/heroes/hero-army.js" />
+    <link rel="modulepreload" href="./game/heroes/battle-ai.js" />
+    <link rel="modulepreload" href="./game/heroes/battle-results.js" />
+    <link rel="modulepreload" href="./game/heroes/monster-stacks.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/battle-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/hero-levels.module.js" />
+    <link rel="modulepreload" href="./game/heroes/hero-experience.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/hero-panel.module.js" />
+    <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
+    <link rel="modulepreload" href="./game/heroes/town-income.js" />
+    <link rel="modulepreload" href="./game/heroes/treasury.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/hero-box.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/town-box.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/hud.module.js" />
+    <link rel="modulepreload" href="./game/heroes/calendar.js" />
+    <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/info-popup.module.js" />
+    <link rel="modulepreload" href="./game/heroes/info-popup-text.js" />
+    <link rel="modulepreload" href="./game/heroes/status-bar-text.js" />
+    <link rel="modulepreload" href="./game/heroes/monster-count.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/mines.module.js" />
+    <link rel="modulepreload" href="./game/heroes/mine-income.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/minimap-view.module.js" />
+    <link rel="modulepreload" href="./engine/layers/dom-layer-utils.js" />
+    <link rel="modulepreload" href="./engine/math-utils.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/music.module.js" />
+    <link rel="modulepreload" href="./game/audio/load-music-tracks.js" />
+    <link rel="modulepreload" href="./game/audio/music-player.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/owner-flag-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/status-bar.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/system-options.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/town.module.js" />
+    <link rel="modulepreload" href="./game/heroes/army-exchange.js" />
+    <link rel="modulepreload" href="./game/heroes/creature-recruitment.js" />
+    <link rel="modulepreload" href="./game/heroes/creature-growth.js" />
+    <link rel="modulepreload" href="./game/heroes/fort-window.js" />
+    <link rel="modulepreload" href="./game/heroes/town-picture.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/town-fort-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/town-hall-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/town-list.module.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/town-list.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/town-recruit-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/town-screen-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/castle-town-art.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/turn.module.js" />
+    <link rel="modulepreload" href="./game/heroes/turn-system.js" />
+    <link rel="modulepreload" href="./game/domain/value-objects/movement-points.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/registry.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/hero.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/mine.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/shared.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/monster.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/resource.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/resource-sprites.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/homm3-resource-atlas.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/town.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/treasure-chest.js" />
+    <link rel="modulepreload" href="./app/modules/dev/bus-dev-panel.js" />
+    <link rel="modulepreload" href="./app/modules/register-modules.js" />
+    <link rel="modulepreload" href="./app/modules/camera.module.js" />
+    <link rel="modulepreload" href="./engine/camera.js" />
+    <link rel="modulepreload" href="./engine/layers/layout.js" />
+    <link rel="modulepreload" href="./engine/input.js" />
+    <link rel="modulepreload" href="./engine/edge-pan-controller.js" />
+    <link rel="modulepreload" href="./app/modules/entity-view.module.js" />
+    <link rel="modulepreload" href="./engine/layers/entity-layer.js" />
+    <link rel="modulepreload" href="./app/modules/interaction.module.js" />
+    <link rel="modulepreload" href="./app/modules/shared/interaction-outcomes.js" />
+    <link rel="modulepreload" href="./app/modules/interaction-modal.module.js" />
+    <link rel="modulepreload" href="./app/ui/interaction-modal.element.js" />
+    <link rel="modulepreload" href="./app/modules/keyboard-shortcuts.module.js" />
+    <link rel="modulepreload" href="./app/modules/movement.module.js" />
+    <link rel="modulepreload" href="./game/domain/movement/arrival-plan.js" />
+    <link rel="modulepreload" href="./app/modules/preview-view.module.js" />
+    <link rel="modulepreload" href="./engine/layers/path-preview-layer.js" />
+    <link rel="modulepreload" href="./app/modules/selection.module.js" />
+    <link rel="modulepreload" href="./app/modules/terrain-view.module.js" />
+    <link rel="modulepreload" href="./engine/layers/terrain-layer.js" />
+    <link rel="modulepreload" href="./app/modules/world.module.js" />
+    <link rel="modulepreload" href="./game/build-world.js" />
+    <link rel="modulepreload" href="./engine/map.js" />
+    <link rel="modulepreload" href="./engine/occupancy.js" />
+    <link rel="modulepreload" href="./game/load.js" />
+    <link rel="modulepreload" href="./app/modules/world-view.module.js" />
+    <link rel="modulepreload" href="./app/restore-session.js" />
+    <link rel="modulepreload" href="./app/session-db-name.js" />
   </head>
   <body>
     <div class="app">
