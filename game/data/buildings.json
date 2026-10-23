@@ -63,7 +63,8 @@
       "GEMS_PILE": 4,
       "GOLD_PILE": 1000
     },
-    "requires": ["MAGE_GUILD_1"]
+    "requires": ["MAGE_GUILD_1"],
+    "upgrades": "MAGE_GUILD_1"
   },
   "MAGE_GUILD_3": {
     "name": "Mage Guild Level 3",
@@ -76,7 +77,8 @@
       "GEMS_PILE": 6,
       "GOLD_PILE": 1000
     },
-    "requires": ["MAGE_GUILD_2"]
+    "requires": ["MAGE_GUILD_2"],
+    "upgrades": "MAGE_GUILD_2"
   },
   "MAGE_GUILD_4": {
     "name": "Mage Guild Level 4",
@@ -89,7 +91,8 @@
       "GEMS_PILE": 8,
       "GOLD_PILE": 1000
     },
-    "requires": ["MAGE_GUILD_3"]
+    "requires": ["MAGE_GUILD_3"],
+    "upgrades": "MAGE_GUILD_3"
   },
   "MAGE_GUILD_5": {
     "name": "Mage Guild Level 5",
@@ -102,7 +105,8 @@
       "GEMS_PILE": 10,
       "GOLD_PILE": 1000
     },
-    "requires": ["MAGE_GUILD_4"]
+    "requires": ["MAGE_GUILD_4"],
+    "upgrades": "MAGE_GUILD_4"
   },
   "SHIPYARD": {
     "name": "Shipyard",

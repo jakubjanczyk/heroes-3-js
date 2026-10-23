@@ -5,8 +5,8 @@ import { canAfford, isShortOf } from './treasury.js'
 // Every town starts with its Village Hall, as in Heroes 3.
 const STARTING_BUILDINGS = ['VILLAGE_HALL']
 // Every faction has the same halls and forts.
-const HALL_CHAIN = ['VILLAGE_HALL', 'TOWN_HALL', 'CITY_HALL', 'CAPITOL']
-const FORT_CHAIN = ['FORT', 'CITADEL', 'CASTLE']
+export const HALL_CHAIN = ['VILLAGE_HALL', 'TOWN_HALL', 'CITY_HALL', 'CAPITOL']
+export const FORT_CHAIN = ['FORT', 'CITADEL', 'CASTLE']
 
 export const BUILDING_STATUS = Object.freeze({
   BUILT: 'built',
@@ -20,12 +20,14 @@ export const BUILDING_STATUS = Object.freeze({
 
 // What a town type can build: the buildings every town has (buildings.json) with the town type's
 // own (its `buildings` in towns.json, which may also change a shared one), and the Hall's layout:
-// rows of chains, each chain the buildings one slot shows in turn (Fort, Citadel, Castle).
+// rows of chains, each chain the buildings one slot shows in turn (Fort, Citadel, Castle); and
+// where the town picture draws each building (its `picture`).
 export function townBuildingsCatalogue(definitions, townType) {
   const townDefinition = definitions?.towns?.[townType] ?? {}
   return {
     buildings: { ...definitions?.buildings, ...townDefinition.buildings },
-    hall: townDefinition.hall ?? []
+    hall: townDefinition.hall ?? [],
+    picture: townDefinition.picture ?? {}
   }
 }
 
