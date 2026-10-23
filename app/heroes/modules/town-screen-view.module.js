@@ -1,3 +1,4 @@
+import { describeSlotHover } from '../../../game/heroes/army-exchange.js'
 import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
@@ -26,6 +27,15 @@ function buildingAt(target) {
   return target?.closest?.('.town-building') ?? null
 }
 
+function armySlotAt(target) {
+  return target?.closest?.('.town-panel__slots > .army-slot') ?? null
+}
+
+function slotPosition(slot) {
+  const list = slot.parentElement
+  return { army: list.dataset.army, slot: [...list.children].indexOf(slot) }
+}
+
 export const registerTownScreenViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document
@@ -33,6 +43,9 @@ export const registerTownScreenViewModule = defineModule(
     let townScreen = null
     // The garrison or visiting hero stack framed for moving, as `{ army, slot }`.
     let selectedStack = null
+    let hoveredSlot = null
+    // The stacks shown, by army, for the status bar's texts; no `hero` without a visiting hero.
+    let armies = {}
 
     function fillSlots(list, army) {
       list.querySelectorAll('.army-slot').forEach((slot, index) => {
@@ -116,13 +129,20 @@ export const registerTownScreenViewModule = defineModule(
           }
         }
       }
+      if (hoveredSlot) {
+        showSlotStatus(hoveredSlot)
+      }
+    }
+
+    function showSlotStatus(slot) {
+      hoveredSlot = slot
+      showStatus(describeSlotHover(armies, selectedStack, slotPosition(slot)))
     }
 
     // As in Heroes 3: the first click frames a stack, the second moves it onto the clicked slot
     // (or unframes it, clicked again). A move the town refuses leaves the stack framed.
     function clickArmySlot(slot) {
-      const list = slot.parentElement
-      const clicked = { army: list.dataset.army, slot: [...list.children].indexOf(slot) }
+      const clicked = slotPosition(slot)
       if (!selectedStack) {
         if (slot.querySelector('.army-slot__creature')) {
           selectStack(clicked)
@@ -189,6 +209,7 @@ export const registerTownScreenViewModule = defineModule(
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
+      armies = visitingHero ? { garrison, hero: visitingHero.army } : { garrison }
       selectStack(null)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
@@ -204,6 +225,7 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.remove()
       townScreen = null
       selectedStack = null
+      hoveredSlot = null
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -217,7 +239,14 @@ export const registerTownScreenViewModule = defineModule(
           target: gameShell,
           type: 'mouseover',
           handler: (event) => {
-            if (townScreen?.contains(event.target)) {
+            if (!townScreen?.contains(event.target)) {
+              return
+            }
+
+            const slot = armySlotAt(event.target)
+            if (slot) {
+              showSlotStatus(slot)
+            } else {
               showStatus(buildingAt(event.target)?.getAttribute('aria-label') ?? '')
             }
           }
@@ -228,6 +257,11 @@ export const registerTownScreenViewModule = defineModule(
           handler: (event) => {
             const building = buildingAt(event.target)
             if (building && buildingAt(event.relatedTarget) !== building) {
+              showStatus('')
+            }
+            const slot = armySlotAt(event.target)
+            if (slot && armySlotAt(event.relatedTarget) !== slot) {
+              hoveredSlot = null
               showStatus('')
             }
           }
@@ -268,7 +302,7 @@ export const registerTownScreenViewModule = defineModule(
               return
             }
 
-            const armySlot = event.target.closest('.town-panel__slots > .army-slot')
+            const armySlot = armySlotAt(event.target)
             if (armySlot) {
               clickArmySlot(armySlot)
               return

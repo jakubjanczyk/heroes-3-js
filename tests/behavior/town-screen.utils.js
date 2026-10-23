@@ -392,3 +392,15 @@ export function readSelectedStack() {
   })
   return selected[0] ?? null
 }
+
+export async function hoverGarrisonSlot(user, slot) {
+  await user.hover(getArmySlotInTown('Garrison', slot))
+}
+
+export async function hoverVisitingHeroSlot(user, slot) {
+  await user.hover(getArmySlotInTown('Visiting hero army', slot))
+}
+
+export async function unhoverGarrisonSlot(user, slot) {
+  await user.unhover(getArmySlotInTown('Garrison', slot))
+}

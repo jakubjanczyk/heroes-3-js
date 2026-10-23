@@ -18,10 +18,14 @@ import {
   clickGarrisonSlot,
   clickVisitingHeroSlot,
   enterTownAt,
+  hoverGarrisonSlot,
+  hoverVisitingHeroSlot,
   leaveTown,
   readGarrison,
   readSelectedStack,
-  readVisitingHeroArmy
+  readTownStatusBar,
+  readVisitingHeroArmy,
+  unhoverGarrisonSlot
 } from './town-screen.utils.js'
 
 const gameDefinitions = {
@@ -243,6 +247,91 @@ describe('town garrison exchange behavior', () => {
 
       expect(readGarrison()[0]).toBe('Archers 5')
       expect(readVisitingHeroArmy()[0]).toBe('Pikemen 10')
+    })
+  })
+
+  // The texts are Heroes 3's, with the creature's singular name (VCMI's CGarrisonSlot::hover).
+  describe('the status bar', () => {
+    test('hovering a garrison stack offers to select it', async () => {
+      const { user } = await startWithHeroInWhitemoon()
+
+      await hoverGarrisonSlot(user, 1)
+
+      expect(readTownStatusBar()).toBe('Select Pikeman (in garrison)')
+    })
+
+    test("hovering a stack of the hero's offers to select it", async () => {
+      const { user } = await startWithHeroInWhitemoon()
+
+      await hoverVisitingHeroSlot(user, 1)
+
+      expect(readTownStatusBar()).toBe('Select Archer (visiting)')
+    })
+
+    test('hovering an empty slot says it is empty', async () => {
+      const { user } = await startWithHeroInWhitemoon()
+
+      await hoverGarrisonSlot(user, 2)
+
+      expect(readTownStatusBar()).toBe('Empty')
+    })
+
+    test('with a stack framed, hovering another creature offers to exchange them', async () => {
+      const { user } = await startWithHeroInWhitemoon()
+      await clickGarrisonSlot(user, 1)
+
+      await hoverVisitingHeroSlot(user, 1)
+
+      expect(readTownStatusBar()).toBe('Exchange Pikeman with Archer')
+    })
+
+    test('with a stack framed, hovering the same creature offers to combine them', async () => {
+      const { user } = await startWithHeroInWhitemoon(
+        anExchangeScenario({ army: [archers(5), pikemen(4)] })
+      )
+      await clickGarrisonSlot(user, 1)
+
+      await hoverVisitingHeroSlot(user, 2)
+
+      expect(readTownStatusBar()).toBe('Combine Pikeman armies')
+    })
+
+    test('with a stack framed, hovering an empty slot offers to move it', async () => {
+      const { user } = await startWithHeroInWhitemoon()
+      await clickGarrisonSlot(user, 1)
+
+      await hoverVisitingHeroSlot(user, 2)
+
+      expect(readTownStatusBar()).toBe('Move Pikeman')
+    })
+
+    test("with the hero's last stack framed, hovering an empty garrison slot says it can't move", async () => {
+      const { user } = await startWithHeroInWhitemoon()
+      await clickVisitingHeroSlot(user, 1)
+
+      await hoverGarrisonSlot(user, 2)
+
+      expect(readTownStatusBar()).toBe('Cannot move last army to garrison')
+    })
+
+    // Heroes 3 says "View <creature>" there, as clicking it opens the creature's window; here it
+    // only unframes the stack until creatures have a window.
+    test('with a stack framed, hovering that stack shows nothing', async () => {
+      const { user } = await startWithHeroInWhitemoon()
+      await clickGarrisonSlot(user, 1)
+
+      await hoverGarrisonSlot(user, 1)
+
+      expect(readTownStatusBar()).toBe('')
+    })
+
+    test('moving off a slot clears the status bar', async () => {
+      const { user } = await startWithHeroInWhitemoon()
+      await hoverGarrisonSlot(user, 1)
+
+      await unhoverGarrisonSlot(user, 1)
+
+      expect(readTownStatusBar()).toBe('')
     })
   })
 

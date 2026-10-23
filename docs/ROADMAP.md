@@ -596,6 +596,7 @@ Stages, one PR each, done in this order:
 #### 6.3.6 Moving creatures between garrison and visiting hero (6.4)
 - [x] Click a stack, then a slot: it moves onto an empty slot, merges into the same creature, swaps with another; between the rows or within one; see `docs/notes/2026-10-23-garrison-exchange.md`
 - [x] The hero's army is never left empty: its last stack can only swap
+- [x] Hovering a slot says what a click does in the status bar, in H3's words ("Select Pikeman (in garrison)", "Exchange Pikeman with Archer", "Move Pikeman")
 - [ ] Split a stack (Shift+click onto an empty slot or a stack of the same creature, then pick the counts)
 
 #### 6.3 later
