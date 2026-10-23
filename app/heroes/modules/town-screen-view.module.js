@@ -176,9 +176,11 @@ export const registerTownScreenViewModule = defineModule(
       if (name) {
         hero.setAttribute('role', 'img')
         hero.setAttribute('aria-label', name)
+        hero.dataset.status = name
       } else {
         hero.removeAttribute('role')
         hero.removeAttribute('aria-label')
+        hero.removeAttribute('data-status')
       }
       hero.title = name
       hero.textContent = name.charAt(0)

@@ -417,3 +417,9 @@ export function getLeaveTownButton() {
 export function getCreatureSlot(tier) {
   return within(getCreatureGrowthPanel()).getAllByRole('listitem')[tier - 1]
 }
+
+// The frame left of the visiting hero's army, with the hero's portrait or empty without a hero.
+export function getVisitingHeroFrame() {
+  return within(getTownScreen()).getByRole('list', { name: 'Visiting hero army' })
+    .previousElementSibling
+}

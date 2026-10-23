@@ -5,10 +5,13 @@ import { getTownInTownList } from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
+  enterTownAt,
   getCreatureSlot,
   getHallIcon,
   getLeaveTownButton,
   getTownInTownScreenList,
+  getVisitingHero,
+  getVisitingHeroFrame,
   queryFortIcon,
   readTownStatusBar,
   recruitInTown
@@ -40,6 +43,26 @@ async function openWhitemoon(scenario = aWhitemoonScenario()) {
   })
   await app.user.dblClick(getTownInTownList('Whitemoon'))
   await flushMicrotasks()
+  return app
+}
+
+// Whitemoon's entrance is at (4, 3), with the hero two tiles below; Ironforge's is at (12, 3).
+const aTwoTownScenario = () =>
+  aScenario()
+    .withSize(16, 7)
+    .withEntities(
+      aHero().at(4, 5),
+      aTown().named('Whitemoon').ownedByPlayer().at(4, 3),
+      aTown().withId('town-2').named('Ironforge').ownedByPlayer().at(12, 3)
+    )
+    .withDefinitions(gameDefinitions)
+
+async function startWithHeroInWhitemoon() {
+  const app = await setupMovementBehaviorApp({
+    loadGameOptions: aTwoTownScenario().build(),
+    appConfig: { interactionModalTransitionMs: 0 }
+  })
+  await enterTownAt(4, 3)
   return app
 }
 
@@ -92,6 +115,35 @@ describe('town panel hover behavior', () => {
     await user.hover(getTownInTownScreenList('Whitemoon'))
 
     expect(readTownStatusBar()).toBe('Whitemoon')
+  })
+
+  // Heroes 3 says "Select Sir Christian (visiting)", as clicking the hero moves them to the
+  // garrison row; until heroes can garrison, the portrait only names the hero.
+  test("hovering the visiting hero's portrait shows the hero's name", async () => {
+    const { user } = await startWithHeroInWhitemoon()
+
+    await user.hover(getVisitingHero('Sir Christian'))
+
+    expect(readTownStatusBar()).toBe('Sir Christian')
+  })
+
+  test('hovering the empty portrait of a town without a hero shows nothing', async () => {
+    const { user } = await startWithHeroInWhitemoon()
+    await user.click(getTownInTownScreenList('Ironforge'))
+    await flushMicrotasks()
+
+    await user.hover(getVisitingHeroFrame())
+
+    expect(readTownStatusBar()).toBe('')
+  })
+
+  test("moving off the visiting hero's portrait clears the status bar", async () => {
+    const { user } = await startWithHeroInWhitemoon()
+    await user.hover(getVisitingHero('Sir Christian'))
+
+    await user.unhover(getVisitingHero('Sir Christian'))
+
+    expect(readTownStatusBar()).toBe('')
   })
 
   test.each([

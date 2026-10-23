@@ -127,7 +127,7 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Town list on the panel's right side: the owned towns, the open one framed; clicking one switches to it
 - [x] Gold/resource display within town view: the resource bar and date stay under the town screen
 - [x] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
-- [x] Hovering the panel names what is under the mouse in the town's status bar: a creature's "9 Pikemen available, +14 growth" (VCMI's wording), the Hall and Fort icons' buildings, "Leave town", a town in the list
+- [x] Hovering the panel names what is under the mouse in the town's status bar: a creature's "9 Pikemen available, +14 growth" (VCMI's wording), the Hall and Fort icons' buildings, "Leave town", a town in the list, the visiting hero's name (H3's "Select <hero> (visiting)" once heroes can garrison)
 
 ### 2.3b Town Ownership & Town List
 Heroes 3 lets the player open their own towns from the sidebar or the map, with no hero inside. See `docs/notes/2026-10-21-town-ownership.md`.
