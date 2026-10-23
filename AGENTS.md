@@ -31,7 +31,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Pushes to `main` publish the site to the `gh-pages` root (`.github/workflows/deploy-pages.yml`).
 - Each PR from this repo gets a preview at `/pr-preview/pr-<number>/`, linked in a PR comment and removed when the PR closes (`.github/workflows/pr-preview.yml`). Previews omit music and keep their own saved session.
-- `node scripts/build-site.mjs <outDir> [--without-music]` builds the same site locally (after `npm install`): `main.js` and `styles.css` are bundled and minified with esbuild, and only the data files and assets are copied. `npm run dev` serves the unbundled sources.
+- `node scripts/build-site.mjs <outDir> [--without-music]` builds the same site locally. It ships the source files as they are (native ES modules, no bundling) and adds preload links for every module and imported stylesheet to `index.html`, so a phone downloads them all at once instead of one import level at a time.
 
 ## Coding Style & Naming Conventions
 
