@@ -404,3 +404,16 @@ export async function hoverVisitingHeroSlot(user, slot) {
 export async function unhoverGarrisonSlot(user, slot) {
   await user.unhover(getArmySlotInTown('Garrison', slot))
 }
+
+export function getHallIcon() {
+  return within(getTownScreen()).getByRole('button', { name: 'Hall' })
+}
+
+export function getLeaveTownButton() {
+  return within(getTownScreen()).getByRole('button', { name: 'Leave town' })
+}
+
+// The creature panel's slot for a tier, 1 to 7.
+export function getCreatureSlot(tier) {
+  return within(getCreatureGrowthPanel()).getAllByRole('listitem')[tier - 1]
+}

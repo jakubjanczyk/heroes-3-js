@@ -18,6 +18,7 @@ export function describeCreatureGrowth({ buildings, built, monsters }) {
       tiers[creature.tier - 1] = {
         creature: building.creature,
         name: creature.namePlural ?? creature.name,
+        singularName: creature.name,
         growth: withFortBonus(creature.growth, fortBonusPercent)
       }
     }

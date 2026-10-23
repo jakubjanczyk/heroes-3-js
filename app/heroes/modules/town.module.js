@@ -16,6 +16,7 @@ import {
   buildingStatus,
   createTownBuildings,
   describeHall,
+  describeTownBox,
   isTownNextToWater,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
@@ -258,6 +259,10 @@ export const registerTownModule = defineModule(
           : null,
         ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
         goldIncome: incomeOf(openTownId).GOLD_PILE ?? 0,
+        hallName: describeTownBox({
+          catalogue: catalogueOf(openTownId),
+          built: townBuildings.builtIn(openTownId)
+        }).hall.name,
         creatures: creaturesOf(openTownId),
         fort: describeFort({
           buildings: catalogueOf(openTownId).buildings,

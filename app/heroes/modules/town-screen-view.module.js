@@ -1,4 +1,5 @@
 import { describeSlotHover } from '../../../game/heroes/army-exchange.js'
+import { describeAvailableCreatures } from '../../../game/heroes/creature-recruitment.js'
 import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
@@ -25,6 +26,11 @@ function placeholderArt() {
 
 function buildingAt(target) {
   return target?.closest?.('.town-building') ?? null
+}
+
+// The panel's icons, buttons and creatures, which name themselves in the status bar.
+function statusSourceAt(target) {
+  return target?.closest?.('[data-status]') ?? null
 }
 
 function armySlotAt(target) {
@@ -59,10 +65,12 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelectorAll('.creature-growth').forEach((slot, index) => {
         const tier = creatures[index]
         if (!tier) {
+          slot.removeAttribute('data-status')
           slot.replaceChildren()
           return
         }
 
+        slot.dataset.status = describeAvailableCreatures(tier)
         const button = document.createElement('button')
         button.type = 'button'
         button.className = 'creature-growth__recruit'
@@ -80,6 +88,7 @@ export const registerTownScreenViewModule = defineModule(
       icon.hidden = !fort
       icon.setAttribute('aria-label', fort?.name ?? '')
       icon.title = fort?.name ?? ''
+      icon.dataset.status = fort?.name ?? ''
       icon.dataset.level = String(fort?.level ?? 0)
     }
 
@@ -186,6 +195,7 @@ export const registerTownScreenViewModule = defineModule(
       visitingHero,
       ownedTowns,
       goldIncome,
+      hallName,
       creatures,
       fort,
       picture
@@ -204,6 +214,7 @@ export const registerTownScreenViewModule = defineModule(
 
       townScreen.querySelector('.town-panel__name').textContent = name
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
+      townScreen.querySelector('.town-panel__hall').dataset.status = hallName
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
       showPicture(picture)
       showCreatures(creatures)
@@ -215,6 +226,9 @@ export const registerTownScreenViewModule = defineModule(
         towns: ownedTowns,
         selectedTownId: entityId
       })
+      for (const town of townScreen.querySelectorAll('.town-list__town')) {
+        town.dataset.status = town.getAttribute('aria-label')
+      }
     }
 
     function closeTown() {
@@ -246,9 +260,10 @@ export const registerTownScreenViewModule = defineModule(
             const slot = armySlotAt(event.target)
             if (slot) {
               showSlotStatus(slot)
-            } else {
-              showStatus(buildingAt(event.target)?.getAttribute('aria-label') ?? '')
+              return
             }
+            const named = buildingAt(event.target)?.getAttribute('aria-label')
+            showStatus(named ?? statusSourceAt(event.target)?.dataset.status ?? '')
           }
         },
         {
@@ -262,6 +277,10 @@ export const registerTownScreenViewModule = defineModule(
             const slot = armySlotAt(event.target)
             if (slot && armySlotAt(event.relatedTarget) !== slot) {
               hoveredSlot = null
+              showStatus('')
+            }
+            const source = statusSourceAt(event.target)
+            if (source && statusSourceAt(event.relatedTarget) !== source) {
               showStatus('')
             }
           }

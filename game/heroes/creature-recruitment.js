@@ -87,3 +87,8 @@ export function addToGarrison(garrison, creature, count) {
   slots[slot] = { creature, count: (slots[slot]?.count ?? 0) + count }
   return slots
 }
+
+// The status bar over a creature in the town screen's panel, as VCMI words it.
+export function describeAvailableCreatures({ available, name, singularName, growth }) {
+  return `${available} ${available === 1 ? singularName : name} available, +${growth} growth`
+}
