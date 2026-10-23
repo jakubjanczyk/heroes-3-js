@@ -78,8 +78,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Keyboard arrow keys scroll the map
 - [x] Camera bounds - cannot scroll beyond map edges
 - [ ] (Not in H3, optional extra) Smooth camera transitions when clicking minimap. H3 jumps straight there
-- [x] Clicking the hero's portrait in the hero list centres the camera on the hero (as in H3, one click is enough)
-- [ ] Double-click on the hero's portrait opens the hero screen, as in H3 (needs a hero screen, 4.1 / 4.3)
+- [x] Clicking the hero's portrait in the hero list selects the hero and centres the camera on them; a click on the hero already selected opens the hero screen instead, as in H3 (4.3b)
 
 ---
 
@@ -226,7 +225,7 @@ Heroes become characters with identity and progression.
 - [x] Starting values come from the hero's class, as in H3 (Knight: A2/D2/P1/K1); only the Knight for now
 - [x] A scenario may set any of them per hero, like the H3 editor's "Customize primary skills"; values below the H3 minimums (A0/D0/P1/K1) are rejected
 - [x] Stats displayed in the info box (H3 layout: portrait, name, four icons with values) and the hero's right-click popup
-- [ ] Stats shown in the hero screen (needs a hero screen)
+- [x] Stats shown in the hero screen (4.3b)
 - [x] Attack: increases creature damage dealt in combat (`docs/notes/2026-10-20-battle-attacks.md`)
 - [x] Defense: reduces creature damage taken in combat
 - [ ] Power: increases spell damage/duration
@@ -242,8 +241,9 @@ Heroes become characters with identity and progression.
 - [x] Level-up popup as in H3: "Hero is now a level 2 Knight." and the primary skill gained ("+1 Defense"), one popup per level
 - [x] The primary skill is not chosen: H3 rolls it by the hero class's chances (Knight: A35/D45/P10/K10 up to level 9, A30/D30/P20/K20 from level 10)
 - [ ] Choose one of two secondary skills on level-up (needs secondary skills, 4.7)
-- [ ] Hero level displayed in hero panel and info screens (H3 shows it on the hero screen only)
-- [ ] Current XP and XP to next level shown in hero details (hero screen)
+- [x] Hero level shown on the hero screen ("Level 3 Knight"), the only place H3 shows it (4.3b)
+- [x] Current experience shown on the hero screen (4.3b)
+- [ ] Right-clicking Experience on the hero screen shows the level, the experience for the next level and the current experience, as in H3
 
 ### 4.3 Hero Army
 - [x] Hero carries up to 7 creature stacks, each in its own slot; a scenario gives every hero an army
@@ -253,8 +253,22 @@ Heroes become characters with identity and progression.
 - [ ] Click on stack to see creature details (stats, abilities)
 - [ ] Drag-and-drop to reorder stacks within hero army
 - [ ] Split stack: divide one stack into two (in town: 6.3.6; the hero screen and army exchange still to come)
+- [ ] Rearranging the army on the hero screen as in the town (6.3.6): click a stack to frame it, click another slot to move, swap or merge, Shift+click or the screen's Split button to split
 - [ ] Merge stacks: drag same creature type together to combine
 - [ ] Army strength estimate (sum of AI values) shown in hero info
+
+### 4.3b Hero Screen
+The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-screen.md`.
+- [x] Opens on a click on the selected hero in the hero list or on the map, and on a second click on the visiting hero's portrait in a town (the first frames it); ✓, Enter or Escape close it
+- [x] Shows the portrait (the initial for now), name, "Level N Knight", the four primary skills, experience and the seven army slots
+- [x] Status bar along the bottom: "View Attack Info" over a primary skill, "View Experience Info" over Experience
+- [x] Not saved: a reload shows the map
+- [x] Empty frames where H3 shows what the game has no data for yet: specialty, morale, luck, spell points, eight secondary skills, the artifact slots on the paper doll, the backpack, Quest Log and Dismiss Hero, the formation, tactics and split buttons
+- [ ] Fill those frames as their features come: specialty (4.4), morale and luck, spell points and the spell book (4.8), secondary skills (4.7), artifacts and backpack (M7), Quest Log, Dismiss Hero (4.5), formations and tactics (5.3)
+- [ ] Rearranging the army there (4.3)
+- [ ] Right-click info on each part, as H3's popups (primary skill descriptions, experience)
+- [ ] The hero list down the right side switches between heroes (4.5); it shows the one hero for now
+- [ ] Status bar text over the portrait (the hero's name), the army slots and the buttons
 
 ### 4.4 Hero Identity & Portrait
 - [ ] Hero has a portrait image (displayed in HUD sidebar, hero panel, map)

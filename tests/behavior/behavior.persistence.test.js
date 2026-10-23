@@ -27,6 +27,7 @@ import {
 } from './app.utils.js'
 import { queryBattleScreen, winBattle } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { closeHeroScreen } from './hero-screen.utils.js'
 import { enterTownAt, leaveTown, queryTownScreen } from './town-screen.utils.js'
 
 function createSession(scenario, appConfig = {}) {
@@ -129,15 +130,17 @@ describe('session persistence behavior', () => {
   test('given preview was selected then cleared before reload when app reloads then preview remains cleared', async () => {
     const session = createSession(aScenario())
 
-    await setupMovementBehaviorApp(session)
+    const { user } = await setupMovementBehaviorApp(session)
 
     dispatchTileClick(3, 0)
     await flushMicrotasks()
     expectPreviewTargetAt(3, 0)
 
+    // Clicking the hero clears the route and opens the hero screen, which covers the map.
     dispatchTileClick(0, 0)
     await flushMicrotasks()
     expectNoPreview()
+    await closeHeroScreen(user)
 
     confirmTileClickByDispatch(2, 0)
     await flushMicrotasks()

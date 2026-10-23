@@ -16,11 +16,12 @@ import {
   getHeroInHeroList,
   getNextHeroButton,
   getResourceBarItems,
+  getTownInTownList,
   openSystemOptions,
   querySystemOptions
 } from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp } from './app.utils.js'
-import { aHero, aScenario } from './builders.js'
+import { aHero, aScenario, aTown } from './builders.js'
 
 const LARGE_VIEWPORT_SIZE = { width: 1000, height: 700 }
 
@@ -68,12 +69,16 @@ describe('adventure HUD behavior', () => {
       expectMovementPoints(1400)
     })
 
-    test('given the player panned away from the hero when they click the hero in the hero list then the camera centres on the hero', async () => {
+    // A click on the hero already selected opens the hero screen instead, as in Heroes 3.
+    test('given a town far from the hero is selected when the player clicks the hero in the hero list then the camera centres on the hero', async () => {
       const { user } = await setupMovementBehaviorApp({
-        loadGameOptions: aLargeMapScenario().withDefinitions(heroDefinitions).build(),
+        loadGameOptions: aLargeMapScenario()
+          .withEntities(aHero().at(20, 15), aTown().named('Whitemoon').ownedByPlayer().at(45, 30))
+          .withDefinitions({ ...heroDefinitions, towns: readGameData('towns.json') })
+          .build(),
         viewportSize: LARGE_VIEWPORT_SIZE
       })
-      panCamera('ArrowRight', 20)
+      await user.click(getTownInTownList('Whitemoon'))
 
       await user.click(getHeroInHeroList(HERO_NAME))
 

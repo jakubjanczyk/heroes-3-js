@@ -95,6 +95,8 @@ export const APP_UI_TOWN_UPDATED = 'ui.town.updated'
 // With a town selected instead of the hero, clicking the map does not move the hero.
 export const APP_UI_TOWN_SELECTED = 'ui.town.selected'
 export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
+// Asked from the hero list, the map or the town screen; the hero screen opens unless it already is.
+export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
 export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 
