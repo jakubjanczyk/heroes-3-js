@@ -38,3 +38,36 @@ export function moveStack(armies, from, to) {
   }
   return moved
 }
+
+const SELECT_TEXT = { garrison: 'Select %s (in garrison)', hero: 'Select %s (visiting)' }
+
+function isLastStackLeaving(armies, selected, hovered) {
+  return (
+    selected.army === 'hero' && hovered.army !== 'hero' && armies.hero.filter(Boolean).length === 1
+  )
+}
+
+// The status bar text for a slot under the mouse, as Heroes 3 words it with the creatures' singular
+// names (VCMI's CGarrisonSlot::hover). `armies` holds the stacks as the town screen shows them,
+// `selected` and `hovered` are each `{ army, slot }`, `selected` null when no stack is framed.
+// Nothing for the framed stack itself: Heroes 3 offers to view it, and there is no creature window
+// yet.
+export function describeSlotHover(armies, selected, hovered) {
+  const stack = armies[hovered.army]?.[hovered.slot]
+  const selectedStack = selected && armies[selected.army]?.[selected.slot]
+  if (!selectedStack) {
+    return stack ? SELECT_TEXT[hovered.army].replace('%s', stack.singularName) : 'Empty'
+  }
+  if (selected.army === hovered.army && selected.slot === hovered.slot) {
+    return ''
+  }
+  if (!stack) {
+    return isLastStackLeaving(armies, selected, hovered)
+      ? 'Cannot move last army to garrison'
+      : `Move ${selectedStack.singularName}`
+  }
+  if (stack.creature === selectedStack.creature) {
+    return `Combine ${stack.singularName} armies`
+  }
+  return `Exchange ${selectedStack.singularName} with ${stack.singularName}`
+}
