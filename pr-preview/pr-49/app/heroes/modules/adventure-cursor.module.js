@@ -1,4 +1,5 @@
 import { sameTile } from '../../../engine/tile-utils.js'
+import { createEntityBehaviors } from '../../../game/domain/entity-behaviors.js'
 import { isTown } from '../../../game/domain/entity-queries.js'
 import { resolveMovementRules } from '../../../game/domain/movement/movement-rules.js'
 import { countTravelDays } from '../../../game/domain/movement/travel-days.js'
@@ -8,12 +9,11 @@ import {
   getScrollCursor
 } from '../../../game/heroes/adventure-cursor.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
-  APP_COMMAND_ROUTE_REQUESTED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
-  APP_FACT_ROUTE_PLANNED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_HERO_SELECTED,
@@ -27,14 +27,21 @@ import { createMapObjects } from '../map-objects.js'
 // The Heroes 3 cursor over the adventure map: what clicking the tile under the mouse would do,
 // and on which day the hero would get there. While the map scrolls from its edge, an arrow
 // pointing the way it scrolls takes its place. The map shows it through `data-cursor`.
+// It plans the route to the tile itself rather than asking the movement module, so moving the
+// mouse over the map puts nothing on the bus but `ui.tile.hovered`.
 export const registerAdventureCursorModule = defineModule(
-  ({ env, emit, config }) => {
+  ({ env, config }) => {
     const viewport = env.document.querySelector('.viewport')
     const movementRules = resolveMovementRules(config?.content?.movementRules)
     const mapObjects = createMapObjects()
     const ownedTowns = createOwnedTowns()
+    const heroRoutes = createHeroRoutes({
+      entityBehaviors: createEntityBehaviors(config?.content?.entityBehaviors),
+      movementRules
+    })
 
     let map = null
+    let routePlanner = null
     let hoveredTile = null
     let remainingMovementPoints = config.maxMovementPoints
     let maxMovementPoints = config.maxMovementPoints
@@ -59,7 +66,6 @@ export const registerAdventureCursorModule = defineModule(
       )
     }
 
-    // The cursor follows once the route to the tile is planned, unless the hero stands on it.
     function updateCursor() {
       if (!hoveredTile) {
         showCursor(ADVENTURE_CURSOR.ARROW)
@@ -80,10 +86,12 @@ export const registerAdventureCursorModule = defineModule(
         return
       }
 
-      emit(APP_COMMAND_ROUTE_REQUESTED, { tile: hoveredTile })
+      showCursorForRoute()
     }
 
-    function showCursorForRoute(path, pathToBattle) {
+    function showCursorForRoute() {
+      const path = routePlanner.planRoute(hoveredTile)
+      const pathToBattle = path ? routePlanner.getPathToBattle(path) : null
       const travelDays = path
         ? countTravelDays({
             map,
@@ -103,6 +111,8 @@ export const registerAdventureCursorModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             mapObjects.onWorldReady(event.detail)
+            heroRoutes.onWorldReady(event.detail)
+            routePlanner = heroRoutes.createMovementSystem()
             ownedTowns.onWorldReady(event.detail.scenario.entities)
             isTownSelected = false
             map = event.detail.map
@@ -115,6 +125,7 @@ export const registerAdventureCursorModule = defineModule(
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
             mapObjects.onHeroMoved(event.detail.to)
+            heroRoutes.onHeroMoved(event.detail)
             updateCursor()
           }
         },
@@ -122,6 +133,7 @@ export const registerAdventureCursorModule = defineModule(
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
             mapObjects.onEntityRemoved(event.detail.entityId)
+            heroRoutes.onEntityRemoved(event.detail.entityId)
             updateCursor()
           }
         },
@@ -145,22 +157,6 @@ export const registerAdventureCursorModule = defineModule(
           handler: (event) => {
             scrollDirection = event.detail.direction
             render()
-          }
-        },
-        {
-          type: APP_FACT_ROUTE_PLANNED,
-          // A click plans a route too, also on a town the click opens: that keeps its cursor.
-          handler: (event) => {
-            if (
-              !hoveredTile ||
-              !sameTile(event.detail.tile, hoveredTile) ||
-              isTownSelected ||
-              opensTown(mapObjects.getEntityAt(hoveredTile))
-            ) {
-              return
-            }
-
-            showCursorForRoute(event.detail.path, event.detail.pathToBattle)
           }
         },
         {
@@ -197,11 +193,10 @@ export const registerAdventureCursorModule = defineModule(
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_TILE_HOVERED,
       APP_UI_MAP_EDGE_SCROLLED,
-      APP_FACT_ROUTE_PLANNED,
       APP_FACT_TOWN_CAPTURED,
       APP_UI_TOWN_SELECTED,
       APP_UI_HERO_SELECTED
     ],
-    produces: [APP_COMMAND_ROUTE_REQUESTED]
+    produces: []
   }
 )
