@@ -9,10 +9,7 @@ export function describeCreatureGrowth({ buildings, built, monsters }) {
   const inEffect = buildingsInEffect({ buildings, built }).map(
     (buildingId) => buildings[buildingId]
   )
-  const fortBonusPercent = Math.max(
-    0,
-    ...inEffect.map((building) => building?.creatureGrowthPercent ?? 0)
-  )
+  const fortBonusPercent = fortBonusPercentOf(inEffect)
   const tiers = Array.from({ length: ARMY_SLOT_COUNT }, () => null)
 
   for (const building of inEffect) {
@@ -21,7 +18,7 @@ export function describeCreatureGrowth({ buildings, built, monsters }) {
       tiers[creature.tier - 1] = {
         creature: building.creature,
         name: creature.namePlural ?? creature.name,
-        growth: Math.floor((creature.growth * (100 + fortBonusPercent)) / 100)
+        growth: withFortBonus(creature.growth, fortBonusPercent)
       }
     }
   }
@@ -34,4 +31,20 @@ export function describeCreatureGrowth({ buildings, built, monsters }) {
   }
 
   return tiers
+}
+
+function fortBonusPercentOf(buildingsStanding) {
+  return Math.max(0, ...buildingsStanding.map((building) => building?.creatureGrowthPercent ?? 0))
+}
+
+function withFortBonus(growth, fortBonusPercent) {
+  return Math.floor((growth * (100 + fortBonusPercent)) / 100)
+}
+
+// A creature's weekly growth with the town's Citadel or Castle bonus, as if its dwelling stood.
+export function growthWithFortBonus({ buildings, built, creature }) {
+  const inEffect = buildingsInEffect({ buildings, built }).map(
+    (buildingId) => buildings[buildingId]
+  )
+  return withFortBonus(creature.growth, fortBonusPercentOf(inEffect))
 }

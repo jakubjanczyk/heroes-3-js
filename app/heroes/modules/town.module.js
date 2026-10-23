@@ -7,6 +7,7 @@ import {
   weeklyGrowthByTier
 } from '../../../game/heroes/creature-recruitment.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
+import { describeFort } from '../../../game/heroes/fort-window.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
 import {
@@ -19,6 +20,7 @@ import {
 } from '../../../game/heroes/town-buildings.js'
 import { dailyIncomeOfTown, sumIncomes } from '../../../game/heroes/town-income.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { describeTownPicture } from '../../../game/heroes/town-picture.js'
 import { createTreasury } from '../../../game/heroes/treasury.js'
 import {
   APP_COMMAND_TILE_CLICKED,
@@ -230,6 +232,17 @@ export const registerTownModule = defineModule(
         ownedTowns: ownedTowns.ids().map((townId) => ({ entityId: townId, name: nameOf(townId) })),
         goldIncome: incomeOf(openTownId).GOLD_PILE ?? 0,
         creatures: creaturesOf(openTownId),
+        fort: describeFort({
+          buildings: catalogueOf(openTownId).buildings,
+          built: townBuildings.builtIn(openTownId),
+          monsters: definitions.monsters,
+          available: availableByTown.get(openTownId) ?? []
+        }),
+        picture: describeTownPicture({
+          ...catalogueOf(openTownId),
+          built: townBuildings.builtIn(openTownId),
+          monsters: definitions.monsters
+        }),
         hall: describeHall({
           catalogue: catalogueOf(openTownId),
           town: buildingsOf(openTownId),

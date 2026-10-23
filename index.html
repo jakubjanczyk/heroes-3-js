@@ -241,22 +241,23 @@
     </template>
 
     <!--
-      The empty frames keep the places of what towns do not have yet, as laid out in Heroes 3: the
-      Fort icon and the creatures to recruit. The Hall icon opens the Hall; the last frame shows the
-      gold the town earns a day.
+      Laid out as in Heroes 3. The picture shows the town's buildings, drawn by town-screen-view; the
+      status bar under the panel names the one under the mouse. The Hall icon opens the Hall; the Fort
+      icon, shown once the town has a Fort, opens the Fort window; the last frame shows the gold the
+      town earns a day.
     -->
     <template id="town-screen-template">
       <section class="town-screen" role="dialog" aria-modal="true" aria-label="Town">
-        <div class="town-screen__view" aria-hidden="true">
-          <div class="town-screen__castle"></div>
-        </div>
+        <div class="town-screen__view" role="group" aria-label="Town picture"></div>
         <div class="town-panel">
           <div class="town-panel__summary">
             <div class="town-panel__picture" aria-hidden="true"></div>
             <h2 class="town-panel__name"></h2>
             <div class="town-panel__buildings">
               <button class="town-panel__frame town-panel__hall" type="button" data-town-action="hall" aria-label="Hall" title="Hall"></button>
-              <span class="town-panel__frame" aria-hidden="true"></span>
+              <span class="town-panel__frame town-panel__fort-frame">
+                <button class="town-panel__fort" type="button" data-town-action="fort" hidden></button>
+              </span>
               <span class="town-panel__frame town-panel__income" aria-label="Daily income" title="Daily income"></span>
             </div>
             <ul class="town-panel__growth" aria-label="Creature growth">
@@ -303,6 +304,7 @@
             </button>
           </div>
         </div>
+        <div class="town-screen__status-bar" role="status" aria-label="Town status bar"></div>
       </section>
     </template>
 
@@ -349,6 +351,35 @@
           </button>
         </div>
       </section>
+    </template>
+
+    <!--
+      The Fort window: a card for each creature tier, the dwelling and how many are available, the
+      creature and its stats. Clicking a built dwelling's card opens its recruit window.
+    -->
+    <template id="fort-window-template">
+      <div class="town-hall-backdrop">
+        <section class="town-hall fort-window" role="dialog" aria-modal="true">
+          <h2 class="town-hall__title fort-window__title"></h2>
+          <div class="fort-window__cards"></div>
+          <button class="town-hall__close" type="button" data-fort-action="close" aria-label="Close" aria-keyshortcuts="Enter Escape" title="Close (Enter)">
+            <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+          </button>
+        </section>
+      </div>
+    </template>
+
+    <template id="fort-card-template">
+      <article class="fort-card">
+        <div class="fort-card__dwelling">
+          <h3 class="fort-card__name"></h3>
+          <div class="fort-card__dwelling-picture town-hall__picture" aria-hidden="true"></div>
+          <p class="fort-card__dwelling-name"></p>
+          <p class="fort-card__available"></p>
+        </div>
+        <div class="fort-card__creature entity--monster" aria-hidden="true"></div>
+        <dl class="fort-card__stats"></dl>
+      </article>
     </template>
 
     <!--

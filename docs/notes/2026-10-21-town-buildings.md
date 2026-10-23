@@ -5,7 +5,7 @@ Roadmap 6.1: the Hall, where a town builds. This change doesn't look at resource
 ## How Heroes 3 does it
 
 - **The Hall.** Clicking the Village Hall (or Town Hall...) on the town picture opens the Hall, a window over the darkened town screen. Its title is the hall building's name. Each faction lays its buildings out in five rows of slots; a slot shows the next building of its chain (Fort, then Citadel, then Castle; a dwelling, then its upgrade), and the last one once the chain is complete.
-- **Slot bars.** Under each picture a bar with the building's name: gold with a tick when built, green when it can be built, red with a cross when requirements are missing, resources are short or the town has built today, grey with a cross when it can never be built here (a Shipyard away from water, a second Capitol).
+- **Slot bars.** Under each picture a bar with the building's name: gold with a tick when built, green when it can be built, red with a cross when requirements are missing or the town has built today, red with a sign of its own when resources are short (we show gold coins), grey with no mark when it can never be built here (a Shipyard away from water, a second Capitol). The marks follow VCMI's `CBuildingBox`.
 - **Building window.** Clicking a slot opens the building's window: picture, description, the buildings still required, the cost, and the Build (tick) and Cancel buttons. Building closes the Hall.
 - **Rules.** One building per town per day. A player can have one Capitol. Every town has its Village Hall from the start.
 

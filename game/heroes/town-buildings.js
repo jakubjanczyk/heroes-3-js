@@ -5,8 +5,8 @@ import { canAfford, isShortOf } from './treasury.js'
 // Every town starts with its Village Hall, as in Heroes 3.
 const STARTING_BUILDINGS = ['VILLAGE_HALL']
 // Every faction has the same halls and forts.
-const HALL_CHAIN = ['VILLAGE_HALL', 'TOWN_HALL', 'CITY_HALL', 'CAPITOL']
-const FORT_CHAIN = ['FORT', 'CITADEL', 'CASTLE']
+export const HALL_CHAIN = ['VILLAGE_HALL', 'TOWN_HALL', 'CITY_HALL', 'CAPITOL']
+export const FORT_CHAIN = ['FORT', 'CITADEL', 'CASTLE']
 
 export const BUILDING_STATUS = Object.freeze({
   BUILT: 'built',
@@ -20,12 +20,14 @@ export const BUILDING_STATUS = Object.freeze({
 
 // What a town type can build: the buildings every town has (buildings.json) with the town type's
 // own (its `buildings` in towns.json, which may also change a shared one), and the Hall's layout:
-// rows of chains, each chain the buildings one slot shows in turn (Fort, Citadel, Castle).
+// rows of chains, each chain the buildings one slot shows in turn (Fort, Citadel, Castle); and
+// where the town picture draws each building (its `picture`).
 export function townBuildingsCatalogue(definitions, townType) {
   const townDefinition = definitions?.towns?.[townType] ?? {}
   return {
     buildings: { ...definitions?.buildings, ...townDefinition.buildings },
-    hall: townDefinition.hall ?? []
+    hall: townDefinition.hall ?? [],
+    picture: townDefinition.picture ?? {}
   }
 }
 
@@ -148,11 +150,26 @@ export function describeTownBox({ catalogue, built }) {
   const { buildings } = catalogue
   const nameOf = (buildingId) => buildings[buildingId]?.name ?? buildingId
   const hallLevel = Math.max(1, HALL_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1)
-  const fortLevel = FORT_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1
 
   return {
     hall: { name: nameOf(HALL_CHAIN[hallLevel - 1]), level: hallLevel },
-    fort: { name: fortLevel > 0 ? nameOf(FORT_CHAIN[fortLevel - 1]) : null, level: fortLevel },
+    fort: { name: fortNameOf({ buildings, built }), level: fortLevelOf(built) },
     goldIncome: dailyIncomeOfTown({ buildings, built }).GOLD_PILE ?? 0
   }
+}
+
+// 1 for a Fort, 2 for a Citadel, 3 for a Castle, 0 for none.
+export function fortLevelOf(built) {
+  return FORT_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1
+}
+
+// The town's highest fort: Fort, Citadel or Castle; null when it has none.
+export function fortNameOf({ buildings, built }) {
+  const fortLevel = fortLevelOf(built)
+  if (fortLevel === 0) {
+    return null
+  }
+
+  const buildingId = FORT_CHAIN[fortLevel - 1]
+  return buildings[buildingId]?.name ?? buildingId
 }
