@@ -205,7 +205,7 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | `minimap-view` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.mine.captured`, `fact.town.captured`, `ui.camera.updated` | `command.camera.centerOnTile` |
 | `hud` | heroes | view | `ui.preview.updated`, `fact.world.ready`, `fact.turn.ended`, `fact.resource.collected`, `fact.income.collected`, `fact.treasureChest.opened`, `fact.resources.spent` | `command.move.continue.requested`, `command.turn.end.requested` |
 | `status-bar` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `ui.tile.hovered` | none |
-| `adventure-cursor` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `ui.tile.hovered`, `ui.map.edgeScrolled`, `fact.route.planned`, `fact.town.captured`, `ui.town.selected`, `ui.hero.selected` | `command.route.requested` |
+| `adventure-cursor` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `ui.tile.hovered`, `ui.map.edgeScrolled`, `fact.town.captured`, `ui.town.selected`, `ui.hero.selected` | none |
 | `info-popup` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.mine.captured`, `fact.town.captured`, `fact.town.building.built`, `fact.town.garrison.changed`, `fact.hero.leveledUp`, `ui.tile.info.requested`, `ui.tile.info.dismissed` | none |
 | `hero-panel` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.town.selected`, `fact.town.building.built`, `fact.town.garrison.changed`, `fact.turn.ended`, `fact.town.left` | `command.camera.centerOnTile`, `ui.hero.selected` |
 | `town-list` | heroes | view | `fact.world.ready`, `fact.town.captured`, `ui.hero.selected` | `ui.town.selected`, `command.camera.centerOnTile`, `command.town.open.requested` |
@@ -239,10 +239,10 @@ World state:
 - the hero's tile comes from the facts themselves: `fact.hero.moved` carries `to`, `fact.move.started` carries `from`, `fact.move.finished` carries `heroId` and `reachedTile`.
   - only `movement` remembers it, as one `heroTile` variable set from the snapshot and then from each `to`.
   - `camera` centers on the tile in each fact, `selection` trims its route by `to` and compares `reachedTile`, `entity-view` moves the hero element to `to`; none of them keep a copy.
-- `removedIds` (`game/domain/removed-entities.js`): ids taken off the map, updated from the generic `fact.entity.removed`. Kept by `movement` (route planning) and `entity-view` (full re-render).
+- `removedIds` (`game/domain/removed-entities.js`): ids taken off the map, updated from the generic `fact.entity.removed`. Kept by `movement` and `adventure-cursor` (route planning, through `game/systems/hero-routes.js`) and `entity-view` (full re-render).
 - `getOccupantAt` (`game/domain/tile-occupant.js`) answers "what stands on this tile": the static entry, unless it was removed. Only `movement` uses it.
 - an entity behavior marks an outcome with `removesEntity: true`; `app/modules/shared/interaction-outcomes.js` then emits `fact.entity.removed` with the outcome's own facts. Nothing outside the behavior needs to know which kinds disappear.
-- the movement system takes queries, not entity lists: `createMovementSystem({ getHero, occupancy })`, and exposes `planRoute(tile)` and `moveHeroTo(tile)`.
+- the movement system takes queries, not entity lists: `createMovementSystem({ getHero, occupancy })`, and exposes `planRoute(tile)` and `moveHeroTo(tile)`. `createHeroRoutes` (`game/systems/hero-routes.js`) keeps those queries up to date from facts and builds the system; `adventure-cursor` builds its own to plan a route for every hovered tile without a bus round trip.
 
 ### 6.2 Reusable UI components (custom elements)
 
