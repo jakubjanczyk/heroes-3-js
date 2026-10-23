@@ -28,6 +28,7 @@
    troop, available, recruit, total cost), the slider between its arrows, then Max, Recruit and
    Cancel. */
 .recruit-window,
+.split-window,
 .town-message {
   position: relative;
   display: grid;
@@ -41,7 +42,7 @@
   }
 }
 
-.recruit-window__title {
+.window-title {
   margin: 0;
   color: var(--hud-text-gold);
   font-size: var(--font-size-lg);
@@ -52,7 +53,8 @@
   gap: var(--space-md);
 }
 
-.recruit-window__creature {
+/* A creature's picture, a stand-in until creatures have art, with its name along the bottom. */
+.creature-picture {
   appearance: none;
   inline-size: 5.5rem;
   aspect-ratio: 58 / 64;
@@ -62,13 +64,13 @@
 
   display: grid;
   align-items: end;
-
-  &[aria-pressed="true"] {
-    border-color: #e0402f;
-  }
 }
 
-.recruit-window__creature-name {
+.recruit-window__creature[aria-pressed="true"] {
+  border-color: #e0402f;
+}
+
+.creature-picture__name {
   padding: var(--space-2xs);
   background: rgb(0 0 0 / 0.55);
   color: white;
@@ -110,19 +112,21 @@
   text-align: center;
 }
 
-.recruit-window__slider-row {
+/* A slider with an arrow at each end that moves it one step, as in Heroes 3's recruit and split
+   windows. */
+.count-slider {
   display: flex;
   align-items: center;
   gap: var(--space-2xs);
   inline-size: 70%;
 }
 
-.recruit-window__slider {
+.count-slider__range {
   flex: 1;
   accent-color: var(--trim-gold);
 }
 
-.recruit-window__arrow {
+.count-slider__arrow {
   appearance: none;
   inline-size: 1.5rem;
   aspect-ratio: 1;
@@ -137,6 +141,46 @@
 .recruit-window__max {
   color: var(--trim-gold);
   font-weight: bold;
+}
+
+/* The split window, laid out as Heroes 3's: the creature over each count, the slider between. */
+.split-window {
+  inline-size: min(20rem, calc(100% - 2rem));
+}
+
+.split-window__creatures,
+.split-window__counts,
+.split-window__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  gap: var(--space-md);
+  inline-size: 100%;
+}
+
+.split-window__creatures .creature-picture {
+  inline-size: 100%;
+}
+
+.split-window__slider {
+  inline-size: 100%;
+}
+
+.split-window__count {
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding: var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  background: rgb(0 0 0 / 0.35);
+  color: var(--hud-text);
+  font: inherit;
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+
+  &:focus {
+    outline: 1px solid var(--trim-gold);
+  }
 }
 
 .town-message-backdrop {
@@ -330,8 +374,10 @@
   list-style: none;
 }
 
-/* Heroes 3 frames the stack picked for moving in yellow. */
-.town-panel .army-slot[aria-current="true"] {
+/* Heroes 3 frames the stack picked for moving in yellow, and with Split pressed, the slots it can
+   be split onto too. */
+.town-panel .army-slot[aria-current="true"],
+.town-panel .army-slot.army-slot--split-target {
   border-color: #f2d23c;
   box-shadow: inset 0 0 0 1px #f2d23c;
 }
@@ -385,7 +431,7 @@
 
 .town-panel__side {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 3px;
   inline-size: clamp(2.5rem, 5vw, 4rem);
 }
@@ -418,6 +464,44 @@
 
   &:active {
     background: linear-gradient(180deg, #170d06, #2c1a0e);
+  }
+}
+
+/* Greyed out until a stack is framed; lit while the next click splits it, as in Heroes 3. */
+.town-panel__split {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  aspect-ratio: 2;
+  padding: 0;
+  border: 1px solid black;
+  background: linear-gradient(180deg, #2c1a0e, #170d06);
+  cursor: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 2px var(--trim-gold-dark),
+    inset 0 0 0 3px black;
+
+  & svg {
+    block-size: 80%;
+    fill: none;
+    stroke: var(--trim-gold);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(1px 1px 0 black);
+  }
+
+  &:disabled svg {
+    stroke: #6b5a40;
+  }
+
+  &[aria-pressed="true"] {
+    box-shadow:
+      inset 0 0 0 1px var(--trim-gold-light),
+      inset 0 0 0 3px var(--trim-gold),
+      inset 0 0 0 4px black;
   }
 }
 

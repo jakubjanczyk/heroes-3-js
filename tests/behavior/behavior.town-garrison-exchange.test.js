@@ -21,6 +21,7 @@ import {
   hoverGarrisonSlot,
   hoverVisitingHeroSlot,
   leaveTown,
+  querySplitWindow,
   readGarrison,
   readSelectedStack,
   readTownStatusBar,
@@ -207,18 +208,38 @@ describe('town garrison exchange behavior', () => {
     })
   })
 
+  // As in Heroes 3 (VCMI's CGarrisonSlot::clickPressed), the hero's last stack never leaves whole.
   describe("the hero's army is never left empty", () => {
-    test("the hero's last stack does not move to an empty garrison slot", async () => {
+    test("moving the hero's last stack to an empty garrison slot leaves one creature with the hero", async () => {
       const { user } = await startWithHeroInWhitemoon()
 
       await clickVisitingHeroSlot(user, 1)
       await clickGarrisonSlot(user, 2)
 
-      expect(readGarrison()).toEqual(['Pikemen 10', '', '', '', '', '', ''])
-      expect(readVisitingHeroArmy()).toEqual(['Archers 5', '', '', '', '', '', ''])
+      expect(readGarrison()).toEqual(['Pikemen 10', 'Archers 4', '', '', '', '', ''])
+      expect(readVisitingHeroArmy()).toEqual(['Archer 1', '', '', '', '', '', ''])
     })
 
-    test("the hero's last stack does not merge into a garrison stack of the same creature", async () => {
+    test("the hero's last stack of a single creature does not move to the garrison", async () => {
+      const { user } = await startWithHeroInWhitemoon(anExchangeScenario({ army: [archers(1)] }))
+
+      await clickVisitingHeroSlot(user, 1)
+      await clickGarrisonSlot(user, 2)
+
+      expect(readGarrison()).toEqual(['Pikemen 10', '', '', '', '', '', ''])
+      expect(readVisitingHeroArmy()).toEqual(['Archer 1', '', '', '', '', '', ''])
+    })
+
+    test("the hero's last stack stays framed when it can't move", async () => {
+      const { user } = await startWithHeroInWhitemoon(anExchangeScenario({ army: [archers(1)] }))
+
+      await clickVisitingHeroSlot(user, 1)
+      await clickGarrisonSlot(user, 2)
+
+      expect(readSelectedStack()).toBe('Visiting hero army 1')
+    })
+
+    test("clicking the hero's last stack onto the same creature in the garrison opens the split window", async () => {
       const { user } = await startWithHeroInWhitemoon(
         anExchangeScenario({ garrison: [archers(10)], army: [archers(5)] })
       )
@@ -226,17 +247,9 @@ describe('town garrison exchange behavior', () => {
       await clickVisitingHeroSlot(user, 1)
       await clickGarrisonSlot(user, 1)
 
+      expect(querySplitWindow('Split Archers')).toBeTruthy()
       expect(readGarrison()[0]).toBe('Archers 10')
       expect(readVisitingHeroArmy()[0]).toBe('Archers 5')
-    })
-
-    test("the hero's last stack stays framed when it can't move", async () => {
-      const { user } = await startWithHeroInWhitemoon()
-
-      await clickVisitingHeroSlot(user, 1)
-      await clickGarrisonSlot(user, 2)
-
-      expect(readSelectedStack()).toBe('Visiting hero army 1')
     })
 
     test("the hero's last stack can swap with a garrison stack", async () => {
