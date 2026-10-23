@@ -366,3 +366,29 @@ export async function clickBuildingOnPicture(user, buildingName) {
 export function readTownStatusBar() {
   return within(getTownScreen()).getByRole('status', { name: 'Town status bar' }).textContent
 }
+
+function getArmySlotInTown(listName, slot) {
+  const army = within(getTownScreen()).getByRole('list', { name: listName })
+  return within(army).getAllByRole('listitem')[slot - 1]
+}
+
+// Slots count from 1, as the player sees them from the left.
+export async function clickGarrisonSlot(user, slot) {
+  await user.click(getArmySlotInTown('Garrison', slot))
+  await flushMicrotasks()
+}
+
+export async function clickVisitingHeroSlot(user, slot) {
+  await user.click(getArmySlotInTown('Visiting hero army', slot))
+  await flushMicrotasks()
+}
+
+// The framed stack, as "<row> <slot>" ("Garrison 2"), or null when none is.
+export function readSelectedStack() {
+  const selected = ['Garrison', 'Visiting hero army'].flatMap((listName) => {
+    const slots = within(getTownScreen()).getByRole('list', { name: listName }).children
+    const index = [...slots].findIndex((slot) => slot.getAttribute('aria-current') === 'true')
+    return index >= 0 ? [`${listName} ${index + 1}`] : []
+  })
+  return selected[0] ?? null
+}

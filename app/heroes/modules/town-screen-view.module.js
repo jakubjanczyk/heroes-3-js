@@ -1,6 +1,7 @@
 import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
+  APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
   APP_FACT_TOWN_LEFT,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -30,6 +31,8 @@ export const registerTownScreenViewModule = defineModule(
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let townScreen = null
+    // The garrison or visiting hero stack framed for moving, as `{ army, slot }`.
+    let selectedStack = null
 
     function fillSlots(list, army) {
       list.querySelectorAll('.army-slot').forEach((slot, index) => {
@@ -102,6 +105,38 @@ export const registerTownScreenViewModule = defineModule(
       view.querySelector('.town-screen__buildings').replaceChildren(...picture.map(renderBuilding))
     }
 
+    function selectStack(stack) {
+      selectedStack = stack
+      for (const list of townScreen.querySelectorAll('.town-panel__slots')) {
+        for (const [index, slot] of [...list.children].entries()) {
+          if (list.dataset.army === stack?.army && index === stack?.slot) {
+            slot.setAttribute('aria-current', 'true')
+          } else {
+            slot.removeAttribute('aria-current')
+          }
+        }
+      }
+    }
+
+    // As in Heroes 3: the first click frames a stack, the second moves it onto the clicked slot
+    // (or unframes it, clicked again). A move the town refuses leaves the stack framed.
+    function clickArmySlot(slot) {
+      const list = slot.parentElement
+      const clicked = { army: list.dataset.army, slot: [...list.children].indexOf(slot) }
+      if (!selectedStack) {
+        if (slot.querySelector('.army-slot__creature')) {
+          selectStack(clicked)
+        }
+        return
+      }
+
+      if (selectedStack.army === clicked.army && selectedStack.slot === clicked.slot) {
+        selectStack(null)
+        return
+      }
+      emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, { from: selectedStack, to: clicked })
+    }
+
     function showStatus(text) {
       townScreen.querySelector('.town-screen__status-bar').textContent = text
     }
@@ -154,6 +189,7 @@ export const registerTownScreenViewModule = defineModule(
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
+      selectStack(null)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
         selectedTownId: entityId
@@ -167,6 +203,7 @@ export const registerTownScreenViewModule = defineModule(
 
       townScreen.remove()
       townScreen = null
+      selectedStack = null
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -231,6 +268,12 @@ export const registerTownScreenViewModule = defineModule(
               return
             }
 
+            const armySlot = event.target.closest('.town-panel__slots > .army-slot')
+            if (armySlot) {
+              clickArmySlot(armySlot)
+              return
+            }
+
             const town = event.target.closest('.town-list__town')
             if (town) {
               emit(APP_COMMAND_TOWN_OPEN_REQUESTED, { entityId: town.dataset.entityId })
@@ -251,6 +294,7 @@ export const registerTownScreenViewModule = defineModule(
     produces: [
       APP_COMMAND_TOWN_LEAVE_REQUESTED,
       APP_COMMAND_TOWN_OPEN_REQUESTED,
+      APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED
     ]

@@ -594,7 +594,9 @@ Stages, one PR each, done in this order:
 - [ ] A building just built fades in, as in H3
 
 #### 6.3.6 Moving creatures between garrison and visiting hero (6.4)
-- [ ] Swap, merge and split stacks between the garrison row and the visiting hero row
+- [x] Click a stack, then a slot: it moves onto an empty slot, merges into the same creature, swaps with another; between the rows or within one; see `docs/notes/2026-10-23-garrison-exchange.md`
+- [x] The hero's army is never left empty: its last stack can only swap
+- [ ] Split a stack (Shift+click onto an empty slot or a stack of the same creature, then pick the counts)
 
 #### 6.3 later
 - [ ] Upgrading creatures already in an army (Upg. dwelling + Hill Fort)
@@ -606,7 +608,7 @@ Stages, one PR each, done in this order:
 - [x] Town has its own garrison (7 creature stacks, independent of visiting hero) (6.3.1)
 - [ ] Garrison defends town if attacked while no hero is present (5.10)
 - [ ] A scenario can give a neutral town a garrison that defends it; capturing the town means winning that battle (5.10). Until sieges exist, only the player's own towns may start with a garrison (6.3.1)
-- [ ] Visiting hero can exchange creatures with garrison (drag-and-drop between rows) (6.3.6)
+- [x] Visiting hero can exchange creatures with garrison (click a stack, then where it goes) (6.3.6)
 - [x] Garrison shown in town view as a row of 7 slots (6.3.1)
 
 ### 6.5 Town Factions
