@@ -45,6 +45,15 @@ export const registerTownScreenViewModule = defineModule(
       })
     }
 
+    // Named after the town's fort, as Heroes 3 draws its level; the frame stays empty without one.
+    function showFortIcon(fort) {
+      const icon = townScreen.querySelector('.town-panel__fort')
+      icon.hidden = !fort
+      icon.setAttribute('aria-label', fort?.name ?? '')
+      icon.title = fort?.name ?? ''
+      icon.dataset.level = String(fort?.level ?? 0)
+    }
+
     function showVisitingHero(visitingHero) {
       const hero = townScreen.querySelector('.town-panel__hero--visiting')
       const name = visitingHero?.name ?? ''
@@ -70,7 +79,8 @@ export const registerTownScreenViewModule = defineModule(
       visitingHero,
       ownedTowns,
       goldIncome,
-      creatures
+      creatures,
+      fort
     }) {
       if (!gameShell) {
         return
@@ -88,6 +98,7 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
       showCreatures(creatures)
+      showFortIcon(fort)
       showVisitingHero(visitingHero)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
