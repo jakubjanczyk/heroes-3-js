@@ -15,17 +15,6 @@ const BROWSER_DEFAULTS_CSS = 'button { cursor: default; }'
 
 let appCssPromise = null
 
-const computeStyleFromStylesheets = window.getComputedStyle
-
-// Without the app's styles nothing is hidden or coloured by a stylesheet, only by the element's
-// own style, so that is all a test reads. Working styles out from jsdom's built-in stylesheet
-// takes a third of the behavior tests' time, mostly in Testing Library checking what is visible.
-function readInlineStyle(element) {
-  return element.style
-}
-
-window.getComputedStyle = readInlineStyle
-
 // jsdom ignores @layer and nesting and does not resolve var(), so the real stylesheet is
 // flattened before loading. Only variables declared on :root are resolved.
 function getAppCss() {
@@ -50,10 +39,8 @@ export async function loadAppStyles() {
   style.id = STYLE_ELEMENT_ID
   style.textContent = `${BROWSER_DEFAULTS_CSS}\n${await getAppCss()}`
   document.head.appendChild(style)
-  window.getComputedStyle = computeStyleFromStylesheets
 }
 
 export function unloadAppStyles() {
   document.getElementById(STYLE_ELEMENT_ID)?.remove()
-  window.getComputedStyle = readInlineStyle
 }
