@@ -122,7 +122,8 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Creatures available for recruitment panel, with their weekly growth (6.3.2, 6.3.3)
 - [x] Hall icon in the panel opens the Hall (6.1)
 - [x] The town's daily gold in the panel
-- [ ] Hall and Fort icons showing the town's level in the panel, as the town box does (the Hall icon is always the same, the Fort's place is kept empty)
+- [x] Fort icon in the panel once the town has a Fort, its towers showing the level as the town box's do; it opens the Fort window (6.3.4)
+- [ ] Hall icon showing the town's hall level in the panel, as the town box does (it is always the same picture)
 - [x] Town list on the panel's right side: the owned towns, the open one framed; clicking one switches to it
 - [x] Gold/resource display within town view: the resource bar and date stay under the town screen
 - [x] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
@@ -579,9 +580,9 @@ Stages, one PR each, done in this order:
 - [x] The town box and right-click popup show the recruits in the garrison; see `docs/notes/2026-10-22-creature-recruitment.md`
 
 #### 6.3.4 Fort window
-- [ ] The Fort icon opens the Fort window once a Fort is built
-- [ ] Seven cards with the creature, dwelling, available count and stats, as above
-- [ ] Clicking a card opens the recruit window over it; recruiting goes back to the Fort window with the new numbers
+- [x] The Fort icon opens the Fort window once a Fort is built; see `docs/notes/2026-10-23-fort-window.md`
+- [x] Seven cards with the creature, dwelling, available count and stats, as above; a tier without a dwelling shows its plain dwelling and creature with none available
+- [x] Clicking a card opens the recruit window over it; recruiting goes back to the Fort window with the new numbers
 
 #### 6.3.5 Buildings on the town picture (6.1, 2.3)
 - [ ] Built buildings drawn on the town picture as stand-ins; a chain shows only its highest building (Castle replaces Citadel and Fort)

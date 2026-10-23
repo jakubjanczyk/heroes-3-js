@@ -19,7 +19,7 @@ Roadmap 6.3.3: a town's dwellings keep creatures to buy, and the recruit window,
 
 ## Not yet
 
-- The Fort window (6.3.4) and clicking dwellings on the town picture (6.3.5).
+- Clicking dwellings on the town picture (6.3.5). The Fort window came in 6.3.4 (`2026-10-23-fort-window.md`).
 - Moving creatures between the garrison and the visiting hero (6.3.6).
 - A `fact.week_started` event (3.1); the town module tells a new week from the turn number.
-- The creature panel is hidden on narrow screens, so recruiting there waits for the Fort window or a layout for it.
+- The creature panel is hidden on narrow screens; there the player recruits from the Fort window.

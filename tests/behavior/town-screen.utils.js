@@ -272,3 +272,59 @@ export async function closeTownMessage(user) {
   await user.click(within(getTownMessage()).getByRole('button', { name: 'OK' }))
   await flushMicrotasks()
 }
+
+const FORT_NAMES = /^(Fort|Citadel|Castle)$/
+
+// The town panel's Fort icon, named after the town's fort; null when the town has none.
+export function queryFortIcon(fortName = FORT_NAMES) {
+  return within(getTownScreen()).queryByRole('button', { name: fortName })
+}
+
+// The Fort window, titled after the town's fort (Fort, Citadel or Castle).
+export function queryFortWindow(fortName = FORT_NAMES) {
+  return screen.queryByRole('dialog', { name: fortName })
+}
+
+function getFortWindow() {
+  const fortWindow = queryFortWindow()
+  expect(fortWindow).toBeTruthy()
+  return fortWindow
+}
+
+export async function openFortWindow(user, fortName) {
+  await user.click(queryFortIcon(fortName))
+  await flushMicrotasks()
+  getFortWindow()
+}
+
+export async function closeFortWindow(user) {
+  await user.click(within(getFortWindow()).getByRole('button', { name: 'Close' }))
+  await flushMicrotasks()
+}
+
+function getFortCard(creaturePlural) {
+  return within(getFortWindow()).getByRole('article', { name: creaturePlural })
+}
+
+// The creature named on each card, tier 1 to 7.
+export function readFortCards() {
+  return within(getFortWindow())
+    .getAllByRole('article')
+    .map((card) => card.getAttribute('aria-label'))
+}
+
+// A card's dwelling, "Available: N" and stats, each as shown: { Attack: '4', Damage: '1-3', ... }.
+export function readFortCard(creaturePlural) {
+  const card = within(getFortCard(creaturePlural))
+  const [dwelling, available] = card.getAllByRole('paragraph').map((line) => line.textContent)
+  const values = card.getAllByRole('definition')
+  const stats = Object.fromEntries(
+    card.getAllByRole('term').map((term, index) => [term.textContent, values[index].textContent])
+  )
+  return { dwelling, available, stats }
+}
+
+export async function clickFortCard(user, creaturePlural) {
+  await user.click(getFortCard(creaturePlural))
+  await flushMicrotasks()
+}
