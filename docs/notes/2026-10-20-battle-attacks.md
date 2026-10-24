@@ -4,9 +4,9 @@ Roadmap 5.6, melee first: the player's stacks attack the monster, it strikes bac
 
 ## How Heroes 3 does it
 
-Checked against VCMI (`scripts/damage/damageCalculator.lua`, `lib/battle/BattleInfo.cpp`, `server/battles/BattleActionProcessor.cpp`, `config/gameConfig.json`, `config/creatures/castle.json`) and the Might and Magic wiki's Damage page.
+Checked against the Might and Magic wiki's Damage page.
 
-- **Attacking.** The player clicks an enemy stack. Of the hexes next to it the stack can attack from, the one nearest the mouse is picked (VCMI `BattleFieldController::selectNearestDirection`; on a tie the upper side), so a side off the battlefield, taken or out of reach gives way to the nearest one that is not. The stack walks or flies there first, or attacks where it stands if it is already there.
+- **Attacking.** The player clicks an enemy stack. Of the hexes next to it the stack can attack from, the one nearest the mouse is picked, so a side off the battlefield, taken or out of reach gives way to the nearest one that is not. The stack walks or flies there first, or attacks where it stands if it is already there.
 - **Base damage.** Up to 10 creatures each roll their damage and the rolls add up. A bigger stack rolls 10 times and the sum is multiplied by count / 10, rounded down.
 - **Attack and defense.** A stack's Attack is its creature's plus its hero's Attack skill, and the same for Defense; a monster has no hero. Attack above defense adds 5% a point, up to +300% (60 points); defense above attack takes 2.5% a point, up to -70% (28 points). Further bonuses (luck, Offense, jousting, hatred) add to the +%, and further reductions (Armorer, Shield) each multiply; none of them exist yet.
 - **Rounding.** The damage is rounded down and is at least 1.
@@ -15,9 +15,9 @@ Checked against VCMI (`scripts/damage/damageCalculator.lua`, `lib/battle/BattleI
 - **Strikes twice.** Crusaders attack, take the retaliation, and attack again if both still live.
 - **Corpses.** A stack with no creatures left lies on its hex: it gets no turn, cannot be attacked, and other stacks walk over it and stand on it.
 - **Experience.** The winner's hero earns the health of every enemy creature killed.
-- **Texts.** The log reads "The Angels do 175 damage. 17 Pikemen perish." ("The Crusader does 9 damage.", "One Pikeman perishes."), and the status bar over an enemy "Attack Pikemen (damage 18-36)". The wording is from memory and VCMI's comments, not from the game's `GENRLTXT.TXT`; VCMI writes its own status text.
+- **Texts.** The log reads "The Angels do 175 damage. 17 Pikemen perish." ("The Crusader does 9 damage.", "One Pikeman perishes."), and the status bar over an enemy "Attack Pikemen (damage 18-36)". The wording is from memory, not from the game's `GENRLTXT.TXT`.
 
-VCMI rolls the damage in the stack's whole range after the modifiers, averaging up to 10 rolls; the wiki rolls first and applies the modifiers after. They differ by a point of rounding at most; we follow the wiki.
+The damage is rolled first and the modifiers applied after, as the wiki describes.
 
 ## What we do
 

@@ -5,9 +5,9 @@ Roadmap 6.3.3: a town's dwellings keep creatures to buy, and the recruit window,
 ## How Heroes 3 does it
 
 - **Creatures to buy.** Each dwelling has a pool. A dwelling standing at the start of the game has a week of creatures, Citadel or Castle bonus included. Each new week adds the week's growth on top of what was left unbought, in every town, neutral ones too, so a captured town keeps what built up.
-- **A dwelling just built** has a week of its creature's own growth straight away, without the Citadel's or Castle's bonus, which counts from the next week. Building its upgrade keeps the pool; both creatures are bought from it (VCMI's `CGameHandler::buildStructure`).
+- **A dwelling just built** has a week of its creature's own growth straight away, without the Citadel's or Castle's bonus, which counts from the next week. Building its upgrade keeps the pool; both creatures are bought from it.
 - **Recruit window.** "Recruit <plural>"; the dwelling's creatures, the upgraded one chosen first and framed in red; Cost Per Troop, Available, Recruit and Total Cost; a slider with arrows that goes no higher than the player can afford or is available; Max, Recruit and Cancel. It starts at 1 when one can be bought, else at 0, with Recruit greyed out. Enter recruits, Escape cancels. Recruiting closes the window.
-- **Where recruits go.** Only to the town's garrison (`getUpperArmy`): a stack of the same creature, else the first empty slot. The visiting hero is never used. With no room, Recruit shows "There is no room in the garrison for this army." and the window stays open (VCMI's `CRecruitmentWindow::buy`).
+- **Where recruits go.** Only to the town's garrison (`getUpperArmy`): a stack of the same creature, else the first empty slot. The visiting hero is never used. With no room, Recruit shows "There is no room in the garrison for this army." and the window stays open.
 
 ## What we do
 

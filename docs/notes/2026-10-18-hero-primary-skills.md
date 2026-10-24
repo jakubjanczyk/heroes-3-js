@@ -4,14 +4,14 @@ Roadmap 4.1. The hero has the four Heroes 3 primary skills: Attack, Defense, Pow
 
 ## How Heroes 3 does it
 
-- **Starting values come from the hero class, not from the hero.** Every hero has a class (Knight, Cleric, ...), and a new hero starts with that class's four values. VCMI reads them from the original game's `DATA/HCTRAITS.TXT` (`lib/entities/hero/CHeroClassHandler.cpp`, `loadFromLegacyData`). A hero's own data (`config/heroes/castle.json`: Orrin, Valeska, Edric, ...) has only the class, starting secondary skills and specialty, and `CGHeroInstance::initHero` sets each primary skill from `getHeroClass()->primarySkillInitial`.
-- **The map maker can override them.** The H3 map editor has "Customize primary skills" for each hero placed on the map. VCMI reads it as the hero's `primarySkills` from the map, and it replaces the class values.
-- **Minimums.** Attack 0, Defense 0, Power 1, Knowledge 1 (VCMI `HEROES_MINIMAL_PRIMARY_SKILLS`). VCMI raises a lower value to the minimum and logs a warning.
+- **Starting values come from the hero class, not from the hero.** Every hero has a class (Knight, Cleric, ...), and a new hero starts with that class's four values. The game reads them from `DATA/HCTRAITS.TXT`. A hero's own data (`config/heroes/castle.json`: Orrin, Valeska, Edric, ...) has only the class, starting secondary skills and specialty, and `CGHeroInstance::initHero` sets each primary skill from `getHeroClass()->primarySkillInitial`.
+- **The map maker can override them.** The H3 map editor has "Customize primary skills" for each hero placed on the map. It replaces the class values.
+- **Minimums.** Attack 0, Defense 0, Power 1, Knowledge 1. A lower value is raised to the minimum.
 - **Where they are shown.**
   - The info box at the bottom of the adventure panel, for the selected hero (`CInteractableHeroTooltip`, `client/widgets/MiscWidgets.cpp`).
     - Top row: the portrait, and beside it the name over four icons (sword, shield, spell book, books) with the numbers in boxes underneath. There are no text labels.
     - Next row: morale and luck, three army slots, then spell points. The four other army slots are below.
-    - Checked against a VCMI screenshot of the vanilla interface (`static/img/screenshots/1.6.0/Search object vanilla.jpg` in `vcmi/vcmi.eu`): Christian, a Knight, shows 2 2 1 1.
+    - Checked against a screenshot of the original interface: Christian, a Knight, shows 2 2 1 1.
   - The right-click popup on a hero (`CInfoBoxPopup` with `CHeroTooltip`), which is the same box.
   - The hero screen (not built yet) labels them "Attack", "Defense", "Power", "Knowledge".
 

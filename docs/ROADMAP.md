@@ -126,7 +126,7 @@ See `docs/notes/2026-10-20-town-screen.md`.
 - [x] Town list on the panel's right side: the owned towns, the open one framed; clicking one switches to it
 - [x] Gold/resource display within town view: the resource bar and date stay under the town screen
 - [x] Hovering a town on the map shows its own name (the scenario's `name`) in the status bar and popup
-- [x] Hovering the panel names what is under the mouse in the town's status bar: a creature's "9 Pikemen available, +14 growth" (VCMI's wording), the Hall and Fort icons' buildings, "Leave town", a town in the list, the visiting hero's name (H3's "Select <hero> (visiting)" once heroes can garrison)
+- [x] Hovering the panel names what is under the mouse in the town's status bar: a creature's "9 Pikemen available, +14 growth", the Hall and Fort icons' buildings, "Leave town", a town in the list, the visiting hero's name (H3's "Select <hero> (visiting)" once heroes can garrison)
 
 ### 2.3b Town Ownership & Town List
 Heroes 3 lets the player open their own towns from the sidebar or the map, with no hero inside. See `docs/notes/2026-10-21-town-ownership.md`.
@@ -142,18 +142,18 @@ Heroes 3 lets the player open their own towns from the sidebar or the map, with 
 - [x] Ownership persisted in the event log; an open town screen is shown again after reload
 
 ### 2.4 Adventure Map Messages
-What a visit tells the player. Small pickups go to the info box (2.4b); a dialog opens only for the rest (VCMI's `EInfoWindowMode`: `INFO` goes to the info box, `AUTO` and `MODAL` open a dialog).
+What a visit tells the player. Small pickups go to the info box (2.4b); a dialog opens only for the rest.
 - [x] Town visit: opens the town screen
 - [x] Treasure chest: dialog to pick the gold or the experience
-- [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message (VCMI's `CGResource::collectRes`)
-- [ ] Mine capture: dialog with the mine's text (VCMI's `core.mineevnt`, one per mine type) and the resource's picture with its daily amount (`CGMine::flagMine`)
+- [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message
+- [ ] Mine capture: dialog with the mine's text and the resource's picture with its daily amount (`CGMine::flagMine`)
 - [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
 - [ ] Artifact pickup: dialog with the artifact's picture and its pickup text (with artifacts, 7.8)
 - [ ] Dwelling visit: asks whether to recruit, then opens the recruit window (6.3.3) (with map dwellings, 7.4)
 - [ ] (Not in H3, optional extra) Floating number over the map on a pickup
 
 ### 2.4b Info Box
-The box at the bottom of the adventure panel shows more than the selected hero or town. How it works (VCMI's `CInfoBar`, `client/adventureMap/CInfoBar.cpp`):
+The box at the bottom of the adventure panel shows more than the selected hero or town. How it works:
 - It shows the selected hero or town by default.
 - A message (a pickup) replaces it for 3 seconds: the pictures with their amounts, a short text over them when it fits (`core.advevent.113` for a resource). Several messages queue and show one after another; a click skips to the next; then the selection comes back. Each pickup plays a sound.
 - Clicking it goes through three views: the selected hero or town, then the kingdom overview, then the date, then back. The overview and the date go back to the selection by themselves after 3 seconds.
@@ -315,7 +315,6 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 - [ ] Hero defeated (loses all army): hero removed from map, goes to tavern pool (recruitable again)
 
 ### 4.6 Movement Points & Terrain
-Rules checked against VCMI's pathfinder (`config/terrains.json`, `config/roads.json`, `lib/pathfinder/CPathfinder.cpp`).
 - [x] 1500 MP per day for now (H3: 1300-2000 from the slowest creature's speed; needs hero army, 4.3)
 - [x] A step costs the terrain of the tile the hero leaves:
   - Grass, dirt, lava, subterranean: 100
@@ -553,7 +552,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [x] Build one building per day per town
 - [x] Buildings have resource costs (gold + materials), shown in the building window
 - [x] Building checks the player can afford it and spends the cost (3.4)
-- [x] Buildings have prerequisites (tech tree, from VCMI); the window lists the missing ones
+- [x] Buildings have prerequisites; the window lists the missing ones
 - [x] Build button: select building, construction completes instantly; the Hall closes back to the town screen
 - [x] A scenario can start a town with buildings (`"buildings": [...]`); every town has its Village Hall
 - [x] Shipyard only in a town with water next to it; one Capitol per player
@@ -563,9 +562,9 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [ ] Right-clicking a building on the town picture shows its info: picture, name and description (H3 shows the building window without Build)
 - [ ] Other factions' buildings and Hall layouts (shared buildings are in `game/data/buildings.json`)
 - [ ] A faction can drop a shared building it doesn't have (`"SHIPYARD": null` for Inferno and Dungeon), so a scenario can't give it one
-- [ ] Buildings that upgrade themselves: a horde building (Griffin Bastion) upgrades when its dwelling is upgraded, as in VCMI's `mode: auto` (matters once buildings have effects, 6.3)
+- [ ] Buildings that upgrade themselves: a horde building (Griffin Bastion) upgrades when its dwelling is upgraded (matters once buildings have effects, 6.3)
 - [ ] Unit test checking the data files: every `requires` and Hall entry names a building that exists
-- Requirements are all-of lists; VCMI's data for all eight original factions needs nothing else (no "A or B" requirements)
+- Requirements are all-of lists; the eight original factions need nothing else (no "A or B" requirements)
 
 ### 6.2 Common Buildings (all factions)
 - [x] **Village Hall** (built-in) -> Town Hall -> City Hall -> Capitol
@@ -589,11 +588,11 @@ How Heroes 3 does it:
 - Growth arrives at the start of each week (with the "New week" popup). Unbought creatures pile up from week to week, in neutral towns too, so a captured town keeps what built up.
 - A dwelling that stands at the start of the game, or has just been built, has one week of creatures to buy straight away.
 - Bonuses: Citadel +50%, Castle +100% (the Fort gives none); horde buildings add a flat number (Griffin Bastion: +3 Griffins).
-- Recruits go to the town's garrison only, never to the visiting hero; with no room there, Recruit says "There is no room in the garrison for this army." and the window stays open (VCMI's `CRecruitmentWindow::buy`). No hero is needed, and there is no daily limit.
+- Recruits go to the town's garrison only, never to the visiting hero; with no room there, Recruit says "There is no room in the garrison for this army." and the window stays open. No hero is needed, and there is no daily limit.
 - The panel (bottom left of the town screen) shows each built tier's creature with its weekly growth ("+14"), in a row of 4 and a row of 3; an unbuilt tier's slot is empty. Clicking a creature opens its recruit window.
 - The Fort window, opened from the Fort icon or the fort on the town picture, exists only once a Fort is built; its title is the fort's name (Fort, Citadel, Castle). Tiers 1-6 in two columns and tier 7 centred below: each card has the plural creature name over the dwelling's picture, the dwelling's name and "Available: N", the creature's picture, and Attack, Defense, Damage, Health, Speed and Growth. Clicking a card opens the recruit window over it; the ✓ closes it.
 - The recruit window: "Recruit <plural>" as its title; both creatures for an upgraded dwelling, the selected one framed in red and the upgraded one selected first; boxes for Cost Per Troop (a column per resource), Available, Recruit and Total Cost; a slider with arrow buttons, going no higher than the player can afford; Max, Recruit (greyed out at 0) and Cancel. The slider starts at 1 when one can be bought and afforded, otherwise at 0.
-- A dwelling built during the game has one week of its creature's own growth straight away; the Citadel's and Castle's bonus counts from the next week (VCMI).
+- A dwelling built during the game has one week of its creature's own growth straight away; the Citadel's and Castle's bonus counts from the next week.
 
 Stages, one PR each, done in this order:
 

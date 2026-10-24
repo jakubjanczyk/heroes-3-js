@@ -6,8 +6,8 @@ Roadmap 6.3.6: moving creatures between a town's garrison and its visiting hero 
 
 - **Two clicks.** Clicking a stack frames it in yellow. Clicking another slot moves the framed stack there: onto an empty slot it moves, onto a stack of the same creature the two merge, onto another creature the two swap places. Clicking the framed stack again unframes it.
 - **Both rows.** It works between the garrison row and the visiting hero row, and within either row.
-- **A hero always has an army.** The hero's last stack moved onto an empty slot of the garrison leaves one creature behind; onto the same creature in the garrison, it opens the split window instead of merging (VCMI's `CGarrisonSlot::clickPressed`). It can always swap with another stack.
-- **Status bar.** Hovering a slot says what clicking it does, with the creature's singular name (VCMI's `CGarrisonSlot::hover`): "Select Pikeman (in garrison)" or "(visiting)", "Empty"; with a stack framed, "Exchange Archer with Pikeman", "Combine Pikeman armies", "Move Pikeman", "Cannot move last army to garrison", and "View Pikeman" on the framed stack itself.
+- **A hero always has an army.** The hero's last stack moved onto an empty slot of the garrison leaves one creature behind; onto the same creature in the garrison, it opens the split window instead of merging. It can always swap with another stack.
+- **Status bar.** Hovering a slot says what clicking it does, with the creature's singular name: "Select Pikeman (in garrison)" or "(visiting)", "Empty"; with a stack framed, "Exchange Archer with Pikeman", "Combine Pikeman armies", "Move Pikeman", "Cannot move last army to garrison", and "View Pikeman" on the framed stack itself.
 - **Splitting.** Shift+click or the split button divides a stack between two slots; see `2026-10-23-stack-splitting.md`.
 
 ## What we do

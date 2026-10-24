@@ -4,8 +4,6 @@ Roadmap 4.3b: the Heroes 3 hero screen, with what the game knows about the hero 
 
 ## How Heroes 3 does it
 
-Checked against VCMI (`client/windows/CHeroWindow.cpp`, `client/adventureMap/CList.cpp`, `AdventureMapInterface.cpp`, `CCastleInterface.cpp`, `config/shortcutsConfig.json`).
-
 - **Opening it.** A click on a hero in the hero list selects them; a click on the hero already selected opens the hero screen (`CList::CListItem::clickPressed`). The selection doesn't move the camera on that second click. Clicking the selected hero on the map opens it too. In a town, the first click on the visiting hero's portrait frames it and the second opens the hero screen over the town (`CHeroGSlot::clickPressed`).
 - **Closing it.** The ✓, Enter or Escape (`globalReturn`). Over a town, it goes back to the town.
 - **Layout**, in the game's pixels (the screenshot of the HD version is the same at 1.8 times):
@@ -14,7 +12,7 @@ Checked against VCMI (`client/windows/CHeroWindow.cpp`, `client/adventureMap/CLi
   - bottom: the seven army slots, and the tight / loose formation, tactics and split buttons
   - down the right side: the player's banner, a list of the player's heroes, the ✓
   - the status bar along the bottom
-- **Status bar.** Hovering a part names what right-clicking it shows: "View Advanced Learning Info" over a secondary skill. Primary skills use the same text (`core.heroscrn.1` with the skill's name) and Experience its own (`core.heroscrn.9`). The game's texts aren't in VCMI's repository; "View Attack Info" and "View Experience Info" follow the wording the screenshot shows for a secondary skill.
+- **Status bar.** Hovering a part names what right-clicking it shows: "View Advanced Learning Info" over a secondary skill. Primary skills use the same text (`core.heroscrn.1` with the skill's name) and Experience its own (`core.heroscrn.9`). The game's texts weren't available; "View Attack Info" and "View Experience Info" follow the wording the screenshot shows for a secondary skill.
 
 ## What we do
 
@@ -27,7 +25,7 @@ Checked against VCMI (`client/windows/CHeroWindow.cpp`, `client/adventureMap/CLi
 
 ## Rearranging the army
 
-- As on the town screen (`2026-10-23-garrison-exchange.md`, `2026-10-23-stack-splitting.md`): click a stack to frame it, then click another slot to move it, swap the two or merge them; Shift+click or the Split button (the bottom right of the four army buttons, as in VCMI's `CHeroWindow`) opens the split window.
+- As on the town screen (`2026-10-23-garrison-exchange.md`, `2026-10-23-stack-splitting.md`): click a stack to frame it, then click another slot to move it, swap the two or merge them; Shift+click or the Split button (the bottom right of the four army buttons) opens the split window.
 - With one army, the hero's last stack moves whole: the "leave one creature" rule only applies when it goes to another army.
 - The status bar words the slots as in town without "(visiting)" or "(in garrison)": "Select Pikeman".
 - `app/heroes/presentation/army-rearranging.js` holds the framing, split mode and status bar texts both screens share. The hero screen asks for the change with `command.hero.stackMove.requested` and `command.hero.stackSplit.requested`; `hero-army.module.js` applies `army-exchange`'s rule to the hero's army alone and emits `fact.hero.army.changed`, which is persisted, and the screen redraws the army from it. Opened over a town, the town screen shows the new army too.

@@ -46,7 +46,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - No comment that restates the code, the function or variable name, or the test name.
   - No header comments describing what a module, function, helper or state variable does, its parameters or what it returns.
   - This is a Heroes 3 game, so don't write "as in Heroes 3", "Heroes 3 does…" or "the Heroes 3 <thing>".
-  - Never mention VCMI (or its classes, functions and files) in code or test comments. Explain the rule itself instead; research notes in `docs/notes/` may still name their sources.
+  - Never mention VCMI (or its classes, functions and files) in code, test comments or docs. Describe the rule itself instead.
   - Not every function, variable or test helper needs one; most need none.
 - In tests, a comment is worth it when it explains how an expected value is worked out (damage numbers, positions), not to narrate the steps.
 

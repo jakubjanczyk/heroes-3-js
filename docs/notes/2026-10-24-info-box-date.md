@@ -4,8 +4,6 @@ Roadmap 2.4b: ending the turn shows the new date in the info box.
 
 ## How Heroes 3 does it
 
-From VCMI's `CInfoBar::VisibleDateInfo`, `CInfoBar::showDate` and `CInfoBar::tick`:
-
 - At the start of every turn but the game's first, the info box shows the date for 3 seconds, then the selection.
 - The text is "Day N", the day of the week (`allTexts[64]`); on the first day of a week "Week N" instead (`allTexts[63]`), the week of the month, so day 29 says "Week 1".
 - The picture is the new day animation (`NEWDAY`), or on the first day of a week that week's animation (`NEWWEEK1`-`NEWWEEK4`). It plays once, in 1.5 seconds of frames about 180 ms long.

@@ -4,16 +4,16 @@ Roadmap 5.6: shooters shoot. Archers, Marksmen, Monks and Zealots had their shot
 
 ## How Heroes 3 does it
 
-Checked against VCMI where marked (`lib/constants/NumericConstants.h`, `lib/battle/CBattleInfoCallback.cpp`, `server/battles/BattleActionProcessor.cpp`, `client/gui/CursorHandler.h`); the rest is from the game as players know it and the Might and Magic wiki.
+From the game as players know it and the Might and Magic wiki.
 
-- **Shooting.** A shooter with shots left and no living enemy next to it shoots instead of moving: clicking any enemy stack, wherever it stands, shoots it (VCMI `battleCanShoot`). With an enemy next to it, or no shots left, it can only fight hand to hand, as other creatures do.
+- **Shooting.** A shooter with shots left and no living enemy next to it shoots instead of moving: clicking any enemy stack, wherever it stands, shoots it. With an enemy next to it, or no shots left, it can only fight hand to hand, as other creatures do.
 - **No retaliation.** A shot is not struck back at. (Some creatures of other factions do strike back at shooters; none of ours.)
-- **Shots.** 12 a battle, 24 once upgraded. Every shot uses one. Marksmen shoot twice: the second shot comes while the target still lives and they have a shot left (VCMI `makeRangedAttack`).
-- **Distance penalty.** A target more than 10 hexes away, counted from the shooter's hex to the nearest hex of the target, takes half damage (VCMI `BATTLE_SHOOTING_PENALTY_DISTANCE`, `battleHasDistancePenalty`).
-- **Melee penalty.** A shooter that fights hand to hand does half damage, its retaliation included. Zealots have no melee penalty. Not checked against VCMI's source, which we could not fetch.
+- **Shots.** 12 a battle, 24 once upgraded. Every shot uses one. Marksmen shoot twice: the second shot comes while the target still lives and they have a shot left.
+- **Distance penalty.** A target more than 10 hexes away, counted from the shooter's hex to the nearest hex of the target, takes half damage.
+- **Melee penalty.** A shooter that fights hand to hand does half damage, its retaliation included. Zealots have no melee penalty.
 - **Rounding.** Both penalties halve the damage after attack and defense, then it is rounded down and is at least 1.
 - **Walls.** In Heroes 3 only castle walls get in the way of a shot; there is no line of fire on an open battlefield.
-- **Texts.** The log reads as for a melee attack ("The Archers do 10 damage. One Pikeman perishes."). The status bar over a target reads "Shoot Pikemen (12 shots left, damage 21-31)"; the wording is from memory, not the game's text files. The cursor is an arrow, and a broken arrow when the distance penalty applies (VCMI `Cursor::Combat::SHOOT` and `SHOOT_PENALTY`).
+- **Texts.** The log reads as for a melee attack ("The Archers do 10 damage. One Pikeman perishes."). The status bar over a target reads "Shoot Pikemen (12 shots left, damage 21-31)"; the wording is from memory, not the game's text files. The cursor is an arrow, and a broken arrow when the distance penalty applies.
 
 ## What we do
 

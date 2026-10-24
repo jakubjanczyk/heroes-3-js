@@ -5,7 +5,7 @@ Roadmap 5.7 and 10.6: three buttons of the combat bar work, each with its Heroes
 ## How Heroes 3 does it
 
 - **Wait** (W). The stack gives up its turn for now. Once every stack that did not wait has acted, the stacks that waited act, the slowest first. A stack waits once a round.
-- **Defend** (D or Space). The stack ends its turn and gets +20% Defense until its next turn starts, at least 1 point when 20% rounds down to nothing (VCMI `BattleActionProcessor::doDefendAction`). The roadmap had +25%.
+- **Defend** (D or Space). The stack ends its turn and gets +20% Defense until its next turn starts, at least 1 point when 20% rounds down to nothing. The roadmap had +25%.
 - **Auto combat** (A). The computer plays the player's stacks too, with the same moves and attacks, until the battle ends. The battle can be lost that way, and the army keeps what it lost.
 
 ## What we do

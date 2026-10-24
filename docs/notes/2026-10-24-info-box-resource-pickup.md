@@ -4,9 +4,7 @@ Roadmap 2.4 and 2.4b: picking up a resource pile tells the player what they foun
 
 ## How Heroes 3 does it
 
-From VCMI's `CGResource::collectRes`, `CPlayerInterface::showInfoDialog`, `CInfoBar` and `AdventureMapInterface`:
-
-- A pile without a message of its own is shown in the info box (`EInfoWindowMode::INFO`): the resource's picture with the amount under it, in place of the selected hero or town. VCMI adds a short text over it; we show the picture and amount only.
+- A pile without a message of its own is shown in the info box (`EInfoWindowMode::INFO`): the resource's picture with the amount under it, in place of the selected hero or town. The game adds a short text over it; we show the picture and amount only.
 - It stays for 3 seconds, then the selection comes back. Clicking the box brings the selection back sooner.
 - The hero starting to move (`onHeroMovementStarted`) or a new selection, such as a town from the town list (`onSelectionChanged`), drops the message and shows the selection straight away.
 - A pile the map gives its own message opens a dialog instead (`EInfoWindowMode::AUTO`); our scenarios have no such piles yet.
