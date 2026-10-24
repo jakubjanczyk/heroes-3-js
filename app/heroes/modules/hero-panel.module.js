@@ -37,11 +37,15 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderDateBox } from '../presentation/date-box.js'
 import { renderFoundResourcesBox } from '../presentation/found-resources-box.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
+import {
+  INFO_BOX_SELECTION,
+  infoBoxTimeoutMs,
+  nextInfoBoxState
+} from '../presentation/info-box-states.js'
 import { renderKingdomOverviewBox } from '../presentation/kingdom-overview-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
-const MESSAGE_SHOWN_MS = 3000
 
 // The hero list with its movement bar, the info box below it and the Next hero button. The hero is
 // selected again on a new day and on leaving a town it is in.
@@ -64,55 +68,38 @@ export const registerHeroPanelModule = defineModule(
     let turnNumber = 1
     let selectedTown = null
     let isRestoring = false
-    let message = null
-    let messageTimer = null
+    let infoBox = INFO_BOX_SELECTION
+    let infoBoxTimer = null
     let openModalCount = 0
 
-    function showMessage(nextMessage) {
-      clearTimeout(messageTimer)
-      message = nextMessage
-      messageTimer = setTimeout(hideMessageUnlessModalOpen, MESSAGE_SHOWN_MS)
-      renderInfoBox()
-    }
-
-    // A message whose time runs out while a window is open stays until something else replaces it.
-    function hideMessageUnlessModalOpen() {
-      if (openModalCount === 0) {
-        hideMessage()
-      }
-    }
-
-    function hideMessage() {
-      if (!message) {
+    function sendToInfoBox(event) {
+      const next = nextInfoBoxState(infoBox, event)
+      if (next === infoBox) {
         return
       }
 
-      clearTimeout(messageTimer)
-      message = null
+      infoBox = next
+      clearTimeout(infoBoxTimer)
+      const timeoutMs = infoBoxTimeoutMs(infoBox)
+      if (timeoutMs !== null) {
+        infoBoxTimer = setTimeout(
+          () => sendToInfoBox({ type: 'timedOut', isModalOpen: openModalCount > 0 }),
+          timeoutMs
+        )
+      }
       renderInfoBox()
     }
 
-    function dropMessage() {
-      message = null
-      clearTimeout(messageTimer)
-    }
-
-    // Clicking the box goes from the selection to the kingdom overview, then to the date, then
-    // back; clicking a pickup or the date brings the selection back. Its army slots don't count.
-    function showNextView(event) {
-      if (!message) {
-        if (!event.target.closest?.('.army-slot')) {
-          showMessage({ kind: 'kingdom' })
-        }
-      } else if (message.kind === 'kingdom') {
-        showMessage({ kind: 'date', date: calendarDateOfTurn(turnNumber) })
-      } else {
-        hideMessage()
-      }
+    function onInfoBoxClicked(event) {
+      sendToInfoBox({
+        type: 'boxClicked',
+        onArmySlot: Boolean(event.target.closest?.('.army-slot')),
+        date: calendarDateOfTurn(turnNumber)
+      })
     }
 
     function selectHero() {
-      hideMessage()
+      sendToInfoBox({ type: 'selectionChanged' })
       if (!isHeroSelected) {
         isHeroSelected = true
         renderInfoBox()
@@ -161,31 +148,28 @@ export const registerHeroPanelModule = defineModule(
       renderMovementPoints()
     }
 
+    const INFO_BOX_RENDERERS = {
+      resources: () => renderFoundResources(),
+      date: () => renderDate(),
+      kingdom: () => renderKingdomOverview(),
+      selection: () => (isHeroSelected ? renderSelectedHero() : renderSelectedTown())
+    }
+
     function renderInfoBox() {
-      if (message?.kind === 'resources') {
-        renderFoundResources()
-      } else if (message?.kind === 'date') {
-        renderDate()
-      } else if (message?.kind === 'kingdom') {
-        renderKingdomOverview()
-      } else if (isHeroSelected) {
-        renderSelectedHero()
-      } else {
-        renderSelectedTown()
-      }
+      INFO_BOX_RENDERERS[infoBox.view]()
     }
 
     function renderFoundResources() {
       if (heroInfo) {
         heroInfo.setAttribute('aria-label', 'Resources found')
-        renderFoundResourcesBox(heroInfo, env.document, message.resources)
+        renderFoundResourcesBox(heroInfo, env.document, infoBox.resources)
       }
     }
 
     function renderDate() {
       if (heroInfo) {
         heroInfo.setAttribute('aria-label', 'Date')
-        renderDateBox(heroInfo, env.document, message.date)
+        renderDateBox(heroInfo, env.document, infoBox.date)
       }
     }
 
@@ -246,7 +230,7 @@ export const registerHeroPanelModule = defineModule(
 
     return {
       domSubscriptions: [
-        { target: heroInfo, type: 'click', handler: showNextView },
+        { target: heroInfo, type: 'click', handler: onInfoBoxClicked },
         {
           target: nextHeroButton,
           type: 'click',
@@ -272,7 +256,7 @@ export const registerHeroPanelModule = defineModule(
             definitions = event.detail.definitions
             levelUpSkills = []
             isHeroSelected = true
-            dropMessage()
+            sendToInfoBox({ type: 'selectionChanged' })
             renderHero(heroName)
             renderInfoBox()
           }
@@ -296,7 +280,7 @@ export const registerHeroPanelModule = defineModule(
           handler: (event) => {
             isHeroSelected = false
             selectedTown = { entityId: event.detail.entityId, name: event.detail.name }
-            dropMessage()
+            sendToInfoBox({ type: 'selectionChanged' })
             renderInfoBox()
           }
         },
@@ -331,7 +315,10 @@ export const registerHeroPanelModule = defineModule(
             turnNumber = event.detail.turnNumber
             selectAndCenterOnHero()
             if (!isRestoring) {
-              showMessage({ kind: 'date', date: calendarDateOfTurn(event.detail.turnNumber) })
+              sendToInfoBox({
+                type: 'dayStarted',
+                date: calendarDateOfTurn(event.detail.turnNumber)
+              })
             }
           }
         },
@@ -350,11 +337,17 @@ export const registerHeroPanelModule = defineModule(
             const { entityType, amount } = event.detail
             if (!isRestoring && entityType) {
               const name = definitions?.resources?.[entityType]?.name ?? entityType
-              showMessage({ kind: 'resources', resources: [{ type: entityType, name, amount }] })
+              sendToInfoBox({
+                type: 'resourceFound',
+                resources: [{ type: entityType, name, amount }]
+              })
             }
           }
         },
-        { type: APP_FACT_MOVE_STARTED, handler: hideMessage },
+        {
+          type: APP_FACT_MOVE_STARTED,
+          handler: () => sendToInfoBox({ type: 'moveStarted' })
+        },
         {
           type: APP_UI_NOTICE_OPENED,
           handler: () => {
@@ -399,7 +392,7 @@ export const registerHeroPanelModule = defineModule(
           }
         }
       ],
-      dispose: () => clearTimeout(messageTimer)
+      dispose: () => clearTimeout(infoBoxTimer)
     }
   },
   {
