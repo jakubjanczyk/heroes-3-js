@@ -1,4 +1,4 @@
-// The buildings standing, except one that a building standing upgrades (VCMI's `upgrades`): a
+// The buildings standing, except one that a building standing upgrades: a
 // Town Hall pays its 1000 gold in place of the Village Hall's 500, not on top of it.
 export function buildingsInEffect({ buildings, built }) {
   const upgraded = new Set([...built].map((buildingId) => buildings[buildingId]?.upgrades))

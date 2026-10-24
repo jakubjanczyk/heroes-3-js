@@ -1,7 +1,7 @@
 import { ARMY_SLOT_COUNT } from './hero-army.js'
 
-// A neutral monster splits into several stacks in battle, as in Heroes 3 (VCMI
-// `CGCreature::fight` and `getNumberOfStacks`, from the Heroes Community research).
+// A neutral monster splits into several stacks in battle, as worked out by the Heroes
+// Community research.
 
 export function getArmyStrength(army, definitions) {
   return army

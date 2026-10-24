@@ -1,4 +1,4 @@
-// The split window, as Heroes 3's (VCMI's CSplitWindow): the framed stack's creatures shared out
+// The split window: the framed stack's creatures shared out
 // between it (left) and the clicked slot (right). The slider counts the right-hand stack; each box
 // can be typed into, and the other box takes the rest. `limits` are the counts both stacks start
 // with and the least each may keep (army-exchange's `splitStackLimits`). OK calls `onSplit` with
