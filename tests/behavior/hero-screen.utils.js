@@ -87,7 +87,6 @@ export async function unhoverHeroScreenArmySlot(user, slot) {
   await user.unhover(getHeroScreenArmySlot(slot))
 }
 
-// The framed slot, counting from 1, or null when no stack is framed.
 export function readHeroScreenSelectedSlot() {
   const slots = within(getHeroScreen()).getByRole('list', { name: 'Army' }).children
   const index = [...slots].findIndex((slot) => slot.getAttribute('aria-current') === 'true')

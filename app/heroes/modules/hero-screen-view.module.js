@@ -19,7 +19,6 @@ import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
-// With one army on the screen, Heroes 3 doesn't say whose stack it is.
 const SELECT_TEXT = { hero: 'Select %s' }
 
 function statusSourceAt(target) {
@@ -30,8 +29,6 @@ function armySlotAt(target) {
   return target?.closest?.('.hero-screen__army > .army-slot') ?? null
 }
 
-// The Heroes 3 hero screen. It shows the hero as they are when it opens; only rearranging the army
-// changes the hero while it is open. It is not saved: a reload shows the map.
 export const registerHeroScreenViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document

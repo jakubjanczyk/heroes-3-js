@@ -206,7 +206,6 @@ export const registerTownScreenViewModule = defineModule(
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
-      // No `hero` without a visiting hero.
       rearranging.showArmies(visitingHero ? { garrison, hero: visitingHero.army } : { garrison })
       frameVisitingHero(false)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {

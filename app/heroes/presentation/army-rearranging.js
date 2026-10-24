@@ -11,12 +11,6 @@ function slotPosition(slot) {
   return { army: list.dataset.army, slot: [...list.children].indexOf(slot) }
 }
 
-// Rearranging armies on a screen as in Heroes 3, shared by the town screen and the hero screen:
-// the first click frames a stack, the second moves it onto the clicked slot (or unframes it,
-// clicked again). With Split pressed or Shift held, a click on an empty slot or the same creature
-// opens the split window. `slotLists` are the screen's army lists, each with `data-army` naming
-// its army; `container` holds the split window. `onMove` and `onSplit` ask for the change, which
-// comes back through `showArmies`; a refused move leaves the stack framed.
 export function createArmyRearranging({
   document,
   container,
@@ -27,12 +21,9 @@ export function createArmyRearranging({
   onMove,
   onSplit
 }) {
-  // The stack framed for moving, as `{ army, slot }`.
   let selectedStack = null
   let hoveredSlot = null
-  // With Split pressed, the next slot clicked splits the framed stack rather than moving it.
   let splitMode = false
-  // The stacks shown, by army, as the screen shows them.
   let armies = {}
 
   function showSlotStatus(slot) {
@@ -40,7 +31,6 @@ export function createArmyRearranging({
     showStatus(describeSlotHover(armies, selectedStack, slotPosition(slot), selectText))
   }
 
-  // The framed stack, and with Split pressed, every slot it can be split onto.
   function showSplitTargets() {
     for (const list of slotLists) {
       for (const slot of list.children) {
@@ -88,7 +78,6 @@ export function createArmyRearranging({
   }
 
   return {
-    // Any new armies unframe the stack.
     showArmies(shown) {
       armies = shown
       selectStack(null)

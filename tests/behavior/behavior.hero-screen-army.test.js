@@ -145,8 +145,6 @@ describe('hero screen army behavior', () => {
       expect(readHeroScreenSelectedSlot()).toBeNull()
     })
 
-    // Within one army the hero keeps every creature, so unlike moving to a town's garrison, the
-    // last stack moves whole.
     test("the hero's only stack moves to an empty slot whole", async () => {
       const { user } = await startOnHeroScreen(anArmyScenario({ army: [pikemen(10)] }))
 
