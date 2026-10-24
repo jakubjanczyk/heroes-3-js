@@ -86,6 +86,8 @@
     <link rel="modulepreload" href="./game/heroes/battle-results.js" />
     <link rel="modulepreload" href="./game/heroes/monster-stacks.js" />
     <link rel="modulepreload" href="./app/heroes/modules/battle-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/hero-army.module.js" />
+    <link rel="modulepreload" href="./game/heroes/army-exchange.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-levels.module.js" />
     <link rel="modulepreload" href="./game/heroes/hero-experience.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-panel.module.js" />
@@ -95,6 +97,8 @@
     <link rel="modulepreload" href="./app/heroes/presentation/hero-box.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/town-box.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-screen-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/army-rearranging.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/split-window.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hud.module.js" />
     <link rel="modulepreload" href="./game/heroes/calendar.js" />
     <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
@@ -114,7 +118,6 @@
     <link rel="modulepreload" href="./app/heroes/modules/status-bar.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/system-options.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/town.module.js" />
-    <link rel="modulepreload" href="./game/heroes/army-exchange.js" />
     <link rel="modulepreload" href="./game/heroes/creature-recruitment.js" />
     <link rel="modulepreload" href="./game/heroes/creature-growth.js" />
     <link rel="modulepreload" href="./game/heroes/fort-window.js" />
@@ -126,7 +129,6 @@
     <link rel="modulepreload" href="./app/heroes/modules/town-recruit-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/town-screen-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/castle-town-art.js" />
-    <link rel="modulepreload" href="./app/heroes/presentation/split-window.js" />
     <link rel="modulepreload" href="./app/heroes/modules/turn.module.js" />
     <link rel="modulepreload" href="./game/heroes/turn-system.js" />
     <link rel="modulepreload" href="./game/domain/value-objects/movement-points.js" />
@@ -734,7 +736,7 @@
           </div>
           <span class="hero-screen__slot hero-screen__button-frame" style="--x: 314; --y: 429" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__button-frame" style="--x: 454; --y: 429" aria-hidden="true"></span>
-          <ul class="hero-screen__army" aria-label="Army">
+          <ul class="hero-screen__army" aria-label="Army" data-army="hero">
             <li class="army-slot"></li>
             <li class="army-slot"></li>
             <li class="army-slot"></li>
@@ -746,7 +748,9 @@
           <span class="hero-screen__slot hero-screen__army-button" style="--x: 481; --y: 483" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__army-button" style="--x: 481; --y: 519" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__army-button" style="--x: 539; --y: 483" aria-hidden="true"></span>
-          <span class="hero-screen__slot hero-screen__army-button" style="--x: 539; --y: 519" aria-hidden="true"></span>
+          <button class="hero-screen__slot hero-screen__army-button hero-screen__split" type="button" style="--x: 539; --y: 519" data-status="Split" aria-label="Split" aria-pressed="false" title="Split" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 V12 M12 12 L5 5 M12 12 L19 5 M5 5 h4 M5 5 v4 M19 5 h-4 M19 5 v4" /></svg>
+          </button>
           <div class="hero-screen__banner" aria-hidden="true"></div>
           <ul class="hero-screen__heroes" aria-hidden="true">
             <li class="hero-screen__hero"></li>
