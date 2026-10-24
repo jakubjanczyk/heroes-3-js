@@ -8,8 +8,6 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
-// The hero's army rearranged within itself, as on the hero screen. Between the hero and a town's
-// garrison, the town module does it.
 export const registerHeroArmyModule = defineModule(
   ({ emit }) => {
     let hero = null

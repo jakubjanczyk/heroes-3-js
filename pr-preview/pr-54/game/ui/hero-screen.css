@@ -343,8 +343,6 @@
     text-shadow: 0 1px 1px black;
   }
 
-  /* As on the town screen: the framed stack in yellow, and with Split pressed, the slots it can be
-     split onto too. */
   & .army-slot[aria-current="true"],
   & .army-slot.army-slot--split-target {
     border-color: #f2d23c;
@@ -357,7 +355,6 @@
   --h: 32;
 }
 
-/* Greyed out until a stack is framed; lit while the next click splits it, as in Heroes 3. */
 .hero-screen__split {
   appearance: none;
   display: grid;
