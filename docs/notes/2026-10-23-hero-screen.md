@@ -18,7 +18,7 @@ Checked against VCMI (`client/windows/CHeroWindow.cpp`, `client/adventureMap/CLi
 
 ## What we do
 
-- `app/heroes/modules/hero-screen-view.module.js` keeps what it shows (experience, level-ups, army, where the hero is, whether they are selected) and opens on `ui.heroScreen.openRequested`, which the hero list (`hero-panel`) and the town screen ask for, or on a click on the selected hero's tile when nothing else blocks the map. It reads the hero when it opens; nothing changes the hero while it is open.
+- `app/heroes/modules/hero-screen-view.module.js` keeps what it shows (experience, level-ups, army) and opens on `ui.heroScreen.openRequested`, which the hero list (`hero-panel`) and the town screen ask for, and on `ui.selectedHero.clicked`. The selection module emits that one for a click on the hero's tile when the map takes clicks: not while the hero walks, a dialog or System options is open, a screen covers the map or a town is selected. It reads the hero when it opens; nothing changes the hero while it is open.
 - The markup is `#hero-screen-template` in `index.html`, styled in `game/ui/hero-screen.css`. Every part is placed in the game's 670 × 584 pixels and the window scales as a whole, so it keeps the game's look on any screen; on a phone it is small.
 - It covers the map (`ui.adventureMap.covered`) unless the town screen already does, and uncovers only what it covered, so closing it over a town leaves the map covered.
 - What the game has no data for yet is an empty frame where Heroes 3 draws it: specialty, morale, luck, spell points (left empty until there are spells), secondary skills, artifacts, backpack, Quest Log, Dismiss Hero and the four army buttons.
