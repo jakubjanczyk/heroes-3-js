@@ -300,6 +300,36 @@
     var(--panel-inset);
 }
 
+.info-box.found-box {
+  display: grid;
+  grid-template: none / none;
+  place-content: center;
+
+  & .found-box__resources {
+    display: flex;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .found-box__resource {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-xs);
+  }
+
+  & .resource-icon {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+  }
+
+  & .found-box__amount {
+    color: var(--hud-text);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 /*
  * Hero box, shared by the info box and the hero's right-click popup as in Heroes 3: the portrait
  * on the left, the name and the four primary skills beside it, then the army in two rows.
@@ -620,7 +650,7 @@
   white-space: nowrap;
 }
 
-.resource-bar__icon {
+.resource-icon {
   --resource-color: var(--trim-gold);
 
   inline-size: 1rem;
@@ -742,7 +772,7 @@
     min-inline-size: 2.5rem;
   }
 
-  .resource-bar__icon {
+  .resource-icon {
     inline-size: 0.75rem;
     block-size: 0.75rem;
   }
@@ -789,7 +819,7 @@
     gap: 0.25rem;
   }
 
-  .resource-bar__icon {
+  .resource-icon {
     inline-size: 0.75rem;
     block-size: 0.75rem;
   }

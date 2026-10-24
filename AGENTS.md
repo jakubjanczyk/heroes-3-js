@@ -78,4 +78,5 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - a short description of user-visible behavior
   - links to relevant docs/tasks (e.g. `docs/v1/tasks/T05-move-hero.md`)
   - screenshots or a short screencast when UI behavior changes
-- When a piece of work is finished (tests and lint passing, changes pushed), open a PR without waiting to be asked, then share its preview URL with the user. The PR preview workflow comments the URL on the PR once it has deployed (`https://jakubjanczyk.github.io/heroes-3-js/pr-preview/pr-<number>/`); take it from that comment.
+- Don't open a PR for a docs-only change (roadmap, notes, these guidelines): commit it on the working branch and let it ship with the feature it plans.
+- When a feature or fix is finished (tests and lint passing, changes pushed), open a PR without waiting to be asked, then share its preview URL with the user. The PR preview workflow comments the URL on the PR once it has deployed (`https://jakubjanczyk.github.io/heroes-3-js/pr-preview/pr-<number>/`); take it from that comment.

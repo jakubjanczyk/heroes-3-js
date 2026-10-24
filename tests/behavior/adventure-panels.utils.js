@@ -212,3 +212,18 @@ export function readPrimarySkills(container) {
 export function expectStatusBarText(text) {
   expect(screen.getByRole('status', { name: 'Status bar' }).textContent).toBe(text)
 }
+
+export function queryFoundResourcesBox() {
+  return screen.queryByRole('region', { name: 'Resources found' })
+}
+
+// Each resource the info box shows as found, e.g. 'Gold 100'.
+export function readFoundResources() {
+  const box = screen.getByRole('region', { name: 'Resources found' })
+  return within(box)
+    .getAllByRole('listitem')
+    .map((item) => {
+      const picture = within(item).getByRole('img')
+      return `${picture.getAttribute('aria-label')} ${item.textContent.trim()}`
+    })
+}

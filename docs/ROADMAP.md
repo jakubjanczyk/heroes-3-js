@@ -141,14 +141,37 @@ Heroes 3 lets the player open their own towns from the sidebar or the map, with 
 - [x] The town list on the town screen's panel switches between owned towns (2.3)
 - [x] Ownership persisted in the event log; an open town screen is shown again after reload
 
-### 2.4 Interaction Modals Upgrade
-- [ ] Monster defeat modal: show creature name, count defeated, XP gained, any loot dropped
-- [ ] Resource pickup modal: show resource icon, type name, amount collected (e.g. "+500 Gold")
-- [ ] Resource pickup: brief floating number animation on map (optional, low priority)
-- [ ] Mine capture modal: show mine type, daily income, "Mine captured!" message
-- [x] Town visit: redirect to town view screen instead of modal
-- [ ] Artifact pickup modal: show artifact name, description, stat bonuses, equip slot
-- [ ] Dwelling visit modal: show available creatures, count, cost, recruit button (reuses the recruit window, 6.3.3)
+### 2.4 Adventure Map Messages
+What a visit tells the player. Small pickups go to the info box (2.4b); a dialog opens only for the rest (VCMI's `EInfoWindowMode`: `INFO` goes to the info box, `AUTO` and `MODAL` open a dialog).
+- [x] Town visit: opens the town screen
+- [x] Treasure chest: dialog to pick the gold or the experience
+- [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message (VCMI's `CGResource::collectRes`)
+- [ ] Mine capture: dialog with the mine's text (VCMI's `core.mineevnt`, one per mine type) and the resource's picture with its daily amount (`CGMine::flagMine`)
+- [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
+- [ ] Artifact pickup: dialog with the artifact's picture and its pickup text (with artifacts, 7.8)
+- [ ] Dwelling visit: asks whether to recruit, then opens the recruit window (6.3.3) (with map dwellings, 7.4)
+- [ ] (Not in H3, optional extra) Floating number over the map on a pickup
+
+### 2.4b Info Box
+The box at the bottom of the adventure panel shows more than the selected hero or town. How it works (VCMI's `CInfoBar`, `client/adventureMap/CInfoBar.cpp`):
+- It shows the selected hero or town by default.
+- A message (a pickup) replaces it for 3 seconds: the pictures with their amounts, a short text over them when it fits (`core.advevent.113` for a resource). Several messages queue and show one after another; a click skips to the next; then the selection comes back. Each pickup plays a sound.
+- Clicking it goes through three views: the selected hero or town, then the kingdom overview, then the date, then back. The overview and the date go back to the selection by themselves after 3 seconds.
+- Kingdom overview: the number of the player's towns at each hall level (Village Hall, Town Hall, City Hall, Capitol icons with a count under each), then the allies' and the enemies' flags.
+- Date: "Day N" (the day of the week) with the new-day animation; on the first day of a new week "Week N" with that week's animation instead. It also shows by itself for 3 seconds at the start of every turn except the first day, with the new day, week or month sound.
+- During another player's turn: an hourglass with that player's crest (8.1).
+- Hovering it shows its help text in the status bar, and right-click shows a popup explaining the box (`zelp[292]`, `allTexts[109]`).
+
+Stages:
+- [x] Selected hero or town (1.3, 2.1)
+- [x] Resource pickup shown for 3 seconds, then back to the selection; a click, moving the hero or selecting a town brings the selection back sooner (2.4); see `docs/notes/2026-10-24-info-box-resource-pickup.md`
+- [ ] Queued messages, a click skipping to the next (needs pickups that give several things, 7.5-7.8)
+- [ ] Pickup sounds
+- [ ] Clicking it shows the kingdom overview (hall levels; flags once there are other players, 8.1), then the date, then back; each goes back after 3 seconds
+- [ ] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the animation and sound (3.1)
+- [ ] Status bar text on hover and right-click popup (2.5, 2.1)
+- [ ] Other pickups as they come: experience, primary skills, spells, artifacts, creatures (7.5-7.8)
+- [ ] The hourglass during another player's turn (8.1)
 
 ### 2.5 Status Bar
 As in H3: a one-line status bar between the map and the resource bar. Text only, no icons, no amounts or income.
@@ -968,7 +991,7 @@ Sprites and map authoring are intentionally late.
 28. Common buildings (6.2)
 29. Creature dwellings in town (6.3)
 30. Town garrison (6.4)
-31. Interaction modals upgrade (2.4)
+31. Info box (2.4b) and adventure map messages (2.4)
 
 ### Phase 5 - "Living World"
 32. Fog of war (7.1)
