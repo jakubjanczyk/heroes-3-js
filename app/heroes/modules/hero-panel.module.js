@@ -12,7 +12,9 @@ import {
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
+  APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_TOWN_LEFT,
@@ -20,13 +22,17 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_HERO_SCREEN_OPEN_REQUESTED,
   APP_UI_HERO_SELECTED,
+  APP_UI_RESTORE_COMPLETED,
+  APP_UI_RESTORE_STARTED,
   APP_UI_TOWN_SELECTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { renderFoundResourcesBox } from '../presentation/found-resources-box.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+const FOUND_RESOURCES_SHOWN_MS = 3000
 
 // The hero list with its movement bar, the info box below it and the Next hero button. As in
 // Heroes 3, the hero is selected again on a new day and on leaving a town it is in.
@@ -46,8 +52,29 @@ export const registerHeroPanelModule = defineModule(
     let townsById = new Map()
     const townBuildings = createTownBuildings()
     let selectedTown = null
+    let isRestoring = false
+    let foundResources = null
+    let foundResourcesTimer = null
+
+    function showFoundResources(resources) {
+      clearTimeout(foundResourcesTimer)
+      foundResources = resources
+      foundResourcesTimer = setTimeout(hideFoundResources, FOUND_RESOURCES_SHOWN_MS)
+      renderInfoBox()
+    }
+
+    function hideFoundResources() {
+      if (!foundResources) {
+        return
+      }
+
+      clearTimeout(foundResourcesTimer)
+      foundResources = null
+      renderInfoBox()
+    }
 
     function selectHero() {
+      hideFoundResources()
       if (!isHeroSelected) {
         isHeroSelected = true
         renderInfoBox()
@@ -97,7 +124,24 @@ export const registerHeroPanelModule = defineModule(
     }
 
     function renderInfoBox() {
-      if (heroInfo && isHeroSelected) {
+      if (foundResources) {
+        renderFoundResources()
+      } else if (isHeroSelected) {
+        renderSelectedHero()
+      } else {
+        renderSelectedTown()
+      }
+    }
+
+    function renderFoundResources() {
+      if (heroInfo) {
+        heroInfo.setAttribute('aria-label', 'Resources found')
+        renderFoundResourcesBox(heroInfo, env.document, foundResources)
+      }
+    }
+
+    function renderSelectedHero() {
+      if (heroInfo) {
         heroInfo.setAttribute('aria-label', 'Hero info')
         renderHeroBox(heroInfo, env.document, {
           name: heroName,
@@ -141,6 +185,7 @@ export const registerHeroPanelModule = defineModule(
 
     return {
       domSubscriptions: [
+        { target: heroInfo, type: 'click', handler: hideFoundResources },
         {
           target: nextHeroButton,
           type: 'click',
@@ -164,6 +209,8 @@ export const registerHeroPanelModule = defineModule(
             definitions = event.detail.definitions
             levelUpSkills = []
             isHeroSelected = true
+            foundResources = null
+            clearTimeout(foundResourcesTimer)
             renderHero(heroName)
             renderInfoBox()
           }
@@ -187,7 +234,9 @@ export const registerHeroPanelModule = defineModule(
           handler: (event) => {
             isHeroSelected = false
             selectedTown = { entityId: event.detail.entityId, name: event.detail.name }
-            renderSelectedTown()
+            foundResources = null
+            clearTimeout(foundResourcesTimer)
+            renderInfoBox()
           }
         },
         {
@@ -196,7 +245,7 @@ export const registerHeroPanelModule = defineModule(
             const { entityId, garrison } = event.detail
             townsById.set(entityId, { ...townsById.get(entityId), garrison })
             if (!isHeroSelected && selectedTown?.entityId === entityId) {
-              renderSelectedTown()
+              renderInfoBox()
             }
           }
         },
@@ -205,7 +254,7 @@ export const registerHeroPanelModule = defineModule(
           handler: (event) => {
             townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
             if (!isHeroSelected && selectedTown?.entityId === event.detail.entityId) {
-              renderSelectedTown()
+              renderInfoBox()
             }
           }
         },
@@ -217,6 +266,29 @@ export const registerHeroPanelModule = defineModule(
             if (heroTile && townTile && sameTile(heroTile, townTile)) {
               selectHero()
             }
+          }
+        },
+        {
+          type: APP_FACT_RESOURCE_COLLECTED,
+          handler: (event) => {
+            const { entityType, amount } = event.detail
+            if (!isRestoring && entityType) {
+              const name = definitions?.resources?.[entityType]?.name ?? entityType
+              showFoundResources([{ type: entityType, name, amount }])
+            }
+          }
+        },
+        { type: APP_FACT_MOVE_STARTED, handler: hideFoundResources },
+        {
+          type: APP_UI_RESTORE_STARTED,
+          handler: () => {
+            isRestoring = true
+          }
+        },
+        {
+          type: APP_UI_RESTORE_COMPLETED,
+          handler: () => {
+            isRestoring = false
           }
         },
         {
@@ -232,7 +304,8 @@ export const registerHeroPanelModule = defineModule(
             renderMovementPoints()
           }
         }
-      ]
+      ],
+      dispose: () => clearTimeout(foundResourcesTimer)
     }
   },
   {
@@ -248,7 +321,11 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_GARRISON_CHANGED,
       APP_FACT_TURN_ENDED,
-      APP_FACT_TOWN_LEFT
+      APP_FACT_TOWN_LEFT,
+      APP_FACT_RESOURCE_COLLECTED,
+      APP_FACT_MOVE_STARTED,
+      APP_UI_RESTORE_STARTED,
+      APP_UI_RESTORE_COMPLETED
     ],
     produces: [
       APP_COMMAND_CAMERA_CENTER_ON_TILE,

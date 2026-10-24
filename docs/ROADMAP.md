@@ -145,7 +145,7 @@ Heroes 3 lets the player open their own towns from the sidebar or the map, with 
 What a visit tells the player. Small pickups go to the info box (2.4b); a dialog opens only for the rest (VCMI's `EInfoWindowMode`: `INFO` goes to the info box, `AUTO` and `MODAL` open a dialog).
 - [x] Town visit: opens the town screen
 - [x] Treasure chest: dialog to pick the gold or the experience
-- [ ] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message (VCMI's `CGResource::collectRes`)
+- [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message (VCMI's `CGResource::collectRes`)
 - [ ] Mine capture: dialog with the mine's text (VCMI's `core.mineevnt`, one per mine type) and the resource's picture with its daily amount (`CGMine::flagMine`)
 - [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
 - [ ] Artifact pickup: dialog with the artifact's picture and its pickup text (with artifacts, 7.8)
@@ -164,7 +164,9 @@ The box at the bottom of the adventure panel shows more than the selected hero o
 
 Stages:
 - [x] Selected hero or town (1.3, 2.1)
-- [ ] Resource pickup shown for 3 seconds, then back to the selection; queued messages; a click skips (2.4)
+- [x] Resource pickup shown for 3 seconds, then back to the selection; a click, moving the hero or selecting a town brings the selection back sooner (2.4); see `docs/notes/2026-10-24-info-box-resource-pickup.md`
+- [ ] Queued messages, a click skipping to the next (needs pickups that give several things, 7.5-7.8)
+- [ ] Pickup sounds
 - [ ] Clicking it shows the kingdom overview (hall levels; flags once there are other players, 8.1), then the date, then back; each goes back after 3 seconds
 - [ ] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the animation and sound (3.1)
 - [ ] Status bar text on hover and right-click popup (2.5, 2.1)
