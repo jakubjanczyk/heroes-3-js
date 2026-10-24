@@ -3,12 +3,7 @@ import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import { expectMonsterNotPresent } from './adventure-map.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import {
   attackBattleHexFrom,
   getBattleStatusBarText,
@@ -483,7 +478,6 @@ describe('battle attack behavior', () => {
         eventLog,
         appConfig: { random: LOWEST_ROLLS }
       })
-      await flushMicrotasks()
       await attackPikemenFrom(reloaded.user, 'bottom-left')
 
       // 36 damage on a top Pikeman with 5 health left kills 4, with no retaliation. The 29 left
@@ -505,7 +499,6 @@ describe('battle attack behavior', () => {
         eventLog,
         appConfig: { random: LOWEST_ROLLS }
       })
-      await flushMicrotasks()
 
       expect(readBattleStacks()).toContainEqual(
         stackAt('Dead Crusader', CRUSADER_CORPSE.row, CRUSADER_CORPSE.column)

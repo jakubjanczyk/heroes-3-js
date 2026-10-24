@@ -289,7 +289,5 @@ export async function holdMouseOverMap(x, y) {
 
 export async function attackMonsterAt(x, y) {
   confirmTileClickByDispatch(x, y)
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }

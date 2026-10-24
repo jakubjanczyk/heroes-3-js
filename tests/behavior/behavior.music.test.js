@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { getMusicToggleButton } from './adventure-panels.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { setupMovementBehaviorApp } from './app.utils.js'
 
 describe('music behavior', () => {
   test('given tracks exist at boot then music toggle shows off state before any user action', async () => {
@@ -51,7 +51,6 @@ describe('music behavior', () => {
     expect(musicToggleButton).toBeTruthy()
 
     await user.click(musicToggleButton)
-    await flushMicrotasks()
 
     expect(musicToggleButton?.textContent).toBe('Music: Off')
     expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false')
@@ -79,13 +78,11 @@ describe('music behavior', () => {
     expect(musicToggleButton).toBeTruthy()
 
     await user.click(musicToggleButton)
-    await flushMicrotasks()
 
     expect(musicToggleButton?.textContent).toBe('Music: On')
     expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('true')
 
     await user.click(musicToggleButton)
-    await flushMicrotasks()
 
     expect(musicToggleButton?.textContent).toBe('Music: Off')
     expect(musicToggleButton?.getAttribute('aria-pressed')).toBe('false')

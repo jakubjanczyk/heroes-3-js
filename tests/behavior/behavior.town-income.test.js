@@ -3,12 +3,7 @@ import { describe, test } from 'vitest'
 
 import { confirmTileClickByDispatch } from './adventure-map.utils.js'
 import { endTurns, expectResourceTotal } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aMine, aScenario, aTown } from './builders.js'
 import { buildInTown, enterTownAt, leaveTown } from './town-screen.utils.js'
 
@@ -117,7 +112,6 @@ describe('town income behavior', () => {
   test('adds town and mine income together on the same day', async () => {
     const { user } = await setupApp(aTownScenario({ whitemoon: aWhitemoon().ownedByPlayer() }))
     confirmTileClickByDispatch(MINE_ENTRANCE.x, MINE_ENTRANCE.y)
-    await flushMicrotasks()
 
     await endTurns(user, 1)
 
@@ -132,7 +126,6 @@ describe('town income behavior', () => {
     await endTurns(user, 3)
 
     await setupApp(scenario, { eventLog })
-    await flushMicrotasks()
 
     expectResourceTotal('Gold', 1500)
   })

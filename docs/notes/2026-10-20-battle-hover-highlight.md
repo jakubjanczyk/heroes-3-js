@@ -4,7 +4,7 @@ Roadmap 5.3: the hex under the mouse lights up when pointing at an enemy, not on
 
 ## How Heroes 3 does it
 
-The combat options have a Cursor Shadow setting that shades the hex under the mouse (VCMI calls it the mouse shadow). We keep it on, and light the hex only when clicking it would do something: a hex the active stack can move to, or an enemy it can attack or shoot. A double-wide enemy lights up on both its hexes. The hex the stack would attack from is not lit; the sword cursor shows the side.
+The combat options have a Cursor Shadow setting that shades the hex under the mouse. We keep it on, and light the hex only when clicking it would do something: a hex the active stack can move to, or an enemy it can attack or shoot. A double-wide enemy lights up on both its hexes. The hex the stack would attack from is not lit; the sword cursor shows the side.
 
 ## What we do
 

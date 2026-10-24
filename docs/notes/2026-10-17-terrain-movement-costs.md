@@ -1,6 +1,6 @@
 # Terrain movement costs (2026-10-17)
 
-Roadmap 1.1 and 4.6. Movement now follows Heroes 3, checked against VCMI's pathfinder (`config/terrains.json`, `lib/pathfinder/CPathfinder.cpp`).
+Roadmap 1.1 and 4.6. Movement now follows Heroes 3.
 
 ## Behaviour
 

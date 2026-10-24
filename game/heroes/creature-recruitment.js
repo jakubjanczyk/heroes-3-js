@@ -75,7 +75,7 @@ export function weeklyGrowthByTier({ buildings, built, monsters }) {
 }
 
 // Recruits join a stack of the same creature, else the first empty slot; null when neither is
-// there (VCMI's getSlotFor).
+// there.
 export function addToGarrison(garrison, creature, count) {
   const slots = Array.from({ length: ARMY_SLOT_COUNT }, (_, index) => garrison?.[index] ?? null)
   const sameCreature = slots.findIndex((stack) => stack?.creature === creature)
@@ -88,7 +88,6 @@ export function addToGarrison(garrison, creature, count) {
   return slots
 }
 
-// The status bar over a creature in the town screen's panel, as VCMI words it.
 export function describeAvailableCreatures({ available, name, singularName, growth }) {
   return `${available} ${available === 1 ? singularName : name} available, +${growth} growth`
 }

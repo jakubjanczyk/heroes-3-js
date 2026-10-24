@@ -1,11 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import {
   attackBattleHexFrom,
   isBattleHexReachable,
@@ -135,7 +130,6 @@ describe('battle double-wide creatures behavior', () => {
     await moveActiveStackTo(user, 6, 5)
 
     await setupMovementBehaviorApp({ loadGameOptions: scenario.build(), eventLog })
-    await flushMicrotasks()
 
     expect(readBattleStacks()).toEqual(
       expect.arrayContaining([stackAt('Cavaliers (back half)', 6, 4), stackAt('Cavaliers 5', 6, 5)])

@@ -40,7 +40,6 @@ function createSession(scenario, appConfig = {}) {
 
 async function reload(sessionOptions) {
   const session = await setupMovementBehaviorApp(sessionOptions)
-  await flushMicrotasks()
   return session
 }
 
@@ -71,7 +70,6 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
     await winBattle(firstSession.user)
-    await flushMicrotasks()
 
     confirmTileClickByDispatch(3, 0)
     await flushMicrotasks()
@@ -99,7 +97,6 @@ describe('session persistence behavior', () => {
     await setupMovementBehaviorApp(session)
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
 
     expectHeroAt(0, 0)
     expectPreviewTargetAt(3, 0)
@@ -133,12 +130,10 @@ describe('session persistence behavior', () => {
     const { user } = await setupMovementBehaviorApp(session)
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
     expectPreviewTargetAt(3, 0)
 
     // Clicking the hero clears the route and opens the hero screen, which covers the map.
     dispatchTileClick(0, 0)
-    await flushMicrotasks()
     expectNoPreview()
     await closeHeroScreen(user)
 
@@ -166,7 +161,6 @@ describe('session persistence behavior', () => {
     expectMovementPoints(500)
 
     dispatchTileClick(17, 0)
-    await flushMicrotasks()
     expectPreviewTargetAt(17, 0)
     expectPreviewOverLimitTargetAt(17, 0)
 
@@ -184,7 +178,6 @@ describe('session persistence behavior', () => {
     await setupMovementBehaviorApp(session)
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
     expectPreviewTargetAt(3, 0)
 
     await reload(session)
@@ -290,7 +283,6 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
     await winBattle(firstSession.user)
-    await flushMicrotasks()
 
     expectMonsterDefeating('monster-1')
 
@@ -337,7 +329,6 @@ describe('session persistence behavior', () => {
     await flushMicrotasks()
 
     dispatchTileClick(17, 0)
-    await flushMicrotasks()
 
     expectHeroAt(10, 0)
     expectMovementPoints(500)
@@ -352,7 +343,6 @@ describe('session persistence behavior', () => {
     expectPreviewOverLimitTargetAt(17, 0)
 
     await clickEndTurn(secondSession.user)
-    await flushMicrotasks()
 
     expectMovementPoints(1500)
     expectPreviewTargetAt(17, 0)
@@ -379,7 +369,6 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(3, 0)
     await flushMicrotasks()
     dispatchTileClick(5, 0)
-    await flushMicrotasks()
 
     expectHeroAt(3, 0)
     expectMovementPoints(1100)
@@ -407,7 +396,6 @@ describe('session persistence behavior', () => {
     expectMovementPoints(0)
 
     dispatchTileClick(16, 0)
-    await flushMicrotasks()
     expectPreviewTargetAt(16, 0)
     expectPreviewOverLimitTargetAt(16, 0)
 
@@ -419,7 +407,6 @@ describe('session persistence behavior', () => {
     expectPreviewOverLimitTargetAt(16, 0)
 
     dispatchTileClick(16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -438,7 +425,6 @@ describe('session persistence behavior', () => {
     confirmTileClickByDispatch(1, 0)
     await flushMicrotasks()
     await winBattle(firstSession.user)
-    await flushMicrotasks()
 
     expectMonsterNotPresent('monster-1')
     expectHeroAt(0, 0)

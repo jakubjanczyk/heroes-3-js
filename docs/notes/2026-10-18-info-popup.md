@@ -4,18 +4,14 @@ Roadmap 2.1. Holding the right mouse button on a map tile shows what is there; r
 
 ## How Heroes 3 does it
 
-Checked in VCMI, the open-source Heroes 3 engine:
-
 - `client/gui/EventDispatcher.cpp`: pressing the right button opens the popup (`dispatchShowPopup`), releasing it closes it (`dispatchClosePopup`). There is no click to dismiss.
 - `client/adventureMap/AdventureMapInterface.cpp`, `onTileRightClicked`: bare terrain shows the terrain name; an object shows its popup, centred on the cursor.
 - `client/windows/InfoWindows.cpp`, `createCustomInfoWindow`: heroes, towns and monsters get an info box (`CInfoBoxPopup`); the monster box is the creature's portrait over its count category and plural name ("Pack of Skeletons", `lib/mapObjects/CGCreature.cpp`).
 - Every other object shows its name, plus the owner's colour on the next line when it has one (`CGObjectInstance::getHoverText`: "Gold Mine", "(Red)"). A resource shows only its name, never the amount.
 
-VCMI's own extras (monster threat level, the mine's resource after the owner) are not in the original and are left out.
-
 ## Look
 
-A plain popup is the game's standard message box (`CInfoWindow`, drawn in the player's colour): brown leather background, and the player's colour only in the frame, a thin band between gold lines with gold corner pieces. Checked against a VCMI screenshot of the "Search map object" dialog, which uses the same frame (`static/img/screenshots/1.6.0/Search object vanilla.jpg` in the `vcmi/vcmi.eu` repository). We draw it with CSS (no game graphics): the leather is a mottled gradient and the corners are plain gold brackets instead of the game's ornaments.
+A plain popup is the game's standard message box (`CInfoWindow`, drawn in the player's colour): brown leather background, and the player's colour only in the frame, a thin band between gold lines with gold corner pieces. We draw it with CSS (no game graphics): the leather is a mottled gradient and the corners are plain gold brackets instead of the game's ornaments.
 
 ## What we do
 

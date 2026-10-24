@@ -13,7 +13,6 @@ import {
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp
@@ -94,7 +93,6 @@ async function setupApp(scenario = aRecruitingScenario(), options = {}) {
 
 async function openWhitemoon(user) {
   await user.dblClick(getTownInTownList('Whitemoon'))
-  await flushMicrotasks()
 }
 
 async function startInWhitemoon(scenario, options) {
@@ -399,7 +397,6 @@ describe('town recruitment behavior', () => {
       expect(readGarrison()).toEqual(['Archers 6', 'Pikemen 25', '', '', '', '', ''])
     })
 
-    // Heroes 3 (VCMI's CRecruitmentWindow): recruits only ever join the garrison.
     test('with the garrison full of other creatures, says there is no room even with a visiting hero who has room', async () => {
       const { user } = await setupApp(
         aRecruitingScenario({
@@ -558,7 +555,6 @@ describe('town recruitment behavior', () => {
       await recruitInTown(user, 'Pikemen', { count: 5 })
 
       const { user: userAfterReload } = await setupApp(aRecruitingScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(readGarrison()[0]).toBe('Pikemen 5')
       expectResourceTotal('Gold', 9700)
@@ -572,7 +568,6 @@ describe('town recruitment behavior', () => {
       await endWeekAwayFromTown(user)
 
       const { user: userAfterReload } = await setupApp(aRecruitingScenario(), { eventLog })
-      await flushMicrotasks()
 
       await openRecruitWindow(userAfterReload, 'Pikemen')
       expect(readAvailable()).toBe(28)

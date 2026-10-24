@@ -8,7 +8,7 @@ import {
   getTerrainTile
 } from './adventure-map.utils.js'
 import { expectMovementPoints } from './adventure-panels.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import { aHero, aScenario } from './builders.js'
 import {
@@ -45,7 +45,6 @@ describe('terrain behavior', () => {
     })
 
     dispatchTileClick(1, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)

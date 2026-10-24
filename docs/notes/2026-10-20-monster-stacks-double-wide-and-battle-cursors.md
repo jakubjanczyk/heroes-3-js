@@ -4,8 +4,6 @@ Roadmap 5.3 and 5.5: a neutral monster splits into several stacks, double-wide c
 
 ## How Heroes 3 does it
 
-Checked against VCMI (`lib/mapObjects/CGCreature.cpp`, `lib/battle/Unit.cpp`, `lib/battle/CBattleInfoCallback.cpp`, `config/creatures/castle.json`).
-
 - **How many stacks.** The hero's army strength against the monster's, each the creatures' AI value times their count: under half as strong, 7 stacks; under 0.67, 6; under as strong, 5; under 1.5 times, 4; under twice, 3; else 2. A number made from the monster's tile then takes one away on about a fifth of tiles and adds one on another fifth: the same monster always splits the same way. Never more stacks than creatures, nor more than 7. A HotA map can set the number for a monster instead.
 - **Sharing out.** The creatures are shared out evenly; when they don't divide, the first stacks get one more.
 - **Upgraded stack.** Sometimes the middle stack is the upgraded creature (Pikemen with Halberdiers in the middle).

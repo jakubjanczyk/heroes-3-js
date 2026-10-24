@@ -144,7 +144,6 @@ describe('camera behavior', () => {
     expectHeroAt(22, 15)
 
     await setupMovementBehaviorApp(sharedAppOptions)
-    await flushMicrotasks()
 
     const worldElement = document.querySelector('.world')
     expect(worldElement).toBeTruthy()

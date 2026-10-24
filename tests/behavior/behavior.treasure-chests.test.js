@@ -15,12 +15,7 @@ import {
   readTreasureChestChoices,
   takeFromTreasureChest
 } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTreasureChest } from './builders.js'
 
 const gameDefinitions = {
@@ -43,7 +38,6 @@ function aChestScenario(chest = aTreasureChest()) {
 
 async function reachChest() {
   confirmTileClickByDispatch(1, 0)
-  await flushMicrotasks()
 }
 
 function getChestOkButton() {
@@ -134,7 +128,6 @@ describe('treasure chest behavior', () => {
       await takeFromTreasureChest(user, { x: 1, y: 0 }, 'gold')
 
       await setupApp(aChestScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(getTreasureChestEntity()).toBeNull()
       expectResourceTotal('Gold', 1500)

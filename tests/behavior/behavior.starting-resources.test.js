@@ -132,7 +132,6 @@ describe('starting resources', () => {
     await endTurns(user, 1)
 
     await setupMovementBehaviorApp(session)
-    await flushMicrotasks()
 
     expect(getResourceBarItems()).toContain('Gold 8600')
   })

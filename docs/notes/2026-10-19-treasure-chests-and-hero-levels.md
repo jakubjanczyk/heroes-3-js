@@ -6,7 +6,7 @@ Roadmap 4.2, first step, through the Treasure Chest (7.7). Chests are the simple
 
 - **Treasure Chest.** Walking up to one opens a dialog titled "Chest": "After scouring the area, you fall upon a hidden treasure cache. You may take the gold or distribute it to the peasants for experience. Which do you choose?" The player picks the gold or the experience (two pictures with the amounts under them) and confirms with the checkmark button. The chest is gone either way.
 - **What a chest holds.** 1000 gold or 500 experience (32%), 1500 or 1000 (32%), 2000 or 1500 (31%), or an artifact (5%).
-- **Levels.** Level 2 needs 1000 experience, then 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500 and 20600 for level 12. After that each step is 20% bigger than the one before, rounded down (VCMI `CHeroHandler::expPerLevel`).
+- **Levels.** Level 2 needs 1000 experience, then 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500 and 20600 for level 12. After that each step is 20% bigger than the one before, rounded down.
 - **Level-up.** The player does not choose the primary skill: the game rolls it by the hero class's chances, which change after level 9 (Knight: Attack 35%, Defense 45%, Power 10%, Knowledge 10% up to level 9; 30/30/20/20 after). The choice on level-up is between two secondary skills. Each level gained shows its own popup.
 - **Where experience shows.** Level and experience are on the hero screen only; the adventure info box shows primary skills, not the level.
 

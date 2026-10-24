@@ -100,23 +100,18 @@ describe('mine interaction behavior', () => {
     })
 
     dispatchTileClick(2, 1)
-    await flushMicrotasks()
     expectNoPreview()
 
     dispatchTileClick(3, 1)
-    await flushMicrotasks()
     expectNoPreview()
 
     dispatchTileClick(4, 1)
-    await flushMicrotasks()
     expectNoPreview()
 
     dispatchTileClick(2, 2)
-    await flushMicrotasks()
     expectNoPreview()
 
     dispatchTileClick(4, 2)
-    await flushMicrotasks()
     expectNoPreview()
   })
 
@@ -237,7 +232,6 @@ describe('mine interaction behavior', () => {
 
     async function reload(session) {
       const app = await setupMovementBehaviorApp(session)
-      await flushMicrotasks()
       return app
     }
 

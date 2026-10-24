@@ -725,8 +725,8 @@
   color: #ff4a3a;
 }
 
-/* Heroes 3 marks a building the player can't pay for with its own sign, not the cross (VCMI's
-   CBuildingBox); a stack of gold coins stands in for it. */
+/* Heroes 3 marks a building the player can't pay for with its own sign, not the cross; a
+   stack of gold coins stands in for it. */
 .town-hall__slot--notEnoughResources::after {
   content: "";
   inline-size: 1.1em;

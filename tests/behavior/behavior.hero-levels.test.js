@@ -10,12 +10,7 @@ import {
   readPrimarySkills,
   takeFromTreasureChest
 } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTreasureChest } from './builders.js'
 
 const gameDefinitions = {
@@ -156,7 +151,6 @@ describe('hero level behavior', () => {
       await closeInteractionModal(user)
 
       await setupApp(aLevelScenario(), { roll: ROLL_ATTACK, eventLog })
-      await flushMicrotasks()
 
       expect(readPrimarySkills(getHeroInfoBox())).toEqual([
         'Attack 2',
@@ -173,7 +167,6 @@ describe('hero level behavior', () => {
       await takeFromTreasureChest(user, firstChest, 'experience')
 
       const reloaded = await setupApp(scenario, { eventLog })
-      await flushMicrotasks()
       await takeFromTreasureChest(reloaded.user, secondChest, 'experience')
 
       expect(readLevelUpDialog()[0]).toBe('Hero is now a level 2 Knight.')

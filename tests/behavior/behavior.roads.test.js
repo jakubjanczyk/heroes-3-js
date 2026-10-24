@@ -10,7 +10,7 @@ import {
   getRoadOn
 } from './adventure-map.utils.js'
 import { expectMovementPoints } from './adventure-panels.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import { aHero, aScenario } from './builders.js'
 import {
@@ -142,7 +142,6 @@ describe('roads behavior', () => {
     })
 
     dispatchTileClick(32, 0)
-    await flushMicrotasks()
 
     // 30 cobblestone steps cost all 1500; the 31st no longer fits.
     expect(getPreviewOverLimitDashAt(30, 0)).toBeFalsy()

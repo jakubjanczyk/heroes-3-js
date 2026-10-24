@@ -188,7 +188,6 @@ export async function takeFromTreasureChestDialog(user, choice) {
   const dialog = getTreasureChestDialog()
   await user.click(within(dialog).getByRole('button', { name: new RegExp(`${choice}$`) }))
   await user.click(within(dialog).getByRole('button', { name: 'OK' }))
-  await flushMicrotasks()
 }
 
 // Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.
@@ -226,4 +225,21 @@ export function readFoundResources() {
       const picture = within(item).getByRole('img')
       return `${picture.getAttribute('aria-label')} ${item.textContent.trim()}`
     })
+}
+
+export function getDateBox() {
+  return screen.getByRole('region', { name: 'Date' })
+}
+
+export function queryDateBox() {
+  return screen.queryByRole('region', { name: 'Date' })
+}
+
+// The date the info box shows and the name of its picture, e.g. { text: 'Day 2', picture: 'Sunrise' }.
+export function readDateBox() {
+  const box = getDateBox()
+  return {
+    text: within(box).getByRole('heading').textContent,
+    picture: within(box).getByRole('img').getAttribute('aria-label')
+  }
 }

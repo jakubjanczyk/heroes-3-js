@@ -46,7 +46,6 @@ describe('reset session behavior', () => {
     expectMovementPoints(1300)
 
     await clickResetSession(firstSession.user)
-    await flushMicrotasks()
 
     expect(reloadCalls).toHaveLength(1)
 
@@ -68,7 +67,6 @@ describe('reset session behavior', () => {
     expectCalendarDate({ month: 1, week: 2, day: 2 })
 
     await clickResetSession(firstSession.user)
-    await flushMicrotasks()
     await setupMovementBehaviorApp(sharedOptions)
 
     expectCalendarDate({ month: 1, week: 1, day: 1 })

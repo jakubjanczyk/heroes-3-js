@@ -224,7 +224,6 @@ describe('town ownership behavior', () => {
       const { user } = await setupApp(aTwoTownScenario({ kirkwall: aKirkwall().ownedByPlayer() }))
 
       await clickTile(user, 11, 2)
-      await flushMicrotasks()
 
       expect(readTownName()).toBe('Kirkwall')
     })
@@ -241,7 +240,6 @@ describe('town ownership behavior', () => {
       const { user } = await setupApp(aTwoTownScenario({ kirkwall: aKirkwall().ownedByPlayer() }))
 
       await clickTile(user, 11, 2)
-      await flushMicrotasks()
 
       expect(readVisitingHeroArmy()).toEqual(EMPTY_SLOTS)
     })
@@ -306,7 +304,6 @@ describe('town ownership behavior', () => {
       await captureTownAt(WHITEMOON_ENTRANCE, user)
 
       await setupApp(aTwoTownScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(getTownFlag('town-1')).not.toBeNull()
     })
@@ -320,7 +317,6 @@ describe('town ownership behavior', () => {
       await captureTownAt(WHITEMOON_ENTRANCE, user)
 
       await setupApp(aTwoTownScenario({ hero: aHero().at(12, 5) }), { eventLog })
-      await flushMicrotasks()
 
       expect(readTownList()).toEqual(['Kirkwall', 'Whitemoon'])
     })
@@ -332,7 +328,6 @@ describe('town ownership behavior', () => {
       await user.dblClick(getTownInTownList('Kirkwall'))
 
       await setupApp(scenario, { eventLog })
-      await flushMicrotasks()
 
       expect(readTownName()).toBe('Kirkwall')
     })

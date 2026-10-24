@@ -5,7 +5,6 @@ import { expectMonsterNotPresent, getHeroEntity } from './adventure-map.utils.js
 import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp,
@@ -108,7 +107,6 @@ describe('battle Auto combat behavior', () => {
 
     await clickBattleButton(user, 'Auto combat')
     await waitMs(600)
-    await flushMicrotasks()
 
     // Played on, the Angel would have killed the 2 Pikemen left and won.
     expect(readActiveStack().stack).toBe('Angel 1')

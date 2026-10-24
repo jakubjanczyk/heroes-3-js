@@ -15,13 +15,7 @@ import {
   getTreasureChestDialog,
   takeFromTreasureChestDialog
 } from './adventure-panels.utils.js'
-import {
-  flushMicrotasks,
-  getCursorOver,
-  readGameData,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
+import { getCursorOver, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import { winBattle } from './battle.utils.js'
 import {
@@ -60,9 +54,7 @@ function aLongRow() {
 
 async function moveHeroTo(x, y) {
   confirmTileClickByDispatch(x, y)
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }
 
 describe('adventure map cursor behavior', () => {
@@ -324,7 +316,6 @@ describe('adventure map cursor behavior', () => {
     await moveHeroTo(1, 0)
     await winBattle(user)
     await waitMs()
-    await flushMicrotasks()
 
     await hoverTile(user, 1, 0)
 
@@ -337,7 +328,6 @@ describe('adventure map cursor behavior', () => {
     )
     await moveHeroTo(1, 0)
     await waitMs()
-    await flushMicrotasks()
 
     await hoverTile(user, 1, 0)
 

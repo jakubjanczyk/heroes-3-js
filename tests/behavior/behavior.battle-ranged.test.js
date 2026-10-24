@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import { createMemoryEventLog, flushMicrotasks, readGameData, waitMs } from './app.utils.js'
+import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleButton,
@@ -33,7 +33,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, monsterStack
 async function shootAt(user, row, column) {
   await clickBattleHex(user, row, column)
   await waitMs()
-  await flushMicrotasks()
 }
 
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6,

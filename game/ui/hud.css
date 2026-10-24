@@ -330,6 +330,68 @@
   }
 }
 
+/* The new day and new week animations play once, in 1.5 seconds of about eight frames. */
+.info-box.date-box {
+  display: grid;
+  grid-template: auto minmax(0, 1fr) / minmax(0, 1fr);
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-xs);
+
+  & .date-box__text {
+    margin: 0;
+    color: var(--hud-text);
+    font:
+      700 1rem / 1 Georgia,
+      "Times New Roman",
+      serif;
+    text-shadow: 0 1px 0 black;
+  }
+
+  & .date-box__picture {
+    inline-size: min(100%, 12rem);
+    block-size: auto;
+    max-block-size: 100%;
+    border: 1px solid var(--trim-gold-dark);
+    image-rendering: pixelated;
+  }
+
+  & .date-box__sun {
+    animation: date-box-sunrise 1.5s steps(8, end) both;
+  }
+
+  & .date-box__dusk {
+    fill: #0b0d24;
+    animation: date-box-dawn 1.5s steps(8, end) both;
+  }
+}
+
+@keyframes date-box-sunrise {
+  from {
+    transform: translateY(22px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes date-box-dawn {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-box.date-box :is(.date-box__sun, .date-box__dusk) {
+    animation-duration: 0s;
+  }
+}
+
 /*
  * Hero box, shared by the info box and the hero's right-click popup as in Heroes 3: the portrait
  * on the left, the name and the four primary skills beside it, then the army in two rows.

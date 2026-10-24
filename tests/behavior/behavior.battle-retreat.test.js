@@ -6,7 +6,6 @@ import { getHeroEntity, hoverTile } from './adventure-map.utils.js'
 import { expectStatusBarText } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp,
@@ -148,7 +147,6 @@ describe('battle retreat behavior', () => {
     await closeBattleResults(user)
 
     await setupMovementBehaviorApp({ loadGameOptions: aFight().build(), eventLog })
-    await flushMicrotasks()
 
     expect(getHeroEntity()).toBeNull()
   })

@@ -5,7 +5,7 @@ import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { attackMonsterAt } from './adventure-map.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 
 // Every damage roll comes out at the bottom of its range.
@@ -53,7 +53,6 @@ export async function reloadBattle(scenario, { random = LOWEST_ROLLS, eventLog }
     eventLog,
     appConfig: battleAppConfig({ random, appConfig: {} })
   })
-  await flushMicrotasks()
   return app
 }
 
@@ -128,13 +127,11 @@ export function isBattleHexReachable(row, column) {
 
 export async function clickBattleHex(user, row, column) {
   await user.click(getBattleHex(row, column))
-  await flushMicrotasks()
 }
 
 export async function moveActiveStackTo(user, row, column) {
   await clickBattleHex(user, row, column)
   await waitMs()
-  await flushMicrotasks()
 }
 
 export async function hoverBattleHex(user, row, column) {
@@ -195,16 +192,12 @@ export async function pointAtBattleHexSide(user, row, column, side) {
 export async function attackBattleHexFrom(user, row, column, side) {
   const pointer = pointerOnHexSide(row, column, side)
   await user.pointer([pointer, { ...pointer, keys: '[MouseLeft]' }])
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }
 
 export async function tapBattleHexSide(user, row, column, side) {
   await user.pointer({ ...pointerOnHexSide(row, column, side), keys: '[TouchA]' })
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }
 
 export function readCombatMessages() {
@@ -243,9 +236,7 @@ export function getBattleButton(name) {
 
 export async function clickBattleButton(user, name) {
   await user.click(getBattleButton(name))
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }
 
 export function queryBattleResults() {
@@ -260,10 +251,8 @@ export function getBattleResults() {
 
 export async function waitForBattleResults() {
   for (let attempt = 0; attempt < 200 && !queryBattleResults(); attempt += 1) {
-    await flushMicrotasks()
     await waitMs()
   }
-  await flushMicrotasks()
 }
 
 // A side of the results window as it reads, e.g. ['Sir Christian', 'Victorious'].
@@ -295,14 +284,12 @@ export function readBattleCasualties(side) {
 
 export async function closeBattleResults(user) {
   await user.click(within(getBattleResults()).getByRole('button', { name: 'OK' }))
-  await flushMicrotasks()
 }
 
 // Waits for the battle to be over and closes the results window, back to the adventure map.
 export async function waitForBattleToEnd() {
   await waitForBattleResults()
   within(getBattleResults()).getByRole('button', { name: 'OK' }).click()
-  await flushMicrotasks()
 }
 
 export function queryRetreatDialog() {
@@ -314,7 +301,6 @@ export async function retreat(user, { confirm = true } = {}) {
   await user.click(
     within(queryRetreatDialog()).getByRole('button', { name: confirm ? 'OK' : 'Cancel' })
   )
-  await flushMicrotasks()
 }
 
 // Auto combat plays the battle out; the hero wins with an army that beats the monster, such as

@@ -4,7 +4,6 @@ import { describe, expect, test } from 'vitest'
 import { clickEndTurn, expectResourceTotal, getTownInTownList } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp
@@ -67,7 +66,6 @@ async function setupAppInWhitemoon(scenario = aTownScenario(), options = {}) {
 async function openTownFromTownList(user, townName) {
   await user.click(getTownInTownList(townName))
   await user.click(getTownInTownList(townName))
-  await flushMicrotasks()
 }
 
 const CAPITOL_REQUIREMENTS = [
@@ -202,7 +200,6 @@ describe('town buildings behavior', () => {
         })
       )
       await user.click(getTownInTownScreenList('Kirkwall'))
-      await flushMicrotasks()
 
       await openHall(user)
 
@@ -301,7 +298,6 @@ describe('town buildings behavior', () => {
       await buildInTown(user, 'Tavern')
 
       const reloaded = await setupApp(aTownScenario(), { eventLog })
-      await flushMicrotasks()
       await openHall(reloaded.user)
 
       expect(readHall()[0][2]).toBe('Brotherhood of the Sword')
@@ -312,7 +308,6 @@ describe('town buildings behavior', () => {
       await buildInTown(user, 'Tavern')
 
       await user.click(getTownInTownScreenList('Kirkwall'))
-      await flushMicrotasks()
       await openHall(user)
 
       expect(readHall()[0][2]).toBe('Tavern')
@@ -382,7 +377,6 @@ describe('town buildings behavior', () => {
       await buildInTown(user, 'Tavern')
 
       await user.click(getTownInTownScreenList('Kirkwall'))
-      await flushMicrotasks()
       await openHall(user)
 
       expect(readHallStatus('Blacksmith')).toBe('Not enough resources')
@@ -395,7 +389,6 @@ describe('town buildings behavior', () => {
       await buildInTown(user, 'Tavern')
 
       await setupApp(scenario, { eventLog })
-      await flushMicrotasks()
 
       expectResourceTotal('Wood', 15)
       expectResourceTotal('Gold', 1500)

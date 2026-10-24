@@ -38,7 +38,7 @@ function isLastHeroStackLeaving(armies, from, to) {
 // (the garrison, the visiting hero's); `from` and `to` are each `{ army, slot }`. Returns the armies
 // after the move, or null when it isn't allowed: an army that isn't there, an empty slot to move,
 // or a hero left with no creatures, which Heroes 3 never allows. The hero's last stack moved onto
-// an empty slot leaves one creature behind instead (VCMI's CGarrisonSlot::clickPressed).
+// an empty slot leaves one creature behind instead.
 export function moveStack(armies, from, to) {
   const stack = armies[from.army]?.[from.slot]
   if (!stack || !armies[to.army] || isSameSlot(from, to)) {
@@ -76,8 +76,7 @@ export function mustSplitStack(armies, from, to) {
   )
 }
 
-// What the split window starts with and how far it goes, as VCMI's CGarrisonSlot::split works it
-// out: the framed stack's count on the left and the clicked slot's on the right, and the least
+// What the split window starts with and how far it goes: the framed stack's count on the left and the clicked slot's on the right, and the least
 // each side may keep. Between two armies, the hero keeps at least one creature when its only stack
 // is split away, or when the split is onto its only stack.
 export function splitStackLimits(armies, from, to) {
@@ -123,7 +122,7 @@ export const TOWN_SELECT_TEXT = {
   hero: 'Select %s (visiting)'
 }
 
-// Texts from VCMI's CGarrisonSlot::hover. The framed stack shows nothing until creatures have a
+// The framed stack shows nothing until creatures have a
 // window to view.
 export function describeSlotHover(armies, selected, hovered, selectText = TOWN_SELECT_TEXT) {
   const stack = armies[hovered.army]?.[hovered.slot]

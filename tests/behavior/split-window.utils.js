@@ -1,8 +1,6 @@
 import { fireEvent, screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
-import { flushMicrotasks } from './app.utils.js'
-
 // The split window, named "Split <plural>" after the creature being split.
 export function querySplitWindow(name = /^Split /) {
   return screen.queryByRole('dialog', { name })
@@ -28,7 +26,6 @@ export async function typeSplitCount(user, side, count) {
   const box = getSplitCountBox(side === 'left' ? 'Left' : 'Right')
   await user.tripleClick(box)
   await user.keyboard(String(count))
-  await flushMicrotasks()
 }
 
 // To the number of creatures in the right-hand stack.
@@ -39,7 +36,6 @@ export function dragSplitSlider(rightCount) {
 
 async function clickInSplitWindow(user, buttonName) {
   await user.click(within(getSplitWindow()).getByRole('button', { name: buttonName }))
-  await flushMicrotasks()
 }
 
 export async function clickSplitMore(user) {

@@ -2,7 +2,6 @@
 import { describe, expect, test } from 'vitest'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   readGameData,
   setupMovementBehaviorApp,
   waitMs
@@ -85,7 +84,6 @@ describe('battle turn order behavior', () => {
     await moveActiveStackTo(user, 3, 3)
 
     await setupMovementBehaviorApp({ loadGameOptions: scenario.build(), eventLog })
-    await flushMicrotasks()
 
     expect(readBattleStacks()).toEqual([
       { stack: 'Marksmen 5', row: 3, column: 3 },
@@ -106,7 +104,6 @@ describe('battle turn order behavior', () => {
     await waitMs(40)
 
     await setupMovementBehaviorApp({ loadGameOptions: scenario.build(), eventLog })
-    await flushMicrotasks()
 
     expect(readBattleStacks()).toContainEqual({ stack: 'Skeletons 10', row: 3, column: 5 })
     expect(readActiveStack()).toEqual({ stack: 'Pikemen 3', row: 9, column: 1 })

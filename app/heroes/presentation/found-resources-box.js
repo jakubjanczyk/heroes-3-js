@@ -20,7 +20,7 @@ export function renderFoundResourcesBox(container, document, resources) {
     list.append(item)
   }
 
-  container.classList.remove('hero-box', 'town-box')
+  container.classList.remove('hero-box', 'town-box', 'date-box')
   container.classList.add('found-box')
   container.replaceChildren(list)
 }

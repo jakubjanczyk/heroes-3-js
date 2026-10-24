@@ -4,12 +4,7 @@ import { describe, expect, test } from 'vitest'
 
 import { confirmMove, holdRightButtonOn } from './adventure-map.utils.js'
 import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 const gameDefinitions = {
@@ -104,10 +99,8 @@ describe('hero army behavior', () => {
       const eventLog = createMemoryEventLog()
       const { user } = await setupApp(scenario, { eventLog })
       await confirmMove(user, 2, 0)
-      await flushMicrotasks()
 
       await setupApp(scenario, { eventLog })
-      await flushMicrotasks()
 
       expect(readArmySlots(getHeroInfoBox())[0]).toBe('Skeletons 12')
     })

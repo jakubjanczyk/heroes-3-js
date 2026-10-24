@@ -8,7 +8,7 @@ import {
   hoverTile
 } from './adventure-map.utils.js'
 import { expectStatusBarText } from './adventure-panels.utils.js'
-import { createMemoryEventLog, flushMicrotasks, readGameData, waitMs } from './app.utils.js'
+import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleHex,
@@ -191,7 +191,6 @@ describe('battle combat AI behavior', () => {
 
       await clickBattleHex(user, 6, 5)
       await waitMs(200)
-      await flushMicrotasks()
 
       expect(readActiveStack()).toEqual(stackAt('Angel 1', 6, 2))
       expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 10', 6, 11))

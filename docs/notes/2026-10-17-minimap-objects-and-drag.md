@@ -4,7 +4,7 @@ Roadmap 1.4. The minimap now follows how the Heroes 3 minimap works.
 
 ## How Heroes 3 colours the minimap
 
-Checked in VCMI, the open-source Heroes 3 engine (`client/adventureMap/CMinimap.cpp`, `CMinimapInstance::getTileColor`). Each tile gets the first colour that applies:
+Each tile gets the first colour that applies:
 
 1. Not explored yet: black.
 2. Covered by an ownable object (town, mine, dwelling, hero): neutral grey `#848484`, or the owner's player colour.

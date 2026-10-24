@@ -42,13 +42,11 @@ describe('end turn behavior', () => {
     const { user } = await setupLinearMovementApp({ width: 6 })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
 
     expectPreviewTargetAt(2, 0)
     expectPreviewNotOverLimitTargetAt(2, 0)
 
     await clickEndTurn(user)
-    await flushMicrotasks()
 
     expectMovementPoints(1500)
     expectPreviewTargetAt(2, 0)
@@ -80,13 +78,11 @@ describe('end turn behavior', () => {
     expectMovementPoints(0)
 
     dispatchTileClick(31, 0)
-    await flushMicrotasks()
 
     expectPreviewTargetAt(31, 0)
     expectPreviewOverLimitDashAt(16, 0)
 
     await clickEndTurn(user)
-    await flushMicrotasks()
 
     expectPreviewTargetAt(31, 0)
     expectPreviewDashAt(16, 0)
@@ -100,7 +96,6 @@ describe('end turn behavior', () => {
     })
 
     confirmTileClickByDispatch(2, 0)
-    await flushMicrotasks()
 
     await clickEndTurn(user)
     expectMovementPoints(1500)
@@ -117,7 +112,6 @@ describe('end turn behavior', () => {
     })
 
     confirmTileClickByDispatch(2, 0)
-    await flushMicrotasks()
 
     await clickEndTurn(user)
     expectMovementPoints(1500)

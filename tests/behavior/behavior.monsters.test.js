@@ -50,9 +50,7 @@ const aWinningHero = () => aHero().withArmy(ARMY_THAT_WINS)
 
 async function moveHeroTo(x, y) {
   confirmTileClickByDispatch(x, y)
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }
 
 describe('monster interaction behavior', () => {
@@ -70,7 +68,6 @@ describe('monster interaction behavior', () => {
     })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -87,7 +84,6 @@ describe('monster interaction behavior', () => {
     })
 
     confirmTileClickByDispatch(1, 0)
-    await flushMicrotasks()
     await waitMs()
 
     expectHeroAt(0, 0)
@@ -101,12 +97,10 @@ describe('monster interaction behavior', () => {
     expectMonsterDefeating('monster-1')
 
     await waitMs(25)
-    await flushMicrotasks()
 
     expectMonsterNotPresent('monster-1')
 
     await clickTile(user, 2, 0)
-    await flushMicrotasks()
 
     expectPreviewTargetAt(2, 0)
   })
@@ -130,7 +124,6 @@ describe('monster interaction behavior', () => {
 
     await winBattle(user)
     await waitMs(50)
-    await flushMicrotasks()
 
     expectMonsterNotPresent('monster-1')
   })
@@ -147,14 +140,12 @@ describe('monster interaction behavior', () => {
 
     confirmTileClickByDispatch(2, 0)
     await waitMs(25)
-    await flushMicrotasks()
 
     expectHeroAt(1, 0)
     expect(queryBattleScreen()).toBeNull()
     expectMonsterPresent('monster-1')
 
     await waitMs(25)
-    await flushMicrotasks()
 
     expect(getBattleScreen()).toBeTruthy()
   })
@@ -171,13 +162,11 @@ describe('monster interaction behavior', () => {
 
     confirmTileClickByDispatch(2, 0)
     await waitMs(250)
-    await flushMicrotasks()
 
     expect(queryBattleScreen()).toBeNull()
     expectMonsterPresent('monster-1')
 
     await waitMs(220)
-    await flushMicrotasks()
 
     expect(getBattleScreen()).toBeTruthy()
   })
@@ -263,7 +252,6 @@ describe('tiles a monster guards', () => {
 
     // Both rows pass through the monster's tiles at x 2-4.
     dispatchTileClick(5, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
   })
@@ -312,7 +300,6 @@ describe('tiles a monster guards', () => {
       await winBattle(user)
 
       await closeInteractionModal(user)
-      await flushMicrotasks()
 
       expect(getBattleScreen()).toBeTruthy()
     })
@@ -325,7 +312,6 @@ describe('tiles a monster guards', () => {
         loadGameOptions: aTileTwoMonstersGuard().build(),
         eventLog
       })
-      await flushMicrotasks()
 
       await winBattle(user)
 
