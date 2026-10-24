@@ -1,9 +1,3 @@
-import {
-  canSplitStack,
-  describeSlotHover,
-  mustSplitStack,
-  splitStackLimits
-} from '../../../game/heroes/army-exchange.js'
 import { describeAvailableCreatures } from '../../../game/heroes/creature-recruitment.js'
 import {
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
@@ -17,9 +11,9 @@ import {
   APP_UI_TOWN_UPDATED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { CASTLE_BUILDING_ART, castleBackgroundArt } from '../presentation/castle-town-art.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
-import { openSplitWindow } from '../presentation/split-window.js'
 import { renderTownList } from '../presentation/town-list.js'
 
 const NO_ARMY = []
@@ -45,24 +39,13 @@ function armySlotAt(target) {
   return target?.closest?.('.town-panel__slots > .army-slot') ?? null
 }
 
-function slotPosition(slot) {
-  const list = slot.parentElement
-  return { army: list.dataset.army, slot: [...list.children].indexOf(slot) }
-}
-
 export const registerTownScreenViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let townScreen = null
-    // The garrison or visiting hero stack framed for moving, as `{ army, slot }`.
-    let selectedStack = null
-    let hoveredSlot = null
-    // With Split pressed, the next slot clicked splits the framed stack rather than moving it.
-    let splitMode = false
+    let rearranging = null
     let isVisitingHeroFramed = false
-    // The stacks shown, by army, for the status bar's texts; no `hero` without a visiting hero.
-    let armies = {}
 
     function fillSlots(list, army) {
       list.querySelectorAll('.army-slot').forEach((slot, index) => {
@@ -155,92 +138,8 @@ export const registerTownScreenViewModule = defineModule(
         emit(APP_UI_HERO_SCREEN_OPEN_REQUESTED, {})
         return
       }
-      selectStack(null)
+      rearranging.unselect()
       frameVisitingHero(true)
-    }
-
-    function selectStack(stack) {
-      selectedStack = stack
-      if (!stack) {
-        splitMode = false
-      }
-      showSplitTargets()
-      if (hoveredSlot) {
-        showSlotStatus(hoveredSlot)
-      }
-    }
-
-    // The framed stack, and with Split pressed, every slot it can be split onto.
-    function showSplitTargets() {
-      for (const list of townScreen.querySelectorAll('.town-panel__slots')) {
-        for (const slot of list.children) {
-          const position = slotPosition(slot)
-          const isSelected =
-            position.army === selectedStack?.army && position.slot === selectedStack?.slot
-          if (isSelected) {
-            slot.setAttribute('aria-current', 'true')
-          } else {
-            slot.removeAttribute('aria-current')
-          }
-          slot.classList.toggle(
-            'army-slot--split-target',
-            splitMode && !isSelected && canSplitStack(armies, selectedStack, position)
-          )
-        }
-      }
-      const splitButton = townScreen.querySelector('.town-panel__split')
-      splitButton.disabled = !selectedStack
-      splitButton.setAttribute('aria-pressed', String(splitMode))
-    }
-
-    function toggleSplitMode() {
-      if (selectedStack) {
-        splitMode = !splitMode
-        showSplitTargets()
-      }
-    }
-
-    function openSplit(to) {
-      const from = selectedStack
-      splitMode = false
-      showSplitTargets()
-      openSplitWindow({
-        document,
-        container: townScreen,
-        pluralName: armies[from.army][from.slot].pluralName,
-        limits: splitStackLimits(armies, from, to),
-        onSplit: (count) => emit(APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED, { from, to, count }),
-        onClose: () => selectStack(null)
-      })
-    }
-
-    function showSlotStatus(slot) {
-      hoveredSlot = slot
-      showStatus(describeSlotHover(armies, selectedStack, slotPosition(slot)))
-    }
-
-    // As in Heroes 3: the first click frames a stack, the second moves it onto the clicked slot
-    // (or unframes it, clicked again). A move the town refuses leaves the stack framed. With Split
-    // pressed or Shift held, a click on an empty slot or the same creature opens the split window.
-    function clickArmySlot(slot, { shiftKey }) {
-      const clicked = slotPosition(slot)
-      if (!selectedStack) {
-        if (slot.querySelector('.army-slot__creature')) {
-          selectStack(clicked)
-        }
-        return
-      }
-
-      if (selectedStack.army === clicked.army && selectedStack.slot === clicked.slot) {
-        selectStack(null)
-        return
-      }
-      const wantsSplit = (splitMode || shiftKey) && canSplitStack(armies, selectedStack, clicked)
-      if (wantsSplit || mustSplitStack(armies, selectedStack, clicked)) {
-        openSplit(clicked)
-        return
-      }
-      emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, { from: selectedStack, to: clicked })
     }
 
     function showStatus(text) {
@@ -287,6 +186,15 @@ export const registerTownScreenViewModule = defineModule(
           .getElementById('town-screen-template')
           .content.firstElementChild.cloneNode(true)
         gameShell.append(townScreen)
+        rearranging = createArmyRearranging({
+          document,
+          container: townScreen,
+          slotLists: townScreen.querySelectorAll('.town-panel__slots'),
+          splitButton: townScreen.querySelector('.town-panel__split'),
+          showStatus,
+          onMove: (move) => emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, move),
+          onSplit: (split) => emit(APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED, split)
+        })
         emit(APP_UI_ADVENTURE_MAP_COVERED, {})
       }
 
@@ -298,8 +206,8 @@ export const registerTownScreenViewModule = defineModule(
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
-      armies = visitingHero ? { garrison, hero: visitingHero.army } : { garrison }
-      selectStack(null)
+      // No `hero` without a visiting hero.
+      rearranging.showArmies(visitingHero ? { garrison, hero: visitingHero.army } : { garrison })
       frameVisitingHero(false)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
@@ -317,9 +225,7 @@ export const registerTownScreenViewModule = defineModule(
 
       townScreen.remove()
       townScreen = null
-      selectedStack = null
-      hoveredSlot = null
-      splitMode = false
+      rearranging = null
       isVisitingHeroFramed = false
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
@@ -340,7 +246,7 @@ export const registerTownScreenViewModule = defineModule(
 
             const slot = armySlotAt(event.target)
             if (slot) {
-              showSlotStatus(slot)
+              rearranging.hoverSlot(slot)
               return
             }
             const named = buildingAt(event.target)?.getAttribute('aria-label')
@@ -361,8 +267,7 @@ export const registerTownScreenViewModule = defineModule(
             }
             const slot = armySlotAt(event.target)
             if (slot && armySlotAt(event.relatedTarget) !== slot) {
-              hoveredSlot = null
-              showStatus('')
+              rearranging.leaveSlot()
             }
             const source = statusSourceAt(event.target)
             if (source && statusSourceAt(event.relatedTarget) !== source) {
@@ -407,7 +312,7 @@ export const registerTownScreenViewModule = defineModule(
             }
 
             if (event.target.closest('.town-panel__split')) {
-              toggleSplitMode()
+              rearranging.toggleSplitMode()
               return
             }
 
@@ -419,7 +324,7 @@ export const registerTownScreenViewModule = defineModule(
             const armySlot = armySlotAt(event.target)
             if (armySlot) {
               frameVisitingHero(false)
-              clickArmySlot(armySlot, event)
+              rearranging.clickSlot(armySlot, event)
               return
             }
 

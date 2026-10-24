@@ -21,5 +21,5 @@ From VCMI's `CGarrisonSlot::clickPressed`, `CGarrisonSlot::split` and `CSplitWin
 ## Not yet
 
 - Creature pictures: both windows show stand-ins.
-- Splitting in the hero screen and when two heroes meet (4.3, 4.5).
+- Splitting when two heroes meet (4.5); the hero screen has it (see `2026-10-23-hero-screen.md`).
 - VCMI's extra shortcuts (Ctrl+click splits off one creature, Alt+Shift+click shares a stack out evenly), which Heroes 3 doesn't have.

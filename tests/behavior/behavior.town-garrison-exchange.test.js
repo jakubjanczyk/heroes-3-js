@@ -14,6 +14,7 @@ import {
   setupMovementBehaviorApp
 } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
+import { querySplitWindow } from './split-window.utils.js'
 import {
   clickGarrisonSlot,
   clickVisitingHeroSlot,
@@ -21,7 +22,6 @@ import {
   hoverGarrisonSlot,
   hoverVisitingHeroSlot,
   leaveTown,
-  querySplitWindow,
   readGarrison,
   readSelectedStack,
   readTownStatusBar,

@@ -342,11 +342,49 @@
     font-size: calc(11 * var(--px));
     text-shadow: 0 1px 1px black;
   }
+
+  /* As on the town screen: the framed stack in yellow, and with Split pressed, the slots it can be
+     split onto too. */
+  & .army-slot[aria-current="true"],
+  & .army-slot.army-slot--split-target {
+    border-color: #f2d23c;
+    box-shadow: inset 0 0 0 1px #f2d23c;
+  }
 }
 
 .hero-screen__army-button {
   --w: 54;
   --h: 32;
+}
+
+/* Greyed out until a stack is framed; lit while the next click splits it, as in Heroes 3. */
+.hero-screen__split {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: inherit;
+
+  & svg {
+    block-size: 80%;
+    fill: none;
+    stroke: var(--trim-gold);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(1px 1px 0 black);
+  }
+
+  &:disabled svg {
+    stroke: #6b5a40;
+  }
+
+  &[aria-pressed="true"] {
+    box-shadow:
+      inset 0 0 0 1px var(--trim-gold-light),
+      inset 0 0 0 3px var(--trim-gold),
+      inset 0 0 0 4px black;
+  }
 }
 
 /* The player's banner over the list of the player's heroes. */
