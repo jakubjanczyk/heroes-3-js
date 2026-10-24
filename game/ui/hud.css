@@ -78,14 +78,17 @@
 }
 
 /*
- * As in Heroes 3 the lists stop at five slots and the info box sits at the bottom of the panel;
- * on tall screens the space left over stays empty between them. Short screens shrink the lists.
+ * The lists stop at five slots with the info box right under them; on tall screens the space left
+ * over stays empty below the box. Short screens shrink the lists.
  */
 .adventure-panel {
   --adventure-lists-max-height: 11.25rem;
+  --info-box-height: var(--adventure-panel-width);
 
   display: grid;
-  grid-template-rows: auto minmax(0, var(--adventure-lists-max-height)) minmax(0, 1fr) auto;
+  grid-template-rows:
+    auto minmax(0, var(--adventure-lists-max-height)) var(--info-box-height)
+    minmax(0, 1fr);
   gap: calc(var(--frame-width) + 2px);
   block-size: 100%;
 }
@@ -287,9 +290,9 @@
   }
 }
 
-/* Info box: the selected hero (a hero box) at the bottom of the panel. */
+/* Info box: the same size whichever view it shows, sized to fit the hero box. */
 .info-box {
-  grid-row: -2;
+  overflow: hidden;
   padding: var(--space-sm) var(--space-xs) var(--space-md);
   background:
     radial-gradient(
@@ -892,6 +895,11 @@
   .resource-icon {
     inline-size: 0.75rem;
     block-size: 0.75rem;
+  }
+
+  /* The hero's army fits in one row here, so the box can be lower. */
+  .adventure-panel {
+    --info-box-height: calc(var(--adventure-panel-width) * 9 / 16);
   }
 
   .info-box {
