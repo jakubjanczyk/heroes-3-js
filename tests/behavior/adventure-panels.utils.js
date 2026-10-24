@@ -227,3 +227,20 @@ export function readFoundResources() {
       return `${picture.getAttribute('aria-label')} ${item.textContent.trim()}`
     })
 }
+
+export function getDateBox() {
+  return screen.getByRole('region', { name: 'Date' })
+}
+
+export function queryDateBox() {
+  return screen.queryByRole('region', { name: 'Date' })
+}
+
+// The date the info box shows and the name of its picture, e.g. { text: 'Day 2', picture: 'Sunrise' }.
+export function readDateBox() {
+  const box = getDateBox()
+  return {
+    text: within(box).getByRole('heading').textContent,
+    picture: within(box).getByRole('img').getAttribute('aria-label')
+  }
+}

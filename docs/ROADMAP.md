@@ -168,7 +168,8 @@ Stages:
 - [ ] Queued messages, a click skipping to the next (needs pickups that give several things, 7.5-7.8)
 - [ ] Pickup sounds
 - [ ] Clicking it shows the kingdom overview (hall levels; flags once there are other players, 8.1), then the date, then back; each goes back after 3 seconds
-- [ ] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the animation and sound (3.1)
+- [x] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the sun rising over the hills (each week of the month under its own sky); see `docs/notes/2026-10-24-info-box-date.md`
+- [ ] The new day, week and month sounds (with sound effects, 10.4)
 - [ ] Status bar text on hover and right-click popup (2.5, 2.1)
 - [ ] Other pickups as they come: experience, primary skills, spells, artifacts, creatures (7.5-7.8)
 - [ ] The hourglass during another player's turn (8.1)
