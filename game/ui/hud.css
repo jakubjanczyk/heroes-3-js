@@ -78,14 +78,17 @@
 }
 
 /*
- * As in Heroes 3 the lists stop at five slots and the info box sits at the bottom of the panel;
- * on tall screens the space left over stays empty between them. Short screens shrink the lists.
+ * The lists stop at five slots with the info box right under them; on tall screens the space left
+ * over stays empty below the box. Short screens shrink the lists.
  */
 .adventure-panel {
   --adventure-lists-max-height: 11.25rem;
+  --info-box-height: var(--adventure-panel-width);
 
   display: grid;
-  grid-template-rows: auto minmax(0, var(--adventure-lists-max-height)) minmax(0, 1fr) auto;
+  grid-template-rows:
+    auto minmax(0, var(--adventure-lists-max-height)) var(--info-box-height)
+    minmax(0, 1fr);
   gap: calc(var(--frame-width) + 2px);
   block-size: 100%;
 }
@@ -287,9 +290,9 @@
   }
 }
 
-/* Info box: the selected hero (a hero box) at the bottom of the panel. */
+/* Info box: the same size whichever view it shows, sized to fit the hero box. */
 .info-box {
-  grid-row: -2;
+  overflow: hidden;
   padding: var(--space-sm) var(--space-xs) var(--space-md);
   background:
     radial-gradient(
@@ -390,6 +393,77 @@
   .info-box.date-box :is(.date-box__sun, .date-box__dusk) {
     animation-duration: 0s;
   }
+}
+
+/* The kingdom overview: the player's towns counted under each hall, then the allies' and enemies' flags. */
+.info-box.kingdom-box {
+  display: grid;
+  grid-template: none / none;
+  align-content: center;
+  gap: var(--space-xs);
+
+  & .kingdom-box__halls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .kingdom-box__hall {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2xs);
+  }
+
+  & .hall-icon {
+    inline-size: 100%;
+    min-block-size: 1.75rem;
+    background-color: #0d0f14;
+    border: 1px solid #2a2d36;
+  }
+
+  & .kingdom-box__count {
+    color: var(--hud-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  & .kingdom-box__players {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--hud-text);
+    font-size: var(--font-size-sm);
+  }
+
+  & .kingdom-box__flags {
+    display: flex;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+/* Stand-ins for the hall pictures: the roof's colour tells the level. */
+.hall-icon {
+  background-position: 50% 55%;
+  background-size: auto 70%;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(150,110,70)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+}
+
+.hall-icon[data-level="2"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(196,92,60)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+}
+
+.hall-icon[data-level="3"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(70,110,190)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
+}
+
+.hall-icon[data-level="4"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(230,190,70)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
 }
 
 /*
@@ -537,22 +611,6 @@
     background-position: 50% 55%;
     background-size: auto 70%;
     background-repeat: no-repeat;
-  }
-
-  & .town-box__hall {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(150,110,70)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
-  }
-
-  & .town-box__hall[data-level="2"] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(196,92,60)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
-  }
-
-  & .town-box__hall[data-level="3"] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(70,110,190)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
-  }
-
-  & .town-box__hall[data-level="4"] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M10 1L19 6H1z' fill='rgb(230,190,70)'/%3E%3Cpath d='M2 7h16v8H2z' fill='rgb(232,226,210)'/%3E%3Cpath d='M4 8h2v6H4zM9 8h2v6H9zM14 8h2v6h-2z' fill='rgb(150,140,120)'/%3E%3C/svg%3E");
   }
 
   & .town-box__fort {
@@ -814,7 +872,7 @@
 }
 
 /* Short screens (a landscape phone, a small laptop window): army slots in one row. */
-@media (height < 42rem) {
+@media (height < 48rem) {
   .minimap {
     --minimap-max-height: 28dvh;
   }
@@ -837,6 +895,11 @@
   .resource-icon {
     inline-size: 0.75rem;
     block-size: 0.75rem;
+  }
+
+  /* The hero's army fits in one row here, so the box can be lower. */
+  .adventure-panel {
+    --info-box-height: calc(var(--adventure-panel-width) * 9 / 16);
   }
 
   .info-box {

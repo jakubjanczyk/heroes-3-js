@@ -20,4 +20,4 @@ Roadmap 2.4b: ending the turn shows the new date in the info box.
 ## Not yet
 
 - The sounds, with sound effects (10.4).
-- Clicking the box to show the kingdom overview and then the date.
+- Clicking the box to show the kingdom overview and then the date: done, see `2026-10-24-info-box-kingdom-overview.md`.

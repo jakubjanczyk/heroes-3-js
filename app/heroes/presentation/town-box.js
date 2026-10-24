@@ -1,4 +1,5 @@
 import { renderArmyStack } from './hero-box.js'
+import { showInfoBoxView } from './info-box-view.js'
 
 const NO_FORT = 'No fort'
 
@@ -26,7 +27,5 @@ export function renderTownBox(container, document, { name, hall, fort, goldIncom
     }
   })
 
-  container.classList.remove('hero-box', 'found-box', 'date-box')
-  container.classList.add('town-box')
-  container.replaceChildren(box)
+  showInfoBoxView(container, 'town-box', box)
 }

@@ -243,3 +243,34 @@ export function readDateBox() {
     picture: within(box).getByRole('img').getAttribute('aria-label')
   }
 }
+
+export function getKingdomOverview() {
+  return screen.getByRole('region', { name: 'Kingdom overview' })
+}
+
+export function queryKingdomOverview() {
+  return screen.queryByRole('region', { name: 'Kingdom overview' })
+}
+
+// The number of the player's towns under each hall, e.g. { 'Village Hall': 1, 'Town Hall': 0, ... }.
+export function readKingdomOverviewHalls() {
+  const halls = within(getKingdomOverview()).getByRole('list', { name: 'Towns by hall' })
+  return Object.fromEntries(
+    within(halls)
+      .getAllByRole('listitem')
+      .map((item) => [
+        within(item).getByRole('img').getAttribute('aria-label'),
+        Number(item.textContent.trim())
+      ])
+  )
+}
+
+// The flags in the overview's Allies and Enemies rows, by the player each stands for.
+export function readKingdomOverviewFlags() {
+  const overview = getKingdomOverview()
+  const flagsIn = (name) =>
+    within(within(overview).getByRole('list', { name }))
+      .queryAllByRole('img')
+      .map((flag) => flag.getAttribute('aria-label'))
+  return { allies: flagsIn('Allies'), enemies: flagsIn('Enemies') }
+}

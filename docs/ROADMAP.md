@@ -156,8 +156,8 @@ What a visit tells the player. Small pickups go to the info box (2.4b); a dialog
 The box at the bottom of the adventure panel shows more than the selected hero or town. How it works:
 - It shows the selected hero or town by default.
 - A message (a pickup) replaces it for 3 seconds: the pictures with their amounts, a short text over them when it fits (`core.advevent.113` for a resource). Several messages queue and show one after another; a click skips to the next; then the selection comes back. Each pickup plays a sound.
-- Clicking it goes through three views: the selected hero or town, then the kingdom overview, then the date, then back. The overview and the date go back to the selection by themselves after 3 seconds.
-- Kingdom overview: the number of the player's towns at each hall level (Village Hall, Town Hall, City Hall, Capitol icons with a count under each), then the allies' and the enemies' flags.
+- Clicking it goes through three views: the selected hero or town, then the kingdom overview, then the date, then back. The overview and the date go back to the selection by themselves after 3 seconds. A click on a unit in the hero's army or the town's garrison does not change the view: units there can be selected and rearranged as on the hero and town screens (no split), and right-clicking one opens its creature info window.
+- Kingdom overview: the number of the player's towns at each hall level (Village Hall, Town Hall, City Hall, Capitol icons with a count under each), then a row of the allies' flags and a row of the enemies'.
 - Date: "Day N" (the day of the week) with the new-day animation; on the first day of a new week "Week N" with that week's animation instead. It also shows by itself for 3 seconds at the start of every turn except the first day, with the new day, week or month sound.
 - During another player's turn: an hourglass with that player's crest (8.1).
 - Hovering it shows its help text in the status bar, and right-click shows a popup explaining the box (`zelp[292]`, `allTexts[109]`).
@@ -167,10 +167,14 @@ Stages:
 - [x] Resource pickup shown for 3 seconds, then back to the selection; a click, moving the hero or selecting a town brings the selection back sooner (2.4); see `docs/notes/2026-10-24-info-box-resource-pickup.md`
 - [ ] Queued messages, a click skipping to the next (needs pickups that give several things, 7.5-7.8)
 - [ ] Pickup sounds
-- [ ] Clicking it shows the kingdom overview (hall levels; flags once there are other players, 8.1), then the date, then back; each goes back after 3 seconds
+- [x] Clicking it shows the kingdom overview (towns per hall level, empty Allies and Enemies rows), then the date, then back; each goes back after 3 seconds; see `docs/notes/2026-10-24-info-box-kingdom-overview.md`
+- [ ] The allies' and enemies' flags in the kingdom overview (8.1)
+- [ ] Selecting and rearranging units in the hero's army and the town's garrison in the info box, as on the hero and town screens but without splitting
+- [ ] Right-clicking a unit in the info box opens its creature info window (needs the creature info window, 4.3)
+- [ ] The date opened by a click plays the new day sound and music, as at the start of a turn (10.4, 10.5)
 - [x] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the sun rising over the hills (each week of the month under its own sky); see `docs/notes/2026-10-24-info-box-date.md`
 - [ ] The new day, week and month sounds (with sound effects, 10.4)
-- [ ] Status bar text on hover and right-click popup (2.5, 2.1)
+- [ ] Status bar text on hover, and right-click popup: a "status window" popup in the middle of the screen explaining the box (2.5, 2.1)
 - [ ] Other pickups as they come: experience, primary skills, spells, artifacts, creatures (7.5-7.8)
 - [ ] The hourglass during another player's turn (8.1)
 
