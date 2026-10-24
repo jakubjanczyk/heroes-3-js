@@ -46,7 +46,7 @@ export function readVisitingHeroArmy() {
 }
 
 export function getVisitingHero(heroName) {
-  return within(getTownScreen()).getByRole('img', { name: heroName })
+  return within(getTownScreen()).getByRole('button', { name: heroName })
 }
 
 function getTownScreenTownList() {

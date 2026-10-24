@@ -1,0 +1,207 @@
+import { findHero } from '../../../game/domain/entity-queries.js'
+import { getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { levelForExperience } from '../../../game/heroes/hero-experience.js'
+import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import {
+  APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_EXPERIENCE_GAINED,
+  APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_WORLD_READY,
+  APP_UI_ADVENTURE_MAP_COVERED,
+  APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_HERO_SCREEN_OPEN_REQUESTED,
+  APP_UI_SELECTED_HERO_CLICKED
+} from '../../events.js'
+import { defineModule } from '../../modules/shared/module-runtime.js'
+import { renderArmyStack } from '../presentation/hero-box.js'
+
+const DEFAULT_HERO_NAME = 'Hero'
+
+function statusSourceAt(target) {
+  return target?.closest?.('[data-status]') ?? null
+}
+
+// The Heroes 3 hero screen. It shows the hero as they are when it opens, as nothing changes the
+// hero while it is open. It is not saved: a reload shows the map.
+export const registerHeroScreenViewModule = defineModule(
+  ({ emit, env }) => {
+    const document = env.document
+    const gameShell = document?.querySelector('.game-shell')
+    let heroScreen = null
+    let hero = null
+    let heroName = DEFAULT_HERO_NAME
+    let definitions = {}
+    let experience = 0
+    let levelUpSkills = []
+    let isMapCovered = false
+    // Whether this screen covered the map, so closing it uncovers only what it covered: over the
+    // town screen, the map stays covered.
+    let coversMap = false
+
+    function fillHeroScreen() {
+      const heroClass = definitions?.heroClasses?.[definitions?.hero?.heroClass]
+      const portrait = heroScreen.querySelector('.hero-screen__portrait')
+      portrait.setAttribute('aria-label', heroName)
+      portrait.textContent = heroName.charAt(0)
+      heroScreen.querySelector('.hero-screen__heroes .hero-screen__hero').textContent =
+        heroName.charAt(0)
+      heroScreen.querySelector('.hero-screen__name').textContent = heroName
+      heroScreen.querySelector('.hero-screen__level').textContent =
+        `Level ${levelForExperience(experience)} ${heroClass?.name ?? ''}`.trim()
+
+      for (const { key, value } of getHeroPrimarySkills({
+        entity: hero,
+        definitions,
+        levelUpSkills
+      })) {
+        heroScreen.querySelector(`[data-skill="${key}"] .hero-screen__skill-value`).textContent =
+          String(value)
+      }
+      heroScreen.querySelector('.hero-screen__experience .hero-screen__box-value').textContent =
+        String(experience)
+
+      const army = getHeroArmy({ entity: hero, definitions })
+      heroScreen.querySelectorAll('.hero-screen__army .army-slot').forEach((slot, index) => {
+        const stack = army[index]
+        slot.replaceChildren(...(stack ? [renderArmyStack(document, stack)] : []))
+      })
+    }
+
+    function openHeroScreen() {
+      if (!gameShell || heroScreen) {
+        return
+      }
+
+      heroScreen = document
+        .getElementById('hero-screen-template')
+        .content.firstElementChild.cloneNode(true)
+      fillHeroScreen()
+      gameShell.append(heroScreen)
+      // The dialog takes the focus, so Enter closes it rather than pressing the button that opened it.
+      heroScreen.focus()
+      if (!isMapCovered) {
+        coversMap = true
+        emit(APP_UI_ADVENTURE_MAP_COVERED, {})
+      }
+    }
+
+    function closeHeroScreen() {
+      if (!heroScreen) {
+        return
+      }
+
+      heroScreen.remove()
+      heroScreen = null
+      if (coversMap) {
+        coversMap = false
+        emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
+      }
+    }
+
+    function showStatus(text) {
+      heroScreen.querySelector('.hero-screen__status-bar').textContent = text
+    }
+
+    return {
+      subscriptions: [
+        {
+          type: APP_FACT_WORLD_READY,
+          handler: (event) => {
+            const { scenario } = event.detail
+            definitions = event.detail.definitions
+            hero = findHero(scenario.entities)
+            heroName = definitions?.hero?.name ?? DEFAULT_HERO_NAME
+            experience = hero?.experience ?? 0
+            levelUpSkills = []
+          }
+        },
+        {
+          type: APP_FACT_HERO_EXPERIENCE_GAINED,
+          handler: (event) => {
+            experience += event.detail.amount
+          }
+        },
+        {
+          type: APP_FACT_HERO_LEVELED_UP,
+          handler: (event) => {
+            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
+          }
+        },
+        {
+          type: APP_FACT_HERO_ARMY_CHANGED,
+          handler: (event) => {
+            hero = { ...hero, army: event.detail.army }
+          }
+        },
+        {
+          type: APP_UI_ADVENTURE_MAP_COVERED,
+          handler: () => {
+            isMapCovered = true
+          }
+        },
+        {
+          type: APP_UI_ADVENTURE_MAP_UNCOVERED,
+          handler: () => {
+            isMapCovered = false
+          }
+        },
+        { type: APP_UI_SELECTED_HERO_CLICKED, handler: openHeroScreen },
+        { type: APP_UI_HERO_SCREEN_OPEN_REQUESTED, handler: openHeroScreen }
+      ],
+      domSubscriptions: [
+        {
+          target: gameShell,
+          type: 'click',
+          handler: (event) => {
+            if (!heroScreen?.contains(event.target)) {
+              return
+            }
+
+            event.stopPropagation()
+            if (event.target.closest('.hero-screen__close')) {
+              closeHeroScreen()
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'mouseover',
+          handler: (event) => {
+            if (heroScreen?.contains(event.target)) {
+              showStatus(statusSourceAt(event.target)?.dataset.status ?? '')
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'mouseout',
+          handler: (event) => {
+            const source = statusSourceAt(event.target)
+            if (heroScreen?.contains(source) && statusSourceAt(event.relatedTarget) !== source) {
+              showStatus('')
+            }
+          }
+        }
+      ],
+      dispose: () => {
+        heroScreen?.remove()
+        heroScreen = null
+      }
+    }
+  },
+  {
+    id: 'hero-screen-view',
+    phase: 'view',
+    consumes: [
+      APP_FACT_WORLD_READY,
+      APP_FACT_HERO_EXPERIENCE_GAINED,
+      APP_FACT_HERO_LEVELED_UP,
+      APP_FACT_HERO_ARMY_CHANGED,
+      APP_UI_ADVENTURE_MAP_COVERED,
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_SELECTED_HERO_CLICKED,
+      APP_UI_HERO_SCREEN_OPEN_REQUESTED
+    ],
+    produces: [APP_UI_ADVENTURE_MAP_COVERED, APP_UI_ADVENTURE_MAP_UNCOVERED]
+  }
+)

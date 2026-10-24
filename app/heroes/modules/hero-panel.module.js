@@ -18,6 +18,7 @@ import {
   APP_FACT_TOWN_LEFT,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
+  APP_UI_HERO_SCREEN_OPEN_REQUESTED,
   APP_UI_HERO_SELECTED,
   APP_UI_TOWN_SELECTED
 } from '../../events.js'
@@ -77,6 +78,10 @@ export const registerHeroPanelModule = defineModule(
       portrait.textContent = name.charAt(0)
       portrait.addEventListener('click', (event) => {
         event.stopPropagation()
+        if (isHeroSelected) {
+          emit(APP_UI_HERO_SCREEN_OPEN_REQUESTED, {})
+          return
+        }
         selectAndCenterOnHero()
       })
 
@@ -245,6 +250,10 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_TURN_ENDED,
       APP_FACT_TOWN_LEFT
     ],
-    produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE, APP_UI_HERO_SELECTED]
+    produces: [
+      APP_COMMAND_CAMERA_CENTER_ON_TILE,
+      APP_UI_HERO_SELECTED,
+      APP_UI_HERO_SCREEN_OPEN_REQUESTED
+    ]
   }
 )
