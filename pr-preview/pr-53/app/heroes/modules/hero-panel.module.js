@@ -76,8 +76,6 @@ export const registerHeroPanelModule = defineModule(
       portrait.setAttribute('aria-label', name)
       portrait.title = name
       portrait.textContent = name.charAt(0)
-      // As in Heroes 3, a click selects the hero and a click on the selected hero opens the
-      // hero screen.
       portrait.addEventListener('click', (event) => {
         event.stopPropagation()
         if (isHeroSelected) {
