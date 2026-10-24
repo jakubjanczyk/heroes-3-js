@@ -19,4 +19,4 @@ Roadmap 2.4 and 2.4b: picking up a resource pile tells the player what they foun
 
 - The pickup sound.
 - Queueing several messages, which needs pickups that give several things at once (7.5-7.8).
-- The other info box views: kingdom overview and date (2.4b).
+- The other info box views: kingdom overview and date (2.4b), now done (`2026-10-24-info-box-kingdom-overview.md`).
