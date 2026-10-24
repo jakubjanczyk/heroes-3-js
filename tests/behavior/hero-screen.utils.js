@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { getHeroInHeroList, readArmySlots } from './adventure-panels.utils.js'
-import { flushMicrotasks } from './app.utils.js'
+import { flushMicrotasks, shiftClick } from './app.utils.js'
 
 export function queryHeroScreen() {
   return screen.queryByRole('dialog', { name: 'Hero screen' })
@@ -62,4 +62,42 @@ export async function hoverOnHeroScreen(user, text) {
 
 export async function unhoverOnHeroScreen(user, text) {
   await user.unhover(within(getHeroScreen()).getByText(text))
+}
+
+function getHeroScreenArmySlot(slot) {
+  const army = within(getHeroScreen()).getByRole('list', { name: 'Army' })
+  return within(army).getAllByRole('listitem')[slot - 1]
+}
+
+// Slots count from 1, as the player sees them from the left.
+export async function clickHeroScreenArmySlot(user, slot) {
+  await user.click(getHeroScreenArmySlot(slot))
+  await flushMicrotasks()
+}
+
+export async function shiftClickHeroScreenArmySlot(user, slot) {
+  await shiftClick(user, getHeroScreenArmySlot(slot))
+}
+
+export async function hoverHeroScreenArmySlot(user, slot) {
+  await user.hover(getHeroScreenArmySlot(slot))
+}
+
+export async function unhoverHeroScreenArmySlot(user, slot) {
+  await user.unhover(getHeroScreenArmySlot(slot))
+}
+
+export function readHeroScreenSelectedSlot() {
+  const slots = within(getHeroScreen()).getByRole('list', { name: 'Army' }).children
+  const index = [...slots].findIndex((slot) => slot.getAttribute('aria-current') === 'true')
+  return index >= 0 ? index + 1 : null
+}
+
+export function getHeroScreenSplitButton() {
+  return within(getHeroScreen()).getByRole('button', { name: 'Split' })
+}
+
+export async function clickHeroScreenSplitButton(user) {
+  await user.click(getHeroScreenSplitButton())
+  await flushMicrotasks()
 }

@@ -118,18 +118,18 @@ export function splitStack(armies, from, to, rightCount) {
   return isHeroLeftEmpty(split) ? null : split
 }
 
-const SELECT_TEXT = { garrison: 'Select %s (in garrison)', hero: 'Select %s (visiting)' }
+export const TOWN_SELECT_TEXT = {
+  garrison: 'Select %s (in garrison)',
+  hero: 'Select %s (visiting)'
+}
 
-// The status bar text for a slot under the mouse, as Heroes 3 words it with the creatures' singular
-// names (VCMI's CGarrisonSlot::hover). `armies` holds the stacks as the town screen shows them,
-// `selected` and `hovered` are each `{ army, slot }`, `selected` null when no stack is framed.
-// Nothing for the framed stack itself: Heroes 3 offers to view it, and there is no creature window
-// yet.
-export function describeSlotHover(armies, selected, hovered) {
+// Texts from VCMI's CGarrisonSlot::hover. The framed stack shows nothing until creatures have a
+// window to view.
+export function describeSlotHover(armies, selected, hovered, selectText = TOWN_SELECT_TEXT) {
   const stack = armies[hovered.army]?.[hovered.slot]
   const selectedStack = selected && armies[selected.army]?.[selected.slot]
   if (!selectedStack) {
-    return stack ? SELECT_TEXT[hovered.army].replace('%s', stack.singularName) : 'Empty'
+    return stack ? selectText[hovered.army].replace('%s', stack.singularName) : 'Empty'
   }
   if (selected.army === hovered.army && selected.slot === hovered.slot) {
     return ''

@@ -252,8 +252,8 @@ Heroes become characters with identity and progression.
 - [x] Army displayed in the info box and the hero's right-click popup (7 slots, creature picture + exact count per slot; the map look until creature portraits)
 - [ ] Click on stack to see creature details (stats, abilities)
 - [ ] Drag-and-drop to reorder stacks within hero army
-- [ ] Split stack: divide one stack into two (in town: 6.3.6; the hero screen and army exchange still to come)
-- [ ] Rearranging the army on the hero screen as in the town (6.3.6): click a stack to frame it, click another slot to move, swap or merge, Shift+click or the screen's Split button to split
+- [ ] Split stack: divide one stack into two (in town: 6.3.6, and on the hero screen; army exchange between heroes still to come, 4.5)
+- [x] Rearranging the army on the hero screen as in the town (6.3.6): click a stack to frame it, click another slot to move, swap or merge, Shift+click or the screen's Split button to split
 - [ ] Merge stacks: drag same creature type together to combine
 - [ ] Army strength estimate (sum of AI values) shown in hero info
 
@@ -265,10 +265,11 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 - [x] Not saved: a reload shows the map
 - [x] Empty frames where H3 shows what the game has no data for yet: specialty, morale, luck, spell points, eight secondary skills, the artifact slots on the paper doll, the backpack, Quest Log and Dismiss Hero, the formation, tactics and split buttons
 - [ ] Fill those frames as their features come: specialty (4.4), morale and luck, spell points and the spell book (4.8), secondary skills (4.7), artifacts and backpack (M7), Quest Log, Dismiss Hero (4.5), formations and tactics (5.3)
-- [ ] Rearranging the army there (4.3)
+- [x] Rearranging the army there (4.3)
 - [ ] Right-click info on each part, as H3's popups (primary skill descriptions, experience)
 - [ ] The hero list down the right side switches between heroes (4.5); it shows the one hero for now
-- [ ] Status bar text over the portrait (the hero's name), the army slots and the buttons
+- [x] Status bar text over the army slots, as in town without "(visiting)": "Select Pikeman", "Move Pikeman", "Exchange Pikeman with Archer", "Combine Pikeman armies", "Empty"
+- [ ] Status bar text over the portrait (the hero's name) and the buttons
 
 ### 4.4 Hero Identity & Portrait
 - [ ] Hero has a portrait image (displayed in HUD sidebar, hero panel, map)

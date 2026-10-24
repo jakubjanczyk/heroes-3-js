@@ -3,6 +3,8 @@ import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
+  APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
+  APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,
@@ -13,21 +15,26 @@ import {
   APP_UI_SELECTED_HERO_CLICKED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+const SELECT_TEXT = { hero: 'Select %s' }
 
 function statusSourceAt(target) {
   return target?.closest?.('[data-status]') ?? null
 }
 
-// The Heroes 3 hero screen. It shows the hero as they are when it opens, as nothing changes the
-// hero while it is open. It is not saved: a reload shows the map.
+function armySlotAt(target) {
+  return target?.closest?.('.hero-screen__army > .army-slot') ?? null
+}
+
 export const registerHeroScreenViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let heroScreen = null
+    let rearranging = null
     let hero = null
     let heroName = DEFAULT_HERO_NAME
     let definitions = {}
@@ -60,11 +67,16 @@ export const registerHeroScreenViewModule = defineModule(
       heroScreen.querySelector('.hero-screen__experience .hero-screen__box-value').textContent =
         String(experience)
 
+      showArmy()
+    }
+
+    function showArmy() {
       const army = getHeroArmy({ entity: hero, definitions })
       heroScreen.querySelectorAll('.hero-screen__army .army-slot').forEach((slot, index) => {
         const stack = army[index]
         slot.replaceChildren(...(stack ? [renderArmyStack(document, stack)] : []))
       })
+      rearranging.showArmies({ hero: army })
     }
 
     function openHeroScreen() {
@@ -75,6 +87,16 @@ export const registerHeroScreenViewModule = defineModule(
       heroScreen = document
         .getElementById('hero-screen-template')
         .content.firstElementChild.cloneNode(true)
+      rearranging = createArmyRearranging({
+        document,
+        container: heroScreen,
+        slotLists: heroScreen.querySelectorAll('.hero-screen__army'),
+        splitButton: heroScreen.querySelector('.hero-screen__split'),
+        selectText: SELECT_TEXT,
+        showStatus,
+        onMove: (move) => emit(APP_COMMAND_HERO_STACK_MOVE_REQUESTED, move),
+        onSplit: (split) => emit(APP_COMMAND_HERO_STACK_SPLIT_REQUESTED, split)
+      })
       fillHeroScreen()
       gameShell.append(heroScreen)
       // The dialog takes the focus, so Enter closes it rather than pressing the button that opened it.
@@ -92,6 +114,7 @@ export const registerHeroScreenViewModule = defineModule(
 
       heroScreen.remove()
       heroScreen = null
+      rearranging = null
       if (coversMap) {
         coversMap = false
         emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
@@ -131,6 +154,9 @@ export const registerHeroScreenViewModule = defineModule(
           type: APP_FACT_HERO_ARMY_CHANGED,
           handler: (event) => {
             hero = { ...hero, army: event.detail.army }
+            if (heroScreen) {
+              showArmy()
+            }
           }
         },
         {
@@ -160,6 +186,17 @@ export const registerHeroScreenViewModule = defineModule(
             event.stopPropagation()
             if (event.target.closest('.hero-screen__close')) {
               closeHeroScreen()
+              return
+            }
+
+            if (event.target.closest('.hero-screen__split')) {
+              rearranging.toggleSplitMode()
+              return
+            }
+
+            const armySlot = armySlotAt(event.target)
+            if (armySlot) {
+              rearranging.clickSlot(armySlot, event)
             }
           }
         },
@@ -167,15 +204,26 @@ export const registerHeroScreenViewModule = defineModule(
           target: gameShell,
           type: 'mouseover',
           handler: (event) => {
-            if (heroScreen?.contains(event.target)) {
-              showStatus(statusSourceAt(event.target)?.dataset.status ?? '')
+            if (!heroScreen?.contains(event.target)) {
+              return
             }
+
+            const slot = armySlotAt(event.target)
+            if (slot) {
+              rearranging.hoverSlot(slot)
+              return
+            }
+            showStatus(statusSourceAt(event.target)?.dataset.status ?? '')
           }
         },
         {
           target: gameShell,
           type: 'mouseout',
           handler: (event) => {
+            const slot = armySlotAt(event.target)
+            if (heroScreen?.contains(slot) && armySlotAt(event.relatedTarget) !== slot) {
+              rearranging.leaveSlot()
+            }
             const source = statusSourceAt(event.target)
             if (heroScreen?.contains(source) && statusSourceAt(event.relatedTarget) !== source) {
               showStatus('')
@@ -186,6 +234,7 @@ export const registerHeroScreenViewModule = defineModule(
       dispose: () => {
         heroScreen?.remove()
         heroScreen = null
+        rearranging = null
       }
     }
   },
@@ -202,6 +251,11 @@ export const registerHeroScreenViewModule = defineModule(
       APP_UI_SELECTED_HERO_CLICKED,
       APP_UI_HERO_SCREEN_OPEN_REQUESTED
     ],
-    produces: [APP_UI_ADVENTURE_MAP_COVERED, APP_UI_ADVENTURE_MAP_UNCOVERED]
+    produces: [
+      APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
+      APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
+      APP_UI_ADVENTURE_MAP_COVERED,
+      APP_UI_ADVENTURE_MAP_UNCOVERED
+    ]
   }
 )

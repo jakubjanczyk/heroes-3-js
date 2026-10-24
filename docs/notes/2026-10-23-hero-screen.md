@@ -25,8 +25,14 @@ Checked against VCMI (`client/windows/CHeroWindow.cpp`, `client/adventureMap/CLi
 - The portrait is the hero's initial, as in the hero box; the icons are the hero box's stand-ins.
 - It isn't saved: a reload shows the map.
 
+## Rearranging the army
+
+- As on the town screen (`2026-10-23-garrison-exchange.md`, `2026-10-23-stack-splitting.md`): click a stack to frame it, then click another slot to move it, swap the two or merge them; Shift+click or the Split button (the bottom right of the four army buttons, as in VCMI's `CHeroWindow`) opens the split window.
+- With one army, the hero's last stack moves whole: the "leave one creature" rule only applies when it goes to another army.
+- The status bar words the slots as in town without "(visiting)" or "(in garrison)": "Select Pikeman".
+- `app/heroes/presentation/army-rearranging.js` holds the framing, split mode and status bar texts both screens share. The hero screen asks for the change with `command.hero.stackMove.requested` and `command.hero.stackSplit.requested`; `hero-army.module.js` applies `army-exchange`'s rule to the hero's army alone and emits `fact.hero.army.changed`, which is persisted, and the screen redraws the army from it. Opened over a town, the town screen shows the new army too.
+
 ## Not yet
 
-- Rearranging the army on the hero screen, as on the town screen (4.3).
-- Right-click popups and status bar texts over the portrait, the army and the buttons.
+- Right-click popups, and status bar texts over the portrait and the buttons.
 - Clicking the hero's own tile still clears the route preview before the screen opens; Heroes 3 keeps the route.

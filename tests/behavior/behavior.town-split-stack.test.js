@@ -12,24 +12,26 @@ import {
 import { aHero, aScenario, aTown } from './builders.js'
 import {
   cancelSplit,
-  clickGarrisonSlot,
-  clickSplitButton,
   clickSplitFewer,
   clickSplitMore,
-  clickVisitingHeroSlot,
   confirmSplit,
   dragSplitSlider,
+  querySplitWindow,
+  readSplitCounts,
+  typeSplitCount
+} from './split-window.utils.js'
+import {
+  clickGarrisonSlot,
+  clickSplitButton,
+  clickVisitingHeroSlot,
   enterTownAt,
   getSplitButton,
   leaveTown,
-  querySplitWindow,
   readGarrison,
   readSelectedStack,
-  readSplitCounts,
   readVisitingHeroArmy,
   shiftClickGarrisonSlot,
-  shiftClickVisitingHeroSlot,
-  typeSplitCount
+  shiftClickVisitingHeroSlot
 } from './town-screen.utils.js'
 
 const gameDefinitions = {

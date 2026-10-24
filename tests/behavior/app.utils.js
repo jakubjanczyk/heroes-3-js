@@ -92,6 +92,13 @@ export async function flushMicrotasks() {
   await new Promise((resolve) => setImmediate(resolve))
 }
 
+export async function shiftClick(user, element) {
+  await user.keyboard('{Shift>}')
+  await user.click(element)
+  await user.keyboard('{/Shift}')
+  await flushMicrotasks()
+}
+
 // Moves the fake clock (see fake-timers.setup.js) on by `ms`, running every timer due on the way.
 export async function waitMs(ms = 0) {
   await vi.advanceTimersByTimeAsync(ms)
