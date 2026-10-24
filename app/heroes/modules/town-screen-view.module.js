@@ -13,6 +13,7 @@ import {
   APP_FACT_TOWN_LEFT,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_HERO_SCREEN_OPEN_REQUESTED,
   APP_UI_TOWN_UPDATED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
@@ -59,6 +60,7 @@ export const registerTownScreenViewModule = defineModule(
     let hoveredSlot = null
     // With Split pressed, the next slot clicked splits the framed stack rather than moving it.
     let splitMode = false
+    let isVisitingHeroFramed = false
     // The stacks shown, by army, for the status bar's texts; no `hero` without a visiting hero.
     let armies = {}
 
@@ -134,6 +136,27 @@ export const registerTownScreenViewModule = defineModule(
         view.append(createPicture())
       }
       view.querySelector('.town-screen__buildings').replaceChildren(...picture.map(renderBuilding))
+    }
+
+    function frameVisitingHero(framed) {
+      isVisitingHeroFramed = framed
+      const hero = townScreen.querySelector('.town-panel__hero--visiting')
+      if (framed) {
+        hero.setAttribute('aria-current', 'true')
+      } else {
+        hero.removeAttribute('aria-current')
+      }
+    }
+
+    // As in Heroes 3, the first click frames the visiting hero and the second opens the hero screen.
+    function clickVisitingHero() {
+      if (isVisitingHeroFramed) {
+        frameVisitingHero(false)
+        emit(APP_UI_HERO_SCREEN_OPEN_REQUESTED, {})
+        return
+      }
+      selectStack(null)
+      frameVisitingHero(true)
     }
 
     function selectStack(stack) {
@@ -227,12 +250,11 @@ export const registerTownScreenViewModule = defineModule(
     function showVisitingHero(visitingHero) {
       const hero = townScreen.querySelector('.town-panel__hero--visiting')
       const name = visitingHero?.name ?? ''
+      hero.disabled = !name
       if (name) {
-        hero.setAttribute('role', 'img')
         hero.setAttribute('aria-label', name)
         hero.dataset.status = name
       } else {
-        hero.removeAttribute('role')
         hero.removeAttribute('aria-label')
         hero.removeAttribute('data-status')
       }
@@ -278,6 +300,7 @@ export const registerTownScreenViewModule = defineModule(
       showVisitingHero(visitingHero)
       armies = visitingHero ? { garrison, hero: visitingHero.army } : { garrison }
       selectStack(null)
+      frameVisitingHero(false)
       renderTownList(townScreen.querySelector('.town-panel__town-list'), document, {
         towns: ownedTowns,
         selectedTownId: entityId
@@ -297,6 +320,7 @@ export const registerTownScreenViewModule = defineModule(
       selectedStack = null
       hoveredSlot = null
       splitMode = false
+      isVisitingHeroFramed = false
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -327,6 +351,10 @@ export const registerTownScreenViewModule = defineModule(
           target: gameShell,
           type: 'mouseout',
           handler: (event) => {
+            if (!townScreen?.contains(event.target)) {
+              return
+            }
+
             const building = buildingAt(event.target)
             if (building && buildingAt(event.relatedTarget) !== building) {
               showStatus('')
@@ -383,8 +411,14 @@ export const registerTownScreenViewModule = defineModule(
               return
             }
 
+            if (event.target.closest('.town-panel__hero--visiting')) {
+              clickVisitingHero()
+              return
+            }
+
             const armySlot = armySlotAt(event.target)
             if (armySlot) {
+              frameVisitingHero(false)
               clickArmySlot(armySlot, event)
               return
             }
@@ -412,7 +446,8 @@ export const registerTownScreenViewModule = defineModule(
       APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
       APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
-      APP_UI_ADVENTURE_MAP_UNCOVERED
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_HERO_SCREEN_OPEN_REQUESTED
     ]
   }
 )

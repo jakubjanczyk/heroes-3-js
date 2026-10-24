@@ -1,4 +1,5 @@
 import { sameTile } from '../../engine/tile-utils.js'
+import { findHero } from '../../game/domain/entity-queries.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
 import {
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
@@ -19,6 +20,7 @@ import {
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_PREVIEW_UPDATED,
+  APP_UI_SELECTED_HERO_CLICKED,
   APP_UI_SYSTEM_OPTIONS_CLOSED,
   APP_UI_SYSTEM_OPTIONS_OPENED,
   APP_UI_TOWN_SELECTED
@@ -29,6 +31,7 @@ export const registerSelectionModule = defineModule(
   ({ emit, config }) => {
     const movementRules = resolveMovementRules(config?.content?.movementRules)
     let map = null
+    let heroTile = null
     let isWorldReady = false
     let requestedTile = null
     let previewPath = null
@@ -96,6 +99,7 @@ export const registerSelectionModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             map = event.detail.map
+            heroTile = findHero(event.detail.scenario?.entities)?.tile ?? null
             isWorldReady = true
             isTownSelected = false
             resetPreview()
@@ -125,6 +129,9 @@ export const registerSelectionModule = defineModule(
             }
 
             const { tile } = event.detail
+            if (heroTile && sameTile(heroTile, tile)) {
+              emit(APP_UI_SELECTED_HERO_CLICKED, {})
+            }
             if (previewTarget && sameTile(previewTarget, tile)) {
               requestMove()
               return
@@ -170,6 +177,7 @@ export const registerSelectionModule = defineModule(
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
             const to = event.detail.to
+            heroTile = to
             if (!previewPath || previewPath.length === 0) {
               return
             }
@@ -306,6 +314,7 @@ export const registerSelectionModule = defineModule(
       APP_COMMAND_MOVE_REQUESTED,
       APP_COMMAND_ROUTE_REQUESTED,
       APP_UI_PREVIEW_UPDATED,
+      APP_UI_SELECTED_HERO_CLICKED,
       APP_FACT_PREVIEW_TARGET_SELECTED,
       APP_FACT_PREVIEW_CLEARED
     ]
