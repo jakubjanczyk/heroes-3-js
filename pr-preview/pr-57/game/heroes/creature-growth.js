@@ -3,7 +3,7 @@ import { buildingsInEffect } from './town-income.js'
 
 // A town's creatures by tier, as the town screen's panel shows them: for each tier with a dwelling,
 // the creature it makes (the upgraded one once the upgrade stands) and how many arrive a week;
-// null for a tier without one. As in VCMI, the Citadel's and Castle's bonus is a share of the
+// null for a tier without one. The Citadel's and Castle's bonus is a share of the
 // dwelling's own growth, rounded down, and a horde building (Griffin Bastion) adds a flat number.
 export function describeCreatureGrowth({ buildings, built, monsters }) {
   const inEffect = buildingsInEffect({ buildings, built }).map(

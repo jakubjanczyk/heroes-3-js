@@ -1,4 +1,3 @@
-// Heroes 3 damage (VCMI `damageCalculator.lua`, `BattleInfo::getActualDamage`).
 // Kept in thousandths so the rounding is the game's, not the floating point's.
 const ATTACK_BONUS_PER_POINT = 50
 const ATTACK_BONUS_CAP = 3000
@@ -82,7 +81,7 @@ export function strikeSequence({ attacker, defender, random }) {
 }
 
 // A shot gets no retaliation. Marksmen shoot a second time while the target lives and they have a
-// shot left (VCMI `BattleActionProcessor::makeRangedAttack`).
+// shot left.
 export function shotSequence({ attacker, defender, random, halved }) {
   const strikes = []
   let target = defender

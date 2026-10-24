@@ -69,8 +69,7 @@ export const registerHeroPanelModule = defineModule(
       renderInfoBox()
     }
 
-    // VCMI's CInfoBar::tick: a message whose time runs out under a window stays until something
-    // else replaces it.
+    // A message whose time runs out while a window is open stays until something else replaces it.
     function hideMessageUnlessModalOpen() {
       if (openModalCount === 0) {
         hideMessage()

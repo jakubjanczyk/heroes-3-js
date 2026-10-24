@@ -1,4 +1,4 @@
-// Heroes 3 adventure map movement (checked against VCMI's pathfinder):
+// Adventure map movement:
 // - a step costs the movementCost of the tile the hero leaves: its road when both tiles have a
 //   road, else its terrain; a diagonal step costs it times √2;
 // - a diagonal step that no longer fits is still allowed when a straight one would, and takes

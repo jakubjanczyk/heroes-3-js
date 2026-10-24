@@ -1,6 +1,6 @@
 // Stand-ins for the Castle town picture until it has sprites: an 800x374 background and an SVG
 // drawing per building, each in its own frame whose top left corner the town's `picture` data
-// places. Laid out after the Heroes 3 Castle (VCMI's config/factions/castle.json), so that each
+// places. Laid out after the Heroes 3 Castle, so that each
 // building can be told apart at a glance.
 
 const STONE = '#e6e2d6'

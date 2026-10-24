@@ -153,7 +153,7 @@ export const registerTownModule = defineModule(
       }
     }
 
-    // A dwelling just built has a week of its creature's own growth (VCMI: no Citadel or Castle
+    // A dwelling just built has a week of its creature's own growth (no Citadel or Castle
     // bonus until the next week); its upgrade keeps the creatures already there.
     function stockNewDwelling(townId, building) {
       const creature = definitions.monsters?.[building?.creature]
