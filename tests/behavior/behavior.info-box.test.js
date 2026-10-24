@@ -17,7 +17,6 @@ import {
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   readGameData,
   setupMovementBehaviorApp,
   waitMs
@@ -109,7 +108,6 @@ describe('info box behavior', () => {
 
     await collectGold(user)
     await user.click(getTownInTownList('Whitemoon'))
-    await flushMicrotasks()
 
     expect(queryFoundResourcesBox()).toBeNull()
     expect(getTownInfoBox()).toBeTruthy()
@@ -121,7 +119,6 @@ describe('info box behavior', () => {
     await collectGold(user)
 
     await setupApp({ eventLog })
-    await flushMicrotasks()
 
     expect(queryFoundResourcesBox()).toBeNull()
     expect(getHeroInfoBox()).toBeTruthy()
@@ -218,7 +215,6 @@ describe('info box date behavior', () => {
 
     await clickEndTurn(user)
     await user.click(getTownInTownList('Whitemoon'))
-    await flushMicrotasks()
 
     expect(queryDateBox()).toBeNull()
     expect(getTownInfoBox()).toBeTruthy()
@@ -230,7 +226,6 @@ describe('info box date behavior', () => {
     await clickEndTurn(user)
 
     await setupApp({ eventLog })
-    await flushMicrotasks()
 
     expect(queryDateBox()).toBeNull()
     expect(getHeroInfoBox()).toBeTruthy()
