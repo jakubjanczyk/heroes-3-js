@@ -26,7 +26,7 @@ export function renderTownBox(container, document, { name, hall, fort, goldIncom
     }
   })
 
-  container.classList.remove('hero-box')
+  container.classList.remove('hero-box', 'found-box')
   container.classList.add('town-box')
   container.replaceChildren(box)
 }

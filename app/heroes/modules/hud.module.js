@@ -47,7 +47,7 @@ export const registerHudModule = defineModule(
           item.title = name
 
           const icon = env.document.createElement('span')
-          icon.className = 'resource-bar__icon'
+          icon.className = 'resource-icon'
           icon.setAttribute('aria-hidden', 'true')
 
           const label = env.document.createElement('span')
