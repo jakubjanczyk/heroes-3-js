@@ -1,3 +1,5 @@
+import { showInfoBoxView } from './info-box-view.js'
+
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 
 const SUN_RAY_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315]
@@ -91,7 +93,10 @@ export function renderDateBox(container, document, { week, day }) {
   heading.className = 'date-box__text'
   heading.textContent = isNewWeek ? `Week ${week}` : `Day ${day}`
 
-  container.classList.remove('hero-box', 'town-box', 'found-box')
-  container.classList.add('date-box')
-  container.replaceChildren(heading, renderSunrise(document, { week: isNewWeek ? week : null }))
+  showInfoBoxView(
+    container,
+    'date-box',
+    heading,
+    renderSunrise(document, { week: isNewWeek ? week : null })
+  )
 }

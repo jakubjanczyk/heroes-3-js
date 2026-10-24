@@ -4,10 +4,12 @@ import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
+  countTownsByHall,
   createTownBuildings,
   describeTownBox,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
+import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_ARMY_CHANGED,
@@ -17,6 +19,7 @@ import {
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_BUILDING_BUILT,
+  APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TURN_ENDED,
@@ -34,6 +37,7 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderDateBox } from '../presentation/date-box.js'
 import { renderFoundResourcesBox } from '../presentation/found-resources-box.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
+import { renderKingdomOverviewBox } from '../presentation/kingdom-overview-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
@@ -56,6 +60,8 @@ export const registerHeroPanelModule = defineModule(
     let isHeroSelected = true
     let townsById = new Map()
     const townBuildings = createTownBuildings()
+    const ownedTowns = createOwnedTowns()
+    let turnNumber = 1
     let selectedTown = null
     let isRestoring = false
     let message = null
@@ -89,6 +95,20 @@ export const registerHeroPanelModule = defineModule(
     function dropMessage() {
       message = null
       clearTimeout(messageTimer)
+    }
+
+    // Clicking the box goes from the selection to the kingdom overview, then to the date, then
+    // back; clicking a pickup or the date brings the selection back. Its army slots don't count.
+    function showNextView(event) {
+      if (!message) {
+        if (!event.target.closest?.('.army-slot')) {
+          showMessage({ kind: 'kingdom' })
+        }
+      } else if (message.kind === 'kingdom') {
+        showMessage({ kind: 'date', date: calendarDateOfTurn(turnNumber) })
+      } else {
+        hideMessage()
+      }
     }
 
     function selectHero() {
@@ -146,6 +166,8 @@ export const registerHeroPanelModule = defineModule(
         renderFoundResources()
       } else if (message?.kind === 'date') {
         renderDate()
+      } else if (message?.kind === 'kingdom') {
+        renderKingdomOverview()
       } else if (isHeroSelected) {
         renderSelectedHero()
       } else {
@@ -164,6 +186,18 @@ export const registerHeroPanelModule = defineModule(
       if (heroInfo) {
         heroInfo.setAttribute('aria-label', 'Date')
         renderDateBox(heroInfo, env.document, message.date)
+      }
+    }
+
+    function renderKingdomOverview() {
+      if (heroInfo) {
+        heroInfo.setAttribute('aria-label', 'Kingdom overview')
+        renderKingdomOverviewBox(heroInfo, env.document, {
+          halls: countTownsByHall({
+            buildings: definitions?.buildings ?? {},
+            builtInTowns: ownedTowns.ids().map((townId) => townBuildings.builtIn(townId))
+          })
+        })
       }
     }
 
@@ -212,7 +246,7 @@ export const registerHeroPanelModule = defineModule(
 
     return {
       domSubscriptions: [
-        { target: heroInfo, type: 'click', handler: hideMessage },
+        { target: heroInfo, type: 'click', handler: showNextView },
         {
           target: nextHeroButton,
           type: 'click',
@@ -230,6 +264,8 @@ export const registerHeroPanelModule = defineModule(
             const towns = event.detail.scenario.entities.filter(isTown)
             townsById = new Map(towns.map((town) => [town.id, town]))
             townBuildings.onWorldReady(towns)
+            ownedTowns.onWorldReady(event.detail.scenario.entities)
+            turnNumber = 1
             selectedTown = null
             heroTile = hero?.tile ?? null
             heroName = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
@@ -265,6 +301,12 @@ export const registerHeroPanelModule = defineModule(
           }
         },
         {
+          type: APP_FACT_TOWN_CAPTURED,
+          handler: (event) => {
+            ownedTowns.onTownCaptured(event.detail.entityId)
+          }
+        },
+        {
           type: APP_FACT_TOWN_GARRISON_CHANGED,
           handler: (event) => {
             const { entityId, garrison } = event.detail
@@ -286,6 +328,7 @@ export const registerHeroPanelModule = defineModule(
         {
           type: APP_FACT_TURN_ENDED,
           handler: (event) => {
+            turnNumber = event.detail.turnNumber
             selectAndCenterOnHero()
             if (!isRestoring) {
               showMessage({ kind: 'date', date: calendarDateOfTurn(event.detail.turnNumber) })
@@ -370,6 +413,7 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_TOWN_SELECTED,
       APP_FACT_TOWN_BUILDING_BUILT,
+      APP_FACT_TOWN_CAPTURED,
       APP_FACT_TOWN_GARRISON_CHANGED,
       APP_FACT_TURN_ENDED,
       APP_FACT_TOWN_LEFT,

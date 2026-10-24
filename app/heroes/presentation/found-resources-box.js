@@ -1,3 +1,5 @@
+import { showInfoBoxView } from './info-box-view.js'
+
 export function renderFoundResourcesBox(container, document, resources) {
   const list = document.createElement('ul')
   list.className = 'found-box__resources'
@@ -20,7 +22,5 @@ export function renderFoundResourcesBox(container, document, resources) {
     list.append(item)
   }
 
-  container.classList.remove('hero-box', 'town-box', 'date-box')
-  container.classList.add('found-box')
-  container.replaceChildren(list)
+  showInfoBoxView(container, 'found-box', list)
 }

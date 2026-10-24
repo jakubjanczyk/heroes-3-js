@@ -149,13 +149,28 @@ export function describeHall({ catalogue, town, builtElsewhere, resources, treas
 export function describeTownBox({ catalogue, built }) {
   const { buildings } = catalogue
   const nameOf = (buildingId) => buildings[buildingId]?.name ?? buildingId
-  const hallLevel = Math.max(1, HALL_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1)
+  const hallLevel = hallLevelOf(built)
 
   return {
     hall: { name: nameOf(HALL_CHAIN[hallLevel - 1]), level: hallLevel },
     fort: { name: fortNameOf({ buildings, built }), level: fortLevelOf(built) },
     goldIncome: dailyIncomeOfTown({ buildings, built }).GOLD_PILE ?? 0
   }
+}
+
+// 1 for a Village Hall up to 4 for a Capitol.
+export function hallLevelOf(built) {
+  return Math.max(1, HALL_CHAIN.findLastIndex((buildingId) => built.has(buildingId)) + 1)
+}
+
+// The kingdom overview: how many of the towns stand at each hall, from Village Hall to Capitol.
+export function countTownsByHall({ buildings, builtInTowns }) {
+  const levels = builtInTowns.map(hallLevelOf)
+  return HALL_CHAIN.map((buildingId, index) => ({
+    name: buildings[buildingId]?.name ?? buildingId,
+    level: index + 1,
+    count: levels.filter((level) => level === index + 1).length
+  }))
 }
 
 // 1 for a Fort, 2 for a Citadel, 3 for a Castle, 0 for none.
