@@ -872,7 +872,7 @@
 }
 
 /* Short screens (a landscape phone, a small laptop window): army slots in one row. */
-@media (height < 42rem) {
+@media (height < 48rem) {
   .minimap {
     --minimap-max-height: 28dvh;
   }
