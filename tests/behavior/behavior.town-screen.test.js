@@ -268,7 +268,7 @@ describe('town screen behavior', () => {
     })
 
     // 7 from the dwelling, 7 more from the Castle and 3 from the Bastion: the Castle doubles only
-    // the dwelling's own growth, as in VCMI.
+    // the dwelling's own growth.
     test('given a Griffin Tower, a Griffin Bastion and a Castle then the Bastion adds its 3 on top', async () => {
       await enterTownWithBuildings([
         'FORT',

@@ -18,7 +18,7 @@ function openedBy(buildingId, building, monsters) {
 
 // The buildings drawn on the town picture, back to front: those standing, except one a standing
 // building upgrades (the Castle is drawn in place of the Citadel and Fort). `picture` places each
-// building on the faction's 800x374 picture: { x, y, z }, like VCMI's town structures.
+// building on the faction's 800x374 picture: { x, y, z }.
 export function describeTownPicture({ buildings, picture, built, monsters }) {
   return buildingsInEffect({ buildings, built })
     .filter((buildingId) => picture[buildingId])

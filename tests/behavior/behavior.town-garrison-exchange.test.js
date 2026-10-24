@@ -208,7 +208,6 @@ describe('town garrison exchange behavior', () => {
     })
   })
 
-  // As in Heroes 3 (VCMI's CGarrisonSlot::clickPressed), the hero's last stack never leaves whole.
   describe("the hero's army is never left empty", () => {
     test("moving the hero's last stack to an empty garrison slot leaves one creature with the hero", async () => {
       const { user } = await startWithHeroInWhitemoon()
@@ -263,7 +262,7 @@ describe('town garrison exchange behavior', () => {
     })
   })
 
-  // The texts are Heroes 3's, with the creature's singular name (VCMI's CGarrisonSlot::hover).
+  // The texts use the creature's singular name.
   describe('the status bar', () => {
     test('hovering a garrison stack offers to select it', async () => {
       const { user } = await startWithHeroInWhitemoon()

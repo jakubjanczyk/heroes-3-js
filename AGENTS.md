@@ -45,7 +45,8 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - Keep comments to a minimum: write one only when the code can't be understood without it (a surprising rule or edge case, or why something is done the odd way it is). Rename or restructure instead where you can.
   - No comment that restates the code, the function or variable name, or the test name.
   - No header comments describing what a module, function, helper or state variable does, its parameters or what it returns.
-  - This is a Heroes 3 game, so don't write "as in Heroes 3", "Heroes 3 does…" or "the Heroes 3 <thing>". When a rule's source matters, name it briefly (e.g. "VCMI's `CGarrisonSlot::hover`").
+  - This is a Heroes 3 game, so don't write "as in Heroes 3", "Heroes 3 does…" or "the Heroes 3 <thing>".
+  - Never mention VCMI (or its classes, functions and files) in code or test comments. Explain the rule itself instead; research notes in `docs/notes/` may still name their sources.
   - Not every function, variable or test helper needs one; most need none.
 - In tests, a comment is worth it when it explains how an expected value is worked out (damage numbers, positions), not to narrate the steps.
 

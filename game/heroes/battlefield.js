@@ -5,8 +5,7 @@ export const BATTLEFIELD_COLUMNS = 15
 export const BATTLEFIELD_ROWS = 11
 export const EDGE_COLUMNS = [-1, BATTLEFIELD_COLUMNS]
 
-// Where an army's stacks start, by how many stacks it has, as in Heroes 3 (VCMI
-// config/battleStartpos.json). Empty army slots take no place: three stacks stand as three.
+// Where an army's stacks start, by how many stacks it has. Empty army slots take no place: three stacks stand as three.
 const START_ROWS_BY_STACK_COUNT = [
   [],
   [5],
@@ -32,7 +31,7 @@ export const isOnBattlefieldOrEdge = ({ row, column }) =>
   row >= 0 && row < BATTLEFIELD_ROWS && column >= -1 && column <= BATTLEFIELD_COLUMNS
 
 // A double-wide creature stands on its hex and the one behind it: the attacker's back half is on
-// its left, the defender's on its right (VCMI `Unit::occupiedHex`).
+// its left, the defender's on its right.
 export function getOccupiedHexes({ hex, doubleWide, side }) {
   if (!doubleWide) {
     return [hex]
@@ -76,7 +75,7 @@ export function getHexNeighbourOnSide({ row, column }, side) {
   return neighbour && isOnBattlefieldOrEdge(neighbour) ? neighbour : null
 }
 
-// In hex widths and heights, in Heroes 3's order of sides (VCMI `BattleHex::EDir`), which
+// In hex widths and heights, in Heroes 3's order of sides, which
 // settles ties.
 const SIDE_OFFSETS = [
   ['top-left', { x: -0.5, y: -0.75 }],
@@ -87,7 +86,7 @@ const SIDE_OFFSETS = [
   ['left', { x: -1, y: 0 }]
 ]
 
-// `point` is an offset from the hex's centre (VCMI `BattleFieldController::selectNearestDirection`).
+// `point` is an offset from the hex's centre.
 export function findNearestHexSide({ point, hexSize, sides }) {
   let nearest = null
   let nearestDistance = Number.POSITIVE_INFINITY

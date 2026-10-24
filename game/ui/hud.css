@@ -330,7 +330,7 @@
   }
 }
 
-/* VCMI plays the new day and new week animations once, in 1.5 seconds of about eight frames. */
+/* The new day and new week animations play once, in 1.5 seconds of about eight frames. */
 .info-box.date-box {
   display: grid;
   grid-template: auto minmax(0, 1fr) / minmax(0, 1fr);

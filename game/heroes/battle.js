@@ -14,8 +14,7 @@ import {
 } from './battlefield.js'
 import { describeStack } from './hero-army.js'
 
-// A shot at a target more than this many hexes away does half damage (VCMI
-// `GameConstants::BATTLE_SHOOTING_PENALTY_DISTANCE`).
+// A shot at a target more than this many hexes away does half damage.
 const SHOOTING_PENALTY_DISTANCE = 10
 
 // Griffins strike back twice a round and Royal Griffins every time; everyone else once.
@@ -143,7 +142,7 @@ export function waitStack(battle, stackId) {
   return startNextTurn({ ...battle, waitedStackIds: [...battle.waitedStackIds, stackId] })
 }
 
-// +20% Defense, and at least 1 point (VCMI `BattleActionProcessor::doDefendAction`).
+// +20% Defense, and at least 1 point.
 export function defendStack(battle, stackId) {
   const defended = {
     ...battle,
@@ -222,7 +221,7 @@ function planPathToFront(battle, stack, front) {
 }
 
 // The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
-// puts its back half there instead (VCMI `BattleActionsController`).
+// puts its back half there instead.
 export function planStackMove(battle, stack, hex) {
   if (coversHex(stack, hex)) {
     return null
@@ -236,8 +235,7 @@ export function planStackMove(battle, stack, hex) {
   return planPathToFront(battle, stack, getFrontHexFor({ hex, side: stack.side }))
 }
 
-// Stays when already on `fromHex`, else the front half goes there, else the back half (VCMI
-// `Unit::getAttackableHexes`).
+// Stays when already on `fromHex`, else the front half goes there, else the back half.
 function planAttackPosition(battle, stack, fromHex) {
   if (coversHex(stack, fromHex)) {
     return []
@@ -312,8 +310,7 @@ export function getApproaches(battle, stack) {
 const livingEnemiesOf = (battle, stack) =>
   livingStacks(battle).filter((other) => other.side !== stack.side)
 
-// A shooter with an enemy next to it can only fight hand to hand (VCMI
-// `CBattleInfoCallback::battleCanShoot`).
+// A shooter with an enemy next to it can only fight hand to hand.
 export function canShoot(battle, stack) {
   if (stack.shots === 0) {
     return false
@@ -323,8 +320,7 @@ export function canShoot(battle, stack) {
   return !getHexesNextTo(stack).some((hex) => enemies.some((enemy) => coversHex(enemy, hex)))
 }
 
-// Measured from the shooter's hex to the nearest hex of the target (VCMI
-// `CBattleInfoCallback::battleHasDistancePenalty`).
+// Measured from the shooter's hex to the nearest hex of the target.
 function hasDistancePenalty(stack, target) {
   return getStackHexes(target).every(
     (hex) => getHexDistance(stack.hex, hex) > SHOOTING_PENALTY_DISTANCE

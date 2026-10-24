@@ -399,7 +399,6 @@ describe('town recruitment behavior', () => {
       expect(readGarrison()).toEqual(['Archers 6', 'Pikemen 25', '', '', '', '', ''])
     })
 
-    // Heroes 3 (VCMI's CRecruitmentWindow): recruits only ever join the garrison.
     test('with the garrison full of other creatures, says there is no room even with a visiting hero who has room', async () => {
       const { user } = await setupApp(
         aRecruitingScenario({
