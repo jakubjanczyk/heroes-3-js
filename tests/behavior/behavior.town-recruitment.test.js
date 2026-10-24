@@ -13,7 +13,6 @@ import {
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp
@@ -94,7 +93,6 @@ async function setupApp(scenario = aRecruitingScenario(), options = {}) {
 
 async function openWhitemoon(user) {
   await user.dblClick(getTownInTownList('Whitemoon'))
-  await flushMicrotasks()
 }
 
 async function startInWhitemoon(scenario, options) {
@@ -557,7 +555,6 @@ describe('town recruitment behavior', () => {
       await recruitInTown(user, 'Pikemen', { count: 5 })
 
       const { user: userAfterReload } = await setupApp(aRecruitingScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(readGarrison()[0]).toBe('Pikemen 5')
       expectResourceTotal('Gold', 9700)
@@ -571,7 +568,6 @@ describe('town recruitment behavior', () => {
       await endWeekAwayFromTown(user)
 
       const { user: userAfterReload } = await setupApp(aRecruitingScenario(), { eventLog })
-      await flushMicrotasks()
 
       await openRecruitWindow(userAfterReload, 'Pikemen')
       expect(readAvailable()).toBe(28)

@@ -65,7 +65,6 @@ export function getTownInTownScreenList(townName) {
 
 export async function leaveTown(user) {
   await user.click(within(getTownScreen()).getByRole('button', { name: 'Leave town' }))
-  await flushMicrotasks()
 }
 
 export function queryHall() {
@@ -80,13 +79,11 @@ function getHall() {
 
 export async function openHall(user) {
   await user.click(within(getTownScreen()).getByRole('button', { name: 'Hall' }))
-  await flushMicrotasks()
   getHall()
 }
 
 export async function closeHall(user) {
   await user.click(within(getHall()).getByRole('button', { name: 'Close' }))
-  await flushMicrotasks()
 }
 
 // The Hall's rows, each the names of the buildings its slots show.
@@ -112,7 +109,6 @@ export function readHallStatus(buildingName) {
 
 export async function openBuildingWindow(user, buildingName) {
   await user.click(getBuildingInHall(buildingName))
-  await flushMicrotasks()
   return screen.getByRole('dialog', { name: buildingName })
 }
 
@@ -136,7 +132,6 @@ export async function buildInTown(user, buildingName) {
   await openHall(user)
   const buildingWindow = await openBuildingWindow(user, buildingName)
   await user.click(getBuildButton(buildingWindow))
-  await flushMicrotasks()
 }
 
 function getCreatureGrowthPanel() {
@@ -146,14 +141,12 @@ function getCreatureGrowthPanel() {
 // The creature panel's slot for a tier, 1 to 7, whether a creature shows in it or not.
 export async function clickCreatureSlot(user, tier) {
   await user.click(within(getCreatureGrowthPanel()).getAllByRole('listitem')[tier - 1])
-  await flushMicrotasks()
 }
 
 export async function openRecruitWindow(user, creaturePlural) {
   await user.click(
     within(getCreatureGrowthPanel()).getByRole('button', { name: `Recruit ${creaturePlural}` })
   )
-  await flushMicrotasks()
   return getRecruitWindow()
 }
 
@@ -217,7 +210,6 @@ export function readChosenRecruitCreature() {
 
 async function clickInRecruitWindow(user, buttonName) {
   await user.click(within(getRecruitWindow()).getByRole('button', { name: buttonName }))
-  await flushMicrotasks()
 }
 
 export async function chooseRecruitCreature(user, creaturePlural) {
@@ -242,7 +234,6 @@ export function getRecruitButton() {
 
 export async function recruit(user) {
   await user.click(getRecruitButton())
-  await flushMicrotasks()
 }
 
 export async function cancelRecruiting(user) {
@@ -270,7 +261,6 @@ export function readTownMessage() {
 
 export async function closeTownMessage(user) {
   await user.click(within(getTownMessage()).getByRole('button', { name: 'OK' }))
-  await flushMicrotasks()
 }
 
 const FORT_NAMES = /^(Fort|Citadel|Castle)$/
@@ -298,13 +288,11 @@ function getFortWindow() {
 
 export async function openFortWindow(user, fortName) {
   await user.click(queryFortIcon(fortName))
-  await flushMicrotasks()
   getFortWindow()
 }
 
 export async function closeFortWindow(user) {
   await user.click(within(getFortWindow()).getByRole('button', { name: 'Close' }))
-  await flushMicrotasks()
 }
 
 function getFortCard(creaturePlural) {
@@ -331,7 +319,6 @@ export function readFortCard(creaturePlural) {
 
 export async function clickFortCard(user, creaturePlural) {
   await user.click(getFortCard(creaturePlural))
-  await flushMicrotasks()
 }
 
 function getTownPicture() {
@@ -360,7 +347,6 @@ export async function unhoverBuildingOnPicture(user, buildingName) {
 
 export async function clickBuildingOnPicture(user, buildingName) {
   await user.click(getBuildingOnPicture(buildingName))
-  await flushMicrotasks()
 }
 
 export function readTownStatusBar() {
@@ -375,12 +361,10 @@ function getArmySlotInTown(listName, slot) {
 // Slots count from 1, as the player sees them from the left.
 export async function clickGarrisonSlot(user, slot) {
   await user.click(getArmySlotInTown('Garrison', slot))
-  await flushMicrotasks()
 }
 
 export async function clickVisitingHeroSlot(user, slot) {
   await user.click(getArmySlotInTown('Visiting hero army', slot))
-  await flushMicrotasks()
 }
 
 // The framed stack, as "<row> <slot>" ("Garrison 2"), or null when none is.
@@ -438,5 +422,4 @@ export function getSplitButton() {
 
 export async function clickSplitButton(user) {
   await user.click(getSplitButton())
-  await flushMicrotasks()
 }

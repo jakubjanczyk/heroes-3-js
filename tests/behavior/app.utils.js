@@ -96,7 +96,6 @@ export async function shiftClick(user, element) {
   await user.keyboard('{Shift>}')
   await user.click(element)
   await user.keyboard('{/Shift}')
-  await flushMicrotasks()
 }
 
 // Moves the fake clock (see fake-timers.setup.js) on by `ms`, running every timer due on the way.
@@ -262,7 +261,5 @@ export function getCursorOver(element) {
 
 export async function pressKey(user, key) {
   await user.keyboard(key)
-  await flushMicrotasks()
   await waitMs()
-  await flushMicrotasks()
 }

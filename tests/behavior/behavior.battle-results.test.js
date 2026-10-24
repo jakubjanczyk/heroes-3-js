@@ -4,7 +4,6 @@ import { attackMonsterAt } from './adventure-map.utils.js'
 import { getHeroInfoBox, queryLevelUpPopup, readArmySlots } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp
@@ -164,7 +163,6 @@ describe('battle results behavior', () => {
     await winLosingSkeletons(user)
 
     await setupMovementBehaviorApp({ loadGameOptions: aFight().build(), eventLog })
-    await flushMicrotasks()
 
     expect(readBattleResultsSide('Attacker')).toEqual([HERO_NAME, 'Victorious'])
     expect(readBattleCasualties('Attacker')).toEqual(['Skeletons 3'])
@@ -205,7 +203,6 @@ describe('battle results behavior', () => {
     await closeBattleResults(user)
 
     await setupMovementBehaviorApp({ loadGameOptions: aFight().build(), eventLog })
-    await flushMicrotasks()
 
     expect(readArmySlots(getHeroInfoBox()).slice(0, 3)).toEqual(['Angels 2', 'Skeletons 8', ''])
   })

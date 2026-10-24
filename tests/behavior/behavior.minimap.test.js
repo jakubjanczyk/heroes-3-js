@@ -405,7 +405,6 @@ describe('minimap behavior', () => {
       releasePointer(100, 100, mapTile)
       // The browser sends the click to the closest element containing both press and release.
       dispatchMouse(getElementOrFail('.game-shell'), 'click', 100, 100)
-      await flushMicrotasks()
 
       expectHeroAt(20, 15)
       expectNoPreview()

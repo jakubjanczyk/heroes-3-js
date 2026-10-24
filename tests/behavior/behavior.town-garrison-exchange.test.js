@@ -7,12 +7,7 @@ import {
   getTownInTownList,
   readArmySlots
 } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import { querySplitWindow } from './split-window.utils.js'
 import {
@@ -69,7 +64,6 @@ async function startWithHeroInWhitemoon(scenario = anExchangeScenario(), options
 async function openWhitemoonWithoutHero(scenario) {
   const app = await setupApp(scenario)
   await app.user.dblClick(getTownInTownList('Whitemoon'))
-  await flushMicrotasks()
   return app
 }
 
@@ -375,7 +369,6 @@ describe('town garrison exchange behavior', () => {
       await leaveTown(user)
 
       await user.click(getTownInTownList('Whitemoon'))
-      await flushMicrotasks()
 
       expect(readArmySlots(getTownInfoBox(), 'Garrison')).toEqual([
         'Pikemen 10',
@@ -397,7 +390,6 @@ describe('town garrison exchange behavior', () => {
       await clickVisitingHeroSlot(user, 1)
 
       await setupApp(anExchangeScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(readGarrison()[0]).toBe('Archers 5')
       expect(readVisitingHeroArmy()[0]).toBe('Pikemen 10')

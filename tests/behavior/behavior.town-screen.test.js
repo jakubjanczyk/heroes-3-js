@@ -76,13 +76,11 @@ describe('town screen behavior', () => {
 
       confirmTileClickByDispatch(4, 3)
       await waitMs(250)
-      await flushMicrotasks()
 
       expectHeroAt(4, 3)
       expect(queryTownScreen()).toBeNull()
 
       await waitMs(220)
-      await flushMicrotasks()
 
       expect(queryTownScreen()).toBeTruthy()
     })
@@ -374,7 +372,6 @@ describe('town screen behavior', () => {
       await enterTownAt(4, 3)
 
       await setupApp(aTownVisit({ town: aTown().named('Whitemoon') }), { eventLog })
-      await flushMicrotasks()
 
       expect(readTownName()).toBe('Whitemoon')
     })
@@ -386,7 +383,6 @@ describe('town screen behavior', () => {
       await leaveTown(user)
 
       await setupApp(aTownVisit(), { eventLog })
-      await flushMicrotasks()
 
       expect(queryTownScreen()).toBeNull()
       expectHeroAt(4, 3)

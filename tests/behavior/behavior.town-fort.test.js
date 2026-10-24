@@ -4,7 +4,6 @@ import { describe, expect, test } from 'vitest'
 import { getTownInTownList } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp
@@ -56,7 +55,6 @@ async function setupApp(scenario = aFortScenario(), options = {}) {
 
 async function openWhitemoon(user) {
   await user.dblClick(getTownInTownList('Whitemoon'))
-  await flushMicrotasks()
 }
 
 async function startInWhitemoon(scenario, options) {
@@ -302,7 +300,6 @@ describe('town fort behavior', () => {
       await recruitFromFort(user, 'Pikemen', 5)
 
       const { user: userAfterReload } = await setupApp(aFortScenario(), { eventLog })
-      await flushMicrotasks()
 
       await openFortWindow(userAfterReload, 'Fort')
       expect(readFortCard('Pikemen').available).toBe('Available: 9')

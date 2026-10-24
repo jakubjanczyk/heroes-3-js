@@ -11,7 +11,7 @@ import {
   expectTownPresent,
   getPreviewTargetAt
 } from './adventure-map.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import { setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import { enterTownAt, leaveTown } from './town-screen.utils.js'
 
@@ -52,7 +52,6 @@ describe('town interaction behavior', () => {
 
     for (const [x, y] of blockedTiles) {
       dispatchTileClick(x, y)
-      await flushMicrotasks()
       expectNoPreview()
     }
   })
@@ -72,7 +71,6 @@ describe('town interaction behavior', () => {
 
     for (const [x, y] of reachableTiles) {
       dispatchTileClick(x, y)
-      await flushMicrotasks()
       expectPreviewTargetAt(x, y)
     }
   })
@@ -103,7 +101,6 @@ describe('town interaction behavior', () => {
 
     confirmTileClickByDispatch(4, 3)
     await waitMs(55)
-    await flushMicrotasks()
 
     expectHeroAt(4, 3)
     expect(getPreviewTargetAt(4, 3)).toBeFalsy()

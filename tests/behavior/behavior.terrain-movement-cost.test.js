@@ -11,7 +11,7 @@ import {
   getPreviewOverLimitDashAt
 } from './adventure-map.utils.js'
 import { clickEndTurn, expectMovementPoints, getMoveButton } from './adventure-panels.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 import { DIRT, GRASS, LAVA, ROCK, ROUGH, SAND, SNOW, SUBTERRANEAN, SWAMP } from './terrain-codes.js'
 
@@ -134,7 +134,6 @@ describe('terrain movement cost behavior', () => {
     })
 
     dispatchTileClick(10, 0)
-    await flushMicrotasks()
 
     // 8 swamp steps cost 1400; the 9th no longer fits.
     expectPreviewTargetAt(10, 0)
@@ -200,7 +199,6 @@ describe('terrain movement cost behavior', () => {
 
     await clickEndTurn(user)
     await user.click(getMoveButton())
-    await flushMicrotasks()
 
     expectHeroAt(10, 0)
     expectMovementPoints(1150)

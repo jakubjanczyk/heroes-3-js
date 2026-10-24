@@ -36,7 +36,6 @@ describe('resource interaction behavior', () => {
     })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -64,7 +63,6 @@ describe('resource interaction behavior', () => {
     expectInteractionModalClosed()
 
     await waitMs(25)
-    await flushMicrotasks()
 
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
@@ -100,7 +98,6 @@ describe('resource interaction behavior', () => {
     expectInteractionModalClosed()
 
     await waitMs(25)
-    await flushMicrotasks()
 
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
@@ -113,7 +110,6 @@ describe('resource interaction behavior', () => {
     expectMovementPoints(1100)
 
     await waitMs(25)
-    await flushMicrotasks()
 
     expectResourceNotPresent('resource-2')
     expectResourceTotal('Gold pile', 100)
@@ -136,14 +132,12 @@ describe('resource interaction behavior', () => {
 
     confirmTileClickByDispatch(2, 0)
     await waitMs(25)
-    await flushMicrotasks()
 
     expectHeroAt(1, 0)
     expectResourcePresent('resource-1')
     expectInteractionModalClosed()
 
     await waitMs(25)
-    await flushMicrotasks()
 
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)
@@ -164,13 +158,11 @@ describe('resource interaction behavior', () => {
 
     confirmTileClickByDispatch(2, 0)
     await waitMs(250)
-    await flushMicrotasks()
 
     expectResourcePresent('resource-1')
     expectInteractionModalClosed()
 
     await waitMs(220)
-    await flushMicrotasks()
 
     expectResourceNotPresent('resource-1')
     expectResourceTotal('Gold pile', 100)

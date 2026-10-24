@@ -29,7 +29,6 @@ describe('tile click behavior', () => {
     })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -42,7 +41,6 @@ describe('tile click behavior', () => {
     })
 
     dispatchTileClick(1, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -53,7 +51,6 @@ describe('tile click behavior', () => {
     await setupLinearMovementApp({ width: 4 })
 
     dispatchTileClick(0, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -73,7 +70,6 @@ describe('tile click behavior', () => {
         clientY: -999
       })
     )
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -85,7 +81,6 @@ describe('tile click behavior', () => {
 
     await user.click(getHeroInfoBox())
     await clickEndTurn(user)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)

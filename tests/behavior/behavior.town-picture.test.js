@@ -2,12 +2,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { getTownInTownList } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
   buildInTown,
@@ -47,7 +42,6 @@ async function startInWhitemoon(buildings, options = {}) {
     ...options
   })
   await app.user.dblClick(getTownInTownList('Whitemoon'))
-  await flushMicrotasks()
   return app
 }
 
@@ -118,7 +112,6 @@ describe('town picture behavior', () => {
         appConfig: { interactionModalTransitionMs: 0 },
         eventLog
       })
-      await flushMicrotasks()
 
       expect(readTownPicture()).toEqual(['Tavern', 'Village Hall'])
     })

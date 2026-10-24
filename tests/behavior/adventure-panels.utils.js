@@ -188,7 +188,6 @@ export async function takeFromTreasureChestDialog(user, choice) {
   const dialog = getTreasureChestDialog()
   await user.click(within(dialog).getByRole('button', { name: new RegExp(`${choice}$`) }))
   await user.click(within(dialog).getByRole('button', { name: 'OK' }))
-  await flushMicrotasks()
 }
 
 // Walks the hero up to the chest, picks 'gold' or 'experience' and confirms with OK.

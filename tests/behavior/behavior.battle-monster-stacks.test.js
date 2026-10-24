@@ -4,12 +4,7 @@ import { describe, expect, test } from 'vitest'
 
 import { expectMonsterNotPresent } from './adventure-map.utils.js'
 import { clickResetSession } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleButton,
@@ -129,7 +124,6 @@ describe('battle monster stacks behavior', () => {
       await clickBattleButton(first.user, 'Auto combat')
       await waitForBattleToEnd()
       await clickResetSession(first.user)
-      await flushMicrotasks()
 
       await startBattle(scenario, { eventLog })
 
@@ -230,7 +224,6 @@ describe('battle monster stacks behavior', () => {
         eventLog,
         appConfig: { random: LOWEST_ROLLS }
       })
-      await flushMicrotasks()
 
       // The Angels kill 17 of 50; the 33 left attack them and lose 18 to the retaliation.
       expect(readBattleStacks()).toEqual(

@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest'
 import { expectHeroAt, expectNoPreview, getTerrainTile } from './adventure-map.utils.js'
 import { clickEndTurn, expectMovementPoints } from './adventure-panels.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import { setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario } from './builders.js'
 
 describe('app boot behavior', () => {
@@ -40,7 +40,6 @@ describe('app boot behavior', () => {
     const { user } = await setupMovementBehaviorApp()
 
     await clickEndTurn(user)
-    await flushMicrotasks()
 
     expectHeroAt(0, 0)
     expectMovementPoints(1500)

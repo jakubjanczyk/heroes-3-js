@@ -4,7 +4,6 @@ import { describe, expect, test } from 'vitest'
 import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   pressKey,
   readGameData,
   setupMovementBehaviorApp
@@ -321,7 +320,6 @@ describe('town split stack behavior', () => {
       await confirmSplit(user)
 
       await setupApp(aSplitScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(readGarrison()[0]).toBe('Pikemen 20')
       expect(readVisitingHeroArmy()[1]).toBe('Pikemen 10')

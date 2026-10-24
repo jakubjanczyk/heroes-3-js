@@ -208,7 +208,6 @@ describe('status bar behavior', () => {
     await attackMonsterAt(1, 0)
     await winBattle(user)
     await waitMs()
-    await flushMicrotasks()
 
     await hoverTile(user, 1, 0)
 

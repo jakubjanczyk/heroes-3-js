@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { getHeroInHeroList, readArmySlots } from './adventure-panels.utils.js'
-import { flushMicrotasks, shiftClick } from './app.utils.js'
+import { shiftClick } from './app.utils.js'
 
 export function queryHeroScreen() {
   return screen.queryByRole('dialog', { name: 'Hero screen' })
@@ -16,12 +16,10 @@ export function getHeroScreen() {
 
 export async function clickHeroInHeroList(user, heroName) {
   await user.click(getHeroInHeroList(heroName))
-  await flushMicrotasks()
 }
 
 export async function closeHeroScreen(user) {
   await user.click(within(getHeroScreen()).getByRole('button', { name: 'Close hero screen' }))
-  await flushMicrotasks()
 }
 
 // The hero's name and, under it, e.g. "Level 1 Knight".
@@ -72,7 +70,6 @@ function getHeroScreenArmySlot(slot) {
 // Slots count from 1, as the player sees them from the left.
 export async function clickHeroScreenArmySlot(user, slot) {
   await user.click(getHeroScreenArmySlot(slot))
-  await flushMicrotasks()
 }
 
 export async function shiftClickHeroScreenArmySlot(user, slot) {
@@ -99,5 +96,4 @@ export function getHeroScreenSplitButton() {
 
 export async function clickHeroScreenSplitButton(user) {
   await user.click(getHeroScreenSplitButton())
-  await flushMicrotasks()
 }

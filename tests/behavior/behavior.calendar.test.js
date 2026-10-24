@@ -11,7 +11,6 @@ import {
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   setupLinearMovementApp,
   setupMovementBehaviorApp
 } from './app.utils.js'
@@ -103,7 +102,6 @@ describe('calendar behavior', () => {
       await endTurns(user, 8)
 
       await setupMovementBehaviorApp(session)
-      await flushMicrotasks()
 
       expectCalendarDate({ month: 1, week: 2, day: 2 })
     })
@@ -116,7 +114,6 @@ describe('calendar behavior', () => {
       expectInteractionModalOpen('A new week begins. Week 2')
 
       await setupMovementBehaviorApp(session)
-      await flushMicrotasks()
 
       expectInteractionModalClosed()
     })

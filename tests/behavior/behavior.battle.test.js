@@ -237,7 +237,6 @@ describe('battle behavior', () => {
     await attackMonsterAt(1, 0)
 
     await setupApp(aFight(), { eventLog })
-    await flushMicrotasks()
 
     expectMonsterPresent('monster-1')
     expect(readBattleStacks()).toEqual([

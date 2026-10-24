@@ -2,12 +2,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { getHeroInfoBox, readArmySlots } from './adventure-panels.utils.js'
-import {
-  createMemoryEventLog,
-  flushMicrotasks,
-  readGameData,
-  setupMovementBehaviorApp
-} from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
   clickHeroInHeroList,
@@ -325,7 +320,6 @@ describe('hero screen army behavior', () => {
       await enterTownAt(4, 3)
       await user.click(getVisitingHero(HERO_NAME))
       await user.click(getVisitingHero(HERO_NAME))
-      await flushMicrotasks()
       await clickHeroScreenArmySlot(user, 1)
       await clickHeroScreenArmySlot(user, 2)
 

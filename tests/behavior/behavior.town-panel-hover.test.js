@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { getTownInTownList } from './adventure-panels.utils.js'
-import { flushMicrotasks, readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
   enterTownAt,
@@ -42,7 +42,6 @@ async function openWhitemoon(scenario = aWhitemoonScenario()) {
     appConfig: { interactionModalTransitionMs: 0 }
   })
   await app.user.dblClick(getTownInTownList('Whitemoon'))
-  await flushMicrotasks()
   return app
 }
 
@@ -130,7 +129,6 @@ describe('town panel hover behavior', () => {
   test('hovering the empty portrait of a town without a hero shows nothing', async () => {
     const { user } = await startWithHeroInWhitemoon()
     await user.click(getTownInTownScreenList('Ironforge'))
-    await flushMicrotasks()
 
     await user.hover(getVisitingHeroFrame())
 

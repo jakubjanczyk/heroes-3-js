@@ -53,12 +53,10 @@ async function slideFingerTo(user, x, y) {
 
 async function liftFinger(user) {
   await user.pointer({ keys: '[/TouchA]' })
-  await flushMicrotasks()
 }
 
 async function tapOn(user, x, y) {
   await user.pointer({ keys: '[TouchA]', ...pointerOverTile(x, y) })
-  await flushMicrotasks()
 }
 
 function queryInfoPopup() {
@@ -79,7 +77,6 @@ async function defeatMonsterAt(user, x, y) {
   await attackMonsterAt(x, y)
   await winBattle(user)
   await waitMs()
-  await flushMicrotasks()
 }
 
 describe('info popup behavior', () => {
@@ -238,7 +235,6 @@ describe('info popup behavior', () => {
       await releaseRightButton(user)
       await holdRightButtonOn(user, 2, 0)
       await releaseRightButton(user)
-      await flushMicrotasks()
 
       expectNoPreview()
       expectHeroAt(0, 0)

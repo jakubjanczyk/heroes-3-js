@@ -73,14 +73,12 @@ describe('path preview behavior', () => {
     await setupLinearMovementApp({ width: 5 })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
 
     expectPreviewTargetAt(2, 0)
     expectPreviewDashAt(1, 0)
     expectHeroAt(0, 0)
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
 
     expect(getPreviewTargetAt(2, 0)).toBeFalsy()
     expectPreviewTargetAt(3, 0)
@@ -95,11 +93,9 @@ describe('path preview behavior', () => {
     })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
     expect(getPreviewSvg()).toBeTruthy()
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
 
     expectNoPreview()
     expectHeroAt(0, 0)
@@ -156,7 +152,6 @@ describe('path preview behavior', () => {
     expectMovementPoints(500)
 
     dispatchTileClick(17, 0)
-    await flushMicrotasks()
 
     expectPreviewTargetAt(17, 0)
     expectPreviewOverLimitTargetAt(17, 0)
@@ -188,12 +183,10 @@ describe('path preview behavior', () => {
     expectMovementPoints(0)
 
     dispatchTileClick(16, 0)
-    await flushMicrotasks()
     expectPreviewTargetAt(16, 0)
     expectPreviewOverLimitTargetAt(16, 0)
 
     dispatchTileClick(16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -215,7 +208,6 @@ describe('path preview behavior', () => {
     await setupLinearMovementApp({ width: 6 })
 
     dispatchTileClick(2, 0)
-    await flushMicrotasks()
     expectPreviewTargetAt(2, 0)
 
     const viewport = document.querySelector('.viewport')

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-import { flushMicrotasks, getCursorOver, readGameData, waitMs } from './app.utils.js'
+import { getCursorOver, readGameData, waitMs } from './app.utils.js'
 import {
   clickBattleButton,
   clickBattleHex,
@@ -184,7 +184,6 @@ describe('battle cursor behavior', () => {
 
     expect(cursorOverHex(6, 3)).toBe('arrow')
     await waitMs(150)
-    await flushMicrotasks()
   })
 
   test('given the mouse stays on the hex a stack moved to when the next stack gets the turn then the cursor changes without the mouse moving', async () => {

@@ -10,12 +10,7 @@ import {
   expectPreviewTargetAt
 } from './adventure-map.utils.js'
 import { clickEndTurn, expectMovementPoints } from './adventure-panels.utils.js'
-import {
-  flushMicrotasks,
-  setupLinearMovementApp,
-  setupMovementBehaviorApp,
-  waitMs
-} from './app.utils.js'
+import { setupLinearMovementApp, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { aScenario } from './builders.js'
 
 describe('movement behavior', () => {
@@ -89,7 +84,6 @@ describe('movement behavior', () => {
     expectHasOverLimitTargetMarker()
 
     await clickTile(user, 16, 0)
-    await flushMicrotasks()
 
     expectHeroAt(15, 0)
     expectMovementPoints(0)
@@ -129,7 +123,6 @@ describe('movement behavior', () => {
     })
 
     confirmTileClickByDispatch(2, 0)
-    await flushMicrotasks()
 
     await clickEndTurn(user)
     expectMovementPoints(1500)
@@ -177,14 +170,12 @@ describe('movement behavior', () => {
 
     await clickTile(user, 2, 0)
     await clickTile(user, 3, 0)
-    await flushMicrotasks()
 
     expectHeroAt(0, 0)
     expectMovementPoints(1500)
     expectPreviewTargetAt(3, 0)
 
     await clickTile(user, 3, 0)
-    await flushMicrotasks()
 
     expectHeroAt(3, 0)
     expectMovementPoints(1200)

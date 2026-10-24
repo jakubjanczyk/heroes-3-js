@@ -97,7 +97,6 @@ describe('hero screen behavior', () => {
     test("given a town is selected when the player clicks the hero's portrait in the hero list then the hero is selected and the hero screen stays closed", async () => {
       const { user } = await setupApp()
       await user.click(getTownInTownList('Whitemoon'))
-      await flushMicrotasks()
 
       await clickHeroInHeroList(user, HERO_NAME)
 
@@ -109,7 +108,6 @@ describe('hero screen behavior', () => {
       const { user } = await setupApp()
 
       await clickTile(user, 4, 5)
-      await flushMicrotasks()
 
       expect(queryHeroScreen()).toBeTruthy()
     })
@@ -122,7 +120,6 @@ describe('hero screen behavior', () => {
 
       await user.click(getVisitingHero(HERO_NAME))
       await user.click(getVisitingHero(HERO_NAME))
-      await flushMicrotasks()
 
       expect(queryHeroScreen()).toBeTruthy()
     })
@@ -132,7 +129,6 @@ describe('hero screen behavior', () => {
       await enterTownAt(4, 3)
 
       await user.click(getVisitingHero(HERO_NAME))
-      await flushMicrotasks()
 
       expect(queryHeroScreen()).toBeNull()
     })
@@ -162,7 +158,6 @@ describe('hero screen behavior', () => {
       const { user } = await setupApp()
       await enterTownAt(4, 3)
       await user.dblClick(getVisitingHero(HERO_NAME))
-      await flushMicrotasks()
 
       await pressKey(user, '{Escape}')
 
@@ -194,7 +189,6 @@ describe('hero screen behavior', () => {
       await clickHeroInHeroList(user, HERO_NAME)
 
       await setupApp(aHeroScreenScenario(), { eventLog })
-      await flushMicrotasks()
 
       expect(queryHeroScreen()).toBeNull()
       expectHeroAt(4, 5)
@@ -290,7 +284,6 @@ describe('hero screen behavior', () => {
       await clickVisitingHeroSlot(user, 2)
 
       await user.dblClick(getVisitingHero(HERO_NAME))
-      await flushMicrotasks()
 
       expect(readHeroScreenArmy()).toEqual(['Archers 5', 'Pikemen 10', '', '', '', '', ''])
     })

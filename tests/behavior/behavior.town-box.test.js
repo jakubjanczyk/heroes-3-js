@@ -9,7 +9,7 @@ import {
   readArmySlots,
   readTownBox
 } from './adventure-panels.utils.js'
-import { flushMicrotasks, readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import { buildInTown, leaveTown } from './town-screen.utils.js'
 
@@ -33,7 +33,6 @@ async function setupApp(scenario) {
 
 async function selectTown(user, townName) {
   await user.click(getTownInTownList(townName))
-  await flushMicrotasks()
 }
 
 describe('town box behavior', () => {

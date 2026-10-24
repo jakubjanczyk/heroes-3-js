@@ -5,7 +5,6 @@ import { confirmMove, dispatchTileClick, expectHeroAt } from './adventure-map.ut
 import { clickEndTurn, expectMovementPoints, getMoveButton } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
-  flushMicrotasks,
   setupLinearMovementApp,
   setupMovementBehaviorApp,
   waitMs
@@ -14,7 +13,6 @@ import { aScenario } from './builders.js'
 
 async function clickMove(user) {
   await user.click(getMoveButton())
-  await flushMicrotasks()
 }
 
 describe('move button behavior', () => {
@@ -28,7 +26,6 @@ describe('move button behavior', () => {
     const { user } = await setupLinearMovementApp({ width: 4 })
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
     expect(getMoveButton().disabled).toBe(false)
 
     await clickMove(user)
@@ -69,9 +66,7 @@ describe('move button behavior', () => {
     })
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
     await user.click(getMoveButton())
-    await flushMicrotasks()
 
     expect(getMoveButton().disabled).toBe(true)
 
@@ -97,10 +92,8 @@ describe('move button behavior', () => {
     await setupMovementBehaviorApp(session)
 
     dispatchTileClick(3, 0)
-    await flushMicrotasks()
 
     const { user } = await setupMovementBehaviorApp(session)
-    await flushMicrotasks()
     expect(getMoveButton().disabled).toBe(false)
 
     await clickMove(user)

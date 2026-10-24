@@ -168,7 +168,6 @@ describe('adventure HUD behavior', () => {
       await openSystemOptions(user)
 
       confirmTileClickByDispatch(2, 0)
-      await flushMicrotasks()
 
       expectHeroAt(0, 0)
       expectNoPreview()
