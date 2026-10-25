@@ -1,6 +1,6 @@
 import { createCamera } from '../../engine/camera.js'
 import { attachCameraInput } from '../../engine/input.js'
-import { firstHeroIdOf, heroTile, viewingPlayer } from '../../game/state/queries.js'
+import { heroTile, selectedHeroIdOf, viewingPlayer } from '../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -36,6 +36,11 @@ export const registerCameraModule = defineModule(
     let detachCameraInput = null
     let isSystemOptionsOpen = false
     let isMapCovered = false
+
+    function centerOnSelectedHero() {
+      const current = state.get()
+      centerOn(heroTile(current, selectedHeroIdOf(current, viewingPlayer(current))))
+    }
 
     function centerOn(tile) {
       if (!camera || !tile) {
@@ -98,8 +103,7 @@ export const registerCameraModule = defineModule(
             })
 
             // Start on the hero; from here on every hero fact carries the tile to center on.
-            const current = state.get()
-            centerOn(heroTile(current, firstHeroIdOf(current, viewingPlayer(current))))
+            centerOnSelectedHero()
 
             const inputCamera = {
               moveBy(dx, dy) {
@@ -153,7 +157,7 @@ export const registerCameraModule = defineModule(
         {
           type: APP_UI_RESTORE_COMPLETED,
           handler: () => {
-            // Replayed hero moves already centered the camera on the hero's last tile.
+            centerOnSelectedHero()
             viewport.dataset.viewportVisibility = 'visible'
             delete viewport.dataset.restoring
           }

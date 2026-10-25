@@ -57,10 +57,12 @@
 .world {
   position: absolute;
   inset: 0;
+  /* Its own layer, so a camera jump moves the map instead of repainting it, which takes phones a
+     noticeable moment. */
+  will-change: transform;
 
   &[data-follow-hero="true"] {
     transition: transform var(--camera-step-duration, var(--duration-medium)) linear;
-    will-change: transform;
   }
 }
 

@@ -2,20 +2,20 @@ import { indexGuardedTiles } from '../domain/movement/guards.js'
 import { NO_REMOVED_ENTITIES } from '../domain/removed-entities.js'
 import { getOccupantAt } from '../domain/tile-occupant.js'
 import {
-  firstHeroIdOf,
+  heroIdAt,
   heroOwner,
   heroTile,
   isTileExplored,
+  selectedHeroIdOf,
   viewingPlayer
 } from '../state/queries.js'
 import { createMovementSystem } from './movement-system.js'
 
-// What the hero's routes depend on: where it stands, what is still on the map and which tiles
-// monsters guard, read from the game state.
+// What the selected hero's routes depend on: where it stands, what is still on the map, where the
+// other heroes stand and which tiles monsters guard, read from the game state.
 export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
   let map = null
   let staticOccupancy = null
-  let heroId = null
   let guards = []
   let indexedRemovedIds = null
   let removedIds = NO_REMOVED_ENTITIES
@@ -35,12 +35,22 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     return removedIds
   }
 
+  function selectedHeroId() {
+    return selectedHeroIdOf(getState(), viewingPlayer(getState()))
+  }
+
   const occupancy = {
-    getAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds: currentRemovedIds() })
+    getAt: (tile) => {
+      const heroId = heroIdAt(getState(), tile)
+      return heroId
+        ? { id: heroId, kind: 'HERO', tile }
+        : getOccupantAt({ tile, staticOccupancy, removedIds: currentRemovedIds() })
+    }
   }
 
   // null once the hero is lost in battle.
   function getHero() {
+    const heroId = selectedHeroId()
     return heroId && !currentRemovedIds().has(heroId)
       ? { id: heroId, tile: heroTile(getState(), heroId) }
       : null
@@ -52,7 +62,6 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     onWorldReady(world) {
       map = world.map
       staticOccupancy = world.staticOccupancy
-      heroId = firstHeroIdOf(getState(), viewingPlayer(getState()))
       guards = world.scenario.entities.filter(entityBehaviors.guardsSurroundings)
       indexedRemovedIds = null
     },
@@ -69,7 +78,8 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
         },
         getStepCost: (from, to) => movementRules.stepCost({ map, from, to }),
         // A hero never walks through tiles its owner has not explored.
-        isExplored: (tile) => isTileExplored(getState(), heroOwner(getState(), heroId), tile),
+        isExplored: (tile) =>
+          isTileExplored(getState(), heroOwner(getState(), selectedHeroId()), tile),
         ...options
       })
     }
