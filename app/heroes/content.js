@@ -9,6 +9,7 @@ import { registerHeroLevelsModule } from './modules/hero-levels.module.js'
 import { registerHeroPanelModule } from './modules/hero-panel.module.js'
 import { registerHeroScreenViewModule } from './modules/hero-screen-view.module.js'
 import { registerHudModule } from './modules/hud.module.js'
+import { registerInfoBoxModule } from './modules/info-box.module.js'
 import { registerInfoPopupModule } from './modules/info-popup.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
@@ -49,6 +50,7 @@ export const heroesAppContent = Object.freeze({
     registerAdventureCursorModule,
     registerInfoPopupModule,
     registerHeroPanelModule,
+    registerInfoBoxModule,
     registerTownListModule,
     registerSystemOptionsModule,
     registerBattleViewModule,

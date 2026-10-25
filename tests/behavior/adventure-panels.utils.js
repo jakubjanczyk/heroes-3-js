@@ -227,6 +227,21 @@ export function readFoundResources() {
     })
 }
 
+export function queryCapturedMineBox() {
+  return screen.queryByRole('region', { name: 'Mine captured' })
+}
+
+// The captured mine's name and its daily income, e.g. { name: 'Gold Mine', income: 'Gold 1000 per day' }.
+export function readCapturedMine() {
+  const box = screen.getByRole('region', { name: 'Mine captured' })
+  const income = within(box).getByRole('listitem')
+  const picture = within(income).getByRole('img')
+  return {
+    name: within(box).getByRole('heading').textContent,
+    income: `${picture.getAttribute('aria-label')} ${income.textContent.trim()}`
+  }
+}
+
 export function getDateBox() {
   return screen.getByRole('region', { name: 'Date' })
 }

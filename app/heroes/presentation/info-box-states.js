@@ -4,14 +4,16 @@ const ON_ANY_VIEW = {
   selectionChanged: 'selection',
   moveStarted: 'selection',
   dayStarted: 'date',
-  resourcesFound: 'resources'
+  resourcesFound: 'resources',
+  mineCaptured: 'mine'
 }
 
 const TRANSITIONS = {
   selection: { ...ON_ANY_VIEW, clicked: 'kingdom' },
   kingdom: { ...ON_ANY_VIEW, clicked: 'date', timedOut: 'selection' },
   date: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' },
-  resources: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' }
+  resources: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' },
+  mine: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' }
 }
 
 export function nextInfoBoxView(view, eventType) {

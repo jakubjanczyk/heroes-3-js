@@ -10,11 +10,14 @@ import {
   getDateBox,
   getHeroInfoBox,
   getKingdomOverview,
+  getNextHeroButton,
   getTownInfoBox,
   getTownInTownList,
+  queryCapturedMineBox,
   queryDateBox,
   queryFoundResourcesBox,
   queryKingdomOverview,
+  readCapturedMine,
   readDateBox,
   readFoundResources,
   readKingdomOverviewFlags,
@@ -26,10 +29,11 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
-import { aHero, aResource, aScenario, aTown } from './builders.js'
+import { aHero, aMine, aResource, aScenario, aTown } from './builders.js'
 import { buildInTown, enterTownAt, leaveTown } from './town-screen.utils.js'
 
 const gameDefinitions = {
+  mines: readGameData('mines.json'),
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
@@ -109,6 +113,16 @@ describe('info box behavior', () => {
     expect(getHeroInfoBox()).toBeTruthy()
   })
 
+  test('shows the hero again when the player clicks Next hero while the resource is shown', async () => {
+    const { user } = await setupApp()
+
+    await collectGold(user)
+    await user.click(getNextHeroButton())
+
+    expect(queryFoundResourcesBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
   test("shows the town's box when the player selects a town in the town list while the resource is shown", async () => {
     const { user } = await setupApp()
 
@@ -127,6 +141,96 @@ describe('info box behavior', () => {
     await setupApp({ eventLog })
 
     expect(queryFoundResourcesBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+})
+
+// The hero stands right below the mine's entry tile, so entering it takes one step.
+const aMineScenario = (mineType = 'GOLD_MINE') =>
+  aScenario()
+    .withSize(8, 3)
+    .withEntities(aHero().at(2, 2), aMine().withType(mineType).at(2, 1))
+    .withDefinitions(gameDefinitions)
+    .build()
+
+async function setupMineApp({ mineType, eventLog } = {}) {
+  return setupMovementBehaviorApp({ loadGameOptions: aMineScenario(mineType), eventLog })
+}
+
+async function captureMine(user) {
+  await confirmMove(user, 2, 1)
+}
+
+describe('info box mine capture behavior', () => {
+  test.each([
+    ['GOLD_MINE', 'Gold Mine', 'Gold 1000 per day'],
+    ['SAWMILL', 'Sawmill', 'Wood 2 per day']
+  ])('shows the captured %s and its daily income in place of the hero', async (mineType, name, income) => {
+    const { user } = await setupMineApp({ mineType })
+
+    await captureMine(user)
+
+    expect(readCapturedMine()).toEqual({ name, income })
+  })
+
+  test('keeps showing the mine just before 3 seconds have passed', async () => {
+    const { user } = await setupMineApp()
+
+    await captureMine(user)
+    await waitMs(MESSAGE_MS - 1)
+
+    expect(readCapturedMine().name).toBe('Gold Mine')
+  })
+
+  test('shows the hero again once 3 seconds have passed', async () => {
+    const { user } = await setupMineApp()
+
+    await captureMine(user)
+    await waitMs(MESSAGE_MS)
+
+    expect(queryCapturedMineBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test('shows the hero again when the player clicks the info box', async () => {
+    const { user } = await setupMineApp()
+
+    await captureMine(user)
+    await user.click(queryCapturedMineBox())
+
+    expect(queryCapturedMineBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test('shows the hero again when the hero starts moving', async () => {
+    const { user } = await setupMineApp()
+
+    await captureMine(user)
+    await confirmMove(user, 5, 2)
+
+    expect(queryCapturedMineBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test('keeps showing the hero when the hero enters a mine the player already owns', async () => {
+    const { user } = await setupMineApp()
+    await captureMine(user)
+    await confirmMove(user, 2, 2)
+
+    await captureMine(user)
+
+    expect(queryCapturedMineBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test('shows the hero, not the mine, after a reload right after the capture', async () => {
+    const eventLog = createMemoryEventLog()
+    const { user } = await setupMineApp({ eventLog })
+    await captureMine(user)
+
+    await setupMineApp({ eventLog })
+
+    expect(queryCapturedMineBox()).toBeNull()
     expect(getHeroInfoBox()).toBeTruthy()
   })
 })
@@ -224,6 +328,15 @@ describe('info box date behavior', () => {
 
     expect(queryDateBox()).toBeNull()
     expect(getTownInfoBox()).toBeTruthy()
+  })
+
+  test('shows the date when the player ends the day while a town is selected', async () => {
+    const { user } = await setupApp()
+    await user.click(getTownInTownList('Whitemoon'))
+
+    await clickEndTurn(user)
+
+    expect(readDateBox().text).toBe('Day 2')
   })
 
   test('shows the hero, not the date, after a reload right after ending the day', async () => {

@@ -146,7 +146,7 @@ What a visit tells the player. Small pickups go to the info box (2.4b); a dialog
 - [x] Town visit: opens the town screen
 - [x] Treasure chest: dialog to pick the gold or the experience
 - [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message
-- [ ] Mine capture: dialog with the mine's text and the resource's picture with its daily amount (`CGMine::flagMine`)
+- [x] Mine capture: no dialog; the info box shows the mine's name and the resource's picture with its daily amount for 3 seconds (2.4b); see `docs/notes/2026-10-25-info-box-mine-capture.md`
 - [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
 - [ ] Artifact pickup: dialog with the artifact's picture and its pickup text (with artifacts, 7.8)
 - [ ] Dwelling visit: asks whether to recruit, then opens the recruit window (6.3.3) (with map dwellings, 7.4)
