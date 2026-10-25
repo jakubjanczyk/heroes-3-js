@@ -1,5 +1,6 @@
-import { findHero } from '../../../game/domain/entity-queries.js'
 import { moveStack, splitStack } from '../../../game/heroes/army-exchange.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
+import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
@@ -9,17 +10,14 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 export const registerHeroArmyModule = defineModule(
-  ({ emit }) => {
-    let hero = null
+  ({ emit, state }) => {
+    let heroId = null
 
     function rearrange(rearrangeArmies) {
-      if (!hero) {
-        return
-      }
-
-      const changed = rearrangeArmies({ hero: hero.army })
+      const hero = heroById(state.get(), heroId)
+      const changed = hero && rearrangeArmies({ hero: hero.army })
       if (changed) {
-        emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army: changed.hero })
+        emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army: changed.hero })
       }
     }
 
@@ -27,14 +25,8 @@ export const registerHeroArmyModule = defineModule(
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
-          handler: (event) => {
-            hero = findHero(event.detail.scenario.entities)
-          }
-        },
-        {
-          type: APP_FACT_HERO_ARMY_CHANGED,
-          handler: (event) => {
-            hero = { ...hero, army: event.detail.army }
+          handler: () => {
+            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
           }
         },
         {
@@ -54,7 +46,6 @@ export const registerHeroArmyModule = defineModule(
     phase: 'domain',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_HERO_ARMY_CHANGED,
       APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
       APP_COMMAND_HERO_STACK_SPLIT_REQUESTED
     ],

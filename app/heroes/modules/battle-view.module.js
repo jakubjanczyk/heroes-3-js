@@ -27,7 +27,6 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
-const DEFAULT_HERO_NAME = 'Hero'
 const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
 
 const COMMAND_BY_ACTION = {
@@ -44,7 +43,6 @@ export const registerBattleViewModule = defineModule(
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let map = null
-    let heroName = DEFAULT_HERO_NAME
     let battleScreen = null
     let hexes = []
     let statusBar = null
@@ -308,8 +306,8 @@ export const registerBattleViewModule = defineModule(
       }
 
       const heroFigure = battleScreen.querySelector('.battle-hero--attacker')
-      heroFigure.setAttribute('aria-label', heroName)
-      heroFigure.title = heroName
+      heroFigure.setAttribute('aria-label', battle.heroName)
+      heroFigure.title = battle.heroName
 
       statusBar = battleScreen.querySelector('.battle-screen__status-bar')
       messageLog = battleScreen.querySelector('.battle-bar__log')
@@ -555,7 +553,6 @@ export const registerBattleViewModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             map = event.detail.map
-            heroName = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
           }
         },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },

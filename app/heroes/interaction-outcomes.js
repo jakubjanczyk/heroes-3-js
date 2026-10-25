@@ -22,6 +22,7 @@ const TREASURE_CHEST_MESSAGE =
 
 function toEntityFactDetail(outcome) {
   return {
+    heroId: outcome.heroId,
     entityId: outcome.entityId,
     entityType: outcome.entityType,
     tile: outcome.tile
@@ -92,7 +93,10 @@ export const heroesOutcomeEffects = Object.freeze({
         gold: [opened({ choice: 'gold', resources: { [TREASURE_CHEST_GOLD_RESOURCE]: gold } })],
         experience: [
           opened({ choice: 'experience' }),
-          { type: APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, detail: { amount: experience } }
+          {
+            type: APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+            detail: { heroId: outcome.heroId, amount: experience }
+          }
         ]
       }
     }

@@ -6,6 +6,10 @@ import { treasureChestBehavior } from './entity-behaviors/treasure-chest.js'
 import { heroesMovementRules } from './movement-rules.js'
 import { PRIMARY_SKILLS } from './primary-skills.js'
 import { heroesRoadTypes } from './road-types.js'
+import { heroDetailsSlice } from './state/hero-details.js'
+import { kingdomsSlice } from './state/kingdoms.js'
+import { minesSlice, monsterCountsSlice } from './state/map-objects.js'
+import { townsSlice } from './state/towns.js'
 import { heroesTerrainTypes } from './terrain-types.js'
 
 export const heroesContent = Object.freeze({
@@ -19,5 +23,12 @@ export const heroesContent = Object.freeze({
   movementRules: heroesMovementRules,
   primarySkills: PRIMARY_SKILLS,
   roadTypes: heroesRoadTypes,
+  stateSlices: Object.freeze([
+    heroDetailsSlice,
+    townsSlice,
+    minesSlice,
+    monsterCountsSlice,
+    kingdomsSlice
+  ]),
   terrainTypes: heroesTerrainTypes
 })

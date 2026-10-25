@@ -1,4 +1,4 @@
-import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { viewingPlayersTownIds } from '../../../game/heroes/state/towns.js'
 import {
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TOWN_CAPTURED,
@@ -7,7 +7,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 export const registerOwnerFlagViewModule = defineModule(
-  ({ env }) => {
+  ({ env, state }) => {
     const entityLayer = env.document?.querySelector('.entity-layer')
 
     function showFlagOn(entityId) {
@@ -27,11 +27,7 @@ export const registerOwnerFlagViewModule = defineModule(
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
-          handler: (event) => {
-            const ownedTowns = createOwnedTowns()
-            ownedTowns.onWorldReady(event.detail.scenario.entities)
-            ownedTowns.ids().forEach(showFlagOn)
-          }
+          handler: () => viewingPlayersTownIds(state.get()).forEach(showFlagOn)
         },
         { type: APP_FACT_MINE_CAPTURED, handler: (event) => showFlagOn(event.detail.entityId) },
         { type: APP_FACT_TOWN_CAPTURED, handler: (event) => showFlagOn(event.detail.entityId) }

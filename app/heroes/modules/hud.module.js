@@ -1,10 +1,9 @@
 import { calendarDateOfTurn, formatCalendarDate } from '../../../game/heroes/calendar.js'
-import { startingResourcesOf } from '../../../game/heroes/starting-resources.js'
-import { createTreasury } from '../../../game/heroes/treasury.js'
+import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
+import { viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
-  APP_FACT_INCOME_COLLECTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_TREASURE_CHEST_OPENED,
@@ -15,7 +14,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 export const registerHudModule = defineModule(
-  ({ emit, env }) => {
+  ({ emit, env, state }) => {
     const uiLayer = env.document?.querySelector('.ui-layer')
     const calendarStatus = env.document?.getElementById('calendar-status')
     const resourceBarList = env.document?.getElementById('resource-bar-list')
@@ -23,7 +22,6 @@ export const registerHudModule = defineModule(
     const endTurnButton = env.document?.getElementById('end-turn-button')
     let resourceTypeOrder = []
     let resourceNamesByType = {}
-    const treasury = createTreasury()
 
     function renderCalendarDate(turnNumber) {
       if (!calendarStatus) {
@@ -38,8 +36,13 @@ export const registerHudModule = defineModule(
         return
       }
 
+      const resources = resourcesOf(state.get(), viewingPlayer(state.get()))
+      // A resource the definitions don't list shows once the player has some, after the others.
+      const others = Object.keys(resources).filter(
+        (resourceType) => !resourceTypeOrder.includes(resourceType) && resources[resourceType] > 0
+      )
       resourceBarList.replaceChildren(
-        ...resourceTypeOrder.map((resourceType) => {
+        ...[...resourceTypeOrder, ...others].map((resourceType) => {
           const name = resourceNamesByType[resourceType] ?? resourceType
           const item = env.document.createElement('li')
           item.className = 'resource-bar__item'
@@ -56,27 +59,12 @@ export const registerHudModule = defineModule(
 
           const amount = env.document.createElement('span')
           amount.className = 'resource-bar__amount'
-          amount.textContent = String(treasury.totals()[resourceType] ?? 0)
+          amount.textContent = String(resources[resourceType] ?? 0)
 
           item.append(icon, label, amount)
           return item
         })
       )
-    }
-
-    function addToResourceTotals(resources = {}) {
-      for (const resourceType of Object.keys(resources)) {
-        if (!resourceTypeOrder.includes(resourceType)) {
-          resourceTypeOrder.push(resourceType)
-        }
-
-        if (!(resourceType in resourceNamesByType)) {
-          resourceNamesByType[resourceType] = resourceType
-        }
-      }
-
-      treasury.add(resources)
-      renderResourceTotals()
     }
 
     return {
@@ -120,10 +108,8 @@ export const registerHudModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             const definitions = event.detail.definitions?.resources ?? {}
-            const startingResources = startingResourcesOf(event.detail.scenario)
             resourceTypeOrder = Object.keys(definitions)
             resourceNamesByType = {}
-            treasury.onWorldReady(startingResources)
 
             for (const resourceType of resourceTypeOrder) {
               resourceNamesByType[resourceType] = definitions[resourceType]?.name ?? resourceType
@@ -137,34 +123,12 @@ export const registerHudModule = defineModule(
           type: APP_FACT_TURN_ENDED,
           handler: (event) => {
             renderCalendarDate(event.detail.turnNumber)
-          }
-        },
-        {
-          type: APP_FACT_RESOURCE_COLLECTED,
-          handler: (event) => {
-            const resourceType = event.detail.entityType
-            if (!resourceType) {
-              return
-            }
-
-            addToResourceTotals({ [resourceType]: event.detail.amount })
-          }
-        },
-        {
-          type: APP_FACT_INCOME_COLLECTED,
-          handler: (event) => addToResourceTotals(event.detail.income)
-        },
-        {
-          type: APP_FACT_TREASURE_CHEST_OPENED,
-          handler: (event) => addToResourceTotals(event.detail.resources)
-        },
-        {
-          type: APP_FACT_RESOURCES_SPENT,
-          handler: (event) => {
-            treasury.spend(event.detail.resources)
             renderResourceTotals()
           }
-        }
+        },
+        { type: APP_FACT_RESOURCE_COLLECTED, handler: renderResourceTotals },
+        { type: APP_FACT_TREASURE_CHEST_OPENED, handler: renderResourceTotals },
+        { type: APP_FACT_RESOURCES_SPENT, handler: renderResourceTotals }
       ]
     }
   },
@@ -176,7 +140,6 @@ export const registerHudModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_TURN_ENDED,
       APP_FACT_RESOURCE_COLLECTED,
-      APP_FACT_INCOME_COLLECTED,
       APP_FACT_TREASURE_CHEST_OPENED,
       APP_FACT_RESOURCES_SPENT
     ],

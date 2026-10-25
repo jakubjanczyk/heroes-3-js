@@ -39,6 +39,13 @@
     <link rel="modulepreload" href="./engine/db.js" />
     <link rel="modulepreload" href="./app/boot-lifecycle.js" />
     <link rel="modulepreload" href="./app/events.js" />
+    <link rel="modulepreload" href="./app/game-state.js" />
+    <link rel="modulepreload" href="./engine/store.js" />
+    <link rel="modulepreload" href="./engine/deep-freeze.js" />
+    <link rel="modulepreload" href="./game/state/combine-slices.js" />
+    <link rel="modulepreload" href="./game/state/core-slices.js" />
+    <link rel="modulepreload" href="./game/domain/entity-queries.js" />
+    <link rel="modulepreload" href="./game/domain/value-objects/movement-points.js" />
     <link rel="modulepreload" href="./app/heroes/content.js" />
     <link rel="modulepreload" href="./game/heroes/content.js" />
     <link rel="modulepreload" href="./game/heroes/entity-behaviors/mine.js" />
@@ -52,7 +59,20 @@
     <link rel="modulepreload" href="./game/heroes/movement-rules.js" />
     <link rel="modulepreload" href="./game/heroes/primary-skills.js" />
     <link rel="modulepreload" href="./game/heroes/road-types.js" />
-    <link rel="modulepreload" href="./engine/deep-freeze.js" />
+    <link rel="modulepreload" href="./game/heroes/state/hero-details.js" />
+    <link rel="modulepreload" href="./game/heroes/state/kingdoms.js" />
+    <link rel="modulepreload" href="./game/state/queries.js" />
+    <link rel="modulepreload" href="./game/heroes/mine-income.js" />
+    <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
+    <link rel="modulepreload" href="./game/heroes/town-income.js" />
+    <link rel="modulepreload" href="./game/heroes/state/map-objects.js" />
+    <link rel="modulepreload" href="./game/heroes/state/towns.js" />
+    <link rel="modulepreload" href="./game/heroes/calendar.js" />
+    <link rel="modulepreload" href="./game/heroes/creature-recruitment.js" />
+    <link rel="modulepreload" href="./game/heroes/creature-growth.js" />
+    <link rel="modulepreload" href="./game/heroes/hero-army.js" />
+    <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
+    <link rel="modulepreload" href="./game/heroes/treasury.js" />
     <link rel="modulepreload" href="./game/heroes/terrain-types.js" />
     <link rel="modulepreload" href="./app/heroes/interaction-outcomes.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/adventure-sprites.js" />
@@ -61,19 +81,17 @@
     <link rel="modulepreload" href="./app/heroes/modules/adventure-cursor.module.js" />
     <link rel="modulepreload" href="./engine/tile-utils.js" />
     <link rel="modulepreload" href="./game/domain/entity-behaviors.js" />
-    <link rel="modulepreload" href="./game/domain/entity-queries.js" />
     <link rel="modulepreload" href="./game/domain/movement/movement-rules.js" />
     <link rel="modulepreload" href="./game/domain/movement/travel-days.js" />
     <link rel="modulepreload" href="./game/heroes/adventure-cursor.js" />
-    <link rel="modulepreload" href="./game/heroes/town-ownership.js" />
     <link rel="modulepreload" href="./game/systems/hero-routes.js" />
     <link rel="modulepreload" href="./game/domain/movement/guards.js" />
     <link rel="modulepreload" href="./game/domain/removed-entities.js" />
-    <link rel="modulepreload" href="./game/domain/value-objects/entity-id.js" />
-    <link rel="modulepreload" href="./game/domain/string-utils.js" />
     <link rel="modulepreload" href="./game/domain/tile-occupant.js" />
     <link rel="modulepreload" href="./game/systems/movement-system.js" />
     <link rel="modulepreload" href="./engine/pathfinding.js" />
+    <link rel="modulepreload" href="./game/domain/value-objects/entity-id.js" />
+    <link rel="modulepreload" href="./game/domain/string-utils.js" />
     <link rel="modulepreload" href="./app/modules/shared/module-runtime.js" />
     <link rel="modulepreload" href="./app/heroes/map-objects.js" />
     <link rel="modulepreload" href="./game/footprint-utils.js" />
@@ -81,7 +99,6 @@
     <link rel="modulepreload" href="./game/heroes/battle.js" />
     <link rel="modulepreload" href="./game/heroes/battle-damage.js" />
     <link rel="modulepreload" href="./game/heroes/battlefield.js" />
-    <link rel="modulepreload" href="./game/heroes/hero-army.js" />
     <link rel="modulepreload" href="./game/heroes/battle-ai.js" />
     <link rel="modulepreload" href="./game/heroes/battle-results.js" />
     <link rel="modulepreload" href="./game/heroes/monster-stacks.js" />
@@ -97,12 +114,7 @@
     <link rel="modulepreload" href="./app/heroes/presentation/hero-box.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/info-box-view.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hud.module.js" />
-    <link rel="modulepreload" href="./game/heroes/calendar.js" />
-    <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
-    <link rel="modulepreload" href="./game/heroes/treasury.js" />
     <link rel="modulepreload" href="./app/heroes/modules/info-box.module.js" />
-    <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
-    <link rel="modulepreload" href="./game/heroes/town-income.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/captured-mine-box.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/resource-amounts.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/date-box.js" />
@@ -116,7 +128,6 @@
     <link rel="modulepreload" href="./game/heroes/status-bar-text.js" />
     <link rel="modulepreload" href="./game/heroes/monster-count.js" />
     <link rel="modulepreload" href="./app/heroes/modules/mines.module.js" />
-    <link rel="modulepreload" href="./game/heroes/mine-income.js" />
     <link rel="modulepreload" href="./app/heroes/modules/minimap-view.module.js" />
     <link rel="modulepreload" href="./engine/layers/dom-layer-utils.js" />
     <link rel="modulepreload" href="./engine/math-utils.js" />
@@ -127,8 +138,6 @@
     <link rel="modulepreload" href="./app/heroes/modules/status-bar.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/system-options.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/town.module.js" />
-    <link rel="modulepreload" href="./game/heroes/creature-recruitment.js" />
-    <link rel="modulepreload" href="./game/heroes/creature-growth.js" />
     <link rel="modulepreload" href="./game/heroes/fort-window.js" />
     <link rel="modulepreload" href="./game/heroes/town-picture.js" />
     <link rel="modulepreload" href="./app/heroes/modules/town-fort-view.module.js" />
@@ -140,7 +149,6 @@
     <link rel="modulepreload" href="./app/heroes/presentation/castle-town-art.js" />
     <link rel="modulepreload" href="./app/heroes/modules/turn.module.js" />
     <link rel="modulepreload" href="./game/heroes/turn-system.js" />
-    <link rel="modulepreload" href="./game/domain/value-objects/movement-points.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/registry.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/hero.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/mine.js" />

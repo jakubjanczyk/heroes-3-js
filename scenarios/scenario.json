@@ -284,6 +284,9 @@
       "id": "hero-1",
       "kind": "HERO",
       "type": "HERO",
+      "name": "Hero",
+      "heroClass": "KNIGHT",
+      "owner": "red",
       "tile": {
         "x": 3,
         "y": 3

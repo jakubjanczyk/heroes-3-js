@@ -1,8 +1,14 @@
 import { sameTile } from '../../../engine/tile-utils.js'
-import { findHero, isTown } from '../../../game/domain/entity-queries.js'
+import { isTown } from '../../../game/domain/entity-queries.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
+import {
+  firstHeroIdOf,
+  heroMovementPoints,
+  heroTile,
+  viewingPlayer
+} from '../../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
-  APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TURN_ENDED,
@@ -19,24 +25,24 @@ const DEFAULT_HERO_NAME = 'Hero'
 // new day and on leaving a town it is in; each of these announces the selection, even when the hero
 // already was selected, so the info box shows the hero again.
 export const registerHeroPanelModule = defineModule(
-  ({ emit, env }) => {
+  ({ emit, env, state }) => {
     const heroList = env.document?.getElementById('hero-list')
     const nextHeroButton = env.document?.getElementById('next-hero-button')
-    let heroTile = null
+    let heroId = null
     let movementBar = null
-    let movementPoints = null
     let isHeroSelected = true
     let townTilesById = new Map()
 
     function selectHero() {
       isHeroSelected = true
-      emit(APP_UI_HERO_SELECTED, {})
+      emit(APP_UI_HERO_SELECTED, { heroId })
     }
 
     function selectAndCenterOnHero() {
       selectHero()
-      if (heroTile) {
-        emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile: heroTile })
+      const tile = heroTile(state.get(), heroId)
+      if (tile) {
+        emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile })
       }
     }
 
@@ -75,6 +81,7 @@ export const registerHeroPanelModule = defineModule(
     }
 
     function renderMovementPoints() {
+      const movementPoints = heroMovementPoints(state.get(), heroId)
       if (!movementPoints) {
         return
       }
@@ -105,10 +112,10 @@ export const registerHeroPanelModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             const { entities } = event.detail.scenario
-            heroTile = findHero(entities)?.tile ?? null
+            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             townTilesById = new Map(entities.filter(isTown).map((town) => [town.id, town.tile]))
             isHeroSelected = true
-            renderHero(event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME)
+            renderHero(heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME)
           }
         },
         {
@@ -124,24 +131,16 @@ export const registerHeroPanelModule = defineModule(
         {
           type: APP_FACT_TOWN_LEFT,
           handler: (event) => {
+            const tile = heroTile(state.get(), heroId)
             const townTile = townTilesById.get(event.detail.entityId)
-            if (heroTile && townTile && sameTile(heroTile, townTile)) {
+            if (tile && townTile && sameTile(tile, townTile)) {
               selectHero()
             }
           }
         },
         {
-          type: APP_FACT_HERO_MOVED,
-          handler: (event) => {
-            heroTile = event.detail.to
-          }
-        },
-        {
           type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-          handler: (event) => {
-            movementPoints = { value: event.detail.value, max: event.detail.max }
-            renderMovementPoints()
-          }
+          handler: renderMovementPoints
         }
       ]
     }
@@ -151,7 +150,6 @@ export const registerHeroPanelModule = defineModule(
     phase: 'view',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_HERO_MOVED,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_TOWN_SELECTED,
       APP_FACT_TURN_ENDED,

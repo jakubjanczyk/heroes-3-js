@@ -1,4 +1,5 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
+import { firstHeroIdOf, viewingPlayer } from '../../game/state/queries.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_INTERACTION_REACHED,
@@ -20,7 +21,7 @@ function resumeEventTypes(config) {
 }
 
 export const registerInteractionModule = defineModule(
-  ({ emit, config }) => {
+  ({ emit, config, state }) => {
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
     let entitiesById = new Map()
     let definitions = {}
@@ -29,6 +30,7 @@ export const registerInteractionModule = defineModule(
     // factsOnModalClosed.
     let eventsByChoice = {}
     let queuedInteractions = []
+    let interactingHeroId = null
     let isNextInteractionDue = false
     let openModalCount = 0
     let isRestoring = false
@@ -45,11 +47,14 @@ export const registerInteractionModule = defineModule(
         return
       }
 
-      const outcome = entityBehaviors.resolveArrivalOutcome({
-        entity,
-        definitions,
-        tile: interaction.targetTile ?? fallbackTile
-      })
+      const outcome = {
+        ...entityBehaviors.resolveArrivalOutcome({
+          entity,
+          definitions,
+          tile: interaction.targetTile ?? fallbackTile
+        }),
+        heroId: interactingHeroId
+      }
       const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects)
       emitFacts(effects?.facts)
 
@@ -58,7 +63,11 @@ export const registerInteractionModule = defineModule(
         eventsByChoice = effects.eventsByChoice ?? {}
         emit(APP_UI_INTERACTION_MODAL_OPENED, effects.modal)
       }
-      emit(APP_FACT_INTERACTION_REACHED, { kind: interaction.kind, entityId: entity.id })
+      emit(APP_FACT_INTERACTION_REACHED, {
+        kind: interaction.kind,
+        entityId: entity.id,
+        heroId: interactingHeroId
+      })
     }
 
     // The next queued interaction waits for every popup to close, e.g. a level-up won in the
@@ -70,7 +79,7 @@ export const registerInteractionModule = defineModule(
 
       isNextInteractionDue = false
       const [next, ...rest] = queuedInteractions
-      emit(APP_FACT_INTERACTIONS_QUEUED, { interactions: rest })
+      emit(APP_FACT_INTERACTIONS_QUEUED, { heroId: interactingHeroId, interactions: rest })
       resolve(next)
     }
 
@@ -85,6 +94,8 @@ export const registerInteractionModule = defineModule(
             factsOnModalClosed = []
             eventsByChoice = {}
             queuedInteractions = []
+            // Queued interactions saved before they named their hero were the only hero's.
+            interactingHeroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             isNextInteractionDue = false
             openModalCount = 0
           }
@@ -100,10 +111,16 @@ export const registerInteractionModule = defineModule(
         {
           type: APP_FACT_MOVE_FINISHED,
           handler: (event) => {
-            const { interaction, queuedInteractions: queued = [], targetTile } = event.detail
+            const {
+              heroId,
+              interaction,
+              queuedInteractions: queued = [],
+              targetTile
+            } = event.detail
             queuedInteractions = []
+            interactingHeroId = heroId
             if (queued.length > 0) {
-              emit(APP_FACT_INTERACTIONS_QUEUED, { interactions: queued })
+              emit(APP_FACT_INTERACTIONS_QUEUED, { heroId, interactions: queued })
             }
             resolve(interaction, targetTile)
           }
@@ -112,6 +129,7 @@ export const registerInteractionModule = defineModule(
           type: APP_FACT_INTERACTIONS_QUEUED,
           handler: (event) => {
             queuedInteractions = [...event.detail.interactions]
+            interactingHeroId = event.detail.heroId ?? interactingHeroId
             isNextInteractionDue = false
           }
         },
