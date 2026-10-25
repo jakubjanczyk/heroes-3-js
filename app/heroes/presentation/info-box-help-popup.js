@@ -2,8 +2,8 @@ const TITLE = 'Status Window'
 const TEXT =
   'This window provides information on the status of your hero or kingdom, and shows the date. Left click here to cycle through these windows.'
 
-// Shown in the middle of the screen, not at the pointer as the map's popup is.
-export function openInfoBoxHelpPopup(document, host) {
+// Shown in the middle of the map, not at the pointer as the map's popup is.
+export function openInfoBoxHelpPopup(document, host, map) {
   const popup = document.createElement('div')
   popup.className = 'info-popup info-popup--help message-box'
   popup.setAttribute('role', 'tooltip')
@@ -18,9 +18,9 @@ export function openInfoBoxHelpPopup(document, host) {
   popup.append(title, text)
 
   host.appendChild(popup)
-  const window = document.defaultView
   const { width, height } = popup.getBoundingClientRect()
-  popup.style.left = `${(window.innerWidth - width) / 2}px`
-  popup.style.top = `${(window.innerHeight - height) / 2}px`
+  const { left, top, right, bottom } = map.getBoundingClientRect()
+  popup.style.left = `${(left + right - width) / 2}px`
+  popup.style.top = `${(top + bottom - height) / 2}px`
   return popup
 }

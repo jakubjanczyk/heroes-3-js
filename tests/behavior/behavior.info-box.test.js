@@ -655,9 +655,10 @@ const LONG_PRESS_MS = 500
 const STATUS_WINDOW_HELP =
   'This window provides information on the status of your hero or kingdom, and shows the date. Left click here to cycle through these windows.'
 
-async function setupHelpApp() {
+async function setupHelpApp(options = {}) {
   return setupApp({
-    appConfig: { fadeOutMsByKind: { RESOURCE: 0 }, longPressMs: LONG_PRESS_MS }
+    appConfig: { fadeOutMsByKind: { RESOURCE: 0 }, longPressMs: LONG_PRESS_MS },
+    ...options
   })
 }
 
@@ -719,15 +720,12 @@ describe('info box help behavior', () => {
     })
   })
 
-  test('shows the popup in the middle of the screen', async () => {
-    const { user } = await setupHelpApp()
+  test('shows the popup in the middle of the map', async () => {
+    const { user } = await setupHelpApp({ viewportSize: { width: 600, height: 400 } })
 
     await holdRightButtonOnInfoBox(user)
 
-    expect(readInfoBoxHelpPopupPosition()).toEqual({
-      left: window.innerWidth / 2,
-      top: window.innerHeight / 2
-    })
+    expect(readInfoBoxHelpPopupPosition()).toEqual({ left: 300, top: 200 })
   })
 
   test('closes the popup when the right button is released', async () => {
