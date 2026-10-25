@@ -81,6 +81,7 @@ flowchart TD
   Registry --> InteractionModalView[interaction-modal.module]
   Registry --> Hud[hud.module]
   Registry --> HeroPanel[hero-panel.module]
+  Registry --> InfoBox[info-box.module]
   Registry --> SystemOptions[system-options.module]
   Registry --> Music[music.module]
 
@@ -208,7 +209,8 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | `status-bar` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `ui.tile.hovered` | none |
 | `adventure-cursor` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `ui.tile.hovered`, `ui.map.edgeScrolled`, `fact.town.captured`, `ui.town.selected`, `ui.hero.selected` | none |
 | `info-popup` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.mine.captured`, `fact.town.captured`, `fact.town.building.built`, `fact.town.garrison.changed`, `fact.hero.leveledUp`, `ui.tile.info.requested`, `ui.tile.info.dismissed` | none |
-| `hero-panel` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.town.selected`, `fact.town.building.built`, `fact.town.captured`, `fact.town.garrison.changed`, `fact.turn.ended`, `fact.town.left`, `fact.resource.collected`, `fact.mine.captured`, `fact.move.started`, `ui.notice.opened`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.restore.started`, `ui.restore.completed` | `command.camera.centerOnTile`, `ui.hero.selected`, `ui.heroScreen.openRequested` |
+| `hero-panel` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed`, `ui.town.selected`, `fact.turn.ended`, `fact.town.left` | `command.camera.centerOnTile`, `ui.hero.selected`, `ui.heroScreen.openRequested` |
+| `info-box` | heroes | view | `fact.world.ready`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.hero.selected`, `ui.town.selected`, `fact.town.captured`, `fact.town.garrison.changed`, `fact.town.building.built`, `fact.turn.ended`, `fact.resource.collected`, `fact.mine.captured`, `fact.move.started`, `ui.notice.opened`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.restore.started`, `ui.restore.completed` | none |
 | `town-list` | heroes | view | `fact.world.ready`, `fact.town.captured`, `ui.hero.selected` | `ui.town.selected`, `command.camera.centerOnTile`, `command.town.open.requested` |
 | `system-options` | heroes | view | `ui.music.state.changed` | `command.music.toggle.requested`, `command.session.reset.requested`, `ui.systemOptions.opened`, `ui.systemOptions.closed` |
 | `battle-view` | heroes | view | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.battle.updated`, `fact.battle.ended` | `command.battle.autoCombat.requested`, `command.battle.resultsClose.requested`, `command.battle.retreat.requested`, `command.battle.stackAttack.requested`, `command.battle.stackDefend.requested`, `command.battle.stackMove.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
@@ -382,8 +384,9 @@ Each module owns the selectors it queries and updates:
   - `#end-turn-button` (end-turn command source)
 - `hero-panel.module`:
   - `#hero-list` (hero portrait + movement bar; portrait click centres the camera)
-  - `#hero-info` (info box: the selected hero or town, a pickup or a captured mine, the date at the start of a day; a click goes on to the kingdom overview, then the date)
   - `#next-hero-button` (centres the camera; disabled with no movement left)
+- `info-box.module`:
+  - `#hero-info` (the selected hero or town, a pickup or a captured mine, the date at the start of a day; a click goes on to the kingdom overview, then the date)
 - `system-options.module`:
   - `#system-options-button` (opens the popup)
   - the System options `<dialog>` it mounts in `.game-shell` (Music, Reset, Return to game)

@@ -10,6 +10,7 @@ import {
   getDateBox,
   getHeroInfoBox,
   getKingdomOverview,
+  getNextHeroButton,
   getTownInfoBox,
   getTownInTownList,
   queryCapturedMineBox,
@@ -107,6 +108,16 @@ describe('info box behavior', () => {
 
     await collectGold(user)
     await confirmMove(user, 0, 1)
+
+    expect(queryFoundResourcesBox()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test('shows the hero again when the player clicks Next hero while the resource is shown', async () => {
+    const { user } = await setupApp()
+
+    await collectGold(user)
+    await user.click(getNextHeroButton())
 
     expect(queryFoundResourcesBox()).toBeNull()
     expect(getHeroInfoBox()).toBeTruthy()
@@ -317,6 +328,15 @@ describe('info box date behavior', () => {
 
     expect(queryDateBox()).toBeNull()
     expect(getTownInfoBox()).toBeTruthy()
+  })
+
+  test('shows the date when the player ends the day while a town is selected', async () => {
+    const { user } = await setupApp()
+    await user.click(getTownInTownList('Whitemoon'))
+
+    await clickEndTurn(user)
+
+    expect(readDateBox().text).toBe('Day 2')
   })
 
   test('shows the hero, not the date, after a reload right after ending the day', async () => {
