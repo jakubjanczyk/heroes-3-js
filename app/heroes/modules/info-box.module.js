@@ -33,16 +33,19 @@ import { renderCapturedMineBox } from '../presentation/captured-mine-box.js'
 import { renderDateBox } from '../presentation/date-box.js'
 import { renderFoundResourcesBox } from '../presentation/found-resources-box.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
+import { openInfoBoxHelpPopup } from '../presentation/info-box-help-popup.js'
 import { infoBoxTimeoutMs, nextInfoBoxView } from '../presentation/info-box-states.js'
 import { renderKingdomOverviewBox } from '../presentation/kingdom-overview-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+const DEFAULT_LONG_PRESS_MS = 500
 
 // Registered after the hero panel: on a new day the hero is selected again before the date shows.
 export const registerInfoBoxModule = defineModule(
-  ({ env }) => {
+  ({ env, config }) => {
     const infoBox = env.document?.getElementById('hero-info')
+    const longPressMs = config?.longPressMs ?? DEFAULT_LONG_PRESS_MS
     let hero = null
     let heroName = DEFAULT_HERO_NAME
     let definitions = {}
@@ -58,6 +61,9 @@ export const registerInfoBoxModule = defineModule(
     let content = {}
     let timer = null
     let openModalCount = 0
+    let helpPopup = null
+    let longPressTimer = null
+    let ignoreNextClick = false
 
     function send(eventType, nextContent = {}) {
       const next = nextInfoBoxView(view, eventType)
@@ -82,7 +88,43 @@ export const registerInfoBoxModule = defineModule(
       }
     }
 
+    function openHelp() {
+      closeHelp()
+      const document = env.document
+      helpPopup = openInfoBoxHelpPopup(
+        document,
+        document.querySelector('.game-shell') ?? document.body,
+        document.querySelector('.viewport')
+      )
+    }
+
+    function closeHelp() {
+      clearTimeout(longPressTimer)
+      longPressTimer = null
+      helpPopup?.remove()
+      helpPopup = null
+    }
+
+    // A held right button, or a finger held still, explains the box until it is let go.
+    function onPointerDown(event) {
+      ignoreNextClick = false
+      if (event.pointerType === 'touch') {
+        clearTimeout(longPressTimer)
+        longPressTimer = setTimeout(() => {
+          ignoreNextClick = true
+          openHelp()
+        }, longPressMs)
+      } else if (event.button === 2) {
+        openHelp()
+      }
+    }
+
     function onClicked(event) {
+      // The browser still sends a click when the finger of a long press lifts.
+      if (ignoreNextClick) {
+        ignoreNextClick = false
+        return
+      }
       if (!event.target.closest?.('.army-slot')) {
         send('clicked', { date: calendarDateOfTurn(turnNumber) })
       }
@@ -157,7 +199,13 @@ export const registerInfoBoxModule = defineModule(
     }
 
     return {
-      domSubscriptions: [{ target: infoBox, type: 'click', handler: onClicked }],
+      domSubscriptions: [
+        { target: infoBox, type: 'click', handler: onClicked },
+        { target: infoBox, type: 'pointerdown', handler: onPointerDown },
+        { target: infoBox, type: 'contextmenu', handler: (event) => event.preventDefault() },
+        { target: env.window, type: 'pointerup', handler: closeHelp },
+        { target: env.window, type: 'pointercancel', handler: closeHelp }
+      ],
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
@@ -283,7 +331,10 @@ export const registerInfoBoxModule = defineModule(
           }
         }
       ],
-      dispose: () => clearTimeout(timer)
+      dispose: () => {
+        clearTimeout(timer)
+        closeHelp()
+      }
     }
   },
   {

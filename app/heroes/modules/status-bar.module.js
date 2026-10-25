@@ -9,10 +9,13 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
+const INFO_BOX_HOVER_TEXT = 'Status Window'
+
 // The Heroes 3 status bar under the map: names whatever the mouse is over.
 export const registerStatusBarModule = defineModule(
   ({ env }) => {
     const statusBar = env.document.getElementById('status-bar')
+    const infoBox = env.document.getElementById('hero-info')
     const mapObjects = createMapObjects()
 
     let definitions = {}
@@ -22,6 +25,11 @@ export const registerStatusBarModule = defineModule(
     }
 
     return {
+      // The info box has one text for all it shows.
+      domSubscriptions: [
+        { target: infoBox, type: 'mouseenter', handler: () => showText(INFO_BOX_HOVER_TEXT) },
+        { target: infoBox, type: 'mouseleave', handler: () => showText('') }
+      ],
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
