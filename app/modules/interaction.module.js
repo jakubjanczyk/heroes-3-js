@@ -1,5 +1,5 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
-import { firstHeroIdOf, viewingPlayer } from '../../game/state/queries.js'
+import { firstHeroIdOf, heroEntity, viewingPlayer } from '../../game/state/queries.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_INTERACTION_REACHED,
@@ -42,7 +42,8 @@ export const registerInteractionModule = defineModule(
     }
 
     function resolve(interaction, fallbackTile) {
-      const entity = entitiesById.get(interaction?.entityId)
+      const entity =
+        entitiesById.get(interaction?.entityId) ?? heroEntity(state.get(), interaction?.entityId)
       if (!entity) {
         return
       }

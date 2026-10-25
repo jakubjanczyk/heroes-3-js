@@ -423,3 +423,86 @@ export function getSplitButton() {
 export async function clickSplitButton(user) {
   await user.click(getSplitButton())
 }
+
+export function queryTavern() {
+  return screen.queryByRole('dialog', { name: 'Tavern' })
+}
+
+function getTavern() {
+  const tavern = queryTavern()
+  expect(tavern).toBeTruthy()
+  return tavern
+}
+
+export async function openTavern(user) {
+  await clickBuildingOnPicture(user, 'Tavern')
+  getTavern()
+}
+
+export async function closeTavern(user) {
+  await user.click(within(getTavern()).getByRole('button', { name: 'Close' }))
+}
+
+export function readTavernRumour() {
+  return within(getTavern()).getByRole('paragraph', { name: 'Rumour' }).textContent
+}
+
+function getHeroesForHire() {
+  return within(within(getTavern()).getByRole('group', { name: 'Heroes for hire' })).getAllByRole(
+    'button'
+  )
+}
+
+function getHeroForHire(heroName) {
+  return within(within(getTavern()).getByRole('group', { name: 'Heroes for hire' })).getByRole(
+    'button',
+    { name: heroName }
+  )
+}
+
+export function readHeroesForHire() {
+  return getHeroesForHire().map((hero) => hero.getAttribute('aria-label'))
+}
+
+export function readSelectedHeroForHire() {
+  return getHeroesForHire()
+    .find((hero) => hero.getAttribute('aria-pressed') === 'true')
+    ?.getAttribute('aria-label')
+}
+
+export function readHeroForHireDescription() {
+  return within(getTavern()).getByRole('paragraph', { name: 'Hero for hire' }).textContent
+}
+
+export async function selectHeroForHire(user, heroName) {
+  await user.click(getHeroForHire(heroName))
+}
+
+export async function hoverHeroForHire(user, heroName) {
+  await user.hover(getHeroForHire(heroName))
+}
+
+// Holds the right mouse button down on a hero's portrait, which opens their hero box.
+export async function holdRightButtonOnHeroForHire(user, heroName) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroForHire(heroName) })
+}
+
+export async function releaseRightButton(user) {
+  await user.pointer({ keys: '[/MouseRight]' })
+}
+
+export function readHiringCost() {
+  return within(getTavern()).getByLabelText('Cost').textContent
+}
+
+export function getHireButton() {
+  return within(getTavern()).getByRole('button', { name: 'Recruit' })
+}
+
+export async function hireHero(user) {
+  await user.click(getHireButton())
+}
+
+export function readTavernStatusBar() {
+  return within(getTavern()).getByRole('status', { name: 'Tavern status bar' }).textContent
+}

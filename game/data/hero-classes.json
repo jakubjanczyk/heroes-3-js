@@ -5,6 +5,11 @@
     "primarySkillChances": {
       "upToLevel9": { "attack": 35, "defense": 45, "power": 10, "knowledge": 10 },
       "fromLevel10": { "attack": 30, "defense": 30, "power": 20, "knowledge": 20 }
-    }
+    },
+    "startingArmy": [
+      { "creature": "PIKEMAN", "min": 10, "max": 20 },
+      { "creature": "ARCHER", "min": 4, "max": 7 },
+      { "creature": "GRIFFIN", "min": 2, "max": 3 }
+    ]
   }
 }

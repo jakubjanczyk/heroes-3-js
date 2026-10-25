@@ -1,10 +1,13 @@
 import { FORT_CHAIN, HALL_CHAIN } from './town-buildings.js'
 import { buildingsInEffect } from './town-income.js'
 
-// What clicking a building opens, as in Heroes 3: the hall the Hall, the fort the Fort window, a
-// dwelling or its horde building (Griffin Bastion) the dwelling's recruit window. The other
-// buildings' screens don't exist yet, so clicking them does nothing.
+// What clicking a building opens: the hall the Hall, the fort the Fort window, the Tavern the
+// tavern, a dwelling or its horde building (Griffin Bastion) the dwelling's recruit window. The
+// other buildings' screens don't exist yet, so clicking them does nothing.
 function openedBy(buildingId, building, monsters) {
+  if (buildingId === 'TAVERN') {
+    return { opens: 'tavern' }
+  }
   if (HALL_CHAIN.includes(buildingId)) {
     return { opens: 'hall' }
   }

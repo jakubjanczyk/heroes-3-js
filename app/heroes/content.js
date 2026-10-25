@@ -18,6 +18,8 @@ import { registerMusicModule } from './modules/music.module.js'
 import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
+import { registerTavernModule } from './modules/tavern.module.js'
+import { registerTavernViewModule } from './modules/tavern-view.module.js'
 import { registerTownModule } from './modules/town.module.js'
 import { registerTownFortViewModule } from './modules/town-fort-view.module.js'
 import { registerTownHallViewModule } from './modules/town-hall-view.module.js'
@@ -44,6 +46,7 @@ export const heroesAppContent = Object.freeze({
     registerHeroArmyModule,
     registerBattleModule,
     registerTownModule,
+    registerTavernModule,
     registerOwnerFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
@@ -59,6 +62,7 @@ export const heroesAppContent = Object.freeze({
     registerTownHallViewModule,
     registerTownFortViewModule,
     registerTownRecruitViewModule,
+    registerTavernViewModule,
     registerHeroScreenViewModule,
     registerHeroExchangeViewModule,
     registerMusicModule

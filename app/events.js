@@ -35,6 +35,8 @@ export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
 export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
+export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
+export const APP_COMMAND_TAVERN_HIRE_REQUESTED = 'command.tavern.hire.requested'
 export const APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED =
   'command.town.garrisonStackMove.requested'
 
@@ -82,6 +84,10 @@ export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
 export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
+// A hero hired in a town's tavern, who comes onto the map at the town's entrance.
+export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
+// The heroes a player's taverns offer this week, and the barkeep's rumour.
+export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -114,6 +120,7 @@ export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
 export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
+export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
@@ -149,7 +156,9 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,
-  APP_FACT_HERO_ARMY_CHANGED
+  APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_HIRED,
+  APP_FACT_TAVERN_HEROES_OFFERED
 ])
 
 export function shouldPersistFactEvent(type) {

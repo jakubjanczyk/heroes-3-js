@@ -980,3 +980,146 @@
     display: none;
   }
 }
+
+/*
+ * The Tavern: the picture and the rumour across the top, then the heroes for hire with the one
+ * picked described under them, the cost and Recruit beside them, and the buttons along the bottom.
+ */
+.tavern-window {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  inline-size: min(28rem, calc(100% - 2rem));
+  max-block-size: 100%;
+  overflow: auto;
+  padding: var(--space-md);
+
+  &:focus {
+    outline: none;
+  }
+
+  & > .window-title,
+  & > .tavern-window__picture,
+  & > .tavern-window__rumour,
+  & > .tavern-window__buttons,
+  & > .tavern-window__status {
+    grid-column: 1 / -1;
+  }
+
+  & > .window-title {
+    justify-self: center;
+  }
+}
+
+/* A stand-in for the tavern's picture: a warm room lit by a hearth. */
+.tavern-window__picture {
+  aspect-ratio: 300 / 100;
+  border: 1px solid var(--trim-gold-dark);
+  background:
+    radial-gradient(ellipse 18% 30% at 22% 72%, rgb(255 190 90 / 0.85), transparent 70%),
+    radial-gradient(ellipse 10% 12% at 70% 60%, rgb(255 220 140 / 0.7), transparent 70%),
+    linear-gradient(180deg, #3a2414 0%, #24160c 62%, #4a2e18 62.5%, #2d1b0e 100%);
+}
+
+.tavern-window__rumour,
+.tavern-window__description {
+  margin: 0;
+  padding: var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  background: rgb(0 0 0 / 0.2);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.tavern-window__hire {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "subtitle cost"
+    "heroes recruit"
+    "description recruit";
+  gap: var(--space-xs) var(--space-sm);
+  align-items: center;
+  padding: var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+}
+
+.tavern-window__subtitle {
+  grid-area: subtitle;
+  margin: 0;
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-md);
+  text-align: center;
+}
+
+.tavern-window__heroes {
+  grid-area: heroes;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+/* The hero's initial until there are portraits, as in the hero list. */
+.tavern-window__hero {
+  appearance: none;
+  inline-size: 4rem;
+  aspect-ratio: 58 / 64;
+  padding: 0;
+  border: 2px solid var(--trim-gold-dark);
+  background: radial-gradient(
+    circle at 50% 35%,
+    color-mix(in oklab, var(--interface-color) 40%, #6b5640),
+    #1c140d 75%
+  );
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-lg);
+  cursor: inherit;
+
+  &[aria-pressed="true"] {
+    border-color: #f0d060;
+    box-shadow: 0 0 0 1px #f0d060;
+  }
+}
+
+.tavern-window__description {
+  grid-area: description;
+}
+
+.tavern-window__cost {
+  grid-area: cost;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+  min-inline-size: 5rem;
+  padding: var(--space-2xs) var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.tavern-window__gold {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+}
+
+.tavern-window__recruit {
+  grid-area: recruit;
+  justify-self: center;
+  inline-size: 4rem;
+}
+
+.tavern-window__buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tavern-window__status {
+  min-block-size: 1.4em;
+  margin: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
