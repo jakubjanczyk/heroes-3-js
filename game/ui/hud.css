@@ -307,30 +307,6 @@
   display: grid;
   grid-template: none / none;
   place-content: center;
-
-  & .found-box__resources {
-    display: flex;
-    gap: var(--space-md);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  & .found-box__resource {
-    display: grid;
-    justify-items: center;
-    gap: var(--space-xs);
-  }
-
-  & .resource-icon {
-    inline-size: 2.5rem;
-    block-size: 2.5rem;
-  }
-
-  & .found-box__amount {
-    color: var(--hud-text);
-    font-variant-numeric: tabular-nums;
-  }
 }
 
 .info-box.mine-box {
@@ -348,14 +324,16 @@
       "Times New Roman",
       serif;
   }
+}
 
-  & .mine-box__income {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+.info-box .resource-amounts {
+  display: flex;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
-  & .mine-box__resource {
+  & .resource-amounts__item {
     display: grid;
     justify-items: center;
     gap: var(--space-xs);
@@ -366,7 +344,7 @@
     block-size: 2.5rem;
   }
 
-  & .mine-box__amount {
+  & .resource-amounts__amount {
     color: var(--hud-text);
     font-variant-numeric: tabular-nums;
   }
