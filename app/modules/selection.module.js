@@ -1,18 +1,22 @@
 import { sameTile } from '../../engine/tile-utils.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
 import {
-  firstHeroIdOf,
+  heroIdAt,
   heroMovementPoints,
+  heroOwner,
   heroTile,
   isTileExplored,
+  selectedHeroIdOf,
   viewingPlayer
 } from '../../game/state/queries.js'
 import {
+  APP_COMMAND_HERO_SELECT_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_ROUTE_REQUESTED,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_HERO_MOVED,
+  APP_FACT_HERO_SELECTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
@@ -37,67 +41,149 @@ export const registerSelectionModule = defineModule(
   ({ emit, config, state }) => {
     const movementRules = resolveMovementRules(config?.content?.movementRules)
     let map = null
-    let selectedHeroId = null
     let isWorldReady = false
     let requestedTile = null
-    let previewPath = null
-    let previewTarget = null
+    // Each hero keeps the route planned for them while another hero is selected.
+    const routesByHeroId = new Map()
     let isMoving = false
     let isInteractionModalOpen = false
     let isSystemOptionsOpen = false
     let isMapCovered = false
     let isTownSelected = false
 
+    function selectedHeroId() {
+      return selectedHeroIdOf(state.get(), viewingPlayer(state.get()))
+    }
+
+    function selectedRoute() {
+      return routesByHeroId.get(selectedHeroId()) ?? null
+    }
+
     function affordableStepCount() {
-      if (!map || !previewPath || previewPath.length < 2) {
+      const path = selectedRoute()?.path
+      if (!map || !path || path.length < 2) {
         return 0
       }
 
       const remainingMovementPoints =
-        heroMovementPoints(state.get(), selectedHeroId)?.value ?? Number.POSITIVE_INFINITY
-      return movementRules.chargeSteps({ map, path: previewPath, remainingMovementPoints }).length
+        heroMovementPoints(state.get(), selectedHeroId())?.value ?? Number.POSITIVE_INFINITY
+      return movementRules.chargeSteps({ map, path, remainingMovementPoints }).length
     }
 
-    function canMove() {
+    function isMapIdle() {
       return (
         isWorldReady &&
         !isMoving &&
         !isInteractionModalOpen &&
         !isSystemOptionsOpen &&
         !isMapCovered &&
-        !isTownSelected &&
-        previewPath?.length >= 2 &&
-        affordableStepCount() >= 1
+        !isTownSelected
       )
     }
 
+    function canMove() {
+      return isMapIdle() && selectedRoute()?.path.length >= 2 && affordableStepCount() >= 1
+    }
+
     function requestMove() {
+      const route = selectedRoute()
       if (canMove()) {
-        emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: previewTarget, path: [...previewPath] })
+        emit(APP_COMMAND_MOVE_REQUESTED, { targetTile: route.target, path: [...route.path] })
       }
     }
 
     function emitPreview() {
+      const route = selectedRoute()
       emit(APP_UI_PREVIEW_UPDATED, {
-        path: previewPath,
-        targetTile: previewTarget,
+        path: route?.path ?? null,
+        targetTile: route?.target ?? null,
         maxAffordableSteps: affordableStepCount(),
         canMove: canMove()
       })
     }
 
-    // The selected route is only assigned in fact handlers (or derived from replayed move facts);
-    // commands and reactions emit facts instead, so live play and replay share one code path.
-    function resetPreview() {
-      previewPath = null
-      previewTarget = null
-      emitPreview()
+    function emitPreviewOf(heroId) {
+      if (heroId === selectedHeroId()) {
+        emitPreview()
+      }
     }
 
-    function requestClearPreview() {
-      if (previewPath || previewTarget) {
-        emit(APP_FACT_PREVIEW_CLEARED, {})
+    // A route is only assigned in fact handlers (or derived from replayed move facts); commands
+    // and reactions emit facts instead, so live play and replay share one code path.
+    function clearRoute(heroId) {
+      routesByHeroId.delete(heroId)
+      emitPreviewOf(heroId)
+    }
+
+    function requestClearRoute(heroId = selectedHeroId()) {
+      if (routesByHeroId.has(heroId)) {
+        emit(APP_FACT_PREVIEW_CLEARED, { heroId })
       }
+    }
+
+    function requestSelectHero(heroId) {
+      const player = viewingPlayer(state.get())
+      if (heroId && heroId !== selectedHeroId() && heroOwner(state.get(), heroId) === player) {
+        emit(APP_FACT_HERO_SELECTED, { heroId, player })
+      }
+    }
+
+    function otherOwnHeroAt(tile) {
+      const heroId = heroIdAt(state.get(), tile)
+      return heroId !== selectedHeroId() &&
+        heroOwner(state.get(), heroId) === viewingPlayer(state.get())
+        ? heroId
+        : null
+    }
+
+    function clickTile(tile) {
+      const otherHeroId = otherOwnHeroAt(tile)
+      if (otherHeroId) {
+        requestSelectHero(otherHeroId)
+        return
+      }
+
+      const selectedHeroTile = heroTile(state.get(), selectedHeroId())
+      if (selectedHeroTile && sameTile(selectedHeroTile, tile)) {
+        emit(APP_UI_SELECTED_HERO_CLICKED, {})
+      }
+      const target = selectedRoute()?.target
+      if (target && sameTile(target, tile)) {
+        requestMove()
+        return
+      }
+
+      requestedTile = tile
+      emit(APP_COMMAND_ROUTE_REQUESTED, { tile })
+    }
+
+    function followStep(heroId, to) {
+      const route = routesByHeroId.get(heroId)
+      if (!route || route.path.length === 0) {
+        return
+      }
+
+      while (route.path.length > 0 && !sameTile(route.path[0], to)) {
+        route.path.shift()
+      }
+
+      if (sameTile(route.target, to)) {
+        clearRoute(heroId)
+        return
+      }
+
+      emitPreviewOf(heroId)
+    }
+
+    function finishMove({ heroId = selectedHeroId(), interaction, reachedTile }) {
+      isMoving = false
+      const target = routesByHeroId.get(heroId)?.target
+      if (!interaction?.kind && target && reachedTile && !sameTile(reachedTile, target)) {
+        emitPreviewOf(heroId)
+        return
+      }
+
+      requestClearRoute(heroId)
     }
 
     return {
@@ -106,16 +192,16 @@ export const registerSelectionModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             map = event.detail.map
-            selectedHeroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             isWorldReady = true
             isTownSelected = false
-            resetPreview()
+            routesByHeroId.clear()
+            emitPreview()
           }
         },
         {
           type: APP_FACT_MOVEMENT_POINTS_CHANGED,
           handler: () => {
-            if (previewPath || previewTarget) {
+            if (selectedRoute()) {
               emitPreview()
             }
           }
@@ -123,33 +209,18 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_COMMAND_TILE_CLICKED,
           handler: (event) => {
-            if (
-              !isWorldReady ||
-              isMoving ||
-              isInteractionModalOpen ||
-              isSystemOptionsOpen ||
-              isMapCovered ||
-              isTownSelected
-            ) {
-              return
-            }
-
             const { tile } = event.detail
-            if (!isTileExplored(state.get(), viewingPlayer(state.get()), tile)) {
-              return
+            if (isMapIdle() && isTileExplored(state.get(), viewingPlayer(state.get()), tile)) {
+              clickTile(tile)
             }
-
-            const selectedHeroTile = heroTile(state.get(), selectedHeroId)
-            if (selectedHeroTile && sameTile(selectedHeroTile, tile)) {
-              emit(APP_UI_SELECTED_HERO_CLICKED, {})
+          }
+        },
+        {
+          type: APP_COMMAND_HERO_SELECT_REQUESTED,
+          handler: (event) => {
+            if (isWorldReady && !isMoving) {
+              requestSelectHero(event.detail.heroId)
             }
-            if (previewTarget && sameTile(previewTarget, tile)) {
-              requestMove()
-              return
-            }
-
-            requestedTile = tile
-            emit(APP_COMMAND_ROUTE_REQUESTED, { tile })
           }
         },
         {
@@ -168,65 +239,35 @@ export const registerSelectionModule = defineModule(
 
             requestedTile = null
             if (!path) {
-              requestClearPreview()
+              requestClearRoute()
               return
             }
 
-            emit(APP_FACT_PREVIEW_TARGET_SELECTED, { tile, path })
+            emit(APP_FACT_PREVIEW_TARGET_SELECTED, { heroId: selectedHeroId(), tile, path })
           }
         },
         {
           type: APP_FACT_MOVE_STARTED,
           handler: () => {
             isMoving = true
-            if (previewPath || previewTarget) {
+            if (selectedRoute()) {
               emitPreview()
             }
           }
         },
         {
           type: APP_FACT_HERO_MOVED,
-          handler: (event) => {
-            const to = event.detail.to
-            if (!previewPath || previewPath.length === 0) {
-              return
-            }
-
-            while (previewPath.length > 0 && !sameTile(previewPath[0], to)) {
-              previewPath.shift()
-            }
-
-            if (previewTarget && sameTile(previewTarget, to)) {
-              resetPreview()
-              return
-            }
-
-            emitPreview()
-          }
+          handler: (event) => followStep(event.detail.heroId ?? selectedHeroId(), event.detail.to)
         },
         {
           type: APP_FACT_MOVE_FINISHED,
-          handler: (event) => {
-            isMoving = false
-            if (event.detail.interaction?.kind) {
-              requestClearPreview()
-              return
-            }
-
-            const reachedTile = event.detail.reachedTile
-            if (previewTarget && reachedTile && !sameTile(reachedTile, previewTarget)) {
-              emitPreview()
-              return
-            }
-
-            requestClearPreview()
-          }
+          handler: (event) => finishMove(event.detail)
         },
         {
           type: APP_UI_INTERACTION_MODAL_OPENED,
           handler: () => {
             isInteractionModalOpen = true
-            requestClearPreview()
+            requestClearRoute()
           }
         },
         {
@@ -268,8 +309,14 @@ export const registerSelectionModule = defineModule(
         },
         {
           type: APP_UI_HERO_SELECTED,
-          handler: (event) => {
-            selectedHeroId = event.detail.heroId ?? selectedHeroId
+          handler: () => {
+            isTownSelected = false
+            emitPreview()
+          }
+        },
+        {
+          type: APP_FACT_HERO_SELECTED,
+          handler: () => {
             isTownSelected = false
             emitPreview()
           }
@@ -277,23 +324,20 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_FACT_PREVIEW_TARGET_SELECTED,
           handler: (event) => {
-            const { tile, path } = event.detail ?? {}
+            const { heroId = selectedHeroId(), tile, path } = event.detail ?? {}
             // Saves from before routes were stored in this fact carry no path; drop those.
             if (!tile || !Array.isArray(path) || path.length < 2) {
-              resetPreview()
+              clearRoute(heroId)
               return
             }
 
-            previewTarget = tile
-            previewPath = [...path]
-            emitPreview()
+            routesByHeroId.set(heroId, { target: tile, path: [...path] })
+            emitPreviewOf(heroId)
           }
         },
         {
           type: APP_FACT_PREVIEW_CLEARED,
-          handler: () => {
-            resetPreview()
-          }
+          handler: (event) => clearRoute(event.detail?.heroId ?? selectedHeroId())
         }
       ]
     }
@@ -305,6 +349,7 @@ export const registerSelectionModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_COMMAND_TILE_CLICKED,
+      APP_COMMAND_HERO_SELECT_REQUESTED,
       APP_COMMAND_MOVE_CONTINUE_REQUESTED,
       APP_FACT_ROUTE_PLANNED,
       APP_FACT_MOVE_STARTED,
@@ -318,10 +363,12 @@ export const registerSelectionModule = defineModule(
       APP_UI_ADVENTURE_MAP_UNCOVERED,
       APP_UI_TOWN_SELECTED,
       APP_UI_HERO_SELECTED,
+      APP_FACT_HERO_SELECTED,
       APP_FACT_PREVIEW_TARGET_SELECTED,
       APP_FACT_PREVIEW_CLEARED
     ],
     produces: [
+      APP_FACT_HERO_SELECTED,
       APP_COMMAND_MOVE_REQUESTED,
       APP_COMMAND_ROUTE_REQUESTED,
       APP_UI_PREVIEW_UPDATED,

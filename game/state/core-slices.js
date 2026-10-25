@@ -48,9 +48,16 @@ const playersSlice = {
           .filter(Boolean)
       ])
     ],
-    activePlayer: DEFAULT_PLAYER
+    activePlayer: DEFAULT_PLAYER,
+    selectedHeroIds: {}
   }),
-  on: {}
+  on: {
+    'fact.hero.selected': (players, { heroId, player = DEFAULT_PLAYER }) => ({
+      ...players,
+      selectedHeroIds: { ...players.selectedHeroIds, [player]: heroId }
+    }),
+    'fact.turn.ended': (players) => ({ ...players, selectedHeroIds: {} })
+  }
 }
 
 const heroesSlice = {

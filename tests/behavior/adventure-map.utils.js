@@ -22,8 +22,8 @@ export function getRoadOn(x, y) {
   return document.querySelector(`.road[data-x="${x}"][data-y="${y}"]`)
 }
 
-export function getHeroEntity() {
-  return document.querySelector('.entity--hero[data-entity-id="hero-1"]')
+export function getHeroEntity(heroId = 'hero-1') {
+  return document.querySelector(`.entity--hero[data-entity-id="${heroId}"]`)
 }
 
 export function getMonsterEntity(entityId = 'monster-1') {
@@ -48,8 +48,8 @@ export function getMineEntity(entityId = 'mine-1') {
   return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`)
 }
 
-export function expectHeroAt(x, y) {
-  const heroEntity = getHeroEntity()
+export function expectHeroAt(x, y, heroId = 'hero-1') {
+  const heroEntity = getHeroEntity(heroId)
   expect(heroEntity).toBeTruthy()
   expect(heroEntity?.dataset.tileX).toBe(String(x))
   expect(heroEntity?.dataset.tileY).toBe(String(y))

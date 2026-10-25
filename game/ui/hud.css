@@ -249,8 +249,16 @@
     serif;
   text-shadow: 0 1px 0 black;
 
-  &:hover {
-    border-color: var(--trim-gold-light);
+  /* A touch screen keeps the last tapped portrait hovered, which reads as still selected. */
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--trim-gold-light);
+    }
+  }
+
+  &[aria-current="true"] {
+    outline: 2px solid var(--trim-gold-light);
+    outline-offset: -2px;
   }
 
   &:focus-visible {

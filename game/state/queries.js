@@ -38,9 +38,14 @@ export function heroIdsOf(state, player) {
   )
 }
 
-// The hero the viewing player has selected until they select another: their first one.
 export function firstHeroIdOf(state, player) {
   return Object.keys(state.heroes).find((heroId) => state.heroes[heroId].owner === player) ?? null
+}
+
+// A player's first hero until they select another, and again on each new day.
+export function selectedHeroIdOf(state, player) {
+  const heroId = state.players.selectedHeroIds?.[player]
+  return heroId && !state.heroes[heroId]?.removed ? heroId : (heroIdsOf(state, player)[0] ?? null)
 }
 
 export function isRemoved(state, entityId) {

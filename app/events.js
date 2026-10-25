@@ -10,6 +10,7 @@ export const APP_COMMAND_CAMERA_PAN_BY = 'command.camera.panBy'
 export const APP_COMMAND_CAMERA_CENTER_ON_TILE = 'command.camera.centerOnTile'
 export const APP_COMMAND_END_TURN_REQUESTED = 'command.turn.end.requested'
 export const APP_COMMAND_MUSIC_TOGGLE_REQUESTED = 'command.music.toggle.requested'
+export const APP_COMMAND_HERO_SELECT_REQUESTED = 'command.hero.select.requested'
 export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experience.gain.requested'
 export const APP_COMMAND_HERO_STACK_MOVE_REQUESTED = 'command.hero.stackMove.requested'
 export const APP_COMMAND_HERO_STACK_SPLIT_REQUESTED = 'command.hero.stackSplit.requested'
@@ -39,6 +40,7 @@ export const APP_FACT_INTERACTIONS_QUEUED = 'fact.interactions.queued'
 // The hero interacts with an entity now: right as it stops, or once what was queued before is over.
 export const APP_FACT_INTERACTION_REACHED = 'fact.interaction.reached'
 export const APP_FACT_HERO_MOVED = 'fact.hero.moved'
+export const APP_FACT_HERO_SELECTED = 'fact.hero.selected'
 export const APP_FACT_ROUTE_PLANNED = 'fact.route.planned'
 export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.changed'
 export const APP_FACT_ENTITY_REMOVED = 'fact.entity.removed'
@@ -106,6 +108,7 @@ export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,
+  APP_FACT_HERO_SELECTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_PREVIEW_TARGET_SELECTED,

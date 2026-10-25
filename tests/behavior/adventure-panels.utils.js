@@ -15,6 +15,26 @@ export function getHeroInHeroList(heroName) {
   return within(getHeroList()).getByRole('button', { name: heroName })
 }
 
+// Each hero in the list as "<name> <movement points left>".
+export function readHeroList() {
+  return within(getHeroList())
+    .getAllByRole('listitem')
+    .map((item) => {
+      const name = within(item).getByRole('button').getAttribute('aria-label')
+      const movementPoints = within(item)
+        .getByRole('progressbar', { name: 'Movement points' })
+        .getAttribute('aria-valuenow')
+      return `${name} ${movementPoints}`
+    })
+}
+
+export function readSelectedHeroInHeroList() {
+  return within(getHeroList())
+    .getAllByRole('button')
+    .filter((portrait) => portrait.getAttribute('aria-current') === 'true')
+    .map((portrait) => portrait.getAttribute('aria-label'))
+}
+
 export function readArmySlots(container, listName = 'Army') {
   const army = within(container).getByRole('list', { name: listName })
   return within(army)

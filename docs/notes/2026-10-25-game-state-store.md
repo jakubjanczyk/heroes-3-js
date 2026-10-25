@@ -200,13 +200,12 @@ Everything per player, per hero and per town is keyed by id from the start, even
 6. **Multiple heroes (4.5).** By now this is mostly UI work: the hero list, Next Hero cycling, selecting a hero, the exchange cursor.
 7. **Player system (8.1), later.** More entries in `players`, turn order, `activePlayer` changing and `viewingPlayer` following it.
 
-Steps 1 to 5 are done (see "How it was built" below). Within a step, the old and new ways live side by side for one area at a time only.
+Steps 1 to 5 are done (see "How it was built" below). Step 6 is under way in parts (roadmap 4.5.1 to 4.5.5); 4.5.1, several heroes from the scenario, and 4.5.2, the Next Hero button, are done. Within a step, the old and new ways live side by side for one area at a time only.
 
 ## Open questions
 
 - **Old saved sessions.** Facts saved before step 1 have no `heroId` or `owner`. Proposed: when applying a fact, fill in a missing `heroId` with the scenario's only hero and a missing owner or player with `'red'`. These are true for every session saved so far, and it costs a few lines. The other choice is to bump `EVENT_SCHEMA_VERSION` and start such sessions over.
-- **Selected hero after a reload.** Today selection is a `ui.*` event and not saved: after a reload the hero is selected. With several heroes, and in hot-seat where each player comes back to their own selection, it could become a saved fact held in `players[p].selectedHeroId`. Proposed: keep it unsaved until multiple heroes (step 6), and decide there. Until then each view takes `selectedHeroId` from `ui.hero.selected { heroId }`.
-- **Where `selectedHeroId` lives meanwhile.** Several views need it to know which hero to read. Each keeping it from `ui.hero.selected` is a small copy of screen state. That is accepted, since screen state stays in modules. Revisit if it spreads.
+- **Selected hero after a reload.** Decided in step 6: selecting a hero is the saved fact `fact.hero.selected { heroId, player }`, held in `players.selectedHeroIds[player]` and read with `selectedHeroIdOf(state, player)`. A new day (`fact.turn.ended`) clears it, which selects each player's first hero again. Views read the selection from the store instead of keeping their own copy; `ui.hero.selected` only says the hero, not a town, is what the info box and the map act on.
 
 ## How it was built
 
