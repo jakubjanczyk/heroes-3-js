@@ -90,9 +90,11 @@ export const registerInfoBoxModule = defineModule(
 
     function openHelp() {
       closeHelp()
+      const document = env.document
       helpPopup = openInfoBoxHelpPopup(
-        env.document,
-        env.document.querySelector('.game-shell') ?? env.document.body
+        document,
+        document.querySelector('.game-shell') ?? document.body,
+        document.querySelector('.viewport')
       )
     }
 
