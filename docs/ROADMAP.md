@@ -307,16 +307,34 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 - [ ] Multiple hero types defined in hero data files
 
 ### 4.5 Multiple Heroes
-- [ ] Player can control more than one hero simultaneously
-- [ ] Hero recruitment from tavern in town (costs gold)
-- [ ] Maximum heroes per player (8 in H3)
-- [ ] "Next Hero" button cycles through heroes with remaining MP
-- [ ] Hero list panel: shows all heroes with portrait, name, MP remaining
-- [ ] Click hero in list to select and center camera
-- [ ] Selected hero highlighted on map and in list
-- [ ] Heroes meeting on map: open army exchange screen
-- [ ] Army exchange screen: two rows of 7 slots, drag between heroes
-- [ ] Hero defeated (loses all army): hero removed from map, goes to tavern pool (recruitable again)
+Built in five parts, one PR each. Parts 1 and 2 first; 3 to 5 in any order after them.
+
+#### 4.5.1 Several heroes from the scenario
+- [ ] A scenario can start a player with several heroes; the default scenario has two
+- [ ] All of them on the map and in the hero list (portrait and movement bar each)
+- [ ] Clicking a hero in the list, or on the map, selects them and centres the camera
+- [ ] Selected hero highlighted in the list
+- [ ] Routes, movement points, the hero box, the hero screen and town visits follow the selected hero; each hero spends their own movement points, and ending the day resets them all
+- [ ] A route can't end on another of the player's heroes yet; it stops next to them (meeting is 4.5.3)
+- [ ] The selected hero is saved: after a reload the same hero is selected
+
+#### 4.5.2 Next Hero button
+- [ ] Cycles through the heroes with movement points left, wrapping round
+- [ ] Disabled when none have any left
+
+#### 4.5.3 Heroes meeting
+- [ ] Hovering over another of the player's heroes shows the exchange cursor (1.2)
+- [ ] Walking onto them opens the army exchange screen: two rows of 7 slots, click a stack then where it goes, as in the garrison exchange (6.3.6); splitting stacks there too (4.3)
+- [ ] Dragging stacks between heroes, later
+
+#### 4.5.4 Tavern: hiring heroes
+- [ ] Clicking the Tavern on the town picture opens the tavern window: two heroes from a pool, 2500 gold each
+- [ ] A hired hero appears at the town's entrance with a small starting army
+- [ ] At most 8 heroes per player; no hiring while a hero stands in the town
+
+#### 4.5.5 A defeated hero
+- [ ] A hero who loses a battle leaves the map and the hero list, and goes back to the tavern pool (recruitable again)
+- [ ] Losing the last hero: the defeat case of victory conditions (8.5)
 
 ### 4.6 Movement Points & Terrain
 - [x] 1500 MP per day for now (H3: 1300-2000 from the slowest creature's speed; needs hero army, 4.3)
@@ -1013,7 +1031,7 @@ Sprites and map authoring are intentionally late.
 First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-store.md`. Fog of war and multiple heroes are built on it.
 
 32. Fog of war (7.1)
-33. Multiple heroes (4.5)
+33. Multiple heroes (4.5), in five parts: several heroes from the scenario, Next Hero, meeting, tavern, defeated hero
 34. Hero secondary skills (4.7)
 35. Creature dwellings on map (7.4)
 36. Resource-generating objects (7.5)
