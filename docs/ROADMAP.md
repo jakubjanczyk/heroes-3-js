@@ -998,6 +998,8 @@ Sprites and map authoring are intentionally late.
 31. Info box (2.4b) and adventure map messages (2.4)
 
 ### Phase 5 - "Living World"
+First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-store.md`. Fog of war and multiple heroes are built on it.
+
 32. Fog of war (7.1)
 33. Multiple heroes (4.5)
 34. Hero secondary skills (4.7)
