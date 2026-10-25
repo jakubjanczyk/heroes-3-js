@@ -307,16 +307,33 @@
   display: grid;
   grid-template: none / none;
   place-content: center;
+}
 
-  & .found-box__resources {
-    display: flex;
-    gap: var(--space-md);
+.info-box.mine-box {
+  display: grid;
+  grid-template: none / none;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-sm);
+
+  & .mine-box__name {
     margin: 0;
-    padding: 0;
-    list-style: none;
+    color: var(--hud-text);
+    font:
+      700 1rem / 1 Georgia,
+      "Times New Roman",
+      serif;
   }
+}
 
-  & .found-box__resource {
+.info-box .resource-amounts {
+  display: flex;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & .resource-amounts__item {
     display: grid;
     justify-items: center;
     gap: var(--space-xs);
@@ -327,7 +344,7 @@
     block-size: 2.5rem;
   }
 
-  & .found-box__amount {
+  & .resource-amounts__amount {
     color: var(--hud-text);
     font-variant-numeric: tabular-nums;
   }
