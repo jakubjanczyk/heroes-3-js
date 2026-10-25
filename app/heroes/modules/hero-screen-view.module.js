@@ -1,13 +1,12 @@
-import { findHero } from '../../../game/domain/entity-queries.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
+import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
-  APP_FACT_HERO_EXPERIENCE_GAINED,
-  APP_FACT_HERO_LEVELED_UP,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -30,23 +29,22 @@ function armySlotAt(target) {
 }
 
 export const registerHeroScreenViewModule = defineModule(
-  ({ emit, env }) => {
+  ({ emit, env, state }) => {
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let heroScreen = null
     let rearranging = null
-    let hero = null
-    let heroName = DEFAULT_HERO_NAME
+    let heroId = null
     let definitions = {}
-    let experience = 0
-    let levelUpSkills = []
     let isMapCovered = false
     // Whether this screen covered the map, so closing it uncovers only what it covered: over the
     // town screen, the map stays covered.
     let coversMap = false
 
     function fillHeroScreen() {
-      const heroClass = definitions?.heroClasses?.[definitions?.hero?.heroClass]
+      const hero = heroById(state.get(), heroId)
+      const heroName = hero?.name ?? DEFAULT_HERO_NAME
+      const heroClass = definitions?.heroClasses?.[hero?.heroClass]
       const portrait = heroScreen.querySelector('.hero-screen__portrait')
       portrait.setAttribute('aria-label', heroName)
       portrait.textContent = heroName.charAt(0)
@@ -54,24 +52,20 @@ export const registerHeroScreenViewModule = defineModule(
         heroName.charAt(0)
       heroScreen.querySelector('.hero-screen__name').textContent = heroName
       heroScreen.querySelector('.hero-screen__level').textContent =
-        `Level ${levelForExperience(experience)} ${heroClass?.name ?? ''}`.trim()
+        `Level ${levelForExperience(hero?.experience ?? 0)} ${heroClass?.name ?? ''}`.trim()
 
-      for (const { key, value } of getHeroPrimarySkills({
-        entity: hero,
-        definitions,
-        levelUpSkills
-      })) {
+      for (const { key, value } of getHeroPrimarySkills({ entity: hero, definitions })) {
         heroScreen.querySelector(`[data-skill="${key}"] .hero-screen__skill-value`).textContent =
           String(value)
       }
       heroScreen.querySelector('.hero-screen__experience .hero-screen__box-value').textContent =
-        String(experience)
+        String(hero?.experience ?? 0)
 
       showArmy()
     }
 
     function showArmy() {
-      const army = getHeroArmy({ entity: hero, definitions })
+      const army = getHeroArmy({ entity: heroById(state.get(), heroId), definitions })
       heroScreen.querySelectorAll('.hero-screen__army .army-slot').forEach((slot, index) => {
         const stack = army[index]
         slot.replaceChildren(...(stack ? [renderArmyStack(document, stack)] : []))
@@ -130,30 +124,13 @@ export const registerHeroScreenViewModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            const { scenario } = event.detail
             definitions = event.detail.definitions
-            hero = findHero(scenario.entities)
-            heroName = definitions?.hero?.name ?? DEFAULT_HERO_NAME
-            experience = hero?.experience ?? 0
-            levelUpSkills = []
-          }
-        },
-        {
-          type: APP_FACT_HERO_EXPERIENCE_GAINED,
-          handler: (event) => {
-            experience += event.detail.amount
-          }
-        },
-        {
-          type: APP_FACT_HERO_LEVELED_UP,
-          handler: (event) => {
-            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
+            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
           }
         },
         {
           type: APP_FACT_HERO_ARMY_CHANGED,
-          handler: (event) => {
-            hero = { ...hero, army: event.detail.army }
+          handler: () => {
             if (heroScreen) {
               showArmy()
             }
@@ -243,8 +220,6 @@ export const registerHeroScreenViewModule = defineModule(
     phase: 'view',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_HERO_EXPERIENCE_GAINED,
-      APP_FACT_HERO_LEVELED_UP,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,

@@ -1,24 +1,11 @@
-import { isTown } from '../../../game/domain/entity-queries.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
-import { getEntityName } from '../../../game/heroes/status-bar-text.js'
+import { mineOwner } from '../../../game/heroes/state/map-objects.js'
+import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
+import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
+import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
 import {
-  createTownBuildings,
-  describeTownBox,
-  townBuildingsCatalogue
-} from '../../../game/heroes/town-buildings.js'
-import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
-import {
-  APP_FACT_ENTITY_REMOVED,
-  APP_FACT_HERO_ARMY_CHANGED,
-  APP_FACT_HERO_LEVELED_UP,
-  APP_FACT_HERO_MOVED,
-  APP_FACT_MINE_CAPTURED,
-  APP_FACT_MONSTER_COUNT_CHANGED,
-  APP_FACT_TOWN_BUILDING_BUILT,
-  APP_FACT_TOWN_CAPTURED,
-  APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
   APP_UI_TILE_INFO_REQUESTED
@@ -28,7 +15,6 @@ import { createMapObjects } from '../map-objects.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
 
-const PLAYER_COLOR_NAME = 'Red'
 const SCREEN_MARGIN_PX = 8
 // Keeps a popup opened by a finger clear of the fingertip.
 const FINGER_GAP_PX = 48
@@ -40,16 +26,12 @@ function clamp(value, min, max) {
 // The Heroes 3 right-click popup: shows what is on a tile while the right button (or a finger
 // on a long press) is held, and closes on release.
 export const registerInfoPopupModule = defineModule(
-  ({ env }) => {
+  ({ env, state }) => {
     const document = env.document
     const host = document.querySelector('.game-shell') ?? document.body
-    const mapObjects = createMapObjects()
-    const ownedMineIds = new Set()
-    const ownedTowns = createOwnedTowns()
-    const townBuildings = createTownBuildings()
+    const mapObjects = createMapObjects(state)
 
     let definitions = {}
-    let levelUpSkills = []
     let popup = null
 
     function close() {
@@ -78,7 +60,7 @@ export const registerInfoPopupModule = defineModule(
       const box = document.createElement('div')
       renderHeroBox(box, document, {
         name: getEntityName({ entity, definitions }),
-        skills: getHeroPrimarySkills({ entity, definitions, levelUpSkills }),
+        skills: getHeroPrimarySkills({ entity, definitions }),
         army: getHeroArmy({ entity, definitions })
       })
       popup.appendChild(box)
@@ -92,7 +74,7 @@ export const registerInfoPopupModule = defineModule(
         name: getEntityName({ entity, definitions }),
         ...describeTownBox({
           catalogue: townBuildingsCatalogue(definitions, entity.type),
-          built: townBuildings.builtIn(entity.id)
+          built: builtIn(state.get(), entity.id)
         }),
         garrison: getTownGarrison({ entity, definitions })
       })
@@ -109,11 +91,12 @@ export const registerInfoPopupModule = defineModule(
         popup.appendChild(picture)
       }
 
+      const owner = entity && mineOwner(state.get(), entity.id)
       const lines = getInfoPopupLines({
         entity,
         terrainName: mapObjects.getTerrainName(tile),
         definitions,
-        ownerColorName: entity && ownedMineIds.has(entity.id) ? PLAYER_COLOR_NAME : null
+        ownerColorName: owner ? capitalize(owner) : null
       })
       for (const line of lines) {
         const text = document.createElement('p')
@@ -133,7 +116,7 @@ export const registerInfoPopupModule = defineModule(
 
       if (entity?.kind === 'HERO') {
         fillHeroBox(entity)
-      } else if (entity?.kind === 'TOWN' && ownedTowns.has(entity.id)) {
+      } else if (entity?.kind === 'TOWN' && isViewingPlayersTown(state.get(), entity.id)) {
         fillTownBox(entity)
       } else {
         fillLines(entity, tile)
@@ -150,64 +133,7 @@ export const registerInfoPopupModule = defineModule(
           handler: (event) => {
             mapObjects.onWorldReady(event.detail)
             definitions = event.detail.definitions
-            ownedMineIds.clear()
-            ownedTowns.onWorldReady(event.detail.scenario.entities)
-            townBuildings.onWorldReady(event.detail.scenario.entities.filter(isTown))
-            levelUpSkills = []
             close()
-          }
-        },
-        {
-          type: APP_FACT_HERO_MOVED,
-          handler: (event) => {
-            mapObjects.onHeroMoved(event.detail.to)
-          }
-        },
-        {
-          type: APP_FACT_ENTITY_REMOVED,
-          handler: (event) => {
-            mapObjects.onEntityRemoved(event.detail.entityId)
-          }
-        },
-        {
-          type: APP_FACT_HERO_ARMY_CHANGED,
-          handler: (event) => {
-            mapObjects.onHeroArmyChanged(event.detail.army)
-          }
-        },
-        {
-          type: APP_FACT_MONSTER_COUNT_CHANGED,
-          handler: (event) => {
-            mapObjects.onMonsterCountChanged(event.detail.entityId, event.detail.count)
-          }
-        },
-        {
-          type: APP_FACT_MINE_CAPTURED,
-          handler: (event) => {
-            ownedMineIds.add(event.detail.entityId)
-          }
-        },
-        {
-          type: APP_FACT_TOWN_CAPTURED,
-          handler: (event) => {
-            ownedTowns.onTownCaptured(event.detail.entityId)
-          }
-        },
-        {
-          type: APP_FACT_TOWN_GARRISON_CHANGED,
-          handler: (event) =>
-            mapObjects.onTownGarrisonChanged(event.detail.entityId, event.detail.garrison)
-        },
-        {
-          type: APP_FACT_TOWN_BUILDING_BUILT,
-          handler: (event) => {
-            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
-          }
-        },
-        {
-          type: APP_FACT_HERO_LEVELED_UP,
-          handler: (event) => {
-            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
           }
         },
         {
@@ -227,20 +153,7 @@ export const registerInfoPopupModule = defineModule(
   {
     id: 'info-popup',
     phase: 'view',
-    consumes: [
-      APP_FACT_WORLD_READY,
-      APP_FACT_HERO_MOVED,
-      APP_FACT_ENTITY_REMOVED,
-      APP_FACT_MONSTER_COUNT_CHANGED,
-      APP_FACT_HERO_ARMY_CHANGED,
-      APP_FACT_MINE_CAPTURED,
-      APP_FACT_TOWN_CAPTURED,
-      APP_FACT_TOWN_BUILDING_BUILT,
-      APP_FACT_TOWN_GARRISON_CHANGED,
-      APP_FACT_HERO_LEVELED_UP,
-      APP_UI_TILE_INFO_REQUESTED,
-      APP_UI_TILE_INFO_DISMISSED
-    ],
+    consumes: [APP_FACT_WORLD_READY, APP_UI_TILE_INFO_REQUESTED, APP_UI_TILE_INFO_DISMISSED],
     produces: []
   }
 )

@@ -1,14 +1,19 @@
-import { findHero, isTown } from '../../../game/domain/entity-queries.js'
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
+import {
+  builtIn,
+  townGarrison,
+  townType,
+  viewingPlayersTownIds
+} from '../../../game/heroes/state/towns.js'
 import {
   countTownsByHall,
-  createTownBuildings,
   describeTownBox,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
-import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { firstHeroIdOf, turnNumber, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
@@ -18,7 +23,6 @@ import {
   APP_FACT_MOVE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_BUILDING_BUILT,
-  APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_GARRISON_CHANGED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
@@ -52,20 +56,14 @@ function armySlotAt(target) {
 
 // Registered after the hero panel: on a new day the hero is selected again before the date shows.
 export const registerInfoBoxModule = defineModule(
-  ({ env, config, emit }) => {
+  ({ env, config, emit, state }) => {
     const infoBox = env.document?.getElementById('hero-info')
     const statusBar = env.document?.getElementById('status-bar')
     const longPressMs = config?.longPressMs ?? DEFAULT_LONG_PRESS_MS
-    let hero = null
-    let heroName = DEFAULT_HERO_NAME
+    let heroId = null
     let definitions = {}
-    let levelUpSkills = []
     let isHeroSelected = true
     let selectedTown = null
-    let townsById = new Map()
-    const townBuildings = createTownBuildings()
-    const ownedTowns = createOwnedTowns()
-    let turnNumber = 1
     let isRestoring = false
     let view = 'selection'
     let content = {}
@@ -142,7 +140,7 @@ export const registerInfoBoxModule = defineModule(
         rearranging?.clickSlot(slot, event)
         return
       }
-      send('clicked', { date: calendarDateOfTurn(turnNumber) })
+      send('clicked', { date: calendarDateOfTurn(turnNumber(state.get())) })
     }
 
     function showStatus(text) {
@@ -229,16 +227,19 @@ export const registerInfoBoxModule = defineModule(
       show('Kingdom overview', renderKingdomOverviewBox, {
         halls: countTownsByHall({
           buildings: definitions?.buildings ?? {},
-          builtInTowns: ownedTowns.ids().map((townId) => townBuildings.builtIn(townId))
+          builtInTowns: viewingPlayersTownIds(state.get()).map((townId) =>
+            builtIn(state.get(), townId)
+          )
         })
       })
     }
 
     function renderSelectedHero() {
+      const hero = heroById(state.get(), heroId)
       const army = getHeroArmy({ entity: hero, definitions })
       show('Hero info', renderHeroBox, {
-        name: heroName,
-        skills: getHeroPrimarySkills({ entity: hero, definitions, levelUpSkills }),
+        name: hero?.name ?? DEFAULT_HERO_NAME,
+        skills: getHeroPrimarySkills({ entity: hero, definitions }),
         army
       })
       startRearranging({ hero: army }, (move) => emit(APP_COMMAND_HERO_STACK_MOVE_REQUESTED, move))
@@ -250,13 +251,16 @@ export const registerInfoBoxModule = defineModule(
       }
 
       const { entityId, name } = selectedTown
-      const town = townsById.get(entityId)
-      const garrison = getTownGarrison({ entity: town, definitions })
+      const current = state.get()
+      const garrison = getTownGarrison({
+        entity: { garrison: townGarrison(current, entityId) },
+        definitions
+      })
       show('Town info', renderTownBox, {
         name,
         ...describeTownBox({
-          catalogue: townBuildingsCatalogue(definitions, town?.type),
-          built: townBuildings.builtIn(entityId)
+          catalogue: townBuildingsCatalogue(definitions, townType(current, entityId)),
+          built: builtIn(current, entityId)
         }),
         garrison
       })
@@ -284,33 +288,20 @@ export const registerInfoBoxModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            hero = findHero(event.detail.scenario.entities)
-            const towns = event.detail.scenario.entities.filter(isTown)
-            townsById = new Map(towns.map((town) => [town.id, town]))
-            townBuildings.onWorldReady(towns)
-            ownedTowns.onWorldReady(event.detail.scenario.entities)
-            turnNumber = 1
-            heroName = event.detail.definitions?.hero?.name ?? DEFAULT_HERO_NAME
+            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             definitions = event.detail.definitions
-            levelUpSkills = []
             select(true)
           }
         },
+        { type: APP_FACT_HERO_LEVELED_UP, handler: () => render() },
+        { type: APP_FACT_HERO_ARMY_CHANGED, handler: () => render() },
         {
-          type: APP_FACT_HERO_LEVELED_UP,
+          type: APP_UI_HERO_SELECTED,
           handler: (event) => {
-            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
-            render()
+            heroId = event.detail.heroId ?? heroId
+            select(true)
           }
         },
-        {
-          type: APP_FACT_HERO_ARMY_CHANGED,
-          handler: (event) => {
-            hero = { ...hero, army: event.detail.army }
-            render()
-          }
-        },
-        { type: APP_UI_HERO_SELECTED, handler: () => select(true) },
         {
           type: APP_UI_TOWN_SELECTED,
           handler: (event) => {
@@ -318,32 +309,18 @@ export const registerInfoBoxModule = defineModule(
           }
         },
         {
-          type: APP_FACT_TOWN_CAPTURED,
-          handler: (event) => {
-            ownedTowns.onTownCaptured(event.detail.entityId)
-          }
-        },
-        {
           type: APP_FACT_TOWN_GARRISON_CHANGED,
-          handler: (event) => {
-            const { entityId, garrison } = event.detail
-            townsById.set(entityId, { ...townsById.get(entityId), garrison })
-            renderIfTownSelected(entityId)
-          }
+          handler: (event) => renderIfTownSelected(event.detail.entityId)
         },
         {
           type: APP_FACT_TOWN_BUILDING_BUILT,
-          handler: (event) => {
-            townBuildings.onBuildingBuilt(event.detail.entityId, event.detail.buildingId)
-            renderIfTownSelected(event.detail.entityId)
-          }
+          handler: (event) => renderIfTownSelected(event.detail.entityId)
         },
         {
           type: APP_FACT_TURN_ENDED,
           handler: (event) => {
-            turnNumber = event.detail.turnNumber
             if (!isRestoring) {
-              send('dayStarted', { date: calendarDateOfTurn(turnNumber) })
+              send('dayStarted', { date: calendarDateOfTurn(event.detail.turnNumber) })
             }
           }
         },
@@ -420,7 +397,6 @@ export const registerInfoBoxModule = defineModule(
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_HERO_SELECTED,
       APP_UI_TOWN_SELECTED,
-      APP_FACT_TOWN_CAPTURED,
       APP_FACT_TOWN_GARRISON_CHANGED,
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TURN_ENDED,

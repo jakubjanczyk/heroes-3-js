@@ -209,7 +209,7 @@ Core game loop - resources flow, time passes.
 - [x] At the start of each new day (after end turn), income is calculated and applied
 - [x] Income source: owned mines (daily amounts as in H3, in `game/data/mines.json`)
 - [x] Income source: owned towns, from their highest hall (6.2); see `docs/notes/2026-10-22-town-income.md`
-- [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
+- [x] Income paid on each new day by the game state, from the towns and mines each player owns (replaying captures and turn ends pays it again)
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
 - [ ] Visual feedback when income is added (brief flash/highlight on resource counts)

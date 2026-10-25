@@ -1,55 +1,23 @@
-import {
-  normalizeMovementPoints,
-  toMovementPointsOrNull
-} from '../domain/value-objects/movement-points.js'
+import { toMovementPointsOrNull } from '../domain/value-objects/movement-points.js'
+import { activePlayer, heroIdsOf, heroMovementPoints, turnNumber } from '../state/queries.js'
 
-const DEFAULT_MAX_MOVEMENT_POINTS = 1500
-
-export function createTurnState({ maxMovementPoints = DEFAULT_MAX_MOVEMENT_POINTS } = {}) {
-  const max =
-    normalizeMovementPoints(maxMovementPoints, { min: 1, fallback: DEFAULT_MAX_MOVEMENT_POINTS }) ??
-    DEFAULT_MAX_MOVEMENT_POINTS
-
-  return {
-    maxMovementPoints: max,
-    remainingMovementPoints: max,
-    turnNumber: 1
-  }
-}
-
-export function decideSpendMovementPoints(state, amount) {
+export function decideSpendMovementPoints(state, { heroId, amount }) {
+  const movementPoints = heroMovementPoints(state, heroId)
   const stepCount = toMovementPointsOrNull(amount)
-  if (stepCount === null || stepCount < 1 || stepCount > state.remainingMovementPoints) {
+  if (!movementPoints || stepCount === null || stepCount < 1 || stepCount > movementPoints.value) {
     return null
   }
 
-  return { remainingMovementPoints: state.remainingMovementPoints - stepCount }
+  return { heroId, value: movementPoints.value - stepCount, max: movementPoints.max }
 }
 
+// The new day, and every hero of the player whose turn ends back to full movement points.
 export function decideEndTurn(state) {
   return {
-    turnNumber: state.turnNumber + 1,
-    remainingMovementPoints: state.maxMovementPoints
+    turnNumber: turnNumber(state) + 1,
+    movementPoints: heroIdsOf(state, activePlayer(state)).map((heroId) => {
+      const { max } = heroMovementPoints(state, heroId)
+      return { heroId, value: max, max }
+    })
   }
-}
-
-export function applyMovementPointsChanged(state, value) {
-  const remaining = toMovementPointsOrNull(value)
-  if (remaining === null) {
-    return state
-  }
-
-  return {
-    ...state,
-    remainingMovementPoints: Math.max(0, Math.min(state.maxMovementPoints, remaining))
-  }
-}
-
-export function applyTurnEnded(state, turnNumber) {
-  const parsed = Number(turnNumber)
-  if (!Number.isFinite(parsed)) {
-    return state
-  }
-
-  return { ...state, turnNumber: Math.max(1, Math.floor(parsed)) }
 }

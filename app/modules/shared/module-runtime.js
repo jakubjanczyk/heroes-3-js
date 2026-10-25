@@ -48,7 +48,7 @@ function resolveEventTypes(eventTypes, config) {
   return new Set(isFunction(eventTypes) ? eventTypes(config) : eventTypes)
 }
 
-export function createModuleRuntime({ bus, env, config }, meta = normalizeModuleMeta()) {
+export function createModuleRuntime({ bus, env, config, state }, meta = normalizeModuleMeta()) {
   const disposers = []
   const consumes = resolveEventTypes(meta.consumes, config)
   const produces = resolveEventTypes(meta.produces, config)
@@ -90,12 +90,23 @@ export function createModuleRuntime({ bus, env, config }, meta = normalizeModule
     })
   }
 
-  function emit(type, detail, options) {
+  function assertProduces(type) {
     if (!produces.has(type)) {
       throw new Error(`Module "${meta.id}" emits "${type}" without declaring it in produces`)
     }
+  }
 
+  function emit(type, detail, options) {
+    assertProduces(type)
     bus.emit(type, detail, options)
+  }
+
+  function emitAll(events, options) {
+    for (const { type } of events) {
+      assertProduces(type)
+    }
+
+    bus.emitAll(events, options)
   }
 
   function dispose() {
@@ -111,9 +122,11 @@ export function createModuleRuntime({ bus, env, config }, meta = normalizeModule
     bus,
     env,
     config,
+    state,
     on,
     onDom,
     emit,
+    emitAll,
     registerDisposer,
     dispose
   }

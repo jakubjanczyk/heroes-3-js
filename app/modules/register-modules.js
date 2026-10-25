@@ -89,11 +89,11 @@ function orderModulesByPhase(modules) {
     .map((entry) => entry.registerModule)
 }
 
-export function registerModules({ bus, env, config }) {
+export function registerModules({ bus, env, config, state }) {
   const modules = [...CORE_MODULES, ...(config?.content?.modules ?? [])]
   assertModuleMetadata(modules)
 
-  const runtime = { bus, env, config }
+  const runtime = { bus, env, config, state }
   const disposers = orderModulesByPhase(modules)
     .map((registerModule) => registerModule(runtime))
     .filter((dispose) => typeof dispose === 'function')

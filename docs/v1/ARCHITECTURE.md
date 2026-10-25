@@ -115,7 +115,22 @@ The bus exposes:
 - `getListenerCount(type?)`
 - `emit(type, detail, options?)`
   - `options.log` defaults to `true` and controls event-log persistence
-- `silent` mode flag (`bus.silent = true`) that suppresses listener dispatch while still allowing logging
+- `emitAll([{ type, detail }], options?)`: one commit. Every event of it is recorded and passed to `beforeDispatch` before any listener hears the first.
+- `silent` mode flag (`bus.silent = true`) that suppresses listener dispatch while still allowing logging and `beforeDispatch`
+
+Options of `createBus`:
+
+- `beforeDispatch(event)`: called for each event after recording it and before its listeners. Boot passes the game state store's `apply`, so a listener already reads the new state.
+- `isDeferredWhileDispatching(type)`: boot passes "is a fact". A fact emitted while the listeners of a fact run waits until they are all done, so none of them sees the effects of a fact emitted after the one it handles. Commands and `ui.*` events are heard at once, and so are the facts a command handler emits.
+
+### 4.1a Game state store (`engine/store.js`, `app/game-state.js`)
+
+The current game state, worked out by applying every saved fact in order; see `docs/notes/2026-10-25-game-state-store.md`. It is rebuilt on every load and never saved.
+
+- Built from slices: the core ones in `game/state/core-slices.js` (players; heroes with their owner, tile and movement points; removed map objects; the date) and the content's own (`content.stateSlices` in `game/heroes/state/`: hero details, towns, mines, monster counts, kingdoms).
+- A slice is `{ key, initial(world), on: { [factType]: (slice, detail, { previousState, scenario, definitions, config }) => slice } }`. Only saved fact types may change it (`tests/architecture/game-state.test.js`). `fact.world.ready` starts it afresh.
+- Income, creature growth and the day's building limit follow from `fact.turn.ended` inside the slices, so nothing is emitted unsaved to replay them.
+- Modules read it through `state.get()` and the queries next to the slices (`heroById`, `townIdsOf`, `resourcesOf`, `viewingPlayer`, ...), never write it. Core modules use only the core queries in `game/state/queries.js`.
 
 Debug mode (`createBus({ debug: true, log })`) reports structured entries for:
 
@@ -136,7 +151,8 @@ Event names follow prefixes:
 
 Every runtime module follows this shape:
 
-- primary API: `registerXModule({ bus, env, config })`
+- primary API: `registerXModule({ bus, env, config, state })`
+- setup receives `emit`, `emitAll`, `on` and the read-only `state` handle
 - module registers all its own bus listeners
 - module queries its own DOM dependencies via `env.document`
 
@@ -150,7 +166,7 @@ High-level steps:
 
 1. build optional bus dev panel when `busDebug` is enabled.
 2. initialize `EventLog` (IndexedDB-backed with in-memory fallback).
-3. create bus (`createBus`) unless one is injected.
+3. create the game state store and the bus (`createBus`), with the store applying each fact before its listeners.
 4. compose `env` (`fetch`, `document`, `window`, `AudioCtor`, `eventLog`).
 5. compose `config` (defaults + overrides).
 6. register all modules through `registerModules`.
@@ -187,7 +203,7 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | Module | Source | Phase | Consumes | Produces |
 |---|---|---|---|---|
 | `world` | core | domain | `command.app.start` | `fact.world.ready`, `fact.world.load.failed` |
-| `movement` | core | domain | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `command.route.requested`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` |
+| `movement` | core | domain | `fact.world.ready`, `fact.entity.removed`, `command.route.requested`, `command.move.requested` | `command.turn.spendMovementPoints.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` |
 | `interaction` | core | domain | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `fact.move.finished`, `fact.interactions.queued`, `fact.monster.defeated`, `ui.interaction.modal.opened`, `ui.notice.opened`, `ui.interaction.modal.closed` | `ui.interaction.modal.opened`, `fact.entity.removed`, `fact.interactions.queued`, `fact.interaction.reached`, `fact.battle.started`, `fact.resource.collected`, `fact.town.visited`, `fact.treasureChest.opened`, `command.hero.experience.gain.requested` |
 | `selection` | core | domain | `fact.world.ready`, `fact.hero.movementPoints.changed`, `command.tile.clicked`, `command.move.continue.requested`, `fact.route.planned`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `ui.town.selected`, `ui.hero.selected`, `fact.preview.target.selected`, `fact.preview.cleared` | `command.move.requested`, `command.route.requested`, `ui.preview.updated`, `ui.selectedHero.clicked`, `fact.preview.target.selected`, `fact.preview.cleared` |
 | `camera` | core | domain | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.map.edgeScrolled`, `ui.tile.hovered`, `ui.tile.info.requested`, `ui.tile.info.dismissed`, `ui.world.motion.updated` |
@@ -197,20 +213,20 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | `world-view` | core | view | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none |
 | `interaction-modal` | core | view | `ui.interaction.modal.opened`, `ui.notice.opened` | `ui.interaction.modal.closed` |
 | `keyboard-shortcuts` | core | view | none | none |
-| `turn` | heroes | domain | `fact.world.ready`, `fact.hero.movementPoints.changed`, `fact.turn.ended`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended`, `ui.notice.opened` |
-| `mines` | heroes | domain | `fact.world.ready`, `fact.interaction.reached`, `fact.mine.captured`, `fact.turn.ended` | `fact.mine.captured`, `fact.income.collected` |
-| `hero-levels` | heroes | domain | `fact.world.ready`, `fact.hero.experience.gained`, `command.hero.experience.gain.requested` | `fact.hero.experience.gained`, `fact.hero.leveledUp`, `ui.notice.opened` |
-| `hero-army` | heroes | domain | `fact.world.ready`, `fact.hero.army.changed`, `command.hero.stackMove.requested`, `command.hero.stackSplit.requested` | `fact.hero.army.changed` |
-| `battle` | heroes | domain | `fact.world.ready`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.restore.started`, `ui.restore.completed`, `fact.battle.started`, `fact.battle.stack.moved`, `fact.battle.stack.attacked`, `fact.battle.stack.shot`, `fact.battle.turn.ended`, `fact.battle.stack.waited`, `fact.battle.stack.defended`, `fact.battle.autoCombat.changed`, `fact.battle.finished`, `fact.battle.ended`, `command.battle.stackMove.requested`, `command.battle.stackAttack.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `command.battle.stackDefend.requested`, `command.battle.autoCombat.requested`, `command.battle.retreat.requested`, `command.battle.resultsClose.requested` | `ui.battle.updated`, `fact.battle.stack.moved`, `fact.battle.stack.attacked`, `fact.battle.stack.shot`, `fact.battle.turn.ended`, `fact.battle.stack.waited`, `fact.battle.stack.defended`, `fact.battle.autoCombat.changed`, `fact.battle.finished`, `fact.battle.ended`, `fact.monster.defeated`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.entity.removed`, `command.hero.experience.gain.requested` |
-| `town` | heroes | domain | `fact.world.ready`, `fact.hero.army.changed`, `fact.hero.moved`, `fact.move.started`, `fact.move.finished`, `fact.interaction.reached`, `fact.town.captured`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.town.selected`, `ui.hero.selected`, `command.tile.clicked`, `command.town.open.requested`, `fact.town.visited`, `fact.town.opened`, `command.town.leave.requested`, `fact.town.left`, `command.town.build.requested`, `command.town.recruit.requested`, `command.town.stackMove.requested`, `command.town.garrisonStackMove.requested`, `command.town.stackSplit.requested`, `fact.town.building.built`, `fact.town.creatures.recruited`, `fact.town.garrison.changed`, `fact.turn.ended`, `fact.resource.collected`, `fact.income.collected`, `fact.treasureChest.opened`, `fact.resources.spent` | `ui.town.updated`, `fact.hero.army.changed`, `fact.resources.spent`, `fact.town.building.built`, `fact.town.creatures.recruited`, `fact.town.garrison.changed`, `ui.town.message.opened`, `fact.town.opened`, `fact.town.left`, `fact.town.captured`, `fact.income.collected` |
+| `turn` | heroes | domain | `fact.world.ready`, `fact.move.started`, `fact.move.finished`, `command.turn.spendMovementPoints.requested`, `command.turn.end.requested` | `fact.hero.movementPoints.changed`, `fact.turn.ended`, `ui.notice.opened` |
+| `mines` | heroes | domain | `fact.interaction.reached` | `fact.mine.captured` |
+| `hero-levels` | heroes | domain | `fact.world.ready`, `command.hero.experience.gain.requested` | `fact.hero.experience.gained`, `fact.hero.leveledUp`, `ui.notice.opened` |
+| `hero-army` | heroes | domain | `fact.world.ready`, `command.hero.stackMove.requested`, `command.hero.stackSplit.requested` | `fact.hero.army.changed` |
+| `battle` | heroes | domain | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `fact.battle.started`, `fact.battle.stack.moved`, `fact.battle.stack.attacked`, `fact.battle.stack.shot`, `fact.battle.turn.ended`, `fact.battle.stack.waited`, `fact.battle.stack.defended`, `fact.battle.autoCombat.changed`, `fact.battle.finished`, `fact.battle.ended`, `command.battle.stackMove.requested`, `command.battle.stackAttack.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `command.battle.stackDefend.requested`, `command.battle.autoCombat.requested`, `command.battle.retreat.requested`, `command.battle.resultsClose.requested` | `ui.battle.updated`, `fact.battle.stack.moved`, `fact.battle.stack.attacked`, `fact.battle.stack.shot`, `fact.battle.turn.ended`, `fact.battle.stack.waited`, `fact.battle.stack.defended`, `fact.battle.autoCombat.changed`, `fact.battle.finished`, `fact.battle.ended`, `fact.monster.defeated`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.entity.removed`, `command.hero.experience.gain.requested` |
+| `town` | heroes | domain | `fact.world.ready`, `fact.hero.army.changed`, `fact.move.started`, `fact.move.finished`, `fact.interaction.reached`, `fact.town.captured`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.town.selected`, `ui.hero.selected`, `command.tile.clicked`, `command.town.open.requested`, `fact.town.visited`, `fact.town.opened`, `command.town.leave.requested`, `fact.town.left`, `command.town.build.requested`, `command.town.recruit.requested`, `command.town.stackMove.requested`, `command.town.garrisonStackMove.requested`, `command.town.stackSplit.requested`, `fact.town.building.built`, `fact.town.garrison.changed` | `ui.town.updated`, `fact.hero.army.changed`, `fact.resources.spent`, `fact.town.building.built`, `fact.town.creatures.recruited`, `fact.town.garrison.changed`, `ui.town.message.opened`, `fact.town.opened`, `fact.town.left`, `fact.town.captured` |
 | `owner-flag-view` | heroes | view | `fact.world.ready`, `fact.mine.captured`, `fact.town.captured` | none |
 | `minimap-view` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.mine.captured`, `fact.town.captured`, `ui.camera.updated` | `command.camera.centerOnTile` |
-| `hud` | heroes | view | `ui.preview.updated`, `fact.world.ready`, `fact.turn.ended`, `fact.resource.collected`, `fact.income.collected`, `fact.treasureChest.opened`, `fact.resources.spent` | `command.move.continue.requested`, `command.turn.end.requested` |
-| `status-bar` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `ui.tile.hovered` | none |
+| `hud` | heroes | view | `ui.preview.updated`, `fact.world.ready`, `fact.turn.ended`, `fact.resource.collected`, `fact.treasureChest.opened`, `fact.resources.spent` | `command.move.continue.requested`, `command.turn.end.requested` |
+| `status-bar` | heroes | view | `fact.world.ready`, `ui.tile.hovered` | none |
 | `adventure-cursor` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.hero.movementPoints.changed`, `ui.tile.hovered`, `ui.map.edgeScrolled`, `fact.town.captured`, `ui.town.selected`, `ui.hero.selected` | none |
-| `info-popup` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `fact.monster.count.changed`, `fact.hero.army.changed`, `fact.mine.captured`, `fact.town.captured`, `fact.town.building.built`, `fact.town.garrison.changed`, `fact.hero.leveledUp`, `ui.tile.info.requested`, `ui.tile.info.dismissed` | none |
-| `hero-panel` | heroes | view | `fact.world.ready`, `fact.hero.moved`, `fact.hero.movementPoints.changed`, `ui.town.selected`, `fact.turn.ended`, `fact.town.left` | `command.camera.centerOnTile`, `ui.hero.selected`, `ui.heroScreen.openRequested` |
-| `info-box` | heroes | view | `fact.world.ready`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.hero.selected`, `ui.town.selected`, `fact.town.captured`, `fact.town.garrison.changed`, `fact.town.building.built`, `fact.turn.ended`, `fact.resource.collected`, `fact.mine.captured`, `fact.move.started`, `ui.notice.opened`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.restore.started`, `ui.restore.completed` | `command.hero.stackMove.requested`, `command.town.garrisonStackMove.requested` |
+| `info-popup` | heroes | view | `fact.world.ready`, `ui.tile.info.requested`, `ui.tile.info.dismissed` | none |
+| `hero-panel` | heroes | view | `fact.world.ready`, `fact.hero.movementPoints.changed`, `ui.town.selected`, `fact.turn.ended`, `fact.town.left` | `command.camera.centerOnTile`, `ui.hero.selected`, `ui.heroScreen.openRequested` |
+| `info-box` | heroes | view | `fact.world.ready`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.hero.selected`, `ui.town.selected`, `fact.town.garrison.changed`, `fact.town.building.built`, `fact.turn.ended`, `fact.resource.collected`, `fact.mine.captured`, `fact.move.started`, `ui.notice.opened`, `ui.interaction.modal.opened`, `ui.interaction.modal.closed`, `ui.restore.started`, `ui.restore.completed` | `command.hero.stackMove.requested`, `command.town.garrisonStackMove.requested` |
 | `town-list` | heroes | view | `fact.world.ready`, `fact.town.captured`, `ui.hero.selected` | `ui.town.selected`, `command.camera.centerOnTile`, `command.town.open.requested` |
 | `system-options` | heroes | view | `ui.music.state.changed` | `command.music.toggle.requested`, `command.session.reset.requested`, `ui.systemOptions.opened`, `ui.systemOptions.closed` |
 | `battle-view` | heroes | view | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.battle.updated`, `fact.battle.ended` | `command.battle.autoCombat.requested`, `command.battle.resultsClose.requested`, `command.battle.retreat.requested`, `command.battle.stackAttack.requested`, `command.battle.stackDefend.requested`, `command.battle.stackMove.requested`, `command.battle.stackShoot.requested`, `command.battle.stackWait.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
@@ -218,7 +234,7 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | `town-hall-view` | heroes | view | `ui.town.updated`, `fact.town.building.built`, `fact.town.left` | `command.town.build.requested` |
 | `town-fort-view` | heroes | view | `ui.town.updated`, `fact.town.left` | none |
 | `town-recruit-view` | heroes | view | `ui.town.updated`, `fact.town.creatures.recruited`, `ui.town.message.opened`, `fact.town.left` | `command.town.recruit.requested` |
-| `hero-screen-view` | heroes | view | `fact.world.ready`, `fact.hero.experience.gained`, `fact.hero.leveledUp`, `fact.hero.army.changed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `ui.selectedHero.clicked`, `ui.heroScreen.openRequested` | `command.hero.stackMove.requested`, `command.hero.stackSplit.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
+| `hero-screen-view` | heroes | view | `fact.world.ready`, `fact.hero.army.changed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `ui.selectedHero.clicked`, `ui.heroScreen.openRequested` | `command.hero.stackMove.requested`, `command.hero.stackSplit.requested`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered` |
 | `music` | heroes | view | `fact.world.ready`, `command.music.toggle.requested` | `ui.music.state.changed` |
 <!-- module-contracts:end -->
 

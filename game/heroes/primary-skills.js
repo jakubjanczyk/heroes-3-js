@@ -9,9 +9,10 @@ export const PRIMARY_SKILLS = Object.freeze([
 
 // A hero starts with their class's primary skills; a scenario may set any of them instead, as
 // the Heroes 3 map editor's "Customize primary skills" does. Each level-up adds 1 to the skill
-// it rolled; `levelUpSkills` lists those skills (e.g. ['defense', 'attack']).
-export function getHeroPrimarySkills({ entity, definitions, levelUpSkills = [] }) {
-  const heroClass = definitions?.heroClasses?.[definitions?.hero?.heroClass]
+// it rolled; the hero's `levelUpSkills` lists those skills (e.g. ['defense', 'attack']).
+export function getHeroPrimarySkills({ entity, definitions }) {
+  const heroClass = definitions?.heroClasses?.[entity?.heroClass]
+  const levelUpSkills = entity?.levelUpSkills ?? []
   return PRIMARY_SKILLS.map(({ key, name }) => ({
     key,
     name,

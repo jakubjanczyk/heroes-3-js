@@ -65,11 +65,13 @@ A slice:
 {
   key: 'towns',
   initial: ({ scenario, definitions, config }) => ({ … }),
-  apply: (towns, fact, previousState) => towns
+  on: {
+    'fact.town.captured': (towns, detail, previousState) => towns
+  }
 }
 ```
 
-- `apply` returns the same object when the fact doesn't concern the slice.
+- `on` names the facts the slice applies, so a test checks they are all saved fact types. A fact it doesn't name leaves the slice as it is.
 - `previousState` is the whole state before this fact, read only. Income on a new day, for example, reads the towns' buildings and the mines' owners. A slice never writes another slice.
 - `config` is there because the starting movement points come from `config.maxMovementPoints`.
 
@@ -104,7 +106,8 @@ The rules:
 - **Never read the state back after emitting.** A command handler reads the state once, works out every fact it leads to, and emits them. Today `hero-levels` emits `fact.hero.experience.gained` and then reads the new experience to find the levels gained; it works out the levels from the experience before and the amount instead.
 - **What the emitter needs, it takes from its own decision.** A module that has just decided something knows the outcome: it can update its own screen state from the facts it built (an optimistic update) without waiting for them to come back, and check against the fact when it arrives.
 - **A decision is emitted as one commit:** `emitAll([...facts])`, with `emit(fact)` a commit of one. The bus applies every fact of the commit, saves them, then notifies the listeners of each fact in order. Every listener sees the state after the whole commit, never a half-done recruit.
-- **Facts emitted by a listener form a new commit,** queued and run once the listeners of the current commit are done. So no listener sees the effects of a fact emitted after the one it's handling.
+- **Facts emitted by a fact's listener form a new commit,** queued and run once the listeners of the current commit are done. So no listener sees the effects of a fact emitted after the one it's handling.
+- Commands and `ui.*` events are heard at once, and so are the facts a command handler emits. Queuing those too changed the order in which views heard `ui.hero.selected`, and broke the battle, whose command handlers read the battle back after emitting its facts.
 
 Open question: whether replay needs to know which facts were one commit. With each saved entry carrying a `tx` id, replay can apply and notify a whole commit at once, exactly as live play did. Without it, replay applies the facts of a commit one by one, and a listener during replay may see the half-done state. Views that render again at `ui.restore.completed` don't care; anything that decides during replay would. Start without `tx` and add it if a case shows up.
 
@@ -198,10 +201,23 @@ Everything per player, per hero and per town is keyed by id from the start, even
 6. **Multiple heroes (4.5).** By now this is mostly UI work: the hero list, Next Hero cycling, selecting a hero, the exchange cursor.
 7. **Player system (8.1), later.** More entries in `players`, turn order, `activePlayer` changing and `viewingPlayer` following it.
 
-Steps 2 to 4 can each be a PR. Within a step, the old and new ways live side by side for one area at a time only.
+Steps 1 to 4 are done (see "How it was built" below). Within a step, the old and new ways live side by side for one area at a time only.
 
 ## Open questions
 
 - **Old saved sessions.** Facts saved before step 1 have no `heroId` or `owner`. Proposed: when applying a fact, fill in a missing `heroId` with the scenario's only hero and a missing owner or player with `'red'`. These are true for every session saved so far, and it costs a few lines. The other choice is to bump `EVENT_SCHEMA_VERSION` and start such sessions over.
 - **Selected hero after a reload.** Today selection is a `ui.*` event and not saved: after a reload the hero is selected. With several heroes, and in hot-seat where each player comes back to their own selection, it could become a saved fact held in `players[p].selectedHeroId`. Proposed: keep it unsaved until multiple heroes (step 6), and decide there. Until then each view takes `selectedHeroId` from `ui.hero.selected { heroId }`.
 - **Where `selectedHeroId` lives meanwhile.** Several views need it to know which hero to read. Each keeping it from `ui.hero.selected` is a small copy of screen state. That is accepted, since screen state stays in modules. Revisit if it spreads.
+
+## How it was built
+
+Where steps 1 to 4 differ from the plan above:
+
+- **Movement points are core.** They sit on the core `heroes` slice with `owner` and `tile`, since the core `movement` and `selection` modules need them and may read only core queries. The starting value comes from `config.maxMovementPoints`, so the turn module no longer emits it unsaved on `fact.world.ready`.
+- **Slice handlers get the world.** The third argument is `{ previousState, scenario, definitions, config }`, since income and creature growth need the definitions.
+- **`fact.income.collected` is gone.** Nothing listened to it once the resource bar read the store; views render again on `fact.turn.ended`.
+- **`hero.json` keeps the defaults.** The scenario's hero now has its own `name`, `heroClass` and `owner`; a hero without them takes `hero.json`'s, which is what behavior tests rely on.
+- **Interaction facts name their hero.** `fact.interaction.reached`, `fact.interactions.queued` and the outcome facts (`fact.battle.started`, `fact.resource.collected`, `fact.town.visited`, `fact.treasureChest.opened`) carry `heroId`, so a capture or a pickup goes to the hero's owner.
+- **Views keep `selectedHeroId`** as screen state: the viewing player's first hero at `fact.world.ready`, then `ui.hero.selected { heroId }`.
+- **Commits:** ending the day (`fact.turn.ended` with every hero's movement points), recruiting, building and the garrison exchange each go out with `emitAll`.
+

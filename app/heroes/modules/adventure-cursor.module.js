@@ -8,7 +8,8 @@ import {
   getAdventureCursor,
   getScrollCursor
 } from '../../../game/heroes/adventure-cursor.js'
-import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
+import { heroMovementPoints } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -30,21 +31,19 @@ import { createMapObjects } from '../map-objects.js'
 // It plans the route to the tile itself rather than asking the movement module, so moving the
 // mouse over the map puts nothing on the bus but `ui.tile.hovered`.
 export const registerAdventureCursorModule = defineModule(
-  ({ env, config }) => {
+  ({ env, config, state }) => {
     const viewport = env.document.querySelector('.viewport')
     const movementRules = resolveMovementRules(config?.content?.movementRules)
-    const mapObjects = createMapObjects()
-    const ownedTowns = createOwnedTowns()
+    const mapObjects = createMapObjects(state)
     const heroRoutes = createHeroRoutes({
       entityBehaviors: createEntityBehaviors(config?.content?.entityBehaviors),
-      movementRules
+      movementRules,
+      getState: state.get
     })
 
     let map = null
     let routePlanner = null
     let hoveredTile = null
-    let remainingMovementPoints = config.maxMovementPoints
-    let maxMovementPoints = config.maxMovementPoints
     let tileCursor = ADVENTURE_CURSOR.ARROW
     let scrollDirection = null
     let isTownSelected = false
@@ -61,7 +60,7 @@ export const registerAdventureCursorModule = defineModule(
     function opensTown(entity) {
       return (
         isTown(entity) &&
-        ownedTowns.has(entity.id) &&
+        isViewingPlayersTown(state.get(), entity.id) &&
         (isTownSelected || !sameTile(hoveredTile, entity.tile))
       )
     }
@@ -92,13 +91,14 @@ export const registerAdventureCursorModule = defineModule(
     function showCursorForRoute() {
       const path = routePlanner.planRoute(hoveredTile)
       const pathToBattle = path ? routePlanner.getPathToBattle(path) : null
+      const movementPoints = heroMovementPoints(state.get(), heroRoutes.getHero()?.id)
       const travelDays = path
         ? countTravelDays({
             map,
             path: pathToBattle ?? path,
             chargeSteps: movementRules.chargeSteps,
-            remainingMovementPoints,
-            maxMovementPoints
+            remainingMovementPoints: movementPoints?.value ?? config.maxMovementPoints,
+            maxMovementPoints: movementPoints?.max ?? config.maxMovementPoints
           })
         : null
       const entity = mapObjects.getEntityAt(hoveredTile)
@@ -113,7 +113,6 @@ export const registerAdventureCursorModule = defineModule(
             mapObjects.onWorldReady(event.detail)
             heroRoutes.onWorldReady(event.detail)
             routePlanner = heroRoutes.createMovementSystem()
-            ownedTowns.onWorldReady(event.detail.scenario.entities)
             isTownSelected = false
             map = event.detail.map
             hoveredTile = null
@@ -123,27 +122,15 @@ export const registerAdventureCursorModule = defineModule(
         },
         {
           type: APP_FACT_HERO_MOVED,
-          handler: (event) => {
-            mapObjects.onHeroMoved(event.detail.to)
-            heroRoutes.onHeroMoved(event.detail)
-            updateCursor()
-          }
+          handler: () => updateCursor()
         },
         {
           type: APP_FACT_ENTITY_REMOVED,
-          handler: (event) => {
-            mapObjects.onEntityRemoved(event.detail.entityId)
-            heroRoutes.onEntityRemoved(event.detail.entityId)
-            updateCursor()
-          }
+          handler: () => updateCursor()
         },
         {
           type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-          handler: (event) => {
-            remainingMovementPoints = event.detail.value
-            maxMovementPoints = event.detail.max ?? maxMovementPoints
-            updateCursor()
-          }
+          handler: () => updateCursor()
         },
         {
           type: APP_UI_TILE_HOVERED,
@@ -161,10 +148,7 @@ export const registerAdventureCursorModule = defineModule(
         },
         {
           type: APP_FACT_TOWN_CAPTURED,
-          handler: (event) => {
-            ownedTowns.onTownCaptured(event.detail.entityId)
-            updateCursor()
-          }
+          handler: () => updateCursor()
         },
         {
           type: APP_UI_TOWN_SELECTED,

@@ -8,7 +8,7 @@ const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   TOWN: 'towns'
 })
 
-function capitalize(text) {
+export function capitalize(text) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
@@ -16,7 +16,7 @@ function capitalize(text) {
 // scenario names by its own name ("Whitemoon").
 export function getEntityName({ entity, definitions }) {
   if (entity.kind === 'HERO') {
-    return definitions.hero.name
+    return entity.name ?? definitions.hero.name
   }
   if (entity.kind === 'TOWN' && entity.name) {
     return entity.name

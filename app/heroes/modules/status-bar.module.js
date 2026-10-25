@@ -1,19 +1,13 @@
 import { getStatusBarText } from '../../../game/heroes/status-bar-text.js'
-import {
-  APP_FACT_ENTITY_REMOVED,
-  APP_FACT_HERO_MOVED,
-  APP_FACT_MONSTER_COUNT_CHANGED,
-  APP_FACT_WORLD_READY,
-  APP_UI_TILE_HOVERED
-} from '../../events.js'
+import { APP_FACT_WORLD_READY, APP_UI_TILE_HOVERED } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
 // The Heroes 3 status bar under the map: names whatever the mouse is over.
 export const registerStatusBarModule = defineModule(
-  ({ env }) => {
+  ({ env, state }) => {
     const statusBar = env.document.getElementById('status-bar')
-    const mapObjects = createMapObjects()
+    const mapObjects = createMapObjects(state)
 
     let definitions = {}
 
@@ -28,24 +22,6 @@ export const registerStatusBarModule = defineModule(
           handler: (event) => {
             mapObjects.onWorldReady(event.detail)
             definitions = event.detail.definitions
-          }
-        },
-        {
-          type: APP_FACT_HERO_MOVED,
-          handler: (event) => {
-            mapObjects.onHeroMoved(event.detail.to)
-          }
-        },
-        {
-          type: APP_FACT_ENTITY_REMOVED,
-          handler: (event) => {
-            mapObjects.onEntityRemoved(event.detail.entityId)
-          }
-        },
-        {
-          type: APP_FACT_MONSTER_COUNT_CHANGED,
-          handler: (event) => {
-            mapObjects.onMonsterCountChanged(event.detail.entityId, event.detail.count)
           }
         },
         {
@@ -72,13 +48,7 @@ export const registerStatusBarModule = defineModule(
   {
     id: 'status-bar',
     phase: 'view',
-    consumes: [
-      APP_FACT_WORLD_READY,
-      APP_FACT_HERO_MOVED,
-      APP_FACT_ENTITY_REMOVED,
-      APP_FACT_MONSTER_COUNT_CHANGED,
-      APP_UI_TILE_HOVERED
-    ],
+    consumes: [APP_FACT_WORLD_READY, APP_UI_TILE_HOVERED],
     produces: []
   }
 )

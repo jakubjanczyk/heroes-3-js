@@ -1,4 +1,3 @@
-import { findHero } from '../../../game/domain/entity-queries.js'
 import {
   attackStack,
   createBattle,
@@ -30,6 +29,8 @@ import {
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
+import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
@@ -52,7 +53,6 @@ import {
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
-  APP_FACT_HERO_LEVELED_UP,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_WORLD_READY,
@@ -73,13 +73,12 @@ const sleep = (ms) =>
 // The battle the hero is fighting. The monster's stacks play by `battle-ai.js`, and so do the
 // hero's while Auto combat is on.
 export const registerBattleModule = defineModule(
-  ({ emit, config }) => {
+  ({ emit, config, state }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
     const random = typeof config?.random === 'function' ? config.random : Math.random
 
-    let hero = null
+    let heroId = null
     let definitions = {}
-    let levelUpSkills = []
     let started = null
     let battle = null
     let isRestoring = false
@@ -90,8 +89,12 @@ export const registerBattleModule = defineModule(
     // How the battle went, once it is over and its results window waits for the player.
     let outcome = null
 
+    function heroNameOf() {
+      return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
+    }
+
     function describeResults() {
-      const heroName = definitions.hero?.name ?? DEFAULT_HERO_NAME
+      const heroName = heroNameOf()
       const experience = outcome === BATTLE_OUTCOME_WON ? getExperienceForWin(battle) : 0
       return describeBattleResults({
         battle,
@@ -106,6 +109,7 @@ export const registerBattleModule = defineModule(
       if (moving) {
         emit(APP_UI_BATTLE_UPDATED, {
           tile: started.tile,
+          heroName: heroNameOf(),
           stacks: withHexes(
             moving.battle.stacks.map((stack) =>
               stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
@@ -131,6 +135,7 @@ export const registerBattleModule = defineModule(
       const canAct = isPlayersTurn()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
+        heroName: heroNameOf(),
         stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
@@ -149,12 +154,12 @@ export const registerBattleModule = defineModule(
     function winBattle() {
       const { entityId, entityType, tile } = started
       const experience = getExperienceForWin(battle)
-      const army = getHeroArmyAfterBattle(battle, hero?.army ?? [])
+      const army = getHeroArmyAfterBattle(battle, heroById(state.get(), heroId)?.army ?? [])
       emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'attacker' })
-      emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: hero.id, army })
+      emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
       emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
       emit(APP_FACT_ENTITY_REMOVED, { entityId })
-      emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { amount: experience })
+      emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
     }
 
     // Beaten or retreated: the hero leaves the map and the monster keeps what it has left.
@@ -165,7 +170,7 @@ export const registerBattleModule = defineModule(
         .reduce((sum, stack) => sum + stack.count, 0)
       emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'defender' })
       emit(APP_FACT_MONSTER_COUNT_CHANGED, { entityId, count })
-      emit(APP_FACT_ENTITY_REMOVED, { entityId: hero.id })
+      emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
     }
 
     function playComputerTurn(stack) {
@@ -319,25 +324,12 @@ export const registerBattleModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            hero = findHero(event.detail.scenario.entities)
+            heroId = null
             definitions = event.detail.definitions ?? {}
-            levelUpSkills = []
             started = null
             battle = null
             autoCombat = false
             outcome = null
-          }
-        },
-        {
-          type: APP_FACT_HERO_LEVELED_UP,
-          handler: (event) => {
-            levelUpSkills = [...levelUpSkills, event.detail.primarySkill]
-          }
-        },
-        {
-          type: APP_FACT_HERO_ARMY_CHANGED,
-          handler: (event) => {
-            hero = { ...hero, army: event.detail.army }
           }
         },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
@@ -354,7 +346,10 @@ export const registerBattleModule = defineModule(
           type: APP_FACT_BATTLE_STARTED,
           handler: (event) => {
             started = event.detail
-            const skills = getHeroPrimarySkills({ entity: hero, definitions, levelUpSkills })
+            // A battle saved before battles named their hero was the only hero's.
+            heroId = started.heroId ?? firstHeroIdOf(state.get(), viewingPlayer(state.get()))
+            const hero = heroById(state.get(), heroId)
+            const skills = getHeroPrimarySkills({ entity: hero, definitions })
             battle = createBattle({
               heroArmy: hero?.army,
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
@@ -569,8 +564,6 @@ export const registerBattleModule = defineModule(
     phase: 'domain',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_HERO_LEVELED_UP,
-      APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
       APP_FACT_BATTLE_STARTED,

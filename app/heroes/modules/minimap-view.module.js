@@ -1,8 +1,10 @@
 import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js'
 import { clamp } from '../../../engine/math-utils.js'
-import { findHero, isMine, isTown } from '../../../game/domain/entity-queries.js'
+import { isMine, isTown } from '../../../game/domain/entity-queries.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
-import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { mineOwner } from '../../../game/heroes/state/map-objects.js'
+import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
+import { firstHeroIdOf, heroTile, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_MOVED,
@@ -22,7 +24,7 @@ function clearNode(node) {
 }
 
 export const registerMinimapViewModule = defineModule(
-  ({ emit, env }) => {
+  ({ emit, env, state }) => {
     const minimapMap = env.document?.getElementById('minimap-map')
     const minimapTerrain = env.document?.getElementById('minimap-terrain')
     const minimapTowns = env.document?.getElementById('minimap-towns')
@@ -33,10 +35,8 @@ export const registerMinimapViewModule = defineModule(
     let map = null
     let staticOccupancy = null
     let entitiesById = new Map()
-    let ownedMineIds = new Set()
     let mineTilesByMineId = new Map()
     let towns = []
-    const ownedTowns = createOwnedTowns()
     let heroMarker = null
     let isDragging = false
     let lastCameraUpdate = null
@@ -58,7 +58,9 @@ export const registerMinimapViewModule = defineModule(
       const mine = getMineCovering(tile)
       if (mine) {
         classNames.push(
-          ownedMineIds.has(mine.id) ? 'minimap-tile--player' : 'minimap-tile--neutral'
+          mineOwner(state.get(), mine.id) === viewingPlayer(state.get())
+            ? 'minimap-tile--player'
+            : 'minimap-tile--neutral'
         )
       }
 
@@ -110,7 +112,7 @@ export const registerMinimapViewModule = defineModule(
 
       for (const town of towns) {
         const marker = createElement('div')
-        marker.className = ownedTowns.has(town.id)
+        marker.className = isViewingPlayersTown(state.get(), town.id)
           ? 'minimap-town-marker minimap-town-marker--player'
           : 'minimap-town-marker'
         marker.dataset.entityId = town.id
@@ -259,9 +261,7 @@ export const registerMinimapViewModule = defineModule(
             map = event.detail.map
             staticOccupancy = event.detail.staticOccupancy ?? null
             entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
-            ownedMineIds = new Set()
             towns = entities.filter(isTown)
-            ownedTowns.onWorldReady(entities)
 
             if (minimapMap && map?.width > 0 && map?.height > 0) {
               setStyleVar(minimapMap, '--minimap-columns', String(map.width))
@@ -272,7 +272,9 @@ export const registerMinimapViewModule = defineModule(
 
             renderTerrain()
             renderTowns()
-            renderHero(findHero(entities))
+            const current = state.get()
+            const heroId = firstHeroIdOf(current, viewingPlayer(current))
+            renderHero(heroId && { id: heroId, tile: heroTile(current, heroId) })
             updateViewportBox(lastCameraUpdate)
           }
         },
@@ -294,17 +296,11 @@ export const registerMinimapViewModule = defineModule(
         },
         {
           type: APP_FACT_MINE_CAPTURED,
-          handler: (event) => {
-            ownedMineIds.add(event.detail.entityId)
-            renderMineTiles(event.detail.entityId)
-          }
+          handler: (event) => renderMineTiles(event.detail.entityId)
         },
         {
           type: APP_FACT_TOWN_CAPTURED,
-          handler: (event) => {
-            ownedTowns.onTownCaptured(event.detail.entityId)
-            renderTowns()
-          }
+          handler: () => renderTowns()
         },
         {
           type: APP_UI_CAMERA_UPDATED,

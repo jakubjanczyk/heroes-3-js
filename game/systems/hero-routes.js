@@ -1,35 +1,43 @@
-import { findHero } from '../domain/entity-queries.js'
 import { indexGuardedTiles } from '../domain/movement/guards.js'
-import { applyEntityRemoved, NO_REMOVED_ENTITIES } from '../domain/removed-entities.js'
+import { NO_REMOVED_ENTITIES } from '../domain/removed-entities.js'
 import { getOccupantAt } from '../domain/tile-occupant.js'
+import { firstHeroIdOf, heroTile, viewingPlayer } from '../state/queries.js'
 import { createMovementSystem } from './movement-system.js'
 
 // What the hero's routes depend on: where it stands, what is still on the map and which tiles
-// monsters guard. Kept up to date from facts, so the module moving the hero and a view that only
-// plans routes, such as the cursor, each keep their own copy.
-export function createHeroRoutes({ entityBehaviors, movementRules }) {
+// monsters guard, read from the game state.
+export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
   let map = null
   let staticOccupancy = null
   let heroId = null
-  let heroTile = null
-  let removedIds = NO_REMOVED_ENTITIES
   let guards = []
+  let indexedRemovedIds = null
+  let removedIds = NO_REMOVED_ENTITIES
   let guardedTiles = indexGuardedTiles([], map)
 
-  const occupancy = {
-    getAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds })
+  function currentRemovedIds() {
+    const ids = getState().mapObjects.removedEntityIds
+    if (ids !== indexedRemovedIds) {
+      indexedRemovedIds = ids
+      removedIds = new Set(ids)
+      guardedTiles = indexGuardedTiles(
+        guards.filter((guard) => !removedIds.has(guard.id)),
+        map
+      )
+    }
+
+    return removedIds
   }
 
-  function indexGuards() {
-    guardedTiles = indexGuardedTiles(
-      guards.filter((guard) => !removedIds.has(guard.id)),
-      map
-    )
+  const occupancy = {
+    getAt: (tile) => getOccupantAt({ tile, staticOccupancy, removedIds: currentRemovedIds() })
   }
 
   // null once the hero is lost in battle.
   function getHero() {
-    return heroId && !removedIds.has(heroId) ? { id: heroId, tile: heroTile } : null
+    return heroId && !currentRemovedIds().has(heroId)
+      ? { id: heroId, tile: heroTile(getState(), heroId) }
+      : null
   }
 
   return {
@@ -38,21 +46,9 @@ export function createHeroRoutes({ entityBehaviors, movementRules }) {
     onWorldReady(world) {
       map = world.map
       staticOccupancy = world.staticOccupancy
-      const hero = findHero(world.scenario.entities)
-      heroId = hero?.id ?? null
-      heroTile = hero?.tile ?? null
-      removedIds = NO_REMOVED_ENTITIES
+      heroId = firstHeroIdOf(getState(), viewingPlayer(getState()))
       guards = world.scenario.entities.filter(entityBehaviors.guardsSurroundings)
-      indexGuards()
-    },
-    onHeroMoved({ heroId: movedHeroId, to }) {
-      if (movedHeroId === heroId && to) {
-        heroTile = to
-      }
-    },
-    onEntityRemoved(entityId) {
-      removedIds = applyEntityRemoved(removedIds, entityId)
-      indexGuards()
+      indexedRemovedIds = null
     },
     // A movement system over the current world; `options` adds what moving the hero needs.
     createMovementSystem(options = {}) {
@@ -61,7 +57,10 @@ export function createHeroRoutes({ entityBehaviors, movementRules }) {
         map,
         occupancy,
         entityBehaviors,
-        getGuardsAt: (tile) => guardedTiles.getGuardsAt(tile),
+        getGuardsAt: (tile) => {
+          currentRemovedIds()
+          return guardedTiles.getGuardsAt(tile)
+        },
         getStepCost: (from, to) => movementRules.stepCost({ map, from, to }),
         ...options
       })
