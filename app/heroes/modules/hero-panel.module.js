@@ -15,6 +15,7 @@ import {
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_MOVED,
+  APP_FACT_MINE_CAPTURED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -34,6 +35,7 @@ import {
   APP_UI_TOWN_SELECTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { renderCapturedMineBox } from '../presentation/captured-mine-box.js'
 import { renderDateBox } from '../presentation/date-box.js'
 import { renderFoundResourcesBox } from '../presentation/found-resources-box.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
@@ -150,6 +152,7 @@ export const registerHeroPanelModule = defineModule(
 
     const INFO_BOX_RENDERERS = {
       resources: () => renderFoundResources(),
+      mine: () => renderCapturedMine(),
       date: () => renderDate(),
       kingdom: () => renderKingdomOverview(),
       selection: () => (isHeroSelected ? renderSelectedHero() : renderSelectedTown())
@@ -163,6 +166,13 @@ export const registerHeroPanelModule = defineModule(
       if (heroInfo) {
         heroInfo.setAttribute('aria-label', 'Resources found')
         renderFoundResourcesBox(heroInfo, env.document, infoBoxContent.resources)
+      }
+    }
+
+    function renderCapturedMine() {
+      if (heroInfo) {
+        heroInfo.setAttribute('aria-label', 'Mine captured')
+        renderCapturedMineBox(heroInfo, env.document, infoBoxContent.mine)
       }
     }
 
@@ -339,6 +349,19 @@ export const registerHeroPanelModule = defineModule(
           }
         },
         {
+          type: APP_FACT_MINE_CAPTURED,
+          handler: (event) => {
+            const mine = definitions?.mines?.[event.detail.entityType]
+            if (!isRestoring && mine) {
+              const { resource, amount } = mine.income
+              const name = definitions?.resources?.[resource]?.name ?? resource
+              sendToInfoBox('mineCaptured', {
+                mine: { name: mine.name, income: { type: resource, name, amount } }
+              })
+            }
+          }
+        },
+        {
           type: APP_FACT_MOVE_STARTED,
           handler: () => sendToInfoBox('moveStarted')
         },
@@ -405,6 +428,7 @@ export const registerHeroPanelModule = defineModule(
       APP_FACT_TURN_ENDED,
       APP_FACT_TOWN_LEFT,
       APP_FACT_RESOURCE_COLLECTED,
+      APP_FACT_MINE_CAPTURED,
       APP_FACT_MOVE_STARTED,
       APP_UI_NOTICE_OPENED,
       APP_UI_INTERACTION_MODAL_OPENED,

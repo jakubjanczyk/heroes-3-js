@@ -333,6 +333,45 @@
   }
 }
 
+.info-box.mine-box {
+  display: grid;
+  grid-template: none / none;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-sm);
+
+  & .mine-box__name {
+    margin: 0;
+    color: var(--hud-text);
+    font:
+      700 1rem / 1 Georgia,
+      "Times New Roman",
+      serif;
+  }
+
+  & .mine-box__income {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .mine-box__resource {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-xs);
+  }
+
+  & .resource-icon {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+  }
+
+  & .mine-box__amount {
+    color: var(--hud-text);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 /* The new day and new week animations play once, in 1.5 seconds of about eight frames. */
 .info-box.date-box {
   display: grid;
