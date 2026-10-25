@@ -5,6 +5,7 @@ import { registerAdventureCursorModule } from './modules/adventure-cursor.module
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
 import { registerHeroArmyModule } from './modules/hero-army.module.js'
+import { registerHeroExchangeViewModule } from './modules/hero-exchange-view.module.js'
 import { registerHeroLevelsModule } from './modules/hero-levels.module.js'
 import { registerHeroPanelModule } from './modules/hero-panel.module.js'
 import { registerHeroScreenViewModule } from './modules/hero-screen-view.module.js'
@@ -59,6 +60,7 @@ export const heroesAppContent = Object.freeze({
     registerTownFortViewModule,
     registerTownRecruitViewModule,
     registerHeroScreenViewModule,
+    registerHeroExchangeViewModule,
     registerMusicModule
   ])
 })

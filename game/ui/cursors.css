@@ -79,6 +79,26 @@ button {
     url("../../assets/cursors/visit-4.png") 16 16,
     pointer;
 }
+.viewport[data-cursor="exchange"] {
+  cursor:
+    url("../../assets/cursors/exchange.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="exchange-2"] {
+  cursor:
+    url("../../assets/cursors/exchange-2.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="exchange-3"] {
+  cursor:
+    url("../../assets/cursors/exchange-3.png") 16 16,
+    pointer;
+}
+.viewport[data-cursor="exchange-4"] {
+  cursor:
+    url("../../assets/cursors/exchange-4.png") 16 16,
+    pointer;
+}
 
 /* While the map scrolls from its edge: an arrow pointing the way it scrolls, its tip the hotspot. */
 .viewport[data-cursor="scroll-n"] {

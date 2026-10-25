@@ -137,12 +137,6 @@ export const registerSelectionModule = defineModule(
     }
 
     function clickTile(tile) {
-      const otherHeroId = otherOwnHeroAt(tile)
-      if (otherHeroId) {
-        requestSelectHero(otherHeroId)
-        return
-      }
-
       const selectedHeroTile = heroTile(state.get(), selectedHeroId())
       if (selectedHeroTile && sameTile(selectedHeroTile, tile)) {
         emit(APP_UI_SELECTED_HERO_CLICKED, {})
@@ -238,6 +232,12 @@ export const registerSelectionModule = defineModule(
             }
 
             requestedTile = null
+            // Another of the player's heroes the selected one can't get to is selected instead.
+            const otherHeroId = path ? null : otherOwnHeroAt(tile)
+            if (otherHeroId) {
+              requestSelectHero(otherHeroId)
+              return
+            }
             if (!path) {
               requestClearRoute()
               return

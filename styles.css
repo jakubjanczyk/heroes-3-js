@@ -18,4 +18,5 @@
 @import url("./game/ui/battle.css") layer(ui);
 @import url("./game/ui/town.css") layer(ui);
 @import url("./game/ui/hero-screen.css") layer(ui);
+@import url("./game/ui/hero-exchange.css") layer(ui);
 @import url("./app/modules/dev/bus-dev-panel.css") layer(ui);

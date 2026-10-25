@@ -1,5 +1,6 @@
 import {
   INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
+  INTERACTION_OUTCOME_KIND_HEROES_MET,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   INTERACTION_OUTCOME_KIND_TOWN_VISITED,
   INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND
@@ -10,7 +11,8 @@ import {
   APP_FACT_BATTLE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
-  APP_FACT_TREASURE_CHEST_OPENED
+  APP_FACT_TREASURE_CHEST_OPENED,
+  APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
 } from '../events.js'
 import { getChestExperiencePicture, getChestGoldPicture } from './presentation/adventure-sprites.js'
 
@@ -35,7 +37,8 @@ export const heroesOutcomeEvents = Object.freeze([
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED,
-  APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED
+  APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+  APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
 ])
 
 export const heroesOutcomeEffects = Object.freeze({
@@ -44,6 +47,14 @@ export const heroesOutcomeEffects = Object.freeze({
       {
         type: APP_FACT_BATTLE_STARTED,
         detail: { ...toEntityFactDetail(outcome), count: outcome.count, stacks: outcome.stacks }
+      }
+    ]
+  }),
+  [INTERACTION_OUTCOME_KIND_HEROES_MET]: (outcome) => ({
+    facts: [
+      {
+        type: APP_UI_HERO_EXCHANGE_OPEN_REQUESTED,
+        detail: { heroId: outcome.heroId, otherHeroId: outcome.entityId }
       }
     ]
   }),
