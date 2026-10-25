@@ -23,4 +23,3 @@ Roadmap 2.4b: clicking the info box goes round its views.
 - The allies' and enemies' flags (8.1).
 - Selecting and rearranging units in the info box, and a unit's info window on right-click (4.3).
 - The sound and music of the date (10.4, 10.5).
-- The right-click "status window" popup and the hover text.

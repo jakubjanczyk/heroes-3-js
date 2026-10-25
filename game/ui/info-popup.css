@@ -33,3 +33,15 @@
   align-items: stretch;
   padding: var(--space-sm);
 }
+
+.info-popup--help {
+  max-inline-size: min(20rem, calc(100vw - 1rem));
+}
+
+/* A title in the game's texts is drawn in gold, with a blank line under it. */
+.info-popup__title {
+  margin: 0 0 var(--space-xs);
+  color: var(--hud-text-gold);
+  font-size: inherit;
+  font-weight: normal;
+}

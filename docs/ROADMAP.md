@@ -174,7 +174,7 @@ Stages:
 - [ ] The date opened by a click plays the new day sound and music, as at the start of a turn (10.4, 10.5)
 - [x] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the sun rising over the hills (each week of the month under its own sky); see `docs/notes/2026-10-24-info-box-date.md`
 - [ ] The new day, week and month sounds (with sound effects, 10.4)
-- [ ] Status bar text on hover, and right-click popup: a "status window" popup in the middle of the screen explaining the box (2.5, 2.1)
+- [x] Status bar text on hover, and right-click popup: a "status window" popup in the middle of the map explaining the box (2.5, 2.1); see `docs/notes/2026-10-25-info-box-help.md`
 - [ ] Other pickups as they come: experience, primary skills, spells, artifacts, creatures (7.5-7.8)
 - [ ] The hourglass during another player's turn (8.1)
 
