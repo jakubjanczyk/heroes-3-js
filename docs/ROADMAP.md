@@ -72,7 +72,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Click on minimap to move camera to that location
 - [x] Drag on minimap to pan camera
 - [x] Current viewport rectangle shown on minimap
-- [ ] Fog of war reflected on minimap (when fog is implemented)
+- [x] Fog of war reflected on minimap
 
 ### 1.5 Camera Improvements
 - [x] Keyboard arrow keys scroll the map
@@ -679,14 +679,18 @@ Stages, one PR each, done in this order:
 Rich adventure map with meaningful locations.
 
 ### 7.1 Fog of War
-- [ ] Two tile states: unexplored (black) and explored. An explored tile stays revealed for good, and what happens on it stays visible (an enemy hero walking there included); nothing is dimmed or shown as last seen
-- [ ] Hero vision radius: 5 tiles by default (increased by Scouting skill)
-- [ ] Town vision radius: 5 tiles around owned towns
-- [ ] Fog clears when a hero moves or a town is captured
-- [ ] Entities in fog are hidden (not rendered)
-- [ ] Fog rendered as overlay layer on terrain
-- [ ] Minimap reflects fog state
-- [ ] Scouting skill: Basic +1, Advanced +2, Expert +3 vision radius
+- [x] Two tile states: unexplored (black) and explored. An explored tile stays revealed for good, and what happens on it stays visible (an enemy hero walking there included); nothing is dimmed or shown as last seen
+- [x] A tile is in sight when its distance, rounded to a whole number, is at most the sight radius
+- [x] Hero vision radius: 5 tiles by default, after every step of a walk
+- [x] Town vision radius: 5 tiles around an owned town's entrance, at the start and when it is captured
+- [x] Any other object owned at the start (a mine) sees 3 tiles; capturing one reveals nothing more
+- [x] Fog drawn as a black layer over terrain and objects, tile by tile
+- [x] Unexplored tiles: a click does nothing, routes go around them, the cursor is the arrow, the status bar is empty, and right-clicking shows "Uncharted Territory"
+- [x] Minimap draws unexplored tiles black and hides the towns and mines on them
+- [x] A scenario can turn fog of war off (`fogOfWar: false`); it is on by default
+- [ ] Soft fog edges where unexplored tiles meet explored ones (with terrain sprites, 10.2)
+- [ ] Scouting skill: Basic +1, Advanced +2, Expert +3 vision radius (4.7)
+- [ ] Town buildings that see further, such as the Lookout Tower (6.5)
 
 ### 7.2 Roads
 - [x] Road layer in scenario data: dirt, gravel or cobblestone per tile, on top of the terrain

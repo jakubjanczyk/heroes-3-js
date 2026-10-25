@@ -1,5 +1,6 @@
 .terrain-layer,
 .entity-layer,
+.fog-layer,
 .effects-layer {
   position: absolute;
   inset: 0;
@@ -12,6 +13,11 @@
 
 .entity-layer {
   z-index: var(--z-layer-entities);
+}
+
+.fog-layer {
+  z-index: var(--z-layer-fog);
+  pointer-events: none;
 }
 
 .effects-layer {

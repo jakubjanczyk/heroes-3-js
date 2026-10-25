@@ -4,7 +4,13 @@ import { isMine, isTown } from '../../../game/domain/entity-queries.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
 import { mineOwner } from '../../../game/heroes/state/map-objects.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
-import { firstHeroIdOf, heroTile, viewingPlayer } from '../../../game/state/queries.js'
+import {
+  firstHeroIdOf,
+  heroTile,
+  isTileExplored,
+  tilesExploredSince,
+  viewingPlayer
+} from '../../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_HERO_MOVED,
@@ -36,6 +42,8 @@ export const registerMinimapViewModule = defineModule(
     let staticOccupancy = null
     let entitiesById = new Map()
     let mineTilesByMineId = new Map()
+    let tileElements = []
+    let shownState = null
     let towns = []
     let heroMarker = null
     let isDragging = false
@@ -48,7 +56,15 @@ export const registerMinimapViewModule = defineModule(
       return isMine(entity) ? entity : null
     }
 
+    function isExplored(tile) {
+      return isTileExplored(state.get(), viewingPlayer(state.get()), tile)
+    }
+
     function getTileClassName(tile) {
+      if (!isExplored(tile)) {
+        return 'minimap-tile minimap-tile--unexplored'
+      }
+
       const classNames = ['minimap-tile']
       const terrainName = map.getTerrainType(tile)?.name
       if (terrainName) {
@@ -79,6 +95,7 @@ export const registerMinimapViewModule = defineModule(
 
       clearNode(minimapTerrain)
       mineTilesByMineId = new Map()
+      tileElements = []
 
       for (let y = 0; y < map.height; y += 1) {
         for (let x = 0; x < map.width; x += 1) {
@@ -87,6 +104,7 @@ export const registerMinimapViewModule = defineModule(
           tile.dataset.x = String(x)
           tile.dataset.y = String(y)
           minimapTerrain.appendChild(tile)
+          tileElements.push(tile)
 
           const mine = getMineCovering({ x, y })
           if (mine) {
@@ -103,6 +121,19 @@ export const registerMinimapViewModule = defineModule(
       }
     }
 
+    // The towns are drawn again only when tiles were explored, since one may have come into view.
+    function renderExplored() {
+      const current = state.get()
+      const explored = tilesExploredSince(shownState, current, viewingPlayer(current))
+      shownState = current
+      for (const tile of explored) {
+        tileElements[tile.y * map.width + tile.x].className = getTileClassName(tile)
+      }
+      if (explored.length > 0) {
+        renderTowns()
+      }
+    }
+
     function renderTowns() {
       if (!map || !minimapTowns || typeof createElement !== 'function') {
         return
@@ -110,7 +141,7 @@ export const registerMinimapViewModule = defineModule(
 
       clearNode(minimapTowns)
 
-      for (const town of towns) {
+      for (const town of towns.filter((town) => isExplored(town.tile))) {
         const marker = createElement('div')
         marker.className = isViewingPlayersTown(state.get(), town.id)
           ? 'minimap-town-marker minimap-town-marker--player'
@@ -271,6 +302,7 @@ export const registerMinimapViewModule = defineModule(
             }
 
             renderTerrain()
+            shownState = state.get()
             renderTowns()
             const current = state.get()
             const heroId = firstHeroIdOf(current, viewingPlayer(current))
@@ -281,6 +313,10 @@ export const registerMinimapViewModule = defineModule(
         {
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
+            if (tileElements.length > 0) {
+              renderExplored()
+            }
+
             const tile = event.detail?.to
             if (
               !map ||
@@ -300,7 +336,12 @@ export const registerMinimapViewModule = defineModule(
         },
         {
           type: APP_FACT_TOWN_CAPTURED,
-          handler: () => renderTowns()
+          handler: () => {
+            renderTowns()
+            if (tileElements.length > 0) {
+              renderExplored()
+            }
+          }
         },
         {
           type: APP_UI_CAMERA_UPDATED,

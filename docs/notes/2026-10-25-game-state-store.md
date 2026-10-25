@@ -200,7 +200,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 6. **Multiple heroes (4.5).** By now this is mostly UI work: the hero list, Next Hero cycling, selecting a hero, the exchange cursor.
 7. **Player system (8.1), later.** More entries in `players`, turn order, `activePlayer` changing and `viewingPlayer` following it.
 
-Steps 1 to 4 are done (see "How it was built" below). Within a step, the old and new ways live side by side for one area at a time only.
+Steps 1 to 5 are done (see "How it was built" below). Within a step, the old and new ways live side by side for one area at a time only.
 
 ## Open questions
 
@@ -219,5 +219,6 @@ Where steps 1 to 4 differ from the plan above:
 - **Interaction facts name their hero.** `fact.interaction.reached`, `fact.interactions.queued` and the outcome facts (`fact.battle.started`, `fact.resource.collected`, `fact.town.visited`, `fact.treasureChest.opened`) carry `heroId`, so a capture or a pickup goes to the hero's owner.
 - **The store holds only what is shared or per entity.** Data one module uses for itself stays in that module.
 - **Views keep `selectedHeroId`** as screen state: the viewing player's first hero at `fact.world.ready`, then `ui.hero.selected { heroId }`.
+- **Fog of war is the `fog` slice, not `players[p].explored`.** `game/state/fog.js` builds it (`createFogSlice`) and holds the sight rule; the Heroes content says who sees how far and which facts reveal tiles (`game/heroes/state/fog.js`). It holds `{ enabled, width, height, explored: { [player]: Uint8Array } }`. Views find what to uncover with `tilesExploredSince(shownState, state, player)`.
 - **Commits:** ending the day (`fact.turn.ended` with every hero's movement points), recruiting, building and the garrison exchange each go out with `emitAll`.
 

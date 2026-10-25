@@ -9,6 +9,15 @@ export function getTerrainTile(x, y) {
   return document.querySelector(`.terrain-tile[data-x="${x}"][data-y="${y}"]`)
 }
 
+export function getFogOver(x, y) {
+  return document.querySelector(`.fog-tile[data-x="${x}"][data-y="${y}"]`)
+}
+
+export function isTileExplored(x, y) {
+  expect(document.querySelector('.fog-layer')).toBeTruthy()
+  return getFogOver(x, y) === null
+}
+
 export function getRoadOn(x, y) {
   return document.querySelector(`.road[data-x="${x}"][data-y="${y}"]`)
 }
@@ -153,6 +162,14 @@ export function hasOverLimitTargetLineAt(x, y) {
     return false
   }
   return Boolean(target.querySelector('.path-preview-target-line-over-limit'))
+}
+
+// The tiles the previewed route goes through, from the first step up to the target.
+export function readPreviewPathTiles() {
+  return [...document.querySelectorAll('.path-preview-svg [data-x]')].map((node) => ({
+    x: Number(node.getAttribute('data-x')),
+    y: Number(node.getAttribute('data-y'))
+  }))
 }
 
 export function expectPreviewDashAt(x, y) {

@@ -5,6 +5,7 @@
 @import url("./engine/layers/layer-containers.css") layer(layers);
 @import url("./engine/layers/terrain-layer.css") layer(layers);
 @import url("./engine/layers/entity-layer.css") layer(layers);
+@import url("./engine/layers/fog-layer.css") layer(layers);
 @import url("./engine/layers/path-preview-layer.css") layer(layers);
 @import url("./game/ui/terrain.css") layer(ui);
 @import url("./game/ui/entities.css") layer(ui);

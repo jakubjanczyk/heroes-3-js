@@ -15,6 +15,7 @@ import { ALL_TERRAINS, GRASS, SAND } from './terrain-codes.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
 const NEUTRAL_GREY = 'rgb(132, 132, 132)'
+const BLACK = 'rgb(0, 0, 0)'
 
 const DEFAULT_MINIMAP_BOUNDS = {
   left: 0,
@@ -311,6 +312,41 @@ describe('minimap behavior', () => {
 
       expect(backgroundOf(getMinimapTile(1, 0))).toBe(backgroundOf(getTerrainTile(1, 0)))
       expect(backgroundOf(getMinimapTile(2, 0))).toBe(backgroundOf(getTerrainTile(2, 0)))
+    })
+  })
+
+  describe('fog of war', () => {
+    const aFoggyScenario = () => aScenario().withFogOfWar(true).withSize(30, 3)
+
+    test('given tiles the hero has not explored when the minimap renders then they are drawn black', async () => {
+      await loadAppStyles()
+      await setupApp(aFoggyScenario().build())
+
+      expect([0, 29].map((x) => backgroundOf(getMinimapTile(x, 0)))).toEqual([
+        backgroundOf(getTerrainTile(0, 0)),
+        BLACK
+      ])
+    })
+
+    test('given a town on an unexplored tile when the minimap renders then only the explored town has a marker', async () => {
+      await setupApp(
+        aFoggyScenario()
+          .withEntities(aHero(), aTown().at(4, 2), aTown().withId('town-2').at(20, 2))
+          .build()
+      )
+
+      expect(getTownDots().map(getMinimapDotTile)).toEqual([{ x: 4, y: 2 }])
+    })
+
+    test('given a mine on an unexplored tile when the minimap renders then its tiles are drawn black', async () => {
+      await loadAppStyles()
+      await setupApp(aFoggyScenario().withEntities(aHero(), aMine().at(20, 1)).build())
+
+      expect([19, 20, 21].map((x) => backgroundOf(getMinimapTile(x, 1)))).toEqual([
+        BLACK,
+        BLACK,
+        BLACK
+      ])
     })
   })
 
