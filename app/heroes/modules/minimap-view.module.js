@@ -39,6 +39,7 @@ export const registerMinimapViewModule = defineModule(
     let towns = []
     let heroMarker = null
     let isDragging = false
+    let dragTile = null
     let lastCameraUpdate = null
 
     function getMineCovering(tile) {
@@ -139,16 +140,12 @@ export const registerMinimapViewModule = defineModule(
       minimapHeroes.appendChild(heroMarker)
     }
 
-    function centerCameraOnPoint(event) {
-      if (!map) {
-        return
-      }
-
+    function tileAtPoint(event) {
       const rect = minimapMap.getBoundingClientRect?.()
       const width = Number(rect?.width ?? 0)
       const height = Number(rect?.height ?? 0)
-      if (width <= 0 || height <= 0) {
-        return
+      if (!map || width <= 0 || height <= 0) {
+        return null
       }
 
       const localX = clamp(Number(event.clientX) - rect.left, 0, Math.max(0, width - 1))
@@ -156,11 +153,17 @@ export const registerMinimapViewModule = defineModule(
       const tileX = Math.min(map.width - 1, Math.floor((localX / width) * map.width))
       const tileY = Math.min(map.height - 1, Math.floor((localY / height) * map.height))
       const tile = { x: tileX, y: tileY }
+      return map.inBounds(tile) ? tile : null
+    }
 
-      if (!map.inBounds(tile)) {
+    // Past the minimap edge every move lands on the same edge tile, so only a new tile moves the camera.
+    function dragCameraTo(event) {
+      const tile = tileAtPoint(event)
+      if (!tile || (tile.x === dragTile?.x && tile.y === dragTile?.y)) {
         return
       }
 
+      dragTile = tile
       emit(APP_COMMAND_CAMERA_CENTER_ON_TILE, { tile })
     }
 
@@ -223,7 +226,8 @@ export const registerMinimapViewModule = defineModule(
             // Keeps the browser from selecting text or dragging an image while the player drags.
             event.preventDefault?.()
             isDragging = true
-            centerCameraOnPoint(event)
+            dragTile = null
+            dragCameraTo(event)
           }
         },
         {
@@ -234,7 +238,7 @@ export const registerMinimapViewModule = defineModule(
           handler: (event) => {
             // Checking the held button too ends a drag whose pointerup never arrived.
             if (isDragging && event.isPrimary && (event.buttons & 1) === 1) {
-              centerCameraOnPoint(event)
+              dragCameraTo(event)
             }
           }
         },
