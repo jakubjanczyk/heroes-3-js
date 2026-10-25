@@ -39,7 +39,7 @@ This is event sourcing with a light form of CQRS:
 - Modules never talk to each other, same as now: no imports between modules and no query APIs on modules.
 - Two things connect them, and neither is a module. **The bus** carries commands, facts and `ui.*` events. **The store** holds the shared state.
 - The store belongs to no module. Only facts build it, so deleting any module leaves the store state exactly the same.
-- **The bus applies each fact to the store before notifying listeners.** When a fact is emitted, the bus saves it to the log (if it is a saved type), applies it to the store, then calls the listeners. So a listener, or the emitter itself on the next line, already reads the new state.
+- **The bus applies each fact to the store before notifying listeners.** When a fact is emitted, the bus saves it to the log (if it is a saved type), applies it to the store, then calls the listeners. So a listener already reads the new state. The emitter must not read the state back after emitting: see "Consistency between facts" below.
 - The store is applied to **even when the bus is silent**, so a silent replay still builds the state.
 - **Modules read the store and never write it.** The module runtime passes a read handle next to `emit` and `on`: `defineModule(({ emit, on, state }) => …)`, with `state.get()` returning the current frozen state. The handle has no `apply`.
 - **The store emits nothing and has no subscribe API.** Modules learn when to update from the facts they already listen to, then read what they need. There is no catch-all `state.changed` event.
@@ -49,10 +49,64 @@ This is event sourcing with a light form of CQRS:
 
 - `engine/store.js`: generic. It keeps a value and replaces it with `applyFact(value, fact)`. It knows nothing about the game.
 - `engine/bus.js`: gains a `beforeDispatch(event)` option, called after recording and before the `silent` check and the listeners.
-- `game/state/`: pure functions only, with no `app/` imports. `game-state.js` has `initialGameState({ scenario, definitions })` and `applyFact(state, fact)`, which combines the files below. Then one file per area (`players.js`, `heroes.js`, `towns.js`, `mines.js`, `map-objects.js`, `fog.js`), each with its apply function and its queries (`heroById`, `heroIdsOf`, `townIdsOwnedBy`, `isExplored`, `visibleTiles`, …).
-- `app/boot-app.js`: creates the store as `createStore(applyFact)`, passes `beforeDispatch: store.apply` to the bus, and passes the read handle to `registerModules`.
+- `game/state/`: core state, pure functions only, with no `app/` or `game/heroes/` imports (see "Core and Heroes slices" below).
+- `game/heroes/state/`: the Heroes slices and the queries that read them.
+- `app/boot-app.js`: creates the store as `createStore(combineSlices([...CORE_SLICES, ...config.content.stateSlices]))`, passes `beforeDispatch: store.apply` to the bus, and passes the read handle to `registerModules`.
 - `app/modules/shared/module-runtime.js`: passes `state` to each module's setup.
-- The existing rule that `engine/` never imports `game/` still holds.
+- The existing rules still hold: `engine/` never imports `game/`, and core `game/` never imports `game/heroes/`.
+
+### Core and Heroes slices
+
+Most of the state is Heroes content (towns, mines, armies, primary skills, income, creature growth), while core modules (`movement`, `selection`, `camera`, `entity-view`) need to read it too: hero tiles and removed entities. So the state is built from slices. Core owns the machinery and the generic slices; Heroes adds its own through content, the same way `entityBehaviors` is passed today.
+
+A slice:
+
+```js
+{
+  key: 'towns',
+  initial: ({ scenario, definitions, config }) => ({ … }),
+  apply: (towns, fact, previousState) => towns
+}
+```
+
+- `apply` returns the same object when the fact doesn't concern the slice.
+- `previousState` is the whole state before this fact, read only. Income on a new day, for example, reads the towns' buildings and the mines' owners. A slice never writes another slice.
+- `config` is there because the starting movement points come from `config.maxMovementPoints`.
+
+Core, in `game/state/`:
+
+- `combineSlices(slices)` builds `initialGameState` and `applyFact`, and throws on a duplicate key.
+- Generic slices:
+  - `players`: colours and `activePlayer`; `viewingPlayer` is a query.
+  - `heroes`: per hero, only `owner`, `tile` and `removed`.
+  - `mapObjects`: `removedEntityIds`.
+  - `date`.
+  - `fog`, possibly, with the vision radius passed in by content.
+- Core queries: `heroTile(state, id)`, `heroIdsOf(state, player)`, `isRemoved(state, id)`, `viewingPlayer(state)`, … Core modules use only these.
+
+Heroes, in `game/heroes/state/`:
+
+- Slices: `towns`, `mines`, `kingdoms` (resources per player), `heroDetails` (army, experience, level, primary skills, movement points), `monsters` (counts).
+- Queries that join core and Heroes slices: `heroById(state, id)` returns `{ ...heroes[id], ...heroDetails[id] }`.
+- `app/heroes/content.js` exposes them as `stateSlices`. Boot is already the one place that picks the content.
+
+A hero is split over two slices keyed by the same id. To core, a hero is something with an owner standing on a tile; everything else about it is Heroes content. That keeps the engine reusable for another game.
+
+### Consistency between facts
+
+Two things can show a listener a state that live play and replay don't agree on.
+
+- **A decision made of several facts.** Recruiting emits `fact.resources.spent`, `fact.town.creatures.recruited` and `fact.town.garrison.changed` one by one. A listener of the first sees the gold paid but the garrison unchanged.
+- **A fact emitted from a listener.** If listener A of fact X emits fact Y, listener B of X, called after A, already sees Y applied. On replay Y comes only after every listener of X, so B sees a different state.
+
+The rules:
+
+- **Never read the state back after emitting.** A command handler reads the state once, works out every fact it leads to, and emits them. Today `hero-levels` emits `fact.hero.experience.gained` and then reads the new experience to find the levels gained; it works out the levels from the experience before and the amount instead.
+- **What the emitter needs, it takes from its own decision.** A module that has just decided something knows the outcome: it can update its own screen state from the facts it built (an optimistic update) without waiting for them to come back, and check against the fact when it arrives.
+- **A decision is emitted as one commit:** `emitAll([...facts])`, with `emit(fact)` a commit of one. The bus applies every fact of the commit, saves them, then notifies the listeners of each fact in order. Every listener sees the state after the whole commit, never a half-done recruit.
+- **Facts emitted by a listener form a new commit,** queued and run once the listeners of the current commit are done. So no listener sees the effects of a fact emitted after the one it's handling.
+
+Open question: whether replay needs to know which facts were one commit. With each saved entry carrying a `tx` id, replay can apply and notify a whole commit at once, exactly as live play did. Without it, replay applies the facts of a commit one by one, and a listener during replay may see the half-done state. Views that render again at `ui.restore.completed` don't care; anything that decides during replay would. Start without `tx` and add it if a case shows up.
 
 ### What changes the state
 
@@ -91,6 +145,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 }
 ```
 
+- This is the state as the queries show it. Stored, a hero is split over the core `heroes` slice (`owner`, `tile`) and the Heroes `heroDetails` slice (the rest), and `players[p].resources` lives in the Heroes `kingdoms` slice (see "Core and Heroes slices").
 - The scenario stays the static description: terrain, entity types, tiles of fixed objects. `staticOccupancy` stays as it is. The store holds only what changes during play.
 - A hero's name and class move from `game/data/hero.json` onto the hero entity in the scenario. `hero.json` goes away, or keeps only defaults.
 - Movement points move from `turnState` onto each hero. The date stays in the state as `date.turnNumber`.
@@ -126,6 +181,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 
 - Architecture test (`tests/architecture/`): `game/state/` imports nothing from `app/`.
 - Architecture test: every fact type `applyFact` handles is in `APP_PERSISTED_FACT_TYPES`, plus `fact.world.ready`.
+- Architecture test: `game/state/` imports nothing from `game/heroes/`, and core modules use only core queries.
 - No live emit of a saved fact type passes `log: false`. Only `restore-session.js` does that, when replaying.
 - Architecture test, added as each copy is removed: no `app/` module imports `createOwnedTowns`, `createTreasury`, `createTownBuildings` or `findHero`.
 - Behavior tests are the safety net for each step. They drive the UI and check the screen, so they should pass unchanged through every step. A behavior test that has to change means the step changed what the player sees.
@@ -135,7 +191,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 ## Order of work
 
 1. **Facts say whose they are.** Add `heroId` to `fact.hero.experience.gained`, `fact.hero.leveledUp`, `fact.hero.movementPoints.changed` and `ui.hero.selected`. Add `owner` to `fact.town.captured` and `fact.mine.captured`, and `player` to `fact.resources.spent` and `fact.income.collected`. The commands that lead to them carry the same ids.
-2. **The store, with towns.** Add `engine/store.js`, the bus `beforeDispatch` option, the runtime `state` handle, `game/state/game-state.js` and `game/state/towns.js` (owner, town order). Replace the 7 `createOwnedTowns()` copies with reads. This proves the pattern on the area with the most copies.
+2. **The store, with towns.** Add `engine/store.js`, the bus `beforeDispatch` option and commits (`emitAll`), the runtime `state` handle, `combineSlices` with the core slices in `game/state/`, and the `towns` slice in `game/heroes/state/` (owner, town order). Replace the 7 `createOwnedTowns()` copies with reads. This proves the pattern on the area with the most copies.
 3. **Heroes.** Add `heroes[id]` with tile, army, experience, level, primary skills and movement points. Move the name and class onto the scenario hero, and movement points out of `turnState`. Replace the 12 single `hero` copies with reads of `heroById(state, selectedHeroId)`. This is the largest step, and the one that makes several heroes possible.
 4. **The rest of the copies:** resources (`players[p].resources`, with income applied on `fact.turn.ended`), buildings and garrisons, mines, removed entities and monster counts (`map-objects.js`).
 5. **Fog of war (7.1)** as `players[p].explored` and `visibleTiles`, read through `viewingPlayer`. The first feature built only on the store.
