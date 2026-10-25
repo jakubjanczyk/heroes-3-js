@@ -1,7 +1,7 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
-import { normalizeMovementPoints } from '../../game/domain/value-objects/movement-points.js'
+import { heroMovementPoints } from '../../game/state/queries.js'
 import { createHeroRoutes } from '../../game/systems/hero-routes.js'
 import {
   APP_COMMAND_MOVE_REQUESTED,
@@ -11,24 +11,22 @@ import {
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
-  APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_ROUTE_PLANNED,
   APP_FACT_WORLD_READY
 } from '../events.js'
 import { defineModule } from './shared/module-runtime.js'
 
 export const registerMovementModule = defineModule(
-  ({ emit, config }) => {
+  ({ emit, config, state }) => {
     const stepDelayMs = config?.movementStepDelayMs ?? 220
     const movementSleep =
       typeof config?.movementSleep === 'function' ? config.movementSleep : undefined
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
     const movementRules = resolveMovementRules(config?.content?.movementRules)
 
-    const heroRoutes = createHeroRoutes({ entityBehaviors, movementRules })
+    const heroRoutes = createHeroRoutes({ entityBehaviors, movementRules, getState: state.get })
 
     let movement = null
-    let remainingMovementPoints = Number.POSITIVE_INFINITY
     let isMoveCommandInProgress = false
 
     return {
@@ -51,10 +49,13 @@ export const registerMovementModule = defineModule(
                 movementRules.chargeSteps({
                   map: world.map,
                   path,
-                  remainingMovementPoints
+                  remainingMovementPoints:
+                    heroMovementPoints(state.get(), heroRoutes.getHero()?.id)?.value ??
+                    Number.POSITIVE_INFINITY
                 }),
               spendMovementPoints: (amount) => {
                 emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
+                  heroId: heroRoutes.getHero()?.id,
                   amount
                 })
               },
@@ -97,29 +98,12 @@ export const registerMovementModule = defineModule(
           }
         },
         {
-          type: APP_FACT_HERO_MOVED,
-          handler: (event) => {
-            heroRoutes.onHeroMoved(event.detail ?? {})
-          }
-        },
-        {
           type: APP_FACT_ENTITY_REMOVED,
-          handler: (event) => {
-            heroRoutes.onEntityRemoved(event.detail?.entityId)
+          handler: () => {
             // A hero lost in battle moves no more.
             if (!heroRoutes.getHero()) {
               movement = null
             }
-          }
-        },
-        {
-          type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-          handler: (event) => {
-            remainingMovementPoints =
-              normalizeMovementPoints(event.detail?.value, {
-                min: 0,
-                fallback: Number.POSITIVE_INFINITY
-              }) ?? Number.POSITIVE_INFINITY
           }
         },
         {
@@ -164,9 +148,7 @@ export const registerMovementModule = defineModule(
     phase: 'domain',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_HERO_MOVED,
       APP_FACT_ENTITY_REMOVED,
-      APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_COMMAND_ROUTE_REQUESTED,
       APP_COMMAND_MOVE_REQUESTED
     ],

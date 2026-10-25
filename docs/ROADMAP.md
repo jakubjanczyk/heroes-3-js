@@ -209,7 +209,7 @@ Core game loop - resources flow, time passes.
 - [x] At the start of each new day (after end turn), income is calculated and applied
 - [x] Income source: owned mines (daily amounts as in H3, in `game/data/mines.json`)
 - [x] Income source: owned towns, from their highest hall (6.2); see `docs/notes/2026-10-22-town-income.md`
-- [x] Income event: `fact.income.collected` with the total per resource (not persisted: replaying captures and turn ends pays it again)
+- [x] Income paid on each new day by the game state, from the towns and mines each player owns (replaying captures and turn ends pays it again)
 - [ ] Income breakdown per source (add when something shows it, e.g. the HUD tooltip)
 - [ ] (Not in H3, optional extra) Income summary tooltip on each resource in HUD (e.g. "Gold: 5000 (+2000/day)")
 - [ ] Visual feedback when income is added (brief flash/highlight on resource counts)
@@ -864,7 +864,16 @@ Moving the mouse across a few tiles sends dozens of events. For each new tile th
 - [ ] A hover sends only `ui.tile.hovered`, once per tile; `command.route.requested` / `fact.route.planned` stay for clicks
 - [ ] `fact.route.planned` is not saved, so it is not a fact: rename it (e.g. `ui.route.planned`) or drop it once only clicks use it
 
-### 9.5 Map Editor (stretch)
+### 9.5 One Fact per Decision
+A decision is saved today as several facts emitted together: recruiting is `fact.resources.spent`, `fact.town.creatures.recruited` and `fact.town.garrison.changed`. The log then follows how the game state is split up instead of what the player did. Instead, each decision is saved as one fact naming everything that happened, and each slice of the game state works out its own part, as `fact.turn.ended` already pays income and grows creatures. Facts never cause other facts: a fact a listener emits on hearing another would be paid twice on replay, or have to be re-emitted on every reload. See `docs/notes/2026-10-25-game-state-store.md`.
+- [ ] Recruiting is one fact `{ townId, player, tier, creature, count, cost }`: the towns slice moves the creatures into the garrison, the kingdoms slice takes the cost
+- [ ] Building is one fact with its cost; the kingdoms slice takes the cost
+- [ ] Ending the day is one fact; the heroes slice restores every hero's movement points
+- [ ] The cost goes in the fact, so an old session keeps what was paid if prices change later
+- [ ] Views that showed resources redraw on the facts that change them (recruit, build, pickups, a new day)
+- [ ] `emitAll` stays only for a decision that really is several facts, or goes
+
+### 9.6 Map Editor (stretch)
 - [ ] Visual in-browser tile editor
 - [ ] Paint terrain types
 - [ ] Place entities with properties
@@ -1035,8 +1044,9 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 60. Map portals (7.9)
 61. Water & boats (7.10)
 62. Hot-seat multiplayer (8.2)
-63. Map editor (9.5)
+63. Map editor (9.6)
 64. Quieter event bus (9.4): no route events on hover
+65. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
 
 ---
 

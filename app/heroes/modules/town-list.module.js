@@ -1,6 +1,6 @@
 import { isTown } from '../../../game/domain/entity-queries.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
-import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
+import { viewingPlayersTownIds } from '../../../game/heroes/state/towns.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
@@ -15,9 +15,8 @@ import { markSelectedTown, renderTownList } from '../presentation/town-list.js'
 // The town list on the adventure panel. As in Heroes 3, clicking a town selects it and centres
 // the map on it; clicking the selected town again, or double-clicking one, opens its town screen.
 export const registerTownListModule = defineModule(
-  ({ emit, env }) => {
+  ({ emit, env, state }) => {
     const townList = env.document?.getElementById('town-list')
-    const ownedTowns = createOwnedTowns()
     let townsById = new Map()
     let definitions = {}
     let selectedTownId = null
@@ -28,7 +27,7 @@ export const registerTownListModule = defineModule(
       }
 
       renderTownList(townList, env.document, {
-        towns: ownedTowns.ids().map((entityId) => ({
+        towns: viewingPlayersTownIds(state.get()).map((entityId) => ({
           entityId,
           name: getTownName({ entity: townsById.get(entityId), definitions })
         })),
@@ -87,7 +86,6 @@ export const registerTownListModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             const { entities } = event.detail.scenario
-            ownedTowns.onWorldReady(entities)
             townsById = new Map(entities.filter(isTown).map((town) => [town.id, town]))
             definitions = event.detail.definitions ?? {}
             selectedTownId = null
@@ -96,10 +94,7 @@ export const registerTownListModule = defineModule(
         },
         {
           type: APP_FACT_TOWN_CAPTURED,
-          handler: (event) => {
-            ownedTowns.onTownCaptured(event.detail.entityId)
-            render()
-          }
+          handler: () => render()
         },
         {
           type: APP_UI_HERO_SELECTED,

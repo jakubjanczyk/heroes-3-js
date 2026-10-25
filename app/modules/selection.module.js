@@ -1,6 +1,11 @@
 import { sameTile } from '../../engine/tile-utils.js'
-import { findHero } from '../../game/domain/entity-queries.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
+import {
+  firstHeroIdOf,
+  heroMovementPoints,
+  heroTile,
+  viewingPlayer
+} from '../../game/state/queries.js'
 import {
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
@@ -28,10 +33,10 @@ import {
 import { defineModule } from './shared/module-runtime.js'
 
 export const registerSelectionModule = defineModule(
-  ({ emit, config }) => {
+  ({ emit, config, state }) => {
     const movementRules = resolveMovementRules(config?.content?.movementRules)
     let map = null
-    let heroTile = null
+    let selectedHeroId = null
     let isWorldReady = false
     let requestedTile = null
     let previewPath = null
@@ -41,13 +46,14 @@ export const registerSelectionModule = defineModule(
     let isSystemOptionsOpen = false
     let isMapCovered = false
     let isTownSelected = false
-    let remainingMovementPoints = Number.POSITIVE_INFINITY
 
     function affordableStepCount() {
       if (!map || !previewPath || previewPath.length < 2) {
         return 0
       }
 
+      const remainingMovementPoints =
+        heroMovementPoints(state.get(), selectedHeroId)?.value ?? Number.POSITIVE_INFINITY
       return movementRules.chargeSteps({ map, path: previewPath, remainingMovementPoints }).length
     }
 
@@ -99,7 +105,7 @@ export const registerSelectionModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             map = event.detail.map
-            heroTile = findHero(event.detail.scenario?.entities)?.tile ?? null
+            selectedHeroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             isWorldReady = true
             isTownSelected = false
             resetPreview()
@@ -107,8 +113,7 @@ export const registerSelectionModule = defineModule(
         },
         {
           type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-          handler: (event) => {
-            remainingMovementPoints = Number(event.detail.value)
+          handler: () => {
             if (previewPath || previewTarget) {
               emitPreview()
             }
@@ -129,7 +134,8 @@ export const registerSelectionModule = defineModule(
             }
 
             const { tile } = event.detail
-            if (heroTile && sameTile(heroTile, tile)) {
+            const selectedHeroTile = heroTile(state.get(), selectedHeroId)
+            if (selectedHeroTile && sameTile(selectedHeroTile, tile)) {
               emit(APP_UI_SELECTED_HERO_CLICKED, {})
             }
             if (previewTarget && sameTile(previewTarget, tile)) {
@@ -177,7 +183,6 @@ export const registerSelectionModule = defineModule(
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
             const to = event.detail.to
-            heroTile = to
             if (!previewPath || previewPath.length === 0) {
               return
             }
@@ -258,7 +263,8 @@ export const registerSelectionModule = defineModule(
         },
         {
           type: APP_UI_HERO_SELECTED,
-          handler: () => {
+          handler: (event) => {
+            selectedHeroId = event.detail.heroId ?? selectedHeroId
             isTownSelected = false
             emitPreview()
           }

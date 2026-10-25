@@ -2,6 +2,7 @@ import { createBus } from '../engine/bus.js'
 import { createEventLog } from '../engine/eventlog.js'
 import { createDisposer, createWorld, setupResetListener } from './boot-lifecycle.js'
 import { APP_COMMAND_APP_START, shouldPersistFactEvent } from './events.js'
+import { createGameStateStore } from './game-state.js'
 import { heroesAppContent } from './heroes/content.js'
 import { createBusDevPanel } from './modules/dev/bus-dev-panel.js'
 import { registerModules } from './modules/register-modules.js'
@@ -27,7 +28,7 @@ function composeBusLoggers(...loggers) {
   }
 }
 
-function setupAppBus(busDebug, document, busLogger, appEventLog) {
+function setupAppBus({ busDebug, document, busLogger, appEventLog, store }) {
   const busPanel = busDebug ? createBusDevPanel({ document }) : null
   const activeBusLogger = composeBusLoggers(busLogger, busPanel?.log)
 
@@ -35,7 +36,8 @@ function setupAppBus(busDebug, document, busLogger, appEventLog) {
     debug: busDebug,
     log: activeBusLogger,
     eventLog: appEventLog,
-    shouldLogEvent: shouldPersistFactEvent
+    shouldLogEvent: shouldPersistFactEvent,
+    beforeDispatch: store.apply
   })
 }
 
@@ -67,7 +69,8 @@ export async function bootApp({
     musicManifestUrl,
     ...configOverride
   }
-  const appBus = setupAppBus(busDebug, document, busLogger, appEventLog)
+  const store = createGameStateStore({ content: config.content, config })
+  const appBus = setupAppBus({ busDebug, document, busLogger, appEventLog, store })
 
   const lifecycle = createDisposer()
 
@@ -79,7 +82,8 @@ export async function bootApp({
       registerModules({
         bus: appBus,
         env,
-        config
+        config,
+        state: { get: store.get }
       })
     )
     lifecycle.add(setupResetListener(appBus, appEventLog, window, lifecycle.dispose))

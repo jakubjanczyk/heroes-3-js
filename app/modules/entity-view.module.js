@@ -1,7 +1,7 @@
 import { setStyleVar } from '../../engine/layers/dom-layer-utils.js'
 import { renderEntityLayer } from '../../engine/layers/entity-layer.js'
 import { getMapCenteredOrigin, getTileCenter } from '../../engine/layers/layout.js'
-import { applyEntityRemoved, NO_REMOVED_ENTITIES } from '../../game/domain/removed-entities.js'
+import { isRemoved } from '../../game/state/queries.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_MOVED,
@@ -12,7 +12,7 @@ import {
 import { defineModule } from './shared/module-runtime.js'
 
 export const registerEntityViewModule = defineModule(
-  ({ env, config }) => {
+  ({ env, config, state }) => {
     const presentation = config?.content?.entityPresentation
     const getEntityStyle = presentation?.getEntityStyle ?? (() => null)
     const entityLayer = env.document?.querySelector('.entity-layer')
@@ -25,7 +25,6 @@ export const registerEntityViewModule = defineModule(
 
     let map = null
     let scenarioEntities = null
-    let removedIds = NO_REMOVED_ENTITIES
     let isRestoring = false
 
     function applyHeroRestoreMotionOverride() {
@@ -80,7 +79,7 @@ export const registerEntityViewModule = defineModule(
       renderEntityLayer({
         container: entityLayer,
         map,
-        entities: scenarioEntities.filter((entity) => !removedIds.has(entity.id)),
+        entities: scenarioEntities.filter((entity) => !isRemoved(state.get(), entity.id)),
         createElement,
         getEntityStyle
       })
@@ -122,7 +121,6 @@ export const registerEntityViewModule = defineModule(
           handler: (event) => {
             map = event.detail.map
             scenarioEntities = event.detail.scenario.entities
-            removedIds = NO_REMOVED_ENTITIES
             setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`)
             render()
           }
@@ -143,7 +141,6 @@ export const registerEntityViewModule = defineModule(
         {
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
-            removedIds = applyEntityRemoved(removedIds, event.detail?.entityId)
             removeEntityElement(event.detail?.entityId)
           }
         },

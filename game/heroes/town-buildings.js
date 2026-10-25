@@ -4,6 +4,10 @@ import { canAfford, isShortOf } from './treasury.js'
 
 // Every town starts with its Village Hall, as in Heroes 3.
 const STARTING_BUILDINGS = ['VILLAGE_HALL']
+
+export function startingBuildingsOf(town) {
+  return [...new Set([...STARTING_BUILDINGS, ...(town.buildings ?? [])])]
+}
 // Every faction has the same halls and forts.
 export const HALL_CHAIN = ['VILLAGE_HALL', 'TOWN_HALL', 'CITY_HALL', 'CAPITOL']
 export const FORT_CHAIN = ['FORT', 'CITADEL', 'CASTLE']
@@ -28,34 +32,6 @@ export function townBuildingsCatalogue(definitions, townType) {
     buildings: { ...definitions?.buildings, ...townDefinition.buildings },
     hall: townDefinition.hall ?? [],
     picture: townDefinition.picture ?? {}
-  }
-}
-
-// The buildings standing in each town, and the towns that have built today: one building a day.
-export function createTownBuildings() {
-  let builtByTownId = new Map()
-  let townIdsBuiltToday = new Set()
-
-  return {
-    onWorldReady(towns) {
-      builtByTownId = new Map(
-        towns.map((town) => [town.id, new Set([...STARTING_BUILDINGS, ...(town.buildings ?? [])])])
-      )
-      townIdsBuiltToday = new Set()
-    },
-    onBuildingBuilt(townId, buildingId) {
-      builtByTownId.get(townId)?.add(buildingId)
-      townIdsBuiltToday.add(townId)
-    },
-    onTurnEnded() {
-      townIdsBuiltToday = new Set()
-    },
-    builtIn(townId) {
-      return builtByTownId.get(townId) ?? new Set()
-    },
-    hasBuiltToday(townId) {
-      return townIdsBuiltToday.has(townId)
-    }
   }
 }
 

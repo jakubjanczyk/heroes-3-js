@@ -1,6 +1,6 @@
 import { createCamera } from '../../engine/camera.js'
 import { attachCameraInput } from '../../engine/input.js'
-import { findHero } from '../../game/domain/entity-queries.js'
+import { firstHeroIdOf, heroTile, viewingPlayer } from '../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -25,7 +25,7 @@ import {
 import { defineModule } from './shared/module-runtime.js'
 
 export const registerCameraModule = defineModule(
-  ({ emit, env, config }) => {
+  ({ emit, env, config, state }) => {
     const viewport = env.document?.querySelector('.viewport')
     const configuredStepDurationMs = Number(config?.movementStepDelayMs ?? 220)
     const cameraStepDurationMs = Number.isFinite(configuredStepDurationMs)
@@ -98,7 +98,8 @@ export const registerCameraModule = defineModule(
             })
 
             // Start on the hero; from here on every hero fact carries the tile to center on.
-            centerOn(findHero(world.scenario.entities)?.tile)
+            const current = state.get()
+            centerOn(heroTile(current, firstHeroIdOf(current, viewingPlayer(current))))
 
             const inputCamera = {
               moveBy(dx, dy) {
