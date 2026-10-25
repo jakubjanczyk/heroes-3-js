@@ -5,7 +5,7 @@ import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
 import { mineOwner } from '../../../game/heroes/state/map-objects.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import {
-  firstHeroIdOf,
+  heroIdsOf,
   heroTile,
   isTileExplored,
   tilesExploredSince,
@@ -45,7 +45,7 @@ export const registerMinimapViewModule = defineModule(
     let tileElements = []
     let shownState = null
     let towns = []
-    let heroMarker = null
+    const heroMarkersById = new Map()
     let isDragging = false
     let dragTile = null
     let lastCameraUpdate = null
@@ -153,22 +153,21 @@ export const registerMinimapViewModule = defineModule(
       }
     }
 
-    function renderHero(hero) {
-      heroMarker = null
+    function renderHeroes(heroIds) {
+      heroMarkersById.clear()
       if (!map || !minimapHeroes || typeof createElement !== 'function') {
         return
       }
 
       clearNode(minimapHeroes)
-      if (!hero) {
-        return
+      for (const heroId of heroIds) {
+        const marker = createElement('div')
+        marker.className = 'minimap-hero-marker'
+        marker.dataset.entityId = heroId
+        placeMarker(marker, heroTile(state.get(), heroId))
+        minimapHeroes.appendChild(marker)
+        heroMarkersById.set(heroId, marker)
       }
-
-      heroMarker = createElement('div')
-      heroMarker.className = 'minimap-hero-marker'
-      heroMarker.dataset.entityId = hero.id
-      placeMarker(heroMarker, hero.tile)
-      minimapHeroes.appendChild(heroMarker)
     }
 
     function tileAtPoint(event) {
@@ -308,9 +307,7 @@ export const registerMinimapViewModule = defineModule(
             renderTerrain()
             shownState = state.get()
             renderTowns()
-            const current = state.get()
-            const heroId = firstHeroIdOf(current, viewingPlayer(current))
-            renderHero(heroId && { id: heroId, tile: heroTile(current, heroId) })
+            renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
             updateViewportBox(lastCameraUpdate)
           }
         },
@@ -322,16 +319,10 @@ export const registerMinimapViewModule = defineModule(
             }
 
             const tile = event.detail?.to
-            if (
-              !map ||
-              !heroMarker ||
-              !tile ||
-              event.detail?.heroId !== heroMarker.dataset.entityId
-            ) {
-              return
+            const marker = heroMarkersById.get(event.detail?.heroId)
+            if (map && marker && tile) {
+              placeMarker(marker, tile)
             }
-
-            placeMarker(heroMarker, tile)
           }
         },
         {

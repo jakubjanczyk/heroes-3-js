@@ -13,7 +13,7 @@ import {
   describeTownBox,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
-import { firstHeroIdOf, turnNumber, viewingPlayer } from '../../../game/state/queries.js'
+import { selectedHeroIdOf, turnNumber, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
@@ -60,7 +60,6 @@ export const registerInfoBoxModule = defineModule(
     const infoBox = env.document?.getElementById('hero-info')
     const statusBar = env.document?.getElementById('status-bar')
     const longPressMs = config?.longPressMs ?? DEFAULT_LONG_PRESS_MS
-    let heroId = null
     let definitions = {}
     let isHeroSelected = true
     let selectedTown = null
@@ -235,7 +234,7 @@ export const registerInfoBoxModule = defineModule(
     }
 
     function renderSelectedHero() {
-      const hero = heroById(state.get(), heroId)
+      const hero = heroById(state.get(), selectedHeroIdOf(state.get(), viewingPlayer(state.get())))
       const army = getHeroArmy({ entity: hero, definitions })
       show('Hero info', renderHeroBox, {
         name: hero?.name ?? DEFAULT_HERO_NAME,
@@ -288,7 +287,6 @@ export const registerInfoBoxModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             definitions = event.detail.definitions
             select(true)
           }
@@ -297,10 +295,7 @@ export const registerInfoBoxModule = defineModule(
         { type: APP_FACT_HERO_ARMY_CHANGED, handler: () => render() },
         {
           type: APP_UI_HERO_SELECTED,
-          handler: (event) => {
-            heroId = event.detail.heroId ?? heroId
-            select(true)
-          }
+          handler: () => select(true)
         },
         {
           type: APP_UI_TOWN_SELECTED,

@@ -71,6 +71,10 @@ function getHeroDot() {
   return document.querySelector('.minimap-hero-marker')
 }
 
+function getHeroDots() {
+  return [...document.querySelectorAll('.minimap-hero-marker')]
+}
+
 // jsdom does no layout, so the helpers below read the styles that place an element and turn
 // them back into the map tiles the player sees it over.
 function percentStyle(element, property) {
@@ -216,6 +220,20 @@ describe('minimap behavior', () => {
       const dot = getHeroDot()
       expect(getMinimapDotTile(dot)).toEqual({ x: 5, y: 3 })
       expect(backgroundOf(dot)).toBe(PLAYER_RED)
+    })
+
+    test('given two heroes when the minimap renders then there is a hero marker at each of their tiles', async () => {
+      await setupApp(
+        aScenario()
+          .withSize(8, 7)
+          .withEntities(aHero().at(5, 3), aHero().withId('hero-2').at(1, 6))
+          .build()
+      )
+
+      expect(getHeroDots().map(getMinimapDotTile)).toEqual([
+        { x: 5, y: 3 },
+        { x: 1, y: 6 }
+      ])
     })
 
     test('given the hero moves when the move finishes then the hero marker is at the new tile', async () => {

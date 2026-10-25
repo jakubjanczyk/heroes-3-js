@@ -310,13 +310,14 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 Built in five parts, one PR each. Parts 1 and 2 first; 3 to 5 in any order after them.
 
 #### 4.5.1 Several heroes from the scenario
-- [ ] A scenario can start a player with several heroes; the default scenario has two
-- [ ] All of them on the map and in the hero list (portrait and movement bar each)
-- [ ] Clicking a hero in the list, or on the map, selects them and centres the camera
-- [ ] Selected hero highlighted in the list
-- [ ] Routes, movement points, the hero box, the hero screen and town visits follow the selected hero; each hero spends their own movement points, and ending the day resets them all
-- [ ] A route can't end on another of the player's heroes yet; it stops next to them (meeting is 4.5.3)
-- [ ] The selected hero is saved: after a reload the same hero is selected
+- [x] A scenario can start a player with several heroes; the default scenario has two
+- [x] All of them on the map, the minimap and in the hero list (portrait and movement bar each)
+- [x] Clicking a hero in the list selects them and centres the camera; clicking one on the map selects them
+- [x] Selected hero framed in the list (no frame while a town is selected)
+- [x] Routes, movement points, the hero box, the hero screen and town visits follow the selected hero; each hero spends their own movement points, and ending the day resets them all
+- [x] Each hero keeps their own planned route while another is selected
+- [x] Routes go around the player's other heroes; meeting them is 4.5.3
+- [x] The selected hero is saved: after a reload the same hero is selected. A new day selects the first hero
 
 #### 4.5.2 Next Hero button
 - [ ] Cycles through the heroes with movement points left, wrapping round

@@ -2,7 +2,7 @@ import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
+import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
@@ -34,15 +34,18 @@ export const registerHeroScreenViewModule = defineModule(
     const gameShell = document?.querySelector('.game-shell')
     let heroScreen = null
     let rearranging = null
-    let heroId = null
     let definitions = {}
     let isMapCovered = false
     // Whether this screen covered the map, so closing it uncovers only what it covered: over the
     // town screen, the map stays covered.
     let coversMap = false
 
+    function selectedHero() {
+      return heroById(state.get(), selectedHeroIdOf(state.get(), viewingPlayer(state.get())))
+    }
+
     function fillHeroScreen() {
-      const hero = heroById(state.get(), heroId)
+      const hero = selectedHero()
       const heroName = hero?.name ?? DEFAULT_HERO_NAME
       const heroClass = definitions?.heroClasses?.[hero?.heroClass]
       const portrait = heroScreen.querySelector('.hero-screen__portrait')
@@ -65,7 +68,7 @@ export const registerHeroScreenViewModule = defineModule(
     }
 
     function showArmy() {
-      const army = getHeroArmy({ entity: heroById(state.get(), heroId), definitions })
+      const army = getHeroArmy({ entity: selectedHero(), definitions })
       heroScreen.querySelectorAll('.hero-screen__army .army-slot').forEach((slot, index) => {
         const stack = army[index]
         slot.replaceChildren(...(stack ? [renderArmyStack(document, stack)] : []))
@@ -125,7 +128,6 @@ export const registerHeroScreenViewModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             definitions = event.detail.definitions
-            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
           }
         },
         {

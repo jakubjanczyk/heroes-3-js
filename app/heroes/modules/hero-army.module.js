@@ -1,19 +1,17 @@
 import { moveStack, splitStack } from '../../../game/heroes/army-exchange.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
+import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
-  APP_FACT_HERO_ARMY_CHANGED,
-  APP_FACT_WORLD_READY
+  APP_FACT_HERO_ARMY_CHANGED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
 export const registerHeroArmyModule = defineModule(
   ({ emit, state }) => {
-    let heroId = null
-
     function rearrange(rearrangeArmies) {
+      const heroId = selectedHeroIdOf(state.get(), viewingPlayer(state.get()))
       const hero = heroById(state.get(), heroId)
       const changed = hero && rearrangeArmies({ hero: hero.army })
       if (changed) {
@@ -23,12 +21,6 @@ export const registerHeroArmyModule = defineModule(
 
     return {
       subscriptions: [
-        {
-          type: APP_FACT_WORLD_READY,
-          handler: () => {
-            heroId = firstHeroIdOf(state.get(), viewingPlayer(state.get()))
-          }
-        },
         {
           type: APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
           handler: ({ detail: { from, to } }) => rearrange((armies) => moveStack(armies, from, to))
@@ -44,11 +36,7 @@ export const registerHeroArmyModule = defineModule(
   {
     id: 'hero-army',
     phase: 'domain',
-    consumes: [
-      APP_FACT_WORLD_READY,
-      APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
-      APP_COMMAND_HERO_STACK_SPLIT_REQUESTED
-    ],
+    consumes: [APP_COMMAND_HERO_STACK_MOVE_REQUESTED, APP_COMMAND_HERO_STACK_SPLIT_REQUESTED],
     produces: [APP_FACT_HERO_ARMY_CHANGED]
   }
 )
