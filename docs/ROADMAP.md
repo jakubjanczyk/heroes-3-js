@@ -307,7 +307,7 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 - [ ] Multiple hero types defined in hero data files
 
 ### 4.5 Multiple Heroes
-Built in five parts, one PR each. Parts 1 and 2 first; 3 to 5 in any order after them.
+Built in five parts. Parts 1 and 2 first (they shipped together); 3 to 5 in any order after them.
 
 #### 4.5.1 Several heroes from the scenario
 - [x] A scenario can start a player with several heroes; the default scenario has two
@@ -320,8 +320,8 @@ Built in five parts, one PR each. Parts 1 and 2 first; 3 to 5 in any order after
 - [x] The selected hero is saved: after a reload the same hero is selected. A new day selects the first hero
 
 #### 4.5.2 Next Hero button
-- [ ] Cycles through the heroes with movement points left, wrapping round
-- [ ] Disabled when none have any left
+- [x] Cycles through the heroes with movement points left, wrapping round, and centres on the one it selects
+- [x] Disabled when none have any left
 
 #### 4.5.3 Heroes meeting
 - [ ] Hovering over another of the player's heroes shows the exchange cursor (1.2)

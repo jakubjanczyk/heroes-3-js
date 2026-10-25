@@ -17,6 +17,7 @@ import {
 import {
   clickEndTurn,
   getHeroInfoBox,
+  getNextHeroButton,
   getTownInTownList,
   readArmySlots,
   readHeroList,
@@ -161,6 +162,78 @@ describe('multiple heroes behavior', () => {
       await selectHero(user, 'Valeska')
 
       expect(readArmySlots(getHeroInfoBox())).toEqual(['Archers 4', '', '', '', '', '', ''])
+    })
+  })
+
+  describe('Next hero', () => {
+    test('given the first hero is selected when the player clicks Next hero then the second is selected and the camera centres on them', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(60, 40)
+          .withEntities(aFirstHero().at(5, 5), aSecondHero().at(40, 25))
+          .withDefinitions(gameDefinitions),
+        { viewportSize: LARGE_VIEWPORT_SIZE }
+      )
+
+      await user.click(getNextHeroButton())
+
+      expect(readSelectedHeroInHeroList()).toEqual(['Valeska'])
+      expect(getMapViewCentreTile()).toEqual({ x: 40, y: 25 })
+    })
+
+    test('given the second hero is selected when the player clicks Next hero then the first is selected again', async () => {
+      const { user } = await setupApp()
+      await selectHero(user, 'Valeska')
+
+      await user.click(getNextHeroButton())
+
+      expect(readSelectedHeroInHeroList()).toEqual(['Sir Christian'])
+    })
+
+    // Fifteen steps of 100 use up the 1500 movement points.
+    test('given the second hero has no movement points left when the player clicks Next hero then the first stays selected', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(30)
+          .withEntities(aFirstHero().at(0, 0), aSecondHero().at(10, 0))
+          .withDefinitions(gameDefinitions)
+      )
+      await selectHero(user, 'Valeska')
+      await confirmMove(user, 25, 0)
+      await selectHero(user, 'Sir Christian')
+
+      await user.click(getNextHeroButton())
+
+      expect(readSelectedHeroInHeroList()).toEqual(['Sir Christian'])
+    })
+
+    test('given the selected hero has no movement points left but the other has when the player clicks Next hero then the other is selected', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(30)
+          .withEntities(aFirstHero().at(0, 0), aSecondHero().at(20, 0))
+          .withDefinitions(gameDefinitions)
+      )
+      await confirmMove(user, 15, 0)
+
+      await user.click(getNextHeroButton())
+
+      expect(readSelectedHeroInHeroList()).toEqual(['Valeska'])
+    })
+
+    test('given no hero has movement points left when the moves finish then Next hero is disabled', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(40)
+          .withEntities(aFirstHero().at(0, 0), aSecondHero().at(20, 0))
+          .withDefinitions(gameDefinitions)
+      )
+      await confirmMove(user, 15, 0)
+      await selectHero(user, 'Valeska')
+
+      await confirmMove(user, 35, 0)
+
+      expect(getNextHeroButton().disabled).toBe(true)
     })
   })
 

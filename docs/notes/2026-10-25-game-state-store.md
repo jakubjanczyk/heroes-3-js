@@ -200,7 +200,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 6. **Multiple heroes (4.5).** By now this is mostly UI work: the hero list, Next Hero cycling, selecting a hero, the exchange cursor.
 7. **Player system (8.1), later.** More entries in `players`, turn order, `activePlayer` changing and `viewingPlayer` following it.
 
-Steps 1 to 5 are done (see "How it was built" below). Step 6 is under way in parts (roadmap 4.5.1 to 4.5.5); 4.5.1, several heroes from the scenario, is done. Within a step, the old and new ways live side by side for one area at a time only.
+Steps 1 to 5 are done (see "How it was built" below). Step 6 is under way in parts (roadmap 4.5.1 to 4.5.5); 4.5.1, several heroes from the scenario, and 4.5.2, the Next Hero button, are done. Within a step, the old and new ways live side by side for one area at a time only.
 
 ## Open questions
 
