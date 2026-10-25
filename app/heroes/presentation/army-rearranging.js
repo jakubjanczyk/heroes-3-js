@@ -17,6 +17,7 @@ export function createArmyRearranging({
   slotLists,
   splitButton,
   selectText,
+  canSplit = true,
   showStatus,
   onMove,
   onSplit
@@ -48,8 +49,10 @@ export function createArmyRearranging({
         )
       }
     }
-    splitButton.disabled = !selectedStack
-    splitButton.setAttribute('aria-pressed', String(splitMode))
+    if (splitButton) {
+      splitButton.disabled = !selectedStack
+      splitButton.setAttribute('aria-pressed', String(splitMode))
+    }
   }
 
   function selectStack(stack) {
@@ -104,7 +107,8 @@ export function createArmyRearranging({
         selectStack(null)
         return
       }
-      const wantsSplit = (splitMode || shiftKey) && canSplitStack(armies, selectedStack, clicked)
+      const wantsSplit =
+        canSplit && (splitMode || shiftKey) && canSplitStack(armies, selectedStack, clicked)
       if (wantsSplit || mustSplitStack(armies, selectedStack, clicked)) {
         openSplit(clicked)
         return

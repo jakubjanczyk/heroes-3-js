@@ -27,6 +27,7 @@ import { createTreasury } from '../../../game/heroes/treasury.js'
 import {
   APP_COMMAND_TILE_CLICKED,
   APP_COMMAND_TOWN_BUILD_REQUESTED,
+  APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_LEAVE_REQUESTED,
   APP_COMMAND_TOWN_OPEN_REQUESTED,
   APP_COMMAND_TOWN_RECRUIT_REQUESTED,
@@ -251,6 +252,14 @@ export const registerTownModule = defineModule(
       }
     }
 
+    function moveGarrisonStack(entityId, from, to) {
+      const garrison = garrisons.get(entityId)
+      const changed = garrison && moveStack({ garrison }, from, to)
+      if (changed) {
+        emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId, garrison: changed.garrison })
+      }
+    }
+
     function showTown() {
       emit(APP_UI_TOWN_UPDATED, {
         entityId: openTownId,
@@ -450,6 +459,10 @@ export const registerTownModule = defineModule(
             rearrangeArmiesInTown((armies) => moveStack(armies, from, to))
         },
         {
+          type: APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
+          handler: ({ detail: { entityId, from, to } }) => moveGarrisonStack(entityId, from, to)
+        },
+        {
           type: APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
           handler: ({ detail: { from, to, count } }) =>
             rearrangeArmiesInTown((armies) => splitStack(armies, from, to, count))
@@ -540,6 +553,7 @@ export const registerTownModule = defineModule(
       APP_COMMAND_TOWN_BUILD_REQUESTED,
       APP_COMMAND_TOWN_RECRUIT_REQUESTED,
       APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
+      APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
       APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
       APP_FACT_TOWN_BUILDING_BUILT,
       APP_FACT_TOWN_CREATURES_RECRUITED,

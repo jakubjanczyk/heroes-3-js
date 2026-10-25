@@ -5,7 +5,7 @@ import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { confirmTileClickByDispatch } from './adventure-map.utils.js'
-import { flushMicrotasks } from './app.utils.js'
+import { flushMicrotasks, shiftClick } from './app.utils.js'
 
 export function getHeroList() {
   return screen.getByRole('list', { name: 'Heroes' })
@@ -311,4 +311,30 @@ export function readInfoBoxHelpPopupPosition() {
     left: Number.parseFloat(popup.style.left) + width / 2,
     top: Number.parseFloat(popup.style.top) + height / 2
   }
+}
+
+function getInfoBoxArmySlots() {
+  const infoBox = screen.getByRole('region', { name: /^(Hero|Town) info$/ })
+  const army = within(infoBox).getByRole('list', { name: /^(Army|Garrison)$/ })
+  return [...army.children]
+}
+
+// Slots count from 1, as the player sees them from the left.
+export async function clickInfoBoxArmySlot(user, slot) {
+  await user.click(getInfoBoxArmySlots()[slot - 1])
+}
+
+export async function shiftClickInfoBoxArmySlot(user, slot) {
+  await shiftClick(user, getInfoBoxArmySlots()[slot - 1])
+}
+
+export async function hoverInfoBoxArmySlot(user, slot) {
+  await user.hover(getInfoBoxArmySlots()[slot - 1])
+}
+
+export function readInfoBoxSelectedSlot() {
+  const index = getInfoBoxArmySlots().findIndex(
+    (slot) => slot.getAttribute('aria-current') === 'true'
+  )
+  return index >= 0 ? index + 1 : null
 }
