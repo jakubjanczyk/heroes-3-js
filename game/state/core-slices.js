@@ -81,6 +81,13 @@ const heroesSlice = {
   on: {
     'fact.hero.moved': updateHero((_hero, { to }) => ({ tile: to })),
     'fact.hero.movementPoints.changed': updateHero(changeMovementPoints),
+    'fact.hero.hired': (heroes, { heroId, player, tile }, { config }) => {
+      const max = maxMovementPointsOf(config)
+      return {
+        ...heroes,
+        [heroId]: { owner: player, tile, removed: false, movementPoints: { value: max, max } }
+      }
+    },
     'fact.entity.removed': (heroes, { entityId }) =>
       heroes[entityId] ? { ...heroes, [entityId]: { ...heroes[entityId], removed: true } } : heroes
   }

@@ -11,6 +11,7 @@ import { fogSlice } from './state/fog.js'
 import { heroDetailsSlice } from './state/hero-details.js'
 import { kingdomsSlice } from './state/kingdoms.js'
 import { minesSlice, monsterCountsSlice } from './state/map-objects.js'
+import { tavernSlice } from './state/tavern.js'
 import { townsSlice } from './state/towns.js'
 import { heroesTerrainTypes } from './terrain-types.js'
 
@@ -32,6 +33,7 @@ export const heroesContent = Object.freeze({
     minesSlice,
     monsterCountsSlice,
     kingdomsSlice,
+    tavernSlice,
     fogSlice
   ]),
   terrainTypes: heroesTerrainTypes

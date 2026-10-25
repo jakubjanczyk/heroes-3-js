@@ -333,9 +333,15 @@ See `docs/notes/2026-10-25-heroes-meeting.md`.
 - [ ] Dragging stacks between heroes, later
 
 #### 4.5.4 Tavern: hiring heroes
-- [ ] Clicking the Tavern on the town picture opens the tavern window: two heroes from a pool, 2500 gold each
-- [ ] A hired hero appears at the town's entrance with a small starting army
-- [ ] At most 8 heroes per player; no hiring while a hero stands in the town
+See `docs/notes/2026-10-25-tavern.md`.
+- [x] Clicking the Tavern on the town picture opens the tavern window: two heroes from a pool, 2500 gold each
+- [x] A hired hero appears at the town's entrance with a small starting army
+- [x] At most 8 heroes per player; no hiring while a hero stands in the town
+- [x] The barkeep's rumour, a new one each week; the heroes for hire change each week too
+- [x] Holding the right button on a hero for hire shows their hero box
+- [ ] Heroes of the other classes and factions, one of the two always of the town's faction
+- [ ] The Thieves' Guild button (8.1); it is there but does nothing yet
+- [ ] Rumours about the other players and the Grail (8.1, 7.x)
 
 #### 4.5.5 A defeated hero
 - [ ] A hero who loses a battle leaves the map and the hero list, and goes back to the tavern pool (recruitable again)
@@ -655,7 +661,8 @@ Stages, one PR each, done in this order:
 - [x] Built buildings drawn on the town picture as stand-ins; a chain shows only its highest building (Castle replaces Citadel and Fort); see `docs/notes/2026-10-23-town-picture.md`
 - [x] Hovering a building highlights it and shows its name in the status bar
 - [x] Clicking a dwelling opens its recruit window, the fort the Fort window, the hall the Hall
-- [ ] Clicking the other buildings opens their screens as they come: Tavern (4.5), Marketplace and Resource Silo, Mage Guild (4.8), Blacksmith, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
+- [x] Clicking the Tavern opens the tavern window (4.5.4)
+- [ ] Clicking the other buildings opens their screens as they come: Marketplace and Resource Silo, Mage Guild (4.8), Blacksmith, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
 - [ ] Right-click info on a building (6.1)
 - [ ] A building just built fades in, as in H3
 

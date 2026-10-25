@@ -137,7 +137,7 @@ export async function loadGame({
   const normalizedScenarioUrl = normalizeStaticUrl(scenarioUrl)
   const normalizedDataBaseUrl = normalizeStaticUrl(dataBaseUrl)
 
-  const [scenario, hero, heroClasses, monsters, resources, towns, buildings, mines] =
+  const [scenario, hero, heroClasses, monsters, resources, towns, buildings, mines, tavern] =
     await Promise.all([
       fetchJson(fetch, normalizedScenarioUrl),
       fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
@@ -146,7 +146,8 @@ export async function loadGame({
       fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
       fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
       fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/buildings.json`),
-      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`)
+      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`),
+      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/tavern.json`)
     ])
 
   const map = createMap(scenario.terrain, terrainTypes)
@@ -157,7 +158,7 @@ export async function loadGame({
   assertHeroPrimarySkills(scenario, primarySkills)
   assertTownGarrisons(scenario)
 
-  const definitions = { hero, heroClasses, monsters, resources, towns, buildings, mines }
+  const definitions = { hero, heroClasses, monsters, resources, towns, buildings, mines, tavern }
   assertTownBuildings(scenario, definitions)
 
   return { scenario, definitions }

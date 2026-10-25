@@ -1,9 +1,10 @@
 import { setStyleVar } from '../../engine/layers/dom-layer-utils.js'
 import { renderEntityLayer } from '../../engine/layers/entity-layer.js'
 import { getMapCenteredOrigin, getTileCenter } from '../../engine/layers/layout.js'
-import { isRemoved } from '../../game/state/queries.js'
+import { heroEntity, isRemoved } from '../../game/state/queries.js'
 import {
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_HIRED,
   APP_FACT_HERO_MOVED,
   APP_FACT_WORLD_READY,
   APP_UI_RESTORE_COMPLETED,
@@ -43,8 +44,8 @@ export const registerEntityViewModule = defineModule(
         return false
       }
 
-      const heroEntity = entityLayer.querySelector?.(`.entity--hero[data-entity-id="${heroId}"]`)
-      if (!heroEntity) {
+      const heroElement = entityLayer.querySelector?.(`.entity--hero[data-entity-id="${heroId}"]`)
+      if (!heroElement) {
         return false
       }
 
@@ -55,20 +56,34 @@ export const registerEntityViewModule = defineModule(
         origin
       })
 
-      heroEntity.dataset.tileX = String(tile.x)
-      heroEntity.dataset.tileY = String(tile.y)
+      heroElement.dataset.tileX = String(tile.x)
+      heroElement.dataset.tileY = String(tile.y)
       if (isRestoring) {
-        heroEntity.style.transition = 'none'
+        heroElement.style.transition = 'none'
       }
-      const hero = scenarioEntities?.find((entity) => entity.id === heroId) ?? null
+      const hero = heroEntity(state.get(), heroId)
       const heroStyle = hero ? getEntityStyle({ entity: hero, map }) : null
       const offsetX = Number(heroStyle?.offsetX)
       const offsetY = Number(heroStyle?.offsetY)
       const resolvedOffsetX = Number.isFinite(offsetX) ? offsetX : -12
       const resolvedOffsetY = Number.isFinite(offsetY) ? offsetY : -12
 
-      heroEntity.style.transform = `translate(${center.x + resolvedOffsetX}px, ${center.y + resolvedOffsetY}px)`
+      heroElement.style.transform = `translate(${center.x + resolvedOffsetX}px, ${center.y + resolvedOffsetY}px)`
       return true
+    }
+
+    // Heroes stand where the state has them, and those who came onto the map during play too.
+    function entitiesOnMap() {
+      const current = state.get()
+      const scenarioIds = new Set(scenarioEntities.map((entity) => entity.id))
+      const heroesAdded = Object.keys(current.heroes)
+        .filter((heroId) => !scenarioIds.has(heroId))
+        .map((heroId) => heroEntity(current, heroId))
+      return [...scenarioEntities, ...heroesAdded]
+        .filter((entity) => !isRemoved(current, entity.id))
+        .map((entity) =>
+          current.heroes[entity.id] ? { ...entity, tile: current.heroes[entity.id].tile } : entity
+        )
     }
 
     function render() {
@@ -79,7 +94,7 @@ export const registerEntityViewModule = defineModule(
       renderEntityLayer({
         container: entityLayer,
         map,
-        entities: scenarioEntities.filter((entity) => !isRemoved(state.get(), entity.id)),
+        entities: entitiesOnMap(),
         createElement,
         getEntityStyle
       })
@@ -138,6 +153,7 @@ export const registerEntityViewModule = defineModule(
             updateHeroPosition({ heroId, tile: toTile })
           }
         },
+        { type: APP_FACT_HERO_HIRED, handler: render },
         {
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
@@ -180,6 +196,7 @@ export const registerEntityViewModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_MOVED,
+      APP_FACT_HERO_HIRED,
       APP_FACT_ENTITY_REMOVED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED

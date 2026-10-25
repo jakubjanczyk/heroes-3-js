@@ -29,7 +29,11 @@ export const heroDetailsSlice = {
     'fact.hero.leveledUp': updateHero((hero, { primarySkill }) => ({
       levelUpSkills: [...hero.levelUpSkills, primarySkill]
     })),
-    'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army }))
+    'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
+    'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({
+      ...heroes,
+      [heroId]: detailsOf({ name, heroClass, army }, definitions)
+    })
   }
 }
 

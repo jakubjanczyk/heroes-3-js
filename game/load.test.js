@@ -57,7 +57,8 @@ describe('bootstrap', () => {
       resources: { GOLD_PILE: { name: 'Gold Pile', amount: 100 } },
       towns: { CASTLE: { name: 'Castle' } },
       buildings: { TAVERN: { name: 'Tavern', cost: { GOLD_PILE: 500 } } },
-      mines: { GOLD_MINE: { name: 'Gold mine' } }
+      mines: { GOLD_MINE: { name: 'Gold mine' } },
+      tavern: { cost: { GOLD_PILE: 2500 } }
     }
 
     const fetch = createFakeFetch({
@@ -68,7 +69,8 @@ describe('bootstrap', () => {
       './game/data/resources.json': definitions.resources,
       './game/data/towns.json': definitions.towns,
       './game/data/buildings.json': definitions.buildings,
-      './game/data/mines.json': definitions.mines
+      './game/data/mines.json': definitions.mines,
+      './game/data/tavern.json': definitions.tavern
     })
 
     const loaded = await loadGame({ fetch })

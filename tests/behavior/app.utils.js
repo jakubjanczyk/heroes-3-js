@@ -83,6 +83,7 @@ export function createLoadGame({
       towns: {},
       buildings: {},
       mines: {},
+      tavern: {},
       ...definitions
     }
   }
@@ -116,26 +117,29 @@ function createJsonResponse(value) {
 }
 
 function createGameFetch({ scenario, definitions, musicTracks = [] }) {
-  const routeMap = new Map([
-    ['./scenarios/scenario.json', scenario],
-    ['/scenarios/scenario.json', scenario],
-    ['./game/data/hero.json', definitions.hero ?? {}],
-    ['/game/data/hero.json', definitions.hero ?? {}],
-    ['./game/data/hero-classes.json', definitions.heroClasses ?? {}],
-    ['/game/data/hero-classes.json', definitions.heroClasses ?? {}],
-    ['./game/data/monsters.json', definitions.monsters ?? {}],
-    ['/game/data/monsters.json', definitions.monsters ?? {}],
-    ['./game/data/resources.json', definitions.resources ?? {}],
-    ['/game/data/resources.json', definitions.resources ?? {}],
-    ['./game/data/towns.json', definitions.towns ?? {}],
-    ['/game/data/towns.json', definitions.towns ?? {}],
-    ['./game/data/buildings.json', definitions.buildings ?? {}],
-    ['/game/data/buildings.json', definitions.buildings ?? {}],
-    ['./game/data/mines.json', definitions.mines ?? {}],
-    ['/game/data/mines.json', definitions.mines ?? {}],
-    ['./assets/music/tracks.json', musicTracks],
-    ['/assets/music/tracks.json', musicTracks]
-  ])
+  const dataFiles = {
+    'hero.json': definitions.hero,
+    'hero-classes.json': definitions.heroClasses,
+    'monsters.json': definitions.monsters,
+    'resources.json': definitions.resources,
+    'towns.json': definitions.towns,
+    'buildings.json': definitions.buildings,
+    'mines.json': definitions.mines,
+    'tavern.json': definitions.tavern
+  }
+  const routes = {
+    'scenarios/scenario.json': scenario,
+    'assets/music/tracks.json': musicTracks,
+    ...Object.fromEntries(
+      Object.entries(dataFiles).map(([fileName, data]) => [`game/data/${fileName}`, data ?? {}])
+    )
+  }
+  const routeMap = new Map(
+    Object.entries(routes).flatMap(([path, value]) => [
+      [`./${path}`, value],
+      [`/${path}`, value]
+    ])
+  )
 
   return async (url) => {
     if (!routeMap.has(url)) {
