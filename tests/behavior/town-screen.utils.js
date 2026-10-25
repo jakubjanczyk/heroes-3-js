@@ -499,7 +499,8 @@ export function getHireButton() {
   return within(getTavern()).getByRole('button', { name: 'Recruit' })
 }
 
-export async function hireHero(user) {
+export async function hireHero(user, heroName) {
+  await selectHeroForHire(user, heroName)
   await user.click(getHireButton())
 }
 

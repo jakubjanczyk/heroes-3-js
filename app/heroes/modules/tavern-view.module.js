@@ -9,8 +9,8 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderHeroBox } from '../presentation/hero-box.js'
 
-// The Tavern opens from the Tavern on the town picture: the heroes for hire, the first picked, and
-// Recruit. Holding the right button on a hero shows their hero box until it is let go.
+// The Tavern opens from the Tavern on the town picture: the heroes for hire, none picked until the
+// player clicks one, and Recruit. Holding the right button on a hero shows their hero box until it is let go.
 export const registerTavernViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document
@@ -18,7 +18,7 @@ export const registerTavernViewModule = defineModule(
     let townId = null
     let tavern = null
     let tavernWindow = null
-    let selectedIndex = 0
+    let selectedIndex = null
     let heroPopup = null
     // Updates for a tavern the player has closed are not shown until they open it again.
     let isOpenRequested = false
@@ -40,9 +40,6 @@ export const registerTavernViewModule = defineModule(
     }
 
     function render() {
-      if (selectedIndex >= tavern.heroes.length) {
-        selectedIndex = 0
-      }
       const selected = tavern.heroes[selectedIndex]
       part('.tavern-window__rumour').textContent = tavern.rumour
       part('.tavern-window__heroes').replaceChildren(...tavern.heroes.map(renderHeroButton))
@@ -59,7 +56,7 @@ export const registerTavernViewModule = defineModule(
       }
       if (!tavernWindow) {
         isOpenRequested = false
-        selectedIndex = 0
+        selectedIndex = null
         tavernWindow = document
           .getElementById('tavern-window-template')
           .content.firstElementChild.cloneNode(true)

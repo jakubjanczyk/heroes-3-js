@@ -94,9 +94,9 @@ async function startInTavern(scenario, options) {
   return app
 }
 
-async function hireHeroInTown(user, townName = 'Whitemoon') {
+async function hireHeroInTown(user, heroName, townName = 'Whitemoon') {
   await openTavernIn(user, townName)
-  await hireHero(user)
+  await hireHero(user, heroName)
 }
 
 describe('town tavern behavior', () => {
@@ -125,11 +125,17 @@ describe('town tavern behavior', () => {
       expect(readHiringCost()).toBe('2500')
     })
 
-    test('the first hero is selected and described', async () => {
+    test('no hero is picked when the tavern opens', async () => {
       await startInTavern()
 
-      expect(readSelectedHeroForHire()).toBe('Orrin')
-      expect(readHeroForHireDescription()).toBe('Orrin is a level 1 Knight with 0 artifacts.')
+      expect(readSelectedHeroForHire()).toBeUndefined()
+      expect(readHeroForHireDescription()).toBe('')
+    })
+
+    test('recruit is disabled until a hero is picked', async () => {
+      await startInTavern()
+
+      expect(getHireButton().disabled).toBe(true)
     })
 
     test('clicking the other hero selects and describes them', async () => {
@@ -192,16 +198,15 @@ describe('town tavern behavior', () => {
     test('hiring a hero takes 2500 gold', async () => {
       const { user } = await startInTavern()
 
-      await hireHero(user)
+      await hireHero(user, 'Orrin')
 
       expectResourceTotal('Gold', 7500)
     })
 
     test('hiring a hero closes the tavern and shows them as the town’s visiting hero', async () => {
       const { user } = await startInTavern()
-      await selectHeroForHire(user, 'Valeska')
 
-      await hireHero(user)
+      await hireHero(user, 'Valeska')
 
       expect(queryTavern()).toBeNull()
       expect(getVisitingHero('Valeska')).toBeTruthy()
@@ -209,7 +214,7 @@ describe('town tavern behavior', () => {
 
     test('the hired hero stands at the town’s entrance, selected in the hero list', async () => {
       const { user } = await startInTavern()
-      await hireHero(user)
+      await hireHero(user, 'Orrin')
 
       await leaveTown(user)
 
@@ -221,7 +226,7 @@ describe('town tavern behavior', () => {
     test('the hired hero has a full day of movement points', async () => {
       const { user } = await startInTavern()
 
-      await hireHero(user)
+      await hireHero(user, 'Orrin')
 
       expect(readHeroList()).toEqual(['Sir Christian 1500', 'Orrin 1500'])
     })
@@ -229,7 +234,7 @@ describe('town tavern behavior', () => {
     test('the hired hero comes with their starting army', async () => {
       const { user } = await startInTavern()
 
-      await hireHero(user)
+      await hireHero(user, 'Orrin')
 
       expect(readVisitingHeroArmy()).toEqual([
         'Pikemen 10',
@@ -244,7 +249,7 @@ describe('town tavern behavior', () => {
 
     test("another hero takes the hired hero's place in the tavern", async () => {
       const { user } = await startInTavern()
-      await hireHero(user)
+      await hireHero(user, 'Orrin')
       await leaveTown(user)
 
       await openTavernIn(user)
@@ -254,7 +259,7 @@ describe('town tavern behavior', () => {
 
     test("the hired hero is no longer offered in the player's other tavern", async () => {
       const { user } = await setupApp(aTavernScenario({ towns: [aWhitemoon(), aGreywater()] }))
-      await hireHeroInTown(user, 'Whitemoon')
+      await hireHeroInTown(user, 'Orrin', 'Whitemoon')
       await leaveTown(user)
 
       await openTavernIn(user, 'Greywater')
@@ -263,13 +268,19 @@ describe('town tavern behavior', () => {
     })
 
     test('recruit is disabled with less than 2500 gold', async () => {
-      await startInTavern(aTavernScenario({ resources: { GOLD_PILE: 2499 } }))
+      const { user } = await startInTavern(aTavernScenario({ resources: { GOLD_PILE: 2499 } }))
+
+      await selectHeroForHire(user, 'Orrin')
 
       expect(getHireButton().disabled).toBe(true)
     })
 
     test('recruit is disabled while a hero stands in the town', async () => {
-      await startInTavern(aTavernScenario({ heroes: [aHero().withName('Sir Christian').at(4, 3)] }))
+      const { user } = await startInTavern(
+        aTavernScenario({ heroes: [aHero().withName('Sir Christian').at(4, 3)] })
+      )
+
+      await selectHeroForHire(user, 'Orrin')
 
       expect(getHireButton().disabled).toBe(true)
     })
@@ -282,7 +293,9 @@ describe('town tavern behavior', () => {
           .at(index, 6)
       )
 
-      await startInTavern(aTavernScenario({ heroes: eightHeroes }))
+      const { user } = await startInTavern(aTavernScenario({ heroes: eightHeroes }))
+
+      await selectHeroForHire(user, 'Orrin')
 
       expect(getHireButton().disabled).toBe(true)
     })
@@ -324,7 +337,7 @@ describe('town tavern behavior', () => {
       const scenario = aTavernScenario()
       const eventLog = createMemoryEventLog()
       const { user } = await setupApp(scenario, { eventLog })
-      await hireHeroInTown(user)
+      await hireHeroInTown(user, 'Orrin')
 
       await setupApp(scenario, { eventLog, random: HIGHEST_ROLLS })
 
