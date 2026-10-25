@@ -37,8 +37,7 @@ function setupAppBus({ busDebug, document, busLogger, appEventLog, store }) {
     log: activeBusLogger,
     eventLog: appEventLog,
     shouldLogEvent: shouldPersistFactEvent,
-    beforeDispatch: store.apply,
-    isDeferredWhileDispatching: (type) => type.startsWith('fact.')
+    beforeDispatch: store.apply
   })
 }
 

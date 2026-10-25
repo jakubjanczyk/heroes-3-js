@@ -106,8 +106,7 @@ The rules:
 - **Never read the state back after emitting.** A command handler reads the state once, works out every fact it leads to, and emits them. Today `hero-levels` emits `fact.hero.experience.gained` and then reads the new experience to find the levels gained; it works out the levels from the experience before and the amount instead.
 - **What the emitter needs, it takes from its own decision.** A module that has just decided something knows the outcome: it can update its own screen state from the facts it built (an optimistic update) without waiting for them to come back, and check against the fact when it arrives.
 - **A decision is emitted as one commit:** `emitAll([...facts])`, with `emit(fact)` a commit of one. The bus applies every fact of the commit, saves them, then notifies the listeners of each fact in order. Every listener sees the state after the whole commit, never a half-done recruit.
-- **Facts emitted by a fact's listener form a new commit,** queued and run once the listeners of the current commit are done. So no listener sees the effects of a fact emitted after the one it's handling.
-- Commands and `ui.*` events are heard at once, and so are the facts a command handler emits. Queuing those too changed the order in which views heard `ui.hero.selected`, and broke the battle, whose command handlers read the battle back after emitting its facts.
+- **Facts emitted by a listener are heard at once,** before the listener goes on. Queuing them until the current commit's listeners were done was tried and dropped: whether an emit was queued then depended on who was on the stack, and the battle, which reads its state back after emitting, replayed a monster's opening shot over and over. So a listener of fact X may see a fact Y that an earlier listener of X emitted, which a replay would not show it; nothing relies on that today.
 
 Open question: whether replay needs to know which facts were one commit. With each saved entry carrying a `tx` id, replay can apply and notify a whole commit at once, exactly as live play did. Without it, replay applies the facts of a commit one by one, and a listener during replay may see the half-done state. Views that render again at `ui.restore.completed` don't care; anything that decides during replay would. Start without `tx` and add it if a case shows up.
 
@@ -218,6 +217,7 @@ Where steps 1 to 4 differ from the plan above:
 - **`fact.income.collected` is gone.** Nothing listened to it once the resource bar read the store; views render again on `fact.turn.ended`.
 - **`hero.json` keeps the defaults.** The scenario's hero now has its own `name`, `heroClass` and `owner`; a hero without them takes `hero.json`'s, which is what behavior tests rely on.
 - **Interaction facts name their hero.** `fact.interaction.reached`, `fact.interactions.queued` and the outcome facts (`fact.battle.started`, `fact.resource.collected`, `fact.town.visited`, `fact.treasureChest.opened`) carry `heroId`, so a capture or a pickup goes to the hero's owner.
+- **The store holds only what is shared or per entity.** Data one module uses for itself stays in that module.
 - **Views keep `selectedHeroId`** as screen state: the viewing player's first hero at `fact.world.ready`, then `ui.hero.selected { heroId }`.
 - **Commits:** ending the day (`fact.turn.ended` with every hero's movement points), recruiting, building and the garrison exchange each go out with `emitAll`.
 

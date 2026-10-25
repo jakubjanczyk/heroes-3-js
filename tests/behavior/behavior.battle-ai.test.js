@@ -168,6 +168,15 @@ describe('battle combat AI behavior', () => {
       expect(readCombatMessages()[0]).toBe('The Archers do 17 damage.')
     })
 
+    // The Zealots (speed 7) go before the Swordsman (speed 5), so they shoot as the battle opens.
+    test('given a monster shooter faster than every hero stack when the battle opens then it shoots once and the hero stack takes its turn', async () => {
+      await startBattle(aFight({ army: [stack('SWORDSMAN', 20)], monsterType: 'ZEALOT' }))
+      await waitMs(1000)
+
+      expect(readCombatMessages()).toHaveLength(1)
+      expect(readActiveStack().stack).toMatch(/^Swordsmen /)
+    })
+
     // The Angel flies 12 hexes: the Archers shoot it on its way, then it lands next to them.
     // 10 Archers do 20, -35% for 6 Attack against 20 Defense: 13, halved in melee: 6.
     test('given an enemy stands next to a monster shooter then it attacks it in melee', async () => {

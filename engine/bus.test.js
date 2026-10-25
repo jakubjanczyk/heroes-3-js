@@ -2,14 +2,9 @@ import { describe, expect, test } from 'vitest'
 
 import { createBus } from './bus.js'
 
-const isFact = (type) => type.startsWith('fact.')
-
 function createRecordingBus() {
   const applied = []
-  const bus = createBus({
-    beforeDispatch: (event) => applied.push(event.type),
-    isDeferredWhileDispatching: isFact
-  })
+  const bus = createBus({ beforeDispatch: (event) => applied.push(event.type) })
   return { bus, applied }
 }
 
@@ -27,19 +22,8 @@ describe('bus', () => {
     expect(seen).toEqual([['fact.resources.spent', 'fact.town.building.built']])
   })
 
-  test('a fact emitted by a fact listener waits until every listener of the first is done', () => {
-    const { bus, applied } = createRecordingBus()
-    const seenBySecondListener = []
-    bus.addEventListener('fact.interaction.reached', () => bus.emit('fact.town.captured', {}))
-    bus.addEventListener('fact.interaction.reached', () => seenBySecondListener.push([...applied]))
-
-    bus.emit('fact.interaction.reached', {})
-
-    expect(seenBySecondListener).toEqual([['fact.interaction.reached']])
-    expect(applied).toEqual(['fact.interaction.reached', 'fact.town.captured'])
-  })
-
-  test('a fact emitted by a command handler is heard before the handler goes on', () => {
+  // The handler can read the state the fact left as soon as it has emitted it.
+  test('a fact emitted by a listener is heard before the listener goes on', () => {
     const { bus } = createRecordingBus()
     const order = []
     bus.addEventListener('fact.turn.ended', () => order.push('fact heard'))

@@ -121,7 +121,8 @@ The bus exposes:
 Options of `createBus`:
 
 - `beforeDispatch(event)`: called for each event after recording it and before its listeners. Boot passes the game state store's `apply`, so a listener already reads the new state.
-- `isDeferredWhileDispatching(type)`: boot passes "is a fact". A fact emitted while the listeners of a fact run waits until they are all done, so none of them sees the effects of a fact emitted after the one it handles. Commands and `ui.*` events are heard at once, and so are the facts a command handler emits.
+
+Every emit is heard at once, also one made by a listener, so whoever emits a fact reads the state it left right after.
 
 ### 4.1a Game state store (`engine/store.js`, `app/game-state.js`)
 
