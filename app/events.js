@@ -14,6 +14,13 @@ export const APP_COMMAND_HERO_SELECT_REQUESTED = 'command.hero.select.requested'
 export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experience.gain.requested'
 export const APP_COMMAND_HERO_STACK_MOVE_REQUESTED = 'command.hero.stackMove.requested'
 export const APP_COMMAND_HERO_STACK_SPLIT_REQUESTED = 'command.hero.stackSplit.requested'
+// Between two heroes on the exchange screen; each names the heroes as `heroIds: { left, right }`
+// and the armies as 'left' and 'right'.
+export const APP_COMMAND_HEROES_STACK_MOVE_REQUESTED = 'command.heroes.stackMove.requested'
+export const APP_COMMAND_HEROES_STACK_SPLIT_REQUESTED = 'command.heroes.stackSplit.requested'
+export const APP_COMMAND_HEROES_STACK_SEND_REQUESTED = 'command.heroes.stackSend.requested'
+export const APP_COMMAND_HEROES_ARMY_SEND_REQUESTED = 'command.heroes.armySend.requested'
+export const APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED = 'command.heroes.armiesSwap.requested'
 export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoCombat.requested'
 export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove.requested'
 export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
@@ -103,6 +110,8 @@ export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
 // The player clicked the selected hero on the map, when the map takes clicks.
 export const APP_UI_SELECTED_HERO_CLICKED = 'ui.selectedHero.clicked'
 export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
+// A hero walked onto another of the player's heroes: `heroId` came to `otherHeroId`.
+export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
 export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 

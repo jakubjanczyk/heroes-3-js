@@ -5,7 +5,8 @@ export const ADVENTURE_CURSOR = Object.freeze({
   CASTLE: 'castle',
   MOVE: 'move',
   ATTACK: 'attack',
-  VISIT: 'visit'
+  VISIT: 'visit',
+  EXCHANGE: 'exchange'
 })
 
 const COMPASS_ROWS = [
@@ -31,15 +32,24 @@ function cursorActionFor(entity, attacks) {
     return ADVENTURE_CURSOR.MOVE
   }
 
+  if (entity.kind === 'HERO') {
+    return ADVENTURE_CURSOR.EXCHANGE
+  }
   return entity.kind === 'MONSTER' ? ADVENTURE_CURSOR.ATTACK : ADVENTURE_CURSOR.VISIT
 }
 
-// The cursor over a map tile: the helmet over the hero; else, when the hero has a route there,
-// the swords for a monster or when a battle on the way (`attacks`) stops it, the rearing horse
-// for anything else it can visit and the horse for an empty tile, numbered with the day it gets
-// there, or to the battle, when that is not today; else the arrow.
-export function getAdventureCursor({ entity, travelDays, attacks = false }) {
-  if (entity?.kind === 'HERO') {
+// The cursor over a map tile: the helmet over the selected hero; else, when the hero has a route
+// there, the swords for a monster or when a battle on the way (`attacks`) stops it, the two
+// heroes trading for another of the player's heroes, the rearing horse for anything else it can
+// visit and the horse for an empty tile, numbered with the day it gets there, or to the battle,
+// when that is not today; else the helmet over another hero and the arrow elsewhere.
+export function getAdventureCursor({
+  entity,
+  travelDays,
+  attacks = false,
+  isSelectedHero = false
+}) {
+  if (entity?.kind === 'HERO' && (isSelectedHero || !travelDays)) {
     return ADVENTURE_CURSOR.HERO
   }
   if (!travelDays) {

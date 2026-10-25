@@ -72,8 +72,8 @@ export const registerAdventureCursorModule = defineModule(
       }
 
       const entity = mapObjects.getEntityAt(hoveredTile)
-      if (entity?.kind === 'HERO') {
-        showCursor(getAdventureCursor({ entity }))
+      if (entity?.kind === 'HERO' && (isTownSelected || entity.id === heroRoutes.getHero()?.id)) {
+        showCursor(getAdventureCursor({ entity, isSelectedHero: true }))
         return
       }
       if (opensTown(entity)) {

@@ -45,7 +45,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] Hover over the hero: hero helmet cursor
 - [x] Hover over own town: castle cursor; its entrance keeps the rearing horse while the hero is selected (2.3b)
 - [x] With a town selected in the town list, the map shows the arrow: the hero does not move
-- [ ] Hover over another hero: exchange cursor (needs multiple heroes)
+- [x] Hover over another of the player's heroes: exchange cursor, numbered with the day; see `docs/notes/2026-10-25-heroes-meeting.md`
 - [x] Scroll arrows at the map edges, while edge scrolling
 - [x] Cursor updates in real-time as mouse moves across tiles, and when the hero moves under a still mouse
 - [x] Cursor reflects whether tile is within current turn's movement range
@@ -280,7 +280,7 @@ Heroes become characters with identity and progression.
 - [x] Army displayed in the info box and the hero's right-click popup (7 slots, creature picture + exact count per slot; the map look until creature portraits)
 - [ ] Click on stack to see creature details (stats, abilities)
 - [ ] Drag-and-drop to reorder stacks within hero army
-- [ ] Split stack: divide one stack into two (in town: 6.3.6, and on the hero screen; army exchange between heroes still to come, 4.5)
+- [x] Split stack: divide one stack into two (in town: 6.3.6, on the hero screen, and between two heroes: 4.5.3)
 - [x] Rearranging the army on the hero screen as in the town (6.3.6): click a stack to frame it, click another slot to move, swap or merge, Shift+click or the screen's Split button to split
 - [ ] Merge stacks: drag same creature type together to combine
 - [ ] Army strength estimate (sum of AI values) shown in hero info
@@ -324,8 +324,12 @@ Built in five parts. Parts 1 and 2 first (they shipped together); 3 to 5 in any 
 - [x] Disabled when none have any left
 
 #### 4.5.3 Heroes meeting
-- [ ] Hovering over another of the player's heroes shows the exchange cursor (1.2)
-- [ ] Walking onto them opens the army exchange screen: two rows of 7 slots, click a stack then where it goes, as in the garrison exchange (6.3.6); splitting stacks there too (4.3)
+See `docs/notes/2026-10-25-heroes-meeting.md`.
+- [x] Hovering over another of the player's heroes shows the exchange cursor (1.2); clicking them plans the route there, and selects them only when there is none
+- [x] Walking onto them opens the exchange screen: banners, portraits, primary skills side by side and both armies, with empty frames for what heroes don't have yet (artifacts, secondary skills, spell points, ...)
+- [x] Click a stack then where it goes, as in the garrison exchange (6.3.6); splitting stacks there too (4.3)
+- [x] The arrow under each slot sends that stack to the other hero; move all left, move all right and swap armies buttons
+- [ ] Status bar texts and right-click popups over the rest of the screen
 - [ ] Dragging stacks between heroes, later
 
 #### 4.5.4 Tavern: hiring heroes
