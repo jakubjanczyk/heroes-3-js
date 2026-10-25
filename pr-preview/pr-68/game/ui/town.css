@@ -1085,6 +1085,9 @@
 
 .tavern-window__description {
   grid-area: description;
+  display: grid;
+  align-content: center;
+  min-block-size: calc(2lh + 2 * var(--space-xs) + 2px);
 }
 
 .tavern-window__cost {
@@ -1116,7 +1119,7 @@
 }
 
 .tavern-window__status {
-  min-block-size: 1.4em;
+  min-block-size: calc(1lh + 2 * var(--space-2xs) + 2px);
   margin: 0;
   padding: var(--space-2xs);
   border: 1px solid var(--trim-gold-dark);
