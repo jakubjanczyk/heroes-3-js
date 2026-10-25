@@ -76,6 +76,8 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - Current history uses short, imperative commit messages (e.g. “add npm for testing and linting”).
 - Prefer: `<area>: <imperative summary>` (example: `docs: clarify movement rules`).
 - Commit as `Jakub Janczyk <jakubjanczyk@users.noreply.github.com>`: if `git config user.name`/`user.email` say otherwise, set them before committing. Never commit with Claude as author or co-author.
+- Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines, and no session links.
+- Commit as `Jakub Janczyk <jakubjanczyk@users.noreply.github.com>`: if `git config user.name`/`user.email` say otherwise, set them before committing. Never commit with Claude as author or co-author.
 - Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines.
 - PRs should include:
   - a short description of user-visible behavior
