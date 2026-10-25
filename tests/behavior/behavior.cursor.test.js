@@ -282,6 +282,29 @@ describe('adventure map cursor behavior', () => {
     expect(getMapCursor()).toBe('hero')
   })
 
+  test("given another of the player's heroes the selected hero can reach when the mouse is over them then the cursor is the exchange cursor", async () => {
+    const { user } = await setupApp(
+      aScenario().withSize(6).withEntities(aHero().at(0, 0), aHero().withId('hero-2').at(4, 0))
+    )
+
+    await hoverTile(user, 4, 0)
+
+    expect(getMapCursor()).toBe('exchange')
+  })
+
+  test("given another of the player's heroes the selected hero can't reach when the mouse is over them then the cursor is the hero helmet", async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(6)
+        .withTiles([GRASS, GRASS, WATER, GRASS, GRASS, GRASS])
+        .withEntities(aHero().at(0, 0), aHero().withId('hero-2').at(4, 0))
+    )
+
+    await hoverTile(user, 4, 0)
+
+    expect(getMapCursor()).toBe('hero')
+  })
+
   test('given the hero has used all its movement when the mouse is over the next tile then the horse shows 2', async () => {
     const { user } = await setupApp(aLongRow())
     await moveHeroTo(15, 0)

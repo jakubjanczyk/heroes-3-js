@@ -66,6 +66,26 @@ const HERO_ROWS = [
   '................'
 ]
 
+// Over another of the player's heroes: two arrows trading places.
+const EXCHANGE_ROWS = [
+  '................',
+  '..........k.....',
+  '..........kk....',
+  '.kkkkkkkkkkYk...',
+  '.kYYYYYYYYYGYk..',
+  '.kGGGGGGGGGGGOk.',
+  '.kkkkkkkkkkGOk..',
+  '..........kOk...',
+  '...kOk..........',
+  '..kOGkkkkkkkkkk.',
+  '.kOGGGGGGGGGGGk.',
+  '..kYGYYYYYYYYYk.',
+  '...kYkkkkkkkkkk.',
+  '....kk..........',
+  '.....k..........',
+  '................'
+]
+
 // Over an empty tile the hero can walk to: a galloping horse.
 const MOVE_ROWS = [
   '................',
@@ -508,7 +528,8 @@ const CURSORS = {
 for (const [name, rows] of Object.entries({
   move: MOVE_ROWS,
   attack: ATTACK_ROWS,
-  visit: VISIT_ROWS
+  visit: VISIT_ROWS,
+  exchange: EXCHANGE_ROWS
 })) {
   CURSORS[name] = rows
   for (const day of [2, 3, 4]) {

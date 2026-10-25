@@ -34,7 +34,6 @@ import { ARMY_THAT_WINS, aHero, aMonster, aScenario, aTown } from './builders.js
 import {
   clickHeroInHeroList,
   closeHeroScreen,
-  queryHeroScreen,
   readHeroScreenArmy,
   readHeroScreenBox,
   readHeroScreenTitle
@@ -135,15 +134,6 @@ describe('multiple heroes behavior', () => {
       await clickHeroInHeroList(user, 'Valeska')
 
       expect(readHeroScreenTitle()).toEqual(['Valeska', 'Level 1 Knight'])
-    })
-
-    test('given the first hero is selected when the player clicks the second on the map then the second is selected', async () => {
-      await setupApp()
-
-      dispatchTileClick(5, 0)
-
-      expect(readSelectedHeroInHeroList()).toEqual(['Valeska'])
-      expect(queryHeroScreen()).toBeNull()
     })
 
     test('given the first hero is selected when the player holds the right button on the second then the popup shows the second hero and their army', async () => {

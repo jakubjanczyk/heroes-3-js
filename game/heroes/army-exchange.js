@@ -24,21 +24,34 @@ function isSameSlot(from, to) {
   return from.army === to.army && from.slot === to.slot
 }
 
+// Every army but a town's garrison is a hero's, and a hero always keeps at least one creature.
+const GARRISON = 'garrison'
+
+function isHeroArmy(armyName) {
+  return armyName !== GARRISON
+}
+
+function stackCount(army) {
+  return army.filter(Boolean).length
+}
+
 function isHeroLeftEmpty(armies) {
-  return Boolean(armies.hero) && !armies.hero.some(Boolean)
+  return Object.entries(armies).some(
+    ([name, army]) => isHeroArmy(name) && Array.isArray(army) && stackCount(army) === 0
+  )
 }
 
-// The hero's only stack, about to go to another army.
+// A hero's only stack, about to go to another army.
 function isLastHeroStackLeaving(armies, from, to) {
-  return from.army === 'hero' && to.army !== 'hero' && armies.hero.filter(Boolean).length === 1
+  return isHeroArmy(from.army) && to.army !== from.army && stackCount(armies[from.army]) === 1
 }
 
-// A stack moved onto another slot, as in Heroes 3: onto an empty slot it moves, onto a stack of the
-// same creature it merges, onto another creature the two swap. `armies` holds the armies by name
-// (the garrison, the visiting hero's); `from` and `to` are each `{ army, slot }`. Returns the armies
-// after the move, or null when it isn't allowed: an army that isn't there, an empty slot to move,
-// or a hero left with no creatures, which Heroes 3 never allows. The hero's last stack moved onto
-// an empty slot leaves one creature behind instead.
+// A stack moved onto another slot: onto an empty slot it moves, onto a stack of the same creature
+// it merges, onto another creature the two swap. `armies` holds the armies by name (`garrison`
+// for a town's, any other name for a hero's); `from` and `to` are each `{ army, slot }`. Returns
+// the armies after the move, or null when it isn't allowed: an army that isn't there, an empty
+// slot to move, or a hero left with no creatures. A hero's last stack moved onto an empty slot of
+// another army leaves one creature behind instead.
 export function moveStack(armies, from, to) {
   const stack = armies[from.army]?.[from.slot]
   if (!stack || !armies[to.army] || isSameSlot(from, to)) {
@@ -67,7 +80,7 @@ export function canSplitStack(armies, from, to) {
   )
 }
 
-// Heroes 3 won't merge the hero's last stack whole into another army: it asks how many to move.
+// A hero's last stack doesn't merge whole into another army: the player is asked how many to move.
 export function mustSplitStack(armies, from, to) {
   return (
     Boolean(armies[to.army]?.[to.slot]) &&
@@ -83,12 +96,13 @@ export function splitStackLimits(armies, from, to) {
   const stack = armies[from.army][from.slot]
   const target = armies[to.army][to.slot]
   const betweenArmies = from.army !== to.army
-  const heroStacks = armies.hero?.filter(Boolean).length
+  const keepsOne = (armyName) =>
+    betweenArmies && isHeroArmy(armyName) && stackCount(armies[armyName]) === 1
   return {
     leftCount: stack.count,
     rightCount: target?.count ?? 0,
-    leftMin: betweenArmies && from.army === 'hero' && heroStacks === 1 ? 1 : 0,
-    rightMin: betweenArmies && to.army === 'hero' && heroStacks === 1 ? 1 : 0
+    leftMin: keepsOne(from.army) ? 1 : 0,
+    rightMin: keepsOne(to.army) ? 1 : 0
   }
 }
 
@@ -117,6 +131,78 @@ export function splitStack(armies, from, to, rightCount) {
   return isHeroLeftEmpty(split) ? null : split
 }
 
+// Where a stack sent to `army` goes: onto the same creature, else into the first empty slot.
+function slotTaking(army, creature) {
+  const sameCreatureSlot = army.findIndex((stack) => stack?.creature === creature)
+  return sameCreatureSlot >= 0 ? sameCreatureSlot : army.indexOf(null)
+}
+
+// `count` of the creatures at `from` sent into `toArmy` within `moved`, changing it in place.
+// Returns whether there was room for them.
+function sendCreatures(moved, from, toArmy, count) {
+  const stack = moved[from.army][from.slot]
+  const slot = slotTaking(moved[toArmy], stack.creature)
+  if (count < 1 || slot < 0) {
+    return false
+  }
+
+  const target = moved[toArmy][slot]
+  moved[toArmy][slot] = { ...stack, count: (target?.count ?? 0) + count }
+  moved[from.army][from.slot] =
+    count === stack.count ? null : { ...stack, count: stack.count - count }
+  return true
+}
+
+function copyBothArmies(armies, fromArmy, toArmy) {
+  return { ...armies, [fromArmy]: toSlots(armies[fromArmy]), [toArmy]: toSlots(armies[toArmy]) }
+}
+
+// The stack at `from` sent to the army named `toArmy`, onto the same creature or into its first
+// empty slot; a hero's last stack leaves one creature behind. Null when there is no room or
+// nothing to send.
+export function sendStack(armies, from, toArmy) {
+  const stack = armies[from.army]?.[from.slot]
+  if (!stack || !armies[toArmy] || toArmy === from.army) {
+    return null
+  }
+
+  const moved = copyBothArmies(armies, from.army, toArmy)
+  const keptCount = isLastHeroStackLeaving(armies, from, { army: toArmy }) ? 1 : 0
+  return sendCreatures(moved, from, toArmy, stack.count - keptCount) ? moved : null
+}
+
+// Every stack of `fromArmy` sent to `toArmy` in slot order, one creature staying in its first
+// stack; a stack with no room left for it stays. Null when nothing moves.
+export function sendAllStacks(armies, fromArmy, toArmy) {
+  if (!armies[fromArmy] || !armies[toArmy] || fromArmy === toArmy) {
+    return null
+  }
+
+  const moved = copyBothArmies(armies, fromArmy, toArmy)
+  const firstSlot = moved[fromArmy].findIndex(Boolean)
+  let hasMoved = false
+  moved[fromArmy].forEach((stack, slot) => {
+    if (stack) {
+      const count = slot === firstSlot ? stack.count - 1 : stack.count
+      hasMoved = sendCreatures(moved, { army: fromArmy, slot }, toArmy, count) || hasMoved
+    }
+  })
+  return hasMoved ? moved : null
+}
+
+// The two armies traded slot for slot.
+export function swapArmies(armies, firstArmy, secondArmy) {
+  if (!armies[firstArmy] || !armies[secondArmy] || firstArmy === secondArmy) {
+    return null
+  }
+
+  return {
+    ...armies,
+    [firstArmy]: toSlots(armies[secondArmy]),
+    [secondArmy]: toSlots(armies[firstArmy])
+  }
+}
+
 export const TOWN_SELECT_TEXT = {
   garrison: 'Select %s (in garrison)',
   hero: 'Select %s (visiting)'
@@ -134,7 +220,7 @@ export function describeSlotHover(armies, selected, hovered, selectText = TOWN_S
     return ''
   }
   if (!stack) {
-    return isLastHeroStackLeaving(armies, selected, hovered)
+    return hovered.army === GARRISON && isLastHeroStackLeaving(armies, selected, hovered)
       ? 'Cannot move last army to garrison'
       : `Move ${selectedStack.singularName}`
   }

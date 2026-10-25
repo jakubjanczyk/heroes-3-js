@@ -19,4 +19,3 @@ Roadmap 6.3.6: splitting a stack between two slots on the town screen, between t
 ## Not yet
 
 - Creature pictures: both windows show stand-ins.
-- Splitting when two heroes meet (4.5); the hero screen has it (see `2026-10-23-hero-screen.md`).
