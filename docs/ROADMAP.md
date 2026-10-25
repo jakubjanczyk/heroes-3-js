@@ -169,7 +169,7 @@ Stages:
 - [ ] Pickup sounds
 - [x] Clicking it shows the kingdom overview (towns per hall level, empty Allies and Enemies rows), then the date, then back; each goes back after 3 seconds; see `docs/notes/2026-10-24-info-box-kingdom-overview.md`
 - [ ] The allies' and enemies' flags in the kingdom overview (8.1)
-- [ ] Selecting and rearranging units in the hero's army and the town's garrison in the info box, as on the hero and town screens but without splitting
+- [x] Selecting and rearranging units in the hero's army and the town's garrison in the info box, as on the hero and town screens but without splitting; see `docs/notes/2026-10-25-info-box-army.md`
 - [ ] Right-clicking a unit in the info box opens its creature info window (needs the creature info window, 4.3)
 - [ ] The date opened by a click plays the new day sound and music, as at the start of a turn (10.4, 10.5)
 - [x] The date at the start of each turn after the first: "Day N", or "Week N" on a new week, with the sun rising over the hills (each week of the month under its own sky); see `docs/notes/2026-10-24-info-box-date.md`

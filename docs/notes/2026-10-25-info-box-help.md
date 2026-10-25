@@ -9,6 +9,6 @@ Roadmap 2.4b: the info box says what it is, like every other part of the adventu
 
 ## What we do
 
-- The status bar module shows the text while the mouse is over the box and empties the bar when it leaves.
+- The info box module shows the text while the mouse is over the box, except over an army slot (`2026-10-25-info-box-army.md`), and empties the bar when it leaves.
 - The info box module opens the popup (`app/heroes/presentation/info-box-help-popup.js`), drawn as the map's right-click popup (`.info-popup.message-box`) but centred on the map, not on the whole screen. A right-click doesn't change the box's view, and the browser's context menu doesn't open.
 - As on the map, a finger held still on the box for 500 ms opens the same popup, and lifting it closes it without the click going round the views.
