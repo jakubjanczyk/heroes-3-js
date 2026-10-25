@@ -78,6 +78,7 @@
     <link rel="modulepreload" href="./game/heroes/hero-army.js" />
     <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
     <link rel="modulepreload" href="./game/heroes/treasury.js" />
+    <link rel="modulepreload" href="./game/heroes/state/tavern.js" />
     <link rel="modulepreload" href="./game/heroes/terrain-types.js" />
     <link rel="modulepreload" href="./app/heroes/interaction-outcomes.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/adventure-sprites.js" />
@@ -143,6 +144,9 @@
     <link rel="modulepreload" href="./app/heroes/modules/owner-flag-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/status-bar.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/system-options.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/tavern.module.js" />
+    <link rel="modulepreload" href="./game/heroes/tavern.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/tavern-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/town.module.js" />
     <link rel="modulepreload" href="./game/heroes/fort-window.js" />
     <link rel="modulepreload" href="./game/heroes/town-picture.js" />
@@ -575,6 +579,40 @@
         <div class="fort-card__creature entity--monster" aria-hidden="true"></div>
         <dl class="fort-card__stats"></dl>
       </article>
+    </template>
+
+    <!--
+      The Tavern: its picture and the barkeep's rumour; the two heroes for hire, the one picked
+      described under them; the cost and Recruit; the Thieves' Guild (not there yet), Close and
+      the window's status bar.
+    -->
+    <template id="tavern-window-template">
+      <div class="town-hall-backdrop">
+        <section class="tavern-window message-box" role="dialog" aria-modal="true" aria-label="Tavern" tabindex="-1">
+          <h3 class="window-title">Tavern</h3>
+          <div class="tavern-window__picture" aria-hidden="true"></div>
+          <p class="tavern-window__rumour" aria-label="Rumour"></p>
+          <div class="tavern-window__hire">
+            <h4 class="tavern-window__subtitle">Heroes for Hire</h4>
+            <div class="tavern-window__heroes" role="group" aria-label="Heroes for hire"></div>
+            <p class="tavern-window__description" aria-label="Hero for hire"></p>
+            <div class="tavern-window__cost" data-resource="GOLD_PILE">
+              <span class="resource-icon tavern-window__gold" aria-hidden="true"></span>
+              <span class="tavern-window__amount" aria-label="Cost"></span>
+            </div>
+            <button class="building-window__button tavern-window__recruit" type="button" data-tavern-action="recruit" aria-label="Recruit">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+          <div class="tavern-window__buttons">
+            <button class="building-window__button" type="button" aria-label="Thieves' Guild" disabled></button>
+            <button class="building-window__button" type="button" data-tavern-action="close" aria-label="Close" aria-keyshortcuts="Escape" title="Close (Escape)">
+              <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
+            </button>
+          </div>
+          <p class="tavern-window__status" role="status" aria-label="Tavern status bar"></p>
+        </section>
+      </div>
     </template>
 
     <!--

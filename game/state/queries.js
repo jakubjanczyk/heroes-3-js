@@ -19,6 +19,12 @@ export function heroTile(state, heroId) {
   return state.heroes[heroId]?.tile ?? null
 }
 
+// A hero as the map knows them, also one who came onto the map during play.
+export function heroEntity(state, heroId) {
+  const hero = state.heroes[heroId]
+  return hero ? { id: heroId, kind: 'HERO', type: 'HERO', tile: hero.tile } : null
+}
+
 export function heroMovementPoints(state, heroId) {
   return state.heroes[heroId]?.movementPoints ?? null
 }

@@ -4,6 +4,7 @@ import { FOOTPRINT_BLOCKER_KIND } from '../../game/footprint-utils.js'
 import { heroById } from '../../game/heroes/state/hero-details.js'
 import { monsterCount } from '../../game/heroes/state/map-objects.js'
 import { townGarrison } from '../../game/heroes/state/towns.js'
+import { heroEntity } from '../../game/state/queries.js'
 
 // What stands on each map tile, for views that describe a tile: a hero, what is still on the map,
 // how many creatures a monster has left, what a town's garrison holds, and every tile of a mine's
@@ -17,7 +18,9 @@ export function createMapObjects(gameState) {
     const heroId = Object.keys(state.heroes).find(
       (id) => !state.heroes[id].removed && sameTile(tile, state.heroes[id].tile)
     )
-    return heroId ? { ...entitiesById.get(heroId), ...heroById(state, heroId) } : null
+    return heroId
+      ? { ...heroEntity(state, heroId), ...entitiesById.get(heroId), ...heroById(state, heroId) }
+      : null
   }
 
   function withState(state, entity) {

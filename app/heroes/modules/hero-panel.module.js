@@ -11,6 +11,7 @@ import {
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_HERO_SELECT_REQUESTED,
+  APP_FACT_HERO_HIRED,
   APP_FACT_HERO_SELECTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
   APP_FACT_TOWN_LEFT,
@@ -188,6 +189,13 @@ export const registerHeroPanelModule = defineModule(
           }
         },
         {
+          type: APP_FACT_HERO_HIRED,
+          handler: () => {
+            heroIds = heroIdsOf(state.get(), viewingPlayer(state.get()))
+            renderHeroes()
+          }
+        },
+        {
           type: APP_FACT_HERO_SELECTED,
           handler: selectHero
         },
@@ -224,6 +232,7 @@ export const registerHeroPanelModule = defineModule(
     phase: 'view',
     consumes: [
       APP_FACT_WORLD_READY,
+      APP_FACT_HERO_HIRED,
       APP_FACT_HERO_SELECTED,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_TOWN_SELECTED,

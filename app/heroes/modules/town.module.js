@@ -36,6 +36,7 @@ import {
   APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_HIRED,
   APP_FACT_INTERACTION_REACHED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
@@ -320,14 +321,14 @@ export const registerTownModule = defineModule(
             mapBlockers.clear()
           }
         },
-        {
-          type: APP_FACT_HERO_ARMY_CHANGED,
+        ...[APP_FACT_HERO_ARMY_CHANGED, APP_FACT_HERO_HIRED].map((type) => ({
+          type,
           handler: () => {
             if (openTownId) {
               showTown()
             }
           }
-        },
+        })),
         { type: APP_FACT_MOVE_STARTED, handler: blockMap('moving') },
         {
           type: APP_FACT_MOVE_FINISHED,
@@ -453,6 +454,7 @@ export const registerTownModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_ARMY_CHANGED,
+      APP_FACT_HERO_HIRED,
       APP_FACT_MOVE_STARTED,
       APP_FACT_MOVE_FINISHED,
       APP_FACT_INTERACTION_REACHED,
