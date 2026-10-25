@@ -58,10 +58,34 @@ export const registerHeroPanelModule = defineModule(
       centerOnHero(selectedHeroId())
     }
 
+    function selectOtherHero(heroId) {
+      emit(APP_COMMAND_HERO_SELECT_REQUESTED, { heroId })
+      centerOnHero(heroId)
+    }
+
+    function canMove(heroId) {
+      return (heroMovementPoints(state.get(), heroId)?.value ?? 0) > 0
+    }
+
+    // The next hero after the selected one, wrapping round, who can still move today.
+    function nextHeroId() {
+      const start = heroIds.indexOf(selectedHeroId())
+      const inTurn = heroIds.map((_, offset) => heroIds[(start + 1 + offset) % heroIds.length])
+      return inTurn.find(canMove) ?? null
+    }
+
+    function selectNextHero() {
+      const heroId = nextHeroId()
+      if (heroId && heroId !== selectedHeroId()) {
+        selectOtherHero(heroId)
+        return
+      }
+      selectAndCenterOnHero()
+    }
+
     function clickPortrait(heroId) {
       if (heroId !== selectedHeroId()) {
-        emit(APP_COMMAND_HERO_SELECT_REQUESTED, { heroId })
-        centerOnHero(heroId)
+        selectOtherHero(heroId)
         return
       }
 
@@ -136,9 +160,8 @@ export const registerHeroPanelModule = defineModule(
     }
 
     function renderNextHeroButton() {
-      const movementPoints = heroMovementPoints(state.get(), selectedHeroId())
-      if (nextHeroButton && movementPoints) {
-        nextHeroButton.disabled = movementPoints.value <= 0
+      if (nextHeroButton) {
+        nextHeroButton.disabled = nextHeroId() === null
       }
     }
 
@@ -149,7 +172,7 @@ export const registerHeroPanelModule = defineModule(
           type: 'click',
           handler: (event) => {
             event?.stopPropagation?.()
-            selectAndCenterOnHero()
+            selectNextHero()
           }
         }
       ],
