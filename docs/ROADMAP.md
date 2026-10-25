@@ -679,12 +679,11 @@ Stages, one PR each, done in this order:
 Rich adventure map with meaningful locations.
 
 ### 7.1 Fog of War
-- [ ] Three tile states: unexplored (black), previously seen (dimmed/shrouded), visible (full)
+- [ ] Two tile states: unexplored (black) and explored. An explored tile stays revealed for good, and what happens on it stays visible (an enemy hero walking there included); nothing is dimmed or shown as last seen
 - [ ] Hero vision radius: 5 tiles by default (increased by Scouting skill)
 - [ ] Town vision radius: 5 tiles around owned towns
-- [ ] Fog updates when hero moves or turn starts
+- [ ] Fog clears when a hero moves or a town is captured
 - [ ] Entities in fog are hidden (not rendered)
-- [ ] Entities in shroud show last-known state (but may have changed)
 - [ ] Fog rendered as overlay layer on terrain
 - [ ] Minimap reflects fog state
 - [ ] Scouting skill: Basic +1, Advanced +2, Expert +3 vision radius

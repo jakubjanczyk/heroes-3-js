@@ -157,7 +157,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 - `players[p].explored` is a `Uint8Array` of `width * height`. 8 players on a 144×144 map take about 166 KB.
 - **No new fact for fog.** Applying `fact.world.ready` reveals around each player's starting heroes and towns. Applying `fact.hero.moved` reveals around the hero's new tile for the hero's owner. Applying `fact.town.captured` reveals around the town for its new owner.
 - The vision radius (5 by default, plus Scouting later) is a rule in `game/state/fog.js`. Fog is rebuilt on replay, so a rule change also applies to old saved sessions.
-- Visible tiles (what is in sight right now) aren't stored. `visibleTiles(state, player)` works them out from current hero and town positions. Seen-but-not-visible tiles are derived the same way.
+- A tile is either unexplored or explored; there is no "seen before but out of sight now" state. An explored tile stays revealed and shows what is on it now, so `explored` is all the screen needs.
 - When explored changes, the array is copied and a new one stored: about 20 KB per step on a 144×144 map. No other module ever sees it change in place.
 - **`deepFreeze` must skip typed arrays.** `Object.freeze` throws on a non-empty `Uint8Array`, so `engine/deep-freeze.js` has to leave `ArrayBuffer` views alone. Typed arrays are then read-only by convention.
 
@@ -196,7 +196,7 @@ Everything per player, per hero and per town is keyed by id from the start, even
 2. **The store, with towns.** Add `engine/store.js`, the bus `beforeDispatch` option and commits (`emitAll`), the runtime `state` handle, `combineSlices` with the core slices in `game/state/`, and the `towns` slice in `game/heroes/state/` (owner, town order). Replace the 7 `createOwnedTowns()` copies with reads. This proves the pattern on the area with the most copies.
 3. **Heroes.** Add `heroes[id]` with tile, army, experience, level, primary skills and movement points. Move the name and class onto the scenario hero, and movement points out of `turnState`. Replace the 12 single `hero` copies with reads of `heroById(state, selectedHeroId)`. This is the largest step, and the one that makes several heroes possible.
 4. **The rest of the copies:** resources (`players[p].resources`, with income applied on `fact.turn.ended`), buildings and garrisons, mines, removed entities and monster counts (`map-objects.js`).
-5. **Fog of war (7.1)** as `players[p].explored` and `visibleTiles`, read through `viewingPlayer`. The first feature built only on the store.
+5. **Fog of war (7.1)** as `players[p].explored`, read through `viewingPlayer`. The first feature built only on the store.
 6. **Multiple heroes (4.5).** By now this is mostly UI work: the hero list, Next Hero cycling, selecting a hero, the exchange cursor.
 7. **Player system (8.1), later.** More entries in `players`, turn order, `activePlayer` changing and `viewingPlayer` following it.
 
