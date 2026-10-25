@@ -4,6 +4,7 @@ import {
   firstHeroIdOf,
   heroMovementPoints,
   heroTile,
+  isTileExplored,
   viewingPlayer
 } from '../../game/state/queries.js'
 import {
@@ -134,6 +135,10 @@ export const registerSelectionModule = defineModule(
             }
 
             const { tile } = event.detail
+            if (!isTileExplored(state.get(), viewingPlayer(state.get()), tile)) {
+              return
+            }
+
             const selectedHeroTile = heroTile(state.get(), selectedHeroId)
             if (selectedHeroTile && sameTile(selectedHeroTile, tile)) {
               emit(APP_UI_SELECTED_HERO_CLICKED, {})

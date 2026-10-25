@@ -20,6 +20,7 @@
     <link rel="preload" href="./engine/layers/layer-containers.css" as="style" />
     <link rel="preload" href="./engine/layers/terrain-layer.css" as="style" />
     <link rel="preload" href="./engine/layers/entity-layer.css" as="style" />
+    <link rel="preload" href="./engine/layers/fog-layer.css" as="style" />
     <link rel="preload" href="./engine/layers/path-preview-layer.css" as="style" />
     <link rel="preload" href="./game/ui/terrain.css" as="style" />
     <link rel="preload" href="./game/ui/entities.css" as="style" />
@@ -59,9 +60,11 @@
     <link rel="modulepreload" href="./game/heroes/movement-rules.js" />
     <link rel="modulepreload" href="./game/heroes/primary-skills.js" />
     <link rel="modulepreload" href="./game/heroes/road-types.js" />
+    <link rel="modulepreload" href="./game/heroes/state/fog.js" />
+    <link rel="modulepreload" href="./game/state/fog.js" />
+    <link rel="modulepreload" href="./game/state/queries.js" />
     <link rel="modulepreload" href="./game/heroes/state/hero-details.js" />
     <link rel="modulepreload" href="./game/heroes/state/kingdoms.js" />
-    <link rel="modulepreload" href="./game/state/queries.js" />
     <link rel="modulepreload" href="./game/heroes/mine-income.js" />
     <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
     <link rel="modulepreload" href="./game/heroes/town-income.js" />
@@ -168,6 +171,8 @@
     <link rel="modulepreload" href="./engine/edge-pan-controller.js" />
     <link rel="modulepreload" href="./app/modules/entity-view.module.js" />
     <link rel="modulepreload" href="./engine/layers/entity-layer.js" />
+    <link rel="modulepreload" href="./app/modules/fog-view.module.js" />
+    <link rel="modulepreload" href="./engine/layers/fog-layer.js" />
     <link rel="modulepreload" href="./app/modules/interaction.module.js" />
     <link rel="modulepreload" href="./app/modules/shared/interaction-outcomes.js" />
     <link rel="modulepreload" href="./app/modules/interaction-modal.module.js" />
@@ -197,6 +202,7 @@
             <div class="world" aria-label="World">
               <div class="terrain-layer" aria-label="Terrain"></div>
               <div class="entity-layer" aria-label="Entities"></div>
+              <div class="fog-layer" aria-label="Fog of war"></div>
               <div class="effects-layer" aria-label="Effects"></div>
             </div>
           </div>

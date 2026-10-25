@@ -43,6 +43,10 @@
     min-block-size: 0;
   }
 
+  & .minimap-tile--unexplored {
+    background: black;
+  }
+
   & .minimap-tile--neutral {
     background: var(--neutral-grey);
   }
