@@ -3,16 +3,12 @@ export function createBus({
   log = null,
   eventLog = null,
   shouldLogEvent = () => false,
-  beforeDispatch = () => {},
-  isDeferredWhileDispatching = () => true
+  beforeDispatch = () => {}
 } = {}) {
   const listenersByType = new Map()
   const writeLog = typeof log === 'function' ? log : () => {}
   const recordEvent = typeof eventLog?.record === 'function' ? eventLog.record.bind(eventLog) : null
   let isSilent = false
-  // For each commit whose listeners are running, innermost last: the commits waiting for them.
-  const dispatching = []
-  const isDeferred = ({ type }) => isDeferredWhileDispatching(type)
 
   function debugLog(entry) {
     if (!debug) {
@@ -120,9 +116,7 @@ export function createBus({
   }
 
   // Every event of a commit is recorded and passed to beforeDispatch before any listener hears the
-  // first, so no listener sees a decision half applied. What the listeners of a deferring commit
-  // emit that defers too waits until all of them are done, so each of them sees the state the
-  // commit left, as a replay of the log would.
+  // first, so no listener sees a decision half applied.
   function dispatchCommit(commit) {
     const events = commit.map(({ type, detail, options }) => {
       record(type, detail, options)
@@ -131,37 +125,17 @@ export function createBus({
       return event
     })
 
-    const deferredCommits = commit.some(isDeferred) ? [] : null
-    dispatching.push(deferredCommits)
-    try {
-      for (const event of events) {
-        notify(event)
-      }
-    } finally {
-      dispatching.pop()
+    for (const event of events) {
+      notify(event)
     }
-
-    for (const deferred of deferredCommits ?? []) {
-      dispatchCommit(deferred)
-    }
-  }
-
-  function enqueue(commit) {
-    const deferredCommits = dispatching.at(-1)
-    if (deferredCommits && commit.some(isDeferred)) {
-      deferredCommits.push(commit)
-      return
-    }
-
-    dispatchCommit(commit)
   }
 
   function emit(type, detail, options = {}) {
-    enqueue([{ type, detail, options }])
+    dispatchCommit([{ type, detail, options }])
   }
 
   function emitAll(events, options = {}) {
-    enqueue(events.map(({ type, detail }) => ({ type, detail, options })))
+    dispatchCommit(events.map(({ type, detail }) => ({ type, detail, options })))
   }
 
   return {
