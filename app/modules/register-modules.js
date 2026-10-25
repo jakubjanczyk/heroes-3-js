@@ -1,5 +1,6 @@
 import { registerCameraModule } from './camera.module.js'
 import { registerEntityViewModule } from './entity-view.module.js'
+import { registerFogViewModule } from './fog-view.module.js'
 import { registerInteractionModule } from './interaction.module.js'
 import { registerInteractionModalModule } from './interaction-modal.module.js'
 import { registerKeyboardShortcutsModule } from './keyboard-shortcuts.module.js'
@@ -23,6 +24,7 @@ export const CORE_MODULES = [
   registerCameraModule,
   registerTerrainViewModule,
   registerEntityViewModule,
+  registerFogViewModule,
   registerPreviewViewModule,
   registerWorldViewModule,
   registerInteractionModalModule,

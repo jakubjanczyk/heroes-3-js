@@ -1,4 +1,5 @@
 import { getStatusBarText } from '../../../game/heroes/status-bar-text.js'
+import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { APP_FACT_WORLD_READY, APP_UI_TILE_HOVERED } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
@@ -28,7 +29,7 @@ export const registerStatusBarModule = defineModule(
           type: APP_UI_TILE_HOVERED,
           handler: (event) => {
             const { tile } = event.detail
-            if (!tile) {
+            if (!tile || !isTileExplored(state.get(), viewingPlayer(state.get()), tile)) {
               showText('')
               return
             }

@@ -34,6 +34,7 @@ app/
     camera.module.js
     terrain-view.module.js
     entity-view.module.js
+    fog-view.module.js
     preview-view.module.js
     world-view.module.js
     interaction-modal.module.js
@@ -75,6 +76,7 @@ flowchart TD
   Registry --> Camera[camera.module]
   Registry --> TerrainView[terrain-view.module]
   Registry --> EntityView[entity-view.module]
+  Registry --> FogView[fog-view.module]
   Registry --> PreviewView[preview-view.module]
   Registry --> WorldView[world-view.module]
   Registry --> MinimapView[minimap-view.module]
@@ -128,7 +130,8 @@ Every emit is heard at once, also one made by a listener, so whoever emits a fac
 
 The current game state, worked out by applying every saved fact in order; see `docs/notes/2026-10-25-game-state-store.md`. It is rebuilt on every load and never saved.
 
-- Built from slices: the core ones in `game/state/core-slices.js` (players; heroes with their owner, tile and movement points; removed map objects; the date) and the content's own (`content.stateSlices` in `game/heroes/state/`: hero details, towns, mines, monster counts, kingdoms).
+- Built from slices: the core ones in `game/state/core-slices.js` (players; heroes with their owner, tile and movement points; removed map objects; the date) and the content's own (`content.stateSlices` in `game/heroes/state/`: hero details, towns, mines, monster counts, kingdoms, fog).
+- Fog of war: `game/state/fog.js` keeps each player's explored tiles (`createFogSlice`) and the core queries `isTileExplored` and `tilesExploredSince` read them; the content says who sees how far (`game/heroes/state/fog.js`). A scenario with `fogOfWar: false` has every tile explored. Unexplored tiles are blocked for routes, and views cover them.
 - A slice is `{ key, initial(world), on: { [factType]: (slice, detail, { previousState, scenario, definitions, config }) => slice } }`. Only saved fact types may change it (`tests/architecture/game-state.test.js`). `fact.world.ready` starts it afresh.
 - Income, creature growth and the day's building limit follow from `fact.turn.ended` inside the slices, so nothing is emitted unsaved to replay them.
 - Modules read it through `state.get()` and the queries next to the slices (`heroById`, `townIdsOf`, `resourcesOf`, `viewingPlayer`, ...), never write it. Core modules use only the core queries in `game/state/queries.js`.
@@ -210,6 +213,7 @@ What each module listens to and emits, generated from its declared `consumes`/`p
 | `camera` | core | domain | `fact.world.ready`, `ui.restore.started`, `ui.restore.completed`, `ui.systemOptions.opened`, `ui.systemOptions.closed`, `ui.adventureMap.covered`, `ui.adventureMap.uncovered`, `command.camera.panBy`, `command.camera.centerOnTile`, `fact.move.started`, `fact.hero.moved`, `fact.move.finished` | `command.camera.panBy`, `command.tile.clicked`, `ui.camera.updated`, `ui.map.edgeScrolled`, `ui.tile.hovered`, `ui.tile.info.requested`, `ui.tile.info.dismissed`, `ui.world.motion.updated` |
 | `terrain-view` | core | view | `fact.world.ready` | none |
 | `entity-view` | core | view | `fact.world.ready`, `fact.hero.moved`, `fact.entity.removed`, `ui.restore.started`, `ui.restore.completed` | none |
+| `fog-view` | core | view | `fact.world.ready`, `fact.hero.moved`, `fact.town.captured` | none |
 | `preview-view` | core | view | `fact.world.ready`, `ui.preview.updated` | none |
 | `world-view` | core | view | `ui.restore.started`, `ui.restore.completed`, `ui.world.motion.updated`, `ui.camera.updated` | none |
 | `interaction-modal` | core | view | `ui.interaction.modal.opened`, `ui.notice.opened` | `ui.interaction.modal.closed` |

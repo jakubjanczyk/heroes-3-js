@@ -105,6 +105,7 @@
   --z-entity-mine: 18;
   --z-entity-town: 20;
   --z-entity-hero: 30;
+  --z-layer-fog: 35;
   --z-layer-effects: 40;
   --z-ui-interaction-modal: 30;
   --z-ui-info-popup: 40;

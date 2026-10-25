@@ -71,7 +71,12 @@ export const aTown = () =>
   }))
 
 export const aMine = () =>
-  builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, placeable)
+  builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, (mine) => ({
+    ...placeable(mine),
+    ownedByPlayer() {
+      mine.owner = 'red'
+    }
+  }))
 
 // Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience.
 export const aTreasureChest = () =>
@@ -94,7 +99,9 @@ export const aScenario = () =>
       tiles: new Array(6).fill(0),
       entities: [aHero().build()],
       definitions: {},
-      startingResources: {}
+      startingResources: {},
+      // On in the game; off here so a test sees the whole map unless it is about fog of war.
+      fogOfWar: false
     },
     (scenario) => ({
       withSize(width, height = 1) {

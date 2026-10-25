@@ -9,7 +9,7 @@ import {
   getScrollCursor
 } from '../../../game/heroes/adventure-cursor.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
-import { heroMovementPoints } from '../../../game/state/queries.js'
+import { heroMovementPoints, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -66,7 +66,7 @@ export const registerAdventureCursorModule = defineModule(
     }
 
     function updateCursor() {
-      if (!hoveredTile) {
+      if (!hoveredTile || !isTileExplored(state.get(), viewingPlayer(state.get()), hoveredTile)) {
         showCursor(ADVENTURE_CURSOR.ARROW)
         return
       }

@@ -55,6 +55,7 @@ export function createLoadGame({
   tiles = [0, 0, 0, 0],
   roads,
   startingResources,
+  fogOfWar = false,
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
@@ -71,6 +72,7 @@ export function createLoadGame({
       meta: { id: 'demo' },
       terrain: { width, height, tiles: terrainTiles, ...(roads ? { roads: [...roads] } : {}) },
       entities: scenarioEntities,
+      fogOfWar,
       ...(startingResources ? { startingResources: { ...startingResources } } : {})
     },
     definitions: {

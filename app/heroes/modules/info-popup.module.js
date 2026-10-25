@@ -5,6 +5,7 @@ import { mineOwner } from '../../../game/heroes/state/map-objects.js'
 import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
 import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
+import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
@@ -16,6 +17,7 @@ import { renderHeroBox } from '../presentation/hero-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
 
 const SCREEN_MARGIN_PX = 8
+const UNCHARTED_TERRITORY = 'Uncharted Territory'
 // Keeps a popup opened by a finger clear of the fingertip.
 const FINGER_GAP_PX = 48
 
@@ -81,6 +83,13 @@ export const registerInfoPopupModule = defineModule(
       popup.appendChild(box)
     }
 
+    function fillLine(text) {
+      const line = document.createElement('p')
+      line.className = 'info-popup__line'
+      line.textContent = text
+      popup.appendChild(line)
+    }
+
     function fillLines(entity, tile) {
       // No creature portraits yet: the monster is pictured as it is drawn on the map.
       if (entity?.kind === 'MONSTER') {
@@ -99,10 +108,7 @@ export const registerInfoPopupModule = defineModule(
         ownerColorName: owner ? capitalize(owner) : null
       })
       for (const line of lines) {
-        const text = document.createElement('p')
-        text.className = 'info-popup__line'
-        text.textContent = line
-        popup.appendChild(text)
+        fillLine(line)
       }
     }
 
@@ -114,7 +120,9 @@ export const registerInfoPopupModule = defineModule(
       popup.className = 'info-popup message-box'
       popup.setAttribute('role', 'tooltip')
 
-      if (entity?.kind === 'HERO') {
+      if (!isTileExplored(state.get(), viewingPlayer(state.get()), tile)) {
+        fillLine(UNCHARTED_TERRITORY)
+      } else if (entity?.kind === 'HERO') {
         fillHeroBox(entity)
       } else if (entity?.kind === 'TOWN' && isViewingPlayersTown(state.get(), entity.id)) {
         fillTownBox(entity)

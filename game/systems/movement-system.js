@@ -53,6 +53,7 @@ export function createMovementSystem({
   occupancy,
   entityBehaviors,
   getGuardsAt = () => [],
+  isExplored = () => true,
   sleep = defaultSleep,
   stepDelayMs = 80,
   getStepCost = () => 1,
@@ -88,6 +89,9 @@ export function createMovementSystem({
       map,
       getStepCost,
       isBlocked: (tile) => {
+        if (!isExplored(tile)) {
+          return true
+        }
         const occupant = occupancy.getAt(tile)
         return occupant !== null && occupant.id !== hero.id
       },
@@ -141,7 +145,7 @@ export function createMovementSystem({
   // A destination holding an entity is only a valid target if the hero can interact with it.
   function planRoute(toTile) {
     const hero = getHero()
-    if (!hero?.tile) {
+    if (!hero?.tile || !isExplored(toTile)) {
       return null
     }
 

@@ -50,3 +50,31 @@ export function isRemoved(state, entityId) {
 export function turnNumber(state) {
   return state.date.turnNumber
 }
+
+// A game without fog of war has every tile explored.
+export function isTileExplored(state, player, tile) {
+  const fog = state.fog
+  if (!fog?.enabled) {
+    return true
+  }
+
+  return fog.explored[player]?.[tile.y * fog.width + tile.x] === 1
+}
+
+// The tiles explored since `before`, an earlier state.
+export function tilesExploredSince(before, state, player) {
+  const fog = state.fog
+  const previous = before?.fog?.explored[player]
+  const explored = fog?.explored[player]
+  if (!fog?.enabled || !explored || explored === previous) {
+    return []
+  }
+
+  const tiles = []
+  for (let index = 0; index < explored.length; index += 1) {
+    if (explored[index] === 1 && previous?.[index] !== 1) {
+      tiles.push({ x: index % fog.width, y: Math.floor(index / fog.width) })
+    }
+  }
+  return tiles
+}

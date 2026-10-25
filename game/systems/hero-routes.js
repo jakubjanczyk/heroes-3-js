@@ -1,7 +1,13 @@
 import { indexGuardedTiles } from '../domain/movement/guards.js'
 import { NO_REMOVED_ENTITIES } from '../domain/removed-entities.js'
 import { getOccupantAt } from '../domain/tile-occupant.js'
-import { firstHeroIdOf, heroTile, viewingPlayer } from '../state/queries.js'
+import {
+  firstHeroIdOf,
+  heroOwner,
+  heroTile,
+  isTileExplored,
+  viewingPlayer
+} from '../state/queries.js'
 import { createMovementSystem } from './movement-system.js'
 
 // What the hero's routes depend on: where it stands, what is still on the map and which tiles
@@ -62,6 +68,8 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
           return guardedTiles.getGuardsAt(tile)
         },
         getStepCost: (from, to) => movementRules.stepCost({ map, from, to }),
+        // A hero never walks through tiles its owner has not explored.
+        isExplored: (tile) => isTileExplored(getState(), heroOwner(getState(), heroId), tile),
         ...options
       })
     }
