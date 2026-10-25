@@ -7,6 +7,7 @@ import {
   clickEndTurn,
   closeInteractionModal,
   endTurns,
+  expectStatusBarText,
   getDateBox,
   getHeroInfoBox,
   getKingdomOverview,
@@ -16,10 +17,13 @@ import {
   queryCapturedMineBox,
   queryDateBox,
   queryFoundResourcesBox,
+  queryInfoBoxHelpPopup,
   queryKingdomOverview,
   readCapturedMine,
   readDateBox,
   readFoundResources,
+  readInfoBoxHelpPopup,
+  readInfoBoxHelpPopupPosition,
   readKingdomOverviewFlags,
   readKingdomOverviewHalls
 } from './adventure-panels.utils.js'
@@ -643,5 +647,145 @@ describe('info box views behavior', () => {
 
     expect(queryKingdomOverview()).toBeNull()
     expect(getTownInfoBox()).toBeTruthy()
+  })
+})
+
+const LONG_PRESS_MS = 500
+
+const STATUS_WINDOW_HELP =
+  'This window provides information on the status of your hero or kingdom, and shows the date. Left click here to cycle through these windows.'
+
+async function setupHelpApp() {
+  return setupApp({
+    appConfig: { fadeOutMsByKind: { RESOURCE: 0 }, longPressMs: LONG_PRESS_MS }
+  })
+}
+
+async function holdRightButtonOnInfoBox(user) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroInfoBox() })
+}
+
+async function releaseRightButton(user) {
+  await user.pointer({ keys: '[/MouseRight]' })
+}
+
+async function longPressInfoBox(user) {
+  await user.pointer({ keys: '[TouchA>]', target: getHeroInfoBox() })
+  await waitMs(LONG_PRESS_MS + 10)
+}
+
+async function liftFinger(user) {
+  await user.pointer({ keys: '[/TouchA]' })
+}
+
+describe('info box help behavior', () => {
+  test('shows "Status Window" in the status bar while the mouse is over the info box', async () => {
+    const { user } = await setupHelpApp()
+
+    await user.hover(getHeroInfoBox())
+
+    expectStatusBarText('Status Window')
+  })
+
+  test.each([
+    ['the kingdom overview', (user) => user.click(getHeroInfoBox()), getKingdomOverview],
+    ['a picked-up resource', collectGold, queryFoundResourcesBox]
+  ])('shows "Status Window" while the mouse is over %s', async (_view, showView, getView) => {
+    const { user } = await setupHelpApp()
+    await showView(user)
+
+    await user.hover(getView())
+
+    expectStatusBarText('Status Window')
+  })
+
+  test('empties the status bar when the mouse leaves the info box', async () => {
+    const { user } = await setupHelpApp()
+    await user.hover(getHeroInfoBox())
+
+    await user.unhover(getHeroInfoBox())
+
+    expectStatusBarText('')
+  })
+
+  test('explains the info box in a popup while the right button is held on it', async () => {
+    const { user } = await setupHelpApp()
+
+    await holdRightButtonOnInfoBox(user)
+
+    expect(readInfoBoxHelpPopup()).toEqual({
+      title: 'Status Window',
+      text: STATUS_WINDOW_HELP
+    })
+  })
+
+  test('shows the popup in the middle of the screen', async () => {
+    const { user } = await setupHelpApp()
+
+    await holdRightButtonOnInfoBox(user)
+
+    expect(readInfoBoxHelpPopupPosition()).toEqual({
+      left: window.innerWidth / 2,
+      top: window.innerHeight / 2
+    })
+  })
+
+  test('closes the popup when the right button is released', async () => {
+    const { user } = await setupHelpApp()
+    await holdRightButtonOnInfoBox(user)
+
+    await releaseRightButton(user)
+
+    expect(queryInfoBoxHelpPopup()).toBeNull()
+  })
+
+  test('explains the info box in a popup while a finger is held on it', async () => {
+    const { user } = await setupHelpApp()
+
+    await longPressInfoBox(user)
+
+    expect(readInfoBoxHelpPopup()).toEqual({
+      title: 'Status Window',
+      text: STATUS_WINDOW_HELP
+    })
+  })
+
+  test('closes the popup when the finger lifts', async () => {
+    const { user } = await setupHelpApp()
+    await longPressInfoBox(user)
+
+    await liftFinger(user)
+
+    expect(queryInfoBoxHelpPopup()).toBeNull()
+  })
+
+  test('keeps showing the hero when the player right-clicks the info box', async () => {
+    const { user } = await setupHelpApp()
+
+    await holdRightButtonOnInfoBox(user)
+    await releaseRightButton(user)
+
+    expect(queryKingdomOverview()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test('keeps showing the hero when the finger of a long press on the info box lifts', async () => {
+    const { user } = await setupHelpApp()
+
+    await longPressInfoBox(user)
+    await liftFinger(user)
+
+    expect(queryKingdomOverview()).toBeNull()
+    expect(getHeroInfoBox()).toBeTruthy()
+  })
+
+  test("doesn't open the browser's context menu when the player right-clicks the info box", async () => {
+    await setupHelpApp()
+
+    const contextMenuAllowed = getHeroInfoBox().dispatchEvent(
+      new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 })
+    )
+
+    expect(contextMenuAllowed).toBe(false)
   })
 })

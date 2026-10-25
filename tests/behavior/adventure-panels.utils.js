@@ -289,3 +289,26 @@ export function readKingdomOverviewFlags() {
       .map((flag) => flag.getAttribute('aria-label'))
   return { allies: flagsIn('Allies'), enemies: flagsIn('Enemies') }
 }
+
+export function queryInfoBoxHelpPopup() {
+  return screen.queryByRole('tooltip', { name: 'Status Window' })
+}
+
+// The popup's highlighted title and the text under it.
+export function readInfoBoxHelpPopup() {
+  const popup = screen.getByRole('tooltip', { name: 'Status Window' })
+  return {
+    title: within(popup).getByRole('heading').textContent,
+    text: popup.querySelector('p').textContent
+  }
+}
+
+// The point the popup is centred on, in screen pixels.
+export function readInfoBoxHelpPopupPosition() {
+  const popup = screen.getByRole('tooltip', { name: 'Status Window' })
+  const { width, height } = popup.getBoundingClientRect()
+  return {
+    left: Number.parseFloat(popup.style.left) + width / 2,
+    top: Number.parseFloat(popup.style.top) + height / 2
+  }
+}
