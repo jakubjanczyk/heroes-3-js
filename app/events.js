@@ -27,6 +27,8 @@ export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
 export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
+export const APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED =
+  'command.town.garrisonStackMove.requested'
 
 export const APP_FACT_WORLD_READY = 'fact.world.ready'
 export const APP_FACT_WORLD_LOAD_FAILED = 'fact.world.load.failed'

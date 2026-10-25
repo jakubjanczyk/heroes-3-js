@@ -10,6 +10,8 @@ import {
 } from '../../../game/heroes/town-buildings.js'
 import { createOwnedTowns } from '../../../game/heroes/town-ownership.js'
 import {
+  APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
+  APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_MINE_CAPTURED,
@@ -29,6 +31,7 @@ import {
   APP_UI_TOWN_SELECTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderCapturedMineBox } from '../presentation/captured-mine-box.js'
 import { renderDateBox } from '../presentation/date-box.js'
 import { renderFoundResourcesBox } from '../presentation/found-resources-box.js'
@@ -40,11 +43,18 @@ import { renderTownBox } from '../presentation/town-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 const DEFAULT_LONG_PRESS_MS = 500
+const HOVER_TEXT = 'Status Window'
+const SELECT_TEXT = { hero: 'Select %s', garrison: 'Select %s' }
+
+function armySlotAt(target) {
+  return target?.closest?.('.army-slot') ?? null
+}
 
 // Registered after the hero panel: on a new day the hero is selected again before the date shows.
 export const registerInfoBoxModule = defineModule(
-  ({ env, config }) => {
+  ({ env, config, emit }) => {
     const infoBox = env.document?.getElementById('hero-info')
+    const statusBar = env.document?.getElementById('status-bar')
     const longPressMs = config?.longPressMs ?? DEFAULT_LONG_PRESS_MS
     let hero = null
     let heroName = DEFAULT_HERO_NAME
@@ -64,6 +74,8 @@ export const registerInfoBoxModule = defineModule(
     let helpPopup = null
     let longPressTimer = null
     let ignoreNextClick = false
+    let rearranging = null
+    let hoveredSlotIndex = null
 
     function send(eventType, nextContent = {}) {
       const next = nextInfoBoxView(view, eventType)
@@ -125,8 +137,59 @@ export const registerInfoBoxModule = defineModule(
         ignoreNextClick = false
         return
       }
-      if (!event.target.closest?.('.army-slot')) {
-        send('clicked', { date: calendarDateOfTurn(turnNumber) })
+      const slot = armySlotAt(event.target)
+      if (slot) {
+        rearranging?.clickSlot(slot, event)
+        return
+      }
+      send('clicked', { date: calendarDateOfTurn(turnNumber) })
+    }
+
+    function showStatus(text) {
+      if (statusBar) {
+        statusBar.textContent = text
+      }
+    }
+
+    function armySlots() {
+      return [...infoBox.querySelectorAll('.army-slot')]
+    }
+
+    function onMouseOver(event) {
+      const slot = armySlotAt(event.target)
+      if (!slot) {
+        showStatus(HOVER_TEXT)
+        return
+      }
+      hoveredSlotIndex = armySlots().indexOf(slot)
+      rearranging?.hoverSlot(slot)
+    }
+
+    function onMouseOut(event) {
+      const slot = armySlotAt(event.target)
+      if (slot && armySlotAt(event.relatedTarget) !== slot) {
+        hoveredSlotIndex = null
+        rearranging?.leaveSlot()
+      }
+    }
+
+    // The box is drawn anew for every change, so the framing starts over with the new slots.
+    function startRearranging(armies, onMove) {
+      rearranging = createArmyRearranging({
+        document: env.document,
+        container: infoBox,
+        slotLists: infoBox.querySelectorAll('[data-army]'),
+        splitButton: null,
+        selectText: SELECT_TEXT,
+        canSplit: false,
+        showStatus,
+        onMove,
+        onSplit: () => {}
+      })
+      rearranging.showArmies(armies)
+      const hoveredSlot = armySlots()[hoveredSlotIndex]
+      if (hoveredSlot) {
+        rearranging.hoverSlot(hoveredSlot)
       }
     }
 
@@ -152,6 +215,7 @@ export const registerInfoBoxModule = defineModule(
 
     function render() {
       if (infoBox) {
+        rearranging = null
         RENDERERS[view]()
       }
     }
@@ -171,11 +235,13 @@ export const registerInfoBoxModule = defineModule(
     }
 
     function renderSelectedHero() {
+      const army = getHeroArmy({ entity: hero, definitions })
       show('Hero info', renderHeroBox, {
         name: heroName,
         skills: getHeroPrimarySkills({ entity: hero, definitions, levelUpSkills }),
-        army: getHeroArmy({ entity: hero, definitions })
+        army
       })
+      startRearranging({ hero: army }, (move) => emit(APP_COMMAND_HERO_STACK_MOVE_REQUESTED, move))
     }
 
     function renderSelectedTown() {
@@ -183,15 +249,20 @@ export const registerInfoBoxModule = defineModule(
         return
       }
 
-      const town = townsById.get(selectedTown.entityId)
+      const { entityId, name } = selectedTown
+      const town = townsById.get(entityId)
+      const garrison = getTownGarrison({ entity: town, definitions })
       show('Town info', renderTownBox, {
-        name: selectedTown.name,
+        name,
         ...describeTownBox({
           catalogue: townBuildingsCatalogue(definitions, town?.type),
-          built: townBuildings.builtIn(selectedTown.entityId)
+          built: townBuildings.builtIn(entityId)
         }),
-        garrison: getTownGarrison({ entity: town, definitions })
+        garrison
       })
+      startRearranging({ garrison }, (move) =>
+        emit(APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED, { entityId, ...move })
+      )
     }
 
     function resourceName(type) {
@@ -203,6 +274,9 @@ export const registerInfoBoxModule = defineModule(
         { target: infoBox, type: 'click', handler: onClicked },
         { target: infoBox, type: 'pointerdown', handler: onPointerDown },
         { target: infoBox, type: 'contextmenu', handler: (event) => event.preventDefault() },
+        { target: infoBox, type: 'mouseover', handler: onMouseOver },
+        { target: infoBox, type: 'mouseout', handler: onMouseOut },
+        { target: infoBox, type: 'mouseleave', handler: () => showStatus('') },
         { target: env.window, type: 'pointerup', handler: closeHelp },
         { target: env.window, type: 'pointercancel', handler: closeHelp }
       ],
@@ -359,6 +433,9 @@ export const registerInfoBoxModule = defineModule(
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED
     ],
-    produces: []
+    produces: [
+      APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
+      APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED
+    ]
   }
 )
