@@ -35,6 +35,7 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
   if (!document?.body || !document.createElement) {
     return {
       log() {},
+      addToggle() {},
       destroy() {}
     }
   }
@@ -68,6 +69,14 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
   clearButton.className = 'bus-dev-panel__clear'
   clearButton.textContent = 'Clear'
 
+  const tools = document.createElement('fieldset')
+  tools.className = 'bus-dev-panel__tools'
+
+  const toolsTitle = document.createElement('legend')
+  toolsTitle.className = 'bus-dev-panel__tools-title'
+  toolsTitle.textContent = 'Dev tools'
+  tools.append(toolsTitle)
+
   const list = document.createElement('ol')
   list.className = 'bus-dev-panel__list'
 
@@ -96,7 +105,7 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
   updateCounter()
   updateToggleText()
   header.append(title, counter, clearButton)
-  body.append(header, list)
+  body.append(tools, header, list)
   root.append(toggle, body)
   document.body.append(root)
 
@@ -141,8 +150,22 @@ export function createBusDevPanel({ document, maxEntries = 120 } = {}) {
     }
   }
 
+  function addToggle({ label, checked, onChange }) {
+    const toggleLabel = document.createElement('label')
+    toggleLabel.className = 'bus-dev-panel__tool'
+
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.checked = checked
+    checkbox.addEventListener('change', () => onChange(checkbox.checked))
+
+    toggleLabel.append(checkbox, label)
+    tools.append(toggleLabel)
+  }
+
   return {
     log,
+    addToggle,
     destroy() {
       root.remove()
     }

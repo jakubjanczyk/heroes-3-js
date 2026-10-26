@@ -124,6 +124,7 @@ export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequeste
 // A message box over the town screen, such as there being no room in the garrison for recruits.
 export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
+export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_MOVED,

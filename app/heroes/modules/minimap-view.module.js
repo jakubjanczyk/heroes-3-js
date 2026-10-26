@@ -19,7 +19,8 @@ import {
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
-  APP_UI_CAMERA_UPDATED
+  APP_UI_CAMERA_UPDATED,
+  APP_UI_DEV_FOG_OF_WAR_CHANGED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
@@ -138,6 +139,12 @@ export const registerMinimapViewModule = defineModule(
       if (explored.length > 0) {
         renderTowns()
       }
+    }
+
+    function renderExploration() {
+      renderTerrain()
+      shownState = state.get()
+      renderTowns()
     }
 
     function renderTowns() {
@@ -309,9 +316,7 @@ export const registerMinimapViewModule = defineModule(
               setStyleVar(minimapMap, '--minimap-map-height', String(map.height))
             }
 
-            renderTerrain()
-            shownState = state.get()
-            renderTowns()
+            renderExploration()
             renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
             updateViewportBox(lastCameraUpdate)
           }
@@ -351,6 +356,7 @@ export const registerMinimapViewModule = defineModule(
             }
           }
         },
+        { type: APP_UI_DEV_FOG_OF_WAR_CHANGED, handler: renderExploration },
         {
           type: APP_UI_CAMERA_UPDATED,
           handler: (event) => {
@@ -371,7 +377,8 @@ export const registerMinimapViewModule = defineModule(
       APP_FACT_DWELLING_FLAGGED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_TOWN_CAPTURED,
-      APP_UI_CAMERA_UPDATED
+      APP_UI_CAMERA_UPDATED,
+      APP_UI_DEV_FOG_OF_WAR_CHANGED
     ],
     produces: [APP_COMMAND_CAMERA_CENTER_ON_TILE]
   }
