@@ -257,6 +257,25 @@ describe('town tavern behavior', () => {
       expect(readHeroesForHire()).toEqual(['Edric', 'Valeska'])
     })
 
+    test("the hero who takes the hired hero's place brings a single first-level creature", async () => {
+      const { user } = await startInTavern()
+      await hireHero(user, 'Orrin')
+      await leaveTown(user)
+      await openTavernIn(user)
+
+      await holdRightButtonOnHeroForHire(user, 'Edric')
+
+      expect(readArmySlots(screen.getByRole('tooltip'))).toEqual([
+        'Pikeman 1',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
+
     test("the hired hero is no longer offered in the player's other tavern", async () => {
       const { user } = await setupApp(aTavernScenario({ towns: [aWhitemoon(), aGreywater()] }))
       await hireHeroInTown(user, 'Orrin', 'Whitemoon')
