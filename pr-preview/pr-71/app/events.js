@@ -83,7 +83,6 @@ export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
-// The secondary skill the player picked on a level-up: a new one at Basic, or one a level higher.
 export const APP_FACT_HERO_SECONDARY_SKILL_LEARNED = 'fact.hero.secondarySkill.learned'
 export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
 // A hero hired in a town's tavern, who comes onto the map at the town's entrance.
@@ -94,7 +93,6 @@ export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
 export const APP_UI_NOTICE_OPENED = 'ui.notice.opened'
-// Sent as a popup closes, before it is gone, with the choice made and the popup's `subject`.
 export const APP_UI_INTERACTION_MODAL_CONFIRMED = 'ui.interaction.modal.confirmed'
 export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed'
 export const APP_UI_CAMERA_UPDATED = 'ui.camera.updated'

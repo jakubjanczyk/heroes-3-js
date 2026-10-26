@@ -155,7 +155,6 @@
   }
 }
 
-/* A secondary skill until there are skill pictures: its initials in gold on a dark square. */
 .interaction-modal__choice-picture[data-initials] {
   display: grid;
   place-items: center;
@@ -220,10 +219,6 @@
   filter: drop-shadow(1px 1px 0 black);
 }
 
-/*
- * The level-up popup: each line in a dark bar, the hero between two medals, the gained primary
- * skill pictured over its line, and the checkmark in the bottom right corner.
- */
 .interaction-modal:has([data-variant="level-up"]) {
   inline-size: min(24rem, calc(100% - (2 * var(--space-lg))));
 }
@@ -299,7 +294,6 @@
   stroke-width: 0.8;
 }
 
-/* The hero's initial until there are portraits, as in the hero box. */
 .interaction-modal__portrait {
   display: grid;
   place-items: center;

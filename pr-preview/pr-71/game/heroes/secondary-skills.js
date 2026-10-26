@@ -69,9 +69,6 @@ export function learnSecondarySkill(secondarySkills, learned) {
     : [...secondarySkills, learned]
 }
 
-// The skills a hero may learn on a level-up: an upgrade of one of theirs and a new one picked by
-// the class's `weights`. With no skill to upgrade both are new; with no room for a new one, both
-// are upgrades.
 export function offerSecondarySkills({ secondarySkills, weights, random }) {
   const pick = (first, second, offered) =>
     first({ secondarySkills, weights, offered, random }) ??
