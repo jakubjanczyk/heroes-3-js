@@ -17,6 +17,9 @@ function createEntityElement(entityEl, entity, entityStyle, center) {
   setStyleVar(entityEl, '--entity-center-y', `${center.y}px`)
   setStyleVar(entityEl, '--entity-offset-x', `${entityStyle.offsetX}px`)
   setStyleVar(entityEl, '--entity-offset-y', `${entityStyle.offsetY}px`)
+  if (entityStyle.label) {
+    entityEl.textContent = entityStyle.label
+  }
   if (entityStyle.backgroundImage) {
     setStyleVar(entityEl, '--entity-background-image', `url('${entityStyle.backgroundImage}')`)
   } else {

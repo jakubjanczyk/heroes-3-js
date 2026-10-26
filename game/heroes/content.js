@@ -1,3 +1,4 @@
+import { dwellingBehavior } from './entity-behaviors/dwelling.js'
 import { heroBehavior } from './entity-behaviors/hero.js'
 import { mineBehavior } from './entity-behaviors/mine.js'
 import { monsterBehavior } from './entity-behaviors/monster.js'
@@ -10,13 +11,14 @@ import { heroesRoadTypes } from './road-types.js'
 import { fogSlice } from './state/fog.js'
 import { heroDetailsSlice } from './state/hero-details.js'
 import { kingdomsSlice } from './state/kingdoms.js'
-import { minesSlice, monsterCountsSlice } from './state/map-objects.js'
+import { dwellingsSlice, minesSlice, monsterCountsSlice } from './state/map-objects.js'
 import { tavernSlice } from './state/tavern.js'
 import { townsSlice } from './state/towns.js'
 import { heroesTerrainTypes } from './terrain-types.js'
 
 export const heroesContent = Object.freeze({
   entityBehaviors: Object.freeze([
+    dwellingBehavior,
     heroBehavior,
     mineBehavior,
     monsterBehavior,
@@ -31,6 +33,7 @@ export const heroesContent = Object.freeze({
     heroDetailsSlice,
     townsSlice,
     minesSlice,
+    dwellingsSlice,
     monsterCountsSlice,
     kingdomsSlice,
     tavernSlice,

@@ -5,6 +5,7 @@ const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   MONSTER: 'monsters',
   RESOURCE: 'resources',
   MINE: 'mines',
+  DWELLING: 'dwellings',
   TOWN: 'towns'
 })
 

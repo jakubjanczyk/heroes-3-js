@@ -146,6 +146,7 @@ export async function loadGame({
     towns,
     buildings,
     mines,
+    dwellings,
     tavern,
     heroes,
     secondarySkills
@@ -158,6 +159,7 @@ export async function loadGame({
     fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/buildings.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/dwellings.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/tavern.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/heroes.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/secondary-skills.json`)
@@ -179,6 +181,7 @@ export async function loadGame({
     towns,
     buildings,
     mines,
+    dwellings,
     tavern,
     heroes,
     secondarySkills

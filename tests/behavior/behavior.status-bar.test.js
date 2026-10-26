@@ -11,7 +11,16 @@ import {
 import { expectStatusBarText } from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { winBattle } from './battle.utils.js'
-import { ARMY_THAT_WINS, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
+import {
+  ARMY_THAT_WINS,
+  aDwelling,
+  aHero,
+  aMine,
+  aMonster,
+  aResource,
+  aScenario,
+  aTown
+} from './builders.js'
 import {
   DIRT,
   GRASS,
@@ -30,7 +39,8 @@ const gameDefinitions = {
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
-  mines: readGameData('mines.json')
+  mines: readGameData('mines.json'),
+  dwellings: readGameData('dwellings.json')
 }
 
 async function setupApp(scenario, { viewportSize } = {}) {
@@ -142,6 +152,24 @@ describe('status bar behavior', () => {
     await hoverTile(user, x, y)
 
     expectStatusBarText('Gold Mine')
+  })
+
+  test.each([
+    { part: 'entrance', x: 2, y: 1 },
+    { part: 'building', x: 1, y: 0 }
+  ])('given a dwelling when the mouse is over its $part then the status bar shows its name', async ({
+    x,
+    y
+  }) => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(5, 3)
+        .withEntities(aHero().at(0, 2), aDwelling().withType('GRIFFIN_TOWER').at(2, 1))
+    )
+
+    await hoverTile(user, x, y)
+
+    expectStatusBarText('Griffin Tower')
   })
 
   test.each([

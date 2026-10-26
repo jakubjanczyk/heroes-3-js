@@ -752,9 +752,9 @@ Rich adventure map with meaningful locations.
 Castle's seven dwellings only; other factions' come with them (6.5). Built in four parts; see `docs/notes/2026-10-26-map-dwellings.md`.
 
 #### 7.4.1 Dwellings on the map, visited and flagged
-- [ ] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`), each with an entrance like a mine's
-- [ ] Shown on the map and minimap, hidden under fog; visit cursor on the entrance, the arrow on the rest; the status bar and the right-click popup name it
-- [ ] A hero entering it flags it in the player's colour, on the map, the minimap and in the popup; kept after a reload
+- [x] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`), each with an entrance like a mine's
+- [x] Shown on the map and minimap, hidden under fog; visit cursor on the entrance, the arrow on the rest; the status bar and the right-click popup name it
+- [x] A hero entering it flags it in the player's colour, on the map, the minimap and in the popup; kept after a reload
 
 #### 7.4.2 Recruiting
 - [ ] Each dwelling has a week of its creature's growth (Pikemen 14, Archers 9, Griffins 7, Swordsmen 4, Monks 3, Cavaliers 2, Angels 1); at each new week the count goes back to the growth, unbought creatures don't pile up

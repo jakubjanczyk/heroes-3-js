@@ -1128,6 +1128,33 @@
         "x": 36,
         "y": 28
       }
+    },
+    {
+      "id": "dwelling-1",
+      "kind": "DWELLING",
+      "type": "GUARDHOUSE",
+      "tile": {
+        "x": 15,
+        "y": 3
+      }
+    },
+    {
+      "id": "dwelling-2",
+      "kind": "DWELLING",
+      "type": "GRIFFIN_TOWER",
+      "tile": {
+        "x": 27,
+        "y": 27
+      }
+    },
+    {
+      "id": "dwelling-3",
+      "kind": "DWELLING",
+      "type": "PORTAL_OF_GLORY",
+      "tile": {
+        "x": 45,
+        "y": 37
+      }
     }
   ]
 }

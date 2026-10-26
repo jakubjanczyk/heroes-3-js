@@ -10,12 +10,22 @@ import {
 } from './adventure-map.utils.js'
 import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
-import { aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { aDwelling, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { ALL_TERRAINS, GRASS, SAND } from './terrain-codes.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
 const NEUTRAL_GREY = 'rgb(132, 132, 132)'
 const BLACK = 'rgb(0, 0, 0)'
+
+// The 3x2 tiles of a dwelling whose entrance is at (2, 1).
+const DWELLING_TILES = [
+  [1, 0],
+  [2, 0],
+  [3, 0],
+  [1, 1],
+  [2, 1],
+  [3, 1]
+]
 
 const DEFAULT_MINIMAP_BOUNDS = {
   left: 0,
@@ -354,6 +364,30 @@ describe('minimap behavior', () => {
       )
 
       expect(getTownDots().map(getMinimapDotTile)).toEqual([{ x: 4, y: 2 }])
+    })
+
+    test('given a dwelling when the minimap renders then its tiles are drawn neutral grey', async () => {
+      await loadAppStyles()
+      await setupApp(
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aDwelling().at(2, 1)).build()
+      )
+
+      const colours = DWELLING_TILES.map(([x, y]) => backgroundOf(getMinimapTile(x, y)))
+
+      expect(colours).toEqual(new Array(6).fill(NEUTRAL_GREY))
+    })
+
+    test('given the hero flagged a dwelling when the minimap renders then its tiles are drawn in the player colour', async () => {
+      await loadAppStyles()
+      await setupApp(
+        aScenario().withSize(5, 3).withEntities(aHero().at(2, 2), aDwelling().at(2, 1)).build()
+      )
+
+      confirmTileClickByDispatch(2, 1)
+      await flushMicrotasks()
+
+      const colours = DWELLING_TILES.map(([x, y]) => backgroundOf(getMinimapTile(x, y)))
+      expect(colours).toEqual(new Array(6).fill(PLAYER_RED))
     })
 
     test('given a mine on an unexplored tile when the minimap renders then its tiles are drawn black', async () => {

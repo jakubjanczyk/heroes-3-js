@@ -56,6 +56,25 @@
   --mine-tint: hue-rotate(176deg) saturate(1.35);
 }
 
+.entity--dwelling {
+  z-index: var(--z-entity-dwelling);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border-radius: 6px 6px 2px 2px;
+  border: 2px solid color-mix(in oklab, white 55%, oklch(0.7 0.04 250));
+  background: color-mix(in oklab, oklch(0.55 0.05 250) 86%, black 10%);
+  box-shadow:
+    inset 0 -0.5rem 0 color-mix(in oklab, oklch(0.25 0.03 250) 50%, transparent),
+    0 0.4rem 0.9rem color-mix(in oklab, black 56%, transparent);
+  color: oklch(0.97 0.01 90);
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 0 1px 1px black;
+}
+
 .entity--town {
   z-index: var(--z-entity-town);
   pointer-events: none;
