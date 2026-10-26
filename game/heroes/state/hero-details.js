@@ -1,6 +1,7 @@
 import { isHero } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
-import { startingSecondarySkills } from '../secondary-skills.js'
+import { levelForExperience } from '../hero-experience.js'
+import { learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
@@ -16,7 +17,9 @@ function detailsOf(hero, definitions) {
     ),
     army: hero.army ?? [],
     experience: hero.experience ?? 0,
-    levelUpSkills: []
+    level: levelForExperience(hero.experience ?? 0),
+    levelUpSkills: [],
+    pendingLevelUp: null
   }
 }
 
@@ -32,8 +35,14 @@ export const heroDetailsSlice = {
     'fact.hero.experience.gained': updateHero((hero, { amount }) => ({
       experience: hero.experience + amount
     })),
-    'fact.hero.leveledUp': updateHero((hero, { primarySkill }) => ({
-      levelUpSkills: [...hero.levelUpSkills, primarySkill]
+    'fact.hero.leveledUp': updateHero((hero, { level, primarySkill, skillOffers = [] }) => ({
+      level,
+      levelUpSkills: [...hero.levelUpSkills, primarySkill],
+      pendingLevelUp: skillOffers.length > 0 ? { level, primarySkill, skillOffers } : null
+    })),
+    'fact.hero.secondarySkill.learned': updateHero((hero, { skill, level }) => ({
+      secondarySkills: learnSecondarySkill(hero.secondarySkills, { skill, level }),
+      pendingLevelUp: null
     })),
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
     'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({

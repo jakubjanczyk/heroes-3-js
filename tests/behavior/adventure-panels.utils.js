@@ -138,6 +138,37 @@ export function queryLevelUpPopup(heroName = 'Hero') {
   return screen.queryByRole('dialog', { name: `${heroName} has gained a level.` })
 }
 
+function levelUpSkillButtons(heroName) {
+  const popup = queryLevelUpPopup(heroName)
+  expect(popup).toBeTruthy()
+  return within(popup)
+    .queryAllByRole('button')
+    .filter((button) => button.getAttribute('aria-label') !== 'OK')
+}
+
+export function readLevelUpSkillOffers(heroName) {
+  return levelUpSkillButtons(heroName).map((button) => button.getAttribute('aria-label'))
+}
+
+export function readPickedLevelUpSkills(heroName) {
+  return levelUpSkillButtons(heroName)
+    .filter((button) => button.getAttribute('aria-pressed') === 'true')
+    .map((button) => button.getAttribute('aria-label'))
+}
+
+export async function closeLevelUpPopup(user, heroName = 'Hero') {
+  const [firstOffer] = readLevelUpSkillOffers(heroName)
+  if (firstOffer && readPickedLevelUpSkills(heroName).length === 0) {
+    await pickLevelUpSkill(user, heroName, firstOffer)
+  }
+  await closeInteractionModal(user)
+}
+
+export async function pickLevelUpSkill(user, heroName, levelAndSkill) {
+  const popup = queryLevelUpPopup(heroName)
+  await user.click(within(popup).getByRole('button', { name: levelAndSkill }))
+}
+
 export async function closeInteractionModal(user) {
   const okButton = getInteractionModalOkButton()
   expect(okButton).toBeTruthy()

@@ -17,7 +17,7 @@ import {
   expectResourcePresent
 } from './adventure-map.utils.js'
 import {
-  closeInteractionModal,
+  closeLevelUpPopup,
   expectMovementPoints,
   expectResourceTotal,
   getTreasureChestDialog,
@@ -292,6 +292,34 @@ describe('tiles a monster guards', () => {
       expect(queryBattleScreen()).toBeNull()
     })
 
+    test('given the hero goes up two levels in the first of two battles when the player closes the first level-up popup then the second shows before the second battle', async () => {
+      // 201 Skeletons of 6 health give 1206 experience, taking 1999 past 3200: levels 3 and 4.
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(4, 2)
+          .withEntities(
+            aHero()
+              .withArmy([{ creature: 'ANGEL', count: 200 }])
+              .withExperience(1999),
+            aMonster().withCount(201).at(3, 0),
+            aMonster().withId('monster-2').at(3, 1)
+          )
+          .withDefinitions({
+            monsters,
+            hero: readGameData('hero.json'),
+            heroClasses: readGameData('hero-classes.json')
+          })
+          .build()
+      })
+      await moveHeroTo(2, 0)
+      await winBattle(user)
+
+      await closeLevelUpPopup(user)
+
+      expect(queryLevelUpPopup()).toBeTruthy()
+      expect(queryBattleScreen()).toBeNull()
+    })
+
     test('given the level-up popup between two battles when the player closes it then the second battle starts', async () => {
       const { user } = await setupMovementBehaviorApp({
         loadGameOptions: aTileTwoMonstersGuard(aWinningHero().withExperience(950)).build()
@@ -299,7 +327,7 @@ describe('tiles a monster guards', () => {
       await moveHeroTo(2, 0)
       await winBattle(user)
 
-      await closeInteractionModal(user)
+      await closeLevelUpPopup(user)
 
       expect(getBattleScreen()).toBeTruthy()
     })

@@ -20,3 +20,64 @@ export function describeSecondarySkill({ skill, level }, definitions) {
     description: skillDefinition?.descriptions?.[level] ?? ''
   }
 }
+
+const MAX_SECONDARY_SKILLS = 8
+const NEXT_LEVEL = Object.freeze({ BASIC: 'ADVANCED', ADVANCED: 'EXPERT' })
+
+function pickUpgrade({ secondarySkills, offered, random }) {
+  const upgradable = secondarySkills.filter(
+    ({ skill, level }) => NEXT_LEVEL[level] && !offered.includes(skill)
+  )
+  if (upgradable.length === 0) {
+    return null
+  }
+
+  const { skill, level } = upgradable[Math.floor(random() * upgradable.length)]
+  return { skill, level: NEXT_LEVEL[level] }
+}
+
+function pickNewSkill({ secondarySkills, weights, offered, random }) {
+  if (secondarySkills.length >= MAX_SECONDARY_SKILLS) {
+    return null
+  }
+
+  const known = new Set(secondarySkills.map(({ skill }) => skill))
+  const candidates = Object.entries(weights ?? {}).filter(
+    ([skill, weight]) => weight > 0 && !known.has(skill) && !offered.includes(skill)
+  )
+  const total = candidates.reduce((sum, [, weight]) => sum + weight, 0)
+  if (total === 0) {
+    return null
+  }
+
+  const roll = random() * total
+  let threshold = 0
+  for (const [skill, weight] of candidates) {
+    threshold += weight
+    if (roll < threshold) {
+      return { skill, level: 'BASIC' }
+    }
+  }
+
+  return { skill: candidates.at(-1)[0], level: 'BASIC' }
+}
+
+export function learnSecondarySkill(secondarySkills, learned) {
+  const isKnown = secondarySkills.some(({ skill }) => skill === learned.skill)
+  return isKnown
+    ? secondarySkills.map((known) => (known.skill === learned.skill ? learned : known))
+    : [...secondarySkills, learned]
+}
+
+export function offerSecondarySkills({ secondarySkills, weights, random }) {
+  const pick = (first, second, offered) =>
+    first({ secondarySkills, weights, offered, random }) ??
+    second({ secondarySkills, weights, offered, random })
+  const firstOffer = pick(pickUpgrade, pickNewSkill, [])
+  if (!firstOffer) {
+    return []
+  }
+
+  const secondOffer = pick(pickNewSkill, pickUpgrade, [firstOffer.skill])
+  return secondOffer ? [firstOffer, secondOffer] : [firstOffer]
+}
