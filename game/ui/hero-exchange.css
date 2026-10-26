@@ -135,6 +135,11 @@
   list-style: none;
 }
 
+.hero-exchange__secondary-skills .secondary-skill-icon {
+  block-size: 100%;
+  font-size: calc(9 * var(--px));
+}
+
 /* Each row: the left hero's value, the skill, the right hero's value. */
 .hero-exchange__primary-skills {
   display: grid;

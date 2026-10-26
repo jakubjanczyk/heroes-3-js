@@ -34,6 +34,7 @@
     <link rel="preload" href="./game/ui/town.css" as="style" />
     <link rel="preload" href="./game/ui/hero-screen.css" as="style" />
     <link rel="preload" href="./game/ui/hero-exchange.css" as="style" />
+    <link rel="preload" href="./game/ui/secondary-skill-icon.css" as="style" />
     <link rel="preload" href="./app/modules/dev/bus-dev-panel.css" as="style" />
     <link rel="modulepreload" href="./app/boot-app.js" />
     <link rel="modulepreload" href="./engine/bus.js" />
@@ -66,6 +67,7 @@
     <link rel="modulepreload" href="./game/state/fog.js" />
     <link rel="modulepreload" href="./game/state/queries.js" />
     <link rel="modulepreload" href="./game/heroes/state/hero-details.js" />
+    <link rel="modulepreload" href="./game/heroes/secondary-skills.js" />
     <link rel="modulepreload" href="./game/heroes/state/kingdoms.js" />
     <link rel="modulepreload" href="./game/heroes/mine-income.js" />
     <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
@@ -117,6 +119,7 @@
     <link rel="modulepreload" href="./app/heroes/presentation/split-window.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/hero-box.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/info-box-view.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/secondary-skill-icon.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-levels.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-panel.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-screen-view.module.js" />
@@ -711,9 +714,9 @@
     <!--
       The Heroes 3 hero screen. Its parts sit where the game draws them, in the game's 670 x 584
       pixels (--x, --y), and the window scales as a whole. Frames for what the game has no data
-      for yet (specialty, morale, luck, spell points, secondary skills, artifacts, backpack, Quest
-      Log, Dismiss Hero, the formation, tactics and split buttons) stay empty, as in the game for
-      a hero without them. The skill icons are the hero box's stand-ins.
+      for yet (specialty, morale, luck, spell points, artifacts, backpack, Quest Log, Dismiss Hero,
+      the formation, tactics and split buttons) stay empty, as in the game for a hero without
+      them. The primary skill icons are the hero box's stand-ins.
     -->
     <template id="hero-screen-template">
       <section class="hero-screen" role="dialog" aria-modal="true" aria-label="Hero screen" tabindex="-1">
@@ -755,15 +758,15 @@
             <span class="hero-screen__box-value"></span>
           </div>
           <div class="hero-screen__box hero-screen__spell-points" aria-hidden="true"></div>
-          <ul class="hero-screen__secondary-skills" aria-hidden="true">
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
-            <li class="hero-screen__box"></li>
+          <ul class="hero-screen__secondary-skills" aria-label="Secondary skills">
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
+            <li class="hero-screen__box hero-screen__secondary-skill"></li>
           </ul>
           <div class="hero-screen__doll" aria-hidden="true">
             <svg class="hero-screen__silhouette" viewBox="0 0 286 331" aria-hidden="true">
@@ -849,7 +852,7 @@
             <div class="hero-exchange__box" aria-hidden="true" style="--x: 93; --y: 38; --w: 36; --h: 44"></div>
             <div class="hero-exchange__box" aria-hidden="true" style="--x: 133; --y: 38; --w: 36; --h: 44"></div>
             <div class="hero-exchange__box" aria-hidden="true" style="--x: 173; --y: 38; --w: 36; --h: 44"></div>
-            <ul class="hero-exchange__secondary-skills" aria-hidden="true" style="--x: 13; --y: 88; --w: 238; --h: 28">
+            <ul class="hero-exchange__secondary-skills" style="--x: 13; --y: 88; --w: 238; --h: 28">
               <li class="hero-exchange__box"></li>
               <li class="hero-exchange__box"></li>
               <li class="hero-exchange__box"></li>
@@ -922,7 +925,7 @@
             <div class="hero-exchange__box" aria-hidden="true" style="--x: 629; --y: 38; --w: 36; --h: 44"></div>
             <div class="hero-exchange__box" aria-hidden="true" style="--x: 669; --y: 38; --w: 36; --h: 44"></div>
             <div class="hero-exchange__box" aria-hidden="true" style="--x: 709; --y: 38; --w: 36; --h: 44"></div>
-            <ul class="hero-exchange__secondary-skills" aria-hidden="true" style="--x: 549; --y: 88; --w: 238; --h: 28">
+            <ul class="hero-exchange__secondary-skills" style="--x: 549; --y: 88; --w: 238; --h: 28">
               <li class="hero-exchange__box"></li>
               <li class="hero-exchange__box"></li>
               <li class="hero-exchange__box"></li>
