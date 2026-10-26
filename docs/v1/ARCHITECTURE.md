@@ -54,7 +54,7 @@ Core code (`app/` outside `app/heroes/`, `game/` outside `game/heroes/`, `engine
 
 `config.content` shape:
 
-- `entityBehaviors`: list of `{ kind, arrivalInteraction?, footprintOffsets? }` (game rules per entity kind)
+- `entityBehaviors`: list of `{ kind, arrivalInteraction?, footprintOffsets? }` (game rules per entity kind; `footprintOffsets` may be a function of the entity when its size depends on its type)
 - `outcomeEffects`: map from outcome kind to `{ facts?, modal?, factsOnModalClosed? }`
 - `outcomeEvents`: every event type the outcome effects can emit; the interaction module declares them in its `produces`
 - `entityPresentation`: `{ getEntityStyle({ entity, map }), getFadeOutSpec({ entityKind }) }`

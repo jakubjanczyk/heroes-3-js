@@ -161,7 +161,7 @@ describe('info popup behavior', () => {
       confirmTileClickByDispatch(2, 1)
       await flushMicrotasks()
 
-      await holdRightButtonOn(user, 1, 0)
+      await holdRightButtonOn(user, 1, 1)
 
       expectInfoPopupLines(['Portal of Glory', '(Red)'])
     })

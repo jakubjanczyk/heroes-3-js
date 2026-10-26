@@ -87,18 +87,38 @@ describe('creature dwellings on the map', () => {
     expectHeroAt(2, 1)
   })
 
+  // A dwelling blocks the tile left of its entrance, and the Guardhouse the one above that too;
+  // the rest of its picture can be walked on.
   test.each([
-    { x: 1, y: 0 },
-    { x: 2, y: 0 },
-    { x: 3, y: 0 },
-    { x: 1, y: 1 },
-    { x: 3, y: 1 }
-  ])('shows no route to the rest of the dwelling at ($x, $y)', async ({ x, y }) => {
-    await setupMovementBehaviorApp({ loadGameOptions: aDwellingScenario() })
+    { type: 'GRIFFIN_TOWER', x: 1, y: 1 },
+    { type: 'GUARDHOUSE', x: 1, y: 1 },
+    { type: 'GUARDHOUSE', x: 1, y: 0 }
+  ])('shows no route to the tile the $type blocks at ($x, $y)', async ({ type, x, y }) => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: aDwellingScenario(aDwelling().withType(type).at(2, 1))
+    })
 
     dispatchTileClick(x, y)
 
     expectNoPreview()
+  })
+
+  test.each([
+    { type: 'GRIFFIN_TOWER', x: 1, y: 0 },
+    { type: 'GRIFFIN_TOWER', x: 3, y: 1 },
+    { type: 'GUARDHOUSE', x: 2, y: 0 }
+  ])('the hero walks across the rest of the $type picture to ($x, $y)', async ({
+    type,
+    x,
+    y
+  }) => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: aDwellingScenario(aDwelling().withType(type).at(2, 1))
+    })
+
+    await enterDwellingAt(x, y)
+
+    expectHeroAt(x, y)
   })
 
   describe('flag', () => {

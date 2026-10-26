@@ -752,7 +752,7 @@ Rich adventure map with meaningful locations.
 Castle's seven dwellings only; other factions' come with them (6.5). Built in four parts; see `docs/notes/2026-10-26-map-dwellings.md`.
 
 #### 7.4.1 Dwellings on the map, visited and flagged
-- [x] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`), each with an entrance like a mine's
+- [x] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`); each blocks its entrance and the tile left of it (the Guardhouse the tile above that too), the rest of its picture can be walked on
 - [x] Shown on the map and minimap, hidden under fog; visit cursor on the entrance, the arrow on the rest; the status bar and the right-click popup name it
 - [x] A hero entering it flags it in the player's colour, on the map, the minimap and in the popup; kept after a reload
 

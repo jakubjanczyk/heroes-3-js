@@ -156,7 +156,7 @@ describe('status bar behavior', () => {
 
   test.each([
     { part: 'entrance', x: 2, y: 1 },
-    { part: 'building', x: 1, y: 0 }
+    { part: 'building', x: 1, y: 1 }
   ])('given a dwelling when the mouse is over its $part then the status bar shows its name', async ({
     x,
     y
