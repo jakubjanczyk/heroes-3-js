@@ -14,7 +14,16 @@ import {
 import { readArmySlots } from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { winBattle } from './battle.utils.js'
-import { ARMY_THAT_WINS, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
+import {
+  ARMY_THAT_WINS,
+  aDwelling,
+  aHero,
+  aMine,
+  aMonster,
+  aResource,
+  aScenario,
+  aTown
+} from './builders.js'
 import { SWAMP } from './terrain-codes.js'
 
 const LONG_PRESS_MS = 20
@@ -24,7 +33,8 @@ const gameDefinitions = {
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
-  mines: readGameData('mines.json')
+  mines: readGameData('mines.json'),
+  dwellings: readGameData('dwellings.json')
 }
 
 async function setupApp(scenario) {
@@ -128,6 +138,32 @@ describe('info popup behavior', () => {
       await holdRightButtonOn(user, 1, 0)
 
       expectInfoPopupLines(['Gold Mine', '(Red)'])
+    })
+
+    test('given a dwelling nobody owns when the player holds the right button on it then the popup shows only its name', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(0, 2), aDwelling().withType('PORTAL_OF_GLORY').at(2, 1))
+      )
+
+      await holdRightButtonOn(user, 2, 1)
+
+      expectInfoPopupLines(['Portal of Glory'])
+    })
+
+    test('given a dwelling the hero flagged when the player holds the right button on it then the popup shows its name and the player colour', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(2, 2), aDwelling().withType('PORTAL_OF_GLORY').at(2, 1))
+      )
+      confirmTileClickByDispatch(2, 1)
+      await flushMicrotasks()
+
+      await holdRightButtonOn(user, 1, 1)
+
+      expectInfoPopupLines(['Portal of Glory', '(Red)'])
     })
 
     test.each([

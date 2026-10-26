@@ -1,3 +1,4 @@
+import * as dwelling from './dwelling.js'
 import * as hero from './hero.js'
 import * as mine from './mine.js'
 import * as monster from './monster.js'
@@ -6,6 +7,7 @@ import * as town from './town.js'
 import * as treasureChest from './treasure-chest.js'
 
 const presentationByKind = Object.freeze({
+  DWELLING: dwelling,
   HERO: hero,
   MINE: mine,
   MONSTER: monster,
@@ -23,13 +25,13 @@ export function getEntityPresentation(entity) {
   return presentationByKind[kind] ?? null
 }
 
-export function getEntityLayerStyle({ entity, map }) {
+export function getEntityLayerStyle({ entity, map, definitions }) {
   const presentation = getEntityPresentation(entity)
   if (!presentation?.getEntityLayerStyle) {
     return null
   }
 
-  return presentation.getEntityLayerStyle({ entity, map })
+  return presentation.getEntityLayerStyle({ entity, map, definitions })
 }
 
 export function getEntityFadeOutSpec({ entityKind }) {

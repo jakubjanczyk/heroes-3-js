@@ -78,6 +78,17 @@ export const aMine = () =>
     }
   }))
 
+export const aDwelling = () =>
+  builder(
+    { id: 'dwelling-1', kind: 'DWELLING', type: 'GUARDHOUSE', tile: { x: 1, y: 0 } },
+    (dwelling) => ({
+      ...placeable(dwelling),
+      ownedByPlayer() {
+        dwelling.owner = 'red'
+      }
+    })
+  )
+
 // Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience.
 export const aTreasureChest = () =>
   builder(

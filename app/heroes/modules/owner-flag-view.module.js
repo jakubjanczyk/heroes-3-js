@@ -1,5 +1,8 @@
+import { dwellingIdsOf } from '../../../game/heroes/state/map-objects.js'
 import { viewingPlayersTownIds } from '../../../game/heroes/state/towns.js'
+import { viewingPlayer } from '../../../game/state/queries.js'
 import {
+  APP_FACT_DWELLING_FLAGGED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY
@@ -27,8 +30,13 @@ export const registerOwnerFlagViewModule = defineModule(
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
-          handler: () => viewingPlayersTownIds(state.get()).forEach(showFlagOn)
+          handler: () => {
+            const current = state.get()
+            viewingPlayersTownIds(current).forEach(showFlagOn)
+            dwellingIdsOf(current, viewingPlayer(current)).forEach(showFlagOn)
+          }
         },
+        { type: APP_FACT_DWELLING_FLAGGED, handler: (event) => showFlagOn(event.detail.entityId) },
         { type: APP_FACT_MINE_CAPTURED, handler: (event) => showFlagOn(event.detail.entityId) },
         { type: APP_FACT_TOWN_CAPTURED, handler: (event) => showFlagOn(event.detail.entityId) }
       ]
@@ -37,7 +45,12 @@ export const registerOwnerFlagViewModule = defineModule(
   {
     id: 'owner-flag-view',
     phase: 'view',
-    consumes: [APP_FACT_WORLD_READY, APP_FACT_MINE_CAPTURED, APP_FACT_TOWN_CAPTURED],
+    consumes: [
+      APP_FACT_WORLD_READY,
+      APP_FACT_MINE_CAPTURED,
+      APP_FACT_DWELLING_FLAGGED,
+      APP_FACT_TOWN_CAPTURED
+    ],
     produces: []
   }
 )

@@ -48,6 +48,16 @@ export function getMineEntity(entityId = 'mine-1') {
   return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`)
 }
 
+export function getDwellingEntity(entityId = 'dwelling-1') {
+  return document.querySelector(`.entity--dwelling[data-entity-id="${entityId}"]`)
+}
+
+export function expectDwellingAt(x, y, entityId = 'dwelling-1') {
+  const dwellingEntity = getDwellingEntity(entityId)
+  expect(dwellingEntity?.dataset.tileX).toBe(String(x))
+  expect(dwellingEntity?.dataset.tileY).toBe(String(y))
+}
+
 export function expectHeroAt(x, y, heroId = 'hero-1') {
   const heroEntity = getHeroEntity(heroId)
   expect(heroEntity).toBeTruthy()

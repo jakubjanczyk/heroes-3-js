@@ -6,7 +6,8 @@ export function createEntityBehaviors(behaviors = []) {
   }
 
   function getFootprintOffsets(entity) {
-    return behaviorByKind.get(entity?.kind)?.footprintOffsets ?? []
+    const offsets = behaviorByKind.get(entity?.kind)?.footprintOffsets ?? []
+    return typeof offsets === 'function' ? offsets(entity) : offsets
   }
 
   function guardsSurroundings(entity) {

@@ -20,6 +20,7 @@ import { loadAppStyles } from './app-styles.js'
 import { winBattle } from './battle.utils.js'
 import {
   ARMY_THAT_WINS,
+  aDwelling,
   aHero,
   aMine,
   aMonster,
@@ -35,7 +36,8 @@ const gameDefinitions = {
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
-  mines: readGameData('mines.json')
+  mines: readGameData('mines.json'),
+  dwellings: readGameData('dwellings.json')
 }
 
 async function setupApp(scenario) {
@@ -199,6 +201,13 @@ describe('adventure map cursor behavior', () => {
       y: 1
     },
     {
+      name: "a dwelling's entrance",
+      scenario: () =>
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aDwelling().at(2, 1)),
+      x: 2,
+      y: 1
+    },
+    {
       name: "a town's entrance",
       scenario: () => aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), aTown().at(2, 2)),
       x: 2,
@@ -228,6 +237,13 @@ describe('adventure map cursor behavior', () => {
       scenario: () => aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), aTown().at(2, 2)),
       x: 0,
       y: 1
+    },
+    {
+      name: 'dwelling',
+      scenario: () =>
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aDwelling().at(2, 1)),
+      x: 1,
+      y: 0
     }
   ])('given the building of a $name when the mouse is over it then the cursor is the arrow', async ({
     scenario,

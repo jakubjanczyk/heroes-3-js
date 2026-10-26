@@ -688,8 +688,7 @@ Stages, one PR each, done in this order:
 #### 6.3 later
 - [ ] Upgrading creatures already in an army (Upg. dwelling + Hill Fort)
 - [ ] "Week of the X" (+5 growth) and plague weeks
-- [ ] External dwellings on map also produce creatures (see M7)
-- [ ] Growth from external dwellings the player owns and the Grail
+- [ ] Growth from the Grail (+1 per flagged map dwelling is 7.4.4)
 
 ### 6.4 Town Garrison
 - [x] Town has its own garrison (7 creature stacks, independent of visiting hero) (6.3.1)
@@ -750,12 +749,29 @@ Rich adventure map with meaningful locations.
 - [ ] Obstacle data in scenario JSON with footprint definitions
 
 ### 7.4 Creature Dwellings on Map
-- [ ] Standalone buildings on the adventure map where heroes recruit creatures
-- [ ] Each dwelling has a creature type and weekly growth
-- [ ] First visit: fight guards (neutral creatures) or claim if unguarded
-- [ ] Subsequent visits: recruit available creatures (accumulated since last visit)
-- [ ] Dwelling ownership: flagged to player who last visited
-- [ ] External dwellings are separate from town dwellings
+Castle's seven dwellings only; other factions' come with them (6.5). Built in four parts; see `docs/notes/2026-10-26-map-dwellings.md`.
+
+#### 7.4.1 Dwellings on the map, visited and flagged
+- [x] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`); each blocks its entrance and the tile left of it (the Guardhouse the tile above that too), the rest of its picture can be walked on
+- [x] Shown on the map and minimap, hidden under fog; visit cursor on the entrance, the arrow on the rest; the status bar and the right-click popup name it
+- [x] A hero entering it flags it in the player's colour, on the map, the minimap and in the popup; kept after a reload
+
+#### 7.4.2 Recruiting
+- [ ] Each dwelling has a week of its creature's growth (Pikemen 14, Archers 9, Griffins 7, Swordsmen 4, Monks 3, Cavaliers 2, Angels 1); at each new week the count goes back to the growth, unbought creatures don't pile up
+- [ ] Entering it asks whether to recruit, then opens the recruit window (shared with the town's, 6.3.3)
+- [ ] Recruits join the visiting hero's army; with no room, the "no room" message
+- [ ] Level 1 creatures (Pikemen) are free; the rest cost what they cost in a town
+- [ ] What was bought kept after a reload
+
+#### 7.4.3 Guards
+- [ ] The Monastery, Training Grounds and Portal of Glory are guarded by three weeks of their non-upgraded creature: 9 Monks, 6 Cavaliers, 3 Angels
+- [ ] Entering one starts a battle with the guards; winning flags it and asks to recruit
+- [ ] A hero beaten or retreating leaves the map; the guards left stay until the week ends
+- [ ] The guards come back at the start of every week, but never fight the player who owns the dwelling
+- [ ] The battle takes a defender army that isn't a monster on the map (refactor of the battle module first)
+
+#### 7.4.4 Town growth
+- [ ] Each flagged dwelling adds +1 to its creature's weekly growth in every Castle town the player owns (creature panel, Fort window, the town's pool)
 
 ### 7.5 Resource-Generating Objects (Weekly)
 - [ ] **Windmill**: gives random resource each week (not gold)
@@ -1058,7 +1074,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 32. Fog of war (7.1)
 33. Multiple heroes (4.5), in five parts: several heroes from the scenario, Next Hero, meeting, tavern, defeated hero
 34. Hero secondary skills (4.7): the skills and starting skills, then choosing one on level-up; their effects come with the features they change
-35. Creature dwellings on map (7.4)
+35. Creature dwellings on map (7.4), Castle only, in four parts: on the map and flagged, recruiting, guards, town growth
 36. Resource-generating objects (7.5)
 37. Permanent bonus objects (7.7)
 38. Stat-boosting objects (7.6)

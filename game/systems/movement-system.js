@@ -43,7 +43,8 @@ function getFinalSettleDelayMs(stepDelayMs) {
   return clampedStepDelayMs
 }
 
-// `getHero` returns the moving hero ({ id, tile }); `occupancy.getAt(tile)` says what blocks a tile.
+// `getHero` returns the moving hero ({ id, tile }); `occupancy.getAt(tile)` says what blocks a tile,
+// and `occupancy.getObjectAt(tile)` what map object stands there under any hero.
 // `getStepCost(from, to)` is what the route search minimises; `getStepCharges(path)` lists what
 // each step of `path` the hero can still take costs. `getGuardsAt(tile)` lists the entities that
 // fight a hero stepping onto `tile`, in the order it fights them; a route can't go on from there.
@@ -81,6 +82,16 @@ export function createMovementSystem({
     return interaction !== null && !interaction.requiresSteppingIntoTarget
   }
 
+  function isEntrance(tile) {
+    return entityBehaviors.getArrivalInteraction(occupancy.getObjectAt(tile))
+      ?.requiresSteppingIntoTarget
+  }
+
+  // An entrance is entered and left from below or the sides, never through the row above it.
+  function crossesEntranceTop(from, to) {
+    return (to.y < from.y && isEntrance(from)) || (to.y > from.y && isEntrance(to))
+  }
+
   function findRoute(hero, toTile) {
     const visitsTargetFromNextTo = isVisitedFromNextTo(toTile, hero)
     return findPath({
@@ -98,9 +109,10 @@ export function createMovementSystem({
       // The hero fights on the first guarded tile it steps onto, so a route ends there, unless
       // it only goes on to visit the target from it.
       canLeave: (from, to) =>
-        sameTile(from, hero.tile) ||
-        guardsAt(from).length === 0 ||
-        (visitsTargetFromNextTo && sameTile(to, toTile))
+        !crossesEntranceTop(from, to) &&
+        (sameTile(from, hero.tile) ||
+          guardsAt(from).length === 0 ||
+          (visitsTargetFromNextTo && sameTile(to, toTile)))
     })
   }
 
