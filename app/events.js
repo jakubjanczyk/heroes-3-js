@@ -83,6 +83,7 @@ export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
+export const APP_FACT_HERO_SECONDARY_SKILL_LEARNED = 'fact.hero.secondarySkill.learned'
 export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
 // A hero hired in a town's tavern, who comes onto the map at the town's entrance.
 export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
@@ -92,6 +93,7 @@ export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
 export const APP_UI_NOTICE_OPENED = 'ui.notice.opened'
+export const APP_UI_INTERACTION_MODAL_CONFIRMED = 'ui.interaction.modal.confirmed'
 export const APP_UI_INTERACTION_MODAL_CLOSED = 'ui.interaction.modal.closed'
 export const APP_UI_CAMERA_UPDATED = 'ui.camera.updated'
 export const APP_UI_TILE_HOVERED = 'ui.tile.hovered'
@@ -156,6 +158,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_HIRED,
   APP_FACT_TAVERN_HEROES_OFFERED
