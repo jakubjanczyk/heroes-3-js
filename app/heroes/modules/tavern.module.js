@@ -1,4 +1,4 @@
-import { isTown } from '../../../game/domain/entity-queries.js'
+import { isHero, isTown } from '../../../game/domain/entity-queries.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -9,6 +9,7 @@ import {
   canHire,
   describeHeroForHire,
   HEROES_FOR_HIRE,
+  heroPool,
   rollHeroesForHire,
   rollRumour,
   rumourText
@@ -36,6 +37,7 @@ export const registerTavernModule = defineModule(
     const random = typeof config?.random === 'function' ? config.random : Math.random
     let definitions = {}
     let townsById = new Map()
+    let pool = []
     let openTownId = null
 
     function heroNamesOnMap(current) {
@@ -58,9 +60,11 @@ export const registerTavernModule = defineModule(
         detail: {
           player,
           heroes: rollHeroesForHire({
-            definitions,
+            pool,
+            heroClasses: definitions.heroClasses,
             heroNamesOnMap: [...heroNamesOnMap(state.get()), ...(hiredName ? [hiredName] : [])],
             kept,
+            isReplacement: Boolean(hiredName),
             random
           }),
           rumour
@@ -161,9 +165,14 @@ export const registerTavernModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             definitions = event.detail.definitions ?? {}
-            townsById = new Map(
-              event.detail.scenario.entities.filter(isTown).map((town) => [town.id, town])
-            )
+            const { entities } = event.detail.scenario
+            townsById = new Map(entities.filter(isTown).map((town) => [town.id, town]))
+            const startingHeroes = entities
+              .filter(isHero)
+              .map(({ id }) => heroById(state.get(), id))
+              .filter(Boolean)
+              .map(({ name, heroClass }) => ({ name, heroClass }))
+            pool = heroPool(definitions.tavern, startingHeroes)
             openTownId = null
           }
         },

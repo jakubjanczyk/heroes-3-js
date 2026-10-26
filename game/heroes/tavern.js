@@ -20,28 +20,51 @@ function rollStartingArmy(startingArmy = [], random) {
     }))
 }
 
-function rollHeroForHire({ tavern, heroClasses, takenNames, random }) {
-  const candidates = Object.values(tavern?.heroes ?? {}).filter(
-    (hero) => !takenNames.has(hero.name)
-  )
+// A hero who takes a hired one's place brings a single creature of their faction's first level.
+function rollReplacementArmy(startingArmy = []) {
+  return startingArmy.slice(0, 1).map(({ creature }) => ({ creature, count: 1 }))
+}
+
+function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random }) {
+  const candidates = pool.filter((hero) => !takenNames.has(hero.name))
   if (candidates.length === 0) {
     return null
   }
 
   const { name, heroClass } = pick(candidates, random)
-  return { name, heroClass, army: rollStartingArmy(heroClasses?.[heroClass]?.startingArmy, random) }
+  const startingArmy = heroClasses?.[heroClass]?.startingArmy
+  return {
+    name,
+    heroClass,
+    army: isReplacement ? rollReplacementArmy(startingArmy) : rollStartingArmy(startingArmy, random)
+  }
+}
+
+// The tavern's own heroes, then the ones the scenario started with: a hero who leaves the map can
+// be hired again.
+export function heroPool(tavern, startingHeroes) {
+  const pool = Object.values(tavern?.heroes ?? {})
+  const names = new Set(pool.map(({ name }) => name))
+  return [...pool, ...startingHeroes.filter(({ name }) => !names.has(name))]
 }
 
 // Heroes on the map are never offered. `kept` holds the heroes still offered, null where a new one
-// is needed.
-export function rollHeroesForHire({ definitions, heroNamesOnMap, kept, random }) {
+// is needed; a hero filling the place of one just hired is a replacement.
+export function rollHeroesForHire({
+  pool,
+  heroClasses,
+  heroNamesOnMap,
+  kept,
+  isReplacement,
+  random
+}) {
   const takenNames = new Set([...heroNamesOnMap, ...kept.filter(Boolean).map(({ name }) => name)])
   return kept.map((hero) => {
     if (hero) {
       return hero
     }
 
-    const rolled = rollHeroForHire({ ...definitions, takenNames, random })
+    const rolled = rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random })
     if (rolled) {
       takenNames.add(rolled.name)
     }
