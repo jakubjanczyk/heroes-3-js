@@ -107,11 +107,7 @@ describe('creature dwellings on the map', () => {
     { type: 'GRIFFIN_TOWER', x: 1, y: 0 },
     { type: 'GRIFFIN_TOWER', x: 3, y: 1 },
     { type: 'GUARDHOUSE', x: 2, y: 0 }
-  ])('the hero walks across the rest of the $type picture to ($x, $y)', async ({
-    type,
-    x,
-    y
-  }) => {
+  ])('the hero walks across the rest of the $type picture to ($x, $y)', async ({ type, x, y }) => {
     await setupMovementBehaviorApp({
       loadGameOptions: aDwellingScenario(aDwelling().withType(type).at(2, 1))
     })
