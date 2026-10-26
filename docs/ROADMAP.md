@@ -339,12 +339,19 @@ See `docs/notes/2026-10-25-tavern.md`.
 - [x] At most 8 heroes per player; no hiring while a hero stands in the town
 - [x] The barkeep's rumour, a new one each week; the heroes for hire change each week too
 - [x] Holding the right button on a hero for hire shows their hero box
-- [ ] Heroes of the other classes and factions, one of the two always of the town's faction
+- [x] Only the two heroes offered at the start of a week bring a starting army; a hero who takes a hired one's place brings a single first-level creature
+- [ ] Heroes of the other classes and factions; at the start of each week the left-most hero is of the faction the player started as, whichever tavern it is
 - [ ] The Thieves' Guild button (8.1); it is there but does nothing yet
 - [ ] Rumours about the other players and the Grail (8.1, 7.x)
 
 #### 4.5.5 A defeated hero
-- [ ] A hero who loses a battle leaves the map and the hero list, and goes back to the tavern pool (recruitable again)
+See `docs/notes/2026-10-26-defeated-hero.md`.
+- [x] A hero who loses a battle leaves the map and the hero list, and the player's next hero is selected
+- [x] They go back to the tavern pool, the heroes the scenario started with too; hired again, they are a level 1 hero of their class with a new starting army
+- [ ] A beaten hero's artifacts go to the winning hero (with artifacts, 7.8, and enemy heroes, 8.1)
+- [ ] A hero who retreats is in the player's tavern straight away, with their level, skills, spells and artifacts, but only one creature of their default stack; no experience from the battle. Retreating on day 7 after the turn has passed puts them in one of the tavern's places instead of a new hero
+- [ ] A hero who surrenders is in the player's tavern straight away with everything, the army left to them included (5.7)
+- [ ] A hero hired again on the day they were beaten, retreated or surrendered keeps the movement points they had left
 - [ ] Losing the last hero: the defeat case of victory conditions (8.5)
 
 ### 4.6 Movement Points & Terrain
@@ -512,8 +519,8 @@ See `docs/notes/2026-10-20-battle-attacks.md` and `docs/notes/2026-10-20-ranged-
 See `docs/notes/2026-10-20-wait-defend-auto-combat.md` and `docs/notes/2026-10-20-retreat-surrender-results.md`.
 - [x] **Wait**: skip current turn, act again once every other stack has acted, the stacks that waited slowest first; once per round
 - [x] **Defend**: end the turn with +20% Defense (at least 1 point) until the stack's next turn
-- [x] **Retreat** (R): asked first; the hero flees and loses the army. With no taverns yet the hero leaves the map, as when beaten
-- [ ] **Surrender**: pay gold to enemy to leave with army intact (gold cost = army value)
+- [x] **Retreat** (R): asked first; the hero flees and loses the army. For now the hero leaves the map as when beaten; keeping their level and artifacts is 4.5.5
+- [ ] **Surrender**: pay the enemy gold to leave with the army: half the recruitment cost of the creatures left, gold only; the hero waits in the player's tavern with the army (4.5.5)
   - [x] Disabled against neutral monsters, as in H3: only an enemy hero takes a surrender
   - [ ] The surrender itself (needs enemy heroes)
 - [x] **Auto-combat**: the combat AI plays your stacks until the battle ends or you press it again
