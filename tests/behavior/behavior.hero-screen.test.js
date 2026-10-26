@@ -9,7 +9,7 @@ import {
   panCamera
 } from './adventure-map.utils.js'
 import {
-  closeInteractionModal,
+  closeLevelUpPopup,
   getHeroInfoBox,
   getTownInTownList,
   takeFromTreasureChest
@@ -247,7 +247,7 @@ describe('hero screen behavior', () => {
           .withDefinitions(gameDefinitions)
       )
       await takeFromTreasureChest(user, { x: 1, y: 0 }, 'experience')
-      await closeInteractionModal(user)
+      await closeLevelUpPopup(user, HERO_NAME)
 
       await clickHeroInHeroList(user, HERO_NAME)
 

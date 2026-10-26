@@ -1,5 +1,6 @@
 import {
   APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_CONFIRMED,
   APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_NOTICE_OPENED
 } from '../events.js'
@@ -48,7 +49,11 @@ export const registerInteractionModalModule = defineModule(
           // Modals opened in reaction to this one closing queue up behind those already waiting.
           isClosing = true
           try {
-            emit(APP_UI_INTERACTION_MODAL_CLOSED, { choice: event.detail?.choice ?? null })
+            const choice = event.detail?.choice ?? null
+            // What the choice sets off, such as the next level-up popup, opens before the
+            // closing is announced, so nothing waiting for every popup to close slips in first.
+            emit(APP_UI_INTERACTION_MODAL_CONFIRMED, { choice, subject: payload.subject ?? null })
+            emit(APP_UI_INTERACTION_MODAL_CLOSED, { choice })
           } finally {
             isClosing = false
           }
@@ -83,6 +88,6 @@ export const registerInteractionModalModule = defineModule(
     id: 'interaction-modal',
     phase: 'view',
     consumes: [APP_UI_INTERACTION_MODAL_OPENED, APP_UI_NOTICE_OPENED],
-    produces: [APP_UI_INTERACTION_MODAL_CLOSED]
+    produces: [APP_UI_INTERACTION_MODAL_CONFIRMED, APP_UI_INTERACTION_MODAL_CLOSED]
   }
 )

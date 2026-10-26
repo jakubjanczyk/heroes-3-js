@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest'
 
 import { holdRightButtonOn } from './adventure-map.utils.js'
 import {
-  closeInteractionModal,
+  closeLevelUpPopup,
   getHeroInfoBox,
   queryLevelUpPopup,
   readPrimarySkills,
@@ -70,7 +70,7 @@ describe('hero level behavior', () => {
     const { user } = await setupApp(aLevelScenario())
     await takeFromTreasureChest(user, firstChest, 'experience')
 
-    await closeInteractionModal(user)
+    await closeLevelUpPopup(user)
 
     expect(readPrimarySkills(getHeroInfoBox())).toEqual([
       'Attack 2',
@@ -83,7 +83,7 @@ describe('hero level behavior', () => {
   test('given the hero went up a level when the player holds the right button on the hero then the popup shows the gained primary skill one higher', async () => {
     const { user } = await setupApp(aLevelScenario())
     await takeFromTreasureChest(user, firstChest, 'experience')
-    await closeInteractionModal(user)
+    await closeLevelUpPopup(user)
 
     await holdRightButtonOn(user, 0, 0)
 
@@ -119,7 +119,7 @@ describe('hero level behavior', () => {
 
     await takeFromTreasureChest(user, firstChest, 'experience')
     const firstPopup = readLevelUpDialog()[0]
-    await closeInteractionModal(user)
+    await closeLevelUpPopup(user)
     const secondPopup = readLevelUpDialog()[0]
 
     expect([firstPopup, secondPopup]).toEqual([
@@ -148,7 +148,7 @@ describe('hero level behavior', () => {
       const eventLog = createMemoryEventLog()
       const { user } = await setupApp(aLevelScenario(), { roll: ROLL_DEFENSE, eventLog })
       await takeFromTreasureChest(user, firstChest, 'experience')
-      await closeInteractionModal(user)
+      await closeLevelUpPopup(user)
 
       await setupApp(aLevelScenario(), { roll: ROLL_ATTACK, eventLog })
 

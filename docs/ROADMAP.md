@@ -386,8 +386,12 @@ Built in three parts; see `docs/notes/2026-10-26-secondary-skills.md`.
 - [x] The exchange screen shows both heroes' skills
 
 #### 4.7.2 Choosing a skill on level-up
-- [ ] On level-up, choose 1 of 2: one skill the hero has at Basic or Advanced, one weighted by the class's table (the note has the Knight's and the Cleric's); with 8 skills both are upgrades
-- [ ] The choice saved as a fact, so a reload replays it
+- [x] On level-up, choose 1 of 2: one skill the hero has at Basic or Advanced, one weighted by the class's table (the Knight's in `hero-classes.json`; the note has the Cleric's); with no skill to upgrade both are new, with 8 skills both are upgrades
+- [x] Nothing picked at first and OK disabled until a pick; a single offer comes picked; with nothing to offer, OK is enabled
+- [x] Several levels at once show one popup each, the next offering skills after the last pick
+- [x] The choice saved as a fact, so a reload replays it; a popup open when the page closed shows again with the same offers
+- [ ] Guaranteed offers: Wisdom at least every 6 levels and a magic school at least every 4, unless the hero has them or can't learn them
+- [ ] The popup's medals and the hero's portrait (with portraits, 4.4) and skill pictures in place of the initials
 
 #### 4.7.3 What the skills do
 Each comes with the feature it changes; the note has every skill's numbers.

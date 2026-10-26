@@ -1,4 +1,4 @@
-function initialsOf(name) {
+export function initialsOf(name) {
   const words = name.split(' ')
   return words.length > 1 ? words.map((word) => word.charAt(0)).join('') : name.slice(0, 2)
 }

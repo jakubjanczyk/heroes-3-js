@@ -119,44 +119,64 @@ function renderDetails(host, details) {
   )
 }
 
-// Rewards to pick from, as in Heroes 3: a picture each with the amount under it and "or" between
-// them; the picked one gets a gold frame. OK stays disabled until one is picked.
+function renderChoicePicture(document, { picture, initials }) {
+  const icon = document.createElement('span')
+  icon.className = 'interaction-modal__choice-picture'
+  icon.setAttribute('aria-hidden', 'true')
+  if (picture) {
+    icon.style.backgroundImage = `url('${picture}')`
+  }
+  if (initials) {
+    icon.dataset.initials = initials
+  }
+  return icon
+}
+
+function renderChoiceCaption(document, { amount, caption }) {
+  const lines = caption ?? [String(amount)]
+  return lines.map((text) => {
+    const line = document.createElement('span')
+    line.className = 'interaction-modal__choice-amount'
+    line.textContent = text
+    return line
+  })
+}
+
+function pickChoice(host, buttons, button) {
+  host._choice = button.dataset.choice
+  host._okButtonEl.disabled = false
+  for (const other of buttons) {
+    other.setAttribute('aria-pressed', String(other === button))
+  }
+}
+
+// Things to pick from, as in Heroes 3: a picture each with its amount or caption under it and
+// "or" between them; the picked one gets a gold frame. OK stays disabled until one is picked, and
+// a single choice comes already picked.
 function renderChoices(host, choices) {
   const document = host.ownerDocument
   host._choice = null
   host._choicesEl.hidden = choices.length === 0
   host._okButtonEl.disabled = choices.length > 0
 
-  const buttons = choices.map(({ id, amount, label, picture }) => {
+  const buttons = choices.map((choice) => {
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'interaction-modal__choice'
-    button.dataset.choice = id
-    button.setAttribute('aria-label', label)
+    button.dataset.choice = choice.id
+    button.setAttribute('aria-label', choice.label)
     button.setAttribute('aria-pressed', 'false')
-
-    const icon = document.createElement('span')
-    icon.className = 'interaction-modal__choice-picture'
-    icon.setAttribute('aria-hidden', 'true')
-    if (picture) {
-      icon.style.backgroundImage = `url('${picture}')`
-    }
-
-    const amountLabel = document.createElement('span')
-    amountLabel.className = 'interaction-modal__choice-amount'
-    amountLabel.textContent = String(amount)
-
-    button.append(icon, amountLabel)
+    button.append(renderChoicePicture(document, choice), ...renderChoiceCaption(document, choice))
     button.addEventListener('click', (event) => {
       event.stopPropagation()
-      host._choice = id
-      host._okButtonEl.disabled = false
-      for (const other of buttons) {
-        other.setAttribute('aria-pressed', String(other === button))
-      }
+      pickChoice(host, buttons, button)
     })
     return button
   })
+
+  if (buttons.length === 1) {
+    pickChoice(host, buttons, buttons[0])
+  }
 
   host._choicesEl.replaceChildren(
     ...buttons.flatMap((button, index) => {

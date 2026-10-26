@@ -155,6 +155,26 @@
   }
 }
 
+/* A secondary skill until there are skill pictures: its initials in gold on a dark square. */
+.interaction-modal__choice-picture[data-initials] {
+  display: grid;
+  place-items: center;
+  inline-size: 3rem;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, #6b5638, #2b1d10);
+  color: var(--trim-gold-light);
+  font-weight: bold;
+
+  &::before {
+    content: attr(data-initials);
+  }
+}
+
+/* Skills have two caption lines (level over name), so "or" sits higher to stay level with them. */
+.interaction-modal__choices:has([data-initials]) .interaction-modal__choice-or {
+  margin-block-end: 2.8rem;
+}
+
 .interaction-modal__actions {
   margin-top: var(--space-md);
   display: flex;
