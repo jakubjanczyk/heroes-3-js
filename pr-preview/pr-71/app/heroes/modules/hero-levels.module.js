@@ -16,6 +16,7 @@ import {
   APP_UI_RESTORE_COMPLETED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { primarySkillPicture } from '../presentation/primary-skill-icons.js'
 import { initialsOf } from '../presentation/secondary-skill-icon.js'
 
 const LEVEL_UP_SUBJECT = 'hero.levelUp'
@@ -39,10 +40,14 @@ export const registerHeroLevelsModule = defineModule(
 
     function openLevelUpPopup(hero, { level, primarySkill, skillOffers }) {
       const heroClass = definitions.heroClasses?.[hero.heroClass] ?? null
+      const skillName = primarySkillName(primarySkill)
       emit(APP_UI_NOTICE_OPENED, {
+        variant: 'level-up',
         title: `${hero.name} has gained a level.`,
+        heroName: hero.name,
         message: `${hero.name} is now a level ${level} ${heroClass?.name ?? ''}.`,
-        details: [`+1 ${primarySkillName(primarySkill)}`],
+        detailsPicture: primarySkillPicture(primarySkill, skillName),
+        details: [`${skillName} +1`],
         choices: skillOffers.map((offer) => skillChoice(offer, definitions)),
         subject: { kind: LEVEL_UP_SUBJECT, heroId: hero.id }
       })
