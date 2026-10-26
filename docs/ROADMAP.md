@@ -391,7 +391,8 @@ Built in three parts; see `docs/notes/2026-10-26-secondary-skills.md`.
 - [x] Several levels at once show one popup each, the next offering skills after the last pick
 - [x] The choice saved as a fact, so a reload replays it; a popup open when the page closed shows again with the same offers
 - [ ] Guaranteed offers: Wisdom at least every 6 levels and a magic school at least every 4, unless the hero has them or can't learn them
-- [ ] The popup's medals and the hero's portrait (with portraits, 4.4) and skill pictures in place of the initials
+- [x] The popup laid out as the game's: each line in a dark bar, the hero between two medals, the gained primary skill pictured over "Knowledge +1", the checkmark in the bottom right
+- [ ] The hero's portrait (4.4) and skill pictures in place of the initials
 
 #### 4.7.3 What the skills do
 Each comes with the feature it changes; the note has every skill's numbers.

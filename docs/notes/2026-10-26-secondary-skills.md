@@ -99,12 +99,12 @@ What we do:
 - Levels are taken one at a time. `hero-levels.module.js` rolls a level's primary skill and its offers and logs them in `fact.hero.leveledUp` (`skillOffers`), then opens the popup. The pick is logged as `fact.hero.secondarySkill.learned` (`skill`, `level`), which adds the skill in the next slot or raises it in its own; only then is the next level rolled, so its offers count the pick.
 - The popup tells the hero-levels module what was picked through `ui.interaction.modal.confirmed`, which the modal sends with the popup's `subject` just before `ui.interaction.modal.closed`. So the next level-up popup is already queued when the interaction module, which waits for every popup to close, would start the next queued battle.
 - The `heroDetails` slice keeps each hero's `level` and the `pendingLevelUp` not yet picked. After a reload, a pending level-up's popup opens again with the same offers.
-- The popup's choices are the chest dialog's: the skill's initials stand in for its picture, with the level over the name under it.
+- The popup is the message box's `level-up` variant: the title, the level line and "Knowledge +1" each in a dark bar; the hero between two medals (drawn in SVG), the hero's initial standing in for the portrait; the gained primary skill's hero box icon over its line; the checkmark in the bottom right. Its choices are the chest dialog's, the skill's initials standing in for its picture, with the level over the name under it.
 
 ## Not yet
 
 - Skill pictures; the initials stand in.
-- The level-up popup's medals and the hero's portrait.
+- The hero's portrait in the level-up popup; the initial stands in.
 - Guaranteed Wisdom and magic school offers.
 - The effects (4.7.3), the Witch Hut and other ways to learn a skill (7.7).
 - The other Knights (Tyris), the Clerics and the other factions' heroes.

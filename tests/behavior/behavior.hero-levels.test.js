@@ -48,7 +48,7 @@ const twoTier1Chests = [
   aTreasureChest().withId('chest-2').withTier(1).at(3, 0)
 ]
 
-// What the level-up popup says, e.g. ['Hero is now a level 2 Knight.', '+1 Defense'].
+// What the level-up popup says, e.g. ['Hero is now a level 2 Knight.', 'Defense +1'].
 function readLevelUpDialog() {
   const dialog = queryLevelUpPopup()
   expect(dialog).toBeTruthy()
@@ -63,7 +63,7 @@ describe('hero level behavior', () => {
 
     await takeFromTreasureChest(user, firstChest, 'experience')
 
-    expect(readLevelUpDialog()).toEqual(['Hero is now a level 2 Knight.', '+1 Defense'])
+    expect(readLevelUpDialog()).toEqual(['Hero is now a level 2 Knight.', 'Defense +1'])
   })
 
   test('given the hero went up a level when the player closes the popup then the info box shows the gained primary skill one higher', async () => {
@@ -93,6 +93,16 @@ describe('hero level behavior', () => {
       'Power 1',
       'Knowledge 1'
     ])
+  })
+
+  test('given a hero with no experience when they take 1000 experience from a chest then the popup pictures the hero and the gained primary skill', async () => {
+    const { user } = await setupApp(aLevelScenario())
+
+    await takeFromTreasureChest(user, firstChest, 'experience')
+
+    const popup = queryLevelUpPopup()
+    expect(within(popup).getByRole('img', { name: 'Hero' })).toBeTruthy()
+    expect(within(popup).getByRole('img', { name: 'Defense' })).toBeTruthy()
   })
 
   test('given a hero with no experience when they take 500 experience then no level-up popup opens', async () => {
@@ -129,9 +139,9 @@ describe('hero level behavior', () => {
   })
 
   test.each([
-    { roll: ROLL_ATTACK, gained: '+1 Attack' },
-    { roll: ROLL_POWER, gained: '+1 Power' },
-    { roll: ROLL_KNOWLEDGE, gained: '+1 Knowledge' }
+    { roll: ROLL_ATTACK, gained: 'Attack +1' },
+    { roll: ROLL_POWER, gained: 'Power +1' },
+    { roll: ROLL_KNOWLEDGE, gained: 'Knowledge +1' }
   ])('given a Knight going up to level 2 when the roll is $roll then the popup shows $gained', async ({
     roll,
     gained
