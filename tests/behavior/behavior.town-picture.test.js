@@ -4,14 +4,13 @@ import { describe, expect, test } from 'vitest'
 import { getTownInTownList } from './adventure-panels.utils.js'
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
+import { queryRecruitWindow, readChosenRecruitCreature } from './recruit-window.utils.js'
 import {
   buildInTown,
   clickBuildingOnPicture,
   hoverBuildingOnPicture,
   queryFortWindow,
   queryHall,
-  queryRecruitWindow,
-  readChosenRecruitCreature,
   readTownPicture,
   readTownStatusBar,
   unhoverBuildingOnPicture
