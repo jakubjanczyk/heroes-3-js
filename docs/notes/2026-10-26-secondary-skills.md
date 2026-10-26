@@ -29,11 +29,11 @@ Checked against the Heroes 3 wiki (heroes.thelazy.net: Secondary skill, Castle, 
 ## What we do
 
 - `game/data/secondary-skills.json`: the 28 skills in the game's order, keyed by id (`PATHFINDING`, ..., `FIRST_AID`), each with its name and a description per level. The descriptions are our own words for the effects in the table below; the game's texts aren't available.
-- `game/data/heroes.json`: the heroes by id (`ORRIN`, ...), each with name, class and `secondarySkills` (`[{ "skill": "LEADERSHIP", "level": "BASIC" }, ...]`, in order). It holds the six Knights the tavern offers and Lord Haart. `tavern.json` keeps the cost and the rumours, and its pool is the heroes in `heroes.json`.
+- `game/data/heroes.json`: the heroes by id (`ORRIN`, ...), each with name, class and `secondarySkills` (`[{ "skill": "LEADERSHIP", "level": "BASIC" }, ...]`, in order). It holds the six Knights the tavern offered and Lord Haart. `tavern.json` keeps the cost and the rumours; the tavern's pool is the heroes in `heroes.json` (so Lord Haart can be hired once he leaves the map), then the scenario's other heroes.
 - The scenario's first hero becomes Lord Haart (was "Hero"). His Basic Leadership and Basic Estates come from `heroes.json`, found by name; a scenario hero may list `secondarySkills` itself to override them. A scenario hero not in `heroes.json` starts with none.
 - The `heroDetails` slice keeps each hero's `secondarySkills`. A hired hero gets theirs from `heroes.json` by name, so `fact.hero.hired` stays as it is and a reload replays the same skills. A beaten hero hired again starts with their starting skills, as with their level (2026-10-26-defeated-hero.md).
-- The hero screen fills its eight slots and the exchange screen its skill rows. The icon is a stand-in (the skill's initials) until there are pictures. The right-click popup and the status bar text come with them.
-- A unit test checks the data files: every hero's skills name a skill that exists, at most 8, none twice.
+- The hero screen fills its eight slots: the icon, then the level over the name. Holding the right button on one shows a popup with "Basic Leadership" and its description; the status bar says "View Basic Leadership Info". The exchange screen shows each hero's skill icons, named "Basic Leadership" for screen readers.
+- `game/heroes/secondary-skills.js` holds the starting skills and the skill's title and description; `app/heroes/presentation/secondary-skill-icon.js` draws the icon. The icon is a stand-in, the skill's initials (`game/ui/secondary-skill-icon.css`), until there are pictures.
 - No skill does anything yet (4.7.3).
 
 ## For later

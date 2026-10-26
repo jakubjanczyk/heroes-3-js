@@ -18,6 +18,7 @@ import {
   clickHeroInHeroList,
   readHeroScreenArmy,
   readHeroScreenPrimarySkills,
+  readHeroScreenSecondarySkills,
   readHeroScreenTitle
 } from './hero-screen.utils.js'
 import { hireHero, leaveTown, openTavern, readHeroesForHire } from './town-screen.utils.js'
@@ -25,6 +26,8 @@ import { hireHero, leaveTown, openTavern, readHeroesForHire } from './town-scree
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
+  heroes: readGameData('heroes.json'),
+  secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
@@ -32,16 +35,15 @@ const gameDefinitions = {
   tavern: readGameData('tavern.json')
 }
 
-const BEATEN_HERO = 'Lord Haart'
+const BEATEN_HERO = 'Christian'
 const OTHER_HERO = 'Sir Mullich'
 
-// Every roll the highest: the tavern offers the last heroes of its pool still free, and the heroes
-// the scenario started with come after those of the tavern's own list. A hired hero's starting
-// army rolls 100, so only the first stack comes, at its largest.
+// Every roll the highest: the tavern offers the last heroes of its pool still free, Christian first.
+// A hired hero's starting army rolls 100, so only the first stack comes, at its largest.
 const HIGHEST_ROLLS = () => 0.99
 
-// Lord Haart, a level 4 Knight with skills of his own, attacks the Swordsmen with a lone Skeleton
-// and loses. Whitemoon's entrance is at (4, 3), away from both heroes.
+// Christian, a level 4 Knight with primary and secondary skills of his own, attacks the Swordsmen
+// with a lone Skeleton and loses. Whitemoon's entrance is at (4, 3), away from both heroes.
 const aDefeatScenario = () =>
   aScenario()
     .withSize(16, 7)
@@ -50,6 +52,11 @@ const aDefeatScenario = () =>
         .withName(BEATEN_HERO)
         .withExperience(3000)
         .withPrimarySkills({ attack: 6, defense: 5, power: 3, knowledge: 2 })
+        .withSecondarySkills([
+          { skill: 'LEADERSHIP', level: 'EXPERT' },
+          { skill: 'ARTILLERY', level: 'ADVANCED' },
+          { skill: 'LOGISTICS', level: 'BASIC' }
+        ])
         .withArmy([{ creature: 'SKELETON', count: 1 }])
         .at(0, 0),
       aHero().withId('hero-2').withName(OTHER_HERO).at(0, 6),
@@ -113,6 +120,18 @@ describe('hero defeat behavior', () => {
       'Defense 2',
       'Power 1',
       'Knowledge 1'
+    ])
+  })
+
+  test('given a beaten hero is hired again then they have their starting secondary skills', async () => {
+    const { user } = await loseBattle()
+
+    await hireBeatenHeroAgain(user)
+
+    expect(readHeroScreenSecondarySkills().slice(0, 3)).toEqual([
+      'Basic Leadership',
+      'Basic Artillery',
+      ''
     ])
   })
 

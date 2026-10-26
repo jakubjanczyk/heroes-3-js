@@ -137,18 +137,31 @@ export async function loadGame({
   const normalizedScenarioUrl = normalizeStaticUrl(scenarioUrl)
   const normalizedDataBaseUrl = normalizeStaticUrl(dataBaseUrl)
 
-  const [scenario, hero, heroClasses, monsters, resources, towns, buildings, mines, tavern] =
-    await Promise.all([
-      fetchJson(fetch, normalizedScenarioUrl),
-      fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
-      fetchJson(fetch, `${normalizedDataBaseUrl}/hero-classes.json`),
-      fetchJson(fetch, `${normalizedDataBaseUrl}/monsters.json`),
-      fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
-      fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
-      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/buildings.json`),
-      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`),
-      fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/tavern.json`)
-    ])
+  const [
+    scenario,
+    hero,
+    heroClasses,
+    monsters,
+    resources,
+    towns,
+    buildings,
+    mines,
+    tavern,
+    heroes,
+    secondarySkills
+  ] = await Promise.all([
+    fetchJson(fetch, normalizedScenarioUrl),
+    fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
+    fetchJson(fetch, `${normalizedDataBaseUrl}/hero-classes.json`),
+    fetchJson(fetch, `${normalizedDataBaseUrl}/monsters.json`),
+    fetchJson(fetch, `${normalizedDataBaseUrl}/resources.json`),
+    fetchJson(fetch, `${normalizedDataBaseUrl}/towns.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/buildings.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/tavern.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/heroes.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/secondary-skills.json`)
+  ])
 
   const map = createMap(scenario.terrain, terrainTypes)
   assertKnownTerrainCodes(scenario.terrain, map)
@@ -158,7 +171,18 @@ export async function loadGame({
   assertHeroPrimarySkills(scenario, primarySkills)
   assertTownGarrisons(scenario)
 
-  const definitions = { hero, heroClasses, monsters, resources, towns, buildings, mines, tavern }
+  const definitions = {
+    hero,
+    heroClasses,
+    monsters,
+    resources,
+    towns,
+    buildings,
+    mines,
+    tavern,
+    heroes,
+    secondarySkills
+  }
   assertTownBuildings(scenario, definitions)
 
   return { scenario, definitions }

@@ -58,7 +58,9 @@ describe('bootstrap', () => {
       towns: { CASTLE: { name: 'Castle' } },
       buildings: { TAVERN: { name: 'Tavern', cost: { GOLD_PILE: 500 } } },
       mines: { GOLD_MINE: { name: 'Gold mine' } },
-      tavern: { cost: { GOLD_PILE: 2500 } }
+      tavern: { cost: { GOLD_PILE: 2500 } },
+      heroes: { ORRIN: { name: 'Orrin', heroClass: 'KNIGHT' } },
+      secondarySkills: { LEADERSHIP: { name: 'Leadership' } }
     }
 
     const fetch = createFakeFetch({
@@ -70,7 +72,9 @@ describe('bootstrap', () => {
       './game/data/towns.json': definitions.towns,
       './game/data/buildings.json': definitions.buildings,
       './game/data/mines.json': definitions.mines,
-      './game/data/tavern.json': definitions.tavern
+      './game/data/tavern.json': definitions.tavern,
+      './game/data/heroes.json': definitions.heroes,
+      './game/data/secondary-skills.json': definitions.secondarySkills
     })
 
     const loaded = await loadGame({ fetch })

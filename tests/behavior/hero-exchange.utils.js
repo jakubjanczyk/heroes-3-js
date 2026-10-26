@@ -45,6 +45,16 @@ export function readHeroExchangePrimarySkills() {
     .map((row) => row.textContent.replace(/\s+/g, ' ').trim())
 }
 
+// The small skill icons under a hero's primary skills, each named "<level> <skill>"; '' when empty.
+export function readHeroExchangeSecondarySkills(heroName) {
+  const list = within(getHeroSide(heroName)).getByRole('list', {
+    name: `${heroName}'s secondary skills`
+  })
+  return within(list)
+    .getAllByRole('listitem')
+    .map((item) => item.querySelector('[role="img"]')?.getAttribute('aria-label') ?? '')
+}
+
 export function readHeroExchangeArmy(heroName) {
   return readArmySlots(getHeroSide(heroName), `${heroName}'s army`)
 }

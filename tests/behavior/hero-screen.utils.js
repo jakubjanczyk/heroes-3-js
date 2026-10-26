@@ -97,3 +97,24 @@ export function getHeroScreenSplitButton() {
 export async function clickHeroScreenSplitButton(user) {
   await user.click(getHeroScreenSplitButton())
 }
+
+// Each slot as "<level> <skill>", the level written over the skill's name; '' when empty.
+export function readHeroScreenSecondarySkills() {
+  const list = within(getHeroScreen()).getByRole('list', { name: 'Secondary skills' })
+  return within(list).getAllByRole('listitem').map(readText)
+}
+
+function getHeroScreenSkill(levelAndSkill) {
+  const list = within(getHeroScreen()).getByRole('list', { name: 'Secondary skills' })
+  return within(list)
+    .getAllByRole('listitem')
+    .find((item) => readText(item) === levelAndSkill)
+}
+
+export async function hoverOnHeroScreenSkill(user, levelAndSkill) {
+  await user.hover(getHeroScreenSkill(levelAndSkill))
+}
+
+export async function holdRightButtonOnHeroScreenSkill(user, levelAndSkill) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenSkill(levelAndSkill) })
+}

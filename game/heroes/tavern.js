@@ -40,10 +40,10 @@ function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random 
   }
 }
 
-// The tavern's own heroes, then the ones the scenario started with: a hero who leaves the map can
-// be hired again.
-export function heroPool(tavern, startingHeroes) {
-  const pool = Object.values(tavern?.heroes ?? {})
+// The game's heroes, then the ones the scenario started with: a hero who leaves the map can be
+// hired again.
+export function heroPool(heroes, startingHeroes) {
+  const pool = Object.values(heroes ?? {})
   const names = new Set(pool.map(({ name }) => name))
   return [...pool, ...startingHeroes.filter(({ name }) => !names.has(name))]
 }

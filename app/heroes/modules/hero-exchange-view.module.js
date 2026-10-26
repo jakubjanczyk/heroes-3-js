@@ -1,6 +1,7 @@
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
   APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED,
@@ -17,6 +18,10 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
+import {
+  renderSecondarySkillIcon,
+  secondarySkillStatusText
+} from '../presentation/secondary-skill-icon.js'
 
 const SIDES = ['left', 'right']
 const OTHER_SIDE = { left: 'right', right: 'left' }
@@ -30,6 +35,14 @@ function statusSourceAt(target) {
 
 function armySlotAt(target) {
   return target?.closest?.('.hero-exchange__army > .army-slot') ?? null
+}
+
+function renderSecondarySkill(document, skill) {
+  const icon = renderSecondarySkillIcon(document, skill)
+  icon.setAttribute('role', 'img')
+  icon.setAttribute('aria-label', skill.title)
+  icon.dataset.status = secondarySkillStatusText(skill)
+  return icon
 }
 
 function sideOf(element) {
@@ -68,6 +81,7 @@ export const registerHeroExchangeViewModule = defineModule(
       element
         .querySelector('.hero-exchange__army')
         .setAttribute('aria-label', `${hero.name}'s army`)
+      fillSecondarySkills(element, hero)
 
       const otherName = heroOn(OTHER_SIDE[side]).name
       element.querySelectorAll('.hero-exchange__slot-arrow').forEach((arrow, index) => {
@@ -82,6 +96,17 @@ export const registerHeroExchangeViewModule = defineModule(
           `[data-skill="${key}"] .hero-exchange__skill-value[data-side="${side}"]`
         ).textContent = String(value)
       }
+    }
+
+    function fillSecondarySkills(element, hero) {
+      const list = element.querySelector('.hero-exchange__secondary-skills')
+      list.setAttribute('aria-label', `${hero.name}'s secondary skills`)
+      const skills = hero.secondarySkills.map((skill) => describeSecondarySkill(skill, definitions))
+      list.querySelectorAll('li').forEach((slot, index) => {
+        slot.replaceChildren(
+          ...(skills[index] ? [renderSecondarySkill(document, skills[index])] : [])
+        )
+      })
     }
 
     function showArmies() {

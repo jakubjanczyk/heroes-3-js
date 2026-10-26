@@ -1,6 +1,7 @@
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -16,6 +17,10 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
+import {
+  renderSecondarySkillIcon,
+  secondarySkillStatusText
+} from '../presentation/secondary-skill-icon.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 const SELECT_TEXT = { hero: 'Select %s' }
@@ -28,12 +33,42 @@ function armySlotAt(target) {
   return target?.closest?.('.hero-screen__army > .army-slot') ?? null
 }
 
+function secondarySkillAt(target) {
+  return target?.closest?.('.hero-screen__secondary-skill[data-skill-index]') ?? null
+}
+
+function renderSecondarySkill(slot, document, skill) {
+  const level = document.createElement('span')
+  level.className = 'hero-screen__secondary-skill-level'
+  level.textContent = skill.levelName
+  const name = document.createElement('span')
+  name.className = 'hero-screen__secondary-skill-name'
+  name.textContent = skill.name
+  slot.replaceChildren(renderSecondarySkillIcon(document, skill), level, ' ', name)
+  slot.dataset.status = secondarySkillStatusText(skill)
+}
+
+function renderSkillPopup(document, { title, description }) {
+  const popup = document.createElement('div')
+  popup.className = 'info-popup info-popup--skill message-box'
+  popup.setAttribute('role', 'tooltip')
+  const heading = document.createElement('h2')
+  heading.className = 'info-popup__title'
+  heading.textContent = title
+  const text = document.createElement('p')
+  text.className = 'info-popup__line'
+  text.textContent = description
+  popup.append(heading, text)
+  return popup
+}
+
 export const registerHeroScreenViewModule = defineModule(
   ({ emit, env, state }) => {
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let heroScreen = null
     let rearranging = null
+    let skillPopup = null
     let definitions = {}
     let isMapCovered = false
     // Whether this screen covered the map, so closing it uncovers only what it covered: over the
@@ -64,7 +99,41 @@ export const registerHeroScreenViewModule = defineModule(
       heroScreen.querySelector('.hero-screen__experience .hero-screen__box-value').textContent =
         String(hero?.experience ?? 0)
 
+      showSecondarySkills(hero)
       showArmy()
+    }
+
+    function describedSkills(hero) {
+      return (hero?.secondarySkills ?? []).map((skill) =>
+        describeSecondarySkill(skill, definitions)
+      )
+    }
+
+    function showSecondarySkills(hero) {
+      const skills = describedSkills(hero)
+      heroScreen.querySelectorAll('.hero-screen__secondary-skill').forEach((slot, index) => {
+        if (skills[index]) {
+          slot.dataset.skillIndex = String(index)
+          renderSecondarySkill(slot, document, skills[index])
+        }
+      })
+    }
+
+    function openSkillPopup(slot) {
+      closeSkillPopup()
+      const skill = describedSkills(selectedHero())[Number(slot.dataset.skillIndex)]
+      skillPopup = renderSkillPopup(document, skill)
+      gameShell.append(skillPopup)
+
+      const slotBox = slot.getBoundingClientRect()
+      const { width } = skillPopup.getBoundingClientRect()
+      skillPopup.style.left = `${Math.max(0, slotBox.left + slotBox.width / 2 - width / 2)}px`
+      skillPopup.style.top = `${slotBox.bottom}px`
+    }
+
+    function closeSkillPopup() {
+      skillPopup?.remove()
+      skillPopup = null
     }
 
     function showArmy() {
@@ -109,6 +178,7 @@ export const registerHeroScreenViewModule = defineModule(
         return
       }
 
+      closeSkillPopup()
       heroScreen.remove()
       heroScreen = null
       rearranging = null
@@ -181,6 +251,27 @@ export const registerHeroScreenViewModule = defineModule(
         },
         {
           target: gameShell,
+          type: 'pointerdown',
+          handler: (event) => {
+            const skill = secondarySkillAt(event.target)
+            if (heroScreen?.contains(skill) && event.button === 2) {
+              openSkillPopup(skill)
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'contextmenu',
+          handler: (event) => {
+            if (heroScreen?.contains(secondarySkillAt(event.target))) {
+              event.preventDefault()
+            }
+          }
+        },
+        { target: env.window, type: 'pointerup', handler: closeSkillPopup },
+        { target: env.window, type: 'pointercancel', handler: closeSkillPopup },
+        {
+          target: gameShell,
           type: 'mouseover',
           handler: (event) => {
             if (!heroScreen?.contains(event.target)) {
@@ -211,6 +302,7 @@ export const registerHeroScreenViewModule = defineModule(
         }
       ],
       dispose: () => {
+        closeSkillPopup()
         heroScreen?.remove()
         heroScreen = null
         rearranging = null

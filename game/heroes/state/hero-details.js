@@ -1,13 +1,19 @@
 import { isHero } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
+import { startingSecondarySkills } from '../secondary-skills.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
 function detailsOf(hero, definitions) {
+  const name = hero.name ?? definitions?.hero?.name ?? DEFAULT_HERO_NAME
   return {
-    name: hero.name ?? definitions?.hero?.name ?? DEFAULT_HERO_NAME,
+    name,
     heroClass: hero.heroClass ?? definitions?.hero?.heroClass ?? null,
     primarySkills: hero.primarySkills ?? null,
+    secondarySkills: startingSecondarySkills(
+      { name, secondarySkills: hero.secondarySkills },
+      definitions
+    ),
     army: hero.army ?? [],
     experience: hero.experience ?? 0,
     levelUpSkills: []
