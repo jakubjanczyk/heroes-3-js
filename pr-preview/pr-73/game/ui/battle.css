@@ -1,0 +1,453 @@
+/*
+ * The Heroes 3 battle screen, laid over the whole adventure screen: the battlefield with its 15 by
+ * 11 hexes and an unmarked edge column past each side, the heroes in the top corners and the combat bar with the status bar along the bottom.
+ * Nothing is taken from the game: the ground takes the colour of the terrain the battle is on.
+ */
+.game-shell {
+  position: relative;
+}
+
+.battle-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 3px;
+  padding: var(--frame-width);
+  background: linear-gradient(180deg, var(--frame-mid), var(--frame-dark));
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 3px var(--frame-dark);
+}
+
+.battle-screen__field {
+  position: relative;
+  min-block-size: 0;
+  overflow: hidden;
+  container-type: size;
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow: inset 0 0 0 1px black;
+
+  /* Pointy-top hexes: as tall as 2/√3 of their width, rows overlapping by a quarter. */
+  --hex-width: min(calc(100cqw / 17.5), calc(84cqh / 9.8));
+  --hex-height: calc(var(--hex-width) * 1.1547);
+}
+
+.battle-screen__ground {
+  position: absolute;
+  inset: 0;
+}
+
+/* Sky and a far treeline over the ground, as on the game's battlefield backdrops. */
+.battle-screen__sky {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 15%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3Cpath d='M4 30L10 6L16 30ZM19 30L27 0L35 30ZM38 30L43 12L48 30ZM49 30L55 4L61 30Z' fill='rgb(38,78,58)'/%3E%3C/svg%3E")
+    0 100% / auto 70% repeat-x,
+    linear-gradient(180deg, oklch(0.82 0.05 230), oklch(0.9 0.03 200) 70%, transparent);
+}
+
+.battle-hero {
+  position: absolute;
+  inset-block-start: 2%;
+  inline-size: calc(var(--hex-width) * 1.2);
+  block-size: calc(var(--hex-height) * 1.6);
+  border-radius: 40% 40% 12% 12%;
+  background: linear-gradient(180deg, oklch(0.9 0.01 250), oklch(0.6 0.03 250));
+  border: 2px solid oklch(0.95 0.01 250);
+  box-shadow: 0 0.2rem 0.6rem black;
+
+  /* The hero's banner, in the player's colour. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block-start: -10%;
+    inset-inline-end: -14%;
+    inline-size: 40%;
+    block-size: 30%;
+    background: var(--interface-color);
+    clip-path: polygon(0 0, 100% 20%, 0 45%);
+  }
+}
+
+.battle-hero--attacker {
+  inset-inline-start: 1%;
+}
+
+.battlefield {
+  /* Taps on hexes do not flash the browser's tap highlight. */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  position: absolute;
+  /* Below the sky, and in the middle of the field when it is taller than the hexes need. */
+  inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.25));
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  inline-size: calc(var(--hex-width) * (17 + 0.5));
+}
+
+.battlefield__row {
+  display: flex;
+  margin-block-start: calc(var(--hex-height) * -0.25);
+
+  &:first-child {
+    margin-block-start: 0;
+  }
+
+  /* As in the game, the top row and every second one under it sit half a hex to the right. */
+  &:nth-child(odd) {
+    padding-inline-start: calc(var(--hex-width) / 2);
+  }
+}
+
+.battlefield__hex {
+  position: relative;
+  flex: none;
+  inline-size: var(--hex-width);
+  block-size: var(--hex-height);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.12)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+
+.battlefield__hex--reachable {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.38)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+
+/* Under the mouse: the hex the stack would move to, or the enemy it would attack or shoot. */
+.battlefield__hex--highlighted {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.5)' stroke='rgba(255,236,120,0.95)' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+
+.battlefield__hex--edge {
+  background: none;
+}
+
+/* A creature stands on its hex, taller than it, with its count in a purple box at its feet. As in
+ * Heroes 3, the mouse points at hexes, not at the pictures reaching over them. */
+.battle-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* A double-wide creature also covers the hex behind it: on the left for the attacker. */
+.battle-stack--double-wide.battle-stack--attacker {
+  inset-inline-start: -100%;
+}
+
+.battle-stack--double-wide.battle-stack--defender {
+  inset-inline-end: -100%;
+}
+
+.battle-stack__back-half {
+  position: absolute;
+  inset: 0;
+}
+
+.battle-stack__creature {
+  position: absolute;
+  inset-inline: 15%;
+  inset-block-end: 20%;
+  block-size: 130%;
+}
+
+.battle-stack--active .battle-stack__creature {
+  outline: 2px solid oklch(0.92 0.17 98);
+  outline-offset: 1px;
+  animation: battle-stack-active 1s ease-in-out infinite alternate;
+}
+
+@keyframes battle-stack-active {
+  from {
+    outline-color: oklch(0.92 0.17 98);
+  }
+
+  to {
+    outline-color: oklch(0.7 0.12 80 / 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-stack--active .battle-stack__creature {
+    animation: none;
+  }
+}
+
+.battle-stack__count {
+  position: absolute;
+  inset-block-end: 4%;
+  min-inline-size: 70%;
+  padding-inline: 2px;
+  background: #5a2aa8;
+  border: 1px solid #c9a6ff;
+  color: white;
+  font-size: clamp(0.5rem, calc(var(--hex-width) * 0.3), 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.battle-stack--dead {
+  z-index: 0;
+}
+
+/* A corpse lies flat and dark on its hexes, under any stack standing on it. */
+.battle-stack--dead .battle-stack__creature {
+  inset-block-end: 25%;
+  block-size: 35%;
+  filter: grayscale(1) brightness(0.45);
+}
+
+.battle-stack--dead .battle-stack__count {
+  display: none;
+}
+
+.battle-stack--attacker .battle-stack__count {
+  inset-inline-start: 65%;
+}
+
+.battle-stack--defender .battle-stack__count {
+  inset-inline-end: 65%;
+}
+
+.battle-stack--double-wide.battle-stack--attacker .battle-stack__count {
+  inset-inline-start: 82%;
+}
+
+.battle-stack--double-wide.battle-stack--defender .battle-stack__count {
+  inset-inline-end: 82%;
+}
+
+.battle-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(1.75rem, 3rem)) minmax(0, 1fr) auto repeat(
+      3,
+      minmax(1.75rem, 3rem)
+    );
+  gap: 3px;
+  block-size: 2.5rem;
+}
+
+.battle-button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--trim-gold-dark);
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--interface-color) 18%, #29324a),
+    color-mix(in oklab, var(--interface-color) 14%, #0d1220)
+  );
+  box-shadow:
+    inset 1px 1px 0 var(--trim-gold-light),
+    inset -1px -1px 0 var(--trim-gold-dark),
+    0 0 0 1px black;
+  color: var(--trim-gold);
+
+  & .battle-button__icon {
+    block-size: min(1.5rem, 70%);
+    inline-size: auto;
+    aspect-ratio: 1;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 1px 0 black);
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--trim-gold-light);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow:
+      inset -1px -1px 0 var(--trim-gold-light),
+      inset 1px 1px 0 var(--trim-gold-dark),
+      0 0 0 1px black;
+  }
+}
+
+.battle-bar__log {
+  min-inline-size: 0;
+  padding: 2px var(--space-xs);
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a1d26, #0b0d12);
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow: inset 0 0 0 1px black;
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.battle-bar__message {
+  margin: 0;
+}
+
+.battle-bar__scroll {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  inline-size: 1.25rem;
+}
+
+.battle-bar__arrow {
+  border: 1px solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #29324a, #0d1220);
+
+  &::before {
+    content: "";
+    display: block;
+    block-size: 100%;
+    background: var(--trim-gold);
+    clip-path: polygon(50% 25%, 80% 75%, 20% 75%);
+  }
+}
+
+.battle-bar__arrow--down::before {
+  rotate: 180deg;
+}
+
+.battle-screen__status-bar {
+  block-size: 1.5rem;
+  padding-inline: var(--space-sm);
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a1d26, #0b0d12);
+  border: 2px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+  line-height: 1.25rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* A window over the battle, as Heroes 3 shows its retreat question and the battle results. */
+.battle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-md);
+  overflow: auto;
+}
+
+.battle-overlay__window {
+  inline-size: min(26rem, 100%);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+}
+
+.battle-overlay__actions {
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.battle-overlay__cancel {
+  inline-size: 1.3rem;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2.6;
+  filter: drop-shadow(1px 1px 0 black);
+}
+
+.battle-retreat__question {
+  margin: 0;
+}
+
+/* The battle stays in view behind its results, darkened. */
+.battle-results {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.battle-results__sides {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.battle-results__side {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2xs);
+
+  & p {
+    margin: 0;
+  }
+}
+
+.battle-results__side--defender {
+  justify-items: end;
+}
+
+.battle-results__outcome {
+  padding: 1px var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+}
+
+.battle-results__message {
+  margin-top: var(--space-md);
+  padding: var(--space-sm);
+  border: 1px solid var(--trim-gold-dark);
+
+  & p {
+    margin: 0;
+  }
+
+  & p + p {
+    margin-top: var(--space-sm);
+  }
+}
+
+.battle-results__title {
+  margin: var(--space-md) 0 0;
+  font-size: var(--font-size-md);
+  color: var(--hud-text-gold);
+}
+
+.battle-results__heading {
+  margin: var(--space-sm) 0 var(--space-2xs);
+  font-size: var(--font-size-md);
+}
+
+.battle-results__creatures,
+.battle-results__none {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  min-block-size: 3rem;
+  margin: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  list-style: none;
+  align-items: center;
+}
+
+.battle-results__creature {
+  display: grid;
+  justify-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.battle-results__picture {
+  position: relative;
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+.battle-results__name-caption {
+  margin-top: var(--space-2xs);
+}

@@ -1,0 +1,334 @@
+.interaction-modal {
+  z-index: var(--z-ui-interaction-modal);
+  inline-size: min(20rem, calc(100% - (2 * var(--space-lg))));
+  max-inline-size: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+  opacity: 0;
+  transition:
+    opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard),
+    display var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete,
+    overlay var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete;
+
+  &::backdrop {
+    /* Heroes 3 leaves the map in view behind its messages; only dim it a little. */
+    background: rgb(0 0 0 / 0.25);
+    opacity: 0;
+    transition: opacity var(--interaction-modal-transition-duration, var(--duration-slow))
+      var(--ease-standard);
+  }
+
+  &[open] {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+
+    &::backdrop {
+      opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
+    }
+  }
+
+  &[data-state="closing"] {
+    opacity: 0;
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+/*
+ * A Heroes 3 message box (message-box.css): a gold title, white text, the pictures to choose from
+ * and the checkmark OK button at the bottom.
+ */
+.interaction-modal__surface {
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  font-size: var(--font-size-md);
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: white;
+  text-shadow:
+    1px 1px 0 black,
+    -1px 0 0 rgb(0 0 0 / 0.6);
+  translate: 0 0;
+  opacity: 1;
+  transition:
+    translate var(--interaction-modal-transition-duration, var(--duration-slow))
+    var(--ease-emphasized),
+    opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard);
+
+  .interaction-modal[open] & {
+    @starting-style {
+      translate: 0 0.75rem;
+      opacity: 0;
+    }
+  }
+
+  .interaction-modal[data-state="closing"] & {
+    translate: 0 0.75rem;
+    opacity: 0;
+  }
+}
+
+.interaction-modal__title {
+  margin: 0;
+  font: inherit;
+  font-weight: normal;
+  color: var(--hud-text-gold);
+  text-wrap: balance;
+}
+
+.interaction-modal__message,
+.interaction-modal__detail {
+  margin: var(--space-md) 0 0;
+  text-wrap: balance;
+}
+
+.interaction-modal__choices {
+  margin-top: var(--space-lg);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: var(--space-sm);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+/* "or" sits level with the bottom of the pictures, above their amounts. */
+.interaction-modal__choice-or {
+  margin-block-end: 1.6rem;
+}
+
+.interaction-modal__choice {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: normal;
+  font-size: var(--font-size-sm);
+  text-shadow: inherit;
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+/* The frame (gold when picked, dotted when focused from the keyboard) is on the picture only,
+ * never around the amount under it, as in the game. */
+.interaction-modal__choice-picture {
+  inline-size: 4.5rem;
+  aspect-ratio: 36 / 42;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  background-color: #3a2618;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.6);
+  image-rendering: pixelated;
+
+  [aria-pressed="true"] > & {
+    outline-color: var(--trim-gold);
+  }
+
+  :focus-visible > & {
+    outline-style: dotted;
+    outline-color: var(--trim-gold-light);
+  }
+}
+
+.interaction-modal__choice-picture[data-initials] {
+  display: grid;
+  place-items: center;
+  inline-size: 3rem;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, #6b5638, #2b1d10);
+  color: var(--trim-gold-light);
+  font-weight: bold;
+
+  &::before {
+    content: attr(data-initials);
+  }
+}
+
+/* Skills have two caption lines (level over name), so "or" sits higher to stay level with them. */
+.interaction-modal__choices:has([data-initials]) .interaction-modal__choice-or {
+  margin-block-end: 2.8rem;
+}
+
+.interaction-modal__actions {
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: center;
+}
+
+/* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
+.interaction-modal__ok-button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  inline-size: 3.75rem;
+  block-size: 1.9rem;
+  padding: 0;
+  border: 1px solid black;
+  background: linear-gradient(180deg, #2c1a0e, #170d06);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 2px var(--trim-gold-dark),
+    inset 0 0 0 3px black;
+
+  &:active:not(:disabled) {
+    translate: 1px 1px;
+  }
+
+  &:disabled {
+    filter: grayscale(1) brightness(0.6);
+  }
+
+  &:focus-visible {
+    outline: 1px dotted var(--trim-gold-light);
+    outline-offset: 2px;
+  }
+}
+
+.interaction-modal__ok-check {
+  inline-size: 1.6rem;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(1px 1px 0 black);
+}
+
+.interaction-modal:has([data-variant="level-up"]) {
+  inline-size: min(24rem, calc(100% - (2 * var(--space-lg))));
+}
+
+.interaction-modal__surface[data-variant="level-up"] {
+  & :is(.interaction-modal__title, .interaction-modal__message, .interaction-modal__detail) {
+    margin: var(--space-md) 0 0;
+    padding: var(--space-2xs) var(--space-sm);
+    background: rgb(16 10 5 / 0.6);
+    border: 1px solid #120b05;
+    box-shadow: inset 0 0 0 1px rgb(217 180 90 / 0.2);
+    color: white;
+    font-weight: bold;
+  }
+
+  & .interaction-modal__title {
+    margin-top: 0;
+  }
+
+  & .interaction-modal__actions {
+    justify-content: end;
+  }
+
+  & .interaction-modal__ok-button {
+    inline-size: 4.75rem;
+    block-size: 2.75rem;
+  }
+
+  & .interaction-modal__ok-check {
+    inline-size: 2.2rem;
+  }
+}
+
+.interaction-modal__hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-md);
+  padding-inline: var(--space-md);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.interaction-modal__medal {
+  inline-size: 4rem;
+  filter: drop-shadow(1px 2px 0 rgb(0 0 0 / 0.6));
+}
+
+.interaction-modal__medal-ribbon {
+  fill: #c8202a;
+  stroke: #4a0808;
+}
+
+.interaction-modal__medal-stripes {
+  stroke: #f0d890;
+  stroke-width: 2;
+}
+
+.interaction-modal__medal-rim {
+  fill: #d9d4c8;
+  stroke: #3a3a3a;
+}
+
+.interaction-modal__medal-face {
+  fill: #2c4ea0;
+}
+
+.interaction-modal__medal-star {
+  fill: var(--trim-gold-light);
+  stroke: #6a4a10;
+  stroke-width: 0.8;
+}
+
+.interaction-modal__portrait {
+  display: grid;
+  place-items: center;
+  inline-size: 4.5rem;
+  aspect-ratio: 1;
+  border: 2px solid black;
+  outline: 1px solid var(--trim-gold-dark);
+  background: radial-gradient(
+    circle at 50% 35%,
+    color-mix(in oklab, var(--interface-color) 40%, #6b5640),
+    #1c140c
+  );
+  color: var(--hud-text-gold);
+  font:
+    700 2.2rem / 1 Georgia,
+    "Times New Roman",
+    serif;
+}
+
+.interaction-modal__details-picture {
+  display: block;
+  inline-size: 3rem;
+  block-size: 3rem;
+  margin: var(--space-md) auto 0;
+  padding: 0.45rem;
+  border: 1px solid black;
+  outline: 1px solid var(--trim-gold-dark);
+  background: radial-gradient(circle, #6b5638, #2b1d10);
+  fill: none;
+  stroke: var(--hud-text-gold);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  &[hidden] {
+    display: none;
+  }
+}
