@@ -1,9 +1,0 @@
-{
-  "GUARDHOUSE": { "name": "Guardhouse", "creature": "PIKEMAN" },
-  "ARCHERS_TOWER": { "name": "Archers' Tower", "creature": "ARCHER" },
-  "GRIFFIN_TOWER": { "name": "Griffin Tower", "creature": "GRIFFIN" },
-  "BARRACKS": { "name": "Barracks", "creature": "SWORDSMAN" },
-  "MONASTERY": { "name": "Monastery", "creature": "MONK" },
-  "TRAINING_GROUNDS": { "name": "Training Grounds", "creature": "CAVALIER" },
-  "PORTAL_OF_GLORY": { "name": "Portal of Glory", "creature": "ANGEL" }
-}
