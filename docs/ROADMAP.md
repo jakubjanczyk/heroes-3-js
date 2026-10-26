@@ -758,9 +758,11 @@ Castle's seven dwellings only; other factions' come with them (6.5). Built in fo
 
 #### 7.4.2 Recruiting
 - [ ] Each dwelling has a week of its creature's growth (Pikemen 14, Archers 9, Griffins 7, Swordsmen 4, Monks 3, Cavaliers 2, Angels 1); at each new week the count goes back to the growth, unbought creatures don't pile up
-- [ ] Entering it asks whether to recruit, then opens the recruit window (shared with the town's, 6.3.3)
-- [ ] Recruits join the visiting hero's army; with no room, the "no room" message
-- [ ] Level 1 creatures (Pikemen) are free; the rest cost what they cost in a town
+- [ ] Entering it asks "Would you like to recruit <plural>?" with the dwelling's name over it, Yes and No
+- [ ] Levels 2-7: Yes opens the recruit window (shared with the town's, 6.3.3); recruits join the visiting hero's army and cost what they cost in a town
+- [ ] Level 1 (Pikemen) are free and get no recruit window: Yes adds them all to the army, then a message says "14 Pikemen join your army." with their picture; with no room, "The Pikemen would join your hero, but there aren't enough provisions to support them." and none join
+- [ ] Levels 2-7 with a full army: for now the recruit window doesn't let the player recruit
+- [ ] Later: levels 2-7 with a full army open the recruit window as usual, and Recruit is refused with a "no room" message on top of it
 - [ ] What was bought kept after a reload
 
 #### 7.4.3 Guards
