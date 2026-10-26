@@ -50,8 +50,8 @@ export const registerInteractionModalModule = defineModule(
           isClosing = true
           try {
             const choice = event.detail?.choice ?? null
-            // What the choice sets off, such as the next level-up popup, opens before the
-            // closing is announced, so nothing waiting for every popup to close slips in first.
+            // Confirmed goes first so a popup it opens (the next level-up) is queued before
+            // anything waiting for every popup to close sees them all closed.
             emit(APP_UI_INTERACTION_MODAL_CONFIRMED, { choice, subject: payload.subject ?? null })
             emit(APP_UI_INTERACTION_MODAL_CLOSED, { choice })
           } finally {

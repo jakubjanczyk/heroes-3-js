@@ -128,7 +128,6 @@ function ensureModalContent(host) {
   })
 }
 
-// The hero between two medals, the hero's initial standing in for their portrait.
 function renderHero(host, heroName) {
   host._heroEl.hidden = !heroName
   host._portraitEl.setAttribute('aria-label', heroName ?? '')
@@ -187,9 +186,6 @@ function pickChoice(host, buttons, button) {
   }
 }
 
-// Things to pick from, as in Heroes 3: a picture each with its amount or caption under it and
-// "or" between them; the picked one gets a gold frame. OK stays disabled until one is picked, and
-// a single choice comes already picked.
 function renderChoices(host, choices) {
   const document = host.ownerDocument
   host._choice = null

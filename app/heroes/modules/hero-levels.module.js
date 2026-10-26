@@ -30,9 +30,6 @@ function skillChoice(offer, definitions) {
   return { id: offer.skill, label: title, caption: [levelName, name], initials: initialsOf(name) }
 }
 
-// A hero's levels, one at a time: each rolls a primary skill by the hero class's chances and
-// offers secondary skills to pick from, and the next level waits for the pick. The rolls and the
-// pick are logged as facts, so a reload replays them instead of rolling again.
 export const registerHeroLevelsModule = defineModule(
   ({ emit, config, state }) => {
     const random = typeof config?.random === 'function' ? config.random : Math.random
@@ -115,8 +112,6 @@ export const registerHeroLevelsModule = defineModule(
             levelUpOnce(subject.heroId)
           }
         },
-        // A level-up whose popup was open when the page closed shows again, as do levels gained
-        // and not yet taken.
         {
           type: APP_UI_RESTORE_COMPLETED,
           handler: () => {

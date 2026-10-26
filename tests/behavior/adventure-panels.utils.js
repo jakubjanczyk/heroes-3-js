@@ -146,7 +146,6 @@ function levelUpSkillButtons(heroName) {
     .filter((button) => button.getAttribute('aria-label') !== 'OK')
 }
 
-// The secondary skills a level-up popup offers, e.g. ['Advanced Artillery', 'Basic Estates'].
 export function readLevelUpSkillOffers(heroName) {
   return levelUpSkillButtons(heroName).map((button) => button.getAttribute('aria-label'))
 }
@@ -157,7 +156,6 @@ export function readPickedLevelUpSkills(heroName) {
     .map((button) => button.getAttribute('aria-label'))
 }
 
-// Picks the first skill offered, when there is a choice to make, and confirms with OK.
 export async function closeLevelUpPopup(user, heroName = 'Hero') {
   const [firstOffer] = readLevelUpSkillOffers(heroName)
   if (firstOffer && readPickedLevelUpSkills(heroName).length === 0) {

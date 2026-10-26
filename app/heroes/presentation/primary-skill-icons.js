@@ -1,4 +1,3 @@
-// The primary skill icons of the hero box in index.html, for pictures drawn from script.
 const PRIMARY_SKILL_ICON_PATHS = Object.freeze({
   attack: 'M4 4l16 16M20 4L4 20M3 15l6 6M15 21l6-6',
   defense: 'M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z',
