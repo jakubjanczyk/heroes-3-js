@@ -268,6 +268,30 @@
   list-style: none;
 }
 
+/* The skill's icon on the left, its level over its name beside it. */
+.hero-screen__secondary-skill {
+  display: grid;
+  grid-template-columns: calc(40 * var(--px)) 1fr;
+  grid-template-rows: 1fr 1fr;
+  column-gap: calc(6 * var(--px));
+  align-items: center;
+  padding: calc(2 * var(--px));
+  font-size: calc(11 * var(--px));
+
+  & .secondary-skill-icon {
+    grid-row: 1 / -1;
+    block-size: 100%;
+  }
+}
+
+.hero-screen__secondary-skill-level {
+  align-self: end;
+}
+
+.hero-screen__secondary-skill-name {
+  align-self: start;
+}
+
 /* The paper doll the artifacts are worn on: the hero's outline in red with a gold edge. */
 .hero-screen__doll {
   --x: 308;

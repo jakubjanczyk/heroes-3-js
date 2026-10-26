@@ -172,7 +172,7 @@ export const registerTavernModule = defineModule(
               .map(({ id }) => heroById(state.get(), id))
               .filter(Boolean)
               .map(({ name, heroClass }) => ({ name, heroClass }))
-            pool = heroPool(definitions.tavern, startingHeroes)
+            pool = heroPool(definitions.heroes, startingHeroes)
             openTownId = null
           }
         },

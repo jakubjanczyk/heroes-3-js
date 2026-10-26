@@ -38,6 +38,7 @@ import {
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
+  heroes: readGameData('heroes.json'),
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),

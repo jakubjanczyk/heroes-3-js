@@ -268,7 +268,7 @@ Heroes become characters with identity and progression.
 - [x] Level-up facts: `fact.hero.experience.gained` and `fact.hero.leveledUp` (with the rolled primary skill, so a reload replays it)
 - [x] Level-up popup as in H3: "Hero is now a level 2 Knight." and the primary skill gained ("+1 Defense"), one popup per level
 - [x] The primary skill is not chosen: H3 rolls it by the hero class's chances (Knight: A35/D45/P10/K10 up to level 9, A30/D30/P20/K20 from level 10)
-- [ ] Choose one of two secondary skills on level-up (needs secondary skills, 4.7)
+- [ ] Choose one of two secondary skills on level-up (4.7.2)
 - [x] Hero level shown on the hero screen ("Level 3 Knight"), the only place H3 shows it (4.3b)
 - [x] Current experience shown on the hero screen (4.3b)
 - [ ] Right-clicking Experience on the hero screen shows the level, the experience for the next level and the current experience, as in H3
@@ -292,7 +292,8 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 - [x] Status bar along the bottom: "View Attack Info" over a primary skill, "View Experience Info" over Experience
 - [x] Not saved: a reload shows the map
 - [x] Empty frames where H3 shows what the game has no data for yet: specialty, morale, luck, spell points, eight secondary skills, the artifact slots on the paper doll, the backpack, Quest Log and Dismiss Hero, the formation, tactics and split buttons
-- [ ] Fill those frames as their features come: specialty (4.4), morale and luck, spell points and the spell book (4.8), secondary skills (4.7), artifacts and backpack (M7), Quest Log, Dismiss Hero (4.5), formations and tactics (5.3)
+- [x] Secondary skills fill their eight frames (4.7.1)
+- [ ] Fill the other frames as their features come: specialty (4.4), morale and luck, spell points and the spell book (4.8), artifacts and backpack (M7), Quest Log, Dismiss Hero (4.5), formations and tactics (5.3)
 - [x] Rearranging the army there (4.3)
 - [ ] Right-click info on each part, as H3's popups (primary skill descriptions, experience)
 - [ ] The hero list down the right side switches between heroes (4.5); it shows the one hero for now
@@ -326,7 +327,7 @@ Built in five parts. Parts 1 and 2 first (they shipped together); 3 to 5 in any 
 #### 4.5.3 Heroes meeting
 See `docs/notes/2026-10-25-heroes-meeting.md`.
 - [x] Hovering over another of the player's heroes shows the exchange cursor (1.2); clicking them plans the route there, and selects them only when there is none
-- [x] Walking onto them opens the exchange screen: banners, portraits, primary skills side by side and both armies, with empty frames for what heroes don't have yet (artifacts, secondary skills, spell points, ...)
+- [x] Walking onto them opens the exchange screen: banners, portraits, primary skills side by side and both armies and secondary skills, with empty frames for what heroes don't have yet (artifacts, spell points, ...)
 - [x] Click a stack then where it goes, as in the garrison exchange (6.3.6); splitting stacks there too (4.3)
 - [x] The arrow under each slot sends that stack to the other hero; move all left, move all right and swap armies buttons
 - [ ] Status bar texts and right-click popups over the rest of the screen
@@ -374,32 +375,32 @@ See `docs/notes/2026-10-26-defeated-hero.md`.
   - Basic: +10%, Advanced: +20%, Expert: +30%
 
 ### 4.7 Hero Secondary Skills
-- [ ] Up to 8 secondary skills per hero
-- [ ] Three levels: Basic, Advanced, Expert
-- [ ] Offered on level-up: choose 1 of 2 skills (new skill or upgrade existing)
-- [ ] Key skills:
-  - **Logistics** - increases movement points
-  - **Pathfinding** - reduces terrain penalties
-  - **Leadership** - increases morale
-  - **Luck** - increases luck
-  - **Archery** - increases ranged damage
-  - **Offense** - increases melee damage
-  - **Armorer** - reduces damage taken
-  - **Wisdom** - allows learning higher-level spells
-  - **Earth/Air/Fire/Water Magic** - improves spells of that school
-  - **Necromancy** - raise skeletons from battlefield dead
-  - **Estates** - daily gold income bonus
-  - **Learning** - bonus XP from all sources
-  - **Scouting** - increases vision radius
-  - **Navigation** - allows/improves sea travel
-  - **Diplomacy** - chance to recruit neutral monsters
-  - **Eagle Eye** - chance to learn enemy spells in combat
-  - **Mysticism** - mana regeneration per day
-  - **Intelligence** - bonus max mana
-  - **First Aid** - heal creatures in combat
-  - **Ballistics** - improved catapult in sieges
-  - **Artillery** - improved ballista
-  - **Scholar** - exchange skills/spells between heroes
+Built in three parts; see `docs/notes/2026-10-26-secondary-skills.md`.
+
+#### 4.7.1 Skills and starting skills
+- [x] The 28 skills (`game/data/secondary-skills.json`), each with Basic, Advanced and Expert: Pathfinding, Archery, Logistics, Scouting, Diplomacy, Navigation, Leadership, Wisdom, Mysticism, Luck, Ballistics, Eagle Eye, Necromancy, Estates, Fire Magic, Air Magic, Water Magic, Earth Magic, Scholar, Tactics, Artillery, Learning, Offense, Armorer, Intelligence, Sorcery, Resistance, First Aid
+- [x] Up to 8 per hero; each hero starts with their own (`game/data/heroes.json`): every Knight has Basic Leadership, plus Archery (Orrin, Valeska), Armorer (Edric), Navigation (Sylvia), Estates (Lord Haart), Offense (Sorsha) or Artillery (Christian)
+- [x] The scenario's first hero is Lord Haart; a scenario hero may list their own skills
+- [x] Hired heroes get their starting skills, and keep them after a reload; a beaten hero hired again has their starting skills
+- [x] The hero screen fills its eight secondary skill slots ("Basic" over "Leadership", initials for the icon); right click shows what the skill does, the status bar "View Basic Leadership Info"
+- [x] The exchange screen shows both heroes' skills
+
+#### 4.7.2 Choosing a skill on level-up
+- [ ] On level-up, choose 1 of 2: one skill the hero has at Basic or Advanced, one weighted by the class's table (the note has the Knight's and the Cleric's); with 8 skills both are upgrades
+- [ ] The choice saved as a fact, so a reload replays it
+
+#### 4.7.3 What the skills do
+Each comes with the feature it changes; the note has every skill's numbers.
+- [ ] Logistics, Pathfinding (4.6), Navigation (7.10)
+- [ ] Scouting (7.1)
+- [ ] Estates (3.2)
+- [ ] Learning (4.2)
+- [ ] Archery, Offense, Armorer (5.6)
+- [ ] Leadership and Luck (with morale and luck)
+- [ ] Tactics (5.3), Ballistics (5.10), Artillery and First Aid (with war machines)
+- [ ] Diplomacy (5.2, 5.7)
+- [ ] Wisdom, Mysticism, Intelligence, Eagle Eye, Scholar and the four schools of magic (4.8); Sorcery and Resistance (5.8)
+- [ ] Necromancy (with the Necropolis)
 
 ### 4.8 Hero Magic
 - [ ] Hero has mana points (max = Knowledge * 10)
@@ -1051,7 +1052,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 
 32. Fog of war (7.1)
 33. Multiple heroes (4.5), in five parts: several heroes from the scenario, Next Hero, meeting, tavern, defeated hero
-34. Hero secondary skills (4.7)
+34. Hero secondary skills (4.7): the skills and starting skills, then choosing one on level-up; their effects come with the features they change
 35. Creature dwellings on map (7.4)
 36. Resource-generating objects (7.5)
 37. Permanent bonus objects (7.7)

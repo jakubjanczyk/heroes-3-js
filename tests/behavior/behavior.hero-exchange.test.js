@@ -22,6 +22,7 @@ import {
   readHeroExchangeArmy,
   readHeroExchangePortraits,
   readHeroExchangePrimarySkills,
+  readHeroExchangeSecondarySkills,
   readHeroExchangeStatusBar,
   readHeroExchangeTitles,
   shiftClickHeroExchangeSlot
@@ -33,6 +34,8 @@ import { GRASS, WATER } from './terrain-codes.js'
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
+  heroes: readGameData('heroes.json'),
+  secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
@@ -166,6 +169,22 @@ describe('hero exchange behavior', () => {
         '0 Defense 2',
         '3 Power 1',
         '4 Knowledge 1'
+      ])
+    })
+
+    test('given two heroes meet then it shows both heroes’ secondary skills', async () => {
+      await startOnHeroExchange(
+        aMeetingScenario({
+          leftHero: aHero().withSecondarySkills([{ skill: 'WISDOM', level: 'ADVANCED' }])
+        })
+      )
+
+      expect([
+        readHeroExchangeSecondarySkills(LEFT_HERO),
+        readHeroExchangeSecondarySkills(RIGHT_HERO)
+      ]).toEqual([
+        ['Advanced Wisdom', EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        ['Basic Leadership', 'Basic Archery', EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY]
       ])
     })
 

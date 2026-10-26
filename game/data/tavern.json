@@ -1,13 +1,5 @@
 {
   "cost": { "GOLD_PILE": 2500 },
-  "heroes": {
-    "ORRIN": { "name": "Orrin", "heroClass": "KNIGHT" },
-    "VALESKA": { "name": "Valeska", "heroClass": "KNIGHT" },
-    "EDRIC": { "name": "Edric", "heroClass": "KNIGHT" },
-    "SYLVIA": { "name": "Sylvia", "heroClass": "KNIGHT" },
-    "SORSHA": { "name": "Sorsha", "heroClass": "KNIGHT" },
-    "CHRISTIAN": { "name": "Christian", "heroClass": "KNIGHT" }
-  },
   "rumours": [
     "Griffins strike back at every attacker, however many come at them in a round.",
     "The richest mines are always guarded by the hungriest monsters.",
