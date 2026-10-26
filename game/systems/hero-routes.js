@@ -39,13 +39,17 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     return selectedHeroIdOf(getState(), viewingPlayer(getState()))
   }
 
+  function objectAt(tile) {
+    return getOccupantAt({ tile, staticOccupancy, removedIds: currentRemovedIds() })
+  }
+
   const occupancy = {
     getAt: (tile) => {
       const heroId = heroIdAt(getState(), tile)
-      return heroId
-        ? { id: heroId, kind: 'HERO', tile }
-        : getOccupantAt({ tile, staticOccupancy, removedIds: currentRemovedIds() })
-    }
+      return heroId ? { id: heroId, kind: 'HERO', tile } : objectAt(tile)
+    },
+    // What stands on `tile` whether or not a hero stands there too.
+    getObjectAt: objectAt
   }
 
   // null once the hero is lost in battle.

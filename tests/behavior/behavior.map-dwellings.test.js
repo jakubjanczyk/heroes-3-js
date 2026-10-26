@@ -7,7 +7,8 @@ import {
   expectDwellingAt,
   expectHeroAt,
   expectNoPreview,
-  getDwellingEntity
+  getDwellingEntity,
+  readPreviewPathTiles
 } from './adventure-map.utils.js'
 import {
   createMemoryEventLog,
@@ -115,6 +116,31 @@ describe('creature dwellings on the map', () => {
     await enterDwellingAt(x, y)
 
     expectHeroAt(x, y)
+  })
+
+  test('the hero leaves the entrance by the side, not by the row above it', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: aDwellingScenario(aDwelling().withType('GRIFFIN_TOWER').at(2, 1))
+    })
+    await enterDwellingAt(2, 1)
+
+    dispatchTileClick(2, 0)
+
+    expect(readPreviewPathTiles()).toContainEqual({ x: 3, y: 1 })
+  })
+
+  test('the hero enters the entrance from the side, not from the row above it', async () => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: aScenario()
+        .withSize(5, 3)
+        .withEntities(aHero().at(2, 0), aDwelling().withType('GRIFFIN_TOWER').at(2, 1))
+        .withDefinitions(gameDefinitions)
+        .build()
+    })
+
+    dispatchTileClick(2, 1)
+
+    expect(readPreviewPathTiles()).toContainEqual({ x: 3, y: 1 })
   })
 
   describe('flag', () => {
