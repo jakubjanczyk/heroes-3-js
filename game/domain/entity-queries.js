@@ -14,6 +14,10 @@ export function isMine(entity) {
   return isEntityKind(entity, 'MINE')
 }
 
+export function isDwelling(entity) {
+  return isEntityKind(entity, 'DWELLING')
+}
+
 export function findHero(entities) {
   if (!Array.isArray(entities)) {
     return null

@@ -1,8 +1,8 @@
 import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js'
 import { clamp } from '../../../engine/math-utils.js'
-import { isMine, isTown } from '../../../game/domain/entity-queries.js'
+import { isDwelling, isMine, isTown } from '../../../game/domain/entity-queries.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
-import { mineOwner } from '../../../game/heroes/state/map-objects.js'
+import { flaggedObjectOwner } from '../../../game/heroes/state/map-objects.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import {
   heroIdsOf,
@@ -13,6 +13,7 @@ import {
 } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
+  APP_FACT_DWELLING_FLAGGED,
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
@@ -42,7 +43,7 @@ export const registerMinimapViewModule = defineModule(
     let map = null
     let staticOccupancy = null
     let entitiesById = new Map()
-    let mineTilesByMineId = new Map()
+    let flaggedObjectTilesById = new Map()
     let tileElements = []
     let shownState = null
     let towns = []
@@ -51,11 +52,11 @@ export const registerMinimapViewModule = defineModule(
     let dragTile = null
     let lastCameraUpdate = null
 
-    function getMineCovering(tile) {
+    function getFlaggedObjectCovering(tile) {
       const occupant = staticOccupancy?.getAt(tile)
       const entity =
         occupant?.kind === FOOTPRINT_BLOCKER_KIND ? entitiesById.get(occupant.ownerId) : occupant
-      return isMine(entity) ? entity : null
+      return isMine(entity) || isDwelling(entity) ? entity : null
     }
 
     function isExplored(tile) {
@@ -72,11 +73,11 @@ export const registerMinimapViewModule = defineModule(
       if (terrainName) {
         classNames.push(`terrain-tile--${terrainName}`)
       }
-      // As in Heroes 3, a tile covered by a mine takes its owner's colour instead of the terrain's.
-      const mine = getMineCovering(tile)
-      if (mine) {
+      // A tile covered by a mine or dwelling takes its owner's colour instead of the terrain's.
+      const flaggedObject = getFlaggedObjectCovering(tile)
+      if (flaggedObject) {
         classNames.push(
-          mineOwner(state.get(), mine.id) === viewingPlayer(state.get())
+          flaggedObjectOwner(state.get(), flaggedObject.id) === viewingPlayer(state.get())
             ? 'minimap-tile--player'
             : 'minimap-tile--neutral'
         )
@@ -96,7 +97,7 @@ export const registerMinimapViewModule = defineModule(
       }
 
       clearNode(minimapTerrain)
-      mineTilesByMineId = new Map()
+      flaggedObjectTilesById = new Map()
       tileElements = []
 
       for (let y = 0; y < map.height; y += 1) {
@@ -108,17 +109,20 @@ export const registerMinimapViewModule = defineModule(
           minimapTerrain.appendChild(tile)
           tileElements.push(tile)
 
-          const mine = getMineCovering({ x, y })
-          if (mine) {
-            mineTilesByMineId.set(mine.id, [...(mineTilesByMineId.get(mine.id) ?? []), tile])
+          const flaggedObject = getFlaggedObjectCovering({ x, y })
+          if (flaggedObject) {
+            flaggedObjectTilesById.set(flaggedObject.id, [
+              ...(flaggedObjectTilesById.get(flaggedObject.id) ?? []),
+              tile
+            ])
           }
         }
       }
     }
 
-    // A capture changes only the tiles that mine covers, so the rest of the minimap stays as is.
-    function renderMineTiles(mineId) {
-      for (const tile of mineTilesByMineId.get(mineId) ?? []) {
+    // A capture changes only the tiles that object covers, so the rest of the minimap stays as is.
+    function renderFlaggedObjectTiles(entityId) {
+      for (const tile of flaggedObjectTilesById.get(entityId) ?? []) {
         tile.className = getTileClassName({ x: Number(tile.dataset.x), y: Number(tile.dataset.y) })
       }
     }
@@ -332,7 +336,11 @@ export const registerMinimapViewModule = defineModule(
         },
         {
           type: APP_FACT_MINE_CAPTURED,
-          handler: (event) => renderMineTiles(event.detail.entityId)
+          handler: (event) => renderFlaggedObjectTiles(event.detail.entityId)
+        },
+        {
+          type: APP_FACT_DWELLING_FLAGGED,
+          handler: (event) => renderFlaggedObjectTiles(event.detail.entityId)
         },
         {
           type: APP_FACT_TOWN_CAPTURED,
@@ -360,6 +368,7 @@ export const registerMinimapViewModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_MOVED,
       APP_FACT_HERO_HIRED,
+      APP_FACT_DWELLING_FLAGGED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_TOWN_CAPTURED,
       APP_UI_CAMERA_UPDATED

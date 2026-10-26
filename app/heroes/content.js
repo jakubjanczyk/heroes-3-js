@@ -4,6 +4,7 @@ import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcome
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
+import { registerDwellingsModule } from './modules/dwellings.module.js'
 import { registerHeroArmyModule } from './modules/hero-army.module.js'
 import { registerHeroExchangeViewModule } from './modules/hero-exchange-view.module.js'
 import { registerHeroLevelsModule } from './modules/hero-levels.module.js'
@@ -42,6 +43,7 @@ export const heroesAppContent = Object.freeze({
   modules: Object.freeze([
     registerTurnModule,
     registerMinesModule,
+    registerDwellingsModule,
     registerHeroLevelsModule,
     registerHeroArmyModule,
     registerBattleModule,

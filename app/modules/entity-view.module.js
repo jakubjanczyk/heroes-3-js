@@ -25,6 +25,7 @@ export const registerEntityViewModule = defineModule(
     const fadeOutTimers = new Set()
 
     let map = null
+    let definitions = {}
     let scenarioEntities = null
     let isRestoring = false
 
@@ -96,7 +97,7 @@ export const registerEntityViewModule = defineModule(
         map,
         entities: entitiesOnMap(),
         createElement,
-        getEntityStyle
+        getEntityStyle: (args) => getEntityStyle({ ...args, definitions })
       })
       applyHeroRestoreMotionOverride()
     }
@@ -135,6 +136,7 @@ export const registerEntityViewModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             map = event.detail.map
+            definitions = event.detail.definitions ?? {}
             scenarioEntities = event.detail.scenario.entities
             setStyleVar(entityLayer, '--hero-step-duration', `${heroStepDurationMs}ms`)
             render()

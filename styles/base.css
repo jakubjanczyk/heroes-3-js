@@ -103,6 +103,7 @@
   --z-layer-terrain: 0;
   --z-layer-entities: 10;
   --z-entity-mine: 18;
+  --z-entity-dwelling: 18;
   --z-entity-town: 20;
   --z-entity-hero: 30;
   --z-layer-fog: 35;
