@@ -758,9 +758,8 @@ Castle's seven dwellings only; other factions' come with them (6.5). Built in fo
 
 #### 7.4.2 Recruiting
 - [ ] Each dwelling has a week of its creature's growth (Pikemen 14, Archers 9, Griffins 7, Swordsmen 4, Monks 3, Cavaliers 2, Angels 1); at each new week the count goes back to the growth, unbought creatures don't pile up
-- [ ] Entering it, at every level, asks the dwelling's name as a title over "Would you like to recruit <plural>?", with Yes and No (`core.advevent.35`); No leaves without recruiting
-- [ ] Levels 2-7: Yes opens the recruit window (shared with the town's, 6.3.3); recruits join the visiting hero's army and cost what they cost in a town
-- [ ] Level 1 (Pikemen) are free and get no recruit window: Yes adds them all to the army, then a message says "14 Pikemen join your army." (`core.genrltxt.423`); with no room, "The Pikemen would join your hero, but there aren't enough provisions to support them." (`core.genrltxt.425`) and none join; with none left this week, "There are no Pikemen here to recruit." (`core.genrltxt.422`)
+- [ ] Levels 2-7: entering it opens the recruit window straight away, with no question first (shared with the town's, 6.3.3); recruits join the visiting hero's army and cost what they cost in a town
+- [ ] Level 1 (Pikemen) are free and get no recruit window: entering asks, under the dwelling's name as a title, "Would you like to recruit Pikemen?" with Yes and No (`core.advevent.35`); No leaves without recruiting; Yes adds them all to the army, then a message says "14 Pikemen join your army." (`core.genrltxt.423`); with no room, "The Pikemen would join your hero, but there aren't enough provisions to support them." (`core.genrltxt.425`) and none join; with none left this week, "There are no Pikemen here to recruit." (`core.genrltxt.422`)
 - [ ] Levels 2-7 with a full army: for now the recruit window doesn't let the player recruit
 - [ ] Later: levels 2-7 with a full army open the recruit window as usual, and Recruit is refused with a "no room" message on top of it
 - [ ] What was bought kept after a reload
