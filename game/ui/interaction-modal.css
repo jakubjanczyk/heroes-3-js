@@ -178,9 +178,10 @@
   margin-top: var(--space-md);
   display: flex;
   justify-content: center;
+  gap: var(--space-xl);
 }
 
-/* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
+/* The game's OK button: a dark panel in a gold frame with a gold checkmark (a cross for No). */
 .interaction-modal__ok-button {
   appearance: none;
   display: grid;
@@ -206,6 +207,10 @@
   &:focus-visible {
     outline: 1px dotted var(--trim-gold-light);
     outline-offset: 2px;
+  }
+
+  &[hidden] {
+    display: none;
   }
 }
 

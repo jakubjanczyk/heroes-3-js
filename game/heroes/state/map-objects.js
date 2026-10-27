@@ -1,5 +1,7 @@
 import { isDwelling, isMine } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
+import { calendarDateOfTurn } from '../calendar.js'
+import { weeklyGrowthOfDwelling } from '../map-dwellings.js'
 
 export const minesSlice = {
   key: 'mines',
@@ -17,19 +19,48 @@ export const minesSlice = {
   }
 }
 
+function updateDwelling(dwellings, dwellingId, update) {
+  const dwelling = dwellings[dwellingId]
+  return dwelling ? { ...dwellings, [dwellingId]: { ...dwelling, ...update(dwelling) } } : dwellings
+}
+
+// Unbought creatures don't pile up: each new week the dwelling has its week's growth again.
+function renewWeeklyGrowth(dwellings, { turnNumber }, { definitions }) {
+  if (calendarDateOfTurn(turnNumber).day !== 1) {
+    return dwellings
+  }
+
+  return Object.fromEntries(
+    Object.entries(dwellings).map(([dwellingId, dwelling]) => [
+      dwellingId,
+      { ...dwelling, available: weeklyGrowthOfDwelling(dwelling.type, definitions) }
+    ])
+  )
+}
+
 export const dwellingsSlice = {
   key: 'dwellings',
-  initial: ({ scenario }) =>
+  initial: ({ scenario, definitions }) =>
     Object.fromEntries(
-      (scenario?.entities ?? [])
-        .filter(isDwelling)
-        .map((dwelling) => [dwelling.id, { type: dwelling.type, owner: dwelling.owner ?? null }])
+      (scenario?.entities ?? []).filter(isDwelling).map((dwelling) => [
+        dwelling.id,
+        {
+          type: dwelling.type,
+          owner: dwelling.owner ?? null,
+          available: weeklyGrowthOfDwelling(dwelling.type, definitions)
+        }
+      ])
     ),
   on: {
     'fact.dwelling.flagged': (dwellings, { entityId, owner = DEFAULT_PLAYER }) =>
-      dwellings[entityId] && dwellings[entityId].owner !== owner
-        ? { ...dwellings, [entityId]: { ...dwellings[entityId], owner } }
-        : dwellings
+      dwellings[entityId]?.owner === owner
+        ? dwellings
+        : updateDwelling(dwellings, entityId, () => ({ owner })),
+    'fact.dwelling.creatures.recruited': (dwellings, { entityId, count }) =>
+      updateDwelling(dwellings, entityId, (dwelling) => ({
+        available: Math.max(0, dwelling.available - count)
+      })),
+    'fact.turn.ended': renewWeeklyGrowth
   }
 }
 
@@ -51,6 +82,10 @@ export function mineOwner(state, mineId) {
 
 export function dwellingOwner(state, dwellingId) {
   return state.dwellings[dwellingId]?.owner ?? null
+}
+
+export function dwellingAvailable(state, dwellingId) {
+  return state.dwellings[dwellingId]?.available ?? 0
 }
 
 export function dwellingIdsOf(state, player) {

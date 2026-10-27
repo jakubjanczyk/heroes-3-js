@@ -1,7 +1,7 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { isTown } from '../../../game/domain/entity-queries.js'
 import { moveStack, splitStack } from '../../../game/heroes/army-exchange.js'
-import { addToGarrison, describeTownCreatures } from '../../../game/heroes/creature-recruitment.js'
+import { addToArmy, describeTownCreatures } from '../../../game/heroes/creature-recruitment.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { describeFort } from '../../../game/heroes/fort-window.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
@@ -135,7 +135,7 @@ export const registerTownModule = defineModule(
         return
       }
 
-      const garrison = addToGarrison(townGarrison(state.get(), entityId), creature, count)
+      const garrison = addToArmy(townGarrison(state.get(), entityId), creature, count)
       if (!garrison) {
         emit(APP_UI_TOWN_MESSAGE_OPENED, { message: NO_ROOM_IN_GARRISON })
         return

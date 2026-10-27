@@ -587,6 +587,11 @@
   background: rgb(0 0 0 / 0.6);
 }
 
+/* A dwelling's recruit window over the adventure map. */
+.game-shell > .town-hall-backdrop {
+  z-index: 30;
+}
+
 .town-hall {
   position: relative;
   display: grid;

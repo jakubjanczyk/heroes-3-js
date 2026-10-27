@@ -1,5 +1,6 @@
 import {
   INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
+  INTERACTION_OUTCOME_KIND_DWELLING_VISITED,
   INTERACTION_OUTCOME_KIND_HEROES_MET,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   INTERACTION_OUTCOME_KIND_TOWN_VISITED,
@@ -7,11 +8,13 @@ import {
 } from '../../game/heroes/interaction-kinds.js'
 import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.js'
 import {
+  APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED,
+  APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
   APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
 } from '../events.js'
 import { getChestExperiencePicture, getChestGoldPicture } from './presentation/adventure-sprites.js'
@@ -33,6 +36,8 @@ function toEntityFactDetail(outcome) {
 
 // Every event the outcomes below can emit, declared so the interaction module may emit them.
 export const heroesOutcomeEvents = Object.freeze([
+  APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
+  APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
@@ -50,6 +55,28 @@ export const heroesOutcomeEffects = Object.freeze({
       }
     ]
   }),
+  // A free dwelling asks before its creatures join; the others open the recruit window straight away.
+  [INTERACTION_OUTCOME_KIND_DWELLING_VISITED]: (outcome) => {
+    const dwelling = { heroId: outcome.heroId, entityId: outcome.entityId }
+    if (!outcome.isFree) {
+      return { facts: [{ type: APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED, detail: dwelling }] }
+    }
+
+    return {
+      modal: {
+        interactionKind: outcome.kind,
+        entityId: outcome.entityId,
+        entityType: outcome.entityType,
+        title: outcome.dwellingName,
+        message: `Would you like to recruit ${outcome.creaturePlural}?`,
+        isQuestion: true
+      },
+      factsOnModalClosed: [],
+      eventsByChoice: {
+        yes: [{ type: APP_COMMAND_DWELLING_RECRUIT_REQUESTED, detail: dwelling }]
+      }
+    }
+  },
   [INTERACTION_OUTCOME_KIND_HEROES_MET]: (outcome) => ({
     facts: [
       {
