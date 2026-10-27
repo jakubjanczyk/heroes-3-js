@@ -239,7 +239,7 @@ describe('adventure map cursor behavior', () => {
       name: 'mine',
       scenario: () => aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aMine().at(2, 1)),
       x: 1,
-      y: 0
+      y: 1
     },
     {
       name: 'town',
@@ -255,9 +255,11 @@ describe('adventure map cursor behavior', () => {
       y: 0
     },
     {
-      name: 'windmill',
+      name: 'water wheel',
       scenario: () =>
-        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aResourceGenerator().at(2, 1)),
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(0, 2), aResourceGenerator().withType('WATER_WHEEL').at(2, 1)),
       x: 1,
       y: 1
     }

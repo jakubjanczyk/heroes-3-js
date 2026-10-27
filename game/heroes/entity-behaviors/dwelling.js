@@ -7,19 +7,19 @@ import { dwellingCreature, isFreeDwelling } from '../map-dwellings.js'
 import { dwellingGuardsAgainst } from '../state/map-objects.js'
 import { getEntityName } from './shared.js'
 
-// A dwelling blocks only the tile left of its entrance; the rest of its picture can be walked on.
-// A level 1 dwelling also blocks the tile above that one.
+// A dwelling blocks only the tile beside its entrance; the rest of its picture can be walked on.
 const DWELLING_FOOTPRINT = Object.freeze([{ x: -1, y: 0 }])
-const LEVEL_ONE_DWELLING_FOOTPRINT = Object.freeze([
-  { x: -1, y: -1 },
-  { x: -1, y: 0 }
-])
-const LEVEL_ONE_DWELLINGS = new Set(['GUARDHOUSE'])
+const FOOTPRINTS = Object.freeze({
+  GUARDHOUSE: Object.freeze([
+    { x: -1, y: -1 },
+    { x: -1, y: 0 }
+  ]),
+  ARCHERS_TOWER: Object.freeze([{ x: 1, y: 0 }])
+})
 
 export const dwellingBehavior = Object.freeze({
   kind: 'DWELLING',
-  footprintOffsets: (dwelling) =>
-    LEVEL_ONE_DWELLINGS.has(dwelling.type) ? LEVEL_ONE_DWELLING_FOOTPRINT : DWELLING_FOOTPRINT,
+  footprintOffsets: (dwelling) => FOOTPRINTS[dwelling.type] ?? DWELLING_FOOTPRINT,
   arrivalInteraction: Object.freeze({
     movementInteractionKind: MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
     outcomeKind: INTERACTION_OUTCOME_KIND_DWELLING_VISITED,

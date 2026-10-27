@@ -130,10 +130,11 @@ describe('creature dwellings on the map', () => {
     expectHeroAt(2, 1)
   })
 
-  // A dwelling blocks the tile left of its entrance, and the Guardhouse the one above that too;
-  // the rest of its picture can be walked on.
+  // A dwelling blocks the tile left of its entrance, the Archers' Tower the one right of it, and the
+  // Guardhouse the one above the left tile too; the rest of its picture can be walked on.
   test.each([
     { type: 'GRIFFIN_TOWER', x: 1, y: 1 },
+    { type: 'ARCHERS_TOWER', x: 3, y: 1 },
     { type: 'GUARDHOUSE', x: 1, y: 1 },
     { type: 'GUARDHOUSE', x: 1, y: 0 }
   ])('shows no route to the tile the $type blocks at ($x, $y)', async ({ type, x, y }) => {
@@ -149,6 +150,7 @@ describe('creature dwellings on the map', () => {
   test.each([
     { type: 'GRIFFIN_TOWER', x: 1, y: 0 },
     { type: 'GRIFFIN_TOWER', x: 3, y: 1 },
+    { type: 'ARCHERS_TOWER', x: 1, y: 1 },
     { type: 'GUARDHOUSE', x: 2, y: 0 }
   ])('the hero walks across the rest of the $type picture to ($x, $y)', async ({ type, x, y }) => {
     await setupMovementBehaviorApp({

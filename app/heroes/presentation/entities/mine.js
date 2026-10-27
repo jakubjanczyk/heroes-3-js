@@ -7,7 +7,8 @@ export function getEntityLayerStyle({ entity, map }) {
     dataset.mineType = entity.type
   }
 
-  const width = map.tileWidth * 3
+  const tilesLeftOfEntrance = entity.type === 'SAWMILL' ? 2 : 1
+  const width = map.tileWidth * (tilesLeftOfEntrance + 2)
   const height = map.tileHeight * 2
   return {
     className:
@@ -16,7 +17,7 @@ export function getEntityLayerStyle({ entity, map }) {
         : `entity entity--mine entity--mine-type-${mineTypeClass}`,
     width,
     height,
-    offsetX: -Math.round(width / 2),
+    offsetX: -Math.round(map.tileWidth * (tilesLeftOfEntrance + 0.5)),
     offsetY: -Math.round(height - map.tileHeight / 2),
     dataset
   }
