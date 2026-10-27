@@ -778,12 +778,14 @@ Castle's seven dwellings only; other factions' come with them (6.5). Built in fo
 - [x] Neutral towns get nothing from the player's flags
 
 ### 7.5 Resource-Generating Objects (Weekly)
-- [ ] **Windmill**: gives random resource each week (not gold)
-- [ ] **Water Wheel**: gives 1000 gold per week
-- [ ] **Mystical Garden**: gives 500 gold or 5 gems per week
-- [ ] Once-per-week limit tracked per hero per object
-- [ ] Visual state: "available" vs "visited this week" (flag/sparkle)
-- [ ] Reset at start of each new week
+The game's only three; see `docs/notes/2026-10-27-resource-generators.md`.
+- [x] **Windmill**: 3-6 of one of Ore, Mercury, Sulfur, Crystal or Gems a week (never Wood or Gold)
+- [x] **Water Wheel**: 1000 gold a week, 500 in the first week of the game
+- [x] **Mystical Garden**: 500 gold or 5 gems a week, even chances
+- [x] Each object gives once a week to whichever hero enters it first; any other visit that week gets the "come back next week" message and nothing
+- [x] Reset at start of each new week; what was taken is kept after a reload
+- [x] Each 2 tiles wide, entered from the left one; shown on the map with its name, status bar and right-click popup name it
+- [ ] Pictures on the map (10.1) and their visit sounds (10.4)
 
 ### 7.6 Stat-Boosting Objects
 - [ ] **Fountain of Youth**: +1 movement point for current turn, +1 morale until next battle
