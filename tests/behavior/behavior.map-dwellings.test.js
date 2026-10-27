@@ -8,6 +8,7 @@ import {
   expectHeroAt,
   expectNoPreview,
   getDwellingEntity,
+  getHeroEntity,
   readPreviewPathTiles
 } from './adventure-map.utils.js'
 import {
@@ -24,10 +25,20 @@ import {
   createMemoryEventLog,
   flushMicrotasks,
   readGameData,
-  setupMovementBehaviorApp
+  setupMovementBehaviorApp,
+  waitMs
 } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
-import { aDwelling, aHero, aScenario } from './builders.js'
+import {
+  clickBattleHex,
+  closeBattleResults,
+  LOWEST_ROLLS,
+  queryBattleScreen,
+  readBattleStacks,
+  retreat,
+  winBattle
+} from './battle.utils.js'
+import { ARMY_THAT_WINS, aDwelling, aHero, aScenario } from './builders.js'
 import {
   cancelRecruiting,
   clickRecruitMax,
@@ -545,6 +556,199 @@ describe('creature dwellings on the map', () => {
         ''
       ])
       expect(readMessage()).toBe('There are no Pikemen here to recruit.')
+    })
+  })
+
+  describe('guards', () => {
+    const MONASTERY_GUARDED =
+      'Much to your dismay, the Monastery is guarded by several Monks. Do you wish to fight the guards?'
+    const battleConfig = { random: LOWEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 } }
+
+    async function setupMonastery({
+      hero = aHero().at(2, 2),
+      dwelling = aDwelling().withType('MONASTERY').at(2, 1),
+      otherHeroes = [],
+      eventLog
+    } = {}) {
+      return setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(5, 3)
+          .withEntities(hero, ...otherHeroes, dwelling)
+          .withDefinitions(gameDefinitions)
+          .withStartingResources({ GOLD_PILE: 10000 })
+          .build(),
+        appConfig: battleConfig,
+        eventLog
+      })
+    }
+
+    async function fightGuards(user) {
+      await enterDwellingAt(2, 1)
+      await answerQuestion(user, MONASTERY_GUARDED, 'Yes')
+      await flushMicrotasks()
+    }
+
+    async function beatGuards(user) {
+      await fightGuards(user)
+      await winBattle(user)
+      await flushMicrotasks()
+    }
+
+    // The Marksmen, faster than the Monks, shoot first: 20 of them at their lowest damage of 2 do
+    // 40, 39 against the Monks' better Defense, and half of it from across the battlefield, 19.
+    // They shoot twice, 38 in all: one Monk (30 health) dies. The hero retreats on their next turn.
+    const SURVIVING_MONKS = 'Monks 8'
+
+    async function killSomeGuardsAndRetreat(user) {
+      await fightGuards(user)
+      await clickBattleHex(user, 6, 15)
+      await waitMs()
+      await retreat(user)
+      await closeBattleResults(user)
+      await flushMicrotasks()
+    }
+
+    const aHeroWithMarksmen = () =>
+      aHero()
+        .at(2, 2)
+        .withArmy([{ creature: 'MARKSMAN', count: 20 }])
+
+    function readGuardStack() {
+      return readBattleStacks().find(({ column }) => column === 15)?.stack
+    }
+
+    test.each([
+      { type: 'MONASTERY', guards: 'the Monastery is guarded by several Monks' },
+      { type: 'TRAINING_GROUNDS', guards: 'the Training Grounds is guarded by several Cavaliers' },
+      { type: 'PORTAL_OF_GLORY', guards: 'the Portal of Glory is guarded by a few Angels' }
+    ])('entering the $type asks whether to fight its guards', async ({ type, guards }) => {
+      await setupMonastery({ dwelling: aDwelling().withType(type).at(2, 1) })
+
+      await enterDwellingAt(2, 1)
+
+      const question = `Much to your dismay, ${guards}. Do you wish to fight the guards?`
+      expect(queryQuestion(question)).toBeTruthy()
+    })
+
+    test('No closes the question without a battle, a flag or the recruit window', async () => {
+      const { user } = await setupMonastery()
+      await enterDwellingAt(2, 1)
+
+      await answerQuestion(user, MONASTERY_GUARDED, 'No')
+      await flushMicrotasks()
+
+      expect(queryQuestion(MONASTERY_GUARDED)).toBeNull()
+      expect(queryBattleScreen()).toBeNull()
+      expect(getDwellingFlag()).toBeNull()
+      expect(queryRecruitWindow()).toBeNull()
+    })
+
+    test('Yes starts a battle against the 9 Monks', async () => {
+      const { user } = await setupMonastery({ hero: aHeroWithMarksmen() })
+
+      await fightGuards(user)
+
+      expect(readBattleStacks().map(({ stack }) => stack)).toEqual(['Marksmen 20', 'Monks 9'])
+    })
+
+    test('closing the results of a win flags the dwelling', async () => {
+      const { user } = await setupMonastery({ hero: aHero().at(2, 2).withArmy(ARMY_THAT_WINS) })
+
+      await beatGuards(user)
+
+      expect(getDwellingFlag()).not.toBeNull()
+    })
+
+    test('closing the results of a win opens the window to recruit the 3 Monks', async () => {
+      const { user } = await setupMonastery({ hero: aHero().at(2, 2).withArmy(ARMY_THAT_WINS) })
+
+      await beatGuards(user)
+
+      expect(queryRecruitWindow('Recruit Monks')).toBeTruthy()
+      expect(readAvailable()).toBe(3)
+    })
+
+    test('after winning, entering again the same week opens the recruit window without a question', async () => {
+      const { user } = await setupMonastery({ hero: aHero().at(2, 2).withArmy(ARMY_THAT_WINS) })
+      await beatGuards(user)
+      await cancelRecruiting(user)
+
+      await enterDwellingAt(2, 2)
+      await enterDwellingAt(2, 1)
+
+      expect(queryQuestion(MONASTERY_GUARDED)).toBeNull()
+      expect(queryRecruitWindow('Recruit Monks')).toBeTruthy()
+    })
+
+    test('after winning, the guards do not come back for the owner the next week', async () => {
+      const { user } = await setupMonastery({ hero: aHero().at(2, 2).withArmy(ARMY_THAT_WINS) })
+      await beatGuards(user)
+      await cancelRecruiting(user)
+      await enterDwellingAt(2, 2)
+
+      await endTurns(user, 7)
+      await enterDwellingAt(2, 1)
+
+      expect(queryQuestion(MONASTERY_GUARDED)).toBeNull()
+      expect(queryRecruitWindow('Recruit Monks')).toBeTruthy()
+    })
+
+    test('retreating takes the hero off the map and leaves the dwelling unflagged', async () => {
+      const { user } = await setupMonastery({ hero: aHeroWithMarksmen() })
+
+      await killSomeGuardsAndRetreat(user)
+
+      expect(getHeroEntity()).toBeNull()
+      expect(getDwellingFlag()).toBeNull()
+    })
+
+    test('another hero entering later that week fights the Monks that survived', async () => {
+      const { user } = await setupMonastery({
+        hero: aHeroWithMarksmen(),
+        otherHeroes: [aHero().withId('hero-2').at(3, 2)]
+      })
+      await killSomeGuardsAndRetreat(user)
+
+      await fightGuards(user)
+
+      expect(readGuardStack()).toBe(SURVIVING_MONKS)
+    })
+
+    test('a new week brings back all 9 Monks after a retreat left fewer', async () => {
+      const { user } = await setupMonastery({
+        hero: aHeroWithMarksmen(),
+        otherHeroes: [aHero().withId('hero-2').at(3, 2)]
+      })
+      await killSomeGuardsAndRetreat(user)
+
+      await endTurns(user, 7)
+      await fightGuards(user)
+
+      expect(readGuardStack()).toBe('Monks 9')
+    })
+
+    test('the Monks that survived are still there after a reload', async () => {
+      const session = {
+        hero: aHeroWithMarksmen(),
+        otherHeroes: [aHero().withId('hero-2').at(3, 2)],
+        eventLog: createMemoryEventLog()
+      }
+      const { user } = await setupMonastery(session)
+      await killSomeGuardsAndRetreat(user)
+
+      const reloaded = await setupMonastery(session)
+      await fightGuards(reloaded.user)
+
+      expect(readGuardStack()).toBe(SURVIVING_MONKS)
+    })
+
+    test('a Monastery the scenario gives to the player has no guards for them', async () => {
+      await setupMonastery({ dwelling: aDwelling().withType('MONASTERY').ownedByPlayer().at(2, 1) })
+
+      await enterDwellingAt(2, 1)
+
+      expect(queryQuestion(MONASTERY_GUARDED)).toBeNull()
+      expect(queryRecruitWindow('Recruit Monks')).toBeTruthy()
     })
   })
 })

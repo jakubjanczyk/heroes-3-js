@@ -156,14 +156,14 @@ describe('info popup behavior', () => {
       const { user } = await setupApp(
         aScenario()
           .withSize(5, 3)
-          .withEntities(aHero().at(2, 2), aDwelling().withType('PORTAL_OF_GLORY').at(2, 1))
+          .withEntities(aHero().at(2, 2), aDwelling().withType('GRIFFIN_TOWER').at(2, 1))
       )
       confirmTileClickByDispatch(2, 1)
       await flushMicrotasks()
 
       await holdRightButtonOn(user, 1, 1)
 
-      expectInfoPopupLines(['Portal of Glory', '(Red)'])
+      expectInfoPopupLines(['Griffin Tower', '(Red)'])
     })
 
     test.each([

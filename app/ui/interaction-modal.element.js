@@ -50,7 +50,8 @@ function ensureModalContent(host) {
     return
   }
 
-  const titleId = `interaction-modal-title-${nextTitleId++}`
+  const titleId = `interaction-modal-title-${nextTitleId}`
+  const messageId = `interaction-modal-message-${nextTitleId++}`
   host.innerHTML = `
     <dialog class="interaction-modal" closedby="none" aria-labelledby="${titleId}">
       <article class="interaction-modal__surface message-box">
@@ -60,7 +61,7 @@ function ensureModalContent(host) {
           <span class="interaction-modal__portrait" role="img"></span>
           ${MEDAL_SVG}
         </div>
-        <p class="interaction-modal__message"></p>
+        <p class="interaction-modal__message" id="${messageId}"></p>
         <svg class="interaction-modal__details-picture" role="img" hidden><path /></svg>
         <div class="interaction-modal__details"></div>
         <div class="interaction-modal__choices"></div>
@@ -376,9 +377,10 @@ function defineInteractionModalElement(window) {
       this.dataset.state = 'open'
       this._dialog.dataset.state = 'open'
 
-      if (this._titleEl) {
-        this._titleEl.textContent = title
-      }
+      // A message without a title names the dialog itself.
+      this._titleEl.hidden = !title
+      this._titleEl.textContent = title ?? ''
+      this._dialog.setAttribute('aria-labelledby', (title ? this._titleEl : this._messageEl).id)
 
       if (this._messageEl) {
         this._messageEl.textContent = message

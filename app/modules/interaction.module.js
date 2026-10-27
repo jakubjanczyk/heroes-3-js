@@ -52,7 +52,9 @@ export const registerInteractionModule = defineModule(
         ...entityBehaviors.resolveArrivalOutcome({
           entity,
           definitions,
-          tile: interaction.targetTile ?? fallbackTile
+          tile: interaction.targetTile ?? fallbackTile,
+          state: state.get(),
+          heroId: interactingHeroId
         }),
         heroId: interactingHeroId
       }
