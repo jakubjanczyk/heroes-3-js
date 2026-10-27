@@ -46,9 +46,13 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - No comment that restates the code, the function or variable name, or the test name.
   - No header comments describing what a module, function, helper or state variable does, its parameters or what it returns.
   - This is a Heroes 3 game, so don't write "as in Heroes 3", "Heroes 3 does…" or "the Heroes 3 <thing>".
-  - Never mention VCMI (or its classes, functions and files) in code, test comments or docs. Describe the rule itself instead.
+  - Never mention VCMI (or its classes, functions and files) in code, test comments or docs. Describe the rule itself instead. The `new-map-object` skill names it only as a source to check rules against.
   - Not every function, variable or test helper needs one; most need none.
 - In tests, a comment is worth it when it explains how an expected value is worked out (damage numbers, positions), not to narrate the steps.
+
+## Game Rules & Map Objects
+
+- Follow the `new-map-object` skill (`.claude/skills/new-map-object/SKILL.md`) whenever a new map object, game rule or message text is planned or built, without waiting to be asked. It takes the object's size from the game's object table online and checks the rules and texts against the wiki, VCMI's config and a web search. Ask when the sources disagree or say nothing.
 
 ## Testing Guidelines
 
