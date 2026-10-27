@@ -176,7 +176,7 @@ describe('status bar behavior', () => {
 
   test.each([
     { part: 'entrance', x: 2, y: 1 },
-    { part: 'other tile', x: 3, y: 1 }
+    { part: 'other tile', x: 1, y: 1 }
   ])('given a water wheel when the mouse is over its $part then the status bar shows its name', async ({
     x,
     y

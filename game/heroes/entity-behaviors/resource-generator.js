@@ -3,8 +3,8 @@ import {
   MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT
 } from '../interaction-kinds.js'
 
-// The entrance is the left of the object's two tiles.
-const RESOURCE_GENERATOR_FOOTPRINT = Object.freeze([{ x: 1, y: 0 }])
+// The entrance is the right of the object's two tiles.
+const RESOURCE_GENERATOR_FOOTPRINT = Object.freeze([{ x: -1, y: 0 }])
 
 export const resourceGeneratorBehavior = Object.freeze({
   kind: 'RESOURCE_GENERATOR',

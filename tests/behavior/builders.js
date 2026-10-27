@@ -89,7 +89,7 @@ export const aDwelling = () =>
     })
   )
 
-// WINDMILL, WATER_WHEEL or MYSTICAL_GARDEN; the tile is its entrance, the left of its two tiles.
+// WINDMILL, WATER_WHEEL or MYSTICAL_GARDEN; the tile is its entrance, the right of its two tiles.
 export const aResourceGenerator = () =>
   builder(
     { id: 'generator-1', kind: 'RESOURCE_GENERATOR', type: 'WINDMILL', tile: { x: 1, y: 0 } },

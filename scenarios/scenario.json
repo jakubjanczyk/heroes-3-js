@@ -1161,7 +1161,7 @@
       "kind": "RESOURCE_GENERATOR",
       "type": "WINDMILL",
       "tile": {
-        "x": 3,
+        "x": 4,
         "y": 8
       }
     },
@@ -1170,7 +1170,7 @@
       "kind": "RESOURCE_GENERATOR",
       "type": "WATER_WHEEL",
       "tile": {
-        "x": 10,
+        "x": 11,
         "y": 3
       }
     },
@@ -1179,7 +1179,7 @@
       "kind": "RESOURCE_GENERATOR",
       "type": "MYSTICAL_GARDEN",
       "tile": {
-        "x": 2,
+        "x": 3,
         "y": 13
       }
     }

@@ -258,7 +258,7 @@ describe('adventure map cursor behavior', () => {
       name: 'windmill',
       scenario: () =>
         aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aResourceGenerator().at(2, 1)),
-      x: 3,
+      x: 1,
       y: 1
     }
   ])('given the building of a $name when the mouse is over it then the cursor is the arrow', async ({

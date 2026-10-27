@@ -784,7 +784,7 @@ The game's only three; see `docs/notes/2026-10-27-resource-generators.md`.
 - [x] **Mystical Garden**: 500 gold or 5 gems a week, even chances
 - [x] Each object gives once a week to whichever hero enters it first; any other visit that week gets the "come back next week" message and nothing
 - [x] Reset at start of each new week; what was taken is kept after a reload
-- [x] Each 2 tiles wide, entered from the left one; shown on the map with its name, status bar and right-click popup name it
+- [x] Each 2 tiles wide, entered from the right one; shown on the map with its name, status bar and right-click popup name it
 - [ ] Pictures on the map (10.1) and their visit sounds (10.4)
 
 ### 7.6 Stat-Boosting Objects

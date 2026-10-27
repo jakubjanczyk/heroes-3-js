@@ -43,7 +43,7 @@ const gameDefinitions = {
   resourceGenerators: readGameData('resource-generators.json')
 }
 
-// The object's entrance is at (2, 1), the tile right of it is the rest of the object, and the
+// The object's entrance is at (2, 1), the tile left of it is the rest of the object, and the
 // hero stands right below the entrance, so entering it takes one step.
 function aGeneratorScenario(type, heroes = [aHero().at(2, 2)]) {
   return aScenario()
@@ -99,11 +99,11 @@ describe('resource generators on the map', () => {
   })
 
   test('the hero cannot walk onto the rest of the object', async () => {
-    await setupGenerator('WINDMILL', { heroes: [aHero().at(3, 2)] })
+    await setupGenerator('WINDMILL', { heroes: [aHero().at(1, 2)] })
 
-    await enterAt(3, 1)
+    await enterAt(1, 1)
 
-    expectHeroAt(3, 2)
+    expectHeroAt(1, 2)
   })
 
   describe('Windmill', () => {
