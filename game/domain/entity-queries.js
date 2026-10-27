@@ -18,6 +18,10 @@ export function isDwelling(entity) {
   return isEntityKind(entity, 'DWELLING')
 }
 
+export function isBonusObject(entity) {
+  return isEntityKind(entity, 'BONUS_OBJECT')
+}
+
 export function isResourceGenerator(entity) {
   return isEntityKind(entity, 'RESOURCE_GENERATOR')
 }

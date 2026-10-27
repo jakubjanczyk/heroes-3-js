@@ -18,6 +18,7 @@ import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_BONUS_OBJECT_VISITED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_MOVE_STARTED,
@@ -292,6 +293,7 @@ export const registerInfoBoxModule = defineModule(
           }
         },
         { type: APP_FACT_HERO_LEVELED_UP, handler: () => render() },
+        { type: APP_FACT_HERO_BONUS_OBJECT_VISITED, handler: () => render() },
         { type: APP_FACT_HERO_ARMY_CHANGED, handler: () => render() },
         {
           type: APP_UI_HERO_SELECTED,
@@ -389,6 +391,7 @@ export const registerInfoBoxModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_LEVELED_UP,
+      APP_FACT_HERO_BONUS_OBJECT_VISITED,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_HERO_SELECTED,
       APP_UI_TOWN_SELECTED,

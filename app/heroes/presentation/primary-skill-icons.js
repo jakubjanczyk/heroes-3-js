@@ -5,6 +5,14 @@ const PRIMARY_SKILL_ICON_PATHS = Object.freeze({
   knowledge: 'M4 3h4v18H4zM10 3h4v18h-4zM16 4l3.5-1 2.5 17-3.5 1z'
 })
 
+// The icon as an image URL, for pictures drawn as a background, such as a message's rewards.
+export function primarySkillPictureUrl(key) {
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f0cf6c" ' +
+    `stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${PRIMARY_SKILL_ICON_PATHS[key]}"/></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
 export function primarySkillPicture(key, name) {
   return { label: name, viewBox: '0 0 24 24', path: PRIMARY_SKILL_ICON_PATHS[key] }
 }

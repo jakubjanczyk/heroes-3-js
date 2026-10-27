@@ -60,6 +60,7 @@ describe('bootstrap', () => {
       mines: { GOLD_MINE: { name: 'Gold mine' } },
       dwellings: { GUARDHOUSE: { name: 'Guardhouse', creature: 'PIKEMAN' } },
       resourceGenerators: { WINDMILL: { name: 'Windmill' } },
+      bonusObjects: { STAR_AXIS: { name: 'Star Axis' } },
       tavern: { cost: { GOLD_PILE: 2500 } },
       heroes: { ORRIN: { name: 'Orrin', heroClass: 'KNIGHT' } },
       secondarySkills: { LEADERSHIP: { name: 'Leadership' } }
@@ -76,6 +77,7 @@ describe('bootstrap', () => {
       './game/data/mines.json': definitions.mines,
       './game/data/dwellings.json': definitions.dwellings,
       './game/data/resource-generators.json': definitions.resourceGenerators,
+      './game/data/bonus-objects.json': definitions.bonusObjects,
       './game/data/tavern.json': definitions.tavern,
       './game/data/heroes.json': definitions.heroes,
       './game/data/secondary-skills.json': definitions.secondarySkills

@@ -1,0 +1,10 @@
+{
+  "LEARNING_STONE": { "name": "Learning Stone", "gives": { "experience": 1000 } },
+  "MERCENARY_CAMP": { "name": "Mercenary Camp", "gives": { "primarySkills": { "attack": 1 } } },
+  "MARLETTO_TOWER": { "name": "Marletto Tower", "gives": { "primarySkills": { "defense": 1 } } },
+  "STAR_AXIS": { "name": "Star Axis", "gives": { "primarySkills": { "power": 1 } } },
+  "GARDEN_OF_REVELATION": {
+    "name": "Garden of Revelation",
+    "gives": { "primarySkills": { "knowledge": 1 } }
+  }
+}

@@ -148,6 +148,7 @@ export async function loadGame({
     mines,
     dwellings,
     resourceGenerators,
+    bonusObjects,
     tavern,
     heroes,
     secondarySkills
@@ -162,6 +163,7 @@ export async function loadGame({
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/mines.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/dwellings.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/resource-generators.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/bonus-objects.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/tavern.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/heroes.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/secondary-skills.json`)
@@ -185,6 +187,7 @@ export async function loadGame({
     mines,
     dwellings,
     resourceGenerators,
+    bonusObjects,
     tavern,
     heroes,
     secondarySkills

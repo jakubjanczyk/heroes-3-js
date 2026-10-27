@@ -1,6 +1,7 @@
 // The adventure map in behavior tests: tiles, the objects on them, the hero moving and the path
 // preview, the camera and the cursor over the map.
 
+import { screen } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { flushMicrotasks, getCursorOver, waitMs } from './app.utils.js'
@@ -59,6 +60,22 @@ function getResourceGeneratorEntity(entityId = 'generator-1') {
 // The name written on a windmill, water wheel or garden while it has no picture.
 export function readResourceGeneratorName(entityId = 'generator-1') {
   return getResourceGeneratorEntity(entityId)?.textContent ?? null
+}
+
+function getBonusObjectEntity(entityId = 'bonus-1') {
+  return document.querySelector(`.entity--bonus-object[data-entity-id="${entityId}"]`)
+}
+
+// The name written on a Learning Stone, Mercenary Camp and the like while it has no picture.
+export function readBonusObjectName(entityId = 'bonus-1') {
+  return getBonusObjectEntity(entityId)?.textContent ?? null
+}
+
+// Each line of the right-click popup, e.g. ['Mercenary Camp', '+1 Attack', '(Not visited)'].
+export function readInfoPopupLines() {
+  const popup = screen.queryByRole('tooltip')
+  expect(popup).not.toBeNull()
+  return [...popup.querySelectorAll('p')].map((line) => line.textContent)
 }
 
 export function expectResourceGeneratorAt(x, y, entityId = 'generator-1') {

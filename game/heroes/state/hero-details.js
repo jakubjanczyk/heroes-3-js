@@ -19,8 +19,19 @@ function detailsOf(hero, definitions) {
     experience: hero.experience ?? 0,
     level: levelForExperience(hero.experience ?? 0),
     levelUpSkills: [],
-    pendingLevelUp: null
+    pendingLevelUp: null,
+    bonusPrimarySkills: {},
+    visitedBonusObjects: []
   }
+}
+
+function addSkills(skills, added) {
+  return Object.fromEntries(
+    [...new Set([...Object.keys(skills), ...Object.keys(added)])].map((key) => [
+      key,
+      (skills[key] ?? 0) + (added[key] ?? 0)
+    ])
+  )
 }
 
 export const heroDetailsSlice = {
@@ -43,6 +54,10 @@ export const heroDetailsSlice = {
     'fact.hero.secondarySkill.learned': updateHero((hero, { skill, level }) => ({
       secondarySkills: learnSecondarySkill(hero.secondarySkills, { skill, level }),
       pendingLevelUp: null
+    })),
+    'fact.hero.bonusObject.visited': updateHero((hero, { entityId, primarySkills = {} }) => ({
+      bonusPrimarySkills: addSkills(hero.bonusPrimarySkills, primarySkills),
+      visitedBonusObjects: [...hero.visitedBonusObjects, entityId]
     })),
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
     'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({

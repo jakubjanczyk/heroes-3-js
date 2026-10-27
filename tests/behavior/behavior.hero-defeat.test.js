@@ -1,21 +1,32 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
+import { attackMonsterAt, confirmTileClickByDispatch } from './adventure-map.utils.js'
 import {
+  closeInteractionModal,
+  getHeroInfoBox,
   getTownInTownList,
   readHeroList,
+  readMessageRewards,
+  readPrimarySkills,
   readSelectedHeroInHeroList
 } from './adventure-panels.utils.js'
-import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import {
   clickBattleButton,
   closeBattleResults,
   startBattle,
   waitForBattleResults
 } from './battle.utils.js'
-import { aHero, aMonster, aScenario, aTown } from './builders.js'
+import { aBonusObject, aHero, aMonster, aScenario, aTown } from './builders.js'
 import {
   clickHeroInHeroList,
+  closeHeroScreen,
   readHeroScreenArmy,
   readHeroScreenPrimarySkills,
   readHeroScreenSecondarySkills,
@@ -32,7 +43,8 @@ const gameDefinitions = {
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json'),
-  tavern: readGameData('tavern.json')
+  tavern: readGameData('tavern.json'),
+  bonusObjects: readGameData('bonus-objects.json')
 }
 
 const BEATEN_HERO = 'Christian'
@@ -156,5 +168,41 @@ describe('hero defeat behavior', () => {
     await openTavernInWhitemoon(user)
 
     expect(readHeroesForHire()).toContain(BEATEN_HERO)
+  })
+
+  // Christian visits the Mercenary Camp at (8, 5) from below, then loses to the Swordsmen at
+  // (12, 6). Hired again in Whitemoon, he walks back to the camp.
+  test('given a beaten hero is hired again then a Mercenary Camp they had visited trains them again', async () => {
+    const { user } = await setupMovementBehaviorApp({
+      loadGameOptions: aDefeatScenario()
+        .withEntities(
+          aHero()
+            .withName(BEATEN_HERO)
+            .withArmy([{ creature: 'SKELETON', count: 1 }])
+            .at(8, 6),
+          aHero().withId('hero-2').withName(OTHER_HERO).at(0, 6),
+          aMonster().withType('SWORDSMAN').withCount(2).withStacks(1).at(12, 6),
+          aBonusObject().withType('MERCENARY_CAMP').at(8, 5),
+          aTown().named('Whitemoon').ownedByPlayer().withBuildings(['TAVERN']).at(4, 3)
+        )
+        .build(),
+      appConfig: { ...appConfig, random: HIGHEST_ROLLS, fadeOutMsByKind: { MONSTER: 0 } }
+    })
+    confirmTileClickByDispatch(8, 5)
+    await flushMicrotasks()
+    expect(readMessageRewards()).toEqual(['+1 Attack'])
+    await closeInteractionModal(user)
+    await attackMonsterAt(12, 6)
+    await clickBattleButton(user, 'Auto combat')
+    await waitForBattleResults()
+    await closeBattleResults(user)
+
+    await hireBeatenHeroAgain(user)
+    await closeHeroScreen(user)
+    confirmTileClickByDispatch(8, 5)
+    await flushMicrotasks()
+
+    expect(readMessageRewards()).toEqual(['+1 Attack'])
+    expect(readPrimarySkills(getHeroInfoBox())[0]).toBe('Attack 3')
   })
 })
