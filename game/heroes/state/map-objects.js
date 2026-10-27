@@ -1,7 +1,11 @@
 import { isDwelling, isMine } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { calendarDateOfTurn } from '../calendar.js'
-import { guardsOfDwelling, weeklyGrowthOfDwelling } from '../map-dwellings.js'
+import {
+  flaggedDwellingCountsByCreature,
+  guardsOfDwelling,
+  weeklyGrowthOfDwelling
+} from '../map-dwellings.js'
 
 export const minesSlice = {
   key: 'mines',
@@ -98,6 +102,10 @@ export function dwellingAvailable(state, dwellingId) {
 export function dwellingGuardsAgainst(state, dwellingId, player) {
   const dwelling = state.dwellings[dwellingId]
   return dwelling && dwelling.owner !== player ? (dwelling.guards ?? 0) : 0
+}
+
+export function flaggedDwellingsOf(state, player, definitions) {
+  return flaggedDwellingCountsByCreature(Object.values(state.dwellings), player, definitions)
 }
 
 export function dwellingIdsOf(state, player) {

@@ -23,13 +23,13 @@ function describeCard({ tier, dwelling, creature, available, growth, canRecruit 
 // standing dwelling's creature (the upgraded one once its upgrade stands) with how many are
 // available. A tier with no dwelling shows the plain dwelling and creature, none to recruit, and
 // the growth it would have once built. null when the town has no Fort.
-export function describeFort({ buildings, built, monsters, available }) {
+export function describeFort({ buildings, built, monsters, available, flaggedDwellings = {} }) {
   const name = fortNameOf({ buildings, built })
   if (!name) {
     return null
   }
 
-  const growthByTier = describeCreatureGrowth({ buildings, built, monsters })
+  const growthByTier = describeCreatureGrowth({ buildings, built, monsters, flaggedDwellings })
   const standing = buildingsInEffect({ buildings, built }).map(
     (buildingId) => buildings[buildingId]
   )
@@ -60,7 +60,9 @@ export function describeFort({ buildings, built, monsters, available }) {
       dwelling: plainDwelling,
       creature,
       available: 0,
-      growth: growthWithFortBonus({ buildings, built, creature }),
+      growth:
+        growthWithFortBonus({ buildings, built, creature }) +
+        (flaggedDwellings[plainDwelling.creature] ?? 0),
       canRecruit: false
     })
   })

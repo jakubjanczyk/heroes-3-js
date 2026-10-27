@@ -18,6 +18,7 @@ import {
   expectResourceTotal,
   getHeroInfoBox,
   getInteractionModalMessage,
+  getTownInTownList,
   queryQuestion,
   readArmySlots
 } from './adventure-panels.utils.js'
@@ -38,7 +39,7 @@ import {
   retreat,
   winBattle
 } from './battle.utils.js'
-import { ARMY_THAT_WINS, aDwelling, aHero, aScenario } from './builders.js'
+import { ARMY_THAT_WINS, aDwelling, aHero, aScenario, aTown } from './builders.js'
 import {
   cancelRecruiting,
   clickRecruitMax,
@@ -50,6 +51,13 @@ import {
   readRecruitCreatures,
   recruit
 } from './recruit-window.utils.js'
+import {
+  enterTownAt,
+  openFortWindow,
+  openRecruitWindow,
+  readCreatureGrowth,
+  readFortCard
+} from './town-screen.utils.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
 
@@ -749,6 +757,205 @@ describe('creature dwellings on the map', () => {
 
       expect(queryQuestion(MONASTERY_GUARDED)).toBeNull()
       expect(queryRecruitWindow('Recruit Monks')).toBeTruthy()
+    })
+  })
+
+  describe('town growth', () => {
+    const TOWN_GROWTH_DEFINITIONS = {
+      ...gameDefinitions,
+      towns: readGameData('towns.json'),
+      buildings: readGameData('buildings.json')
+    }
+    const aWhitemoon = (buildings = ['FORT', 'GUARDHOUSE']) =>
+      aTown().named('Whitemoon').ownedByPlayer().withBuildings(buildings)
+    const aGuardhouseOfThePlayer = () => aDwelling().ownedByPlayer().at(8, 5)
+
+    // Whitemoon's entrance is at (4, 3) and the hero stands two tiles below it; the dwelling's
+    // entrance is at (8, 5), four steps to the right of the hero.
+    const aTownGrowthScenario = ({
+      town = aWhitemoon(),
+      dwellings = [aDwelling().at(8, 5)]
+    } = {}) =>
+      aScenario()
+        .withSize(10, 7)
+        .withEntities(aHero().at(4, 5), town.at(4, 3), ...dwellings)
+        .withDefinitions(TOWN_GROWTH_DEFINITIONS)
+        .withStartingResources({ GOLD_PILE: 10000 })
+        .build()
+
+    async function setupTownGrowthApp(scenario = aTownGrowthScenario(), options = {}) {
+      return setupMovementBehaviorApp({
+        loadGameOptions: scenario,
+        appConfig: { interactionModalTransitionMs: 0 },
+        ...options
+      })
+    }
+
+    async function flagGuardhouse(user) {
+      await enterDwellingAt(8, 5)
+      await answerQuestion(user, 'Guardhouse', 'No')
+    }
+
+    async function openWhitemoon(user) {
+      await user.dblClick(getTownInTownList('Whitemoon'))
+    }
+
+    test("flagging a Guardhouse adds one to the Pikemen's growth in the player's town", async () => {
+      const { user } = await setupTownGrowthApp()
+
+      await flagGuardhouse(user)
+
+      await openWhitemoon(user)
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +15')
+    })
+
+    test("a dwelling the player owns at the start adds to the town's growth from day one", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({ dwellings: [aGuardhouseOfThePlayer()] })
+      )
+
+      await openWhitemoon(user)
+
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +15')
+    })
+
+    test("a town's Guardhouse standing at the start has the flag's Pikeman too", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({ dwellings: [aGuardhouseOfThePlayer()] })
+      )
+
+      await openWhitemoon(user)
+
+      await openRecruitWindow(user, 'Pikemen')
+      expect(readAvailable()).toBe(15)
+    })
+
+    test('two flagged Guardhouses add two', async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({
+          dwellings: [
+            aGuardhouseOfThePlayer(),
+            aDwelling().withId('dwelling-2').ownedByPlayer().at(8, 2)
+          ]
+        })
+      )
+
+      await openWhitemoon(user)
+
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +16')
+    })
+
+    test("the flag adds to the upgraded dwelling's creature", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({
+          town: aWhitemoon(['FORT', 'GUARDHOUSE', 'UPG_GUARDHOUSE']),
+          dwellings: [aGuardhouseOfThePlayer()]
+        })
+      )
+
+      await openWhitemoon(user)
+
+      expect(readCreatureGrowth()[0]).toBe('Halberdiers +15')
+    })
+
+    // 14 doubled by the Castle, then the flag's one.
+    test("the Castle's bonus doubles only the dwelling's own growth, not the flag's", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({
+          town: aWhitemoon(['FORT', 'CITADEL', 'CASTLE', 'GUARDHOUSE']),
+          dwellings: [aGuardhouseOfThePlayer()]
+        })
+      )
+
+      await openWhitemoon(user)
+
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +29')
+    })
+
+    test("a flagged Archers' Tower adds to the Archers, not the Pikemen", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({
+          town: aWhitemoon(['FORT', 'GUARDHOUSE', 'ARCHERS_TOWER']),
+          dwellings: [aDwelling().withType('ARCHERS_TOWER').ownedByPlayer().at(8, 5)]
+        })
+      )
+
+      await openWhitemoon(user)
+
+      expect(readCreatureGrowth().slice(0, 2)).toEqual(['Pikemen +14', 'Archers +10'])
+    })
+
+    test("the Fort window's card shows the growth with the flag", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({ dwellings: [aGuardhouseOfThePlayer()] })
+      )
+      await openWhitemoon(user)
+
+      await openFortWindow(user, 'Fort')
+
+      expect(readFortCard('Pikemen').stats.Growth).toBe('15')
+    })
+
+    test("the Fort window's card for an unbuilt dwelling includes the flag", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({
+          dwellings: [aDwelling().withType('ARCHERS_TOWER').ownedByPlayer().at(8, 5)]
+        })
+      )
+      await openWhitemoon(user)
+
+      await openFortWindow(user, 'Fort')
+
+      expect(readFortCard('Archers').stats.Growth).toBe('10')
+    })
+
+    // The 14 the town started with, then a week with the flag.
+    test('a new week adds the growth with the flag to the creatures available', async () => {
+      const { user } = await setupTownGrowthApp()
+      await flagGuardhouse(user)
+
+      await endTurns(user, 7)
+
+      await openWhitemoon(user)
+      await openRecruitWindow(user, 'Pikemen')
+      expect(readAvailable()).toBe(29)
+    })
+
+    test('flagging a dwelling mid-week adds no creatures until the next week', async () => {
+      const { user } = await setupTownGrowthApp()
+
+      await flagGuardhouse(user)
+
+      await openWhitemoon(user)
+      await openRecruitWindow(user, 'Pikemen')
+      expect(readAvailable()).toBe(14)
+    })
+
+    // Two weeks of 14, the player's flag counting for neither.
+    test("a neutral town's creatures grow without the player's flags until it is captured", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({
+          town: aTown().named('Whitemoon').withBuildings(['FORT', 'GUARDHOUSE']),
+          dwellings: [aGuardhouseOfThePlayer()]
+        })
+      )
+      await endTurns(user, 7)
+
+      await enterTownAt(4, 3)
+
+      await openRecruitWindow(user, 'Pikemen')
+      expect(readAvailable()).toBe(28)
+    })
+
+    test("after a reload, the town's growth still includes the flag", async () => {
+      const session = { eventLog: createMemoryEventLog() }
+      const { user } = await setupTownGrowthApp(aTownGrowthScenario(), session)
+      await flagGuardhouse(user)
+
+      const reloaded = await setupTownGrowthApp(aTownGrowthScenario(), session)
+
+      await openWhitemoon(reloaded.user)
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +15')
     })
   })
 })
