@@ -178,6 +178,7 @@
   margin-top: var(--space-md);
   display: flex;
   justify-content: center;
+  gap: var(--space-xl);
 }
 
 /* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
@@ -206,6 +207,10 @@
   &:focus-visible {
     outline: 1px dotted var(--trim-gold-light);
     outline-offset: 2px;
+  }
+
+  &[hidden] {
+    display: none;
   }
 }
 

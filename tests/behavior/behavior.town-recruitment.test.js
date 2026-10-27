@@ -19,30 +19,32 @@ import {
 } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
-  buildInTown,
   cancelRecruiting,
   chooseRecruitCreature,
-  clickCreatureSlot,
   clickRecruitFewer,
   clickRecruitMax,
   clickRecruitMore,
-  closeTownMessage,
   dragRecruitSlider,
-  enterTownAt,
   getRecruitButton,
-  leaveTown,
-  openRecruitWindow,
   queryRecruitWindow,
   readAvailable,
   readChosenRecruitCreature,
   readCostPerTroop,
-  readGarrison,
   readRecruitCount,
   readRecruitCreatures,
   readTotalCost,
+  recruit
+} from './recruit-window.utils.js'
+import {
+  buildInTown,
+  clickCreatureSlot,
+  closeTownMessage,
+  enterTownAt,
+  leaveTown,
+  openRecruitWindow,
+  readGarrison,
   readTownMessage,
   readVisitingHeroArmy,
-  recruit,
   recruitInTown
 } from './town-screen.utils.js'
 

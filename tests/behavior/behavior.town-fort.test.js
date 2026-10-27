@@ -10,19 +10,21 @@ import {
 } from './app.utils.js'
 import { aHero, aScenario, aTown } from './builders.js'
 import {
-  buildInTown,
   cancelRecruiting,
+  dragRecruitSlider,
+  queryRecruitWindow,
+  recruit
+} from './recruit-window.utils.js'
+import {
+  buildInTown,
   clickFortCard,
   closeFortWindow,
-  dragRecruitSlider,
   openFortWindow,
   queryFortIcon,
   queryFortWindow,
-  queryRecruitWindow,
   readFortCard,
   readFortCards,
-  readGarrison,
-  recruit
+  readGarrison
 } from './town-screen.utils.js'
 
 const gameDefinitions = {

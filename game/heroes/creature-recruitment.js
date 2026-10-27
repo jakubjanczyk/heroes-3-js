@@ -34,9 +34,18 @@ function describeCost(cost = {}, resources = {}) {
     }))
 }
 
+export function describeRecruit({ creature, monsters, resources, available, treasury }) {
+  const { cost, namePlural, name } = monsters[creature]
+  return {
+    creature,
+    name: namePlural ?? name,
+    cost: describeCost(cost, resources),
+    maxCount: Math.min(available, affordableCount(treasury, cost))
+  }
+}
+
 // The town screen's creature panel and recruit window: for each tier with a dwelling, its weekly
-// growth, how many are available and the creatures to recruit them as, each with its cost and how
-// many the player can recruit (no more than are available, no more than the player can pay for).
+// growth, how many are available and the creatures to recruit them as.
 export function describeTownCreatures({
   buildings,
   built,
@@ -56,15 +65,9 @@ export function describeTownCreatures({
     return {
       ...tier,
       available: availableCount,
-      recruits: recruitable[index].map((creature) => {
-        const { cost, namePlural, name } = monsters[creature]
-        return {
-          creature,
-          name: namePlural ?? name,
-          cost: describeCost(cost, resources),
-          maxCount: Math.min(availableCount, affordableCount(treasury, cost))
-        }
-      })
+      recruits: recruitable[index].map((creature) =>
+        describeRecruit({ creature, monsters, resources, available: availableCount, treasury })
+      )
     }
   })
 }
@@ -76,8 +79,8 @@ export function weeklyGrowthByTier({ buildings, built, monsters }) {
 
 // Recruits join a stack of the same creature, else the first empty slot; null when neither is
 // there.
-export function addToGarrison(garrison, creature, count) {
-  const slots = Array.from({ length: ARMY_SLOT_COUNT }, (_, index) => garrison?.[index] ?? null)
+export function addToArmy(army, creature, count) {
+  const slots = Array.from({ length: ARMY_SLOT_COUNT }, (_, index) => army?.[index] ?? null)
   const sameCreature = slots.findIndex((stack) => stack?.creature === creature)
   const slot = sameCreature >= 0 ? sameCreature : slots.indexOf(null)
   if (slot < 0) {

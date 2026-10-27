@@ -757,15 +757,16 @@ Castle's seven dwellings only; other factions' come with them (6.5). Built in fo
 - [x] A hero entering it flags it in the player's colour, on the map, the minimap and in the popup; kept after a reload
 
 #### 7.4.2 Recruiting
-- [ ] Each dwelling has a week of its creature's growth (Pikemen 14, Archers 9, Griffins 7, Swordsmen 4, Monks 3, Cavaliers 2, Angels 1); at each new week the count goes back to the growth, unbought creatures don't pile up
-- [ ] Entering it asks whether to recruit, then opens the recruit window (shared with the town's, 6.3.3)
-- [ ] Recruits join the visiting hero's army; with no room, the "no room" message
-- [ ] Level 1 creatures (Pikemen) are free; the rest cost what they cost in a town
-- [ ] What was bought kept after a reload
+- [x] Each dwelling has a week of its creature's growth (Pikemen 14, Archers 9, Griffins 7, Swordsmen 4, Monks 3, Cavaliers 2, Angels 1); at each new week the count goes back to the growth, unbought creatures don't pile up
+- [x] Levels 2-7: entering it opens the recruit window straight away, with no question first (shared with the town's, 6.3.3); recruits join the visiting hero's army and cost what they cost in a town
+- [x] Level 1 (Pikemen) are free and get no recruit window: entering asks, under the dwelling's name as a title, "Would you like to recruit Pikemen?" with Yes and No (`core.advevent.35`); No leaves without recruiting; Yes adds them all to the army, then a message says "14 Pikemen join your army." (`core.genrltxt.423`); with no room, "The Pikemen would join your hero, but there aren't enough provisions to support them." (`core.genrltxt.425`) and none join; with none left this week, "There are no Pikemen here to recruit." (`core.genrltxt.422`)
+- [x] Levels 2-7 with a full army: the recruit window opens as usual, and Recruit is refused with "The Archers would join your hero, but there aren't enough provisions to support them." over it (the same text as level 1; not yet checked in the game)
+- [x] What was bought kept after a reload
+- [ ] The message boxes' titles: the game shows these messages without the dwelling's name over them
 
 #### 7.4.3 Guards
 - [ ] The Monastery, Training Grounds and Portal of Glory are guarded by three weeks of their non-upgraded creature: 9 Monks, 6 Cavaliers, 3 Angels
-- [ ] Entering one starts a battle with the guards; winning flags it and asks to recruit
+- [ ] Entering one asks "Much to your dismay, the <dwelling> is guarded by <a few> <Monks>. Do you wish to fight the guards?" (`core.genrltxt.421`, the count in words as for monsters); Yes starts the battle, winning flags it and asks to recruit
 - [ ] A hero beaten or retreating leaves the map; the guards left stay until the week ends
 - [ ] The guards come back at the start of every week, but never fight the player who owns the dwelling
 - [ ] The battle takes a defender army that isn't a monster on the map (refactor of the battle module first)

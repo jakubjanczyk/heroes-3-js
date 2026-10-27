@@ -169,6 +169,16 @@ export async function pickLevelUpSkill(user, heroName, levelAndSkill) {
   await user.click(within(popup).getByRole('button', { name: levelAndSkill }))
 }
 
+export function queryQuestion(title) {
+  return screen.queryByRole('dialog', { name: title })
+}
+
+export async function answerQuestion(user, title, answer) {
+  const question = queryQuestion(title)
+  expect(question).toBeTruthy()
+  await user.click(within(question).getByRole('button', { name: answer }))
+}
+
 export async function closeInteractionModal(user) {
   const okButton = getInteractionModalOkButton()
   expect(okButton).toBeTruthy()

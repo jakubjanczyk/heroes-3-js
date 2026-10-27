@@ -2,6 +2,8 @@ import {
   INTERACTION_OUTCOME_KIND_DWELLING_VISITED,
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT
 } from '../interaction-kinds.js'
+import { dwellingCreature, isFreeDwelling } from '../map-dwellings.js'
+import { getEntityName } from './shared.js'
 
 // A dwelling blocks only the tile left of its entrance; the rest of its picture can be walked on.
 // A level 1 dwelling also blocks the tile above that one.
@@ -22,12 +24,21 @@ export const dwellingBehavior = Object.freeze({
     requiresSteppingIntoTarget: true,
     definitionsKey: 'dwellings',
     defaultName: 'Dwelling',
-    resolveArrivalOutcome({ entity, tile }) {
+    resolveArrivalOutcome({ entity, definitions = {}, tile }) {
+      const creature = dwellingCreature(entity.type, definitions)
       return {
         kind: INTERACTION_OUTCOME_KIND_DWELLING_VISITED,
         entityId: entity.id,
         entityType: entity.type,
-        tile
+        tile,
+        dwellingName: getEntityName({
+          entity,
+          definitions,
+          definitionsKey: 'dwellings',
+          defaultName: 'Dwelling'
+        }),
+        creaturePlural: creature?.namePlural ?? creature?.name ?? '',
+        isFree: isFreeDwelling(entity.type, definitions)
       }
     }
   })

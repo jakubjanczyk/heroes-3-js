@@ -11,6 +11,16 @@ import {
   readPreviewPathTiles
 } from './adventure-map.utils.js'
 import {
+  answerQuestion,
+  closeInteractionModal,
+  endTurns,
+  expectResourceTotal,
+  getHeroInfoBox,
+  getInteractionModalMessage,
+  queryQuestion,
+  readArmySlots
+} from './adventure-panels.utils.js'
+import {
   createMemoryEventLog,
   flushMicrotasks,
   readGameData,
@@ -18,20 +28,33 @@ import {
 } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import { aDwelling, aHero, aScenario } from './builders.js'
+import {
+  cancelRecruiting,
+  clickRecruitMax,
+  dragRecruitSlider,
+  getRecruitButton,
+  queryRecruitWindow,
+  readAvailable,
+  readCostPerTroop,
+  readRecruitCreatures,
+  recruit
+} from './recruit-window.utils.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
 
 const gameDefinitions = {
   monsters: readGameData('monsters.json'),
+  resources: readGameData('resources.json'),
   dwellings: readGameData('dwellings.json')
 }
 
 // The hero stands right below the dwelling's entrance, so entering it takes one step.
-function aDwellingScenario(dwelling = aDwelling().at(2, 1)) {
+function aDwellingScenario(dwelling = aDwelling().at(2, 1), hero = aHero().at(2, 2)) {
   return aScenario()
     .withSize(5, 3)
-    .withEntities(aHero().at(2, 2), dwelling)
+    .withEntities(hero, dwelling)
     .withDefinitions(gameDefinitions)
+    .withStartingResources({ GOLD_PILE: 10000 })
     .build()
 }
 
@@ -119,10 +142,11 @@ describe('creature dwellings on the map', () => {
   })
 
   test('the hero leaves the entrance by the side, not by the row above it', async () => {
-    await setupMovementBehaviorApp({
+    const { user } = await setupMovementBehaviorApp({
       loadGameOptions: aDwellingScenario(aDwelling().withType('GRIFFIN_TOWER').at(2, 1))
     })
     await enterDwellingAt(2, 1)
+    await cancelRecruiting(user)
 
     dispatchTileClick(2, 0)
 
@@ -170,8 +194,9 @@ describe('creature dwellings on the map', () => {
     })
 
     test('keeps one flag when the hero enters a dwelling the player already owns', async () => {
-      await setupMovementBehaviorApp({ loadGameOptions: aDwellingScenario() })
+      const { user } = await setupMovementBehaviorApp({ loadGameOptions: aDwellingScenario() })
       await enterDwellingAt(2, 1)
+      await answerQuestion(user, 'Guardhouse', 'No')
       await enterDwellingAt(2, 2)
 
       await enterDwellingAt(2, 1)
@@ -189,6 +214,337 @@ describe('creature dwellings on the map', () => {
       await setupMovementBehaviorApp(session)
 
       expect(getDwellingFlag()).not.toBeNull()
+    })
+  })
+
+  describe('recruiting at a paid dwelling', () => {
+    const anArchersTower = () => aDwelling().withType('ARCHERS_TOWER').at(2, 1)
+    const FULL_ARMY = [
+      'SKELETON',
+      'GRIFFIN',
+      'SWORDSMAN',
+      'MONK',
+      'CAVALIER',
+      'ANGEL',
+      'PIKEMAN'
+    ].map((creature) => ({ creature, count: 1 }))
+
+    async function enterArchersTower(hero) {
+      await setupMovementBehaviorApp({ loadGameOptions: aDwellingScenario(anArchersTower(), hero) })
+      await enterDwellingAt(2, 1)
+    }
+
+    async function recruitAllArchers(user) {
+      await clickRecruitMax(user)
+      await recruit(user)
+    }
+
+    async function reenterDwelling() {
+      await enterDwellingAt(2, 2)
+      await enterDwellingAt(2, 1)
+    }
+
+    test("entering the Archers' Tower opens the window to recruit Archers, without a question", async () => {
+      await enterArchersTower()
+
+      expect(queryRecruitWindow('Recruit Archers')).toBeTruthy()
+      expect(queryQuestion("Archers' Tower")).toBeNull()
+    })
+
+    test('offers the week of 9 Archers at 100 gold each', async () => {
+      await enterArchersTower()
+
+      expect(readRecruitCreatures()).toEqual(['Archers'])
+      expect(readAvailable()).toBe(9)
+      expect(readCostPerTroop()).toEqual(['100 Gold'])
+    })
+
+    test("recruiting adds the Archers to the hero's army and spends the gold", async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower())
+      })
+      await enterDwellingAt(2, 1)
+
+      dragRecruitSlider(3)
+      await recruit(user)
+
+      expect(queryRecruitWindow()).toBeNull()
+      expect(readArmySlots(getHeroInfoBox())).toEqual([
+        'Skeletons 10',
+        'Archers 3',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+      expectResourceTotal('Gold', 9700)
+    })
+
+    test('recruits join a stack of Archers the hero already has', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(
+          anArchersTower(),
+          aHero()
+            .at(2, 2)
+            .withArmy([null, { creature: 'ARCHER', count: 2 }])
+        )
+      })
+      await enterDwellingAt(2, 1)
+
+      await recruitAllArchers(user)
+
+      expect(readArmySlots(getHeroInfoBox())).toEqual(['', 'Archers 11', '', '', '', '', ''])
+    })
+
+    test('Cancel closes the window without buying anything', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower())
+      })
+      await enterDwellingAt(2, 1)
+
+      await cancelRecruiting(user)
+
+      expect(queryRecruitWindow()).toBeNull()
+      expect(readArmySlots(getHeroInfoBox())).toEqual(['Skeletons 10', '', '', '', '', '', ''])
+      expectResourceTotal('Gold', 10000)
+    })
+
+    test('entering again in the same week offers what is left', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower())
+      })
+      await enterDwellingAt(2, 1)
+      dragRecruitSlider(3)
+      await recruit(user)
+
+      await reenterDwelling()
+
+      expect(readAvailable()).toBe(6)
+    })
+
+    test('entering after buying them all opens the window with none to recruit', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower())
+      })
+      await enterDwellingAt(2, 1)
+      await recruitAllArchers(user)
+
+      await reenterDwelling()
+
+      expect(readAvailable()).toBe(0)
+      expect(getRecruitButton().disabled).toBe(true)
+    })
+
+    test('a new week brings back 9 Archers, not the ones left plus 9', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower())
+      })
+      await enterDwellingAt(2, 1)
+      dragRecruitSlider(3)
+      await recruit(user)
+
+      await enterDwellingAt(2, 2)
+      await endTurns(user, 7)
+      await enterDwellingAt(2, 1)
+
+      expect(readAvailable()).toBe(9)
+    })
+
+    test('with a full army of other creatures, Recruit says there is no room', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower(), aHero().at(2, 2).withArmy(FULL_ARMY))
+      })
+      await enterDwellingAt(2, 1)
+
+      await recruitAllArchers(user)
+
+      expect(getInteractionModalMessage().textContent).toBe(
+        "The Archers would join your hero, but there aren't enough provisions to support them."
+      )
+    })
+
+    test('with a full army of other creatures, Recruit buys nothing', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower(), aHero().at(2, 2).withArmy(FULL_ARMY))
+      })
+      await enterDwellingAt(2, 1)
+
+      await recruitAllArchers(user)
+      await closeInteractionModal(user)
+
+      expect(queryRecruitWindow('Recruit Archers')).toBeTruthy()
+      expect(readAvailable()).toBe(9)
+      expectResourceTotal('Gold', 10000)
+    })
+
+    test('the Archers bought stay bought after a reload', async () => {
+      const session = {
+        eventLog: createMemoryEventLog(),
+        loadGameOptions: aDwellingScenario(anArchersTower())
+      }
+      const { user } = await setupMovementBehaviorApp(session)
+      await enterDwellingAt(2, 1)
+      dragRecruitSlider(3)
+      await recruit(user)
+
+      await setupMovementBehaviorApp(session)
+      await reenterDwelling()
+
+      expect(readArmySlots(getHeroInfoBox())).toEqual([
+        'Skeletons 10',
+        'Archers 3',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+      expect(readAvailable()).toBe(6)
+    })
+  })
+
+  describe('recruiting at the free Guardhouse', () => {
+    const FULL_ARMY = [
+      'SKELETON',
+      'GRIFFIN',
+      'SWORDSMAN',
+      'MONK',
+      'CAVALIER',
+      'ANGEL',
+      'ARCHER'
+    ].map((creature) => ({ creature, count: 1 }))
+
+    async function setupGuardhouse(hero, session = {}) {
+      return setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(aDwelling().withType('GUARDHOUSE').at(2, 1), hero),
+        ...session
+      })
+    }
+
+    async function takePikemen(user) {
+      await enterDwellingAt(2, 1)
+      await answerQuestion(user, 'Guardhouse', 'Yes')
+    }
+
+    function readMessage() {
+      return getInteractionModalMessage()?.textContent
+    }
+
+    test('entering the Guardhouse asks whether to recruit the Pikemen', async () => {
+      await setupGuardhouse()
+
+      await enterDwellingAt(2, 1)
+
+      expect(queryQuestion('Guardhouse')).toBeTruthy()
+      expect(readMessage()).toBe('Would you like to recruit Pikemen?')
+      expect(queryRecruitWindow()).toBeNull()
+    })
+
+    test("Yes adds the week's 14 Pikemen to the army for free", async () => {
+      const { user } = await setupGuardhouse()
+
+      await takePikemen(user)
+
+      expect(readArmySlots(getHeroInfoBox())).toEqual([
+        'Skeletons 10',
+        'Pikemen 14',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+      expectResourceTotal('Gold', 10000)
+    })
+
+    test('Yes then says the Pikemen join the army', async () => {
+      const { user } = await setupGuardhouse()
+
+      await takePikemen(user)
+
+      expect(readMessage()).toBe('14 Pikemen join your army.')
+    })
+
+    test('No closes the question without any Pikemen joining', async () => {
+      const { user } = await setupGuardhouse()
+      await enterDwellingAt(2, 1)
+
+      await answerQuestion(user, 'Guardhouse', 'No')
+
+      expect(queryQuestion('Guardhouse')).toBeNull()
+      expect(readArmySlots(getHeroInfoBox())).toEqual(['Skeletons 10', '', '', '', '', '', ''])
+    })
+
+    test('after No, entering again still gives all 14 Pikemen', async () => {
+      const { user } = await setupGuardhouse()
+      await enterDwellingAt(2, 1)
+      await answerQuestion(user, 'Guardhouse', 'No')
+      await enterDwellingAt(2, 2)
+
+      await takePikemen(user)
+
+      expect(readMessage()).toBe('14 Pikemen join your army.')
+    })
+
+    test('entering again in the same week says there are no Pikemen to recruit', async () => {
+      const { user } = await setupGuardhouse()
+      await takePikemen(user)
+      await closeInteractionModal(user)
+      await enterDwellingAt(2, 2)
+
+      await takePikemen(user)
+
+      expect(readMessage()).toBe('There are no Pikemen here to recruit.')
+    })
+
+    test('with a full army of other creatures, the Pikemen cannot join', async () => {
+      const { user } = await setupGuardhouse(aHero().at(2, 2).withArmy(FULL_ARMY))
+
+      await takePikemen(user)
+
+      expect(readMessage()).toBe(
+        "The Pikemen would join your hero, but there aren't enough provisions to support them."
+      )
+      expect(readArmySlots(getHeroInfoBox())).not.toContain('Pikemen 14')
+    })
+
+    test('with a full army that has Pikemen, they join that stack', async () => {
+      const { user } = await setupGuardhouse(
+        aHero()
+          .at(2, 2)
+          .withArmy(
+            FULL_ARMY.map((stack, index) =>
+              index === 6 ? { creature: 'PIKEMAN', count: 2 } : stack
+            )
+          )
+      )
+
+      await takePikemen(user)
+
+      expect(readArmySlots(getHeroInfoBox())[6]).toBe('Pikemen 16')
+    })
+
+    test('Pikemen taken stay taken after a reload', async () => {
+      const session = { eventLog: createMemoryEventLog() }
+      const { user } = await setupGuardhouse(undefined, session)
+      await takePikemen(user)
+      await closeInteractionModal(user)
+
+      const reloaded = await setupGuardhouse(undefined, session)
+      await enterDwellingAt(2, 2)
+      await takePikemen(reloaded.user)
+
+      expect(readArmySlots(getHeroInfoBox())).toEqual([
+        'Skeletons 10',
+        'Pikemen 14',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+      expect(readMessage()).toBe('There are no Pikemen here to recruit.')
     })
   })
 })

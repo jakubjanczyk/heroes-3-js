@@ -33,6 +33,7 @@ export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
 export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
 export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
 export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requested'
+export const APP_COMMAND_DWELLING_RECRUIT_REQUESTED = 'command.dwelling.recruit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
@@ -80,6 +81,7 @@ export const APP_FACT_TOWN_CREATURES_RECRUITED = 'fact.town.creatures.recruited'
 export const APP_FACT_TOWN_GARRISON_CHANGED = 'fact.town.garrison.changed'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_DWELLING_FLAGGED = 'fact.dwelling.flagged'
+export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.recruited'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
@@ -123,6 +125,8 @@ export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
 export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
+export const APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED = 'ui.dwelling.recruit.openRequested'
+export const APP_UI_DWELLING_RECRUIT_UPDATED = 'ui.dwelling.recruit.updated'
 export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 
@@ -158,6 +162,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_DWELLING_FLAGGED,
+  APP_FACT_DWELLING_CREATURES_RECRUITED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,
