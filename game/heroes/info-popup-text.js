@@ -1,4 +1,4 @@
-import { bonusObjectGives, describeBonus } from './bonus-objects.js'
+import { describeBonusObject } from './bonus-objects.js'
 import { getEntityName, getStatusBarText } from './status-bar-text.js'
 
 // What the Heroes 3 right-click popup says about a map tile: the same name the status bar
@@ -12,10 +12,9 @@ export function getInfoPopupLines({
   visitedText = null
 }) {
   if (entity?.kind === 'BONUS_OBJECT') {
-    const gives = describeBonus(bonusObjectGives(definitions, entity.type))
     return [
       getEntityName({ entity, definitions }),
-      ...gives.map(({ label }) => label),
+      ...describeBonusObject(definitions, entity.type),
       ...(visitedText ? [visitedText] : [])
     ]
   }

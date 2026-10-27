@@ -1227,6 +1227,33 @@
         "x": 18,
         "y": 3
       }
+    },
+    {
+      "id": "bonus-6",
+      "kind": "BONUS_OBJECT",
+      "type": "ARENA",
+      "tile": {
+        "x": 22,
+        "y": 4
+      }
+    },
+    {
+      "id": "bonus-7",
+      "kind": "BONUS_OBJECT",
+      "type": "SCHOOL_OF_WAR",
+      "tile": {
+        "x": 27,
+        "y": 4
+      }
+    },
+    {
+      "id": "bonus-8",
+      "kind": "BONUS_OBJECT",
+      "type": "SCHOOL_OF_MAGIC",
+      "tile": {
+        "x": 20,
+        "y": 1
+      }
     }
   ]
 }
