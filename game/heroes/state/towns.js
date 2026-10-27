@@ -1,8 +1,9 @@
-import { isTown } from '../../domain/entity-queries.js'
+import { isDwelling, isTown } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { viewingPlayer } from '../../state/queries.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { weeklyGrowthByTier } from '../creature-recruitment.js'
+import { flaggedDwellingCountsByCreature } from '../map-dwellings.js'
 import { startingBuildingsOf, townBuildingsCatalogue } from '../town-buildings.js'
 import { dailyIncomeOfTown } from '../town-income.js'
 
@@ -21,18 +22,19 @@ function catalogueOf(town, definitions) {
   return townBuildingsCatalogue(definitions, town.type)
 }
 
-function weeklyGrowthOf(town, definitions) {
+function weeklyGrowthOf(town, definitions, mapDwellings) {
   return weeklyGrowthByTier({
     buildings: catalogueOf(town, definitions).buildings,
     built: new Set(town.built),
-    monsters: definitions?.monsters
+    monsters: definitions?.monsters,
+    flaggedDwellings: flaggedDwellingCountsByCreature(mapDwellings, town.owner, definitions)
   })
 }
 
-// As in Heroes 3, every town's dwellings, neutral towns' too, add a week of creatures at the start
-// of each week, on top of those left unbought.
-function growCreatures(town, definitions) {
-  const growth = weeklyGrowthOf(town, definitions)
+// Every town's dwellings, neutral towns' too, add a week of creatures at the start of each week,
+// on top of those left unbought.
+function growCreatures(town, definitions, mapDwellings) {
+  const growth = weeklyGrowthOf(town, definitions, mapDwellings)
   return { available: growth.map((amount, index) => (town.available[index] ?? 0) + amount) }
 }
 
@@ -85,22 +87,23 @@ function recruitCreatures(towns, { entityId, tier, count }) {
   })
 }
 
-function endTurn(towns, { turnNumber }, { definitions }) {
+function endTurn(towns, { turnNumber }, { definitions, previousState }) {
   const isNewWeek = calendarDateOfTurn(turnNumber).day === 1
+  const mapDwellings = Object.values(previousState.dwellings ?? {})
   const byId = Object.fromEntries(
     Object.entries(towns.byId).map(([townId, town]) => [
       townId,
       {
         ...town,
         builtToday: false,
-        ...(isNewWeek ? growCreatures(town, definitions) : {})
+        ...(isNewWeek ? growCreatures(town, definitions, mapDwellings) : {})
       }
     ])
   )
   return { ...towns, byId }
 }
 
-function initialTown(town, definitions) {
+function initialTown(town, definitions, mapDwellings) {
   const initial = {
     type: town.type,
     owner: town.owner ?? null,
@@ -110,7 +113,7 @@ function initialTown(town, definitions) {
     available: []
   }
   // The dwellings standing at the start of the game have a week of creatures.
-  return { ...initial, ...growCreatures(initial, definitions) }
+  return { ...initial, ...growCreatures(initial, definitions, mapDwellings) }
 }
 
 // A player's towns are in the order the town list shows them: the scenario's own first, then each
@@ -119,13 +122,16 @@ export const townsSlice = {
   key: 'towns',
   initial: ({ scenario, definitions }) => {
     const towns = (scenario?.entities ?? []).filter(isTown)
+    const mapDwellings = (scenario?.entities ?? []).filter(isDwelling)
     const idsByOwner = {}
     for (const town of towns.filter((town) => town.owner)) {
       idsByOwner[town.owner] = [...(idsByOwner[town.owner] ?? []), town.id]
     }
 
     return {
-      byId: Object.fromEntries(towns.map((town) => [town.id, initialTown(town, definitions)])),
+      byId: Object.fromEntries(
+        towns.map((town) => [town.id, initialTown(town, definitions, mapDwellings)])
+      ),
       idsByOwner
     }
   },

@@ -772,7 +772,10 @@ Castle's seven dwellings only; other factions' come with them (6.5). Built in fo
 - [x] The battle takes a defender army that isn't a monster on the map
 
 #### 7.4.4 Town growth
-- [ ] Each flagged dwelling adds +1 to its creature's weekly growth in every Castle town the player owns (creature panel, Fort window, the town's pool)
+- [x] Each flagged dwelling adds +1 to its creature's weekly growth in every town the player owns that makes the creature, upgraded dwellings included (creature panel, Fort window, the town's pool); see `docs/notes/2026-10-26-map-dwellings.md`
+- [x] The Citadel and Castle bonus is a share of the dwelling's own growth only, so a Castle and a flagged Guardhouse give Pikemen +29
+- [x] The growth shown changes as soon as the dwelling is flagged; the creatures come with the next week. A dwelling the player owns at the start counts in the town's first week too
+- [x] Neutral towns get nothing from the player's flags
 
 ### 7.5 Resource-Generating Objects (Weekly)
 - [ ] **Windmill**: gives random resource each week (not gold)

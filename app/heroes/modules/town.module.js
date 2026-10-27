@@ -7,6 +7,7 @@ import { describeFort } from '../../../game/heroes/fort-window.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
+import { flaggedDwellingsOf } from '../../../game/heroes/state/map-objects.js'
 import {
   availableCreatures,
   builtIn,
@@ -111,6 +112,11 @@ export const registerTownModule = defineModule(
       return townBuildingsCatalogue(definitions, townsById.get(townId)?.type)
     }
 
+    function flaggedDwellingsOfOwner(townId) {
+      const current = state.get()
+      return flaggedDwellingsOf(current, townOwner(current, townId), definitions)
+    }
+
     function creaturesOf(townId) {
       return describeTownCreatures({
         buildings: catalogueOf(townId).buildings,
@@ -118,7 +124,8 @@ export const registerTownModule = defineModule(
         monsters: definitions.monsters,
         resources: definitions.resources,
         available: availableCreatures(state.get(), townId),
-        treasury: treasuryOf(townId)
+        treasury: treasuryOf(townId),
+        flaggedDwellings: flaggedDwellingsOfOwner(townId)
       })
     }
 
@@ -261,7 +268,8 @@ export const registerTownModule = defineModule(
           buildings: catalogueOf(openTownId).buildings,
           built,
           monsters: definitions.monsters,
-          available: availableCreatures(current, openTownId)
+          available: availableCreatures(current, openTownId),
+          flaggedDwellings: flaggedDwellingsOfOwner(openTownId)
         }),
         picture: describeTownPicture({
           ...catalogueOf(openTownId),
