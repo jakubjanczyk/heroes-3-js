@@ -800,16 +800,34 @@ The game's only three; see `docs/notes/2026-10-27-resource-generators.md`.
 - [ ] Bonus tracking per hero per object with cooldown
 
 ### 7.7 Permanent Bonus Objects (One-Time)
+Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-27-permanent-bonus-objects.md`.
 - [x] **Treasure Chest**: choose its gold or experience (1000 gold or 500 XP, 1500 or 1000, 2000 or 1500); the chest disappears
   - [ ] Random tier when the scenario sets none (H3: 32% / 32% / 31%), and the 5% artifact chest (needs artifacts, 7.8)
-- [ ] **Learning Stone**: +1000 XP (one-time per hero)
-- [ ] **Tree of Knowledge**: level up for gold or gems (one-time per hero)
-- [ ] **Mercenary Camp / Marletto Tower / Star Axis / Garden of Revelation**: +1 to a primary stat permanently (one-time per hero)
-- [ ] **Witch Hut**: teaches a random secondary skill (one-time per hero)
-- [ ] **School of Magic**: teaches a specific spell (one-time per hero)
-- [ ] **School of War**: +1 Attack and +1 Defense (costs 1000 gold)
-- [ ] **Library of Enlightenment**: +2 to all primary stats if hero is level 10+ (one-time)
-- [ ] Tracking: set of visited object IDs stored per hero
+
+#### 7.7.1 Once per hero, free
+- [ ] **Learning Stone**: +1000 experience
+- [ ] **Mercenary Camp** +1 Attack, **Marletto Tower** +1 Defense, **Star Axis** +1 Power, **Garden of Revelation** +1 Knowledge
+- [ ] Each hero keeps the objects they have visited; another hero can still use them; visiting again gets the object's second message
+- [ ] Status bar and right-click popup add "(Visited)" or "(Not visited)" for the selected hero
+- [ ] A beaten hero hired again loses the bonuses and the visited list, as with their level
+
+#### 7.7.2 Choices
+- [ ] **Arena**: +2 Attack or +2 Defense, the hero has to pick one
+- [ ] **School of War**: +1 Attack or +1 Defense for 1000 gold; may leave without paying; too little gold gets a message and the school stays unvisited
+- [ ] **School of Magic**: +1 Power or +1 Knowledge for 1000 gold, as the School of War
+
+#### 7.7.3 Tree of Knowledge
+- [ ] Gives the experience missing for the next level
+- [ ] Price rolled per tree at the start: free, 2000 gold or 10 gems (34 / 33 / 33); a paid tree asks first, and too little leaves it unvisited
+
+#### 7.7.4 Witch Hut
+- [ ] Each hut teaches one skill at Basic, rolled at the start from all but Leadership and Necromancy, or set by the scenario; class restrictions don't apply
+- [ ] Already has the skill, or has 8 skills: a message and nothing
+- [ ] The popup names the skill once a hero of the player has visited
+
+#### 7.7.5 Library of Enlightenment
+- [ ] +2 to all four primary skills, once per hero
+- [ ] Hero level 10 needed, 8 / 6 / 4 with Basic / Advanced / Expert Diplomacy; a hero turned away can come back
 
 ### 7.8 Artifacts on Map
 - [ ] Artifacts placed as entities on adventure map
@@ -1082,7 +1100,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 34. Hero secondary skills (4.7): the skills and starting skills, then choosing one on level-up; their effects come with the features they change
 35. Creature dwellings on map (7.4), Castle only, in four parts: on the map and flagged, recruiting, guards, town growth
 36. Resource-generating objects (7.5)
-37. Permanent bonus objects (7.7)
+37. Permanent bonus objects (7.7), in five parts: free once-per-hero objects, choices (Arena, schools), Tree of Knowledge, Witch Hut, Library of Enlightenment
 38. Stat-boosting objects (7.6)
 39. Artifacts on map (7.8)
 40. Obstacles & decorations (7.3)
