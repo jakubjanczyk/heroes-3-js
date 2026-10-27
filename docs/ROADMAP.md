@@ -765,11 +765,11 @@ Castle's seven dwellings only; other factions' come with them (6.5). Built in fo
 - [ ] The message boxes' titles: the game shows these messages without the dwelling's name over them
 
 #### 7.4.3 Guards
-- [ ] The Monastery, Training Grounds and Portal of Glory are guarded by three weeks of their non-upgraded creature: 9 Monks, 6 Cavaliers, 3 Angels
-- [ ] Entering one asks "Much to your dismay, the <dwelling> is guarded by <a few> <Monks>. Do you wish to fight the guards?" (`core.genrltxt.421`, the count in words as for monsters); Yes starts the battle, winning flags it and asks to recruit
-- [ ] A hero beaten or retreating leaves the map; the guards left stay until the week ends
-- [ ] The guards come back at the start of every week, but never fight the player who owns the dwelling
-- [ ] The battle takes a defender army that isn't a monster on the map (refactor of the battle module first)
+- [x] The Monastery, Training Grounds and Portal of Glory are guarded by three weeks of their non-upgraded creature: 9 Monks, 6 Cavaliers, 3 Angels, fighting as one stack
+- [x] Entering one asks, with no title, "Much to your dismay, the <dwelling> is guarded by <a few> <Monks>. Do you wish to fight the guards?" (`core.genrltxt.421`, the count in words as for monsters); No leaves without a battle; Yes starts the battle, and winning flags the dwelling and opens the recruit window
+- [x] A hero beaten or retreating leaves the map; the guards left stay until the week ends, kept after a reload
+- [x] The guards come back at the start of every week, but never fight the player who owns the dwelling
+- [x] The battle takes a defender army that isn't a monster on the map
 
 #### 7.4.4 Town growth
 - [ ] Each flagged dwelling adds +1 to its creature's weekly growth in every Castle town the player owns (creature panel, Fort window, the town's pool)

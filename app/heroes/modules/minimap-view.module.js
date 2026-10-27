@@ -14,6 +14,7 @@ import {
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_FACT_DWELLING_FLAGGED,
+  APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
@@ -340,6 +341,14 @@ export const registerMinimapViewModule = defineModule(
           handler: () => renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
         },
         {
+          type: APP_FACT_ENTITY_REMOVED,
+          handler: (event) => {
+            if (heroMarkersById.has(event.detail.entityId)) {
+              renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
+            }
+          }
+        },
+        {
           type: APP_FACT_MINE_CAPTURED,
           handler: (event) => renderFlaggedObjectTiles(event.detail.entityId)
         },
@@ -374,6 +383,7 @@ export const registerMinimapViewModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_MOVED,
       APP_FACT_HERO_HIRED,
+      APP_FACT_ENTITY_REMOVED,
       APP_FACT_DWELLING_FLAGGED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_TOWN_CAPTURED,

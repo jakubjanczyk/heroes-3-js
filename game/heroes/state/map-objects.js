@@ -1,7 +1,7 @@
 import { isDwelling, isMine } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { calendarDateOfTurn } from '../calendar.js'
-import { weeklyGrowthOfDwelling } from '../map-dwellings.js'
+import { guardsOfDwelling, weeklyGrowthOfDwelling } from '../map-dwellings.js'
 
 export const minesSlice = {
   key: 'mines',
@@ -32,7 +32,11 @@ function renewWeeklyGrowth(dwellings, { turnNumber }, { definitions }) {
   return Object.fromEntries(
     Object.entries(dwellings).map(([dwellingId, dwelling]) => [
       dwellingId,
-      { ...dwelling, available: weeklyGrowthOfDwelling(dwelling.type, definitions) }
+      {
+        ...dwelling,
+        available: weeklyGrowthOfDwelling(dwelling.type, definitions),
+        guards: guardsOfDwelling(dwelling.type, definitions)
+      }
     ])
   )
 }
@@ -46,7 +50,8 @@ export const dwellingsSlice = {
         {
           type: dwelling.type,
           owner: dwelling.owner ?? null,
-          available: weeklyGrowthOfDwelling(dwelling.type, definitions)
+          available: weeklyGrowthOfDwelling(dwelling.type, definitions),
+          guards: guardsOfDwelling(dwelling.type, definitions)
         }
       ])
     ),
@@ -59,6 +64,8 @@ export const dwellingsSlice = {
       updateDwelling(dwellings, entityId, (dwelling) => ({
         available: Math.max(0, dwelling.available - count)
       })),
+    'fact.dwelling.guards.changed': (dwellings, { entityId, count }) =>
+      updateDwelling(dwellings, entityId, () => ({ guards: count })),
     'fact.turn.ended': renewWeeklyGrowth
   }
 }
@@ -85,6 +92,12 @@ export function dwellingOwner(state, dwellingId) {
 
 export function dwellingAvailable(state, dwellingId) {
   return state.dwellings[dwellingId]?.available ?? 0
+}
+
+// The guards never fight the player who owns the dwelling.
+export function dwellingGuardsAgainst(state, dwellingId, player) {
+  const dwelling = state.dwellings[dwellingId]
+  return dwelling && dwelling.owner !== player ? (dwelling.guards ?? 0) : 0
 }
 
 export function dwellingIdsOf(state, player) {

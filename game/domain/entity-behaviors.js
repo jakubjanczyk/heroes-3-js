@@ -18,13 +18,13 @@ export function createEntityBehaviors(behaviors = []) {
     return getArrivalInteraction(entity) !== null
   }
 
-  function resolveArrivalOutcome({ entity, definitions = {}, tile }) {
+  function resolveArrivalOutcome({ entity, definitions = {}, tile, state, heroId }) {
     const interaction = getArrivalInteraction(entity)
     if (!interaction) {
       return null
     }
 
-    return interaction.resolveArrivalOutcome({ entity, definitions, tile })
+    return interaction.resolveArrivalOutcome({ entity, definitions, tile, state, heroId })
   }
 
   return Object.freeze({

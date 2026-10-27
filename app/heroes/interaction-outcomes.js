@@ -6,6 +6,8 @@ import {
   INTERACTION_OUTCOME_KIND_TOWN_VISITED,
   INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND
 } from '../../game/heroes/interaction-kinds.js'
+import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
+import { describeMonsterGroupInText } from '../../game/heroes/monster-count.js'
 import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.js'
 import {
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
@@ -24,6 +26,33 @@ const TREASURE_CHEST_TITLE = 'Chest'
 const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +
   'distribute it to the peasants for experience. Which do you choose?'
+
+function askToFightGuards(outcome) {
+  const { creature, count } = outcome.guards
+  const guards = describeMonsterGroupInText(count, outcome.creaturePlural)
+  return {
+    modal: {
+      interactionKind: outcome.kind,
+      entityId: outcome.entityId,
+      entityType: outcome.entityType,
+      title: null,
+      message: `Much to your dismay, the ${outcome.dwellingName} is guarded by ${guards}. Do you wish to fight the guards?`,
+      isQuestion: true
+    },
+    factsOnModalClosed: [],
+    eventsByChoice: {
+      yes: [
+        {
+          type: APP_FACT_BATTLE_STARTED,
+          detail: {
+            ...toEntityFactDetail(outcome),
+            defender: { kind: BATTLE_DEFENDER_DWELLING_GUARDS, creature, count }
+          }
+        }
+      ]
+    }
+  }
+}
 
 function toEntityFactDetail(outcome) {
   return {
@@ -57,6 +86,10 @@ export const heroesOutcomeEffects = Object.freeze({
   }),
   [INTERACTION_OUTCOME_KIND_DWELLING_VISITED]: (outcome) => {
     const dwelling = { heroId: outcome.heroId, entityId: outcome.entityId }
+    if (outcome.guards) {
+      return askToFightGuards(outcome)
+    }
+
     if (!outcome.isFree) {
       return { facts: [{ type: APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED, detail: dwelling }] }
     }

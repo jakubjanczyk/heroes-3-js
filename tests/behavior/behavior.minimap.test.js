@@ -8,8 +8,20 @@ import {
   getMapViewCentreTile,
   getTerrainTile
 } from './adventure-map.utils.js'
-import { flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import {
+  createMemoryEventLog,
+  flushMicrotasks,
+  readGameData,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
+import {
+  clickBattleButton,
+  closeBattleResults,
+  reloadBattle,
+  startBattle,
+  waitForBattleResults
+} from './battle.utils.js'
 import { aDwelling, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { ALL_TERRAINS, GRASS, SAND } from './terrain-codes.js'
 
@@ -252,6 +264,48 @@ describe('minimap behavior', () => {
 
       expectHeroAt(4, 2)
       expect(getMinimapDotTile(getHeroDot())).toEqual({ x: 4, y: 2 })
+    })
+
+    describe('a hero beaten in battle', () => {
+      // A lone Skeleton attacks two Swordsmen and loses; the other hero stays at (5, 4).
+      const aLostBattle = () =>
+        aScenario()
+          .withSize(8, 7)
+          .withEntities(
+            aHero()
+              .at(0, 0)
+              .withArmy([{ creature: 'SKELETON', count: 1 }]),
+            aHero().withId('hero-2').at(5, 4),
+            aMonster().withType('SWORDSMAN').withCount(2).withStacks(1).at(1, 0)
+          )
+          .withDefinitions({ monsters: readGameData('monsters.json') })
+
+      async function loseBattle(scenario, eventLog) {
+        const { user } = await startBattle(scenario, { eventLog })
+        await clickBattleButton(user, 'Auto combat')
+        await waitForBattleResults()
+        await closeBattleResults(user)
+      }
+
+      test('given a hero lost a battle when the results close then only the other hero has a marker', async () => {
+        const scenario = aLostBattle()
+        mapSize = { width: 8, height: 7 }
+
+        await loseBattle(scenario)
+
+        expect(getHeroDots().map(getMinimapDotTile)).toEqual([{ x: 5, y: 4 }])
+      })
+
+      test('given a hero lost a battle when the game is reloaded then only the other hero has a marker', async () => {
+        const scenario = aLostBattle()
+        const eventLog = createMemoryEventLog()
+        mapSize = { width: 8, height: 7 }
+        await loseBattle(scenario, eventLog)
+
+        await reloadBattle(scenario, { eventLog })
+
+        expect(getHeroDots().map(getMinimapDotTile)).toEqual([{ x: 5, y: 4 }])
+      })
     })
 
     test('given a mine when the minimap renders then its tiles are drawn neutral grey', async () => {
