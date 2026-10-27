@@ -4,16 +4,31 @@ import {
 } from '../interaction-kinds.js'
 import { getEntityName } from './shared.js'
 
-export const mineBehavior = Object.freeze({
-  kind: 'MINE',
-  // Tiles around the entry tile that the mine's building covers.
-  footprintOffsets: Object.freeze([
-    { x: -1, y: -1 },
+const MINE_FOOTPRINT = Object.freeze([
+  { x: -1, y: 0 },
+  { x: 1, y: 0 }
+])
+const TWO_ROW_MINE_FOOTPRINT = Object.freeze([
+  { x: -1, y: -1 },
+  { x: 0, y: -1 },
+  { x: 1, y: -1 },
+  ...MINE_FOOTPRINT
+])
+const FOOTPRINTS = Object.freeze({
+  GEM_POND: TWO_ROW_MINE_FOOTPRINT,
+  ORE_PIT: TWO_ROW_MINE_FOOTPRINT,
+  SAWMILL: Object.freeze([
     { x: 0, y: -1 },
     { x: 1, y: -1 },
+    { x: -2, y: 0 },
     { x: -1, y: 0 },
     { x: 1, y: 0 }
-  ]),
+  ])
+})
+
+export const mineBehavior = Object.freeze({
+  kind: 'MINE',
+  footprintOffsets: (mine) => FOOTPRINTS[mine.type] ?? MINE_FOOTPRINT,
   arrivalInteraction: Object.freeze({
     movementInteractionKind: MOVEMENT_INTERACTION_KIND_MINE_ENTER,
     outcomeKind: INTERACTION_OUTCOME_KIND_MINE_ENTERED,
