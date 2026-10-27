@@ -140,7 +140,7 @@ describe('status bar behavior', () => {
 
   test.each([
     { part: 'entry tile', x: 2, y: 1 },
-    { part: 'building', x: 1, y: 0 }
+    { part: 'building', x: 1, y: 1 }
   ])('given a mine when the mouse is over its $part then the status bar shows its name', async ({
     x,
     y

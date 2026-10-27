@@ -91,28 +91,54 @@ describe('mine interaction behavior', () => {
     expectMinePresent('mine-1')
   })
 
-  test('given mine is rendered as 3x2 when player previews non-entry footprint tiles then no preview is shown', async () => {
+  // Most mines block the tiles either side of their entrance; the Gem Pond and Ore Pit also the
+  // three above. The Sawmill blocks two tiles left of its entrance and one right, and above, the
+  // entrance's tile and the one right of it.
+  test.each([
+    { type: 'GOLD_MINE', entrance: { x: 2, y: 1 }, x: 1, y: 1 },
+    { type: 'GOLD_MINE', entrance: { x: 2, y: 1 }, x: 3, y: 1 },
+    { type: 'GEM_POND', entrance: { x: 2, y: 1 }, x: 1, y: 0 },
+    { type: 'GEM_POND', entrance: { x: 2, y: 1 }, x: 2, y: 0 },
+    { type: 'GEM_POND', entrance: { x: 2, y: 1 }, x: 3, y: 0 },
+    { type: 'SAWMILL', entrance: { x: 3, y: 1 }, x: 1, y: 1 },
+    { type: 'SAWMILL', entrance: { x: 3, y: 1 }, x: 2, y: 1 },
+    { type: 'SAWMILL', entrance: { x: 3, y: 1 }, x: 4, y: 1 },
+    { type: 'SAWMILL', entrance: { x: 3, y: 1 }, x: 3, y: 0 },
+    { type: 'SAWMILL', entrance: { x: 3, y: 1 }, x: 4, y: 0 }
+  ])('shows no route to the tile the $type blocks at ($x, $y)', async ({
+    type,
+    entrance,
+    x,
+    y
+  }) => {
     await setupMovementBehaviorApp({
-      loadGameOptions: aScenario()
-        .withSize(8, 4)
-        .withEntities(aHero().at(0, 2), aMine().at(3, 2))
-        .build()
+      loadGameOptions: aMineScenario(aMine().withType(type).at(entrance.x, entrance.y))
     })
 
-    dispatchTileClick(2, 1)
-    expectNoPreview()
+    dispatchTileClick(x, y)
 
-    dispatchTileClick(3, 1)
     expectNoPreview()
+  })
 
-    dispatchTileClick(4, 1)
-    expectNoPreview()
+  test.each([
+    { type: 'GOLD_MINE', entrance: { x: 2, y: 1 }, x: 1, y: 0 },
+    { type: 'SULFUR_DUNE', entrance: { x: 2, y: 1 }, x: 1, y: 0 },
+    { type: 'CRYSTAL_CAVERN', entrance: { x: 2, y: 1 }, x: 1, y: 0 },
+    { type: 'ALCHEMIST_LAB', entrance: { x: 2, y: 1 }, x: 1, y: 0 },
+    { type: 'SAWMILL', entrance: { x: 3, y: 1 }, x: 2, y: 0 }
+  ])('the hero walks onto the row above the $type to ($x, $y)', async ({
+    type,
+    entrance,
+    x,
+    y
+  }) => {
+    await setupMovementBehaviorApp({
+      loadGameOptions: aMineScenario(aMine().withType(type).at(entrance.x, entrance.y))
+    })
 
-    dispatchTileClick(2, 2)
-    expectNoPreview()
+    await enterMineAt(x, y)
 
-    dispatchTileClick(4, 2)
-    expectNoPreview()
+    expectHeroAt(x, y)
   })
 
   describe('capture', () => {

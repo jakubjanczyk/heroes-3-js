@@ -222,6 +222,7 @@ Core game loop - resources flow, time passes.
 - [ ] Hero arriving at enemy mine: captures it (combat later, auto-capture for now)
 - [x] Mine visual indicator: small flag in the owner's colour
 - [x] Neutral mines have no flag
+- [x] Each mine blocks the tiles either side of its entrance; the Gem Pond and Ore Pit also the three above, the Sawmill a second tile on the left and, above, the entrance's tile and the one right of it. The rest of the picture can be walked on
 - [x] Mine ownership persisted in event log
 - [x] Mine income only from owned mines
 
@@ -752,7 +753,7 @@ Rich adventure map with meaningful locations.
 Castle's seven dwellings only; other factions' come with them (6.5). Built in four parts; see `docs/notes/2026-10-26-map-dwellings.md`.
 
 #### 7.4.1 Dwellings on the map, visited and flagged
-- [x] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`); each blocks its entrance and the tile left of it (the Guardhouse the tile above that too), the rest of its picture can be walked on
+- [x] Guardhouse (Pikemen), Archers' Tower, Griffin Tower, Barracks, Monastery, Training Grounds and Portal of Glory (`game/data/dwellings.json`); each blocks its entrance and the tile left of it (the Archers' Tower the tile right of it instead, the Guardhouse the tile above the left one too), the rest of its picture can be walked on
 - [x] Shown on the map and minimap, hidden under fog; visit cursor on the entrance, the arrow on the rest; the status bar and the right-click popup name it
 - [x] A hero entering it flags it in the player's colour, on the map, the minimap and in the popup; kept after a reload
 
@@ -784,7 +785,7 @@ The game's only three; see `docs/notes/2026-10-27-resource-generators.md`.
 - [x] **Mystical Garden**: 500 gold or 5 gems a week, even chances
 - [x] Each object gives once a week to whichever hero enters it first; any other visit that week gets the "come back next week" message and nothing
 - [x] Reset at start of each new week; what was taken is kept after a reload
-- [x] Each 2 tiles wide, entered from the right one; shown on the map with its name, status bar and right-click popup name it
+- [x] The Windmill blocks only its entrance, the Mystical Garden the tiles either side of it, the Water Wheel two rows of three ending at it; shown on the map with its name, status bar and right-click popup name it
 - [ ] Pictures on the map (10.1) and their visit sounds (10.4)
 
 ### 7.6 Stat-Boosting Objects

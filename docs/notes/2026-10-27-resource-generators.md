@@ -18,7 +18,10 @@ Checked against the Heroes 3 wiki (heroes.thelazy.net: Windmill, Water Wheel, My
 
 ## What we do
 
-- A scenario entity `{ "kind": "RESOURCE_GENERATOR", "type": "WINDMILL" }` (or `WATER_WHEEL`, `MYSTICAL_GARDEN`); `game/data/resource-generators.json` names them. Each is two tiles wide: the scenario tile is the entrance, which the hero steps onto, and the tile left of it is blocked.
+- A scenario entity `{ "kind": "RESOURCE_GENERATOR", "type": "WINDMILL" }` (or `WATER_WHEEL`, `MYSTICAL_GARDEN`); `game/data/resource-generators.json` names them. The scenario tile is the entrance, which the hero steps onto. The rest follows the game's object table (`Objects.txt`, checked against homm3tools' copy of it); bottom row last, `E` the entrance, `#` blocked, `.` part of the picture that can be walked on:
+  - Windmill `E.`: only the entrance blocks.
+  - Water Wheel `###` / `##E`: two rows of three, the entrance bottom right.
+  - Mystical Garden `#E#`.
 - The reward is rolled when the hero enters (`config.random`, `Math.random` by default; `game/heroes/resource-generators.js`) and saved as `fact.resourceGenerator.visited` with the resources, which the kingdom adds. A reload replays it without rolling again.
 - The `resourceGenerators` state slice marks an object visited and clears every mark on the first day of a week.
-- No pictures yet: the object shows its name across its two tiles, as the dwellings do.
+- No pictures yet: the object shows its name across its tiles, as the dwellings do (the Windmill across its entrance and the tile right of it).

@@ -9,6 +9,18 @@ Roadmap 3.2 and 3.3.
 - At the start of each new day (after End Turn), every owned mine adds its income to the resource totals. Nothing is paid on the day of the capture.
 - Daily amounts follow Heroes 3 and live in `game/data/mines.json` (`income.resource` is a key from `resources.json`): Gold mine 1000 gold, Sawmill 2 wood, Ore pit 2 ore, and 1 each for Alchemist lab (mercury), Sulfur dune, Crystal cavern and Gem pond.
 
+## Footprints
+
+The game's object table (`Objects.txt`, checked against homm3tools' copy of it) gives which tiles of a mine block; bottom row last, `E` the entrance, `#` blocked, `.` part of the picture that can be walked on.
+
+| Mine | Footprint |
+|---|---|
+| Gold Mine, Sulfur Dune, Crystal Cavern, Alchemist Lab | `#E#` |
+| Gem Pond, Ore Pit | `###` / `#E#` |
+| Sawmill | `..##` / `##E#` |
+
+The map shows each as a 3×2 box over its tiles, the Sawmill 4×2.
+
 ## How it works
 
 - `app/heroes/modules/mines.module.js` owns the state: it emits `fact.mine.captured` (persisted) when a move ends on a mine not owned yet, and on each `fact.turn.ended` emits `fact.income.collected` with the total per resource type.

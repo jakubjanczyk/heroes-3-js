@@ -137,7 +137,7 @@ describe('info popup behavior', () => {
       confirmTileClickByDispatch(2, 1)
       await flushMicrotasks()
 
-      await holdRightButtonOn(user, 1, 0)
+      await holdRightButtonOn(user, 1, 1)
 
       expectInfoPopupLines(['Gold Mine', '(Red)'])
     })
@@ -182,7 +182,7 @@ describe('info popup behavior', () => {
 
     test.each([
       { object: 'mine', part: 'entry tile', x: 2, y: 2, name: 'Gold Mine' },
-      { object: 'mine', part: 'building', x: 1, y: 1, name: 'Gold Mine' },
+      { object: 'mine', part: 'building', x: 1, y: 2, name: 'Gold Mine' },
       { object: 'town', part: 'entry tile', x: 2, y: 2, name: 'Castle' },
       { object: 'town', part: 'building', x: 0, y: 1, name: 'Castle' }
     ])('given a $object when the player holds the right button on its $part then the popup names it', async ({

@@ -3,12 +3,24 @@ import {
   MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT
 } from '../interaction-kinds.js'
 
-// The entrance is the right of the object's two tiles.
-const RESOURCE_GENERATOR_FOOTPRINT = Object.freeze([{ x: -1, y: 0 }])
+const FOOTPRINTS = Object.freeze({
+  WINDMILL: Object.freeze([]),
+  WATER_WHEEL: Object.freeze([
+    { x: -2, y: -1 },
+    { x: -1, y: -1 },
+    { x: 0, y: -1 },
+    { x: -2, y: 0 },
+    { x: -1, y: 0 }
+  ]),
+  MYSTICAL_GARDEN: Object.freeze([
+    { x: -1, y: 0 },
+    { x: 1, y: 0 }
+  ])
+})
 
 export const resourceGeneratorBehavior = Object.freeze({
   kind: 'RESOURCE_GENERATOR',
-  footprintOffsets: RESOURCE_GENERATOR_FOOTPRINT,
+  footprintOffsets: (generator) => FOOTPRINTS[generator.type] ?? [],
   arrivalInteraction: Object.freeze({
     movementInteractionKind: MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT,
     outcomeKind: INTERACTION_OUTCOME_KIND_RESOURCE_GENERATOR_VISITED,

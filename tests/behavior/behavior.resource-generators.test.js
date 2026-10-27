@@ -2,7 +2,9 @@
 import { describe, expect, test } from 'vitest'
 import {
   confirmTileClickByDispatch,
+  dispatchTileClick,
   expectHeroAt,
+  expectNoPreview,
   expectResourceGeneratorAt,
   readResourceGeneratorName
 } from './adventure-map.utils.js'
@@ -44,8 +46,7 @@ const gameDefinitions = {
   resourceGenerators: readGameData('resource-generators.json')
 }
 
-// The object's entrance is at (2, 1), the tile left of it is the rest of the object, and the
-// hero stands right below the entrance, so entering it takes one step.
+// The object's entrance is at (2, 1) and the hero stands right below it, so entering it takes one step.
 function setupMapWith(type, { random = LOWEST_ROLL, heroes = [aHero().at(2, 2)], eventLog } = {}) {
   return setupMovementBehaviorApp({
     loadGameOptions: aScenario()
@@ -97,12 +98,30 @@ describe('Windmill, Water Wheel and Mystical Garden', () => {
     expectHeroAt(2, 1)
   })
 
-  test('the hero cannot walk onto the rest of the Windmill', async () => {
-    await setupWindmill({ heroes: [aHero().at(1, 2)] })
+  test('the hero walks onto the tile left of the Windmill, which blocks only its entrance', async () => {
+    await setupWindmill()
 
     await walkTo(1, 1)
 
-    expectHeroAt(1, 2)
+    expectHeroAt(1, 1)
+  })
+
+  // The Water Wheel blocks two rows of three ending at its entrance, the Mystical Garden the tiles
+  // either side of its entrance.
+  test.each([
+    { type: 'WATER_WHEEL', name: 'Water Wheel', x: 0, y: 1 },
+    { type: 'WATER_WHEEL', name: 'Water Wheel', x: 1, y: 1 },
+    { type: 'WATER_WHEEL', name: 'Water Wheel', x: 0, y: 0 },
+    { type: 'WATER_WHEEL', name: 'Water Wheel', x: 1, y: 0 },
+    { type: 'WATER_WHEEL', name: 'Water Wheel', x: 2, y: 0 },
+    { type: 'MYSTICAL_GARDEN', name: 'Mystical Garden', x: 1, y: 1 },
+    { type: 'MYSTICAL_GARDEN', name: 'Mystical Garden', x: 3, y: 1 }
+  ])('shows no route to the tile the $name blocks at ($x, $y)', async ({ type, x, y }) => {
+    await setupMapWith(type)
+
+    dispatchTileClick(x, y)
+
+    expectNoPreview()
   })
 
   describe('Windmill', () => {
