@@ -28,10 +28,24 @@ The roadmap had two of these wrong: the School of Magic teaches no spell, it rai
 
 Objects that look similar but belong elsewhere: the Shrines (a spell, needs 4.8), the Scholar (a primary skill, a secondary skill or a spell, and it disappears), the University (secondary skills for gold, its own trade window), the Warrior's Tomb, Wagon, Corpse and Lean To (once per object, not per hero), and the temporary bonus objects of 7.6.
 
+### Tiles on the map
+
+From the game's object table (`Objects.txt`, as the map tool homm3tools ships it; not yet checked against the game's own file). `E` is the entrance, which is blocked and visited, `#` a blocked tile, `.` a tile of the picture that can be walked on; the bottom row is last. Tiles left out of the picture are walkable.
+
+| Object | Tiles |
+|---|---|
+| Learning Stone, Star Axis, Garden of Revelation, School of Magic | `E` |
+| Tree of Knowledge, Witch Hut | `E.` |
+| Marletto Tower | `#E` |
+| Mercenary Camp | `#E#` |
+| Arena | `###` / `#E#` |
+| Library of Enlightenment | `..##` / `##E#` |
+| School of War | `.##.` / `####` / `.#E.` |
+
 ### Once per hero
 
 - Each hero keeps a list of the objects they have used. Another hero, of the same player or not, can still use the object.
-- The status bar and the right-click popup over one of these objects add "(Visited)" or "(Not visited)" under the name, for the selected hero (`core.genrltxt.352`, `353`; not yet checked in the game). With no hero selected nothing is added.
+- The right-click popup shows the name, a line saying what the object gives (`core.xtrainfo.<n>`, e.g. "+1 Attack"; the exact wording not yet checked), and "(Visited)" or "(Not visited)" under it for the selected hero (`core.genrltxt.352`, `353`). The status bar shows the name and the visited line. With no hero selected there is no visited line.
 - There is no sign on the map itself.
 - Visiting again gets the object's second message and nothing more.
 - Every message has no title: the text, the picture of what it gives with the amount under it ("+1" under the Attack picture, "1000" under the experience picture), and OK.
@@ -94,11 +108,11 @@ Built in five parts, each its own change. Nothing here needs a feature we don't 
 ### Part 1
 
 - A scenario entity `{ "kind": "BONUS_OBJECT", "type": "LEARNING_STONE" }` (or `MERCENARY_CAMP`, `MARLETTO_TOWER`, `STAR_AXIS`, `GARDEN_OF_REVELATION`); `game/data/bonus-objects.json` names each and says what it gives (`{ "experience": 1000 }`, `{ "primarySkills": { "attack": 1 } }`). Parts 2 to 5 add their objects to the same file.
-- Each is one tile for now, which the hero steps onto, as the resource generators' entrance; real footprints come with the pictures (10.1). They show their name on the map, as the dwellings and resource generators do.
+- The scenario tile is the entrance, which the hero steps onto; the blocked tiles are the table's above, as footprint offsets in `bonus-objects.json`. Each shows its name on the map across its tiles, as the dwellings and resource generators do.
 - A visit is saved as `fact.hero.bonusObject.visited` (`heroId`, `entityId`, `primarySkills`). The `heroDetails` slice keeps the hero's `visitedBonusObjects` and adds the primary skills to a `bonusPrimarySkills` count that `getHeroPrimarySkills` adds in, as it adds the level-ups. Experience goes through `command.hero.experience.gain.requested`, as the chest's does, so level-ups work the same.
 - A beaten hero hired again starts over, as with their level and skills (2026-10-26-defeated-hero.md): the bonuses and the visited list go.
 - The message is the notice the resource generators use: no title, the text, the reward's picture with its amount, OK. The primary skill pictures are the hero box's; experience uses the chest's banner.
-- The status bar and the right-click popup add "(Visited)" or "(Not visited)" for the selected hero.
+- The right-click popup says what the object gives, then "(Visited)" or "(Not visited)" for the selected hero; the status bar adds the visited line to the name.
 
 ### Later parts
 
