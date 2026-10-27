@@ -1,0 +1,26 @@
+{
+  "LEARNING_STONE": { "name": "Learning Stone", "gives": { "experience": 1000 } },
+  "MERCENARY_CAMP": { "name": "Mercenary Camp", "gives": { "primarySkills": { "attack": 1 } } },
+  "MARLETTO_TOWER": { "name": "Marletto Tower", "gives": { "primarySkills": { "defense": 1 } } },
+  "STAR_AXIS": { "name": "Star Axis", "gives": { "primarySkills": { "power": 1 } } },
+  "GARDEN_OF_REVELATION": {
+    "name": "Garden of Revelation",
+    "gives": { "primarySkills": { "knowledge": 1 } }
+  },
+  "ARENA": {
+    "name": "Arena",
+    "choices": [{ "primarySkills": { "attack": 2 } }, { "primarySkills": { "defense": 2 } }]
+  },
+  "SCHOOL_OF_WAR": {
+    "name": "School of War",
+    "description": "+1 Attack or +1 Defense for 1000 gold",
+    "cost": { "GOLD_PILE": 1000 },
+    "choices": [{ "primarySkills": { "attack": 1 } }, { "primarySkills": { "defense": 1 } }]
+  },
+  "SCHOOL_OF_MAGIC": {
+    "name": "School of Magic",
+    "description": "+1 Power or +1 Knowledge for 1000 gold",
+    "cost": { "GOLD_PILE": 1000 },
+    "choices": [{ "primarySkills": { "power": 1 } }, { "primarySkills": { "knowledge": 1 } }]
+  }
+}
