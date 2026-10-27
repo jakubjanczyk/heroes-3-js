@@ -141,7 +141,7 @@ function ensureModalContent(host) {
 
   host._noButtonEl?.addEventListener('click', (event) => {
     event.stopPropagation()
-    host._choice = 'no'
+    host._choice = host._isQuestion ? 'no' : null
     host.closeInteraction()
   })
 }
@@ -173,9 +173,10 @@ function renderDetails(host, details) {
   )
 }
 
-function renderQuestionButtons(host, isQuestion) {
+function renderQuestionButtons(host, { isQuestion, canCancel }) {
   host._isQuestion = isQuestion
-  host._noButtonEl.hidden = !isQuestion
+  host._noButtonEl.hidden = !isQuestion && !canCancel
+  host._noButtonEl.setAttribute('aria-label', isQuestion ? 'No' : 'Cancel')
   host._okButtonEl.setAttribute('aria-label', isQuestion ? 'Yes' : 'OK')
   if (isQuestion) {
     host._okButtonEl.setAttribute('aria-keyshortcuts', 'Enter')
@@ -389,7 +390,8 @@ function defineInteractionModalElement(window) {
       details = [],
       choices = [],
       rewards = [],
-      isQuestion = false
+      isQuestion = false,
+      canCancel = false
     } = {}) {
       configureModalHost(this, { transitionMs: this._transitionMs })
       this._clearCloseTimer()
@@ -417,7 +419,7 @@ function defineInteractionModalElement(window) {
       renderDetails(this, details)
       renderChoices(this, choices)
       renderRewards(this, rewards)
-      renderQuestionButtons(this, isQuestion)
+      renderQuestionButtons(this, { isQuestion, canCancel })
 
       showDialog(this._dialog)
     }

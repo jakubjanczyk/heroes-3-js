@@ -96,8 +96,8 @@ export const aResourceGenerator = () =>
     placeable
   )
 
-// LEARNING_STONE, MERCENARY_CAMP, MARLETTO_TOWER, STAR_AXIS or GARDEN_OF_REVELATION; the tile is
-// its entrance.
+// LEARNING_STONE, MERCENARY_CAMP, MARLETTO_TOWER, STAR_AXIS, GARDEN_OF_REVELATION, ARENA,
+// SCHOOL_OF_WAR or SCHOOL_OF_MAGIC; the tile is its entrance.
 export const aBonusObject = () =>
   builder(
     { id: 'bonus-1', kind: 'BONUS_OBJECT', type: 'MERCENARY_CAMP', tile: { x: 1, y: 0 } },
