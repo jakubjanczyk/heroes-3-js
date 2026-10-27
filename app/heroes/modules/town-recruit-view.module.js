@@ -8,8 +8,6 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { openRecruitWindow } from '../presentation/recruit-window.js'
 
-// The recruit window opens from a creature in the town screen's panel, the Fort window or the town
-// picture. Recruiting closes it.
 export const registerTownRecruitViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document

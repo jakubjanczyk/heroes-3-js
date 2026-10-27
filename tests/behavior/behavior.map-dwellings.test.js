@@ -336,7 +336,6 @@ describe('creature dwellings on the map', () => {
       expect(getRecruitButton().disabled).toBe(true)
     })
 
-    // Unbought creatures don't pile up: a new week brings the count back to the week's growth.
     test('a new week brings back 9 Archers, not the ones left plus 9', async () => {
       const { user } = await setupMovementBehaviorApp({
         loadGameOptions: aDwellingScenario(anArchersTower())

@@ -181,7 +181,7 @@
   gap: var(--space-xl);
 }
 
-/* The game's OK button: a dark panel in a gold frame with a gold checkmark (a cross for No). */
+/* The game's OK button: a dark panel in a gold frame with a gold checkmark. */
 .interaction-modal__ok-button {
   appearance: none;
   display: grid;

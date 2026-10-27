@@ -169,7 +169,6 @@ export async function pickLevelUpSkill(user, heroName, levelAndSkill) {
   await user.click(within(popup).getByRole('button', { name: levelAndSkill }))
 }
 
-// A question on the map, named after its title, with Yes and No.
 export function queryQuestion(title) {
   return screen.queryByRole('dialog', { name: title })
 }

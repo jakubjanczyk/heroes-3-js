@@ -24,7 +24,6 @@ function updateDwelling(dwellings, dwellingId, update) {
   return dwelling ? { ...dwellings, [dwellingId]: { ...dwelling, ...update(dwelling) } } : dwellings
 }
 
-// Unbought creatures don't pile up: each new week the dwelling has its week's growth again.
 function renewWeeklyGrowth(dwellings, { turnNumber }, { definitions }) {
   if (calendarDateOfTurn(turnNumber).day !== 1) {
     return dwellings

@@ -8,7 +8,6 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { openRecruitWindow } from '../presentation/recruit-window.js'
 
-// The recruit window of a dwelling on the map, over the adventure map. Recruiting closes it.
 export const registerDwellingRecruitViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document

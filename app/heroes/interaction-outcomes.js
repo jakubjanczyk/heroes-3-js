@@ -55,7 +55,6 @@ export const heroesOutcomeEffects = Object.freeze({
       }
     ]
   }),
-  // A free dwelling asks before its creatures join; the others open the recruit window straight away.
   [INTERACTION_OUTCOME_KIND_DWELLING_VISITED]: (outcome) => {
     const dwelling = { heroId: outcome.heroId, entityId: outcome.entityId }
     if (!outcome.isFree) {
