@@ -1155,6 +1155,33 @@
         "x": 45,
         "y": 37
       }
+    },
+    {
+      "id": "generator-1",
+      "kind": "RESOURCE_GENERATOR",
+      "type": "WINDMILL",
+      "tile": {
+        "x": 4,
+        "y": 8
+      }
+    },
+    {
+      "id": "generator-2",
+      "kind": "RESOURCE_GENERATOR",
+      "type": "WATER_WHEEL",
+      "tile": {
+        "x": 11,
+        "y": 3
+      }
+    },
+    {
+      "id": "generator-3",
+      "kind": "RESOURCE_GENERATOR",
+      "type": "MYSTICAL_GARDEN",
+      "tile": {
+        "x": 3,
+        "y": 13
+      }
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { isDwelling, isMine } from '../../domain/entity-queries.js'
+import { isDwelling, isMine, isResourceGenerator } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
@@ -74,6 +74,37 @@ export const dwellingsSlice = {
   }
 }
 
+function renewWeeklyVisits(generators, { turnNumber }) {
+  if (calendarDateOfTurn(turnNumber).day !== 1) {
+    return generators
+  }
+
+  return Object.fromEntries(
+    Object.entries(generators).map(([generatorId, generator]) => [
+      generatorId,
+      { ...generator, visited: false }
+    ])
+  )
+}
+
+// Each generator gives once a week, to whichever hero enters it first.
+export const resourceGeneratorsSlice = {
+  key: 'resourceGenerators',
+  initial: ({ scenario }) =>
+    Object.fromEntries(
+      (scenario?.entities ?? [])
+        .filter(isResourceGenerator)
+        .map((generator) => [generator.id, { type: generator.type, visited: false }])
+    ),
+  on: {
+    'fact.resourceGenerator.visited': (generators, { entityId }) =>
+      generators[entityId]
+        ? { ...generators, [entityId]: { ...generators[entityId], visited: true } }
+        : generators,
+    'fact.turn.ended': renewWeeklyVisits
+  }
+}
+
 // How many creatures a monster has left after a battle it won; the others keep the scenario's.
 export const monsterCountsSlice = {
   key: 'monsterCounts',
@@ -121,6 +152,10 @@ export function flaggedObjectOwner(state, entityId) {
 
 export function mineIdsOf(state, player) {
   return Object.keys(state.mines).filter((mineId) => state.mines[mineId].owner === player)
+}
+
+export function isResourceGeneratorVisited(state, generatorId) {
+  return state.resourceGenerators[generatorId]?.visited ?? false
 }
 
 export function monsterCount(state, entityId) {

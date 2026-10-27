@@ -3,6 +3,7 @@ import * as hero from './hero.js'
 import * as mine from './mine.js'
 import * as monster from './monster.js'
 import * as resource from './resource.js'
+import * as resourceGenerator from './resource-generator.js'
 import * as town from './town.js'
 import * as treasureChest from './treasure-chest.js'
 
@@ -12,6 +13,7 @@ const presentationByKind = Object.freeze({
   MINE: mine,
   MONSTER: monster,
   RESOURCE: resource,
+  RESOURCE_GENERATOR: resourceGenerator,
   TOWN: town,
   TREASURE_CHEST: treasureChest
 })
