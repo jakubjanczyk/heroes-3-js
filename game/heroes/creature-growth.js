@@ -4,8 +4,9 @@ import { buildingsInEffect } from './town-income.js'
 // A town's creatures by tier, as the town screen's panel shows them: for each tier with a dwelling,
 // the creature it makes (the upgraded one once the upgrade stands) and how many arrive a week;
 // null for a tier without one. The Citadel's and Castle's bonus is a share of the
-// dwelling's own growth, rounded down, and a horde building (Griffin Bastion) adds a flat number.
-export function describeCreatureGrowth({ buildings, built, monsters }) {
+// dwelling's own growth, rounded down; a horde building (Griffin Bastion) and each map dwelling of
+// the creature flying the town owner's flag add a flat number.
+export function describeCreatureGrowth({ buildings, built, monsters, flaggedDwellings = {} }) {
   const inEffect = buildingsInEffect({ buildings, built }).map(
     (buildingId) => buildings[buildingId]
   )
@@ -19,7 +20,9 @@ export function describeCreatureGrowth({ buildings, built, monsters }) {
         creature: building.creature,
         name: creature.namePlural ?? creature.name,
         singularName: creature.name,
-        growth: withFortBonus(creature.growth, fortBonusPercent)
+        growth:
+          withFortBonus(creature.growth, fortBonusPercent) +
+          (flaggedDwellings[plainCreatureOf(building, buildings)] ?? 0)
       }
     }
   }
@@ -32,6 +35,10 @@ export function describeCreatureGrowth({ buildings, built, monsters }) {
   }
 
   return tiers
+}
+
+function plainCreatureOf(dwelling, buildings) {
+  return dwelling.upgrades ? buildings[dwelling.upgrades]?.creature : dwelling.creature
 }
 
 function fortBonusPercentOf(buildingsStanding) {

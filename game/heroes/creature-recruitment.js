@@ -52,11 +52,14 @@ export function describeTownCreatures({
   monsters,
   resources,
   available,
-  treasury
+  treasury,
+  flaggedDwellings
 }) {
   const recruitable = recruitableCreaturesByTier({ buildings, built, monsters })
 
-  return describeCreatureGrowth({ buildings, built, monsters }).map((tier, index) => {
+  const growthByTier = describeCreatureGrowth({ buildings, built, monsters, flaggedDwellings })
+
+  return growthByTier.map((tier, index) => {
     if (!tier) {
       return null
     }
@@ -73,8 +76,10 @@ export function describeTownCreatures({
 }
 
 // The week of creatures each tier's dwelling makes, 0 for a tier without one.
-export function weeklyGrowthByTier({ buildings, built, monsters }) {
-  return describeCreatureGrowth({ buildings, built, monsters }).map((tier) => tier?.growth ?? 0)
+export function weeklyGrowthByTier({ buildings, built, monsters, flaggedDwellings }) {
+  return describeCreatureGrowth({ buildings, built, monsters, flaggedDwellings }).map(
+    (tier) => tier?.growth ?? 0
+  )
 }
 
 // Recruits join a stack of the same creature, else the first empty slot; null when neither is
