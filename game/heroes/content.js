@@ -1,3 +1,4 @@
+import { bonusObjectBehavior } from './entity-behaviors/bonus-object.js'
 import { dwellingBehavior } from './entity-behaviors/dwelling.js'
 import { heroBehavior } from './entity-behaviors/hero.js'
 import { mineBehavior } from './entity-behaviors/mine.js'
@@ -24,6 +25,7 @@ import { heroesTerrainTypes } from './terrain-types.js'
 
 export const heroesContent = Object.freeze({
   entityBehaviors: Object.freeze([
+    bonusObjectBehavior,
     dwellingBehavior,
     heroBehavior,
     mineBehavior,

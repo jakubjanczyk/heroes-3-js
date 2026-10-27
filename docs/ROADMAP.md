@@ -805,11 +805,11 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
   - [ ] Random tier when the scenario sets none (H3: 32% / 32% / 31%), and the 5% artifact chest (needs artifacts, 7.8)
 
 #### 7.7.1 Once per hero, free
-- [ ] **Learning Stone**: +1000 experience
-- [ ] **Mercenary Camp** +1 Attack, **Marletto Tower** +1 Defense, **Star Axis** +1 Power, **Garden of Revelation** +1 Knowledge
-- [ ] Each hero keeps the objects they have visited; another hero can still use them; visiting again gets the object's second message
-- [ ] Status bar and right-click popup add "(Visited)" or "(Not visited)" for the selected hero
-- [ ] A beaten hero hired again loses the bonuses and the visited list, as with their level
+- [x] **Learning Stone**: +1000 experience
+- [x] **Mercenary Camp** +1 Attack, **Marletto Tower** +1 Defense, **Star Axis** +1 Power, **Garden of Revelation** +1 Knowledge
+- [x] Each hero keeps the objects they have visited; another hero can still use them; visiting again gets the object's second message
+- [x] Status bar and right-click popup add "(Visited)" or "(Not visited)" for the selected hero
+- [x] A beaten hero hired again loses the bonuses and the visited list, as with their level
 
 #### 7.7.2 Choices
 - [ ] **Arena**: +2 Attack or +2 Defense, the hero has to pick one

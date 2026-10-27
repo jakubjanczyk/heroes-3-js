@@ -92,6 +92,23 @@
   text-shadow: 0 1px 1px black;
 }
 
+.entity--bonus-object {
+  z-index: var(--z-entity-bonus-object);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  border: 2px solid color-mix(in oklab, white 50%, oklch(0.72 0.08 85));
+  background: color-mix(in oklab, oklch(0.52 0.07 60) 86%, black 10%);
+  box-shadow: 0 0.3rem 0.7rem color-mix(in oklab, black 56%, transparent);
+  color: oklch(0.97 0.01 90);
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 0 1px 1px black;
+}
+
 .entity--town {
   z-index: var(--z-entity-town);
   pointer-events: none;

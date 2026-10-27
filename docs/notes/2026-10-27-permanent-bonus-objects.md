@@ -105,14 +105,14 @@ Built in five parts, each its own change. Nothing here needs a feature we don't 
 4. **Witch Hut.**
 5. **Library of Enlightenment.**
 
-### Part 1
+### Part 1 (done)
 
 - A scenario entity `{ "kind": "BONUS_OBJECT", "type": "LEARNING_STONE" }` (or `MERCENARY_CAMP`, `MARLETTO_TOWER`, `STAR_AXIS`, `GARDEN_OF_REVELATION`); `game/data/bonus-objects.json` names each and says what it gives (`{ "experience": 1000 }`, `{ "primarySkills": { "attack": 1 } }`). Parts 2 to 5 add their objects to the same file.
-- The scenario tile is the entrance, which the hero steps onto; the blocked tiles are the table's above, as footprint offsets in `bonus-objects.json`. Each shows its name on the map across its tiles, as the dwellings and resource generators do.
+- The scenario tile is the entrance, which the hero steps onto; the blocked tiles are the table's above, as footprint offsets in `game/heroes/bonus-objects.js` (the footprint is read without the game data). Each shows its name on the map across its tiles, as the dwellings and resource generators do.
 - A visit is saved as `fact.hero.bonusObject.visited` (`heroId`, `entityId`, `primarySkills`). The `heroDetails` slice keeps the hero's `visitedBonusObjects` and adds the primary skills to a `bonusPrimarySkills` count that `getHeroPrimarySkills` adds in, as it adds the level-ups. Experience goes through `command.hero.experience.gain.requested`, as the chest's does, so level-ups work the same.
 - A beaten hero hired again starts over, as with their level and skills (2026-10-26-defeated-hero.md): the bonuses and the visited list go.
-- The message is the notice the resource generators use: no title, the text, the reward's picture with its amount, OK. The primary skill pictures are the hero box's; experience uses the chest's banner.
-- The right-click popup says what the object gives, then "(Visited)" or "(Not visited)" for the selected hero; the status bar adds the visited line to the name.
+- The message is the notice the resource generators use: no title, the text, the reward's picture with "+1" or "1000" under it, OK. The primary skill pictures are the hero box's icons; experience uses the chest's banner. A Learning Stone's level-up popup comes after its message.
+- The right-click popup says what the object gives ("+1 Attack", "+1000 Experience", our own wording), then "(Visited)" or "(Not visited)" for the selected hero; the status bar reads "Mercenary Camp (Not visited)". The demo map has one of each.
 
 ### Later parts
 

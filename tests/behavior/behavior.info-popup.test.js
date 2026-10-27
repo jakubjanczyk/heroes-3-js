@@ -9,7 +9,8 @@ import {
   expectNoPreview,
   expectPreviewTargetAt,
   holdRightButtonOn,
-  pointerOverTile
+  pointerOverTile,
+  readInfoPopupLines
 } from './adventure-map.utils.js'
 import { readArmySlots } from './adventure-panels.utils.js'
 import { flushMicrotasks, readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
@@ -76,9 +77,7 @@ function queryInfoPopup() {
 }
 
 function expectInfoPopupLines(lines) {
-  const popup = queryInfoPopup()
-  expect(popup).not.toBeNull()
-  expect([...popup.querySelectorAll('p')].map((line) => line.textContent)).toEqual(lines)
+  expect(readInfoPopupLines()).toEqual(lines)
 }
 
 function expectInfoPopupPicture(name) {

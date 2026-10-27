@@ -36,6 +36,7 @@ export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requeste
 export const APP_COMMAND_DWELLING_RECRUIT_REQUESTED = 'command.dwelling.recruit.requested'
 export const APP_COMMAND_RESOURCE_GENERATOR_VISIT_REQUESTED =
   'command.resourceGenerator.visit.requested'
+export const APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED = 'command.bonusObject.visit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
@@ -87,6 +88,7 @@ export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.re
 export const APP_FACT_DWELLING_GUARDS_CHANGED = 'fact.dwelling.guards.changed'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_RESOURCE_GENERATOR_VISITED = 'fact.resourceGenerator.visited'
+export const APP_FACT_HERO_BONUS_OBJECT_VISITED = 'fact.hero.bonusObject.visited'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
@@ -169,6 +171,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_DWELLING_CREATURES_RECRUITED,
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_RESOURCE_GENERATOR_VISITED,
+  APP_FACT_HERO_BONUS_OBJECT_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,

@@ -7,6 +7,7 @@ const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   MINE: 'mines',
   DWELLING: 'dwellings',
   RESOURCE_GENERATOR: 'resourceGenerators',
+  BONUS_OBJECT: 'bonusObjects',
   TOWN: 'towns'
 })
 
@@ -32,12 +33,16 @@ export function getEntityName({ entity, definitions }) {
 }
 
 // What the Heroes 3 status bar says about a map tile: the name of what stands on it,
-// or the terrain name when nothing does. Monsters also get the size of the group ("Pack of Skeletons").
-export function getStatusBarText({ entity, terrainName, definitions }) {
+// or the terrain name when nothing does. Monsters also get the size of the group ("Pack of Skeletons"),
+// and an object each hero uses once whether the selected hero has ("Star Axis (Visited)").
+export function getStatusBarText({ entity, terrainName, definitions, visitedText = null }) {
   if (!entity) {
     return capitalize(terrainName)
   }
 
   const name = getEntityName({ entity, definitions })
-  return entity.kind === 'MONSTER' ? describeMonsterGroup(entity.count, name) : name
+  if (entity.kind === 'MONSTER') {
+    return describeMonsterGroup(entity.count, name)
+  }
+  return visitedText ? `${name} ${visitedText}` : name
 }

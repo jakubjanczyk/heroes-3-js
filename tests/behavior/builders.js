@@ -96,6 +96,14 @@ export const aResourceGenerator = () =>
     placeable
   )
 
+// LEARNING_STONE, MERCENARY_CAMP, MARLETTO_TOWER, STAR_AXIS or GARDEN_OF_REVELATION; the tile is
+// its entrance.
+export const aBonusObject = () =>
+  builder(
+    { id: 'bonus-1', kind: 'BONUS_OBJECT', type: 'MERCENARY_CAMP', tile: { x: 1, y: 0 } },
+    placeable
+  )
+
 // Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience.
 export const aTreasureChest = () =>
   builder(
