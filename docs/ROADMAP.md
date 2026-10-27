@@ -813,9 +813,9 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
 - [x] A beaten hero hired again loses the bonuses and the visited list, as with their level
 
 #### 7.7.2 Choices
-- [ ] **Arena**: +2 Attack or +2 Defense, the hero has to pick one
-- [ ] **School of War**: +1 Attack or +1 Defense for 1000 gold; may leave without paying; too little gold gets a message and the school stays unvisited
-- [ ] **School of Magic**: +1 Power or +1 Knowledge for 1000 gold, as the School of War
+- [x] **Arena**: +2 Attack or +2 Defense, the hero has to pick one
+- [x] **School of War**: +1 Attack or +1 Defense for 1000 gold; may leave without paying; too little gold gets a message and the school stays unvisited
+- [x] **School of Magic**: +1 Power or +1 Knowledge for 1000 gold, as the School of War
 
 #### 7.7.3 Tree of Knowledge
 - [ ] Gives the experience missing for the next level

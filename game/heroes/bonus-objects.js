@@ -7,6 +7,22 @@ const FOOTPRINT_BY_TYPE = Object.freeze({
   MERCENARY_CAMP: Object.freeze([
     { x: -1, y: 0 },
     { x: 1, y: 0 }
+  ]),
+  ARENA: Object.freeze([
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+    { x: -1, y: -1 },
+    { x: 0, y: -1 },
+    { x: 1, y: -1 }
+  ]),
+  SCHOOL_OF_WAR: Object.freeze([
+    { x: -1, y: 0 },
+    { x: -2, y: -1 },
+    { x: -1, y: -1 },
+    { x: 0, y: -1 },
+    { x: 1, y: -1 },
+    { x: -1, y: -2 },
+    { x: 0, y: -2 }
   ])
 })
 
@@ -14,8 +30,22 @@ export function bonusObjectFootprint(type) {
   return FOOTPRINT_BY_TYPE[type] ?? []
 }
 
+export function bonusObjectDefinition(definitions, type) {
+  return definitions?.bonusObjects?.[type] ?? {}
+}
+
 export function bonusObjectGives(definitions, type) {
-  return definitions?.bonusObjects?.[type]?.gives ?? {}
+  return bonusObjectDefinition(definitions, type).gives ?? {}
+}
+
+// The popup's line on what the object gives. An object that offers a choice has its own line,
+// or none, as the Arena.
+export function describeBonusObject(definitions, type) {
+  const { description, choices } = bonusObjectDefinition(definitions, type)
+  if (choices) {
+    return description ? [description] : []
+  }
+  return describeBonus(bonusObjectGives(definitions, type)).map(({ label }) => label)
 }
 
 // What an object gives, as the player reads it: ['+1 Attack'] or ['+1000 Experience'].

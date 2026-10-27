@@ -30,7 +30,7 @@ Objects that look similar but belong elsewhere: the Shrines (a spell, needs 4.8)
 
 ### Tiles on the map
 
-From the game's object table (`Objects.txt`, as the map tool homm3tools ships it; not yet checked against the game's own file). `E` is the entrance, which is blocked and visited, `#` a blocked tile, `.` a tile of the picture that can be walked on; the bottom row is last. Tiles left out of the picture are walkable.
+From the game's object table (`Objects.txt`, as the map tool homm3tools ships it; the game's own file is inside its data archive and not to be found online). `E` is the entrance, which is blocked and visited, `#` a blocked tile, `.` a tile of the picture that can be walked on; the bottom row is last. Tiles left out of the picture are walkable.
 
 | Object | Tiles |
 |---|---|
@@ -67,8 +67,8 @@ The Learning Stone's 1000 experience can level the hero up, with the usual level
 The dialog shows both bonuses as pictures with "+2" or "+1" under them, "or" between them, and the checkmark, disabled until one is picked, as the chest's.
 
 - **Arena** (0, 1). "You enter the arena and face a pack of vicious lions. You handily defeat them, to the wild cheers of the crowd. Impressed by your skill, the aged trainer of gladiators agrees to train you in a skill of your choice." No way out: the hero has to pick one. Visited again: "The Arena guards prevent you from entering. "You've already beaten our best. Begone from here.""
-- **School of War** (158, 159, 160). "The battle-scarred instructor of this school of war grunts as you walk past. For a fee of 1000 gold he can teach you your choice of new attack or defense skills." The dialog also has a cancel button; cancelling costs nothing and leaves the school unvisited. Picking one takes 1000 gold. With less than 1000 gold: "The battle-scarred instructor of this school of war grunts as you walk past. He could teach you some new combat tactics, but he charges 1000 gold, which you currently do not have." with OK only, and the school stays unvisited. Visited again: "The head instructor laughs out loud when you ask to receive more training. "You should be teaching here!" he shouts."
-- **School of Magic** (71, 72, 73). The same with Power and Knowledge. "The tingle of magic fills the air of this school of mystical arts. An acolyte offers to sign you up for the next class for 1000 gold. You will have your choice of increasing your knowledge, or learning to better focus your powers." Too poor: "The tingle of magic fills the air of this school of mystical arts. An acolyte informs you that he could sign you up for the next class, but that you do not have the required tuition of 1000 gold." Visited again: "An old wizard appears out of thin air. "Master," he says, "you have learned all that we could possibly teach you.""
+- **School of War** (158 the offer, 159 visited again, 160 too little gold). "The battle-scarred instructor of this school of war grunts as you walk past. For a fee of 1000 gold he can teach you your choice of new attack or defense skills." The dialog also has a cancel button; cancelling costs nothing and leaves the school unvisited. Picking one takes 1000 gold. With less than 1000 gold: "The battle-scarred instructor of this school of war grunts as you walk past. He could teach you some new combat tactics, but he charges 1000 gold, which you currently do not have." with OK only, and the school stays unvisited. Visited again: "The head instructor laughs out loud when you ask to receive more training. "You should be teaching here!" he shouts."
+- **School of Magic** (71 the offer, 72 visited again, 73 too little gold). The same with Power and Knowledge. "The tingle of magic fills the air of this school of mystical arts. An acolyte offers to sign you up for the next class for 1000 gold. You will have your choice of increasing your knowledge, or learning to better focus your powers." Too poor: "The tingle of magic fills the air of this school of mystical arts. An acolyte informs you that he could sign you up for the next class, but that you do not have the required tuition of 1000 gold." Visited again: "An old wizard appears out of thin air. "Master," he says, "you have learned all that we could possibly teach you.""
 
 ### Tree of Knowledge
 
@@ -114,9 +114,16 @@ Built in five parts, each its own change. Nothing here needs a feature we don't 
 - The message is the notice the resource generators use: no title, the text, the reward's picture with "+1" or "1000" under it, OK. The primary skill pictures are the hero box's icons; experience uses the chest's banner. A Learning Stone's level-up popup comes after its message.
 - The right-click popup says what the object gives ("+1 Attack", "+1000 Experience", our own wording), then "(Visited)" or "(Not visited)" for the selected hero; the status bar reads "Mercenary Camp (Not visited)". The demo map has one of each.
 
+### Part 2 (done)
+
+- `ARENA`, `SCHOOL_OF_WAR` and `SCHOOL_OF_MAGIC` in `game/data/bonus-objects.json` list their `choices` (each a `gives`, e.g. `{ "primarySkills": { "attack": 2 } }`) and the schools their `cost` (`{ "GOLD_PILE": 1000 }`).
+- Entering opens the chest's choice dialog with the object's message, both bonuses as pictures with "+2" or "+1" under them, and the checkmark. The schools' dialog also has a Cancel button (the cross); cancelling costs nothing and leaves the school unvisited. The dialog is a notice with a subject; picking and confirming saves `fact.resources.spent` for the school's gold, then the same `fact.hero.bonusObject.visited` with the picked skill.
+- A school with less than 1000 gold in the treasury shows its too-poor message with OK only and stays unvisited.
+- The popup's line: the Arena has none, as in the game; the schools read "+1 Attack or +1 Defense for 1000 gold" and "+1 Power or +1 Knowledge for 1000 gold" (our own wording, `description` in the data file).
+- The demo map has one of each.
+
 ### Later parts
 
-- **Part 2.** The chest's choice dialog with a cancel button for the schools. Gold is spent through the kingdom's spending (3.4); too little gold gets the message and the object stays unvisited.
 - **Part 3.** Each tree's price is rolled when the world is built (`config.random`) and kept in the world state, so a reload keeps it; a scenario may set `price`.
 - **Part 4.** Each hut's skill is rolled when the world is built, or set by the scenario (`skill`). The player's visited huts are kept per player, so the popup can name the skill.
 - **Part 5.** The level rule with Diplomacy; Diplomacy itself does nothing else yet.

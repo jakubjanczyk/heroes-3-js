@@ -141,6 +141,29 @@ export function readMessageRewards() {
     .map((picture) => picture.getAttribute('aria-label'))
 }
 
+// The bonuses the open message lets the player pick from, e.g. ['+2 Attack', '+2 Defense'].
+export function readMessageChoices() {
+  return within(getInteractionModal())
+    .queryAllByRole('button', { name: /^\+\d+ / })
+    .map((button) => button.getAttribute('aria-label'))
+}
+
+export function readMessageButtons() {
+  return within(getInteractionModal())
+    .getAllByRole('button')
+    .map((button) => button.getAttribute('aria-label'))
+}
+
+export async function pickInMessage(user, choice) {
+  const modal = getInteractionModal()
+  await user.click(within(modal).getByRole('button', { name: choice }))
+  await user.click(within(modal).getByRole('button', { name: 'OK' }))
+}
+
+export async function cancelMessage(user) {
+  await user.click(within(getInteractionModal()).getByRole('button', { name: 'Cancel' }))
+}
+
 export function expectInteractionModalClosed() {
   expect(getInteractionModal()).toBeFalsy()
 }
