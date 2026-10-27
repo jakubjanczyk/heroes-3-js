@@ -3,13 +3,14 @@ import { describe, expect, test } from 'vitest'
 import {
   confirmTileClickByDispatch,
   expectHeroAt,
-  getResourceGeneratorEntity
+  expectResourceGeneratorAt,
+  readResourceGeneratorName
 } from './adventure-map.utils.js'
 import {
   closeInteractionModal,
   endTurns,
   expectResourceTotal,
-  getInteractionModalMessage,
+  readMessage,
   readMessageRewards
 } from './adventure-panels.utils.js'
 import {
@@ -45,74 +46,72 @@ const gameDefinitions = {
 
 // The object's entrance is at (2, 1), the tile left of it is the rest of the object, and the
 // hero stands right below the entrance, so entering it takes one step.
-function aGeneratorScenario(type, heroes = [aHero().at(2, 2)]) {
-  return aScenario()
-    .withSize(5, 3)
-    .withEntities(...heroes, aResourceGenerator().withType(type).at(2, 1))
-    .withDefinitions(gameDefinitions)
-    .build()
-}
-
-async function setupGenerator(type, { random = LOWEST_ROLL, heroes, eventLog } = {}) {
+function setupMapWith(type, { random = LOWEST_ROLL, heroes = [aHero().at(2, 2)], eventLog } = {}) {
   return setupMovementBehaviorApp({
-    loadGameOptions: aGeneratorScenario(type, heroes),
+    loadGameOptions: aScenario()
+      .withSize(5, 3)
+      .withEntities(...heroes, aResourceGenerator().withType(type).at(2, 1))
+      .withDefinitions(gameDefinitions)
+      .build(),
     appConfig: { random },
     eventLog
   })
 }
 
-async function enterAt(x, y) {
+const setupWindmill = (options) => setupMapWith('WINDMILL', options)
+const setupWaterWheel = (options) => setupMapWith('WATER_WHEEL', options)
+const setupMysticalGarden = (options) => setupMapWith('MYSTICAL_GARDEN', options)
+
+async function walkTo(x, y) {
   confirmTileClickByDispatch(x, y)
   await flushMicrotasks()
 }
 
-async function enterGenerator() {
-  await enterAt(2, 1)
-}
+const enterEntrance = () => walkTo(2, 1)
+const enterWindmill = enterEntrance
+const enterWaterWheel = enterEntrance
+const enterMysticalGarden = enterEntrance
 
-async function stepOffAndEnterAgain(user) {
+async function closeMessageAndStepOff(user) {
   await closeInteractionModal(user)
-  await enterAt(2, 2)
-  await enterGenerator()
+  await walkTo(2, 2)
 }
 
-describe('resource generators on the map', () => {
+describe('Windmill, Water Wheel and Mystical Garden', () => {
   test.each([
     { type: 'WINDMILL', name: 'Windmill' },
     { type: 'WATER_WHEEL', name: 'Water Wheel' },
     { type: 'MYSTICAL_GARDEN', name: 'Mystical Garden' }
   ])('shows the $name on the map', async ({ type, name }) => {
-    await setupGenerator(type)
+    await setupMapWith(type)
 
-    const entity = getResourceGeneratorEntity()
-    expect(entity?.textContent).toBe(name)
-    expect(entity?.dataset.tileX).toBe('2')
-    expect(entity?.dataset.tileY).toBe('1')
+    expect(readResourceGeneratorName()).toBe(name)
+    expectResourceGeneratorAt(2, 1)
   })
 
-  test('the hero walks onto the entrance', async () => {
-    await setupGenerator('WINDMILL')
+  test("the hero walks onto the Windmill's entrance", async () => {
+    await setupWindmill()
 
-    await enterGenerator()
+    await enterWindmill()
 
     expectHeroAt(2, 1)
   })
 
-  test('the hero cannot walk onto the rest of the object', async () => {
-    await setupGenerator('WINDMILL', { heroes: [aHero().at(1, 2)] })
+  test('the hero cannot walk onto the rest of the Windmill', async () => {
+    await setupWindmill({ heroes: [aHero().at(1, 2)] })
 
-    await enterAt(1, 1)
+    await walkTo(1, 1)
 
     expectHeroAt(1, 2)
   })
 
   describe('Windmill', () => {
     test("entering shows the keeper's message with what the mill gives", async () => {
-      await setupGenerator('WINDMILL')
+      await setupWindmill()
 
-      await enterGenerator()
+      await enterWindmill()
 
-      expect(getInteractionModalMessage().textContent).toBe(WINDMILL_GIVES)
+      expect(readMessage()).toBe(WINDMILL_GIVES)
       expect(readMessageRewards()).toEqual(['3 Ore'])
     })
 
@@ -122,91 +121,93 @@ describe('resource generators on the map', () => {
       { roll: 'lowest', random: LOWEST_ROLL, resource: 'Ore', amount: 3 },
       { roll: 'highest', random: HIGHEST_ROLL, resource: 'Gems', amount: 6 }
     ])('on the $roll roll gives $amount $resource', async ({ random, resource, amount }) => {
-      await setupGenerator('WINDMILL', { random })
+      await setupWindmill({ random })
 
-      await enterGenerator()
+      await enterWindmill()
 
       expectResourceTotal(resource, amount)
     })
 
     test('entering again the same week says there are no resources', async () => {
-      const { user } = await setupGenerator('WINDMILL')
-      await enterGenerator()
+      const { user } = await setupWindmill()
+      await enterWindmill()
 
-      await stepOffAndEnterAgain(user)
+      await closeMessageAndStepOff(user)
+      await enterWindmill()
 
-      expect(getInteractionModalMessage().textContent).toBe(WINDMILL_EMPTY)
+      expect(readMessage()).toBe(WINDMILL_EMPTY)
       expect(readMessageRewards()).toEqual([])
     })
 
     test('entering again the same week gives nothing', async () => {
-      const { user } = await setupGenerator('WINDMILL')
-      await enterGenerator()
+      const { user } = await setupWindmill()
+      await enterWindmill()
 
-      await stepOffAndEnterAgain(user)
+      await closeMessageAndStepOff(user)
+      await enterWindmill()
 
       expectResourceTotal('Ore', 3)
     })
 
     test('another hero entering the same week gets nothing', async () => {
-      const { user } = await setupGenerator('WINDMILL', {
+      const { user } = await setupWindmill({
         heroes: [
           aHero().withName('Sir Christian').at(2, 2),
           aHero().withId('hero-2').withName('Valeska').at(1, 2)
         ]
       })
-      await enterGenerator()
+      await enterWindmill()
       await closeInteractionModal(user)
-      await enterAt(3, 2)
+      await walkTo(3, 2)
 
       await clickHeroInHeroList(user, 'Valeska')
-      await enterGenerator()
+      await enterWindmill()
 
-      expect(getInteractionModalMessage().textContent).toBe(WINDMILL_EMPTY)
+      expect(readMessage()).toBe(WINDMILL_EMPTY)
     })
 
     test('a new week gives resources again', async () => {
-      const { user } = await setupGenerator('WINDMILL')
-      await enterGenerator()
-      await closeInteractionModal(user)
-      await enterAt(2, 2)
+      const { user } = await setupWindmill()
+      await enterWindmill()
+      await closeMessageAndStepOff(user)
 
       await endTurns(user, 7)
-      await enterGenerator()
+      await enterWindmill()
 
-      expect(getInteractionModalMessage().textContent).toBe(WINDMILL_GIVES)
+      expect(readMessage()).toBe(WINDMILL_GIVES)
       expectResourceTotal('Ore', 6)
     })
   })
 
   describe('Water Wheel', () => {
     test('gives 500 gold in the first week', async () => {
-      await setupGenerator('WATER_WHEEL')
+      await setupWaterWheel()
 
-      await enterGenerator()
+      await enterWaterWheel()
 
-      expect(getInteractionModalMessage().textContent).toBe(WATER_WHEEL_GIVES)
+      expect(readMessage()).toBe(WATER_WHEEL_GIVES)
       expect(readMessageRewards()).toEqual(['500 Gold'])
       expectResourceTotal('Gold', 500)
     })
 
     test('gives 1000 gold from the second week', async () => {
-      const { user } = await setupGenerator('WATER_WHEEL')
+      const { user } = await setupWaterWheel()
 
       await endTurns(user, 7)
-      await enterGenerator()
+      await enterWaterWheel()
 
       expect(readMessageRewards()).toEqual(['1000 Gold'])
       expectResourceTotal('Gold', 1000)
     })
 
     test('entering again the same week says there is no gold', async () => {
-      const { user } = await setupGenerator('WATER_WHEEL')
-      await enterGenerator()
+      const { user } = await setupWaterWheel()
+      await enterWaterWheel()
 
-      await stepOffAndEnterAgain(user)
+      await closeMessageAndStepOff(user)
+      await enterWaterWheel()
 
-      expect(getInteractionModalMessage().textContent).toBe(WATER_WHEEL_EMPTY)
+      expect(readMessage()).toBe(WATER_WHEEL_EMPTY)
       expectResourceTotal('Gold', 500)
     })
   })
@@ -216,22 +217,23 @@ describe('resource generators on the map', () => {
       { roll: 'lowest', random: LOWEST_ROLL, reward: '5 Gems', resource: 'Gems', amount: 5 },
       { roll: 'highest', random: HIGHEST_ROLL, reward: '500 Gold', resource: 'Gold', amount: 500 }
     ])('on the $roll roll gives $reward', async ({ random, reward, resource, amount }) => {
-      await setupGenerator('MYSTICAL_GARDEN', { random })
+      await setupMysticalGarden({ random })
 
-      await enterGenerator()
+      await enterMysticalGarden()
 
-      expect(getInteractionModalMessage().textContent).toBe(MYSTICAL_GARDEN_GIVES)
+      expect(readMessage()).toBe(MYSTICAL_GARDEN_GIVES)
       expect(readMessageRewards()).toEqual([reward])
       expectResourceTotal(resource, amount)
     })
 
     test('entering again the same week the leprechaun eludes the hero', async () => {
-      const { user } = await setupGenerator('MYSTICAL_GARDEN')
-      await enterGenerator()
+      const { user } = await setupMysticalGarden()
+      await enterMysticalGarden()
 
-      await stepOffAndEnterAgain(user)
+      await closeMessageAndStepOff(user)
+      await enterMysticalGarden()
 
-      expect(getInteractionModalMessage().textContent).toBe(MYSTICAL_GARDEN_EMPTY)
+      expect(readMessage()).toBe(MYSTICAL_GARDEN_EMPTY)
       expectResourceTotal('Gems', 5)
     })
   })
@@ -239,15 +241,14 @@ describe('resource generators on the map', () => {
   describe('reload', () => {
     test('what the Windmill gave is kept and it stays empty for the week', async () => {
       const session = { eventLog: createMemoryEventLog() }
-      const { user } = await setupGenerator('WINDMILL', session)
-      await enterGenerator()
-      await closeInteractionModal(user)
-      await enterAt(2, 2)
+      const { user } = await setupWindmill(session)
+      await enterWindmill()
+      await closeMessageAndStepOff(user)
 
-      await setupGenerator('WINDMILL', { ...session, random: HIGHEST_ROLL })
-      await enterGenerator()
+      await setupWindmill({ ...session, random: HIGHEST_ROLL })
+      await enterWindmill()
 
-      expect(getInteractionModalMessage().textContent).toBe(WINDMILL_EMPTY)
+      expect(readMessage()).toBe(WINDMILL_EMPTY)
       expectResourceTotal('Ore', 3)
     })
   })

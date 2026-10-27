@@ -52,8 +52,19 @@ export function getDwellingEntity(entityId = 'dwelling-1') {
   return document.querySelector(`.entity--dwelling[data-entity-id="${entityId}"]`)
 }
 
-export function getResourceGeneratorEntity(entityId = 'generator-1') {
+function getResourceGeneratorEntity(entityId = 'generator-1') {
   return document.querySelector(`.entity--resource-generator[data-entity-id="${entityId}"]`)
+}
+
+// The name written on a windmill, water wheel or garden while it has no picture.
+export function readResourceGeneratorName(entityId = 'generator-1') {
+  return getResourceGeneratorEntity(entityId)?.textContent ?? null
+}
+
+export function expectResourceGeneratorAt(x, y, entityId = 'generator-1') {
+  const entity = getResourceGeneratorEntity(entityId)
+  expect(entity?.dataset.tileX).toBe(String(x))
+  expect(entity?.dataset.tileY).toBe(String(y))
 }
 
 export function expectDwellingAt(x, y, entityId = 'dwelling-1') {
