@@ -8,7 +8,6 @@ export function weeklyGrowthOfDwelling(dwellingType, definitions) {
   return dwellingCreature(dwellingType, definitions)?.growth ?? 0
 }
 
-// Level 1 creatures cost nothing at a dwelling on the map.
 export function isFreeDwelling(dwellingType, definitions) {
   return dwellingCreature(dwellingType, definitions)?.tier === 1
 }

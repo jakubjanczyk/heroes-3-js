@@ -34,8 +34,6 @@ function describeCost(cost = {}, resources = {}) {
     }))
 }
 
-// A creature in the recruit window: its cost and how many the player can recruit (no more than are
-// available, no more than the player can pay for).
 export function describeRecruit({ creature, monsters, resources, available, treasury }) {
   const { cost, namePlural, name } = monsters[creature]
   return {

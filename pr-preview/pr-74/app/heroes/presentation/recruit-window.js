@@ -1,4 +1,3 @@
-// The upgraded creature, listed last, is chosen first.
 export function openRecruitWindow({ document, container, offer, onRecruit, onCancel }) {
   const backdrop = document.getElementById('recruit-window-template').content.firstElementChild
   const recruitWindow = backdrop.cloneNode(true)

@@ -33,7 +33,6 @@ export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
 export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
 export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
 export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requested'
-// Recruiting at a dwelling on the map; without a count, a free dwelling gives all it has.
 export const APP_COMMAND_DWELLING_RECRUIT_REQUESTED = 'command.dwelling.recruit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
@@ -82,7 +81,6 @@ export const APP_FACT_TOWN_CREATURES_RECRUITED = 'fact.town.creatures.recruited'
 export const APP_FACT_TOWN_GARRISON_CHANGED = 'fact.town.garrison.changed'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_DWELLING_FLAGGED = 'fact.dwelling.flagged'
-// Creatures recruited from a dwelling on the map, leaving fewer there until the week ends.
 export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.recruited'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
@@ -127,9 +125,7 @@ export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
 export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
-// A hero entered a dwelling on the map whose creatures are bought in the recruit window.
 export const APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED = 'ui.dwelling.recruit.openRequested'
-// The recruit window over the map: the dwelling's creature, how many are available and what they cost.
 export const APP_UI_DWELLING_RECRUIT_UPDATED = 'ui.dwelling.recruit.updated'
 export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'

@@ -93,7 +93,6 @@ export const registerDwellingsModule = defineModule(
       ]
     }
 
-    // False when the hero's army has no room for them.
     function joinArmy({ hero, entityId, offer, count, isFree }) {
       const { creature } = offer.recruit
       const army = addToArmy(hero.army, creature, count)
@@ -106,7 +105,6 @@ export const registerDwellingsModule = defineModule(
       return true
     }
 
-    // A free dwelling gives every creature it has.
     function takeFreeCreatures({ hero, entityId, offer }) {
       const count = offer.available
       const stack = describeStack({ creature: offer.recruit.creature, count }, definitions)
