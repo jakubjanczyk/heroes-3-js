@@ -70,6 +70,11 @@ function ensureModalContent(host) {
               <path d="M5 8.5 L9.5 13 L19 3" />
             </svg>
           </button>
+          <button class="interaction-modal__ok-button interaction-modal__no-button" type="button" aria-label="No" aria-keyshortcuts="Escape" hidden>
+            <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true">
+              <path d="M7 2 L17 14 M17 2 L7 14" />
+            </svg>
+          </button>
         </div>
       </article>
     </dialog>
@@ -85,6 +90,7 @@ function ensureModalContent(host) {
   host._choicesEl = host.querySelector('.interaction-modal__choices')
   host._surfaceEl = host.querySelector('.interaction-modal__surface')
   host._okButtonEl = host.querySelector('.interaction-modal__ok-button')
+  host._noButtonEl = host.querySelector('.interaction-modal__no-button')
 
   host.addEventListener('click', (event) => {
     event.stopPropagation()
@@ -124,6 +130,15 @@ function ensureModalContent(host) {
 
   host._okButtonEl?.addEventListener('click', (event) => {
     event.stopPropagation()
+    if (host._isQuestion) {
+      host._choice = 'yes'
+    }
+    host.closeInteraction()
+  })
+
+  host._noButtonEl?.addEventListener('click', (event) => {
+    event.stopPropagation()
+    host._choice = 'no'
     host.closeInteraction()
   })
 }
@@ -153,6 +168,17 @@ function renderDetails(host, details) {
       return line
     })
   )
+}
+
+function renderQuestionButtons(host, isQuestion) {
+  host._isQuestion = isQuestion
+  host._noButtonEl.hidden = !isQuestion
+  host._okButtonEl.setAttribute('aria-label', isQuestion ? 'Yes' : 'OK')
+  if (isQuestion) {
+    host._okButtonEl.setAttribute('aria-keyshortcuts', 'Enter')
+  } else {
+    host._okButtonEl.removeAttribute('aria-keyshortcuts')
+  }
 }
 
 function renderChoicePicture(document, { picture, initials }) {
@@ -259,6 +285,8 @@ function defineInteractionModalElement(window) {
       this._choice = null
       this._surfaceEl = null
       this._okButtonEl = null
+      this._noButtonEl = null
+      this._isQuestion = false
       this._isClosing = false
       this._isFinalizingClose = false
       this._transitionMs = 260
@@ -339,7 +367,8 @@ function defineInteractionModalElement(window) {
       message = '',
       detailsPicture = null,
       details = [],
-      choices = []
+      choices = [],
+      isQuestion = false
     } = {}) {
       configureModalHost(this, { transitionMs: this._transitionMs })
       this._clearCloseTimer()
@@ -365,6 +394,7 @@ function defineInteractionModalElement(window) {
       renderDetailsPicture(this, detailsPicture)
       renderDetails(this, details)
       renderChoices(this, choices)
+      renderQuestionButtons(this, isQuestion)
 
       showDialog(this._dialog)
     }

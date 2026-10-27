@@ -587,6 +587,10 @@
   background: rgb(0 0 0 / 0.6);
 }
 
+.game-shell > .town-hall-backdrop {
+  z-index: 30;
+}
+
 .town-hall {
   position: relative;
   display: grid;
