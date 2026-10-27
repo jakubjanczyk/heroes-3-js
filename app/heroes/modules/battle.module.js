@@ -27,10 +27,11 @@ import {
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
+import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
+import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
@@ -51,12 +52,15 @@ import {
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_TURN_ENDED,
+  APP_FACT_DWELLING_FLAGGED,
+  APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_WORLD_READY,
   APP_UI_BATTLE_UPDATED,
+  APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED
 } from '../../events.js'
@@ -66,6 +70,27 @@ const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
 
 const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
+
+// A battle started before battles named their defender was against a monster on the map.
+function defenderOf(started) {
+  return started.defender ?? { creature: started.entityType, count: started.count }
+}
+
+const isDwellingGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_DWELLING_GUARDS
+
+function defenderArmy({ started, heroArmy, definitions }) {
+  const defender = defenderOf(started)
+  if (isDwellingGuards(started)) {
+    return [{ creature: defender.creature, count: defender.count }]
+  }
+
+  return splitMonster({
+    monster: { ...defender, stacks: started.stacks },
+    heroArmy,
+    tile: started.tile,
+    definitions
+  })
+}
 
 const sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
@@ -100,7 +125,7 @@ export const registerBattleModule = defineModule(
         battle,
         outcome,
         heroName,
-        monster: { creature: started.entityType, count: started.count },
+        monster: defenderOf(started),
         experience
       })
     }
@@ -151,25 +176,43 @@ export const registerBattleModule = defineModule(
       })
     }
 
+    // Beaten guards leave the dwelling to the hero's player, who may recruit there straight away.
     function winBattle() {
       const { entityId, entityType, tile } = started
       const experience = getExperienceForWin(battle)
       const army = getHeroArmyAfterBattle(battle, heroById(state.get(), heroId)?.army ?? [])
+      const guarded = isDwellingGuards(started)
       emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'attacker' })
       emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
-      emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
-      emit(APP_FACT_ENTITY_REMOVED, { entityId })
+      if (guarded) {
+        emit(APP_FACT_DWELLING_GUARDS_CHANGED, { entityId, count: 0 })
+        emit(APP_FACT_DWELLING_FLAGGED, {
+          entityId,
+          entityType,
+          owner: heroOwner(state.get(), heroId)
+        })
+      } else {
+        emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
+        emit(APP_FACT_ENTITY_REMOVED, { entityId })
+      }
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
+      if (guarded) {
+        emit(APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED, { heroId, entityId })
+      }
     }
 
-    // Beaten or retreated: the hero leaves the map and the monster keeps what it has left.
+    // Beaten or retreated: the hero leaves the map and the defender keeps what it has left.
     function loseBattle() {
       const { entityId } = started
+      const guarded = isDwellingGuards(started)
       const count = battle.stacks
         .filter((stack) => stack.side === 'defender')
         .reduce((sum, stack) => sum + stack.count, 0)
       emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'defender' })
-      emit(APP_FACT_MONSTER_COUNT_CHANGED, { entityId, count })
+      emit(guarded ? APP_FACT_DWELLING_GUARDS_CHANGED : APP_FACT_MONSTER_COUNT_CHANGED, {
+        entityId,
+        count
+      })
       emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
     }
 
@@ -353,16 +396,7 @@ export const registerBattleModule = defineModule(
             battle = createBattle({
               heroArmy: hero?.army,
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
-              monsterArmy: splitMonster({
-                monster: {
-                  creature: started.entityType,
-                  count: started.count,
-                  stacks: started.stacks
-                },
-                heroArmy: hero?.army,
-                tile: started.tile,
-                definitions
-              }),
+              monsterArmy: defenderArmy({ started, heroArmy: hero?.army, definitions }),
               definitions
             })
             showBattle()
@@ -598,9 +632,12 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_ENDED,
       APP_FACT_MONSTER_DEFEATED,
       APP_FACT_MONSTER_COUNT_CHANGED,
+      APP_FACT_DWELLING_GUARDS_CHANGED,
+      APP_FACT_DWELLING_FLAGGED,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_ENTITY_REMOVED,
-      APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED
+      APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+      APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED
     ]
   }
 )

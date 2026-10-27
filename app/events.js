@@ -82,6 +82,7 @@ export const APP_FACT_TOWN_GARRISON_CHANGED = 'fact.town.garrison.changed'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_DWELLING_FLAGGED = 'fact.dwelling.flagged'
 export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.recruited'
+export const APP_FACT_DWELLING_GUARDS_CHANGED = 'fact.dwelling.guards.changed'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
@@ -163,6 +164,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_MINE_CAPTURED,
   APP_FACT_DWELLING_FLAGGED,
   APP_FACT_DWELLING_CREATURES_RECRUITED,
+  APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,

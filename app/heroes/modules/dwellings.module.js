@@ -3,7 +3,7 @@ import { describeStack } from '../../../game/heroes/hero-army.js'
 import { dwellingCreature, isFreeDwelling } from '../../../game/heroes/map-dwellings.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
-import { dwellingAvailable } from '../../../game/heroes/state/map-objects.js'
+import { dwellingAvailable, dwellingGuardsAgainst } from '../../../game/heroes/state/map-objects.js'
 import { activePlayer, heroOwner } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
@@ -144,7 +144,8 @@ export const registerDwellingsModule = defineModule(
             const { entityId, heroId } = event.detail
             const dwelling = dwellingOf(entityId)
             const owner = heroOwner(state.get(), heroId)
-            if (dwelling && owner && dwelling.owner !== owner) {
+            const guarded = dwellingGuardsAgainst(state.get(), entityId, owner) > 0
+            if (dwelling && owner && dwelling.owner !== owner && !guarded) {
               emit(APP_FACT_DWELLING_FLAGGED, { entityId, entityType: dwelling.type, owner })
             }
           }
