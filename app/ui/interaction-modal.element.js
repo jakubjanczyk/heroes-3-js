@@ -65,6 +65,7 @@ function ensureModalContent(host) {
         <svg class="interaction-modal__details-picture" role="img" hidden><path /></svg>
         <div class="interaction-modal__details"></div>
         <div class="interaction-modal__choices"></div>
+        <div class="interaction-modal__choices interaction-modal__rewards"></div>
         <div class="interaction-modal__actions">
           <button class="interaction-modal__ok-button" type="button" aria-label="OK">
             <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true">
@@ -89,6 +90,7 @@ function ensureModalContent(host) {
   host._portraitEl = host.querySelector('.interaction-modal__portrait')
   host._detailsPictureEl = host.querySelector('.interaction-modal__details-picture')
   host._choicesEl = host.querySelector('.interaction-modal__choices')
+  host._rewardsEl = host.querySelector('.interaction-modal__rewards')
   host._surfaceEl = host.querySelector('.interaction-modal__surface')
   host._okButtonEl = host.querySelector('.interaction-modal__ok-button')
   host._noButtonEl = host.querySelector('.interaction-modal__no-button')
@@ -252,6 +254,22 @@ function renderChoices(host, choices) {
   )
 }
 
+// What the message gives, e.g. a pile of ore with its amount; nothing to pick, unlike choices.
+function renderRewards(host, rewards) {
+  const document = host.ownerDocument
+  host._rewardsEl.hidden = rewards.length === 0
+  host._rewardsEl.replaceChildren(
+    ...rewards.map((reward) => {
+      const item = document.createElement('span')
+      item.className = 'interaction-modal__choice'
+      item.setAttribute('role', 'img')
+      item.setAttribute('aria-label', reward.label)
+      item.append(renderChoicePicture(document, reward), ...renderChoiceCaption(document, reward))
+      return item
+    })
+  )
+}
+
 function applyTransitionMs(host) {
   setStyleVar(host._dialog, '--interaction-modal-transition-duration', `${host._transitionMs}ms`)
 }
@@ -283,6 +301,7 @@ function defineInteractionModalElement(window) {
       this._messageEl = null
       this._detailsEl = null
       this._choicesEl = null
+      this._rewardsEl = null
       this._choice = null
       this._surfaceEl = null
       this._okButtonEl = null
@@ -369,6 +388,7 @@ function defineInteractionModalElement(window) {
       detailsPicture = null,
       details = [],
       choices = [],
+      rewards = [],
       isQuestion = false
     } = {}) {
       configureModalHost(this, { transitionMs: this._transitionMs })
@@ -396,6 +416,7 @@ function defineInteractionModalElement(window) {
       renderDetailsPicture(this, detailsPicture)
       renderDetails(this, details)
       renderChoices(this, choices)
+      renderRewards(this, rewards)
       renderQuestionButtons(this, isQuestion)
 
       showDialog(this._dialog)

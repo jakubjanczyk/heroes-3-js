@@ -6,6 +6,7 @@ const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   RESOURCE: 'resources',
   MINE: 'mines',
   DWELLING: 'dwellings',
+  RESOURCE_GENERATOR: 'resourceGenerators',
   TOWN: 'towns'
 })
 

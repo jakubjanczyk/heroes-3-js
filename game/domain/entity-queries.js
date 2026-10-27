@@ -18,6 +18,10 @@ export function isDwelling(entity) {
   return isEntityKind(entity, 'DWELLING')
 }
 
+export function isResourceGenerator(entity) {
+  return isEntityKind(entity, 'RESOURCE_GENERATOR')
+}
+
 export function findHero(entities) {
   if (!Array.isArray(entities)) {
     return null

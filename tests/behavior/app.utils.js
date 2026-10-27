@@ -126,6 +126,7 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
     'buildings.json': definitions.buildings,
     'mines.json': definitions.mines,
     'dwellings.json': definitions.dwellings,
+    'resource-generators.json': definitions.resourceGenerators,
     'tavern.json': definitions.tavern,
     'heroes.json': definitions.heroes,
     'secondary-skills.json': definitions.secondarySkills

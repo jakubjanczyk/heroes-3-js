@@ -52,6 +52,10 @@ export function getDwellingEntity(entityId = 'dwelling-1') {
   return document.querySelector(`.entity--dwelling[data-entity-id="${entityId}"]`)
 }
 
+export function getResourceGeneratorEntity(entityId = 'generator-1') {
+  return document.querySelector(`.entity--resource-generator[data-entity-id="${entityId}"]`)
+}
+
 export function expectDwellingAt(x, y, entityId = 'dwelling-1') {
   const dwellingEntity = getDwellingEntity(entityId)
   expect(dwellingEntity?.dataset.tileX).toBe(String(x))

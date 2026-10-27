@@ -89,6 +89,13 @@ export const aDwelling = () =>
     })
   )
 
+// WINDMILL, WATER_WHEEL or MYSTICAL_GARDEN; the tile is its entrance, the left of its two tiles.
+export const aResourceGenerator = () =>
+  builder(
+    { id: 'generator-1', kind: 'RESOURCE_GENERATOR', type: 'WINDMILL', tile: { x: 1, y: 0 } },
+    placeable
+  )
+
 // Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience.
 export const aTreasureChest = () =>
   builder(

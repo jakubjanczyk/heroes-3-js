@@ -25,6 +25,7 @@ import {
   aMine,
   aMonster,
   aResource,
+  aResourceGenerator,
   aScenario,
   aTown,
   aTreasureChest
@@ -37,7 +38,8 @@ const gameDefinitions = {
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   mines: readGameData('mines.json'),
-  dwellings: readGameData('dwellings.json')
+  dwellings: readGameData('dwellings.json'),
+  resourceGenerators: readGameData('resource-generators.json')
 }
 
 async function setupApp(scenario) {
@@ -212,6 +214,13 @@ describe('adventure map cursor behavior', () => {
       scenario: () => aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), aTown().at(2, 2)),
       x: 2,
       y: 2
+    },
+    {
+      name: "a windmill's entrance",
+      scenario: () =>
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aResourceGenerator().at(2, 1)),
+      x: 2,
+      y: 1
     }
   ])('given $name when the mouse is over it then the cursor is the rearing horse', async ({
     scenario,
@@ -244,6 +253,13 @@ describe('adventure map cursor behavior', () => {
         aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aDwelling().at(2, 1)),
       x: 1,
       y: 0
+    },
+    {
+      name: 'windmill',
+      scenario: () =>
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aResourceGenerator().at(2, 1)),
+      x: 3,
+      y: 1
     }
   ])('given the building of a $name when the mouse is over it then the cursor is the arrow', async ({
     scenario,
