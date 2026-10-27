@@ -56,6 +56,8 @@ export const kingdomsSlice = {
       changeResources(kingdoms, finderOf(previousState, heroId), { [entityType]: amount }),
     'fact.treasureChest.opened': (kingdoms, { heroId, resources }, { previousState }) =>
       resources ? changeResources(kingdoms, finderOf(previousState, heroId), resources) : kingdoms,
+    'fact.resourceGenerator.visited': (kingdoms, { heroId, resources }, { previousState }) =>
+      changeResources(kingdoms, finderOf(previousState, heroId), resources),
     'fact.resources.spent': (kingdoms, { player = DEFAULT_PLAYER, resources }) =>
       changeResources(kingdoms, player, resources, -1),
     'fact.turn.ended': payIncome

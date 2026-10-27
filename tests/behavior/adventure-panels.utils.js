@@ -129,6 +129,17 @@ export function expectInteractionModalOpen(messageIncludes = null) {
   return modal
 }
 
+export function readMessage() {
+  return getInteractionModalMessage()?.textContent ?? null
+}
+
+// What the open message gives, as the player reads it under its pictures, e.g. ['3 Ore'].
+export function readMessageRewards() {
+  return within(getInteractionModal())
+    .queryAllByRole('img', { name: /^\d+ / })
+    .map((picture) => picture.getAttribute('aria-label'))
+}
+
 export function expectInteractionModalClosed() {
   expect(getInteractionModal()).toBeFalsy()
 }

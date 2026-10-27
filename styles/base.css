@@ -104,6 +104,7 @@
   --z-layer-entities: 10;
   --z-entity-mine: 18;
   --z-entity-dwelling: 18;
+  --z-entity-resource-generator: 18;
   --z-entity-town: 20;
   --z-entity-hero: 30;
   --z-layer-fog: 35;

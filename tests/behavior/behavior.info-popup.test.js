@@ -21,6 +21,7 @@ import {
   aMine,
   aMonster,
   aResource,
+  aResourceGenerator,
   aScenario,
   aTown
 } from './builders.js'
@@ -34,7 +35,8 @@ const gameDefinitions = {
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   mines: readGameData('mines.json'),
-  dwellings: readGameData('dwellings.json')
+  dwellings: readGameData('dwellings.json'),
+  resourceGenerators: readGameData('resource-generators.json')
 }
 
 async function setupApp(scenario) {
@@ -150,6 +152,18 @@ describe('info popup behavior', () => {
       await holdRightButtonOn(user, 2, 1)
 
       expectInfoPopupLines(['Portal of Glory'])
+    })
+
+    test('given a mystical garden when the player holds the right button on it then the popup shows its name', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(0, 2), aResourceGenerator().withType('MYSTICAL_GARDEN').at(2, 1))
+      )
+
+      await holdRightButtonOn(user, 2, 1)
+
+      expectInfoPopupLines(['Mystical Garden'])
     })
 
     test('given a dwelling the hero flagged when the player holds the right button on it then the popup shows its name and the player colour', async () => {

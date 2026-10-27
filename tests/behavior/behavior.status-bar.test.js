@@ -18,6 +18,7 @@ import {
   aMine,
   aMonster,
   aResource,
+  aResourceGenerator,
   aScenario,
   aTown
 } from './builders.js'
@@ -40,7 +41,8 @@ const gameDefinitions = {
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   mines: readGameData('mines.json'),
-  dwellings: readGameData('dwellings.json')
+  dwellings: readGameData('dwellings.json'),
+  resourceGenerators: readGameData('resource-generators.json')
 }
 
 async function setupApp(scenario, { viewportSize } = {}) {
@@ -170,6 +172,24 @@ describe('status bar behavior', () => {
     await hoverTile(user, x, y)
 
     expectStatusBarText('Griffin Tower')
+  })
+
+  test.each([
+    { part: 'entrance', x: 2, y: 1 },
+    { part: 'other tile', x: 1, y: 1 }
+  ])('given a water wheel when the mouse is over its $part then the status bar shows its name', async ({
+    x,
+    y
+  }) => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(5, 3)
+        .withEntities(aHero().at(0, 2), aResourceGenerator().withType('WATER_WHEEL').at(2, 1))
+    )
+
+    await hoverTile(user, x, y)
+
+    expectStatusBarText('Water Wheel')
   })
 
   test.each([
