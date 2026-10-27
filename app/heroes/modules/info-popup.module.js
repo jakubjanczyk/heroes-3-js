@@ -1,3 +1,4 @@
+import { bonusObjectVisitedText } from '../../../game/heroes/bonus-objects.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
@@ -105,7 +106,8 @@ export const registerInfoPopupModule = defineModule(
         entity,
         terrainName: mapObjects.getTerrainName(tile),
         definitions,
-        ownerColorName: owner ? capitalize(owner) : null
+        ownerColorName: owner ? capitalize(owner) : null,
+        visitedText: bonusObjectVisitedText(state.get(), entity)
       })
       for (const line of lines) {
         fillLine(line)

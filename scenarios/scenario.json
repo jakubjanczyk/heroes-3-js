@@ -1182,6 +1182,51 @@
         "x": 3,
         "y": 13
       }
+    },
+    {
+      "id": "bonus-1",
+      "kind": "BONUS_OBJECT",
+      "type": "LEARNING_STONE",
+      "tile": {
+        "x": 2,
+        "y": 5
+      }
+    },
+    {
+      "id": "bonus-2",
+      "kind": "BONUS_OBJECT",
+      "type": "MERCENARY_CAMP",
+      "tile": {
+        "x": 4,
+        "y": 1
+      }
+    },
+    {
+      "id": "bonus-3",
+      "kind": "BONUS_OBJECT",
+      "type": "MARLETTO_TOWER",
+      "tile": {
+        "x": 16,
+        "y": 5
+      }
+    },
+    {
+      "id": "bonus-4",
+      "kind": "BONUS_OBJECT",
+      "type": "STAR_AXIS",
+      "tile": {
+        "x": 3,
+        "y": 16
+      }
+    },
+    {
+      "id": "bonus-5",
+      "kind": "BONUS_OBJECT",
+      "type": "GARDEN_OF_REVELATION",
+      "tile": {
+        "x": 18,
+        "y": 3
+      }
     }
   ]
 }

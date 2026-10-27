@@ -1,3 +1,4 @@
+import { bonusObjectVisitedText } from '../../../game/heroes/bonus-objects.js'
 import { getStatusBarText } from '../../../game/heroes/status-bar-text.js'
 import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { APP_FACT_WORLD_READY, APP_UI_TILE_HOVERED } from '../../events.js'
@@ -34,11 +35,13 @@ export const registerStatusBarModule = defineModule(
               return
             }
 
+            const entity = mapObjects.getEntityAt(tile)
             showText(
               getStatusBarText({
-                entity: mapObjects.getEntityAt(tile),
+                entity,
                 terrainName: mapObjects.getTerrainName(tile),
-                definitions
+                definitions,
+                visitedText: bonusObjectVisitedText(state.get(), entity)
               })
             )
           }

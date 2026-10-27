@@ -17,6 +17,7 @@
     <link rel="preload" href="./game/data/mines.json" as="fetch" crossorigin="anonymous" />
     <link rel="preload" href="./game/data/dwellings.json" as="fetch" crossorigin="anonymous" />
     <link rel="preload" href="./game/data/resource-generators.json" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="./game/data/bonus-objects.json" as="fetch" crossorigin="anonymous" />
     <link rel="preload" href="./styles/base.css" as="style" />
     <link rel="preload" href="./styles/elements/app-shell.css" as="style" />
     <link rel="preload" href="./engine/layers/layer-containers.css" as="style" />
@@ -53,9 +54,12 @@
     <link rel="modulepreload" href="./game/domain/value-objects/movement-points.js" />
     <link rel="modulepreload" href="./app/heroes/content.js" />
     <link rel="modulepreload" href="./game/heroes/content.js" />
-    <link rel="modulepreload" href="./game/heroes/entity-behaviors/dwelling.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/bonus-object.js" />
+    <link rel="modulepreload" href="./game/heroes/bonus-objects.js" />
     <link rel="modulepreload" href="./game/state/queries.js" />
+    <link rel="modulepreload" href="./game/heroes/primary-skills.js" />
     <link rel="modulepreload" href="./game/heroes/interaction-kinds.js" />
+    <link rel="modulepreload" href="./game/heroes/entity-behaviors/dwelling.js" />
     <link rel="modulepreload" href="./game/heroes/map-dwellings.js" />
     <link rel="modulepreload" href="./game/heroes/state/map-objects.js" />
     <link rel="modulepreload" href="./game/heroes/calendar.js" />
@@ -69,7 +73,6 @@
     <link rel="modulepreload" href="./game/heroes/entity-behaviors/treasure-chest.js" />
     <link rel="modulepreload" href="./game/heroes/treasure-chest.js" />
     <link rel="modulepreload" href="./game/heroes/movement-rules.js" />
-    <link rel="modulepreload" href="./game/heroes/primary-skills.js" />
     <link rel="modulepreload" href="./game/heroes/road-types.js" />
     <link rel="modulepreload" href="./game/heroes/state/fog.js" />
     <link rel="modulepreload" href="./game/state/fog.js" />
@@ -118,6 +121,8 @@
     <link rel="modulepreload" href="./game/heroes/battle-results.js" />
     <link rel="modulepreload" href="./game/heroes/monster-stacks.js" />
     <link rel="modulepreload" href="./app/heroes/modules/battle-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/bonus-objects.module.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/primary-skill-icons.js" />
     <link rel="modulepreload" href="./app/heroes/modules/dwelling-recruit-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/recruit-window.js" />
     <link rel="modulepreload" href="./app/heroes/modules/dwellings.module.js" />
@@ -130,7 +135,6 @@
     <link rel="modulepreload" href="./app/heroes/presentation/info-box-view.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/secondary-skill-icon.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-levels.module.js" />
-    <link rel="modulepreload" href="./app/heroes/presentation/primary-skill-icons.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-panel.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-screen-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hud.module.js" />
@@ -176,8 +180,9 @@
     <link rel="modulepreload" href="./app/heroes/modules/turn.module.js" />
     <link rel="modulepreload" href="./game/heroes/turn-system.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/registry.js" />
-    <link rel="modulepreload" href="./app/heroes/presentation/entities/dwelling.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/bonus-object.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/shared.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/entities/dwelling.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/hero.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/mine.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/entities/monster.js" />
