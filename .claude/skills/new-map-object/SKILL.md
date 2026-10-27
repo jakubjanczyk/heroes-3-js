@@ -1,11 +1,11 @@
 ---
 name: new-map-object
-description: Use before planning or building a new adventure map object (a mine, dwelling, bonus object, building on the map, ...), or a game rule or message text not yet in the repo. Reads the object's real size from the game's object table and checks its rules and texts against outside sources.
+description: Use before planning or building a new adventure map object (a mine, dwelling, bonus object, building on the map, ...). Reads which tiles the object blocks from the game's object table and ports them into the repo; its rules and texts are checked with the game-sources skill.
 ---
 
 # New map object
 
-Don't guess an object's size, rules or texts from memory, a picture or one wiki page. Look each one up as below, without waiting to be asked. Do it when the object is planned (the note in `docs/notes/`), before the test scenarios are written.
+Don't guess an object's size from memory, a picture or a wiki page. Look it up as below, without waiting to be asked. Do it when the object is planned (the note in `docs/notes/`), before the test scenarios are written. Its rules and texts follow the `game-sources` skill.
 
 ## Size: which tiles it blocks
 
@@ -25,21 +25,15 @@ Take it from the game's object table, as homm3tools (a map tool) ships it, and p
 
 ## Rules and texts
 
-Check every rule and message against at least two of these before writing it down:
+Follow the `game-sources` skill. For a map object, VCMI's `config/objects/<file>.json` also shows (`<file>` is e.g. `rewardableOncePerHero`, `rewardableOncePerWeek`, `rewardablePickable`, `rewardableBonusing` or `rewardableOnceVisitable`):
 
-1. **The Heroes 3 wiki, raw page source.** Get exact message texts from `https://heroes.thelazy.net/index.php?title=<Page_Name>&action=raw`. The rendered page, or a summary of it, splits and rewords texts. The `{{AMLocation}}` template lists the visit message first, then the visited-again message. Several messages in one field are separated by `* * *`.
-2. **VCMI's object config.** Fetch it with `curl -sSfL https://raw.githubusercontent.com/vcmi/vcmi/develop/config/objects/<file>.json`, where `<file>` is one of `rewardableOncePerHero`, `rewardableOncePerWeek`, `rewardablePickable`, `rewardableBonusing`, `rewardableOnceVisitable` or another file in that folder. It doesn't contain the game texts, but it does show:
-   - what each reward gives, its limiters (cost, level) and whether the player can refuse (`canRefuse`);
-   - which message number is which: `onSelectMessage`, `onVisitedMessage`, `onEmptyMessage` (the case where nothing can be given, e.g. too little gold), as `core.advevent.<n>`;
-   - whether the right-click popup has a line on the bonus: `description` (`core.xtrainfo.<n>`). No `description` means the popup has none.
-   - the visit rules: `visitMode`, `selectMode` and `resetParameters`.
-   For game mechanics outside the object configs (battles, skills, spells), search its source on GitHub.
-3. **A web search** for anything still unclear, or where the two above disagree.
+- what each reward gives, its limiters (cost, level) and whether the player can refuse (`canRefuse`);
+- which message number is which: `onSelectMessage`, `onVisitedMessage`, `onEmptyMessage` (the case where nothing can be given, e.g. too little gold), as `core.advevent.<n>`;
+- whether the right-click popup has a line on the bonus: `description` (`core.xtrainfo.<n>`). No `description` means the popup has none.
+- the visit rules: `visitMode`, `selectMode` and `resetParameters`.
 
-Where the sources disagree, or none of them says, write that down and ask instead of picking one. Texts nobody can confirm, such as the bonus line in the popup, are written in our own wording and marked as such in the note.
+On the wiki, an object's `{{AMLocation}}` template lists the visit message first, then the visited-again message. Several messages in one field are separated by `* * *`.
 
 ## Writing it down
 
-- In the note, say what each fact was checked against ("checked against the Heroes 3 wiki", "from the game's object table"), and list what couldn't be checked.
-- Never mention VCMI in code, tests or docs (AGENTS.md): describe the rule itself. VCMI is only for checking.
-- When reporting the plan to the user, say what was verified and against which source.
+- In the note, say the footprint is from the game's object table (homm3tools' copy), alongside what `game-sources` asks for.
