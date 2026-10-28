@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import { createMemoryEventLog, readGameData } from './app.utils.js'
+import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleButton,
   moveActiveStackTo,
   queryBattleResults,
   readActiveStack,
+  readBattleEffects,
   readCombatMessages,
   reloadBattle,
   shootAt,
@@ -386,6 +387,58 @@ describe('battle morale and luck behavior', () => {
       await attackSkeletonsFromTheLeft(user)
 
       expect(readCombatMessages()[0]).toBe('The Archangel does 115 damage. 19 Skeletons perish.')
+    })
+  })
+
+  describe('indicators', () => {
+    test('given a stack gets good morale then the good morale picture shows over it', async () => {
+      const { user } = await startBattle(twoPikemen(), { appConfig: { moraleRandom: ALWAYS } })
+
+      await moveActiveStackTo(user, FIRST_PIKEMEN.row, 2)
+
+      expect(readBattleEffects()).toEqual([
+        { effect: 'Good morale', row: FIRST_PIKEMEN.row, column: 2 }
+      ])
+    })
+
+    // With three stacks the Centaurs, second in the army, start on row 6, column 1.
+    test('given a stack freezes then the bad morale picture shows over it', async () => {
+      await startBattle(aFight({ army: threeTowns }), {
+        appConfig: { moraleRandom: rollsInTurn(0, 0.99) }
+      })
+
+      expect(readBattleEffects()).toEqual([{ effect: 'Bad morale', row: 6, column: 1 }])
+    })
+
+    test('given a stack strikes lucky then the good luck picture shows over it', async () => {
+      const { user } = await startBattle(anArchangel({ skills: [basic('LUCK')] }), {
+        appConfig: { luckRandom: ALWAYS }
+      })
+
+      await attackSkeletonsFromTheLeft(user)
+
+      // The Skeletons then attack the Archangel, which strikes back lucky too.
+      expect(readBattleEffects()).toContainEqual({ effect: 'Good luck', row: 6, column: 14 })
+    })
+
+    test('given a picture shows when a second passes then it is gone', async () => {
+      const { user } = await startBattle(twoPikemen(), { appConfig: { moraleRandom: ALWAYS } })
+      await moveActiveStackTo(user, FIRST_PIKEMEN.row, 2)
+
+      await waitMs(1000)
+
+      expect(readBattleEffects()).toEqual([])
+    })
+
+    test('given a stack got good morale when the page reloads then no picture shows', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = twoPikemen()
+      const first = await startBattle(scenario, { eventLog, appConfig: { moraleRandom: ALWAYS } })
+      await moveActiveStackTo(first.user, FIRST_PIKEMEN.row, 2)
+
+      await reloadBattle(scenario, { eventLog })
+
+      expect(readBattleEffects()).toEqual([])
     })
   })
 

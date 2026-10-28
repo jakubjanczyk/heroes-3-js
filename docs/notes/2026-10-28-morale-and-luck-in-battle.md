@@ -23,11 +23,12 @@ The game's battle log texts are not online. Ours are our own wording:
 - `game/heroes/battle.js` gives each stack its morale and luck when the battle is created, keeps the stacks whose morale took effect this round, and the one acting again. It works out the chances (`getGoodMoraleChance`, `getBadMoraleChance`), gives the extra turn (`finishAction`) and freezes a stack (`freezeStack`).
 - `game/heroes/battle-damage.js` rolls luck for each strike and adds the lucky bonus; a strike is saved with `lucky: true`.
 - `battle.module.js` rolls good morale when the stack acts and saves the result with the move, attack or shot (`goodMorale: true`), so a reload gives the same extra turn. Bad morale is rolled as a turn starts and saved as `fact.battle.stack.froze`. Monster stacks and Auto combat follow the same rules.
+- **Indicators.** The game plays a short animation over the stack each time: the Mirth spell's for good morale, Sorrow's for bad morale and Fortune's for good luck. Until there are animations, ours is the stand-in picture of the hero screen on a dark round badge over the stack: a gold banner for good morale, a red banner for bad morale and a gold clover for good luck. It fades in and out over a second and is named "Good morale", "Bad morale" or "Good luck" for screen readers. A reload shows the battle as it is, without them. There is no bad luck in the game (that is Horn of the Abyss), so no picture for it.
 - The rolls come from `config.moraleRandom` and `config.luckRandom` (`Math.random` by default); behavior tests set them so that neither takes effect unless a test says otherwise.
 
 ## Not yet
 
-- Morale and luck animations and sounds.
+- The game's animations and sounds in place of the stand-in pictures.
 - The wait phase of its own for a stack that waits on its extra turn: it waits with the others.
 - A bad morale roll that let the stack act is not saved: after a reload the stack's turn is rolled for again.
 - The other morale and luck sources listed in the earlier note (artifacts, spells, map objects, the Bone Dragon and Devils, magical terrain).

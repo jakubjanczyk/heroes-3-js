@@ -109,6 +109,8 @@ export function createBattle({
     // The stacks whose morale took effect this round, for good or bad: it does so once a round.
     moraleStackIds: [],
     extraTurnStackId: null,
+    // Each time morale or luck took effect, in order: { stackId, kind }.
+    effects: [],
     messages: [],
     definitions
   }
@@ -216,6 +218,7 @@ function giveExtraTurn(battle, stackId) {
     ...battle,
     moraleStackIds: [...battle.moraleStackIds, stackId],
     extraTurnStackId: stackId,
+    effects: [...battle.effects, { stackId, kind: 'goodMorale' }],
     messages: [
       ...battle.messages,
       `High morale enables the ${nameOf(battle, stackId)} to attack again.`
@@ -233,6 +236,7 @@ export function freezeStack(battle, stackId) {
     {
       ...battle,
       moraleStackIds: [...battle.moraleStackIds, stackId],
+      effects: [...battle.effects, { stackId, kind: 'badMorale' }],
       messages: [
         ...battle.messages,
         `Low morale causes the ${nameOf(battle, stackId)} to freeze in panic.`
@@ -516,6 +520,9 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliat
 
       return stack
     }),
+    effects: lucky
+      ? [...battle.effects, { stackId: attackerId, kind: 'goodLuck' }]
+      : battle.effects,
     messages: [
       ...battle.messages,
       ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),

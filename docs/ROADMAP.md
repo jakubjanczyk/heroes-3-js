@@ -431,7 +431,8 @@ See `docs/notes/2026-10-28-morale-and-luck.md` and, for battle, `docs/notes/2026
 - [x] Right click: the state as title, what it means, and the current modifiers or "None"; the status bar names the state
 - [x] Follows the army as it changes, and the same after a reload
 - [x] In battle: good morale gives an extra turn, bad morale freezes a stack, luck doubles the base damage (5.6)
-- [ ] Morale and luck animations and sounds (10.3, 10.4)
+- [x] A picture over the stack when its morale or luck takes effect: good morale, bad morale, good luck (stand-ins)
+- [ ] The game's morale and luck animations and sounds in their place (10.3, 10.4)
 - [ ] The wait phase of its own for a stack that waits on its extra turn (it waits with the others for now)
 - [ ] Bonuses until the next battle (7.6), artifacts (7.8) and spells (5.8)
 

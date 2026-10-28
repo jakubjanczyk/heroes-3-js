@@ -8,7 +8,7 @@ const ICON_PATHS = Object.freeze({
 
 const NAMES = Object.freeze({ morale: 'Morale', luck: 'Luck' })
 
-function renderIcon(document, kind) {
+export function renderMoraleOrLuckIcon(document, kind) {
   const svg = document.createElementNS(SVG_NS, 'svg')
   svg.setAttribute('class', 'morale-luck__icon')
   svg.setAttribute('viewBox', '0 0 24 24')
@@ -32,7 +32,7 @@ export function showMoraleOrLuck(frame, document, kind, { state, title, valueTex
   const value = document.createElement('span')
   value.className = 'morale-luck__value'
   value.textContent = valueText
-  frame.replaceChildren(renderIcon(document, kind), value)
+  frame.replaceChildren(renderMoraleOrLuckIcon(document, kind), value)
 }
 
 function paragraph(document, className, text) {

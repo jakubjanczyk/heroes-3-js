@@ -125,6 +125,8 @@ export const registerBattleModule = defineModule(
     let outcome = null
     // The battle as the active stack's turn started, once its bad morale was rolled for.
     let badMoraleRolledFor = null
+    // How many of the battle's morale and luck effects the player has been shown.
+    let effectsShown = 0
 
     function heroNameOf() {
       return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
@@ -140,6 +142,13 @@ export const registerBattleModule = defineModule(
         monster: defenderOf(started),
         experience
       })
+    }
+
+    // A reload shows the battle as it is, without the effects that led there.
+    function takeNewEffects() {
+      const effects = isRestoring ? [] : battle.effects.slice(effectsShown)
+      effectsShown = battle.effects.length
+      return effects
     }
 
     function showBattle() {
@@ -158,6 +167,7 @@ export const registerBattleModule = defineModule(
           attackTargets: [],
           shotTargets: [],
           messages: moving.battle.messages,
+          effects: [],
           canWait: false,
           canDefend: false,
           canRetreat: false,
@@ -179,6 +189,7 @@ export const registerBattleModule = defineModule(
         attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],
         shotTargets: activeStack ? getShotTargets(battle, activeStack) : [],
         messages: battle.messages,
+        effects: takeNewEffects(),
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
         canRetreat: canAct,
@@ -433,6 +444,7 @@ export const registerBattleModule = defineModule(
           type: APP_FACT_BATTLE_STARTED,
           handler: (event) => {
             started = event.detail
+            effectsShown = 0
             // A battle saved before battles named their hero was the only hero's.
             heroId = started.heroId ?? firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             const hero = heroById(state.get(), heroId)

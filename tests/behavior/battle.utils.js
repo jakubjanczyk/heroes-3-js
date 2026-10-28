@@ -78,6 +78,7 @@ export function getBattlefield() {
 export function readBattleStacks() {
   return within(getBattlefield())
     .queryAllByRole('img')
+    .filter((image) => !image.closest(BATTLE_EFFECT))
     .map((creature) => ({
       stack: describeBattleStack(creature),
       ...readHexPosition(creature.closest('[role="gridcell"]'))
@@ -102,6 +103,17 @@ export function getBattleHex(row, column) {
   return within(rowElement)
     .getAllByRole('gridcell')
     .find((hex) => hex.getAttribute('aria-colindex') === String(column + 1))
+}
+
+const BATTLE_EFFECT = '.battle-effect'
+
+// The pictures shown over a stack as its morale or luck takes effect: "Good morale", "Bad morale"
+// or "Good luck", with the hex of the stack it is over.
+export function readBattleEffects() {
+  return [...getBattlefield().querySelectorAll(BATTLE_EFFECT)].map((effect) => ({
+    effect: effect.getAttribute('aria-label'),
+    ...readHexPosition(effect.closest('[role="gridcell"]'))
+  }))
 }
 
 export function readActiveStack() {
