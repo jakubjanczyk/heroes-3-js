@@ -1254,6 +1254,15 @@
         "x": 20,
         "y": 1
       }
+    },
+    {
+      "id": "bonus-9",
+      "kind": "BONUS_OBJECT",
+      "type": "TREE_OF_KNOWLEDGE",
+      "tile": {
+        "x": 24,
+        "y": 1
+      }
     }
   ]
 }

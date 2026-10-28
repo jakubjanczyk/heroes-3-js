@@ -72,13 +72,16 @@ The dialog shows both bonuses as pictures with "+2" or "+1" under them, "or" bet
 
 ### Tree of Knowledge
 
-- Gives exactly the experience the hero is missing for the next level, so the hero always goes up one level, with the level-up popup.
+Checked against the Heroes 3 wiki's page source and the game's object rules; the texts below are the wiki's, word for word. Its tiles, `E.`, are from the game's object table (homm3tools' copy, `Tree of Knowledge0`; the Dirt and Grass lines are the same object): it blocks only its entrance.
+
+- Gives exactly the experience the hero is missing for the next level, so the hero always goes up one level, with the level-up popup. The reward is a level, not an amount of experience, so the Learning skill won't add to it.
 - Each tree's price is rolled once, when the map starts: free, 2000 gold or 10 gems, a third each (34 / 33 / 33). A map may set it.
 - Free (148): "Upon your approach, the tree opens its eyes in delight. "Ahh, an adventurer! Allow me to teach you a little of what I have learned over the ages.""
 - 2000 gold (149): "Upon your approach, the tree opens its eyes in delight. "Ahh, an adventurer! I will be happy to teach you a little of what I have learned over the ages for a mere 2000 gold." (Just bury it around my roots.)" The paid tree asks: the player can accept or leave, and leaving keeps the tree unvisited. Too poor (150): "Tears brim in the eyes of the tree. "I need 2000 gold." it whispers. (sniff) "Well, come back when you can pay me.""
 - 10 gems (151, 152): the same with "10 gems".
 - Visited again (147): "Upon your approach, the tree opens its eyes in delight. "It is good to see you, my student. I hope my teachings have helped you.""
-- Whether the free tree asks too, or just gives the level with OK, is not yet checked in the game.
+- The free tree doesn't ask: entering gives the level, with the message, the experience picture and OK. The wiki doesn't say; this is how the game plays (not found written down anywhere).
+- The right-click popup has a line on the bonus, but its text isn't online; ours reads "+1 level", "+1 level for 2000 gold" or "+1 level for 10 gems" (our own wording).
 
 ### Witch Hut
 
@@ -122,9 +125,15 @@ Built in five parts, each its own change. Nothing here needs a feature we don't 
 - The popup's line: the Arena has none, as in the game; the schools read "+1 Attack or +1 Defense for 1000 gold" and "+1 Power or +1 Knowledge for 1000 gold" (our own wording, `description` in the data file).
 - The demo map has one of each.
 
+### Part 3 (done)
+
+- `TREE_OF_KNOWLEDGE` in `game/data/bonus-objects.json` lists its `prices`, each a `chance` in percent and a `cost` (`{}` when free). A scenario may set an entity's `price` (`{ "GEMS_PILE": 10 }`).
+- Once the saved facts have been replayed, boot emits `command.game.setup.requested`; the bonus objects module rolls (`config.random`) the price of every tree that has none yet and saves them as `fact.bonusObject.prices.rolled`, kept in the `bonusObjectPrices` slice. A reload rolls nothing new, as the saved fact already set them.
+- A free tree saves the visit, shows its message with the experience missing under the experience picture and OK, then gives the experience, so the level-up popup follows. A paid tree asks with the same picture and Yes / No; Yes spends the price (`fact.resources.spent`) and gives the level. Too little shows the "I need" message with OK only, and the tree stays unvisited.
+- The demo map has one, with its price rolled.
+
 ### Later parts
 
-- **Part 3.** Each tree's price is rolled when the world is built (`config.random`) and kept in the world state, so a reload keeps it; a scenario may set `price`.
 - **Part 4.** Each hut's skill is rolled when the world is built, or set by the scenario (`skill`). The player's visited huts are kept per player, so the popup can name the skill.
 - **Part 5.** The level rule with Diplomacy; Diplomacy itself does nothing else yet.
 

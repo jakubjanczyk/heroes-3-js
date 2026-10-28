@@ -1,4 +1,5 @@
 export const APP_COMMAND_APP_START = 'command.app.start'
+export const APP_COMMAND_GAME_SETUP_REQUESTED = 'command.game.setup.requested'
 export const APP_COMMAND_TILE_CLICKED = 'command.tile.clicked'
 export const APP_COMMAND_MOVE_REQUESTED = 'command.move.requested'
 export const APP_COMMAND_MOVE_CONTINUE_REQUESTED = 'command.move.continue.requested'
@@ -89,6 +90,7 @@ export const APP_FACT_DWELLING_GUARDS_CHANGED = 'fact.dwelling.guards.changed'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_RESOURCE_GENERATOR_VISITED = 'fact.resourceGenerator.visited'
 export const APP_FACT_HERO_BONUS_OBJECT_VISITED = 'fact.hero.bonusObject.visited'
+export const APP_FACT_BONUS_OBJECT_PRICES_ROLLED = 'fact.bonusObject.prices.rolled'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
@@ -172,6 +174,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_RESOURCE_GENERATOR_VISITED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,
+  APP_FACT_BONUS_OBJECT_PRICES_ROLLED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,

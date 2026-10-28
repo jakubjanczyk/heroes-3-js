@@ -4,6 +4,10 @@ const EXPERIENCE_FOR_LEVEL = [
   0, 1000, 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500, 20600
 ]
 
+export function experienceToNextLevel(experience) {
+  return experienceForLevel(levelForExperience(experience) + 1) - experience
+}
+
 // Heroes 3 rolls level-up primary skills with one set of chances up to level 9 and another after.
 const LAST_LOW_LEVEL = 9
 

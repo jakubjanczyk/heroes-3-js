@@ -3,6 +3,7 @@ import { createEventLog } from '../engine/eventlog.js'
 import { createDisposer, createWorld, setupResetListener } from './boot-lifecycle.js'
 import {
   APP_COMMAND_APP_START,
+  APP_COMMAND_GAME_SETUP_REQUESTED,
   APP_UI_DEV_FOG_OF_WAR_CHANGED,
   shouldPersistFactEvent
 } from './events.js'
@@ -120,6 +121,8 @@ export async function bootApp({
       persistedFacts: appEventLog?.getAll?.(),
       appBus
     })
+    // After a reload too: what the saved game already rolled is kept, only the rest is rolled.
+    appBus.emit(APP_COMMAND_GAME_SETUP_REQUESTED, {})
 
     return {
       ...world,

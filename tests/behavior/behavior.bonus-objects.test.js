@@ -92,7 +92,8 @@ describe('Learning Stone, Mercenary Camp, Marletto Tower, Star Axis and Garden o
     { type: 'MERCENARY_CAMP', name: 'Mercenary Camp' },
     { type: 'MARLETTO_TOWER', name: 'Marletto Tower' },
     { type: 'STAR_AXIS', name: 'Star Axis' },
-    { type: 'GARDEN_OF_REVELATION', name: 'Garden of Revelation' }
+    { type: 'GARDEN_OF_REVELATION', name: 'Garden of Revelation' },
+    { type: 'TREE_OF_KNOWLEDGE', name: 'Tree of Knowledge' }
   ])('shows the $name on the map', async ({ type, name }) => {
     await setupMapWith(type)
 
