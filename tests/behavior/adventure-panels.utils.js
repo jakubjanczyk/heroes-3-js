@@ -438,3 +438,11 @@ export function readInfoBoxSelectedSlot() {
   )
   return index >= 0 ? index + 1 : null
 }
+
+// Morale and luck as "<name> <value>", e.g. ['Morale +1', 'Luck 0'].
+export function readMoraleAndLuck(container) {
+  return ['Morale', 'Luck'].map((name) => {
+    const box = within(container).getByRole('group', { name })
+    return `${name} ${box.textContent.trim()}`
+  })
+}

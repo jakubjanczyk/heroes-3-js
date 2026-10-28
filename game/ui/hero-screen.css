@@ -214,6 +214,12 @@
   --h: 45;
 }
 
+.hero-screen__morale,
+.hero-screen__luck {
+  padding: calc(4 * var(--px)) 0 calc(3 * var(--px));
+  font-size: calc(11 * var(--px));
+}
+
 /* An icon on the left, the label and the value beside it. */
 .hero-screen__experience {
   --x: 18;

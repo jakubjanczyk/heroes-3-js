@@ -332,5 +332,65 @@
     },
     "aiValue": 85,
     "abilities": ["undead"]
+  },
+  "CENTAUR": {
+    "name": "Centaur",
+    "namePlural": "Centaurs",
+    "faction": "RAMPART",
+    "tier": 1,
+    "attack": 5,
+    "defense": 3,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "health": 8,
+    "speed": 6,
+    "growth": 14,
+    "cost": {
+      "GOLD_PILE": 70
+    },
+    "aiValue": 100,
+    "abilities": ["doubleWide"]
+  },
+  "IMP": {
+    "name": "Imp",
+    "namePlural": "Imps",
+    "faction": "INFERNO",
+    "tier": 1,
+    "attack": 2,
+    "defense": 3,
+    "damage": {
+      "min": 1,
+      "max": 2
+    },
+    "health": 4,
+    "speed": 5,
+    "growth": 15,
+    "cost": {
+      "GOLD_PILE": 50
+    },
+    "aiValue": 50,
+    "abilities": []
+  },
+  "PEASANT": {
+    "name": "Peasant",
+    "namePlural": "Peasants",
+    "faction": "NEUTRAL",
+    "tier": 1,
+    "attack": 1,
+    "defense": 1,
+    "damage": {
+      "min": 1,
+      "max": 1
+    },
+    "health": 1,
+    "speed": 3,
+    "growth": 25,
+    "cost": {
+      "GOLD_PILE": 10
+    },
+    "aiValue": 15,
+    "abilities": []
   }
 }

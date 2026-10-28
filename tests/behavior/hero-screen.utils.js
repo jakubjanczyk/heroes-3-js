@@ -118,3 +118,15 @@ export async function hoverOnHeroScreenSkill(user, levelAndSkill) {
 export async function holdRightButtonOnHeroScreenSkill(user, levelAndSkill) {
   await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenSkill(levelAndSkill) })
 }
+
+function getHeroScreenBox(label) {
+  return within(getHeroScreen()).getByRole('group', { name: label })
+}
+
+export async function hoverOnHeroScreenBox(user, label) {
+  await user.hover(getHeroScreenBox(label))
+}
+
+export async function holdRightButtonOnHeroScreenBox(user, label) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenBox(label) })
+}

@@ -1,6 +1,8 @@
 import { isHero, isTown } from '../../../game/domain/entity-queries.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
+import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { startingSecondarySkills } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { tavernOf } from '../../../game/heroes/state/tavern.js'
@@ -84,11 +86,14 @@ export const registerTavernModule = defineModule(
     }
 
     function describeHero(hero, slot) {
+      const withSkills = { ...hero, secondarySkills: startingSecondarySkills(hero, definitions) }
       return {
         slot,
         name: hero.name,
         description: describeHeroForHire(hero, definitions.heroClasses),
         skills: getHeroPrimarySkills({ entity: hero, definitions }),
+        morale: getHeroMorale({ entity: withSkills, definitions }),
+        luck: getHeroLuck({ entity: withSkills, definitions }),
         army: getHeroArmy({ entity: hero, definitions })
       }
     }

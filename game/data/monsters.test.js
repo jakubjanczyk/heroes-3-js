@@ -23,7 +23,10 @@ describe('creature data', () => {
     ['ANGEL', 'Angel', 'Angels'],
     ['ARCHANGEL', 'Archangel', 'Archangels'],
     ['SKELETON', 'Skeleton', 'Skeletons'],
-    ['SKELETON_WARRIOR', 'Skeleton Warrior', 'Skeleton Warriors']
+    ['SKELETON_WARRIOR', 'Skeleton Warrior', 'Skeleton Warriors'],
+    ['CENTAUR', 'Centaur', 'Centaurs'],
+    ['IMP', 'Imp', 'Imps'],
+    ['PEASANT', 'Peasant', 'Peasants']
   ])('%s is called %s, %s for several', (key, name, namePlural) => {
     expect(creatures[key]).toMatchObject({ name, namePlural })
   })
@@ -45,7 +48,10 @@ describe('creature data', () => {
     ['ANGEL', 20, 20, 50, 50, 200, 12, 1, { GOLD_PILE: 3000, GEMS_PILE: 1 }, 5019],
     ['ARCHANGEL', 30, 30, 50, 50, 250, 18, 1, { GOLD_PILE: 5000, GEMS_PILE: 3 }, 8776],
     ['SKELETON', 5, 4, 1, 3, 6, 4, 12, { GOLD_PILE: 60 }, 60],
-    ['SKELETON_WARRIOR', 6, 6, 1, 3, 6, 5, 12, { GOLD_PILE: 70 }, 85]
+    ['SKELETON_WARRIOR', 6, 6, 1, 3, 6, 5, 12, { GOLD_PILE: 70 }, 85],
+    ['CENTAUR', 5, 3, 2, 3, 8, 6, 14, { GOLD_PILE: 70 }, 100],
+    ['IMP', 2, 3, 1, 2, 4, 5, 15, { GOLD_PILE: 50 }, 50],
+    ['PEASANT', 1, 1, 1, 1, 1, 3, 25, { GOLD_PILE: 10 }, 15]
   ])('%s has attack %i, defense %i, damage %i-%i, health %i, speed %i, growth %i, cost %o and AI value %i', (key, attack, defense, damageMin, damageMax, health, speed, growth, cost, aiValue) => {
     expect(creatures[key]).toMatchObject({
       attack,
@@ -82,7 +88,10 @@ describe('creature data', () => {
       undefined
     ],
     ['SKELETON', 'NECROPOLIS', 1, ['undead'], undefined],
-    ['SKELETON_WARRIOR', 'NECROPOLIS', 1, ['undead'], undefined]
+    ['SKELETON_WARRIOR', 'NECROPOLIS', 1, ['undead'], undefined],
+    ['CENTAUR', 'RAMPART', 1, ['doubleWide'], undefined],
+    ['IMP', 'INFERNO', 1, [], undefined],
+    ['PEASANT', 'NEUTRAL', 1, [], undefined]
   ])('%s is a %s tier %i creature with abilities %o and %s shots', (key, faction, tier, abilities, shots) => {
     const creature = creatures[key]
 
@@ -115,7 +124,11 @@ describe('creature data', () => {
       ANGEL: 'ARCHANGEL',
       ARCHANGEL: null,
       SKELETON: 'SKELETON_WARRIOR',
-      SKELETON_WARRIOR: null
+      SKELETON_WARRIOR: null,
+      // Their upgrades come with their towns.
+      CENTAUR: null,
+      IMP: null,
+      PEASANT: null
     })
   })
 })

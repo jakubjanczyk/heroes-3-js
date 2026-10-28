@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { confirmMove } from './adventure-map.utils.js'
-import { readArmySlots } from './adventure-panels.utils.js'
+import { readArmySlots, readMoraleAndLuck } from './adventure-panels.utils.js'
 import { shiftClick } from './app.utils.js'
 
 export function queryHeroExchange() {
@@ -96,4 +96,8 @@ export async function closeHeroExchange(user) {
 
 export function readHeroExchangeStatusBar() {
   return screen.getByRole('status', { name: 'Hero exchange status bar' }).textContent
+}
+
+export function readHeroExchangeMoraleAndLuck(heroName) {
+  return readMoraleAndLuck(getHeroSide(heroName))
 }

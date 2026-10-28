@@ -402,7 +402,7 @@ Each comes with the feature it changes; the note has every skill's numbers.
 - [ ] Estates (3.2)
 - [ ] Learning (4.2)
 - [ ] Archery, Offense, Armorer (5.6)
-- [ ] Leadership and Luck (with morale and luck)
+- [x] Leadership and Luck (4.9)
 - [ ] Tactics (5.3), Ballistics (5.10), Artillery and First Aid (with war machines)
 - [ ] Diplomacy (5.2, 5.7)
 - [ ] Wisdom, Mysticism, Intelligence, Eagle Eye, Scholar and the four schools of magic (4.8); Sorcery and Resistance (5.8)
@@ -422,6 +422,16 @@ Each comes with the feature it changes; the note has every skill's numbers.
   - **Town Portal** - teleport to nearest/any owned town
   - **Fly** - allows movement over any terrain
 - [ ] Combat spells: see Milestone 5
+
+### 4.9 Morale and Luck
+Shown and worked out, not used in battle yet; see `docs/notes/2026-10-28-morale-and-luck.md`.
+- [x] Morale -3 to +3 and luck 0 to +3, the modifiers added up and held to the range
+- [x] Sources the game has: Leadership and Luck skills; creatures of one town +1, of three -1, four -2; undead in the army -1; Angels or Archangels +1
+- [x] Shown on the hero screen, the exchange screen and the hero box (info box, right-click popup, tavern), with stand-in pictures
+- [x] Right click: the state as title, what it means, and the current modifiers or "None"; the status bar names the state
+- [x] Follows the army as it changes, and the same after a reload
+- [ ] In battle: good morale gives an extra turn, bad morale freezes a stack, luck doubles the damage (5.6)
+- [ ] Bonuses until the next battle (7.6), artifacts (7.8) and spells (5.8)
 
 ---
 
@@ -1103,38 +1113,39 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 35. Creature dwellings on map (7.4), Castle only, in four parts: on the map and flagged, recruiting, guards, town growth
 36. Resource-generating objects (7.5)
 37. Permanent bonus objects (7.7), in five parts: free once-per-hero objects, choices (Arena, schools), Tree of Knowledge, Witch Hut, Library of Enlightenment
-38. Stat-boosting objects (7.6)
-39. Artifacts on map (7.8)
-40. Obstacles & decorations (7.3)
+38. Morale and luck (4.9): worked out and shown, not yet used in battle
+39. Stat-boosting objects (7.6)
+40. Artifacts on map (7.8)
+41. Obstacles & decorations (7.3)
 
 ### Phase 6 - "Real Competition"
-41. Player system (8.1)
-42. AI basics (8.3)
-43. AI decision making (8.4)
-44. Victory conditions (8.5)
-45. Combat spells (5.8)
-46. Hero magic (4.8)
-47. Siege combat (5.10)
-48. Town factions (6.5)
-49. Smarter combat AI (5.7b)
+42. Player system (8.1)
+43. AI basics (8.3)
+44. AI decision making (8.4)
+45. Victory conditions (8.5)
+46. Combat spells (5.8)
+47. Hero magic (4.8)
+48. Siege combat (5.10)
+49. Town factions (6.5)
+50. Smarter combat AI (5.7b)
 
 ### Phase 7 - "Polish & Reusability"
-50. Engine public API (9.3)
-51. Scenario format v2 (9.1)
-52. Multiple scenarios + selector (9.2)
-53. Keyboard shortcuts (10.6)
-54. Save/Load system (10.7)
-55. Sound effects (10.4)
-56. Music per context (10.5)
-57. Entity sprites (10.1)
-58. Terrain sprites (10.2)
-59. Animations (10.3)
-60. Map portals (7.9)
-61. Water & boats (7.10)
-62. Hot-seat multiplayer (8.2)
-63. Map editor (9.6)
-64. Quieter event bus (9.4): no route events on hover
-65. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
+51. Engine public API (9.3)
+52. Scenario format v2 (9.1)
+53. Multiple scenarios + selector (9.2)
+54. Keyboard shortcuts (10.6)
+55. Save/Load system (10.7)
+56. Sound effects (10.4)
+57. Music per context (10.5)
+58. Entity sprites (10.1)
+59. Terrain sprites (10.2)
+60. Animations (10.3)
+61. Map portals (7.9)
+62. Water & boats (7.10)
+63. Hot-seat multiplayer (8.2)
+64. Map editor (9.6)
+65. Quieter event bus (9.4): no route events on hover
+66. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
 
 ---
 

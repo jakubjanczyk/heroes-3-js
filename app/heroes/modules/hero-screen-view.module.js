@@ -1,5 +1,6 @@
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
+import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -17,6 +18,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
+import { renderMoraleOrLuckPopup, showMoraleOrLuck } from '../presentation/morale-and-luck.js'
 import {
   renderSecondarySkillIcon,
   secondarySkillStatusText
@@ -35,6 +37,14 @@ function armySlotAt(target) {
 
 function secondarySkillAt(target) {
   return target?.closest?.('.hero-screen__secondary-skill[data-skill-index]') ?? null
+}
+
+function moraleOrLuckAt(target) {
+  return target?.closest?.('[data-morale-luck]') ?? null
+}
+
+function popupSourceAt(target) {
+  return secondarySkillAt(target) ?? moraleOrLuckAt(target)
 }
 
 function renderSecondarySkill(slot, document, skill) {
@@ -68,7 +78,7 @@ export const registerHeroScreenViewModule = defineModule(
     const gameShell = document?.querySelector('.game-shell')
     let heroScreen = null
     let rearranging = null
-    let skillPopup = null
+    let popup = null
     let definitions = {}
     let isMapCovered = false
     // Whether this screen covered the map, so closing it uncovers only what it covered: over the
@@ -103,6 +113,23 @@ export const registerHeroScreenViewModule = defineModule(
       showArmy()
     }
 
+    const describeMoraleOrLuck = {
+      morale: (hero) => getHeroMorale({ entity: hero, definitions }),
+      luck: (hero) => getHeroLuck({ entity: hero, definitions })
+    }
+
+    function showMoraleAndLuck() {
+      const hero = selectedHero()
+      for (const kind of ['morale', 'luck']) {
+        showMoraleOrLuck(
+          heroScreen.querySelector(`.hero-screen__${kind}`),
+          document,
+          kind,
+          describeMoraleOrLuck[kind](hero)
+        )
+      }
+    }
+
     function describedSkills(hero) {
       return (hero?.secondarySkills ?? []).map((skill) =>
         describeSecondarySkill(skill, definitions)
@@ -119,21 +146,29 @@ export const registerHeroScreenViewModule = defineModule(
       })
     }
 
-    function openSkillPopup(slot) {
-      closeSkillPopup()
-      const skill = describedSkills(selectedHero())[Number(slot.dataset.skillIndex)]
-      skillPopup = renderSkillPopup(document, skill)
-      gameShell.append(skillPopup)
-
-      const slotBox = slot.getBoundingClientRect()
-      const { width } = skillPopup.getBoundingClientRect()
-      skillPopup.style.left = `${Math.max(0, slotBox.left + slotBox.width / 2 - width / 2)}px`
-      skillPopup.style.top = `${slotBox.bottom}px`
+    function renderPopupFor(source) {
+      const kind = source.dataset.moraleLuck
+      if (kind) {
+        return renderMoraleOrLuckPopup(document, describeMoraleOrLuck[kind](selectedHero()))
+      }
+      const skill = describedSkills(selectedHero())[Number(source.dataset.skillIndex)]
+      return renderSkillPopup(document, skill)
     }
 
-    function closeSkillPopup() {
-      skillPopup?.remove()
-      skillPopup = null
+    function openPopup(source) {
+      closePopup()
+      popup = renderPopupFor(source)
+      gameShell.append(popup)
+
+      const sourceBox = source.getBoundingClientRect()
+      const { width } = popup.getBoundingClientRect()
+      popup.style.left = `${Math.max(0, sourceBox.left + sourceBox.width / 2 - width / 2)}px`
+      popup.style.top = `${sourceBox.bottom}px`
+    }
+
+    function closePopup() {
+      popup?.remove()
+      popup = null
     }
 
     function showArmy() {
@@ -143,6 +178,7 @@ export const registerHeroScreenViewModule = defineModule(
         slot.replaceChildren(...(stack ? [renderArmyStack(document, stack)] : []))
       })
       rearranging.showArmies({ hero: army })
+      showMoraleAndLuck()
     }
 
     function openHeroScreen() {
@@ -178,7 +214,7 @@ export const registerHeroScreenViewModule = defineModule(
         return
       }
 
-      closeSkillPopup()
+      closePopup()
       heroScreen.remove()
       heroScreen = null
       rearranging = null
@@ -253,9 +289,9 @@ export const registerHeroScreenViewModule = defineModule(
           target: gameShell,
           type: 'pointerdown',
           handler: (event) => {
-            const skill = secondarySkillAt(event.target)
-            if (heroScreen?.contains(skill) && event.button === 2) {
-              openSkillPopup(skill)
+            const source = popupSourceAt(event.target)
+            if (heroScreen?.contains(source) && event.button === 2) {
+              openPopup(source)
             }
           }
         },
@@ -263,13 +299,13 @@ export const registerHeroScreenViewModule = defineModule(
           target: gameShell,
           type: 'contextmenu',
           handler: (event) => {
-            if (heroScreen?.contains(secondarySkillAt(event.target))) {
+            if (heroScreen?.contains(popupSourceAt(event.target))) {
               event.preventDefault()
             }
           }
         },
-        { target: env.window, type: 'pointerup', handler: closeSkillPopup },
-        { target: env.window, type: 'pointercancel', handler: closeSkillPopup },
+        { target: env.window, type: 'pointerup', handler: closePopup },
+        { target: env.window, type: 'pointercancel', handler: closePopup },
         {
           target: gameShell,
           type: 'mouseover',
@@ -302,7 +338,7 @@ export const registerHeroScreenViewModule = defineModule(
         }
       ],
       dispose: () => {
-        closeSkillPopup()
+        closePopup()
         heroScreen?.remove()
         heroScreen = null
         rearranging = null
