@@ -1,3 +1,5 @@
+import { describeSecondarySkill } from './secondary-skills.js'
+
 const MAX_MORALE = 3
 const MIN_MORALE = -3
 const MAX_LUCK = 3
@@ -34,13 +36,23 @@ const STATE_TEXTS = Object.freeze({
   }
 })
 
+const MODIFIERS_HEADINGS = Object.freeze({
+  morale: 'Current Morale Modifiers:',
+  luck: 'Current Luck Modifiers:'
+})
+
 function signed(value) {
   return value > 0 ? `+${value}` : String(value)
 }
 
-function skillBonus(hero, skill) {
+function skillModifier(hero, skill, definitions) {
   const known = (hero?.secondarySkills ?? []).find((learned) => learned.skill === skill)
-  return SKILL_BONUS[known?.level] ?? 0
+  if (!known) {
+    return []
+  }
+
+  const { title } = describeSecondarySkill(known, definitions)
+  return [{ text: title, value: SKILL_BONUS[known.level] ?? 0 }]
 }
 
 function armyCreatures(hero, definitions) {
@@ -51,23 +63,27 @@ function armyCreatures(hero, definitions) {
 }
 
 // Neutral creatures count as a town of their own.
-function townsBonus(creatures) {
+function townsModifier(creatures) {
   const towns = new Set(creatures.map(({ creature, definition }) => definition.faction ?? creature))
   if (towns.size === 0) {
-    return 0
+    return []
   }
-  return towns.size === 1 ? 1 : 2 - towns.size
+  if (towns.size === 1) {
+    return [{ text: 'All troops of one alignment', value: 1 }]
+  }
+  return [{ text: `Troops of ${towns.size} alignments`, value: 2 - towns.size }]
 }
 
 const hasAbility = (ability) => (creature) =>
   (creature.definition.abilities ?? []).includes(ability)
 
-function undeadPenalty(creatures) {
-  return creatures.some(hasAbility('undead')) ? -1 : 0
+function undeadModifier(creatures) {
+  return creatures.some(hasAbility('undead')) ? [{ text: 'Undead in army', value: -1 }] : []
 }
 
-function angelsBonus(creatures) {
-  return creatures.some(hasAbility('raisesMorale')) ? 1 : 0
+function angelsModifier(creatures) {
+  const raising = creatures.find(hasAbility('raisesMorale'))
+  return raising ? [{ text: `${raising.definition.namePlural} in army`, value: 1 }] : []
 }
 
 function stateOf(value) {
@@ -77,22 +93,38 @@ function stateOf(value) {
   return value < 0 ? 'bad' : 'neutral'
 }
 
-function describe(kind, total, { min, max }) {
+function describe(kind, modifiers, { min, max }) {
+  const shown = modifiers.filter(({ value }) => value !== 0)
+  const total = shown.reduce((sum, { value }) => sum + value, 0)
   const value = Math.min(max, Math.max(min, total))
   const state = stateOf(value)
-  return { value, valueText: signed(value), state, ...STATE_TEXTS[kind][state] }
+  return {
+    value,
+    valueText: signed(value),
+    state,
+    ...STATE_TEXTS[kind][state],
+    modifiersHeading: MODIFIERS_HEADINGS[kind],
+    modifiers: shown.map(({ text, value: modifier }) => `${text} ${signed(modifier)}`)
+  }
 }
 
 export function getHeroMorale({ entity, definitions }) {
   const creatures = armyCreatures(entity, definitions)
-  const total =
-    skillBonus(entity, 'LEADERSHIP') +
-    townsBonus(creatures) +
-    undeadPenalty(creatures) +
-    angelsBonus(creatures)
-  return describe('morale', total, { min: MIN_MORALE, max: MAX_MORALE })
+  return describe(
+    'morale',
+    [
+      ...skillModifier(entity, 'LEADERSHIP', definitions),
+      ...townsModifier(creatures),
+      ...undeadModifier(creatures),
+      ...angelsModifier(creatures)
+    ],
+    { min: MIN_MORALE, max: MAX_MORALE }
+  )
 }
 
-export function getHeroLuck({ entity }) {
-  return describe('luck', skillBonus(entity, 'LUCK'), { min: MIN_LUCK, max: MAX_LUCK })
+export function getHeroLuck({ entity, definitions }) {
+  return describe('luck', skillModifier(entity, 'LUCK', definitions), {
+    min: MIN_LUCK,
+    max: MAX_LUCK
+  })
 }
