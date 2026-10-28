@@ -451,3 +451,46 @@
 .battle-results__name-caption {
   margin-top: var(--space-2xs);
 }
+
+/* Over the stack whose morale or luck took effect, rising and fading out. */
+.battle-effect {
+  position: absolute;
+  inset-block-end: 60%;
+  inset-inline-start: 50%;
+  z-index: 2;
+  box-sizing: border-box;
+  inline-size: 40px;
+  block-size: 40px;
+  padding: 6px;
+  border: 2px solid currentcolor;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 75%);
+  translate: -50% 0;
+  pointer-events: none;
+  box-shadow: 0 2px 4px black;
+  animation: battle-effect var(--battle-effect-ms, 1s) ease-out forwards;
+}
+
+@keyframes battle-effect {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.7);
+  }
+
+  15%,
+  70% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-effect {
+    animation: none;
+  }
+}
