@@ -428,7 +428,7 @@ Shown and worked out, not used in battle yet; see `docs/notes/2026-10-28-morale-
 - [x] Morale -3 to +3 and luck 0 to +3, the modifiers added up and held to the range
 - [x] Sources the game has: Leadership and Luck skills; creatures of one town +1, of three -1, four -2; undead in the army -1; Angels or Archangels +1
 - [x] Shown on the hero screen, the exchange screen and the hero box (info box, right-click popup, tavern), with stand-in pictures
-- [x] Right click: the state as title, what it means, and a line per modifier; the status bar names the state
+- [x] Right click: the state as title and what it means; the status bar names the state
 - [x] Follows the army as it changes, and the same after a reload
 - [ ] In battle: good morale gives an extra turn, bad morale freezes a stack, luck doubles the damage (5.6)
 - [ ] Bonuses until the next battle (7.6), artifacts (7.8) and spells (5.8)

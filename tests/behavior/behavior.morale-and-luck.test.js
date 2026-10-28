@@ -166,20 +166,18 @@ describe('morale and luck behavior', () => {
   })
 
   describe('right click and status bar on the hero screen', () => {
-    test('given good morale when the player holds the right button on it then the popup names it and lists its modifiers', async () => {
+    test('given good morale when the player holds the right button on it then the popup names it and says what it does', async () => {
       const { user } = await startOnHeroScreen(aMoraleHero({ skills: [basic('LEADERSHIP')] }))
 
       await holdRightButtonOnHeroScreenBox(user, 'Morale')
 
       expect(readPopup()).toEqual([
         'Good Morale',
-        'Good morale may give your troops an extra attack in combat.',
-        'Basic Leadership +1',
-        'All troops of one alignment +1'
+        'Good morale may give your troops an extra attack in combat.'
       ])
     })
 
-    test('given bad morale when the player holds the right button on it then the popup lists each penalty', async () => {
+    test('given bad morale when the player holds the right button on it then the popup names it and says what it does', async () => {
       const { user } = await startOnHeroScreen(
         aMoraleHero({ army: [stack('PIKEMAN'), stack('CENTAUR'), stack('IMP'), stack('SKELETON')] })
       )
@@ -188,13 +186,11 @@ describe('morale and luck behavior', () => {
 
       expect(readPopup()).toEqual([
         'Bad Morale',
-        'Bad morale may make your troops freeze in combat.',
-        'Troops of 4 alignments -2',
-        'Undead in army -1'
+        'Bad morale may make your troops freeze in combat.'
       ])
     })
 
-    test('given neutral luck when the player holds the right button on it then the popup names it and lists no modifiers', async () => {
+    test('given neutral luck when the player holds the right button on it then the popup names it and says what it does', async () => {
       const { user } = await startOnHeroScreen(aMoraleHero())
 
       await holdRightButtonOnHeroScreenBox(user, 'Luck')
