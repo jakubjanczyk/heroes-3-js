@@ -71,6 +71,8 @@ export const APP_FACT_BATTLE_STACK_SHOT = 'fact.battle.stack.shot'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_BATTLE_STACK_WAITED = 'fact.battle.stack.waited'
 export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
+// Bad morale: the stack loses its turn.
+export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
@@ -159,6 +161,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STACK_DEFENDED,
+  APP_FACT_BATTLE_STACK_FROZE,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MONSTER_COUNT_CHANGED,
