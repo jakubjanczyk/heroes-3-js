@@ -5,6 +5,7 @@ import {
   describeBonus,
   describePrice,
   hasVisitedBonusObject,
+  meetsMinimumHeroLevel,
   rollBonusObjectPrice
 } from '../../../game/heroes/bonus-objects.js'
 import { experienceToNextLevel } from '../../../game/heroes/hero-experience.js'
@@ -90,6 +91,14 @@ const MESSAGES_BY_TYPE = Object.freeze({
     visited:
       'An old wizard appears out of thin air. "Master," he says, "you have learned all that we could possibly teach you."'
   },
+  LIBRARY_OF_ENLIGHTENMENT: {
+    gives:
+      'The caretaker admits you into the Library of Enlightenment. You are able to learn much in the short time you spend here.',
+    tooLowLevel:
+      'The caretaker opens the door and looks you up and down. "You are neither famous nor diplomatic enough to be admitted to the Library of Enlightenment," he sniffs. "Come back when you think yourself worthy."',
+    visited:
+      'Recognizing you, the caretaker refuses to admit you. "The Library of Enlightenment," he says, "may be visited but once."'
+  },
   TREE_OF_KNOWLEDGE: {
     visited: `${TREE_GREETING} "It is good to see you, my student. I hope my teachings have helped you."`
   }
@@ -114,7 +123,8 @@ function describeChoices(choices) {
 
 // Each object gives its bonus once to each hero who enters it. An object with choices gives the
 // one the player picks, for its cost; a hero who leaves without picking can come back. A Tree of
-// Knowledge gives the hero one level, for the price rolled for it once per game.
+// Knowledge gives the hero one level, for the price rolled for it once per game. A hero below an
+// object's minimum level is turned away and can come back later.
 export const registerBonusObjectsModule = defineModule(
   ({ emit, config, state }) => {
     const random = typeof config?.random === 'function' ? config.random : Math.random
@@ -256,6 +266,11 @@ export const registerBonusObjectsModule = defineModule(
 
       if (hasVisitedBonusObject(current, heroId, entityId)) {
         emit(APP_UI_NOTICE_OPENED, { title: null, message: MESSAGES_BY_TYPE[type].visited })
+        return
+      }
+
+      if (!meetsMinimumHeroLevel(definitions, type, current.heroDetails[heroId] ?? {})) {
+        emit(APP_UI_NOTICE_OPENED, { title: null, message: MESSAGES_BY_TYPE[type].tooLowLevel })
         return
       }
 

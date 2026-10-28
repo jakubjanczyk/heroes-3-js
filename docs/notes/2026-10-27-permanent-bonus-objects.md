@@ -94,7 +94,9 @@ Checked against the Heroes 3 wiki's page source and the game's object rules; the
 
 ### Library of Enlightenment
 
-- +2 Attack, Defense, Power and Knowledge, once per hero (66).
+Checked against the Heroes 3 wiki's page source and a second source's object rules, which agree on the bonus, the levels and the message numbers.
+
+- +2 Attack, Defense, Power and Knowledge, once per hero (66): "The caretaker admits you into the Library of Enlightenment. You are able to learn much in the short time you spend here."
 - The hero must be level 10, or 8 with Basic Diplomacy, 6 with Advanced, 4 with Expert. Too low (68): "The caretaker opens the door and looks you up and down. "You are neither famous nor diplomatic enough to be admitted to the Library of Enlightenment," he sniffs. "Come back when you think yourself worthy."" A hero turned away can come back later.
 - Visited again (67): "Recognizing you, the caretaker refuses to admit you. "The Library of Enlightenment," he says, "may be visited but once.""
 
@@ -141,9 +143,13 @@ Built in five parts, each its own change. Nothing here needs a feature we don't 
 - The status bar reads "Witch Hut (Archery)" and the popup "Witch Hut" / "(Archery)", with no per-hero line.
 - The demo map has one, with its skill rolled.
 
-### Later parts
+### Part 5 (done)
 
-- **Part 5.** The level rule with Diplomacy; Diplomacy itself does nothing else yet.
+- `LIBRARY_OF_ENLIGHTENMENT` in `game/data/bonus-objects.json` gives the four skills and has a `minimumHeroLevel`: the `level`, and the lower levels `withDiplomacy` at Basic, Advanced and Expert. Diplomacy does nothing else yet.
+- A hero below the level gets the "neither famous nor diplomatic enough" message with OK and nothing is saved, so the Library stays unvisited for them and they can come back once they are high enough.
+- Admitted, the message shows the four skill pictures with "+2" under each, as the free objects' messages do.
+- The popup's line reads "+2 Attack, Defense, Power and Knowledge" (our own wording; the game's line isn't online).
+- The demo map has one, at (3, 10).
 
 ## Not yet
 

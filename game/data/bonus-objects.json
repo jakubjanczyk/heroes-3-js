@@ -31,6 +31,12 @@
       { "chance": 33, "cost": { "GEMS_PILE": 10 } }
     ]
   },
+  "LIBRARY_OF_ENLIGHTENMENT": {
+    "name": "Library of Enlightenment",
+    "description": "+2 Attack, Defense, Power and Knowledge",
+    "gives": { "primarySkills": { "attack": 2, "defense": 2, "power": 2, "knowledge": 2 } },
+    "minimumHeroLevel": { "level": 10, "withDiplomacy": { "BASIC": 8, "ADVANCED": 6, "EXPERT": 4 } }
+  },
   "WITCH_HUT": {
     "name": "Witch Hut",
     "teachesSkill": { "level": "BASIC", "neverRolled": ["LEADERSHIP", "NECROMANCY"] }

@@ -1272,6 +1272,15 @@
         "x": 6,
         "y": 5
       }
+    },
+    {
+      "id": "bonus-11",
+      "kind": "BONUS_OBJECT",
+      "type": "LIBRARY_OF_ENLIGHTENMENT",
+      "tile": {
+        "x": 3,
+        "y": 10
+      }
     }
   ]
 }

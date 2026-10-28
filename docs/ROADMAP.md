@@ -828,8 +828,8 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
 - [x] The status bar and popup name the skill once a hero of the player has visited ("Witch Hut (Archery)", our own wording)
 
 #### 7.7.5 Library of Enlightenment
-- [ ] +2 to all four primary skills, once per hero
-- [ ] Hero level 10 needed, 8 / 6 / 4 with Basic / Advanced / Expert Diplomacy; a hero turned away can come back
+- [x] +2 to all four primary skills, once per hero
+- [x] Hero level 10 needed, 8 / 6 / 4 with Basic / Advanced / Expert Diplomacy; a hero turned away can come back
 
 ### 7.8 Artifacts on Map
 - [ ] Artifacts placed as entities on adventure map
