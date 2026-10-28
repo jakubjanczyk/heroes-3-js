@@ -9,12 +9,13 @@ export function getInfoPopupLines({
   terrainName,
   definitions,
   ownerColorName = null,
-  visitedText = null
+  visitedText = null,
+  bonusObjectPrice = null
 }) {
   if (entity?.kind === 'BONUS_OBJECT') {
     return [
       getEntityName({ entity, definitions }),
-      ...describeBonusObject(definitions, entity.type),
+      ...describeBonusObject(definitions, entity.type, bonusObjectPrice),
       ...(visitedText ? [visitedText] : [])
     ]
   }

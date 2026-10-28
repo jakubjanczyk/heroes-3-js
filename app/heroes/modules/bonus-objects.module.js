@@ -2,14 +2,20 @@ import { isBonusObject } from '../../../game/domain/entity-queries.js'
 import {
   bonusObjectDefinition,
   describeBonus,
-  hasVisitedBonusObject
+  describePrice,
+  hasVisitedBonusObject,
+  rollBonusObjectPrice
 } from '../../../game/heroes/bonus-objects.js'
+import { experienceToNextLevel } from '../../../game/heroes/hero-experience.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
+import { bonusObjectPrice } from '../../../game/heroes/state/map-objects.js'
 import { canAfford } from '../../../game/heroes/treasury.js'
 import { activePlayer, heroOwner } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED,
+  APP_COMMAND_GAME_SETUP_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+  APP_FACT_BONUS_OBJECT_PRICES_ROLLED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_WORLD_READY,
@@ -26,7 +32,18 @@ const STAR_AXIS =
 const SCHOOL_OF_WAR = 'The battle-scarred instructor of this school of war grunts as you walk past.'
 const SCHOOL_OF_MAGIC = 'The tingle of magic fills the air of this school of mystical arts.'
 
+const TREE_GREETING = 'Upon your approach, the tree opens its eyes in delight.'
+
 const CHOICE_SUBJECT = 'bonusObject.choice'
+const LEVEL_OFFER_SUBJECT = 'bonusObject.levelOffer'
+
+const TREE_OF_KNOWLEDGE_MESSAGES = Object.freeze({
+  free: `${TREE_GREETING} "Ahh, an adventurer! Allow me to teach you a little of what I have learned over the ages."`,
+  paid: (price) =>
+    `${TREE_GREETING} "Ahh, an adventurer! I will be happy to teach you a little of what I have learned over the ages for a mere ${price}." (Just bury it around my roots.)`,
+  tooPoor: (price) =>
+    `Tears brim in the eyes of the tree. "I need ${price}." it whispers. (sniff) "Well, come back when you can pay me."`
+})
 
 const MESSAGES_BY_TYPE = Object.freeze({
   LEARNING_STONE: {
@@ -71,6 +88,9 @@ const MESSAGES_BY_TYPE = Object.freeze({
     tooPoor: `${SCHOOL_OF_MAGIC} An acolyte informs you that he could sign you up for the next class, but that you do not have the required tuition of 1000 gold.`,
     visited:
       'An old wizard appears out of thin air. "Master," he says, "you have learned all that we could possibly teach you."'
+  },
+  TREE_OF_KNOWLEDGE: {
+    visited: `${TREE_GREETING} "It is good to see you, my student. I hope my teachings have helped you."`
   }
 })
 
@@ -92,9 +112,11 @@ function describeChoices(choices) {
 }
 
 // Each object gives its bonus once to each hero who enters it. An object with choices gives the
-// one the player picks, for its cost; a hero who leaves without picking can come back.
+// one the player picks, for its cost; a hero who leaves without picking can come back. A Tree of
+// Knowledge gives the hero one level, for the price rolled for it once per game.
 export const registerBonusObjectsModule = defineModule(
-  ({ emit, state }) => {
+  ({ emit, config, state }) => {
+    const random = typeof config?.random === 'function' ? config.random : Math.random
     let definitions = {}
     let entityTypes = new Map()
 
@@ -145,6 +167,85 @@ export const registerBonusObjectsModule = defineModule(
       }
     }
 
+    function rollMissingPrices() {
+      const current = state.get()
+      const prices = Object.fromEntries(
+        [...entityTypes]
+          .filter(([entityId, type]) => {
+            const { prices: choices } = bonusObjectDefinition(definitions, type)
+            return choices && !bonusObjectPrice(current, entityId)
+          })
+          .map(([entityId, type]) => [entityId, rollBonusObjectPrice(definitions, type, random())])
+      )
+      if (Object.keys(prices).length > 0) {
+        emit(APP_FACT_BONUS_OBJECT_PRICES_ROLLED, { prices })
+      }
+    }
+
+    const priceOf = (entityId) => bonusObjectPrice(state.get(), entityId) ?? {}
+    const experienceMissing = (heroId) =>
+      experienceToNextLevel(state.get().heroDetails[heroId]?.experience ?? 0)
+
+    function giveLevel({ heroId, entityId, type }, message) {
+      const experience = experienceMissing(heroId)
+      const price = priceOf(entityId)
+      if (Object.keys(price).length > 0) {
+        emit(APP_FACT_RESOURCES_SPENT, {
+          player: heroOwner(state.get(), heroId),
+          resources: price,
+          reason: 'bonusObject.visit',
+          entityId
+        })
+      }
+      give({ heroId, entityId, type }, {})
+      if (message) {
+        emit(APP_UI_NOTICE_OPENED, {
+          title: null,
+          message,
+          rewards: describeRewards({ experience })
+        })
+      }
+      emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
+    }
+
+    function offerLevel({ heroId, entityId, type }) {
+      const price = priceOf(entityId)
+      const priceText = describePrice(definitions, price)
+      if (!priceText) {
+        giveLevel({ heroId, entityId, type }, TREE_OF_KNOWLEDGE_MESSAGES.free)
+        return
+      }
+
+      if (!canPay(heroId, price)) {
+        emit(APP_UI_NOTICE_OPENED, {
+          title: null,
+          message: TREE_OF_KNOWLEDGE_MESSAGES.tooPoor(priceText)
+        })
+        return
+      }
+
+      emit(APP_UI_NOTICE_OPENED, {
+        title: null,
+        message: TREE_OF_KNOWLEDGE_MESSAGES.paid(priceText),
+        rewards: describeRewards({ experience: experienceMissing(heroId) }),
+        isQuestion: true,
+        subject: { kind: LEVEL_OFFER_SUBJECT, heroId, entityId }
+      })
+    }
+
+    function acceptLevelOffer({ heroId, entityId }) {
+      const type = entityTypes.get(entityId)
+      if (
+        !type ||
+        hasVisitedBonusObject(state.get(), heroId, entityId) ||
+        !canPay(heroId, priceOf(entityId))
+      ) {
+        return
+      }
+
+      giveLevel({ heroId, entityId, type }, null)
+    }
+
     function visit({ heroId, entityId }) {
       const current = state.get()
       const type = entityTypes.get(entityId)
@@ -157,7 +258,10 @@ export const registerBonusObjectsModule = defineModule(
         return
       }
 
-      if (bonusObjectDefinition(definitions, type).choices) {
+      const { choices, prices } = bonusObjectDefinition(definitions, type)
+      if (prices) {
+        offerLevel({ heroId, entityId, type })
+      } else if (choices) {
         offerChoices({ heroId, entityId, type })
       } else {
         giveFree({ heroId, entityId, type })
@@ -197,6 +301,10 @@ export const registerBonusObjectsModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_GAME_SETUP_REQUESTED,
+          handler: rollMissingPrices
+        },
+        {
           type: APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED,
           handler: (event) => visit(event.detail)
         },
@@ -206,6 +314,8 @@ export const registerBonusObjectsModule = defineModule(
             const { choice, subject } = event.detail
             if (subject?.kind === CHOICE_SUBJECT && choice !== null) {
               givePicked(subject, choice)
+            } else if (subject?.kind === LEVEL_OFFER_SUBJECT && choice === 'yes') {
+              acceptLevelOffer(subject)
             }
           }
         }
@@ -217,11 +327,13 @@ export const registerBonusObjectsModule = defineModule(
     phase: 'domain',
     consumes: [
       APP_FACT_WORLD_READY,
+      APP_COMMAND_GAME_SETUP_REQUESTED,
       APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED,
       APP_UI_INTERACTION_MODAL_CONFIRMED
     ],
     produces: [
       APP_FACT_HERO_BONUS_OBJECT_VISITED,
+      APP_FACT_BONUS_OBJECT_PRICES_ROLLED,
       APP_FACT_RESOURCES_SPENT,
       APP_UI_NOTICE_OPENED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED

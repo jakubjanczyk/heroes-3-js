@@ -3,6 +3,7 @@ import { createEventLog } from '../engine/eventlog.js'
 import { createDisposer, createWorld, setupResetListener } from './boot-lifecycle.js'
 import {
   APP_COMMAND_APP_START,
+  APP_COMMAND_GAME_SETUP_REQUESTED,
   APP_UI_DEV_FOG_OF_WAR_CHANGED,
   shouldPersistFactEvent
 } from './events.js'
@@ -120,6 +121,9 @@ export async function bootApp({
       persistedFacts: appEventLog?.getAll?.(),
       appBus
     })
+    // Rolls what each game rolls once, such as a Tree of Knowledge's price. Runs after the replay,
+    // so on a reload the saved rolls are already in place and only what is missing gets rolled.
+    appBus.emit(APP_COMMAND_GAME_SETUP_REQUESTED, {})
 
     return {
       ...world,

@@ -818,8 +818,9 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
 - [x] **School of Magic**: +1 Power or +1 Knowledge for 1000 gold, as the School of War
 
 #### 7.7.3 Tree of Knowledge
-- [ ] Gives the experience missing for the next level
-- [ ] Price rolled per tree at the start: free, 2000 gold or 10 gems (34 / 33 / 33); a paid tree asks first, and too little leaves it unvisited
+- [x] Gives the experience missing for the next level; a free tree gives it without asking
+- [x] Price rolled per tree at the start: free, 2000 gold or 10 gems (34 / 33 / 33), or set by the scenario, and kept after a reload; a paid tree asks first, and too little leaves it unvisited
+- [x] Right-click popup: "+1 level", or "+1 level for 2000 gold" / "for 10 gems" (our own wording), and "(Visited)" for the selected hero
 
 #### 7.7.4 Witch Hut
 - [ ] Each hut teaches one skill at Basic, rolled at the start from all but Leadership and Necromancy, or set by the scenario; class restrictions don't apply

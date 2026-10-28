@@ -160,6 +160,10 @@ export async function pickInMessage(user, choice) {
   await user.click(within(modal).getByRole('button', { name: 'OK' }))
 }
 
+export async function answerMessage(user, answer) {
+  await user.click(within(getInteractionModal()).getByRole('button', { name: answer }))
+}
+
 export async function cancelMessage(user) {
   await user.click(within(getInteractionModal()).getByRole('button', { name: 'Cancel' }))
 }

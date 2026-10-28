@@ -38,10 +38,39 @@ export function bonusObjectGives(definitions, type) {
   return bonusObjectDefinition(definitions, type).gives ?? {}
 }
 
+// A Tree of Knowledge's price in the words of its messages: '2000 gold', or null when free.
+export function describePrice(definitions, cost = {}) {
+  const [resourceType, amount] = Object.entries(cost)[0] ?? []
+  if (!resourceType) {
+    return null
+  }
+
+  const name = definitions?.resources?.[resourceType]?.name ?? resourceType
+  return `${amount} ${name.toLowerCase()}`
+}
+
+// One of the object's prices, picked by their chances in percent with `roll` in [0, 1).
+export function rollBonusObjectPrice(definitions, type, roll) {
+  const { prices = [] } = bonusObjectDefinition(definitions, type)
+  let threshold = 0
+  for (const { chance, cost } of prices) {
+    threshold += chance
+    if (roll * 100 < threshold) {
+      return cost
+    }
+  }
+
+  return prices.at(-1)?.cost ?? {}
+}
+
 // The popup's line on what the object gives. An object that offers a choice has its own line,
 // or none, as the Arena.
-export function describeBonusObject(definitions, type) {
-  const { description, choices } = bonusObjectDefinition(definitions, type)
+export function describeBonusObject(definitions, type, price = null) {
+  const { description, choices, prices } = bonusObjectDefinition(definitions, type)
+  if (prices) {
+    const priceText = describePrice(definitions, price ?? {})
+    return [priceText ? `+1 level for ${priceText}` : '+1 level']
+  }
   if (choices) {
     return description ? [description] : []
   }

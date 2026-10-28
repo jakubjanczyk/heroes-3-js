@@ -2,7 +2,7 @@ import { bonusObjectVisitedText } from '../../../game/heroes/bonus-objects.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
-import { flaggedObjectOwner } from '../../../game/heroes/state/map-objects.js'
+import { bonusObjectPrice, flaggedObjectOwner } from '../../../game/heroes/state/map-objects.js'
 import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
 import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
@@ -107,7 +107,8 @@ export const registerInfoPopupModule = defineModule(
         terrainName: mapObjects.getTerrainName(tile),
         definitions,
         ownerColorName: owner ? capitalize(owner) : null,
-        visitedText: bonusObjectVisitedText(state.get(), entity)
+        visitedText: bonusObjectVisitedText(state.get(), entity),
+        bonusObjectPrice: entity && bonusObjectPrice(state.get(), entity.id)
       })
       for (const line of lines) {
         fillLine(line)

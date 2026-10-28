@@ -1,4 +1,9 @@
-import { isDwelling, isMine, isResourceGenerator } from '../../domain/entity-queries.js'
+import {
+  isBonusObject,
+  isDwelling,
+  isMine,
+  isResourceGenerator
+} from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
@@ -105,6 +110,20 @@ export const resourceGeneratorsSlice = {
   }
 }
 
+// What each Tree of Knowledge asks for a level: set by the scenario, or rolled once per game.
+export const bonusObjectPricesSlice = {
+  key: 'bonusObjectPrices',
+  initial: ({ scenario }) =>
+    Object.fromEntries(
+      (scenario?.entities ?? [])
+        .filter((entity) => isBonusObject(entity) && entity.price)
+        .map((bonusObject) => [bonusObject.id, bonusObject.price])
+    ),
+  on: {
+    'fact.bonusObject.prices.rolled': (prices, { prices: rolled }) => ({ ...rolled, ...prices })
+  }
+}
+
 // How many creatures a monster has left after a battle it won; the others keep the scenario's.
 export const monsterCountsSlice = {
   key: 'monsterCounts',
@@ -156,6 +175,10 @@ export function mineIdsOf(state, player) {
 
 export function isResourceGeneratorVisited(state, generatorId) {
   return state.resourceGenerators[generatorId]?.visited ?? false
+}
+
+export function bonusObjectPrice(state, entityId) {
+  return state.bonusObjectPrices[entityId] ?? null
 }
 
 export function monsterCount(state, entityId) {
