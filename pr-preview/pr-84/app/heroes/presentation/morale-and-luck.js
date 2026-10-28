@@ -42,10 +42,7 @@ function paragraph(document, className, text) {
   return line
 }
 
-export function renderMoraleOrLuckPopup(
-  document,
-  { title, description, modifiersHeading, modifiers }
-) {
+export function renderMoraleOrLuckPopup(document, { title, description, modifiers }) {
   const popup = document.createElement('div')
   popup.className = 'info-popup info-popup--morale-luck message-box'
   popup.setAttribute('role', 'tooltip')
@@ -55,10 +52,7 @@ export function renderMoraleOrLuckPopup(
   popup.append(
     heading,
     paragraph(document, 'info-popup__line', description),
-    paragraph(document, 'info-popup__line info-popup__line--heading', modifiersHeading),
-    ...(modifiers.length > 0 ? modifiers : ['None']).map((modifier) =>
-      paragraph(document, 'info-popup__line', modifier)
-    )
+    ...modifiers.map((modifier) => paragraph(document, 'info-popup__line', modifier))
   )
   return popup
 }

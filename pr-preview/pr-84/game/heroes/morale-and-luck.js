@@ -36,11 +36,6 @@ const STATE_TEXTS = Object.freeze({
   }
 })
 
-const MODIFIERS_HEADINGS = Object.freeze({
-  morale: 'Current Morale Modifiers:',
-  luck: 'Current Luck Modifiers:'
-})
-
 function signed(value) {
   return value > 0 ? `+${value}` : String(value)
 }
@@ -103,7 +98,6 @@ function describe(kind, modifiers, { min, max }) {
     valueText: signed(value),
     state,
     ...STATE_TEXTS[kind][state],
-    modifiersHeading: MODIFIERS_HEADINGS[kind],
     modifiers: shown.map(({ text, value: modifier }) => `${text} ${signed(modifier)}`)
   }
 }
