@@ -26,8 +26,18 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
 
 const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
+
+// The game plays a short animation over the stack; ours is the morale or luck picture, faded out.
+const EFFECT_MS = 1000
+
+const EFFECTS = Object.freeze({
+  goodMorale: { icon: 'morale', label: 'Good morale', state: 'good' },
+  badMorale: { icon: 'morale', label: 'Bad morale', state: 'bad' },
+  goodLuck: { icon: 'luck', label: 'Good luck', state: 'good' }
+})
 
 const COMMAND_BY_ACTION = {
   'auto-combat': APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
@@ -395,9 +405,30 @@ export const registerBattleViewModule = defineModule(
       }
 
       showMessages(battle.messages)
+      for (const effect of battle.effects ?? []) {
+        showEffect(effect)
+      }
       showActions(battle)
       showResults(battle.results)
       describeHoveredHex()
+    }
+
+    function showEffect({ stackId, kind }) {
+      const stack = stackElements.get(stackId)?.stack
+      const { icon, label, state } = EFFECTS[kind]
+      if (!stack) {
+        return
+      }
+
+      const effect = document.createElement('div')
+      effect.className = 'battle-effect morale-luck'
+      effect.dataset.state = state
+      effect.setAttribute('role', 'img')
+      effect.setAttribute('aria-label', label)
+      effect.style.setProperty('--battle-effect-ms', `${EFFECT_MS}ms`)
+      effect.append(renderMoraleOrLuckIcon(document, icon))
+      stack.append(effect)
+      setTimeout(() => effect.remove(), EFFECT_MS)
     }
 
     function showActions({ canWait, canDefend, canRetreat, autoCombat }) {
