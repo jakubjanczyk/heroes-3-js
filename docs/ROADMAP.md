@@ -823,9 +823,9 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
 - [x] Right-click popup: "+1 level", or "+1 level for 2000 gold" / "for 10 gems" (our own wording), and "(Visited)" for the selected hero
 
 #### 7.7.4 Witch Hut
-- [ ] Each hut teaches one skill at Basic, rolled at the start from all but Leadership and Necromancy, or set by the scenario; class restrictions don't apply
-- [ ] Already has the skill, or has 8 skills: a message and nothing
-- [ ] The popup names the skill once a hero of the player has visited
+- [x] Each hut teaches one skill at Basic, rolled at the start from all but Leadership and Necromancy, or set by the scenario; class restrictions don't apply
+- [x] Already has the skill, or has 8 skills: a message and nothing
+- [x] The status bar and popup name the skill once a hero of the player has visited ("Witch Hut (Archery)", our own wording)
 
 #### 7.7.5 Library of Enlightenment
 - [ ] +2 to all four primary skills, once per hero

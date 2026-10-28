@@ -1,6 +1,7 @@
 import { isBonusObject } from '../../../game/domain/entity-queries.js'
 import {
   bonusObjectDefinition,
+  bonusObjectTaughtSkill,
   describeBonus,
   describePrice,
   hasVisitedBonusObject,
@@ -295,7 +296,10 @@ export const registerBonusObjectsModule = defineModule(
             definitions = event.detail.definitions ?? {}
             entityTypes = new Map(
               (event.detail.scenario?.entities ?? [])
-                .filter(isBonusObject)
+                .filter(
+                  (entity) =>
+                    isBonusObject(entity) && !bonusObjectTaughtSkill(definitions, entity.type)
+                )
                 .map((entity) => [entity.id, entity.type])
             )
           }

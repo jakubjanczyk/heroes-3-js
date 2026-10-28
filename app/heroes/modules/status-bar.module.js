@@ -41,7 +41,7 @@ export const registerStatusBarModule = defineModule(
                 entity,
                 terrainName: mapObjects.getTerrainName(tile),
                 definitions,
-                visitedText: bonusObjectVisitedText(state.get(), entity)
+                visitedText: bonusObjectVisitedText(state.get(), entity, definitions)
               })
             )
           }

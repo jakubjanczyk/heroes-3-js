@@ -107,7 +107,7 @@ export const registerInfoPopupModule = defineModule(
         terrainName: mapObjects.getTerrainName(tile),
         definitions,
         ownerColorName: owner ? capitalize(owner) : null,
-        visitedText: bonusObjectVisitedText(state.get(), entity),
+        visitedText: bonusObjectVisitedText(state.get(), entity, definitions),
         bonusObjectPrice: entity && bonusObjectPrice(state.get(), entity.id)
       })
       for (const line of lines) {

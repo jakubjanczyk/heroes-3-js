@@ -86,7 +86,7 @@ Checked against the Heroes 3 wiki's page source and the game's object rules; the
 ### Witch Hut
 
 - Each hut teaches one skill, rolled when the map starts from every skill but Leadership and Necromancy; a map may set it or narrow the list. A skill the hero's class never gets on level-up can still be learned here.
-- Nothing tells the player the skill before a hero of theirs has visited; after that the status bar and popup name it ("Witch Hut" and the skill on the next line, `core.genrltxt.354`).
+- Nothing tells the player the skill before a hero of theirs has visited; after that the status bar and popup name it (`core.genrltxt.354`, whose text isn't online; ours reads "Witch Hut (Archery)", our own wording).
 - No question first: entering teaches the skill at Basic. "An ancient witch living in a strange hut welcomes you, offering to teach you Archery for her own inscrutable purposes." (171), with the skill's picture and "Basic Archery" under it.
 - The hero already has the skill, at any level (172): "You approach the strange hut and observe a witch inside studying an ancient tome on Archery. As you approach, she turns and speaks. "You already know that which I would teach you. I can help you no further.""
 - The hero has 8 skills (173): "You approach the strange hut and observe a witch inside studying an ancient tome on Archery. As you approach, she turns and focuses her one glass eye on you. "HA!" she screeches, "I would not presume to try to teach new tricks to someone so clearly as wise as you." You leave, but can't quite shake the feeling that you have just been insulted."
@@ -132,9 +132,17 @@ Built in five parts, each its own change. Nothing here needs a feature we don't 
 - A free tree saves the visit, shows its message with the experience missing under the experience picture and OK, then gives the experience, so the level-up popup follows. A paid tree asks with the same picture and Yes / No; Yes spends the price (`fact.resources.spent`) and gives the level. Too little shows the "I need" message with OK only, and the tree stays unvisited.
 - The demo map has one, with its price rolled.
 
+### Part 4 (done)
+
+- `WITCH_HUT` in `game/data/bonus-objects.json` has `teachesSkill`: the `level` taught and the skills `neverRolled`. A scenario may set an entity's `skill` (`"ARCHERY"`), banned ones included.
+- On `command.game.setup.requested` the witch huts module rolls the skill of every hut that has none, evenly from the skill list but the banned ones, and saves them as `fact.witchHut.skills.rolled`, kept in the `witchHuts` slice.
+- Entering saves `fact.witchHut.visited` (`heroId`, `entityId`, `player`), even when the hero is turned away, so the slice knows which players have seen the skill. A hero without the skill and with room for it learns it through `fact.hero.secondarySkill.learned`, and the message shows the skill's initials with "Basic" and its name under them. The bonus objects module leaves huts to this module.
+- Checked against the Heroes 3 wiki's Witch Hut page and a second source's object rules: no question first (being able to refuse is Horn of the Abyss), and the "already know" message wins over the "too wise" one for a hero with 8 skills that include the hut's.
+- The status bar reads "Witch Hut (Archery)" and the popup "Witch Hut" / "(Archery)", with no per-hero line.
+- The demo map has one, with its skill rolled.
+
 ### Later parts
 
-- **Part 4.** Each hut's skill is rolled when the world is built, or set by the scenario (`skill`). The player's visited huts are kept per player, so the popup can name the skill.
 - **Part 5.** The level rule with Diplomacy; Diplomacy itself does nothing else yet.
 
 ## Not yet
