@@ -18,7 +18,8 @@ import {
   dwellingsSlice,
   minesSlice,
   monsterCountsSlice,
-  resourceGeneratorsSlice
+  resourceGeneratorsSlice,
+  witchHutsSlice
 } from './state/map-objects.js'
 import { tavernSlice } from './state/tavern.js'
 import { townsSlice } from './state/towns.js'
@@ -46,6 +47,7 @@ export const heroesContent = Object.freeze({
     dwellingsSlice,
     resourceGeneratorsSlice,
     bonusObjectPricesSlice,
+    witchHutsSlice,
     monsterCountsSlice,
     kingdomsSlice,
     tavernSlice,

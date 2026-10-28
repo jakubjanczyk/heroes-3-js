@@ -31,6 +31,7 @@ import { registerTownListModule } from './modules/town-list.module.js'
 import { registerTownRecruitViewModule } from './modules/town-recruit-view.module.js'
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
+import { registerWitchHutsModule } from './modules/witch-huts.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
 
 export const heroesAppContent = Object.freeze({
@@ -49,6 +50,7 @@ export const heroesAppContent = Object.freeze({
     registerDwellingsModule,
     registerResourceGeneratorsModule,
     registerBonusObjectsModule,
+    registerWitchHutsModule,
     registerHeroLevelsModule,
     registerHeroArmyModule,
     registerBattleModule,

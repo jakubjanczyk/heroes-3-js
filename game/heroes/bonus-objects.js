@@ -1,5 +1,6 @@
 import { selectedHeroIdOf, viewingPlayer } from '../state/queries.js'
 import { PRIMARY_SKILLS } from './primary-skills.js'
+import { describeSecondarySkill } from './secondary-skills.js'
 
 // The tiles each object blocks besides its entrance; the rest of its picture can be walked on.
 const FOOTPRINT_BY_TYPE = Object.freeze({
@@ -63,6 +64,19 @@ export function rollBonusObjectPrice(definitions, type, roll) {
   return prices.at(-1)?.cost ?? {}
 }
 
+export function bonusObjectTaughtSkill(definitions, type) {
+  return bonusObjectDefinition(definitions, type).teachesSkill ?? null
+}
+
+// One of the skills a Witch Hut may teach, drawn evenly with `roll` in [0, 1).
+export function rollTaughtSkill(definitions, type, roll) {
+  const { neverRolled = [] } = bonusObjectTaughtSkill(definitions, type) ?? {}
+  const skills = Object.keys(definitions?.secondarySkills ?? {}).filter(
+    (skill) => !neverRolled.includes(skill)
+  )
+  return skills[Math.floor(roll * skills.length)] ?? null
+}
+
 // The popup's line on what the object gives. An object that offers a choice has its own line,
 // or none, as the Arena.
 export function describeBonusObject(definitions, type, price = null) {
@@ -93,10 +107,24 @@ export function hasVisitedBonusObject(state, heroId, entityId) {
   return state.heroDetails[heroId]?.visitedBonusObjects.includes(entityId) ?? false
 }
 
-// Whether the player's selected hero has used the object, as the status bar and popup say it.
-export function bonusObjectVisitedText(state, entity) {
+// A Witch Hut's skill stays unknown until a hero of the player has been inside.
+function witchHutSkillText(state, { skill, visitedBy }, definitions) {
+  if (!skill || !visitedBy.includes(viewingPlayer(state))) {
+    return null
+  }
+  return `(${describeSecondarySkill({ skill }, definitions).name})`
+}
+
+// Whether the player's selected hero has used the object, as the status bar and popup say it,
+// or for a Witch Hut the skill it teaches.
+export function bonusObjectVisitedText(state, entity, definitions) {
   if (entity?.kind !== 'BONUS_OBJECT') {
     return null
+  }
+
+  const witchHut = state.witchHuts?.[entity.id]
+  if (witchHut) {
+    return witchHutSkillText(state, witchHut, definitions)
   }
 
   const heroId = selectedHeroIdOf(state, viewingPlayer(state))

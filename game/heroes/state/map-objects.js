@@ -5,6 +5,7 @@ import {
   isResourceGenerator
 } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
+import { bonusObjectTaughtSkill } from '../bonus-objects.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
   flaggedDwellingCountsByCreature,
@@ -124,6 +125,37 @@ export const bonusObjectPricesSlice = {
   }
 }
 
+function updateWitchHut(huts, hutId, update) {
+  const hut = huts[hutId]
+  return hut ? { ...huts, [hutId]: { ...hut, ...update(hut) } } : huts
+}
+
+// The skill each Witch Hut teaches, set by the scenario or rolled once per game, and the players
+// whose heroes have been inside and so know it.
+export const witchHutsSlice = {
+  key: 'witchHuts',
+  initial: ({ scenario, definitions }) =>
+    Object.fromEntries(
+      (scenario?.entities ?? [])
+        .filter(
+          (entity) => isBonusObject(entity) && bonusObjectTaughtSkill(definitions, entity.type)
+        )
+        .map((hut) => [hut.id, { skill: hut.skill ?? null, visitedBy: [] }])
+    ),
+  on: {
+    'fact.witchHut.skills.rolled': (huts, { skills }) =>
+      Object.entries(skills).reduce(
+        (updated, [hutId, skill]) =>
+          updateWitchHut(updated, hutId, (hut) => ({ skill: hut.skill ?? skill })),
+        huts
+      ),
+    'fact.witchHut.visited': (huts, { entityId, player = DEFAULT_PLAYER }) =>
+      updateWitchHut(huts, entityId, ({ visitedBy }) => ({
+        visitedBy: visitedBy.includes(player) ? visitedBy : [...visitedBy, player]
+      }))
+  }
+}
+
 // How many creatures a monster has left after a battle it won; the others keep the scenario's.
 export const monsterCountsSlice = {
   key: 'monsterCounts',
@@ -179,6 +211,10 @@ export function isResourceGeneratorVisited(state, generatorId) {
 
 export function bonusObjectPrice(state, entityId) {
   return state.bonusObjectPrices[entityId] ?? null
+}
+
+export function witchHutSkill(state, entityId) {
+  return state.witchHuts[entityId]?.skill ?? null
 }
 
 export function monsterCount(state, entityId) {
