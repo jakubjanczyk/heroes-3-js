@@ -18,10 +18,14 @@ Checked against the Heroes 3 wiki (Morale, Luck, Alignment, Leadership pages) an
   - The hero screen: two frames between Specialty and Experience, morale then luck, each a picture for its state.
   - The hero exchange screen: in each hero's row of small frames after experience and spell points.
   - The hero info box and the right-click hero popup: morale and luck beside the army slots.
-- **Right click** on one of them shows a popup: the state as its title ("Good Morale", "Neutral Morale", "Bad Morale"; "Good Luck", "Neutral Luck"), a sentence on what it means, then "Current Morale Modifiers:" with a line per modifier ("Basic Leadership +1", "All troops of one alignment +1", "Troops of 3 alignments -1", "Undead in army -1"), or "None" when there are none (`core.arraytxt.60-62`, `86-88`, `108`, `114-116`).
+- **Right click** on one of them shows a popup: the state as its title ("Good Morale", "Neutral Morale", "Bad Morale"; "Good Luck", "Neutral Luck"), a sentence on what it means, then a line per modifier ("Basic Leadership +1", "All troops of one alignment +1", "Troops of 3 alignments -1", "Undead in army -1"), and nothing more when there are none (`core.arraytxt.60-62`, `86-88`, `114-116`). There is no heading over the modifiers.
 - **The status bar** over one names its state (`core.heroscrn.3-8`).
 
-The game's texts aren't online. The titles and modifier lines above follow how the game builds them (one line per modifier with its number) and are our own wording. Of the sentences on what each state means, only the neutral morale one is the game's ("Neutral morale means your armies will neither be blessed with extra attacks or freeze in combat.", quoted in a source's code); the others are ours. The Angels' line ("Angels in army +1") is ours too.
+The game's text files aren't online; a few of their lines are quoted in a source's code, so those match the game, though nothing else confirms them:
+- "All troops of one alignment +1", "Troops of %d alignments %d" and "Undead in army -1";
+- "Neutral morale means your armies will neither be blessed with extra attacks or freeze in combat."
+
+The rest is our own wording: the titles ("Good Morale"), the other sentences on what each state means, the skill lines ("Basic Leadership +1") and "Angels in army +1".
 
 ## What we do
 
