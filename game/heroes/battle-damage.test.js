@@ -31,6 +31,18 @@ describe('battle damage', () => {
     expect(damage).toBe(expected)
   })
 
+  // 10 damage, +300% for 60 Attack against 0 Defense and +100% for luck.
+  test('a lucky strike adds +100% on top of the attack bonus and outside its cap', () => {
+    const damage = rollDamage({
+      attacker: aStack({ attack: 60 }),
+      defender: aStack(),
+      random: LOWEST_ROLLS,
+      lucky: true
+    })
+
+    expect(damage).toBe(50)
+  })
+
   test.each([
     { defense: 28, expected: 30 },
     { defense: 40, expected: 30 }

@@ -3,9 +3,13 @@ import {
   createBattle,
   defendStack,
   endTurn,
+  finishAction,
+  freezeStack,
   getActiveStack,
   getAttackTargets,
+  getBadMoraleChance,
   getExperienceForWin,
+  getGoodMoraleChance,
   getHeroArmyAfterBattle,
   getShotTargets,
   getStackHexes,
@@ -16,6 +20,8 @@ import {
   planStackAttack,
   planStackMove,
   planStackShot,
+  resolveAttack,
+  resolveShot,
   shootStack,
   waitStack
 } from '../../../game/heroes/battle.js'
@@ -47,6 +53,7 @@ import {
   APP_FACT_BATTLE_FINISHED,
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_DEFENDED,
+  APP_FACT_BATTLE_STACK_FROZE,
   APP_FACT_BATTLE_STACK_MOVED,
   APP_FACT_BATTLE_STACK_SHOT,
   APP_FACT_BATTLE_STACK_WAITED,
@@ -101,6 +108,9 @@ export const registerBattleModule = defineModule(
   ({ emit, config, state }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
     const random = typeof config?.random === 'function' ? config.random : Math.random
+    const moraleRandom =
+      typeof config?.moraleRandom === 'function' ? config.moraleRandom : Math.random
+    const luckRandom = typeof config?.luckRandom === 'function' ? config.luckRandom : Math.random
 
     let heroId = null
     let definitions = {}
@@ -113,6 +123,8 @@ export const registerBattleModule = defineModule(
     let passedTurns = 0
     // How the battle went, once it is over and its results window waits for the player.
     let outcome = null
+    // The battle as the active stack's turn started, once its bad morale was rolled for.
+    let badMoraleRolledFor = null
 
     function heroNameOf() {
       return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
@@ -216,14 +228,29 @@ export const registerBattleModule = defineModule(
       emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
     }
 
+    // The roll is saved with the action, so a reload gives the stack the same extra turn.
+    function withGoodMoraleRoll(detail, resolved) {
+      const chance = getGoodMoraleChance(resolved, detail.stackId)
+      return chance > 0 && moraleRandom() < chance ? { ...detail, goodMorale: true } : detail
+    }
+
+    function moveDetail(stackId, path) {
+      const detail = { stackId, path }
+      return withGoodMoraleRoll(detail, moveStack(battle, stackId, path.at(-1)))
+    }
+
+    const attackDetail = (detail) => withGoodMoraleRoll(detail, resolveAttack(battle, detail))
+
+    const shotDetail = (detail) => withGoodMoraleRoll(detail, resolveShot(battle, detail))
+
     function playComputerTurn(stack) {
-      const plan = planComputerTurn(battle, stack, { random })
+      const plan = planComputerTurn(battle, stack, { random, luckRandom })
       if (plan?.shot) {
         void walkThenShow({
           stack,
           path: [],
           fact: APP_FACT_BATTLE_STACK_SHOT,
-          detail: { stackId: stack.id, ...plan.shot }
+          detail: shotDetail({ stackId: stack.id, ...plan.shot })
         })
         return
       }
@@ -233,7 +260,7 @@ export const registerBattleModule = defineModule(
           stack,
           path: plan.attack.path,
           fact: APP_FACT_BATTLE_STACK_ATTACKED,
-          detail: { stackId: stack.id, ...plan.attack }
+          detail: attackDetail({ stackId: stack.id, ...plan.attack })
         })
         return
       }
@@ -243,7 +270,7 @@ export const registerBattleModule = defineModule(
           stack,
           path: plan.path,
           fact: APP_FACT_BATTLE_STACK_MOVED,
-          detail: { stackId: stack.id, path: plan.path }
+          detail: moveDetail(stack.id, plan.path)
         })
         return
       }
@@ -283,9 +310,25 @@ export const registerBattleModule = defineModule(
       }
 
       const stack = getActiveStack(battle)
+      if (freezesInPanic(stack)) {
+        emit(APP_FACT_BATTLE_STACK_FROZE, { stackId: stack.id })
+        continueBattle()
+        return
+      }
+
       if (stack.side === 'defender' || autoCombat) {
         playComputerTurn(stack)
       }
+    }
+
+    function freezesInPanic(stack) {
+      if (badMoraleRolledFor === battle) {
+        return false
+      }
+
+      badMoraleRolledFor = battle
+      const chance = getBadMoraleChance(battle, stack.id)
+      return chance > 0 && moraleRandom() < chance
     }
 
     const isPlayersTurn = () =>
@@ -327,13 +370,14 @@ export const registerBattleModule = defineModule(
         stack,
         path,
         fact: APP_FACT_BATTLE_STACK_MOVED,
-        detail: { stackId: stack.id, path }
+        detail: moveDetail(stack.id, path)
       })
     }
 
     function attackWithActiveStack({ targetId, fromHex }) {
       const stack = getActiveStack(battle)
-      const attack = stack && planStackAttack(battle, stack, { targetId, fromHex, random })
+      const attack =
+        stack && planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom })
       if (!attack) {
         return
       }
@@ -343,13 +387,13 @@ export const registerBattleModule = defineModule(
         stack,
         path,
         fact: APP_FACT_BATTLE_STACK_ATTACKED,
-        detail: { stackId: stack.id, targetId, path, strikes }
+        detail: attackDetail({ stackId: stack.id, targetId, path, strikes })
       })
     }
 
     function shootWithActiveStack({ targetId }) {
       const stack = getActiveStack(battle)
-      const shot = stack && planStackShot(battle, stack, { targetId, random })
+      const shot = stack && planStackShot(battle, stack, { targetId, random, luckRandom })
       if (!shot) {
         return
       }
@@ -358,7 +402,7 @@ export const registerBattleModule = defineModule(
         stack,
         path: [],
         fact: APP_FACT_BATTLE_STACK_SHOT,
-        detail: { stackId: stack.id, targetId, strikes: shot.strikes }
+        detail: shotDetail({ stackId: stack.id, targetId, strikes: shot.strikes })
       })
     }
 
@@ -396,6 +440,7 @@ export const registerBattleModule = defineModule(
             battle = createBattle({
               heroArmy: hero?.army,
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
+              heroSecondarySkills: hero?.secondarySkills,
               monsterArmy: defenderArmy({ started, heroArmy: hero?.army, definitions }),
               definitions
             })
@@ -413,7 +458,7 @@ export const registerBattleModule = defineModule(
             }
 
             const { stackId, path } = event.detail
-            battle = endTurn(moveStack(battle, stackId, path.at(-1)), stackId)
+            battle = finishAction(moveStack(battle, stackId, path.at(-1)), event.detail)
             showBattle()
           }
         },
@@ -447,6 +492,17 @@ export const registerBattleModule = defineModule(
             }
 
             battle = endTurn(battle, event.detail.stackId)
+            showBattle()
+          }
+        },
+        {
+          type: APP_FACT_BATTLE_STACK_FROZE,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = freezeStack(battle, event.detail.stackId)
             showBattle()
           }
         },
@@ -607,6 +663,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
+      APP_FACT_BATTLE_STACK_FROZE,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
@@ -627,6 +684,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
+      APP_FACT_BATTLE_STACK_FROZE,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,

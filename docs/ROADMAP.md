@@ -424,13 +424,15 @@ Each comes with the feature it changes; the note has every skill's numbers.
 - [ ] Combat spells: see Milestone 5
 
 ### 4.9 Morale and Luck
-Shown and worked out, not used in battle yet; see `docs/notes/2026-10-28-morale-and-luck.md`.
+See `docs/notes/2026-10-28-morale-and-luck.md` and, for battle, `docs/notes/2026-10-28-morale-and-luck-in-battle.md`.
 - [x] Morale -3 to +3 and luck 0 to +3, the modifiers added up and held to the range
 - [x] Sources the game has: Leadership and Luck skills; creatures of one town +1, of three -1, four -2; undead in the army -1; Angels or Archangels +1
 - [x] Shown on the hero screen, the exchange screen and the hero box (info box, right-click popup, tavern), with stand-in pictures
 - [x] Right click: the state as title, what it means, and the current modifiers or "None"; the status bar names the state
 - [x] Follows the army as it changes, and the same after a reload
-- [ ] In battle: good morale gives an extra turn, bad morale freezes a stack, luck doubles the damage (5.6)
+- [x] In battle: good morale gives an extra turn, bad morale freezes a stack, luck doubles the base damage (5.6)
+- [ ] Morale and luck animations and sounds (10.3, 10.4)
+- [ ] The wait phase of its own for a stack that waits on its extra turn (it waits with the others for now)
 - [ ] Bonuses until the next battle (7.6), artifacts (7.8) and spells (5.8)
 
 ---
@@ -530,7 +532,8 @@ See `docs/notes/2026-10-20-battle-attacks.md` and `docs/notes/2026-10-20-ranged-
 - [ ] Attack animation: brief visual for attack, damage number shown
 - [x] A stack at 0 units stays on its hex as a corpse: it gets no turn, and other stacks can stand on it
 - [ ] Death animation
-- [ ] Jousting (Cavaliers), hatred (Angels and Devils), luck, Offense and Armorer skills
+- [x] Luck: a lucky strike adds +100% to the damage (4.9)
+- [ ] Jousting (Cavaliers), hatred (Angels and Devils), Offense and Armorer skills
 
 ### 5.7 Combat Actions (Wait, Defend, Retreat, Surrender)
 See `docs/notes/2026-10-20-wait-defend-auto-combat.md` and `docs/notes/2026-10-20-retreat-surrender-results.md`.
@@ -1113,7 +1116,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 35. Creature dwellings on map (7.4), Castle only, in four parts: on the map and flagged, recruiting, guards, town growth
 36. Resource-generating objects (7.5)
 37. Permanent bonus objects (7.7), in five parts: free once-per-hero objects, choices (Arena, schools), Tree of Knowledge, Witch Hut, Library of Enlightenment
-38. Morale and luck (4.9): worked out and shown, not yet used in battle
+38. Morale and luck (4.9): worked out and shown, then used in battle
 39. Stat-boosting objects (7.6)
 40. Artifacts on map (7.8)
 41. Obstacles & decorations (7.3)

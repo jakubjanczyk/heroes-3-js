@@ -47,10 +47,10 @@ function findNearestShotTarget(battle, stack) {
 
 // `{ shot }` with the target and the shots, `{ attack }` with the target, the way there and the
 // strikes, `{ path }` for a move, or null when the stack can do nothing and its turn passes.
-export function planComputerTurn(battle, stack, { random }) {
+export function planComputerTurn(battle, stack, { random, luckRandom }) {
   if (canShoot(battle, stack)) {
     const { stackId: targetId } = findNearestShotTarget(battle, stack)
-    return { shot: { targetId, ...planStackShot(battle, stack, { targetId, random }) } }
+    return { shot: { targetId, ...planStackShot(battle, stack, { targetId, random, luckRandom }) } }
   }
 
   const approach = findNearestApproach(battle, stack)
@@ -60,7 +60,7 @@ export function planComputerTurn(battle, stack, { random }) {
 
   const { targetId, fromHex, way } = approach
   if (approach.distance <= stack.speed) {
-    const attack = planStackAttack(battle, stack, { targetId, fromHex, random })
+    const attack = planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom })
     return attack && { attack: { targetId, ...attack } }
   }
 

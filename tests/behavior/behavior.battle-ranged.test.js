@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
+import { createMemoryEventLog, readGameData } from './app.utils.js'
 import {
   attackBattleHexFrom,
   clickBattleButton,
-  clickBattleHex,
   getBattleStatusBarText,
   hoverBattleHex,
   moveActiveStackTo,
   readBattleStacks,
   readCombatMessages,
   reloadBattle,
+  shootAt,
   startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario } from './builders.js'
@@ -29,11 +29,6 @@ const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 50, monsterStack
       aMonster().withType(monsterType).withCount(monsterCount).withStacks(monsterStacks).at(1, 0)
     )
     .withDefinitions({ monsters })
-
-async function shootAt(user, row, column) {
-  await clickBattleHex(user, row, column)
-  await waitMs()
-}
 
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster on row 6,
 // column 15: 14 hexes away. Pikemen (speed 4) walk 4 hexes a turn toward the shooter, to column

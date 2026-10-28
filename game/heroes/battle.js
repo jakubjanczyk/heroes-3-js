@@ -13,6 +13,11 @@ import {
   isSameHex
 } from './battlefield.js'
 import { describeStack } from './hero-army.js'
+import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
+
+const MORALE_CHANCE_IN = 24
+// Bad morale freezes twice as often as good morale gives an extra turn.
+const BAD_MORALE_CHANCE_FACTOR = 2
 
 // A shot at a target more than this many hexes away does half damage.
 const SHOOTING_PENALTY_DISTANCE = 10
@@ -37,7 +42,7 @@ const UNKNOWN_CREATURE = Object.freeze({
   abilities: []
 })
 
-function createStacks({ side, army, skills, definitions }) {
+function createStacks({ side, army, skills, morale = 0, luck = 0, definitions }) {
   const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
   const startHexes = getStartHexes({ side, stackCount: stacks.length })
   return stacks.map(({ creature, count, slot }, index) => {
@@ -45,6 +50,7 @@ function createStacks({ side, army, skills, definitions }) {
     const { abilities } = definition
     const retaliationsPerRound = getRetaliationsPerRound(abilities)
     const shooter = abilities.includes('ranged')
+    const unaffectedByMorale = abilities.includes('undead')
     return {
       id: `${side}-${slot}`,
       side,
@@ -65,19 +71,44 @@ function createStacks({ side, army, skills, definitions }) {
       shots: shooter ? definition.shots : 0,
       shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
       meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
+      morale: unaffectedByMorale ? 0 : morale,
+      luck,
       hex: startHexes[index]
     }
   })
 }
 
-export function createBattle({ heroArmy, heroSkills, monsterArmy, definitions }) {
+// Morale and luck are the armies' as the battle starts. A monster has no hero, so no luck.
+export function createBattle({
+  heroArmy,
+  heroSkills,
+  heroSecondarySkills,
+  monsterArmy,
+  definitions
+}) {
+  const hero = { army: heroArmy ?? [], secondarySkills: heroSecondarySkills }
   return {
     stacks: [
-      ...createStacks({ side: 'attacker', army: heroArmy ?? [], skills: heroSkills, definitions }),
-      ...createStacks({ side: 'defender', army: monsterArmy, definitions })
+      ...createStacks({
+        side: 'attacker',
+        army: hero.army,
+        skills: heroSkills,
+        morale: getHeroMorale({ entity: hero, definitions }).value,
+        luck: getHeroLuck({ entity: hero, definitions }).value,
+        definitions
+      }),
+      ...createStacks({
+        side: 'defender',
+        army: monsterArmy,
+        morale: getHeroMorale({ entity: { army: monsterArmy }, definitions }).value,
+        definitions
+      })
     ],
     actedStackIds: [],
     waitedStackIds: [],
+    // The stacks whose morale took effect this round, for good or bad: it does so once a round.
+    moraleStackIds: [],
+    extraTurnStackId: null,
     messages: [],
     definitions
   }
@@ -97,6 +128,11 @@ export function getTurnOrder(battle) {
 
 // The stacks that waited act once every other stack has, the slowest first.
 export function getActiveStack(battle) {
+  const extraTurn = livingStacks(battle).find(({ id }) => id === battle.extraTurnStackId)
+  if (extraTurn) {
+    return extraTurn
+  }
+
   const yetToAct = getTurnOrder(battle).filter(({ id }) => !battle.actedStackIds.includes(id))
   return yetToAct.find(({ id }) => !battle.waitedStackIds.includes(id)) ?? yetToAct.at(-1) ?? null
 }
@@ -124,13 +160,15 @@ function startNextTurn(battle) {
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
   if (livingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
-    return startNextTurn({ ...battle, actedStackIds })
+    return startNextTurn({ ...battle, actedStackIds, extraTurnStackId: null })
   }
 
   return startNextTurn({
     ...battle,
     actedStackIds: [],
     waitedStackIds: [],
+    moraleStackIds: [],
+    extraTurnStackId: null,
     stacks: battle.stacks.map((stack) => ({
       ...stack,
       retaliationsLeft: stack.retaliationsPerRound
@@ -139,7 +177,69 @@ export function endTurn(battle, stackId) {
 }
 
 export function waitStack(battle, stackId) {
-  return startNextTurn({ ...battle, waitedStackIds: [...battle.waitedStackIds, stackId] })
+  return startNextTurn({
+    ...battle,
+    waitedStackIds: [...battle.waitedStackIds, stackId],
+    extraTurnStackId: null
+  })
+}
+
+const hadMorale = (battle, stackId) => battle.moraleStackIds.includes(stackId)
+
+// After a stack moved, attacked or shot, and its target struck back: never after it defended,
+// died or won the battle, and once a round.
+export function getGoodMoraleChance(battle, stackId) {
+  const stack = livingStacks(battle).find(({ id }) => id === stackId)
+  const battleGoesOn = hasLivingStacks(battle, 'attacker') && hasLivingStacks(battle, 'defender')
+  if (!stack || !battleGoesOn || stack.morale <= 0 || hadMorale(battle, stackId)) {
+    return 0
+  }
+
+  return stack.morale / MORALE_CHANCE_IN
+}
+
+// As the stack's turn starts; not when a stack that waited gets its turn back, nor on an extra
+// turn.
+export function getBadMoraleChance(battle, stackId) {
+  const stack = livingStacks(battle).find(({ id }) => id === stackId)
+  if (!stack || stack.morale >= 0 || hasWaited(battle, stackId) || hadMorale(battle, stackId)) {
+    return 0
+  }
+
+  return (-stack.morale * BAD_MORALE_CHANCE_FACTOR) / MORALE_CHANCE_IN
+}
+
+const nameOf = (battle, stackId) => battle.stacks.find(({ id }) => id === stackId).name
+
+function giveExtraTurn(battle, stackId) {
+  return {
+    ...battle,
+    moraleStackIds: [...battle.moraleStackIds, stackId],
+    extraTurnStackId: stackId,
+    messages: [
+      ...battle.messages,
+      `High morale enables the ${nameOf(battle, stackId)} to attack again.`
+    ]
+  }
+}
+
+// A stack whose morale took effect acts again; any other's turn ends.
+export function finishAction(battle, { stackId, goodMorale = false }) {
+  return goodMorale ? giveExtraTurn(battle, stackId) : endTurn(battle, stackId)
+}
+
+export function freezeStack(battle, stackId) {
+  return endTurn(
+    {
+      ...battle,
+      moraleStackIds: [...battle.moraleStackIds, stackId],
+      messages: [
+        ...battle.messages,
+        `Low morale causes the ${nameOf(battle, stackId)} to freeze in panic.`
+      ]
+    },
+    stackId
+  )
 }
 
 // +20% Defense, and at least 1 point.
@@ -359,7 +459,7 @@ export function getAttackTargets(battle, stack) {
 
 // The way there and every strike with its rolled damage, or null when the stack cannot attack
 // the target from `fromHex`.
-export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
+export function planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom }) {
   const target = livingStacks(battle).find(({ id }) => id === targetId)
   const isNextToTarget =
     !canShoot(battle, stack) &&
@@ -372,7 +472,10 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random }) {
     return null
   }
 
-  return { path, strikes: strikeSequence({ attacker: stack, defender: target, random }) }
+  return {
+    path,
+    strikes: strikeSequence({ attacker: stack, defender: target, random, luckRandom })
+  }
 }
 
 // "The Angels do 175 damage. 17 Pikemen perish."
@@ -390,7 +493,7 @@ function describeStrike({ attacker, damage, killed, nameFor }) {
   return `${dealt} ${perished}`
 }
 
-function applyStrike(battle, { attackerId, defenderId, damage }, retaliatorId) {
+function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliatorId) {
   const attacker = battle.stacks.find(({ id }) => id === attackerId)
   const defender = battle.stacks.find(({ id }) => id === defenderId)
   const nameFor = (count) =>
@@ -413,18 +516,24 @@ function applyStrike(battle, { attackerId, defenderId, damage }, retaliatorId) {
 
       return stack
     }),
-    messages: [...battle.messages, describeStrike({ attacker, damage, killed, nameFor })]
+    messages: [
+      ...battle.messages,
+      ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
+      describeStrike({ attacker, damage, killed, nameFor })
+    ]
   }
 }
 
-export function attackStack(battle, { stackId, targetId, path, strikes }) {
+// The attack itself, before the attacker's turn ends.
+export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
-  const struck = strikes.reduce((current, strike) => applyStrike(current, strike, targetId), moved)
-  return endTurn(struck, stackId)
+  return strikes.reduce((current, strike) => applyStrike(current, strike, targetId), moved)
 }
 
+export const attackStack = (battle, attack) => finishAction(resolveAttack(battle, attack), attack)
+
 // Every shot with its rolled damage, or null when the stack cannot shoot the target.
-export function planStackShot(battle, stack, { targetId, random }) {
+export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
   const target = livingEnemiesOf(battle, stack).find(({ id }) => id === targetId)
   if (!target || !canShoot(battle, stack)) {
     return null
@@ -435,23 +544,24 @@ export function planStackShot(battle, stack, { targetId, random }) {
       attacker: stack,
       defender: target,
       random,
+      luckRandom,
       halved: hasDistancePenalty(stack, target)
     })
   }
 }
 
-export function shootStack(battle, { stackId, strikes }) {
+// The shot itself, before the shooter's turn ends.
+export function resolveShot(battle, { stackId, strikes }) {
   const shot = strikes.reduce((current, strike) => applyStrike(current, strike, null), battle)
-  return endTurn(
-    {
-      ...shot,
-      stacks: shot.stacks.map((stack) =>
-        stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
-      )
-    },
-    stackId
-  )
+  return {
+    ...shot,
+    stacks: shot.stacks.map((stack) =>
+      stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
+    )
+  }
 }
+
+export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
 
 export function getHeroArmyAfterBattle(battle, heroArmy) {
   return heroArmy.map((slot, index) => {

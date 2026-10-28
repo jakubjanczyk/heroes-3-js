@@ -134,6 +134,11 @@ export async function moveActiveStackTo(user, row, column) {
   await waitMs()
 }
 
+export async function shootAt(user, row, column) {
+  await clickBattleHex(user, row, column)
+  await waitMs()
+}
+
 export async function hoverBattleHex(user, row, column) {
   await user.hover(getBattleHex(row, column))
 }
