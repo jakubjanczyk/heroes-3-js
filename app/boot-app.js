@@ -121,7 +121,8 @@ export async function bootApp({
       persistedFacts: appEventLog?.getAll?.(),
       appBus
     })
-    // After a reload too: what the saved game already rolled is kept, only the rest is rolled.
+    // Rolls what each game rolls once, such as a Tree of Knowledge's price. Runs after the replay,
+    // so on a reload the saved rolls are already in place and only what is missing gets rolled.
     appBus.emit(APP_COMMAND_GAME_SETUP_REQUESTED, {})
 
     return {
