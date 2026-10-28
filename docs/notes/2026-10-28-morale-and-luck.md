@@ -18,14 +18,19 @@ Checked against the Heroes 3 wiki (Morale, Luck, Alignment, Leadership pages) an
   - The hero screen: two frames between Specialty and Experience, morale then luck, each a picture for its state.
   - The hero exchange screen: in each hero's row of small frames after experience and spell points.
   - The hero info box and the right-click hero popup: morale and luck beside the army slots.
-- **Right click** on one of them shows a popup: the state as its title ("Good Morale", "Neutral Morale", "Bad Morale"; "Good Luck", "Neutral Luck"), and a sentence on what it means (`core.arraytxt.60-62`, `86-88`). It doesn't list what makes up the value.
+- **Right click** on one of them shows a popup: the state as its title ("Good Morale", "Neutral Morale", "Bad Morale"; "Good Luck", "Neutral Luck"), a sentence on what it means, then "Current Morale Modifiers:" with a line per modifier ("Basic Leadership +1", "All troops of one alignment +1", "Troops of 3 alignments -1", "Undead in army -1"), or "None" when there are none (`core.arraytxt.60-62`, `86-88`, `108`, `114-116`).
 - **The status bar** over one names its state (`core.heroscrn.3-8`).
 
-The game's text files aren't online. The neutral morale sentence ("Neutral morale means your armies will neither be blessed with extra attacks or freeze in combat.") is quoted in a source's code, so it matches the game, though nothing else confirms it. The titles ("Good Morale") and the other sentences are our own wording.
+The game's text files aren't online; a few of their lines are quoted in a source's code, so those match the game, though nothing else confirms them:
+- the luck heading, "Current Luck Modifiers:" (the morale one follows the same pattern);
+- "All troops of one alignment +1", "Troops of %d alignments %d" and "Undead in army -1";
+- "Neutral morale means your armies will neither be blessed with extra attacks or freeze in combat."
+
+The rest is our own wording: the titles ("Good Morale"), the other sentences on what each state means, "None", the skill lines ("Basic Leadership +1") and "Angels in army +1".
 
 ## What we do
 
-- `game/heroes/morale-and-luck.js` works out a hero's morale and luck from their secondary skills and army: the modifiers added up and held to the range. Nothing new is saved; skills and army already are, so a reload shows the same values.
+- `game/heroes/morale-and-luck.js` works out a hero's morale and luck from their secondary skills and army: the total, held to the range, and the list of modifiers with their values. Nothing new is saved; skills and army already are, so a reload shows the same values.
 - Creature data: each creature already has its town (`faction`), Skeletons and Skeleton Warriors the `undead` ability and Angels and Archangels `raisesMorale`. To have armies of more than two towns, three level 1 creatures join `monsters.json`: the Centaur (Rampart, double-wide), the Imp (Inferno) and the Peasant (neutral). Their stats are the wiki's; town, level and size are checked against a second source. Their upgrades come with their towns.
 - Shown in the hero screen, the exchange screen and the hero box: the info box, the right-click popup on a hero and the tavern's popup on a hero for hire. In the hero box they sit in the free first column of the army's top row, morale over luck; in the one-row layouts of short and portrait screens there is no room, so they are left out. The pictures are stand-ins until there are sprites (10.1): an SVG banner for morale and a clover for luck, the value under it ("+1", "0", "-1").
 - Holding the right button on one shows the popup above; the status bar says "Good Morale" and so on.

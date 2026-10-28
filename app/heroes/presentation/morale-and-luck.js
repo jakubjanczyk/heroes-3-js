@@ -35,16 +35,30 @@ export function showMoraleOrLuck(frame, document, kind, { state, title, valueTex
   frame.replaceChildren(renderIcon(document, kind), value)
 }
 
-export function renderMoraleOrLuckPopup(document, { title, description }) {
+function paragraph(document, className, text) {
+  const line = document.createElement('p')
+  line.className = className
+  line.textContent = text
+  return line
+}
+
+export function renderMoraleOrLuckPopup(
+  document,
+  { title, description, modifiersHeading, modifiers }
+) {
   const popup = document.createElement('div')
   popup.className = 'info-popup info-popup--morale-luck message-box'
   popup.setAttribute('role', 'tooltip')
   const heading = document.createElement('h2')
   heading.className = 'info-popup__title'
   heading.textContent = title
-  const text = document.createElement('p')
-  text.className = 'info-popup__line'
-  text.textContent = description
-  popup.append(heading, text)
+  popup.append(
+    heading,
+    paragraph(document, 'info-popup__line', description),
+    paragraph(document, 'info-popup__line info-popup__line--heading', modifiersHeading),
+    ...(modifiers.length > 0 ? modifiers : ['None']).map((modifier) =>
+      paragraph(document, 'info-popup__line', modifier)
+    )
+  )
   return popup
 }
