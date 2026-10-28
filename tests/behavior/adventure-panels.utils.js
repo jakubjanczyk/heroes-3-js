@@ -134,10 +134,10 @@ export function readMessage() {
 }
 
 // What the open message gives, as the player reads it under its pictures, e.g. ['3 Ore'] or
-// ['+1 Attack'].
+// ['+1 Attack'] or ['Basic Archery'].
 export function readMessageRewards() {
   return within(getInteractionModal())
-    .queryAllByRole('img', { name: /^\+?\d+ / })
+    .queryAllByRole('img', { name: /^(\+?\d+|Basic) / })
     .map((picture) => picture.getAttribute('aria-label'))
 }
 

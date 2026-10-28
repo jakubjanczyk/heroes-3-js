@@ -1263,6 +1263,15 @@
         "x": 24,
         "y": 1
       }
+    },
+    {
+      "id": "bonus-10",
+      "kind": "BONUS_OBJECT",
+      "type": "WITCH_HUT",
+      "tile": {
+        "x": 8,
+        "y": 1
+      }
     }
   ]
 }
