@@ -21,13 +21,13 @@ Checked against the Heroes 3 wiki (Morale, Luck, Alignment, Leadership pages) an
 - **Right click** on one of them shows a popup: the state as its title ("Good Morale", "Neutral Morale", "Bad Morale"; "Good Luck", "Neutral Luck"), a sentence on what it means, then "Current Morale Modifiers:" with a line per modifier ("Basic Leadership +1", "All troops of one alignment +1", "Troops of 3 alignments -1", "Undead in army -1"), or "None" when there are none (`core.arraytxt.60-62`, `86-88`, `108`, `114-116`).
 - **The status bar** over one names its state (`core.heroscrn.3-8`).
 
-The game's texts aren't online. The titles and modifier lines above follow how the game builds them (one line per modifier with its number) and are our own wording; the sentences on what each state means are ours too.
+The game's texts aren't online. The titles and modifier lines above follow how the game builds them (one line per modifier with its number) and are our own wording. Of the sentences on what each state means, only the neutral morale one is the game's ("Neutral morale means your armies will neither be blessed with extra attacks or freeze in combat.", quoted in a source's code); the others are ours. The Angels' line ("Angels in army +1") is ours too.
 
 ## What we do
 
 - `game/heroes/morale-and-luck.js` works out a hero's morale and luck from their secondary skills and army: the total, held to the range, and the list of modifiers with their values. Nothing new is saved; skills and army already are, so a reload shows the same values.
-- Creature data: the faction is already there (`CASTLE`, `NECROPOLIS`). Skeletons and Skeleton Warriors get an `undead` ability, Angels and Archangels a `raisesMorale` ability.
-- Shown in the hero screen, the exchange screen and the hero box (info box and right-click popup). The pictures are stand-ins until there are sprites (10.1): an SVG banner for morale and a clover for luck, the value under it ("+1", "0", "-1").
+- Creature data: each creature already has its town (`faction`), Skeletons and Skeleton Warriors the `undead` ability and Angels and Archangels `raisesMorale`. To have armies of more than two towns, three level 1 creatures join `monsters.json`: the Centaur (Rampart, double-wide), the Imp (Inferno) and the Peasant (neutral). Their stats are the wiki's; town, level and size are checked against a second source. Their upgrades come with their towns.
+- Shown in the hero screen, the exchange screen and the hero box: the info box, the right-click popup on a hero and the tavern's popup on a hero for hire. In the hero box they sit in the free first column of the army's top row, morale over luck; in the one-row layouts of short and portrait screens there is no room, so they are left out. The pictures are stand-ins until there are sprites (10.1): an SVG banner for morale and a clover for luck, the value under it ("+1", "0", "-1").
 - Holding the right button on one shows the popup above; the status bar says "Good Morale" and so on.
 - The values follow the army as it changes: recruiting, an exchange, a stack moved into a town's garrison, a lost battle.
 - Nothing changes in battle yet.

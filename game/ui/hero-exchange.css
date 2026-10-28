@@ -116,6 +116,12 @@
   padding-block: calc(2 * var(--px));
 }
 
+.hero-exchange__morale,
+.hero-exchange__luck {
+  padding-block: calc(4 * var(--px)) calc(2 * var(--px));
+  font-size: calc(10 * var(--px));
+}
+
 .hero-exchange__icon {
   inline-size: 70%;
   fill: var(--trim-gold);

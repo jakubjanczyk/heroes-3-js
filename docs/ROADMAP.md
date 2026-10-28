@@ -402,7 +402,7 @@ Each comes with the feature it changes; the note has every skill's numbers.
 - [ ] Estates (3.2)
 - [ ] Learning (4.2)
 - [ ] Archery, Offense, Armorer (5.6)
-- [ ] Leadership and Luck (4.9)
+- [x] Leadership and Luck (4.9)
 - [ ] Tactics (5.3), Ballistics (5.10), Artillery and First Aid (with war machines)
 - [ ] Diplomacy (5.2, 5.7)
 - [ ] Wisdom, Mysticism, Intelligence, Eagle Eye, Scholar and the four schools of magic (4.8); Sorcery and Resistance (5.8)
@@ -425,11 +425,11 @@ Each comes with the feature it changes; the note has every skill's numbers.
 
 ### 4.9 Morale and Luck
 Shown and worked out, not used in battle yet; see `docs/notes/2026-10-28-morale-and-luck.md`.
-- [ ] Morale -3 to +3 and luck 0 to +3, the modifiers added up and held to the range
-- [ ] Sources the game has: Leadership and Luck skills; creatures of one town +1, of three -1, four -2; undead in the army -1; Angels or Archangels +1
-- [ ] Shown on the hero screen, the exchange screen and the hero box (info box, right-click popup), with stand-in pictures
-- [ ] Right click: the state as title, what it means, and the current modifiers or "None"; the status bar names the state
-- [ ] Follows the army as it changes, and the same after a reload
+- [x] Morale -3 to +3 and luck 0 to +3, the modifiers added up and held to the range
+- [x] Sources the game has: Leadership and Luck skills; creatures of one town +1, of three -1, four -2; undead in the army -1; Angels or Archangels +1
+- [x] Shown on the hero screen, the exchange screen and the hero box (info box, right-click popup, tavern), with stand-in pictures
+- [x] Right click: the state as title, what it means, and the current modifiers or "None"; the status bar names the state
+- [x] Follows the army as it changes, and the same after a reload
 - [ ] In battle: good morale gives an extra turn, bad morale freezes a stack, luck doubles the damage (5.6)
 - [ ] Bonuses until the next battle (7.6), artifacts (7.8) and spells (5.8)
 
