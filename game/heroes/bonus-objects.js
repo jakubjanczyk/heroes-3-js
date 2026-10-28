@@ -16,6 +16,13 @@ const FOOTPRINT_BY_TYPE = Object.freeze({
     { x: 0, y: -1 },
     { x: 1, y: -1 }
   ]),
+  LIBRARY_OF_ENLIGHTENMENT: Object.freeze([
+    { x: -2, y: 0 },
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+    { x: 0, y: -1 },
+    { x: 1, y: -1 }
+  ]),
   SCHOOL_OF_WAR: Object.freeze([
     { x: -1, y: 0 },
     { x: -2, y: -1 },
@@ -85,7 +92,7 @@ export function describeBonusObject(definitions, type, price = null) {
     const priceText = describePrice(definitions, price ?? {})
     return [priceText ? `+1 level for ${priceText}` : '+1 level']
   }
-  if (choices) {
+  if (description || choices) {
     return description ? [description] : []
   }
   return describeBonus(bonusObjectGives(definitions, type)).map(({ label }) => label)
@@ -101,6 +108,17 @@ export function describeBonus({ experience, primarySkills = {} }) {
   return experience
     ? [{ key: 'experience', amount: experience, label: `+${experience} Experience` }, ...skills]
     : skills
+}
+
+export function meetsMinimumHeroLevel(definitions, type, { level, secondarySkills = [] }) {
+  const { minimumHeroLevel } = bonusObjectDefinition(definitions, type)
+  if (!minimumHeroLevel) {
+    return true
+  }
+
+  const diplomacy = secondarySkills.find(({ skill }) => skill === 'DIPLOMACY')
+  const needed = minimumHeroLevel.withDiplomacy?.[diplomacy?.level] ?? minimumHeroLevel.level
+  return level >= needed
 }
 
 export function hasVisitedBonusObject(state, heroId, entityId) {
