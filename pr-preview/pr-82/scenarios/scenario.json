@@ -1269,8 +1269,8 @@
       "kind": "BONUS_OBJECT",
       "type": "WITCH_HUT",
       "tile": {
-        "x": 8,
-        "y": 1
+        "x": 6,
+        "y": 5
       }
     }
   ]
