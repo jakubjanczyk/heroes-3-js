@@ -1,5 +1,6 @@
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
+import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -18,6 +19,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
+import { showMoraleOrLuck } from '../presentation/morale-and-luck.js'
 import {
   renderSecondarySkillIcon,
   secondarySkillStatusText
@@ -121,6 +123,26 @@ export const registerHeroExchangeViewModule = defineModule(
           })
       }
       rearranging.showArmies(armies)
+      showMoraleAndLuck()
+    }
+
+    function showMoraleAndLuck() {
+      for (const side of SIDES) {
+        const hero = heroOn(side)
+        const element = sideElement(side)
+        showMoraleOrLuck(
+          element.querySelector('.hero-exchange__morale'),
+          document,
+          'morale',
+          getHeroMorale({ entity: hero, definitions })
+        )
+        showMoraleOrLuck(
+          element.querySelector('.hero-exchange__luck'),
+          document,
+          'luck',
+          getHeroLuck({ entity: hero, definitions })
+        )
+      }
     }
 
     function open({ heroId, otherHeroId }) {

@@ -1,5 +1,6 @@
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
+import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
@@ -20,6 +21,7 @@ import {
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,
   APP_FACT_HERO_LEVELED_UP,
+  APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
@@ -240,6 +242,8 @@ export const registerInfoBoxModule = defineModule(
       show('Hero info', renderHeroBox, {
         name: hero?.name ?? DEFAULT_HERO_NAME,
         skills: getHeroPrimarySkills({ entity: hero, definitions }),
+        morale: getHeroMorale({ entity: hero, definitions }),
+        luck: getHeroLuck({ entity: hero, definitions }),
         army
       })
       startRearranging({ hero: army }, (move) => emit(APP_COMMAND_HERO_STACK_MOVE_REQUESTED, move))
@@ -293,6 +297,7 @@ export const registerInfoBoxModule = defineModule(
           }
         },
         { type: APP_FACT_HERO_LEVELED_UP, handler: () => render() },
+        { type: APP_FACT_HERO_SECONDARY_SKILL_LEARNED, handler: () => render() },
         { type: APP_FACT_HERO_BONUS_OBJECT_VISITED, handler: () => render() },
         { type: APP_FACT_HERO_ARMY_CHANGED, handler: () => render() },
         {
@@ -391,6 +396,7 @@ export const registerInfoBoxModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_LEVELED_UP,
+      APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
       APP_FACT_HERO_BONUS_OBJECT_VISITED,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_UI_HERO_SELECTED,
