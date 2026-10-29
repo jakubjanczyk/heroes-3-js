@@ -1,0 +1,226 @@
+{
+  "PATHFINDING": {
+    "name": "Pathfinding",
+    "descriptions": {
+      "BASIC": "Reduces the movement penalty of rough terrain by 25.",
+      "ADVANCED": "Reduces the movement penalty of rough terrain by 50.",
+      "EXPERT": "Reduces the movement penalty of rough terrain by 75."
+    }
+  },
+  "ARCHERY": {
+    "name": "Archery",
+    "descriptions": {
+      "BASIC": "Increases the damage of the hero's shooters by 10%.",
+      "ADVANCED": "Increases the damage of the hero's shooters by 25%.",
+      "EXPERT": "Increases the damage of the hero's shooters by 50%."
+    }
+  },
+  "LOGISTICS": {
+    "name": "Logistics",
+    "descriptions": {
+      "BASIC": "Increases the hero's movement on land by 10%.",
+      "ADVANCED": "Increases the hero's movement on land by 20%.",
+      "EXPERT": "Increases the hero's movement on land by 30%."
+    }
+  },
+  "SCOUTING": {
+    "name": "Scouting",
+    "descriptions": {
+      "BASIC": "Increases the hero's sight radius by 1.",
+      "ADVANCED": "Increases the hero's sight radius by 2.",
+      "EXPERT": "Increases the hero's sight radius by 3."
+    }
+  },
+  "DIPLOMACY": {
+    "name": "Diplomacy",
+    "descriptions": {
+      "BASIC": "Some wandering monsters offer to join the hero, and surrendering costs 20% less.",
+      "ADVANCED": "More wandering monsters offer to join the hero, and surrendering costs 40% less.",
+      "EXPERT": "Many wandering monsters offer to join the hero, and surrendering costs 60% less."
+    }
+  },
+  "NAVIGATION": {
+    "name": "Navigation",
+    "descriptions": {
+      "BASIC": "Increases the hero's movement at sea by 50%.",
+      "ADVANCED": "Increases the hero's movement at sea by 100%.",
+      "EXPERT": "Increases the hero's movement at sea by 150%."
+    }
+  },
+  "LEADERSHIP": {
+    "name": "Leadership",
+    "descriptions": {
+      "BASIC": "Increases the morale of the hero's troops by 1.",
+      "ADVANCED": "Increases the morale of the hero's troops by 2.",
+      "EXPERT": "Increases the morale of the hero's troops by 3."
+    }
+  },
+  "WISDOM": {
+    "name": "Wisdom",
+    "descriptions": {
+      "BASIC": "Lets the hero learn spells of the third level.",
+      "ADVANCED": "Lets the hero learn spells of the fourth level.",
+      "EXPERT": "Lets the hero learn spells of every level."
+    }
+  },
+  "MYSTICISM": {
+    "name": "Mysticism",
+    "descriptions": {
+      "BASIC": "The hero regains 2 more spell points each day.",
+      "ADVANCED": "The hero regains 3 more spell points each day.",
+      "EXPERT": "The hero regains 4 more spell points each day."
+    }
+  },
+  "LUCK": {
+    "name": "Luck",
+    "descriptions": {
+      "BASIC": "Increases the luck of the hero's troops by 1.",
+      "ADVANCED": "Increases the luck of the hero's troops by 2.",
+      "EXPERT": "Increases the luck of the hero's troops by 3."
+    }
+  },
+  "BALLISTICS": {
+    "name": "Ballistics",
+    "descriptions": {
+      "BASIC": "Gives control of the catapult in sieges and makes its shots more accurate.",
+      "ADVANCED": "The catapult shoots twice a round and hits harder.",
+      "EXPERT": "The catapult shoots twice a round, hits harder still and rarely misses."
+    }
+  },
+  "EAGLE_EYE": {
+    "name": "Eagle Eye",
+    "descriptions": {
+      "BASIC": "Gives a 40% chance to learn a spell of up to the second level cast in battle.",
+      "ADVANCED": "Gives a 50% chance to learn a spell of up to the third level cast in battle.",
+      "EXPERT": "Gives a 60% chance to learn a spell of up to the fourth level cast in battle."
+    }
+  },
+  "NECROMANCY": {
+    "name": "Necromancy",
+    "descriptions": {
+      "BASIC": "Raises 10% of the enemy creatures killed in battle as Skeletons.",
+      "ADVANCED": "Raises 20% of the enemy creatures killed in battle as Skeletons.",
+      "EXPERT": "Raises 30% of the enemy creatures killed in battle as Skeletons."
+    }
+  },
+  "ESTATES": {
+    "name": "Estates",
+    "descriptions": {
+      "BASIC": "Brings the kingdom 125 gold a day.",
+      "ADVANCED": "Brings the kingdom 250 gold a day.",
+      "EXPERT": "Brings the kingdom 500 gold a day."
+    }
+  },
+  "FIRE_MAGIC": {
+    "name": "Fire Magic",
+    "descriptions": {
+      "BASIC": "Fire spells cost less and work better.",
+      "ADVANCED": "Fire spells cost less and work much better.",
+      "EXPERT": "Fire spells cost less and work at their full strength."
+    }
+  },
+  "AIR_MAGIC": {
+    "name": "Air Magic",
+    "descriptions": {
+      "BASIC": "Air spells cost less and work better.",
+      "ADVANCED": "Air spells cost less and work much better.",
+      "EXPERT": "Air spells cost less and work at their full strength."
+    }
+  },
+  "WATER_MAGIC": {
+    "name": "Water Magic",
+    "descriptions": {
+      "BASIC": "Water spells cost less and work better.",
+      "ADVANCED": "Water spells cost less and work much better.",
+      "EXPERT": "Water spells cost less and work at their full strength."
+    }
+  },
+  "EARTH_MAGIC": {
+    "name": "Earth Magic",
+    "descriptions": {
+      "BASIC": "Earth spells cost less and work better.",
+      "ADVANCED": "Earth spells cost less and work much better.",
+      "EXPERT": "Earth spells cost less and work at their full strength."
+    }
+  },
+  "SCHOLAR": {
+    "name": "Scholar",
+    "descriptions": {
+      "BASIC": "Heroes who meet teach each other spells of up to the second level.",
+      "ADVANCED": "Heroes who meet teach each other spells of up to the third level.",
+      "EXPERT": "Heroes who meet teach each other spells of up to the fourth level."
+    }
+  },
+  "TACTICS": {
+    "name": "Tactics",
+    "descriptions": {
+      "BASIC": "Lets the hero place their troops up to 3 columns forward before a battle.",
+      "ADVANCED": "Lets the hero place their troops up to 5 columns forward before a battle.",
+      "EXPERT": "Lets the hero place their troops up to 7 columns forward before a battle."
+    }
+  },
+  "ARTILLERY": {
+    "name": "Artillery",
+    "descriptions": {
+      "BASIC": "Gives control of the Ballista, with a 50% chance of double damage.",
+      "ADVANCED": "Gives control of the Ballista, with a 75% chance of double damage.",
+      "EXPERT": "Gives control of the Ballista, which always does double damage."
+    }
+  },
+  "LEARNING": {
+    "name": "Learning",
+    "descriptions": {
+      "BASIC": "The hero earns 5% more experience.",
+      "ADVANCED": "The hero earns 10% more experience.",
+      "EXPERT": "The hero earns 15% more experience."
+    }
+  },
+  "OFFENSE": {
+    "name": "Offense",
+    "descriptions": {
+      "BASIC": "Increases the melee damage of the hero's troops by 10%.",
+      "ADVANCED": "Increases the melee damage of the hero's troops by 20%.",
+      "EXPERT": "Increases the melee damage of the hero's troops by 30%."
+    }
+  },
+  "ARMORER": {
+    "name": "Armorer",
+    "descriptions": {
+      "BASIC": "Reduces the damage the hero's troops take by 5%.",
+      "ADVANCED": "Reduces the damage the hero's troops take by 10%.",
+      "EXPERT": "Reduces the damage the hero's troops take by 15%."
+    }
+  },
+  "INTELLIGENCE": {
+    "name": "Intelligence",
+    "descriptions": {
+      "BASIC": "Increases the hero's spell points by 25%.",
+      "ADVANCED": "Increases the hero's spell points by 50%.",
+      "EXPERT": "Increases the hero's spell points by 100%."
+    }
+  },
+  "SORCERY": {
+    "name": "Sorcery",
+    "descriptions": {
+      "BASIC": "Increases the damage of the hero's spells by 5%.",
+      "ADVANCED": "Increases the damage of the hero's spells by 10%.",
+      "EXPERT": "Increases the damage of the hero's spells by 15%."
+    }
+  },
+  "RESISTANCE": {
+    "name": "Resistance",
+    "descriptions": {
+      "BASIC": "Gives the hero's troops a 5% chance to resist an enemy spell.",
+      "ADVANCED": "Gives the hero's troops a 10% chance to resist an enemy spell.",
+      "EXPERT": "Gives the hero's troops a 20% chance to resist an enemy spell."
+    }
+  },
+  "FIRST_AID": {
+    "name": "First Aid",
+    "descriptions": {
+      "BASIC": "Gives control of the First Aid Tent, which heals up to 50 health.",
+      "ADVANCED": "Gives control of the First Aid Tent, which heals up to 75 health.",
+      "EXPERT": "Gives control of the First Aid Tent, which heals up to 100 health."
+    }
+  }
+}
