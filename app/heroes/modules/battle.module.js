@@ -205,7 +205,7 @@ export const registerBattleModule = defineModule(
       const experience = getExperienceForWin(battle)
       const army = getHeroArmyAfterBattle(battle, heroById(state.get(), heroId)?.army ?? [])
       const guarded = isDwellingGuards(started)
-      emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'attacker' })
+      emit(APP_FACT_BATTLE_ENDED, { entityId, heroId, winner: 'attacker' })
       emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
       if (guarded) {
         emit(APP_FACT_DWELLING_GUARDS_CHANGED, { entityId, count: 0 })
@@ -231,7 +231,7 @@ export const registerBattleModule = defineModule(
       const count = battle.stacks
         .filter((stack) => stack.side === 'defender')
         .reduce((sum, stack) => sum + stack.count, 0)
-      emit(APP_FACT_BATTLE_ENDED, { entityId, winner: 'defender' })
+      emit(APP_FACT_BATTLE_ENDED, { entityId, heroId, winner: 'defender' })
       emit(guarded ? APP_FACT_DWELLING_GUARDS_CHANGED : APP_FACT_MONSTER_COUNT_CHANGED, {
         entityId,
         count
@@ -453,6 +453,7 @@ export const registerBattleModule = defineModule(
               heroArmy: hero?.army,
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
               heroSecondarySkills: hero?.secondarySkills,
+              heroBattleBonuses: hero?.battleBonuses,
               monsterArmy: defenderArmy({ started, heroArmy: hero?.army, definitions }),
               definitions
             })

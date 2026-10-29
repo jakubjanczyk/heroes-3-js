@@ -93,6 +93,7 @@ export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_RESOURCE_GENERATOR_VISITED = 'fact.resourceGenerator.visited'
 export const APP_FACT_HERO_BONUS_OBJECT_VISITED = 'fact.hero.bonusObject.visited'
 export const APP_FACT_BONUS_OBJECT_PRICES_ROLLED = 'fact.bonusObject.prices.rolled'
+export const APP_FACT_HERO_BATTLE_BONUS_GAINED = 'fact.hero.battleBonus.gained'
 export const APP_FACT_WITCH_HUT_SKILLS_ROLLED = 'fact.witchHut.skills.rolled'
 // A hero of the player entered the hut, whether or not they could learn its skill.
 export const APP_FACT_WITCH_HUT_VISITED = 'fact.witchHut.visited'
@@ -181,6 +182,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_RESOURCE_GENERATOR_VISITED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,
   APP_FACT_BONUS_OBJECT_PRICES_ROLLED,
+  APP_FACT_HERO_BATTLE_BONUS_GAINED,
   APP_FACT_WITCH_HUT_SKILLS_ROLLED,
   APP_FACT_WITCH_HUT_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED,

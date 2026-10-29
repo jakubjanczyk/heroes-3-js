@@ -1,9 +1,15 @@
-import { selectedHeroIdOf, viewingPlayer } from '../state/queries.js'
+import { selectedHeroIdOf, turnNumber, viewingPlayer } from '../state/queries.js'
+import { calendarDateOfTurn } from './calendar.js'
 import { PRIMARY_SKILLS } from './primary-skills.js'
 import { describeSecondarySkill } from './secondary-skills.js'
 
+const RIGHT_OF_ENTRANCE = Object.freeze([{ x: 1, y: 0 }])
+
 // The tiles each object blocks besides its entrance; the rest of its picture can be walked on.
 const FOOTPRINT_BY_TYPE = Object.freeze({
+  FAERIE_RING: RIGHT_OF_ENTRANCE,
+  SWAN_POND: RIGHT_OF_ENTRANCE,
+  TEMPLE: RIGHT_OF_ENTRANCE,
   MARLETTO_TOWER: Object.freeze([{ x: -1, y: 0 }]),
   MERCENARY_CAMP: Object.freeze([
     { x: -1, y: 0 },
@@ -125,6 +131,32 @@ export function hasVisitedBonusObject(state, heroId, entityId) {
   return state.heroDetails[heroId]?.visitedBonusObjects.includes(entityId) ?? false
 }
 
+export function givesBonusUntilNextBattle(definitions, type) {
+  return Boolean(bonusObjectDefinition(definitions, type).untilNextBattle)
+}
+
+// The morale and luck the object gives on the day of the week the hero enters it.
+export function bonusUntilNextBattle(definitions, type, state) {
+  const { day } = calendarDateOfTurn(turnNumber(state))
+  const bonuses = bonusObjectDefinition(definitions, type).untilNextBattle ?? []
+  const { morale = 0, luck = 0 } = bonuses.find(({ days }) => !days || days.includes(day)) ?? {}
+  return { morale, luck }
+}
+
+// A hero can't take a bonus while one from an object of the same kind lasts.
+export function hasBonusFromObjectType(state, heroId, type) {
+  return (state.heroDetails[heroId]?.battleBonuses ?? []).some(
+    ({ entityType }) => entityType === type
+  )
+}
+
+function hasUsedBonusObject(state, heroId, entity) {
+  return (
+    hasVisitedBonusObject(state, heroId, entity.id) ||
+    hasBonusFromObjectType(state, heroId, entity.type)
+  )
+}
+
 // A Witch Hut's skill stays unknown until a hero of the player has been inside.
 function witchHutSkillText(state, { skill, visitedBy }, definitions) {
   if (!skill || !visitedBy.includes(viewingPlayer(state))) {
@@ -149,5 +181,5 @@ export function bonusObjectVisitedText(state, entity, definitions) {
   if (!heroId) {
     return null
   }
-  return hasVisitedBonusObject(state, heroId, entity.id) ? '(Visited)' : '(Not visited)'
+  return hasUsedBonusObject(state, heroId, entity) ? '(Visited)' : '(Not visited)'
 }

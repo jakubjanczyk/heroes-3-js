@@ -83,6 +83,18 @@ Built in four parts, each its own change.
 
 Each object goes into `game/data/bonus-objects.json` beside the permanent ones, with its tiles in the footprint table, its name on the map and one of each on the demo map.
 
+### Part 1 (done)
+
+- `FAERIE_RING`, `SWAN_POND`, `IDOL_OF_FORTUNE` and `TEMPLE` in `game/data/bonus-objects.json` list what they give `untilNextBattle`: a `morale` and `luck` per entry, the first entry whose `days` (of the week) include today, or that has none, being the one given. The Swan Pond has `endsMovement`.
+- Their own module handles their visits; the bonus objects module leaves them alone. Entering saves `fact.hero.battleBonus.gained` (`heroId`, `entityId`, `entityType`, `morale`, `luck`), kept in the hero's `battleBonuses` in the `heroDetails` slice. The Swan Pond then sets the hero's movement points to 0.
+- A hero with a bonus from an object of that kind gets its second message and nothing.
+- `fact.battle.ended` now names the hero; it empties their `battleBonuses`, won or lost.
+- Morale and luck add each bonus as a modifier, "Temple Visit +1" (our own wording), held to the range as the rest, and the battle starts with them.
+- The message shows the morale or luck picture (the hero screen's stand-ins) with "+1" or "+2" under it; the Idol's day 7 shows both.
+- The popup's line on what an object gives (our own wording): "+1 Luck until the next battle", "+2 Luck until the next battle", "+1 Luck or Morale, depending on the day", "+1 Morale, +2 on day 7", then "(Visited)" while the selected hero has a bonus from that kind of object. The status bar says the same.
+- The demo map has one of each, near the starting hero.
+- A beaten or retreated hero leaves the map and starts over when hired again, so there is nothing to test there beyond the battle ending.
+
 ## Not yet
 
 - The Buoy and the Mermaids (water, 7.10).

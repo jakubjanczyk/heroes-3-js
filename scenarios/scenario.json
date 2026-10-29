@@ -1281,6 +1281,42 @@
         "x": 3,
         "y": 10
       }
+    },
+    {
+      "id": "bonus-12",
+      "kind": "BONUS_OBJECT",
+      "type": "TEMPLE",
+      "tile": {
+        "x": 4,
+        "y": 6
+      }
+    },
+    {
+      "id": "bonus-13",
+      "kind": "BONUS_OBJECT",
+      "type": "IDOL_OF_FORTUNE",
+      "tile": {
+        "x": 8,
+        "y": 4
+      }
+    },
+    {
+      "id": "bonus-14",
+      "kind": "BONUS_OBJECT",
+      "type": "FAERIE_RING",
+      "tile": {
+        "x": 0,
+        "y": 8
+      }
+    },
+    {
+      "id": "bonus-15",
+      "kind": "BONUS_OBJECT",
+      "type": "SWAN_POND",
+      "tile": {
+        "x": 6,
+        "y": 8
+      }
     }
   ]
 }

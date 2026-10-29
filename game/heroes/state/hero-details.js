@@ -21,7 +21,8 @@ function detailsOf(hero, definitions) {
     levelUpSkills: [],
     pendingLevelUp: null,
     bonusPrimarySkills: {},
-    visitedBonusObjects: []
+    visitedBonusObjects: [],
+    battleBonuses: []
   }
 }
 
@@ -59,6 +60,11 @@ export const heroDetailsSlice = {
       bonusPrimarySkills: addSkills(hero.bonusPrimarySkills, primarySkills),
       visitedBonusObjects: [...hero.visitedBonusObjects, entityId]
     })),
+    'fact.hero.battleBonus.gained': updateHero((hero, { entityType, morale = 0, luck = 0 }) => ({
+      battleBonuses: [...hero.battleBonuses, { entityType, morale, luck }]
+    })),
+    'fact.battle.ended': (heroes, detail) =>
+      detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
     'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({
       ...heroes,

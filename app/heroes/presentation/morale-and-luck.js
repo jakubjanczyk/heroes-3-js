@@ -8,6 +8,14 @@ const ICON_PATHS = Object.freeze({
 
 const NAMES = Object.freeze({ morale: 'Morale', luck: 'Luck' })
 
+// The icon as an image URL, for pictures drawn as a background, such as a message's rewards.
+export function moraleOrLuckPictureUrl(kind) {
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f0cf6c" ' +
+    `stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICON_PATHS[kind]}"/></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
 export function renderMoraleOrLuckIcon(document, kind) {
   const svg = document.createElementNS(SVG_NS, 'svg')
   svg.setAttribute('class', 'morale-luck__icon')

@@ -20,6 +20,7 @@ import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
 import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
 import { registerResourceGeneratorsModule } from './modules/resource-generators.module.js'
+import { registerStatBoostingObjectsModule } from './modules/stat-boosting-objects.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTavernModule } from './modules/tavern.module.js'
@@ -51,6 +52,7 @@ export const heroesAppContent = Object.freeze({
     registerResourceGeneratorsModule,
     registerBonusObjectsModule,
     registerWitchHutsModule,
+    registerStatBoostingObjectsModule,
     registerHeroLevelsModule,
     registerHeroArmyModule,
     registerBattleModule,

@@ -804,14 +804,14 @@ The game's only three; see `docs/notes/2026-10-27-resource-generators.md`.
 
 ### 7.6 Stat-Boosting Objects
 Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-boosting-objects.md`.
-- [ ] A bonus from an object can't be taken again while the hero still has one from an object of the same kind; bonuses of different kinds add up
+- [x] A bonus from an object can't be taken again while the hero still has one from an object of the same kind; bonuses of different kinds add up
 
 #### 7.6.1 Until the next battle
-- [ ] **Faerie Ring**: luck +1
-- [ ] **Swan Pond**: luck +2, and the hero loses the rest of the day's movement points
-- [ ] **Idol of Fortune**: luck +1 on days 1, 3, 5, morale +1 on days 2, 4, 6, both on day 7
-- [ ] **Temple**: morale +1, +2 on day 7
-- [ ] The bonuses count in battle and show in the morale and luck popups; they are gone once a battle ends, so the hero can take them again
+- [x] **Faerie Ring**: luck +1
+- [x] **Swan Pond**: luck +2, and the hero loses the rest of the day's movement points
+- [x] **Idol of Fortune**: luck +1 on days 1, 3, 5, morale +1 on days 2, 4, 6, both on day 7
+- [x] **Temple**: morale +1, +2 on day 7
+- [x] The bonuses count in battle and show in the morale and luck popups; they are gone once a battle ends, so the hero can take them again
 
 #### 7.6.2 Movement points
 - [ ] **Fountain of Youth**: morale +1 until the next battle, +400 movement points until the end of the day
