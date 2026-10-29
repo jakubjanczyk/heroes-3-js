@@ -105,30 +105,29 @@ Each object goes into `game/data/bonus-objects.json` beside the permanent ones, 
 - The Oasis and Watering Hole are left out for now: they have more than one entrance tile, which no object has yet.
 - The demo map has one of each, near the starting hero.
 
-### Part 3: Fountain of Fortune (planned)
+### Part 3: Fountain of Fortune (done)
 
 Checked again against the wiki's raw Fountain of Fortune (adventure map) page and the second source's configuration: luck -1, +1, +2 or +3 until the next battle, a quarter each (never 0), rolled per fountain at the start of each week, the same for every hero who drinks there that week.
 
-- `FOUNTAIN_OF_FORTUNE` in `game/data/bonus-objects.json` lists the four luck values it can give, one tile (`E`).
-- The roll is made on the first visit of the week and saved in the visit's `fact.hero.battleBonus.gained`; any later visit that week, by any hero, gives the luck that fact saved. A new week rolls again. Nothing needs saving at the week's start.
+- `FOUNTAIN_OF_FORTUNE` in `game/data/bonus-objects.json` lists the four luck values it can give (`luckRolledEachWeek`), one tile (`E`).
+- The roll is made on the first visit of the week and saved in the visit's `fact.hero.battleBonus.gained`; the `fountainsOfFortune` slice keeps it, so any later visit that week, by any hero, gives the same luck, even after the first hero's bonus is gone in a battle. A new week forgets it and the next visit rolls again. Nothing needs saving at the week's start.
 - Everything else as part 1: the message (55, 56) with the luck picture and "-1" to "+3" under it, the visit rule by kind of object, gone after a battle, "Fountain of Fortune Visit -1" in the luck popup.
 - The popup's line (our own wording): "-1 to +3 Luck until the next battle". It doesn't give away this week's roll.
 
-### Part 4: Stables (planned)
+### Part 4: Stables (done)
 
 Checked again against the wiki's raw Stables page and the second source's configuration: +400 movement points on the visit and at the start of each day until the end of the week, the hero's maximum being 400 higher; Cavaliers in the army upgraded to Champions, free, on every visit.
 
-- `STABLES` in `game/data/bonus-objects.json`, tiles `#E`.
-- Entering saves a fact with the hero and the 400 movement points; the hero gets 400 more than they have left after the step. Each new day of that week starts the hero at their maximum plus 400; the first day of the next week at the maximum. A visit on day 7 lasts that day only.
+- `STABLES` in `game/data/bonus-objects.json` (`movementPointsUntilEndOfWeek`, `upgradesCreatures`), tiles `#E`.
+- Entering saves `fact.hero.weekBonus.gained` with the hero and the 400 movement points, kept as the hero's `weekMovementPoints` until the week ends; the hero gets 400 more than they have left after the step. Each new day of that week starts the hero at their maximum plus 400; the first day of the next week at the maximum. A visit on day 7 lasts that day only.
 - The bonus is per hero: another hero can take it at the same Stables that week. A hero who has it gets "You have already visited the stables this week." (136) and nothing, from any Stables. A battle doesn't end it.
-- Every Cavalier stack in the hero's army becomes a Champion stack of the same count, on every visit: the first message is then 138 instead of 137. Visiting again with Cavaliers upgrades them with message 139, whose text isn't online (our own wording).
+- Every Cavalier stack in the hero's army becomes a Champion stack of the same count, on every visit: the first message is then 138 instead of 137. Visiting again with Cavaliers upgrades them with message 139, whose text isn't online: "The stablemaster upgrades all your Cavaliers to Champions." (our own wording).
 - The message shows no picture, as the movement-point objects of part 2.
 - The popup's line (our own wording): "+400 movement points each day until the end of the week", then "(Visited)" while the selected hero has the bonus this week. The status bar says the same.
 
 ## Not yet
 
 - The Oasis and the Watering Hole (several entrance tiles).
-
+- The Castle town's Stables building, which gives the same week's movement points (6.5).
 - The Buoy and the Mermaids (water, 7.10).
-- The Castle town's Stables building, which gives the same bonus (6.5).
 - Pictures on the map (10.1), visit sounds (10.4).

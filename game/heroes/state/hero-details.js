@@ -1,5 +1,6 @@
 import { isHero } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
+import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
 import { learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
 
@@ -22,8 +23,19 @@ function detailsOf(hero, definitions) {
     pendingLevelUp: null,
     bonusPrimarySkills: {},
     visitedBonusObjects: [],
-    battleBonuses: []
+    battleBonuses: [],
+    weekMovementPoints: 0
   }
+}
+
+function endWeekBonuses(heroes, { turnNumber }) {
+  if (calendarDateOfTurn(turnNumber).day !== 1) {
+    return heroes
+  }
+
+  return Object.fromEntries(
+    Object.entries(heroes).map(([heroId, hero]) => [heroId, { ...hero, weekMovementPoints: 0 }])
+  )
 }
 
 function addSkills(skills, added) {
@@ -63,6 +75,10 @@ export const heroDetailsSlice = {
     'fact.hero.battleBonus.gained': updateHero((hero, { entityType, morale = 0, luck = 0 }) => ({
       battleBonuses: [...hero.battleBonuses, { entityType, morale, luck }]
     })),
+    'fact.hero.weekBonus.gained': updateHero((_hero, { movementPoints }) => ({
+      weekMovementPoints: movementPoints
+    })),
+    'fact.turn.ended': endWeekBonuses,
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),

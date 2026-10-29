@@ -16,6 +16,7 @@ import {
   expectMovementPoints,
   expectStatusBarText,
   getHeroInfoBox,
+  readArmySlots,
   readMessage,
   readMessageRewards,
   readMoraleAndLuck
@@ -34,6 +35,7 @@ import {
   winBattle
 } from './battle.utils.js'
 import { ARMY_THAT_WINS, aBonusObject, aHero, aMonster, aScenario } from './builders.js'
+import { clickHeroExchangeSlot, closeHeroExchange, meetHeroAt } from './hero-exchange.utils.js'
 import {
   clickHeroInHeroList,
   closeHeroScreen,
@@ -685,5 +687,322 @@ describe('Fountain of Youth and Rally Flag', () => {
     await setupMapWith('RALLY_FLAG', session)
 
     expectMovementPoints(1800)
+  })
+})
+
+describe('Fountain of Fortune', () => {
+  const FOUNTAIN_OF_FORTUNE_GIVES =
+    'As you drink the bittersweet water, you feel your luck changing.'
+  const FOUNTAIN_OF_FORTUNE_VISITED = 'You drink from the enchanted fountain, but nothing happens.'
+  const otherHero = () => aHero().withId('hero-2').withName(OTHER_HERO).withArmy(TWO_TOWNS).at(1, 2)
+
+  // The luck is one of -1, +1, +2 and +3, a quarter each, picked by the roll.
+  const setupFountain = ({ roll = { value: 0 }, ...options } = {}) =>
+    setupMapWith('FOUNTAIN_OF_FORTUNE', { ...options, appConfig: { random: () => roll.value } })
+
+  async function otherHeroDrinks(user) {
+    await walkTo(3, 2)
+    await clickHeroInHeroList(user, OTHER_HERO)
+    await enterEntrance()
+  }
+
+  test.each([
+    { value: 0, luck: '-1 Luck' },
+    { value: 0.25, luck: '+1 Luck' },
+    { value: 0.5, luck: '+2 Luck' },
+    { value: 0.75, luck: '+3 Luck' }
+  ])('entering shows its message with $luck under the luck picture', async ({ value, luck }) => {
+    await setupFountain({ roll: { value } })
+
+    await enterEntrance()
+
+    expect(readMessage()).toBe(FOUNTAIN_OF_FORTUNE_GIVES)
+    expect(readMessageRewards()).toEqual([luck])
+  })
+
+  test('the hero screen shows the luck afterwards', async () => {
+    const { user } = await setupFountain({ roll: { value: 0.75 } })
+
+    await enterAndClose(user)
+
+    expect(await readHeroScreenMoraleAndLuck(user)).toEqual(['Morale 0', 'Luck +3'])
+  })
+
+  test('the luck popup lists the Fountain of Fortune Visit', async () => {
+    const { user } = await setupFountain({ roll: { value: 0 } })
+    await enterAndClose(user)
+
+    expect(await readHeroScreenPopup(user, 'Luck')).toContain('Fountain of Fortune Visit -1')
+  })
+
+  test('entering again before a battle shows the second message and gives nothing', async () => {
+    const roll = { value: 0.25 }
+    const { user } = await setupFountain({ roll })
+    await enterAndClose(user)
+
+    await enterAgain()
+
+    expect(readMessage()).toBe(FOUNTAIN_OF_FORTUNE_VISITED)
+    expect(readMessageRewards()).toEqual([])
+    await closeInteractionModal(user)
+    expect(await readHeroScreenMoraleAndLuck(user)).toEqual(['Morale 0', 'Luck +1'])
+  })
+
+  test('another hero drinking the same week gets the same luck', async () => {
+    const roll = { value: 0 }
+    const { user } = await setupFountain({ roll, others: [otherHero()] })
+    await enterAndClose(user)
+    roll.value = 0.75
+
+    await otherHeroDrinks(user)
+
+    expect(readMessageRewards()).toEqual(['-1 Luck'])
+  })
+
+  test('the next week the fountain can give a different luck', async () => {
+    const roll = { value: 0 }
+    const { user } = await setupFountain({ roll, others: [otherHero()] })
+    await enterAndClose(user)
+    roll.value = 0.75
+    await endTurns(user, 7)
+
+    await otherHeroDrinks(user)
+
+    expect(readMessageRewards()).toEqual(['+3 Luck'])
+  })
+
+  test("after a battle the hero can drink again and gets this week's luck", async () => {
+    const roll = { value: 0.5 }
+    const { user } = await setupFountain({
+      roll,
+      hero: aBoostedHero({ army: ARMY_THAT_WINS }),
+      monster: aWeakMonster()
+    })
+    await enterAndClose(user)
+    await fightAndWin(user)
+    roll.value = 0
+
+    await walkTo(2, 2)
+    await enterEntrance()
+
+    expect(readMessage()).toBe(FOUNTAIN_OF_FORTUNE_GIVES)
+    expect(readMessageRewards()).toEqual(['+2 Luck'])
+  })
+
+  test('the right-click popup names the fountain, what it can give and that the hero has not visited it', async () => {
+    const { user } = await setupFountain()
+
+    expect(await readPopupOn(user, 2, 1)).toEqual([
+      'Fountain of Fortune',
+      '-1 to +3 Luck until the next battle',
+      '(Not visited)'
+    ])
+  })
+
+  test('the luck is kept after a reload', async () => {
+    const session = { eventLog: createMemoryEventLog() }
+    const { user } = await setupFountain({ ...session, roll: { value: 0.5 } })
+    await enterAndClose(user)
+
+    const reloaded = await setupFountain(session)
+
+    expect(await readHeroScreenMoraleAndLuck(reloaded.user)).toEqual(['Morale 0', 'Luck +2'])
+  })
+
+  test("the week's luck is kept after a reload", async () => {
+    const session = { eventLog: createMemoryEventLog(), others: [otherHero()] }
+    const { user } = await setupFountain({ ...session, roll: { value: 0.5 } })
+    await enterAndClose(user)
+
+    const reloaded = await setupFountain({ ...session, roll: { value: 0 } })
+    await otherHeroDrinks(reloaded.user)
+
+    expect(readMessageRewards()).toEqual(['+2 Luck'])
+  })
+})
+
+describe('Stables', () => {
+  const STABLEMASTER =
+    'The stablemaster offers to provide your army with horses, increasing your movement for the remainder of the week'
+  const STABLES_GIVES = `${STABLEMASTER}.`
+  const STABLES_GIVES_AND_UPGRADES = `${STABLEMASTER} and upgrading all your Cavaliers to Champions.`
+  const STABLES_VISITED = 'You have already visited the stables this week.'
+  const STABLES_UPGRADES = 'The stablemaster upgrades all your Cavaliers to Champions.'
+  const WITH_CAVALIERS = [
+    { creature: 'CAVALIER', count: 5 },
+    { creature: 'PIKEMAN', count: 10 }
+  ]
+
+  test("entering shows the stablemaster's message", async () => {
+    await setupMapWith('STABLES')
+
+    await enterEntrance()
+
+    expect(readMessage()).toBe(STABLES_GIVES)
+  })
+
+  // 1500, less 100 for the step onto the entrance, and 400 more.
+  test('entering gives the hero 400 movement points, above the maximum', async () => {
+    const { user } = await setupMapWith('STABLES')
+
+    await enterAndClose(user)
+
+    expectMovementPoints(1800)
+  })
+
+  test('the next day the hero starts with the maximum and 400 more', async () => {
+    const { user } = await setupMapWith('STABLES')
+    await enterAndClose(user)
+
+    await endTurns(user, 1)
+
+    expectMovementPoints(1900)
+  })
+
+  test('on the first day of the next week the hero starts with the maximum', async () => {
+    const { user } = await setupMapWith('STABLES')
+    await enterAndClose(user)
+
+    await endTurns(user, 7)
+
+    expectMovementPoints(1500)
+  })
+
+  // 1800 after the first visit, less two steps of 100 off the entrance and back.
+  test('entering again the same week shows the second message and gives no movement points', async () => {
+    const { user } = await setupMapWith('STABLES')
+    await enterAndClose(user)
+    await endTurns(user, 1)
+
+    await enterAgain()
+
+    expect(readMessage()).toBe(STABLES_VISITED)
+    expectMovementPoints(1700)
+  })
+
+  // 1800 after the first visit, less two diagonal steps of 141 round the tile the second Stables
+  // block left of their entrance.
+  test('another Stables the same week gives nothing either', async () => {
+    const { user } = await setupMapWith('STABLES', { secondType: 'STABLES' })
+    await enterAndClose(user)
+
+    await walkTo(4, 1)
+
+    expect(readMessage()).toBe(STABLES_VISITED)
+    expectMovementPoints(1518)
+  })
+
+  test('another hero of the player can take the bonus at the same Stables that week', async () => {
+    const { user } = await setupMapWith('STABLES', {
+      others: [aHero().withId('hero-2').withName(OTHER_HERO).withArmy(TWO_TOWNS).at(1, 2)]
+    })
+    await enterAndClose(user)
+    await walkTo(3, 2)
+
+    await clickHeroInHeroList(user, OTHER_HERO)
+    await enterEntrance()
+
+    expect(readMessage()).toBe(STABLES_GIVES)
+  })
+
+  test('the bonus lasts after a battle', async () => {
+    const { user } = await setupMapWith('STABLES', {
+      hero: aBoostedHero({ army: ARMY_THAT_WINS }),
+      monster: aWeakMonster()
+    })
+    await enterAndClose(user)
+    await fightAndWin(user)
+
+    await endTurns(user, 1)
+
+    expectMovementPoints(1900)
+  })
+
+  test('entering with Cavaliers shows the message about Champions', async () => {
+    await setupMapWith('STABLES', { hero: aBoostedHero({ army: WITH_CAVALIERS }) })
+
+    await enterEntrance()
+
+    expect(readMessage()).toBe(STABLES_GIVES_AND_UPGRADES)
+  })
+
+  test('the Cavaliers in the army become as many Champions', async () => {
+    const { user } = await setupMapWith('STABLES', {
+      hero: aBoostedHero({ army: WITH_CAVALIERS })
+    })
+
+    await enterAndClose(user)
+
+    expect(readArmySlots(getHeroInfoBox()).slice(0, 2)).toEqual(['Champions 5', 'Pikemen 10'])
+  })
+
+  // The other hero keeps one of the 5 Cavaliers, the last creature of their army.
+  test('entering again the same week with Cavaliers upgrades them with its own message', async () => {
+    const { user } = await setupMapWith('STABLES', {
+      others: [
+        aHero()
+          .withId('hero-2')
+          .withName(OTHER_HERO)
+          .withArmy([{ creature: 'CAVALIER', count: 5 }])
+          .at(3, 2)
+      ]
+    })
+    await enterAndClose(user)
+    await meetHeroAt(user, 3, 2)
+    await clickHeroExchangeSlot(user, OTHER_HERO, 1)
+    await clickHeroExchangeSlot(user, HERO, 3)
+    await closeHeroExchange(user)
+
+    await enterAgain()
+
+    expect(readMessage()).toBe(STABLES_UPGRADES)
+    await closeInteractionModal(user)
+    expect(readArmySlots(getHeroInfoBox()).slice(0, 3)).toEqual([
+      'Pikemen 10',
+      'Centaurs 10',
+      'Champions 4'
+    ])
+  })
+
+  test('the right-click popup names the Stables, what they give and that the hero has not visited them', async () => {
+    const { user } = await setupMapWith('STABLES')
+
+    expect(await readPopupOn(user, 2, 1)).toEqual([
+      'Stables',
+      '+400 movement points each day until the end of the week',
+      '(Not visited)'
+    ])
+  })
+
+  test('the status bar says visited while the hero has the bonus', async () => {
+    const { user } = await setupMapWith('STABLES')
+    await enterAndClose(user)
+    await walkTo(2, 2)
+
+    await hoverTile(user, 2, 1)
+
+    expectStatusBarText('Stables (Visited)')
+  })
+
+  test('the bonus is kept after a reload', async () => {
+    const session = { eventLog: createMemoryEventLog() }
+    const { user } = await setupMapWith('STABLES', session)
+    await enterAndClose(user)
+
+    const reloaded = await setupMapWith('STABLES', session)
+    await endTurns(reloaded.user, 1)
+
+    expectMovementPoints(1900)
+  })
+
+  test('the Champions are kept after a reload', async () => {
+    const session = { eventLog: createMemoryEventLog() }
+    const hero = aBoostedHero({ army: WITH_CAVALIERS })
+    const { user } = await setupMapWith('STABLES', { ...session, hero })
+    await enterAndClose(user)
+
+    await setupMapWith('STABLES', { ...session, hero })
+
+    expect(readArmySlots(getHeroInfoBox()).slice(0, 2)).toEqual(['Champions 5', 'Pikemen 10'])
   })
 })
