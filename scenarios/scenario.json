@@ -1335,6 +1335,24 @@
         "x": 8,
         "y": 1
       }
+    },
+    {
+      "id": "bonus-18",
+      "kind": "BONUS_OBJECT",
+      "type": "FOUNTAIN_OF_FORTUNE",
+      "tile": {
+        "x": 2,
+        "y": 6
+      }
+    },
+    {
+      "id": "bonus-19",
+      "kind": "BONUS_OBJECT",
+      "type": "STABLES",
+      "tile": {
+        "x": 4,
+        "y": 4
+      }
     }
   ]
 }

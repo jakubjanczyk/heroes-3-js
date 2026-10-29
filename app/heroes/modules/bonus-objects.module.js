@@ -4,8 +4,8 @@ import {
   bonusObjectTaughtSkill,
   describeBonus,
   describePrice,
-  givesBonusUntilNextBattle,
   hasVisitedBonusObject,
+  isStatBoostingObject,
   meetsMinimumHeroLevel,
   rollBonusObjectPrice
 } from '../../../game/heroes/bonus-objects.js'
@@ -316,7 +316,7 @@ export const registerBonusObjectsModule = defineModule(
                   (entity) =>
                     isBonusObject(entity) &&
                     !bonusObjectTaughtSkill(definitions, entity.type) &&
-                    !givesBonusUntilNextBattle(definitions, entity.type)
+                    !isStatBoostingObject(definitions, entity.type)
                 )
                 .map((entity) => [entity.id, entity.type])
             )

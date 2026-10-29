@@ -73,6 +73,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - validation of real data files or of inputs a player can't produce (scenario loading)
   - layering rules (`tests/architecture/`)
 - Don't write unit tests for module wiring (module X reacts to event A by emitting B or calling a fake); they break on every refactor and duplicate behavior tests.
+- A new map object of a kind that already has tests doesn't get its own generic tests: that it's drawn with its name, that a tile it blocks has no route, that the entrance can be walked onto. Its data says that, and the shared code is already tested. Test what the object itself does.
 - If the user provides behavior scenarios/cases, implement those first and identify additional important missing cases.
 - If the user does not provide scenarios/cases, identify the expected behavior cases yourself first, then add behavior tests for them.
 

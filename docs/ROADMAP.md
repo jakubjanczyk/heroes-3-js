@@ -820,11 +820,12 @@ Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-bo
 - [x] Movement points above the maximum until the end of the day
 
 #### 7.6.3 Fountain of Fortune
-- [ ] Luck -1, +1, +2 or +3 until the next battle, rolled per fountain each week
+- [x] Luck -1, +1, +2 or +3 until the next battle, rolled per fountain each week
 
 #### 7.6.4 Stables
-- [ ] +400 movement points now and at the start of each day until the end of the week; another Stables does nothing that week
-- [ ] Cavaliers upgraded to Champions for free, on any visit
+- [x] +400 movement points now and at the start of each day until the end of the week; another Stables does nothing that week
+- [x] Cavaliers upgraded to Champions for free, on any visit
+- [ ] The Castle town's Stables building gives the same movement points (6.5)
 
 - [ ] Later: the Buoy and the Mermaids on water (7.10)
 

@@ -137,7 +137,7 @@ export function readMessage() {
 // ['+1 Attack'] or ['Basic Archery'].
 export function readMessageRewards() {
   return within(getInteractionModal())
-    .queryAllByRole('img', { name: /^(\+?\d+|Basic) / })
+    .queryAllByRole('img', { name: /^([+-]?\d+|Basic) / })
     .map((picture) => picture.getAttribute('aria-label'))
 }
 
