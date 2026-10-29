@@ -16,6 +16,7 @@ import { kingdomsSlice } from './state/kingdoms.js'
 import {
   bonusObjectPricesSlice,
   dwellingsSlice,
+  fountainsOfFortuneSlice,
   minesSlice,
   monsterCountsSlice,
   resourceGeneratorsSlice,
@@ -46,6 +47,7 @@ export const heroesContent = Object.freeze({
     minesSlice,
     dwellingsSlice,
     resourceGeneratorsSlice,
+    fountainsOfFortuneSlice,
     bonusObjectPricesSlice,
     witchHutsSlice,
     monsterCountsSlice,

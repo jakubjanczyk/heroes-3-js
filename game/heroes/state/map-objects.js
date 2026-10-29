@@ -5,7 +5,7 @@ import {
   isResourceGenerator
 } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
-import { bonusObjectTaughtSkill } from '../bonus-objects.js'
+import { bonusObjectTaughtSkill, rollsLuckEachWeek } from '../bonus-objects.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
   flaggedDwellingCountsByCreature,
@@ -122,6 +122,33 @@ export const bonusObjectPricesSlice = {
     ),
   on: {
     'fact.bonusObject.prices.rolled': (prices, { prices: rolled }) => ({ ...rolled, ...prices })
+  }
+}
+
+function forgetWeeklyLuck(fountains, { turnNumber }) {
+  if (calendarDateOfTurn(turnNumber).day !== 1) {
+    return fountains
+  }
+
+  return Object.fromEntries(
+    Object.keys(fountains).map((fountainId) => [fountainId, { luck: null }])
+  )
+}
+
+// The luck each Fountain of Fortune gives this week: rolled on the week's first visit, the same
+// for every hero who drinks there until the week ends.
+export const fountainsOfFortuneSlice = {
+  key: 'fountainsOfFortune',
+  initial: ({ scenario, definitions }) =>
+    Object.fromEntries(
+      (scenario?.entities ?? [])
+        .filter((entity) => isBonusObject(entity) && rollsLuckEachWeek(definitions, entity.type))
+        .map((fountain) => [fountain.id, { luck: null }])
+    ),
+  on: {
+    'fact.hero.battleBonus.gained': (fountains, { entityId, luck = 0 }) =>
+      fountains[entityId] ? { ...fountains, [entityId]: { luck } } : fountains,
+    'fact.turn.ended': forgetWeeklyLuck
   }
 }
 

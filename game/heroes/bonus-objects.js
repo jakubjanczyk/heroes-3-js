@@ -11,6 +11,7 @@ const FOOTPRINT_BY_TYPE = Object.freeze({
   SWAN_POND: RIGHT_OF_ENTRANCE,
   TEMPLE: RIGHT_OF_ENTRANCE,
   RALLY_FLAG: Object.freeze([{ x: -1, y: 0 }]),
+  STABLES: Object.freeze([{ x: -1, y: 0 }]),
   FOUNTAIN_OF_YOUTH: Object.freeze([
     { x: -1, y: 0 },
     { x: -1, y: -1 },
@@ -137,8 +138,46 @@ export function hasVisitedBonusObject(state, heroId, entityId) {
   return state.heroDetails[heroId]?.visitedBonusObjects.includes(entityId) ?? false
 }
 
-export function givesBonusUntilNextBattle(definitions, type) {
-  return Boolean(bonusObjectDefinition(definitions, type).untilNextBattle)
+export function rollsLuckEachWeek(definitions, type) {
+  return Boolean(bonusObjectDefinition(definitions, type).luckRolledEachWeek)
+}
+
+export function givesMovementPointsUntilEndOfWeek(definitions, type) {
+  return bonusObjectDefinition(definitions, type).movementPointsUntilEndOfWeek ?? 0
+}
+
+// The objects whose bonus doesn't last: until the next battle, the end of the day or the week.
+export function isStatBoostingObject(definitions, type) {
+  return Boolean(
+    bonusObjectDefinition(definitions, type).untilNextBattle ||
+      rollsLuckEachWeek(definitions, type) ||
+      givesMovementPointsUntilEndOfWeek(definitions, type)
+  )
+}
+
+// One of the luck values a Fountain of Fortune may give, drawn evenly with `roll` in [0, 1).
+export function rollWeeklyLuck(definitions, type, roll) {
+  const values = bonusObjectDefinition(definitions, type).luckRolledEachWeek ?? []
+  return values[Math.floor(roll * values.length)] ?? 0
+}
+
+export function weeklyLuckOf(state, entityId) {
+  return state.fountainsOfFortune?.[entityId]?.luck ?? null
+}
+
+export function hasWeekMovementBonus(state, heroId) {
+  return (state.heroDetails[heroId]?.weekMovementPoints ?? 0) > 0
+}
+
+// The army with each creature the object upgrades replaced by its upgrade, or null when none is.
+export function upgradeArmyAt(definitions, type, army) {
+  const upgrades = bonusObjectDefinition(definitions, type).upgradesCreatures ?? {}
+  if (!army.some((stack) => upgrades[stack?.creature])) {
+    return null
+  }
+  return army.map((stack) =>
+    upgrades[stack?.creature] ? { ...stack, creature: upgrades[stack.creature] } : stack
+  )
 }
 
 // The morale and luck the object gives on the day of the week the hero enters it.
@@ -156,10 +195,16 @@ export function hasBonusFromObjectType(state, heroId, type) {
   )
 }
 
-function hasUsedBonusObject(state, heroId, entity) {
+export function hasUsedStatBoostingObject(state, heroId, type, definitions) {
+  return givesMovementPointsUntilEndOfWeek(definitions, type)
+    ? hasWeekMovementBonus(state, heroId)
+    : hasBonusFromObjectType(state, heroId, type)
+}
+
+function hasUsedBonusObject(state, heroId, entity, definitions) {
   return (
     hasVisitedBonusObject(state, heroId, entity.id) ||
-    hasBonusFromObjectType(state, heroId, entity.type)
+    hasUsedStatBoostingObject(state, heroId, entity.type, definitions)
   )
 }
 
@@ -187,5 +232,5 @@ export function bonusObjectVisitedText(state, entity, definitions) {
   if (!heroId) {
     return null
   }
-  return hasUsedBonusObject(state, heroId, entity) ? '(Visited)' : '(Not visited)'
+  return hasUsedBonusObject(state, heroId, entity, definitions) ? '(Visited)' : '(Not visited)'
 }

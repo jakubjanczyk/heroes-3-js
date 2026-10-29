@@ -77,5 +77,16 @@
     "description": "+1 Morale and Luck until the next battle, +400 movement points today",
     "untilNextBattle": [{ "morale": 1, "luck": 1 }],
     "movementPoints": 400
+  },
+  "FOUNTAIN_OF_FORTUNE": {
+    "name": "Fountain of Fortune",
+    "description": "-1 to +3 Luck until the next battle",
+    "luckRolledEachWeek": [-1, 1, 2, 3]
+  },
+  "STABLES": {
+    "name": "Stables",
+    "description": "+400 movement points each day until the end of the week",
+    "movementPointsUntilEndOfWeek": 400,
+    "upgradesCreatures": { "CAVALIER": "CHAMPION" }
   }
 }
