@@ -60,6 +60,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Follow the `writing-tests` skill (`.claude/skills/writing-tests/SKILL.md`) for any feature, behavior change or bug fix: list scenarios first, get them approved, write tests before the code. The rules below are this repo's specifics on top of it.
 - Test runner: Vitest.
+- While iterating, run only the tests the change touches (`npx vitest run tests/behavior/behavior.camera.test.js`, or `-t "<test name>"`); the full suite takes over a minute. Run the full `npm test` once at the end, before pushing.
 - Test files: `**/*.test.js` (co-located with source files).
 - Keep tests deterministic (no network, no wall-clock dependencies unless mocked).
 - For new features, start by adding behavior coverage in `tests/behavior/` for that feature before implementation work.
