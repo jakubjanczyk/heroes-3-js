@@ -177,6 +177,7 @@ Stages:
 - [ ] The new day, week and month sounds (with sound effects, 10.4)
 - [x] Status bar text on hover, and right-click popup: a "status window" popup in the middle of the map explaining the box (2.5, 2.1); see `docs/notes/2026-10-25-info-box-help.md`
 - [ ] Other pickups as they come: experience, primary skills, spells, artifacts, creatures (7.5-7.8)
+- [ ] A picked-up artifact shows in the info box, its picture and name, as a picked-up resource does (7.8.1 picks it up with no message)
 - [ ] The hourglass during another player's turn (8.1)
 
 ### 2.5 Status Bar
