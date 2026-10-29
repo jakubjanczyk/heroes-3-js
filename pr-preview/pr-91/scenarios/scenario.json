@@ -635,6 +635,15 @@
       }
     },
     {
+      "id": "artifact-5",
+      "kind": "ARTIFACT",
+      "type": "QUIET_EYE_OF_THE_DRAGON",
+      "tile": {
+        "x": 4,
+        "y": 5
+      }
+    },
+    {
       "id": "resource-1",
       "kind": "RESOURCE",
       "type": "GOLD_PILE",
