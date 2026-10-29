@@ -34,7 +34,7 @@ function changeMovementPoints(hero, { value }) {
   }
 
   const { max } = hero.movementPoints
-  return { movementPoints: { value: Math.max(0, Math.min(max, remaining)), max } }
+  return { movementPoints: { value: Math.max(0, remaining), max } }
 }
 
 const playersSlice = {

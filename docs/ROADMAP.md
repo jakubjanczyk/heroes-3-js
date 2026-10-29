@@ -814,10 +814,10 @@ Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-bo
 - [x] The bonuses count in battle and show in the morale and luck popups; they are gone once a battle ends, so the hero can take them again
 
 #### 7.6.2 Movement points
-- [ ] **Fountain of Youth**: morale +1 until the next battle, +400 movement points until the end of the day
-- [ ] **Rally Flag**: morale +1, luck +1, +400 movement points
+- [x] **Fountain of Youth**: morale +1 until the next battle, +400 movement points until the end of the day
+- [x] **Rally Flag**: morale +1, luck +1, +400 movement points
 - [ ] **Oasis** (morale +1, +800) and **Watering Hole** (morale +1, +400), if wanted: they have more than one entrance tile
-- [ ] Movement points above the maximum until the end of the day
+- [x] Movement points above the maximum until the end of the day
 
 #### 7.6.3 Fountain of Fortune
 - [ ] Luck -1, +1, +2 or +3 until the next battle, rolled per fountain each week

@@ -95,7 +95,19 @@ Each object goes into `game/data/bonus-objects.json` beside the permanent ones, 
 - The demo map has one of each, near the starting hero.
 - A beaten or retreated hero leaves the map and starts over when hired again, so there is nothing to test there beyond the battle ending.
 
+### Part 2 (done)
+
+- `FOUNTAIN_OF_YOUTH` and `RALLY_FLAG` give their morale and luck `untilNextBattle` as the objects of part 1, and `movementPoints: 400`, added to what the hero has left after the step onto the entrance. A hero who still has the bonus from that kind of object gets the second message and no movement points; after a battle both come again.
+- Movement points are no longer held to the maximum when they change, so they can go above it until the day ends; the new day resets them to the maximum. The hero list's movement bar stays full above the maximum.
+- The Fountain of Youth's messages are our own wording, as its texts aren't online: "You drink from the fountain of youth. Your troops feel refreshed and their spirits lift. You can travel a bit further today." and "You drink from the fountain of youth again, but nothing more happens."
+- The popup's lines, our own wording: "+1 Morale until the next battle, +400 movement points today" and "+1 Morale and Luck until the next battle, +400 movement points today".
+- The message shows only the morale and luck pictures, not the movement points.
+- The Oasis and Watering Hole are left out for now: they have more than one entrance tile, which no object has yet.
+- The demo map has one of each, near the starting hero.
+
 ## Not yet
+
+- The Oasis and the Watering Hole (several entrance tiles).
 
 - The Buoy and the Mermaids (water, 7.10).
 - The Castle town's Stables building, which gives the same bonus (6.5).

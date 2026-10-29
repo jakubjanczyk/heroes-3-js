@@ -1317,6 +1317,24 @@
         "x": 6,
         "y": 8
       }
+    },
+    {
+      "id": "bonus-16",
+      "kind": "BONUS_OBJECT",
+      "type": "RALLY_FLAG",
+      "tile": {
+        "x": 1,
+        "y": 4
+      }
+    },
+    {
+      "id": "bonus-17",
+      "kind": "BONUS_OBJECT",
+      "type": "FOUNTAIN_OF_YOUTH",
+      "tile": {
+        "x": 8,
+        "y": 1
+      }
     }
   ]
 }
