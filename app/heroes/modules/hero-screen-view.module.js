@@ -6,9 +6,14 @@ import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
+  APP_COMMAND_HERO_ARTIFACT_PUT_BACK_REQUESTED,
+  APP_COMMAND_HERO_ARTIFACT_PUT_REQUESTED,
+  APP_COMMAND_HERO_ARTIFACT_TAKE_REQUESTED,
+  APP_COMMAND_HERO_BACKPACK_SCROLL_REQUESTED,
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -26,6 +31,7 @@ import {
 
 const DEFAULT_HERO_NAME = 'Hero'
 const SELECT_TEXT = { hero: 'Select %s' }
+const EMPTY_ARTIFACT_FRAME_TEXT = 'Empty'
 
 function statusSourceAt(target) {
   return target?.closest?.('[data-status]') ?? null
@@ -43,8 +49,27 @@ function moraleOrLuckAt(target) {
   return target?.closest?.('[data-morale-luck]') ?? null
 }
 
+function artifactFrameAt(target) {
+  return (
+    target?.closest?.('[data-artifact-slot]') ??
+    target?.closest?.('.hero-screen__backpack-slots > li') ??
+    null
+  )
+}
+
+function placeOfArtifactFrame(frame) {
+  if (frame.dataset.artifactSlot) {
+    return { slot: frame.dataset.artifactSlot }
+  }
+  return { backpack: [...frame.parentElement.children].indexOf(frame) }
+}
+
+function artifactAt(target) {
+  return target?.closest?.('[data-artifact]') ?? null
+}
+
 function popupSourceAt(target) {
-  return secondarySkillAt(target) ?? moraleOrLuckAt(target)
+  return secondarySkillAt(target) ?? moraleOrLuckAt(target) ?? artifactAt(target)
 }
 
 function renderSecondarySkill(slot, document, skill) {
@@ -58,11 +83,11 @@ function renderSecondarySkill(slot, document, skill) {
   slot.dataset.status = secondarySkillStatusText(skill)
 }
 
-function renderArtifactPicture(document, artifact) {
+function renderArtifactPicture(document, artifact, label = artifact.name) {
   const picture = document.createElement('span')
   picture.className = 'hero-screen__artifact-picture'
   picture.setAttribute('role', 'img')
-  picture.setAttribute('aria-label', artifact.name)
+  picture.setAttribute('aria-label', label)
   picture.textContent = artifact.name
   return picture
 }
@@ -88,6 +113,8 @@ export const registerHeroScreenViewModule = defineModule(
     let heroScreen = null
     let rearranging = null
     let popup = null
+    let heldPicture = null
+    let pointer = { x: 0, y: 0 }
     let definitions = {}
     let isMapCovered = false
     // Whether this screen covered the map, so closing it uncovers only what it covered: over the
@@ -111,10 +138,7 @@ export const registerHeroScreenViewModule = defineModule(
       heroScreen.querySelector('.hero-screen__level').textContent =
         `Level ${levelForExperience(hero?.experience ?? 0)} ${heroClass?.name ?? ''}`.trim()
 
-      for (const { key, value } of getHeroPrimarySkills({ entity: hero, definitions })) {
-        heroScreen.querySelector(`[data-skill="${key}"] .hero-screen__skill-value`).textContent =
-          String(value)
-      }
+      showPrimarySkills(hero)
       heroScreen.querySelector('.hero-screen__experience .hero-screen__box-value').textContent =
         String(hero?.experience ?? 0)
 
@@ -123,19 +147,63 @@ export const registerHeroScreenViewModule = defineModule(
       showArmy()
     }
 
+    function showPrimarySkills(hero) {
+      for (const { key, value } of getHeroPrimarySkills({ entity: hero, definitions })) {
+        heroScreen.querySelector(`[data-skill="${key}"] .hero-screen__skill-value`).textContent =
+          String(value)
+      }
+    }
+
     function showArtifactIn(frame, artifactId) {
       const artifact = definitions?.artifacts?.[artifactId]
       frame.replaceChildren(...(artifact ? [renderArtifactPicture(document, artifact)] : []))
+      frame.dataset.status = artifact ? `View ${artifact.name} Info` : EMPTY_ARTIFACT_FRAME_TEXT
+      if (artifact) {
+        frame.dataset.artifact = artifactId
+      } else {
+        delete frame.dataset.artifact
+      }
     }
 
     function showArtifacts(hero) {
-      const { worn = {}, backpack = [] } = hero?.artifacts ?? {}
+      const { worn = {}, backpack = [], held } = hero?.artifacts ?? {}
       for (const frame of heroScreen.querySelectorAll('[data-artifact-slot]')) {
         showArtifactIn(frame, worn[frame.dataset.artifactSlot])
       }
       heroScreen.querySelectorAll('.hero-screen__backpack-slots > li').forEach((frame, index) => {
         showArtifactIn(frame, backpack[index])
       })
+      showHeldArtifact(definitions?.artifacts?.[held])
+    }
+
+    function showHeldArtifact(artifact) {
+      heldPicture?.remove()
+      heldPicture = artifact
+        ? renderArtifactPicture(document, artifact, `Held: ${artifact.name}`)
+        : null
+      if (heldPicture) {
+        heldPicture.classList.add('hero-screen__held-artifact')
+        heroScreen.querySelector('.hero-screen__window').append(heldPicture)
+        moveHeldArtifact()
+      }
+    }
+
+    function moveHeldArtifact() {
+      if (heldPicture) {
+        const heroWindow = heldPicture.parentElement.getBoundingClientRect()
+        heldPicture.style.left = `${pointer.x - heroWindow.left}px`
+        heldPicture.style.top = `${pointer.y - heroWindow.top}px`
+      }
+    }
+
+    function clickArtifactFrame(frame) {
+      const place = placeOfArtifactFrame(frame)
+      emit(
+        selectedHero()?.artifacts?.held
+          ? APP_COMMAND_HERO_ARTIFACT_PUT_REQUESTED
+          : APP_COMMAND_HERO_ARTIFACT_TAKE_REQUESTED,
+        { place }
+      )
     }
 
     const describeMoraleOrLuck = {
@@ -175,6 +243,13 @@ export const registerHeroScreenViewModule = defineModule(
       const kind = source.dataset.moraleLuck
       if (kind) {
         return renderMoraleOrLuckPopup(document, describeMoraleOrLuck[kind](selectedHero()))
+      }
+      const artifact = definitions?.artifacts?.[source.dataset.artifact]
+      if (artifact) {
+        return renderSkillPopup(document, {
+          title: artifact.name,
+          description: artifact.description
+        })
       }
       const skill = describedSkills(selectedHero())[Number(source.dataset.skillIndex)]
       return renderSkillPopup(document, skill)
@@ -240,8 +315,12 @@ export const registerHeroScreenViewModule = defineModule(
       }
 
       closePopup()
+      if (selectedHero()?.artifacts?.held) {
+        emit(APP_COMMAND_HERO_ARTIFACT_PUT_BACK_REQUESTED, {})
+      }
       heroScreen.remove()
       heroScreen = null
+      heldPicture = null
       rearranging = null
       if (coversMap) {
         coversMap = false
@@ -266,6 +345,16 @@ export const registerHeroScreenViewModule = defineModule(
           handler: () => {
             if (heroScreen) {
               showArmy()
+            }
+          }
+        },
+        {
+          type: APP_FACT_HERO_ARTIFACTS_CHANGED,
+          handler: () => {
+            if (heroScreen) {
+              const hero = selectedHero()
+              showArtifacts(hero)
+              showPrimarySkills(hero)
             }
           }
         },
@@ -304,10 +393,32 @@ export const registerHeroScreenViewModule = defineModule(
               return
             }
 
+            const backpackArrow = event.target.closest('.hero-screen__backpack-arrow')
+            if (backpackArrow) {
+              emit(APP_COMMAND_HERO_BACKPACK_SCROLL_REQUESTED, {
+                direction: backpackArrow.dataset.direction
+              })
+              return
+            }
+
+            const artifactFrame = artifactFrameAt(event.target)
+            if (artifactFrame) {
+              clickArtifactFrame(artifactFrame)
+              return
+            }
+
             const armySlot = armySlotAt(event.target)
             if (armySlot) {
               rearranging.clickSlot(armySlot, event)
             }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'pointermove',
+          handler: (event) => {
+            pointer = { x: event.clientX, y: event.clientY }
+            moveHeldArtifact()
           }
         },
         {
@@ -366,6 +477,7 @@ export const registerHeroScreenViewModule = defineModule(
         closePopup()
         heroScreen?.remove()
         heroScreen = null
+        heldPicture = null
         rearranging = null
       }
     }
@@ -376,12 +488,17 @@ export const registerHeroScreenViewModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_ARMY_CHANGED,
+      APP_FACT_HERO_ARTIFACTS_CHANGED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,
       APP_UI_SELECTED_HERO_CLICKED,
       APP_UI_HERO_SCREEN_OPEN_REQUESTED
     ],
     produces: [
+      APP_COMMAND_HERO_ARTIFACT_TAKE_REQUESTED,
+      APP_COMMAND_HERO_ARTIFACT_PUT_REQUESTED,
+      APP_COMMAND_HERO_ARTIFACT_PUT_BACK_REQUESTED,
+      APP_COMMAND_HERO_BACKPACK_SCROLL_REQUESTED,
       APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
       APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,

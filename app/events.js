@@ -15,6 +15,11 @@ export const APP_COMMAND_HERO_SELECT_REQUESTED = 'command.hero.select.requested'
 export const APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED = 'command.hero.experience.gain.requested'
 export const APP_COMMAND_HERO_STACK_MOVE_REQUESTED = 'command.hero.stackMove.requested'
 export const APP_COMMAND_HERO_STACK_SPLIT_REQUESTED = 'command.hero.stackSplit.requested'
+// Each names a place as a worn slot, `{ slot: 'WEAPON' }`, or a backpack frame, `{ backpack: 0 }`.
+export const APP_COMMAND_HERO_ARTIFACT_TAKE_REQUESTED = 'command.hero.artifactTake.requested'
+export const APP_COMMAND_HERO_ARTIFACT_PUT_REQUESTED = 'command.hero.artifactPut.requested'
+export const APP_COMMAND_HERO_ARTIFACT_PUT_BACK_REQUESTED = 'command.hero.artifactPutBack.requested'
+export const APP_COMMAND_HERO_BACKPACK_SCROLL_REQUESTED = 'command.hero.backpackScroll.requested'
 // Between two heroes on the exchange screen; each names the heroes as `heroIds: { left, right }`
 // and the armies as 'left' and 'right'.
 export const APP_COMMAND_HEROES_STACK_MOVE_REQUESTED = 'command.heroes.stackMove.requested'
@@ -105,6 +110,7 @@ export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
 export const APP_FACT_HERO_SECONDARY_SKILL_LEARNED = 'fact.hero.secondarySkill.learned'
 export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
+export const APP_FACT_HERO_ARTIFACTS_CHANGED = 'fact.hero.artifacts.changed'
 // A hero hired in a town's tavern, who comes onto the map at the town's entrance.
 export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
 // The heroes a player's taverns offer this week, and the barkeep's rumour.
@@ -195,6 +201,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_HIRED,
   APP_FACT_TAVERN_HEROES_OFFERED
 ])

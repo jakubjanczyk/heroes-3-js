@@ -6,7 +6,8 @@
     "cost": 1000,
     "primarySkills": {
       "knowledge": 1
-    }
+    },
+    "description": "Worn on the head, this item increases your Knowledge skill by +1."
   },
   "SKULL_HELMET": {
     "name": "Skull Helmet",
@@ -15,7 +16,8 @@
     "cost": 3000,
     "primarySkills": {
       "knowledge": 2
-    }
+    },
+    "description": "Worn on the head, this item increases your Knowledge skill by +2."
   },
   "HELM_OF_CHAOS": {
     "name": "Helm of Chaos",
@@ -24,7 +26,8 @@
     "cost": 4000,
     "primarySkills": {
       "knowledge": 3
-    }
+    },
+    "description": "Worn on the head, this item increases your Knowledge skill by +3."
   },
   "CROWN_OF_THE_SUPREME_MAGI": {
     "name": "Crown of the Supreme Magi",
@@ -33,7 +36,8 @@
     "cost": 5000,
     "primarySkills": {
       "knowledge": 4
-    }
+    },
+    "description": "Worn on the head, this item increases your Knowledge skill by +4."
   },
   "HELLSTORM_HELMET": {
     "name": "Hellstorm Helmet",
@@ -42,7 +46,8 @@
     "cost": 6000,
     "primarySkills": {
       "knowledge": 5
-    }
+    },
+    "description": "Worn on the head, this item increases your Knowledge skill by +5."
   },
   "CROWN_OF_DRAGONTOOTH": {
     "name": "Crown of Dragontooth",
@@ -52,7 +57,8 @@
     "primarySkills": {
       "power": 4,
       "knowledge": 4
-    }
+    },
+    "description": "Worn on the head, this item increases your Knowledge and Power skills by +4."
   },
   "THUNDER_HELMET": {
     "name": "Thunder Helmet",
@@ -62,7 +68,8 @@
     "primarySkills": {
       "power": -2,
       "knowledge": 10
-    }
+    },
+    "description": "When worn, this relic increases your Knowledge skill by +10, but reduces your Power skill by -2."
   },
   "HELM_OF_HEAVENLY_ENLIGHTENMENT": {
     "name": "Helm of Heavenly Enlightenment",
@@ -74,7 +81,8 @@
       "defense": 6,
       "power": 6,
       "knowledge": 6
-    }
+    },
+    "description": "Worn on the head, the Helm of Heavenly Enlightenment increases all four primary skills by +6."
   },
   "DRAGON_WING_TABARD": {
     "name": "Dragon Wing Tabard",
@@ -84,7 +92,8 @@
     "primarySkills": {
       "power": 2,
       "knowledge": 2
-    }
+    },
+    "description": "Worn on the shoulders, this item increases your Knowledge and Power skills by +2."
   },
   "NECKLACE_OF_DRAGONTEETH": {
     "name": "Necklace of Dragonteeth",
@@ -94,7 +103,8 @@
     "primarySkills": {
       "power": 3,
       "knowledge": 3
-    }
+    },
+    "description": "Worn about the neck, this item increases your Knowledge and Power skills by +3."
   },
   "CELESTIAL_NECKLACE_OF_BLISS": {
     "name": "Celestial Necklace of Bliss",
@@ -106,7 +116,8 @@
       "defense": 3,
       "power": 3,
       "knowledge": 3
-    }
+    },
+    "description": "Worn about the neck, the Celestial Necklace of Bliss increases all four primary skills by +3."
   },
   "CENTAURS_AXE": {
     "name": "Centaur's Axe",
@@ -115,7 +126,8 @@
     "cost": 2000,
     "primarySkills": {
       "attack": 2
-    }
+    },
+    "description": "This right handed weapon increases your Attack skill by +2."
   },
   "BLACKSHARD_OF_THE_DEAD_KNIGHT": {
     "name": "Blackshard of the Dead Knight",
@@ -124,7 +136,8 @@
     "cost": 3000,
     "primarySkills": {
       "attack": 3
-    }
+    },
+    "description": "This right handed weapon increases your Attack skill by +3."
   },
   "GREATER_GNOLLS_FLAIL": {
     "name": "Greater Gnoll's Flail",
@@ -133,7 +146,8 @@
     "cost": 4000,
     "primarySkills": {
       "attack": 4
-    }
+    },
+    "description": "This right handed weapon increases your Attack skill by +4."
   },
   "RED_DRAGON_FLAME_TONGUE": {
     "name": "Red Dragon Flame Tongue",
@@ -143,7 +157,8 @@
     "primarySkills": {
       "attack": 2,
       "defense": 2
-    }
+    },
+    "description": "Held with the right hand, this item increases your Attack and Defense skills by +2."
   },
   "OGRES_CLUB_OF_HAVOC": {
     "name": "Ogre's Club of Havoc",
@@ -152,7 +167,8 @@
     "cost": 5000,
     "primarySkills": {
       "attack": 5
-    }
+    },
+    "description": "This right handed weapon increases your Attack skill by +5."
   },
   "SWORD_OF_HELLFIRE": {
     "name": "Sword of Hellfire",
@@ -161,7 +177,8 @@
     "cost": 6000,
     "primarySkills": {
       "attack": 6
-    }
+    },
+    "description": "This right handed weapon increases your Attack skill by +6."
   },
   "TITANS_GLADIUS": {
     "name": "Titan's Gladius",
@@ -171,7 +188,8 @@
     "primarySkills": {
       "attack": 12,
       "defense": -3
-    }
+    },
+    "description": "Held with the right hand, this massive relic increases your Attack skill by +12, but reduces your Defense skill by -3."
   },
   "SWORD_OF_JUDGEMENT": {
     "name": "Sword of Judgement",
@@ -183,7 +201,8 @@
       "defense": 5,
       "power": 5,
       "knowledge": 5
-    }
+    },
+    "description": "Held with the right hand, the Sword of Judgement increases all four primary skills by +5."
   },
   "SHIELD_OF_THE_DWARVEN_LORDS": {
     "name": "Shield of the Dwarven Lords",
@@ -192,7 +211,8 @@
     "cost": 2000,
     "primarySkills": {
       "defense": 2
-    }
+    },
+    "description": "This left handed item increases your Defense skill by +2."
   },
   "SHIELD_OF_THE_YAWNING_DEAD": {
     "name": "Shield of the Yawning Dead",
@@ -201,7 +221,8 @@
     "cost": 3000,
     "primarySkills": {
       "defense": 3
-    }
+    },
+    "description": "This left handed item increases your Defense skill by +3."
   },
   "BUCKLER_OF_THE_GNOLL_KING": {
     "name": "Buckler of the Gnoll King",
@@ -210,7 +231,8 @@
     "cost": 4000,
     "primarySkills": {
       "defense": 4
-    }
+    },
+    "description": "This left handed item increases your Defense skill by +4."
   },
   "TARG_OF_THE_RAMPAGING_OGRE": {
     "name": "Targ of the Rampaging Ogre",
@@ -219,7 +241,8 @@
     "cost": 5000,
     "primarySkills": {
       "defense": 5
-    }
+    },
+    "description": "This left handed item increases your Defense skill by +5."
   },
   "SHIELD_OF_THE_DAMNED": {
     "name": "Shield of the Damned",
@@ -228,7 +251,8 @@
     "cost": 6000,
     "primarySkills": {
       "defense": 6
-    }
+    },
+    "description": "This left handed item increases your Defense skill by +6."
   },
   "DRAGON_SCALE_SHIELD": {
     "name": "Dragon Scale Shield",
@@ -238,7 +262,8 @@
     "primarySkills": {
       "attack": 3,
       "defense": 3
-    }
+    },
+    "description": "Held with the left hand, this item increases your Attack and Defense skills by +3."
   },
   "SENTINELS_SHIELD": {
     "name": "Sentinel's Shield",
@@ -248,7 +273,8 @@
     "primarySkills": {
       "attack": -3,
       "defense": 12
-    }
+    },
+    "description": "Held with the left hand, this relic increases your Defense skill by +12, but reduces your Attack skill by -3."
   },
   "LIONS_SHIELD_OF_COURAGE": {
     "name": "Lion's Shield of Courage",
@@ -260,7 +286,8 @@
       "defense": 4,
       "power": 4,
       "knowledge": 4
-    }
+    },
+    "description": "Held with the left hand, the Lion's Shield of Courage increases all four primary skills by +4."
   },
   "BREASTPLATE_OF_PETRIFIED_WOOD": {
     "name": "Breastplate of Petrified Wood",
@@ -269,7 +296,8 @@
     "cost": 1000,
     "primarySkills": {
       "power": 1
-    }
+    },
+    "description": "Worn on the torso, this item increases your Power skill by +1."
   },
   "RIB_CAGE": {
     "name": "Rib Cage",
@@ -278,7 +306,8 @@
     "cost": 3000,
     "primarySkills": {
       "power": 2
-    }
+    },
+    "description": "Worn on the torso, this item increases your Power skill by +2."
   },
   "SCALES_OF_THE_GREATER_BASILISK": {
     "name": "Scales of the Greater Basilisk",
@@ -287,7 +316,8 @@
     "cost": 4000,
     "primarySkills": {
       "power": 3
-    }
+    },
+    "description": "Worn on the torso, this item increases your Power skill by +3."
   },
   "ARMOR_OF_WONDER": {
     "name": "Armor of Wonder",
@@ -299,7 +329,8 @@
       "defense": 1,
       "power": 1,
       "knowledge": 1
-    }
+    },
+    "description": "Worn on the torso, the Armor of Wonder increases all four primary skills by +1."
   },
   "TUNIC_OF_THE_CYCLOPS_KING": {
     "name": "Tunic of the Cyclops King",
@@ -308,7 +339,8 @@
     "cost": 5000,
     "primarySkills": {
       "power": 4
-    }
+    },
+    "description": "Worn on the torso, this item increases your Power skill by +4."
   },
   "BREASTPLATE_OF_BRIMSTONE": {
     "name": "Breastplate of Brimstone",
@@ -317,7 +349,8 @@
     "cost": 6000,
     "primarySkills": {
       "power": 5
-    }
+    },
+    "description": "Worn on the torso, this item increases your Power skill by +5."
   },
   "DRAGON_SCALE_ARMOR": {
     "name": "Dragon Scale Armor",
@@ -327,7 +360,8 @@
     "primarySkills": {
       "attack": 4,
       "defense": 4
-    }
+    },
+    "description": "Worn on a torso, this item increases your Attack and Defense skills by +4."
   },
   "TITANS_CUIRASS": {
     "name": "Titan's Cuirass",
@@ -337,7 +371,8 @@
     "primarySkills": {
       "power": 10,
       "knowledge": -2
-    }
+    },
+    "description": "When worn, this massive relic increases your Power skill by +10, but reduces your Knowledge skill by -2."
   },
   "QUIET_EYE_OF_THE_DRAGON": {
     "name": "Quiet Eye of the Dragon",
@@ -348,7 +383,8 @@
       "attack": 1,
       "defense": 1
     },
-    "stacks": true
+    "stacks": true,
+    "description": "Worn on a finger, this item increases your Attack and Defense skills by +1."
   },
   "DRAGONBONE_GREAVES": {
     "name": "Dragonbone Greaves",
@@ -358,7 +394,8 @@
     "primarySkills": {
       "power": 1,
       "knowledge": 1
-    }
+    },
+    "description": "Worn on the feet, this item increases your Knowledge and Power skills by +1."
   },
   "SANDALS_OF_THE_SAINT": {
     "name": "Sandals of the Saint",
@@ -370,6 +407,7 @@
       "defense": 2,
       "power": 2,
       "knowledge": 2
-    }
+    },
+    "description": "Worn on the feet, the Sandals of the Saint increase all four primary skills by +2."
   }
 }

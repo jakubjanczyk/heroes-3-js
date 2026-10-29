@@ -153,3 +153,51 @@ export function readHeroScreenArtifacts() {
 export function readHeroScreenBackpack() {
   return readArtifactsIn('Backpack').map(([, artifact]) => artifact)
 }
+
+function getHeroScreenArtifactSlot(slot) {
+  const list = within(getHeroScreen()).getByRole('list', { name: 'Artifacts' })
+  return within(list).getByRole('listitem', { name: slot })
+}
+
+function getHeroScreenBackpackFrame(frame) {
+  const list = within(getHeroScreen()).getByRole('list', { name: 'Backpack' })
+  return within(list).getAllByRole('listitem')[frame - 1]
+}
+
+// A slot by its name, e.g. 'Weapon' or 'Left ring'.
+export async function clickHeroScreenArtifactSlot(user, slot) {
+  await user.click(getHeroScreenArtifactSlot(slot))
+}
+
+// Frames count from 1, as the player sees them from the left.
+export async function clickHeroScreenBackpackFrame(user, frame) {
+  await user.click(getHeroScreenBackpackFrame(frame))
+}
+
+export async function clickHeroScreenBackpackArrow(user, direction) {
+  await user.click(
+    within(getHeroScreen()).getByRole('button', { name: `Scroll backpack ${direction}` })
+  )
+}
+
+export async function hoverHeroScreenArtifactSlot(user, slot) {
+  await user.hover(getHeroScreenArtifactSlot(slot))
+}
+
+export async function holdRightButtonOnHeroScreenArtifactSlot(user, slot) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenArtifactSlot(slot) })
+}
+
+export async function holdRightButtonOnHeroScreenBackpackFrame(user, frame) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenBackpackFrame(frame) })
+}
+
+// The artifact on the pointer, or null when nothing is held.
+export function readHeroScreenHeldArtifact() {
+  return (
+    within(getHeroScreen())
+      .queryByRole('img', { name: /^Held: / })
+      ?.getAttribute('aria-label')
+      .replace(/^Held: /, '') ?? null
+  )
+}

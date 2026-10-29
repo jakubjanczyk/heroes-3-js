@@ -876,9 +876,12 @@ See `docs/notes/2026-10-29-artifacts-on-the-map.md`.
 - [x] Kept after a reload
 
 #### 7.8.2 Moving them on the hero screen
-- [ ] Click an artifact to take it, then put it in another slot of its kind or the backpack, swapping with what is there
-- [ ] The backpack's five visible slots and its arrows
-- [ ] Right-click an artifact for its description
+See `docs/notes/2026-10-29-moving-artifacts.md`.
+- [x] Click an artifact to take it onto the pointer, then put it in another slot of its kind, swapping with what is there; a slot of another kind does nothing
+- [x] A backpack frame takes it in at that place, the rest moving along; closing the screen puts a held artifact back as a picked-up one goes
+- [x] The backpack's arrows move it round by one, with more than five in it; the order is kept
+- [x] Right-click an artifact for its description; the status bar names it ("View Centaur's Axe Info") or says "Empty"
+- [ ] Check in the game how moving works: taken from one source only
 
 #### 7.8.3 Morale, luck and movement
 - [ ] The morale and luck artifacts (Clover of Fortune, Badge of Courage, Pendant of Courage, Still Eye of the Dragon, ...), and the Hourglass of the Evil Hour and Spirit of Oppression that cancel positive luck and morale (4.9)
