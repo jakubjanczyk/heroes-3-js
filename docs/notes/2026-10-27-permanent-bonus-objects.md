@@ -1,5 +1,7 @@
 # Permanent bonus objects (2026-10-27)
 
+How these objects are built has changed since: see `2026-10-29-visitable-objects.md`. The game rules below still hold.
+
 Roadmap 7.7: map objects that each hero can use once, for a bonus that stays. The Treasure Chest is done (2026-10-19-treasure-chests-and-hero-levels.md); this note covers the rest.
 
 ## How Heroes 3 does it

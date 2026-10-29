@@ -1,5 +1,7 @@
 # Stat-boosting objects (2026-10-28)
 
+How these objects are built has changed since: see `2026-10-29-visitable-objects.md`. The game rules below still hold.
+
 Roadmap 7.6: map objects that give a hero a bonus that doesn't last: morale or luck until the next battle, movement points for the day or the week.
 
 ## How Heroes 3 does it

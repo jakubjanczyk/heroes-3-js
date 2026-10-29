@@ -1,5 +1,6 @@
-import { describeBonusObject } from './bonus-objects.js'
 import { getEntityName, getStatusBarText } from './status-bar-text.js'
+import { isVisitableObject } from './visitable-objects/definitions.js'
+import { describeVisitableObject } from './visitable-objects/visits.js'
 
 // What the Heroes 3 right-click popup says about a map tile: the same name the status bar
 // shows, then the owner's colour on its own line for an owned object ("Gold Mine", "(Red)"). An
@@ -10,12 +11,12 @@ export function getInfoPopupLines({
   definitions,
   ownerColorName = null,
   visitedText = null,
-  bonusObjectPrice = null
+  values = {}
 }) {
-  if (entity?.kind === 'BONUS_OBJECT') {
+  if (isVisitableObject(entity)) {
     return [
       getEntityName({ entity, definitions }),
-      ...describeBonusObject(definitions, entity.type, bonusObjectPrice),
+      ...describeVisitableObject(definitions, entity, values),
       ...(visitedText ? [visitedText] : [])
     ]
   }

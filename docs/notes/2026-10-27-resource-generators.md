@@ -1,5 +1,7 @@
 # Resource generators (2026-10-27)
 
+How these objects are built has changed since: see `2026-10-29-visitable-objects.md`. The game rules below still hold.
+
 Roadmap 7.5: map objects that give resources once a week.
 
 ## How Heroes 3 does it

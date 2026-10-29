@@ -35,9 +35,8 @@ export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'
 export const APP_COMMAND_TOWN_BUILD_REQUESTED = 'command.town.build.requested'
 export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requested'
 export const APP_COMMAND_DWELLING_RECRUIT_REQUESTED = 'command.dwelling.recruit.requested'
-export const APP_COMMAND_RESOURCE_GENERATOR_VISIT_REQUESTED =
-  'command.resourceGenerator.visit.requested'
-export const APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED = 'command.bonusObject.visit.requested'
+// A hero entered a bonus object or a resource generator.
+export const APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED = 'command.mapObject.visit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
@@ -90,15 +89,16 @@ export const APP_FACT_DWELLING_FLAGGED = 'fact.dwelling.flagged'
 export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.recruited'
 export const APP_FACT_DWELLING_GUARDS_CHANGED = 'fact.dwelling.guards.changed'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
-export const APP_FACT_RESOURCE_GENERATOR_VISITED = 'fact.resourceGenerator.visited'
+export const APP_FACT_RESOURCES_GAINED = 'fact.resources.gained'
+// A hero of the player entered the object, whether or not it gave them anything.
+export const APP_FACT_MAP_OBJECT_VISITED = 'fact.mapObject.visited'
+// The values a map object rolls once per game or once per week, such as a Witch Hut's skill.
+export const APP_FACT_MAP_OBJECT_VALUES_ROLLED = 'fact.mapObject.values.rolled'
 export const APP_FACT_HERO_BONUS_OBJECT_VISITED = 'fact.hero.bonusObject.visited'
-export const APP_FACT_BONUS_OBJECT_PRICES_ROLLED = 'fact.bonusObject.prices.rolled'
+export const APP_FACT_HERO_PRIMARY_SKILLS_GAINED = 'fact.hero.primarySkills.gained'
 export const APP_FACT_HERO_BATTLE_BONUS_GAINED = 'fact.hero.battleBonus.gained'
 // Movement points the hero gets now and at the start of each day until the week ends.
 export const APP_FACT_HERO_WEEK_BONUS_GAINED = 'fact.hero.weekBonus.gained'
-export const APP_FACT_WITCH_HUT_SKILLS_ROLLED = 'fact.witchHut.skills.rolled'
-// A hero of the player entered the hut, whether or not they could learn its skill.
-export const APP_FACT_WITCH_HUT_VISITED = 'fact.witchHut.visited'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
@@ -181,13 +181,13 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_DWELLING_FLAGGED,
   APP_FACT_DWELLING_CREATURES_RECRUITED,
   APP_FACT_DWELLING_GUARDS_CHANGED,
-  APP_FACT_RESOURCE_GENERATOR_VISITED,
+  APP_FACT_RESOURCES_GAINED,
+  APP_FACT_MAP_OBJECT_VISITED,
+  APP_FACT_MAP_OBJECT_VALUES_ROLLED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,
-  APP_FACT_BONUS_OBJECT_PRICES_ROLLED,
+  APP_FACT_HERO_PRIMARY_SKILLS_GAINED,
   APP_FACT_HERO_BATTLE_BONUS_GAINED,
   APP_FACT_HERO_WEEK_BONUS_GAINED,
-  APP_FACT_WITCH_HUT_SKILLS_ROLLED,
-  APP_FACT_WITCH_HUT_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,

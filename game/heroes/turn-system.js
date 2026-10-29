@@ -14,7 +14,7 @@ export function decideSpendMovementPoints(state, { heroId, amount }) {
 
 function weekMovementPointsOn(state, heroId, nextTurnNumber) {
   const isNewWeek = calendarDateOfTurn(nextTurnNumber).day === 1
-  return isNewWeek ? 0 : (state.heroDetails?.[heroId]?.weekMovementPoints ?? 0)
+  return isNewWeek ? 0 : (state.heroDetails?.[heroId]?.weekBonus?.movementPoints ?? 0)
 }
 
 // The new day, and every hero of the player whose turn ends back to full movement points, more
