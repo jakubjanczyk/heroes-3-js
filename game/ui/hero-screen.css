@@ -375,7 +375,7 @@
 }
 
 /* An empty slot the held artifact can go in. */
-.hero-screen__artifact[data-highlighted='true'] {
+.hero-screen__artifact[data-highlighted="true"] {
   box-shadow:
     inset 0 0 0 2px var(--trim-gold),
     0 0 6px rgb(217 180 90 / 0.8);
