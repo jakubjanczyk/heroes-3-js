@@ -19,8 +19,15 @@ export function readGameData(fileName) {
   return JSON.parse(readFileSync(join(import.meta.dirname, '../../game/data', fileName), 'utf8'))
 }
 
+// Parsing the page is the slowest part of starting the app in jsdom, so it is parsed once per page.
+let appBodyTemplate = null
+
 export function mountAppTemplate() {
-  document.body.innerHTML = appBodyHtml
+  if (appBodyTemplate?.ownerDocument !== document) {
+    appBodyTemplate = document.createElement('template')
+    appBodyTemplate.innerHTML = appBodyHtml
+  }
+  document.body.replaceChildren(appBodyTemplate.content.cloneNode(true))
 }
 
 export function createMemoryEventLog() {
