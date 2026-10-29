@@ -71,6 +71,15 @@ export function readBonusObjectName(entityId = 'bonus-1') {
   return getBonusObjectEntity(entityId)?.textContent ?? null
 }
 
+export function getArtifactEntity(entityId = 'artifact-1') {
+  return document.querySelector(`.entity--artifact[data-entity-id="${entityId}"]`)
+}
+
+// The name written on an artifact while it has no picture.
+export function readArtifactName(entityId = 'artifact-1') {
+  return getArtifactEntity(entityId)?.textContent ?? null
+}
+
 // Each line of the right-click popup, e.g. ['Mercenary Camp', '+1 Attack', '(Not visited)'].
 export function readInfoPopupLines() {
   const popup = screen.queryByRole('tooltip')

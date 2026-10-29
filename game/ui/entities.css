@@ -109,6 +109,24 @@
   text-shadow: 0 1px 1px black;
 }
 
+.entity--artifact {
+  z-index: var(--z-entity-artifact);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border-radius: 50%;
+  border: 2px solid oklch(0.86 0.12 90);
+  background: color-mix(in oklab, oklch(0.45 0.09 300) 86%, black 10%);
+  box-shadow: 0 0.3rem 0.7rem color-mix(in oklab, black 56%, transparent);
+  color: oklch(0.97 0.01 90);
+  font-size: 8px;
+  line-height: 1.05;
+  text-align: center;
+  text-shadow: 0 1px 1px black;
+  overflow: hidden;
+}
+
 .entity--town {
   z-index: var(--z-entity-town);
   pointer-events: none;

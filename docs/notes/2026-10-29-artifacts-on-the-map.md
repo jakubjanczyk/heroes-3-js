@@ -63,11 +63,11 @@ Slot, class and cost match between the slot tables and each artifact's page; the
 ## What we do
 
 - `game/data/artifacts.json`: the 38 by id (`CENTAURS_AXE`, ...), each with name, slot, class, cost and `primarySkills` (`{ "attack": 2 }`). An artifact is data only: adding one with bonuses the game already knows needs no code. The other artifacts come with the parts that give their effects.
-- A new entity kind, `ARTIFACT`, naming its artifact (`"artifact": "CENTAURS_AXE"`). It blocks its tile and is visited from the next one, as a resource is; the step is paid as for any visit from the next tile.
+- A new entity kind, `ARTIFACT`, whose `type` names its artifact (`"type": "CENTAURS_AXE"`), as a resource's names its pile. It blocks its tile and is visited from the next one, as a resource is; the step is paid as for any visit from the next tile.
 - No pictures yet: the map and the hero screen frames show a stand-in with the artifact's name, as other objects do.
 - A scenario hero may start with artifacts (`"artifacts": ["CENTAURS_AXE", ...]`), put on as if picked up in that order, as the map editor lets a map maker equip a hero.
-- Picking it up is saved (`fact.artifact.picked_up`, with the hero and where it went), so a reload shows it worn and gone from the map.
-- The hero screen shows each worn artifact in its frame, and the backpack's first five in the backpack frames. Its arrows, moving artifacts and right-click descriptions are 7.8.2.
+- Picking it up is saved (`fact.artifact.pickedUp`, with the hero and the artifact; where it goes is worked out from what the hero wears), so a reload shows it worn and gone from the map.
+- The hero screen shows each worn artifact in its frame, and the backpack's first five in the backpack frames. The war machine and spell book frames stay empty. Its arrows, moving artifacts and right-click descriptions are 7.8.2.
 - The primary skills shown in the info box, the hero's right-click popup, the hero screen and the exchange screen, and used in battle, add the worn artifacts, never below the minimums above.
 - A beaten hero hired again comes back without artifacts, as they come back at level 1 (see `2026-10-26-defeated-hero.md`).
 - Closes 2.4's artifact pickup item: no message.

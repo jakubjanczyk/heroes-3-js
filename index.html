@@ -533,8 +533,8 @@
     <!--
       The Heroes 3 hero screen. Its parts sit where the game draws them, in the game's 670 x 584
       pixels (--x, --y), and the window scales as a whole. Frames for what the game has no data
-      for yet (specialty, morale, luck, spell points, artifacts, backpack, Quest Log, Dismiss Hero,
-      the formation, tactics and split buttons) stay empty, as in the game for a hero without
+      for yet (specialty, spell points, war machines, the spell book, Quest Log, Dismiss Hero,
+      the formation and tactics buttons) stay empty, as in the game for a hero without
       them. The primary skill icons are the hero box's stand-ins.
     -->
     <template id="hero-screen-template">
@@ -592,33 +592,37 @@
               <path d="M140 50 C134 30 140 6 157 6 C174 6 180 30 174 50 Z M140 50 L174 50 L190 70 C210 78 214 100 212 130 L240 230 L262 270 L226 262 L232 322 L196 322 L190 286 L170 286 L164 322 L128 322 L136 240 L128 150 L118 100 L80 92 L36 84 L20 74 L22 56 L40 54 L84 66 L124 70 Z"/>
             </svg>
           </div>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 444; --y: 22"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 503; --y: 234"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 444; --y: 72"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 318; --y: 61"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 497; --y: 176"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 444; --y: 123"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 366; --y: 61"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 176"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 450; --y: 287"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 318; --y: 135"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 334; --y: 185"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 350; --y: 236"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 366; --y: 287"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 499; --y: 22"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 22"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 68"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 114"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 302"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 316; --y: 287"></span>
-          <div class="hero-screen__backpack" aria-hidden="true">
-            <span class="hero-screen__slot hero-screen__backpack-arrow" style="--x: 314; --y: 357"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 338; --y: 357"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 384; --y: 357"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 430; --y: 357"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 476; --y: 357"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 522; --y: 357"></span>
-            <span class="hero-screen__slot hero-screen__backpack-arrow" style="--x: 569; --y: 357"></span>
+          <ul class="hero-screen__artifacts" aria-label="Artifacts">
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 444; --y: 22" data-artifact-slot="HELMET" aria-label="Helmet"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 503; --y: 234" data-artifact-slot="CAPE" aria-label="Cape"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 444; --y: 72" data-artifact-slot="NECKLACE" aria-label="Necklace"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 318; --y: 61" data-artifact-slot="WEAPON" aria-label="Weapon"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 497; --y: 176" data-artifact-slot="SHIELD" aria-label="Shield"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 444; --y: 123" data-artifact-slot="TORSO" aria-label="Torso"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 366; --y: 61" data-artifact-slot="RIGHT_RING" aria-label="Right ring"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 176" data-artifact-slot="LEFT_RING" aria-label="Left ring"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 450; --y: 287" data-artifact-slot="FEET" aria-label="Feet"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 318; --y: 135" data-artifact-slot="MISC_1" aria-label="Misc 1"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 334; --y: 185" data-artifact-slot="MISC_2" aria-label="Misc 2"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 350; --y: 236" data-artifact-slot="MISC_3" aria-label="Misc 3"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 366; --y: 287" data-artifact-slot="MISC_4" aria-label="Misc 4"></li>
+            <li class="hero-screen__slot hero-screen__artifact" style="--x: 316; --y: 287" data-artifact-slot="MISC_5" aria-label="Misc 5"></li>
+          </ul>
+          <span class="hero-screen__slot hero-screen__artifact" style="--x: 499; --y: 22" aria-hidden="true"></span>
+          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 22" aria-hidden="true"></span>
+          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 68" aria-hidden="true"></span>
+          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 114" aria-hidden="true"></span>
+          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 302" aria-hidden="true"></span>
+          <div class="hero-screen__backpack">
+            <span class="hero-screen__slot hero-screen__backpack-arrow" style="--x: 314; --y: 357" aria-hidden="true"></span>
+            <ul class="hero-screen__backpack-slots" aria-label="Backpack">
+              <li class="hero-screen__slot hero-screen__artifact" style="--x: 338; --y: 357"></li>
+              <li class="hero-screen__slot hero-screen__artifact" style="--x: 384; --y: 357"></li>
+              <li class="hero-screen__slot hero-screen__artifact" style="--x: 430; --y: 357"></li>
+              <li class="hero-screen__slot hero-screen__artifact" style="--x: 476; --y: 357"></li>
+              <li class="hero-screen__slot hero-screen__artifact" style="--x: 522; --y: 357"></li>
+            </ul>
+            <span class="hero-screen__slot hero-screen__backpack-arrow" style="--x: 569; --y: 357" aria-hidden="true"></span>
           </div>
           <span class="hero-screen__slot hero-screen__button-frame" style="--x: 314; --y: 429" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__button-frame" style="--x: 454; --y: 429" aria-hidden="true"></span>

@@ -1,5 +1,6 @@
 import { isHero } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
+import { putOnArtifact, startingArtifacts } from '../artifacts.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
 import { learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
@@ -17,6 +18,7 @@ function detailsOf(hero, definitions) {
       definitions
     ),
     army: hero.army ?? [],
+    artifacts: startingArtifacts(hero.artifacts, definitions),
     experience: hero.experience ?? 0,
     level: levelForExperience(hero.experience ?? 0),
     levelUpSkills: [],
@@ -84,6 +86,10 @@ export const heroDetailsSlice = {
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
+    'fact.artifact.pickedUp': (heroes, detail, { definitions }) =>
+      updateHero((hero, { artifact }) => ({
+        artifacts: putOnArtifact(hero.artifacts, artifact, definitions)
+      }))(heroes, detail),
     'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({
       ...heroes,
       [heroId]: detailsOf({ name, heroClass, army }, definitions)

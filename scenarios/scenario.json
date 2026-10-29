@@ -599,6 +599,42 @@
       }
     },
     {
+      "id": "artifact-1",
+      "kind": "ARTIFACT",
+      "type": "CENTAURS_AXE",
+      "tile": {
+        "x": 4,
+        "y": 3
+      }
+    },
+    {
+      "id": "artifact-2",
+      "kind": "ARTIFACT",
+      "type": "SWORD_OF_HELLFIRE",
+      "tile": {
+        "x": 3,
+        "y": 1
+      }
+    },
+    {
+      "id": "artifact-3",
+      "kind": "ARTIFACT",
+      "type": "HELM_OF_THE_ALABASTER_UNICORN",
+      "tile": {
+        "x": 1,
+        "y": 3
+      }
+    },
+    {
+      "id": "artifact-4",
+      "kind": "ARTIFACT",
+      "type": "QUIET_EYE_OF_THE_DRAGON",
+      "tile": {
+        "x": 3,
+        "y": 5
+      }
+    },
+    {
       "id": "resource-1",
       "kind": "RESOURCE",
       "type": "GOLD_PILE",

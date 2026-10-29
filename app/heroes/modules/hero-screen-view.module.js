@@ -58,6 +58,15 @@ function renderSecondarySkill(slot, document, skill) {
   slot.dataset.status = secondarySkillStatusText(skill)
 }
 
+function renderArtifactPicture(document, artifact) {
+  const picture = document.createElement('span')
+  picture.className = 'hero-screen__artifact-picture'
+  picture.setAttribute('role', 'img')
+  picture.setAttribute('aria-label', artifact.name)
+  picture.textContent = artifact.name
+  return picture
+}
+
 function renderSkillPopup(document, { title, description }) {
   const popup = document.createElement('div')
   popup.className = 'info-popup info-popup--skill message-box'
@@ -110,7 +119,23 @@ export const registerHeroScreenViewModule = defineModule(
         String(hero?.experience ?? 0)
 
       showSecondarySkills(hero)
+      showArtifacts(hero)
       showArmy()
+    }
+
+    function showArtifactIn(frame, artifactId) {
+      const artifact = definitions?.artifacts?.[artifactId]
+      frame.replaceChildren(...(artifact ? [renderArtifactPicture(document, artifact)] : []))
+    }
+
+    function showArtifacts(hero) {
+      const { worn = {}, backpack = [] } = hero?.artifacts ?? {}
+      for (const frame of heroScreen.querySelectorAll('[data-artifact-slot]')) {
+        showArtifactIn(frame, worn[frame.dataset.artifactSlot])
+      }
+      heroScreen.querySelectorAll('.hero-screen__backpack-slots > li').forEach((frame, index) => {
+        showArtifactIn(frame, backpack[index])
+      })
     }
 
     const describeMoraleOrLuck = {

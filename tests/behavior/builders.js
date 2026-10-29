@@ -117,6 +117,19 @@ export const aTreasureChest = () =>
     placeable
   )
 
+// The artifact's `type` names its entry in the scenario's `artifacts` definitions.
+export const anArtifact = () =>
+  builder({ id: 'artifact-1', kind: 'ARTIFACT', type: 'ARTIFACT', tile: { x: 1, y: 0 } }, placeable)
+
+// slot: HELMET, CAPE, NECKLACE, WEAPON, SHIELD, TORSO, RING, FEET or MISC.
+export const anArtifactDefinition = () =>
+  builder({ name: 'Artifact', slot: 'WEAPON', primarySkills: {} }, (artifact) => ({
+    // Two worn copies both count, as with Quiet Eye of the Dragon.
+    stacking() {
+      artifact.stacks = true
+    }
+  }))
+
 export const aScenario = () =>
   builder(
     {

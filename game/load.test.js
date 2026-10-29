@@ -63,7 +63,8 @@ describe('bootstrap', () => {
       bonusObjects: { STAR_AXIS: { name: 'Star Axis' } },
       tavern: { cost: { GOLD_PILE: 2500 } },
       heroes: { ORRIN: { name: 'Orrin', heroClass: 'KNIGHT' } },
-      secondarySkills: { LEADERSHIP: { name: 'Leadership' } }
+      secondarySkills: { LEADERSHIP: { name: 'Leadership' } },
+      artifacts: { CENTAURS_AXE: { name: "Centaur's Axe", slot: 'WEAPON' } }
     }
 
     const fetch = createFakeFetch({
@@ -80,7 +81,8 @@ describe('bootstrap', () => {
       './game/data/bonus-objects.json': definitions.bonusObjects,
       './game/data/tavern.json': definitions.tavern,
       './game/data/heroes.json': definitions.heroes,
-      './game/data/secondary-skills.json': definitions.secondarySkills
+      './game/data/secondary-skills.json': definitions.secondarySkills,
+      './game/data/artifacts.json': definitions.artifacts
     })
 
     const loaded = await loadGame({ fetch })

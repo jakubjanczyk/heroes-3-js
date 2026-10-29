@@ -148,7 +148,8 @@ What a visit tells the player. Small pickups go to the info box (2.4b); a dialog
 - [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message
 - [x] Mine capture: no dialog; the info box shows the mine's name and the resource's picture with its daily amount for 3 seconds (2.4b); see `docs/notes/2026-10-25-info-box-mine-capture.md`
 - [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
-- [ ] Artifact pickup: no message, the artifact just goes to the hero; a message only when the backpack is full (7.8.1, 7.8.5)
+- [x] Artifact pickup: no message, the artifact just goes to the hero (7.8.1)
+- [ ] A message when the backpack is full (7.8.5)
 - [ ] Dwelling visit: asks whether to recruit, then opens the recruit window (6.3.3) (with map dwellings, 7.4)
 - [ ] (Not in H3, optional extra) Floating number over the map on a pickup
 
@@ -864,11 +865,14 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
 Built in seven parts. 134 artifacts without HotA's, each with a slot (Helmet, Cape, Necklace, Weapon, Shield, Torso, two Rings, Feet, five Misc), a class (Treasure, Minor, Major, Relic) and a cost; the HotA values in the wiki's tables are left out (Boots of Speed +600, Equestrian's Gloves +300). Two of the same artifact don't add up, except Quiet Eye of the Dragon and the resource artifacts.
 
 #### 7.8.1 On the map and worn
-- [ ] An artifact on the map blocks its tile and is picked up from the next one; shown with its name, visit cursor, status bar and right-click popup
-- [ ] Picking it up asks and shows nothing: it goes to the first free slot of its kind, else to the backpack, and leaves the map
-- [ ] The hero screen's slots show what the hero wears
-- [ ] The 38 artifacts that only change primary skills (Centaur's Axe to Sword of Judgement), counted wherever primary skills are, battle included
-- [ ] Kept after a reload
+See `docs/notes/2026-10-29-artifacts-on-the-map.md`.
+- [x] An artifact on the map blocks its tile and is picked up from the next one; shown with its name, visit cursor, status bar and right-click popup
+- [x] Picking it up asks and shows nothing: it goes to the first free slot of its kind, else to the backpack, and leaves the map
+- [x] The hero screen's slots show what the hero wears, and the backpack's first five
+- [x] The 38 artifacts that only change primary skills (Centaur's Axe to Sword of Judgement), counted wherever primary skills are, battle included, never below Attack and Defense 0 or Power and Knowledge 1
+- [x] Two of the same count once, except those that add up (Quiet Eye of the Dragon)
+- [x] A scenario hero may start with artifacts; a beaten hero hired again has none
+- [x] Kept after a reload
 
 #### 7.8.2 Moving them on the hero screen
 - [ ] Click an artifact to take it, then put it in another slot of its kind or the backpack, swapping with what is there

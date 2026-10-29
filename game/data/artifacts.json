@@ -1,0 +1,375 @@
+{
+  "HELM_OF_THE_ALABASTER_UNICORN": {
+    "name": "Helm of the Alabaster Unicorn",
+    "slot": "HELMET",
+    "class": "TREASURE",
+    "cost": 1000,
+    "primarySkills": {
+      "knowledge": 1
+    }
+  },
+  "SKULL_HELMET": {
+    "name": "Skull Helmet",
+    "slot": "HELMET",
+    "class": "TREASURE",
+    "cost": 3000,
+    "primarySkills": {
+      "knowledge": 2
+    }
+  },
+  "HELM_OF_CHAOS": {
+    "name": "Helm of Chaos",
+    "slot": "HELMET",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "knowledge": 3
+    }
+  },
+  "CROWN_OF_THE_SUPREME_MAGI": {
+    "name": "Crown of the Supreme Magi",
+    "slot": "HELMET",
+    "class": "MINOR",
+    "cost": 5000,
+    "primarySkills": {
+      "knowledge": 4
+    }
+  },
+  "HELLSTORM_HELMET": {
+    "name": "Hellstorm Helmet",
+    "slot": "HELMET",
+    "class": "MAJOR",
+    "cost": 6000,
+    "primarySkills": {
+      "knowledge": 5
+    }
+  },
+  "CROWN_OF_DRAGONTOOTH": {
+    "name": "Crown of Dragontooth",
+    "slot": "HELMET",
+    "class": "RELIC",
+    "cost": 8000,
+    "primarySkills": {
+      "power": 4,
+      "knowledge": 4
+    }
+  },
+  "THUNDER_HELMET": {
+    "name": "Thunder Helmet",
+    "slot": "HELMET",
+    "class": "RELIC",
+    "cost": 10000,
+    "primarySkills": {
+      "power": -2,
+      "knowledge": 10
+    }
+  },
+  "HELM_OF_HEAVENLY_ENLIGHTENMENT": {
+    "name": "Helm of Heavenly Enlightenment",
+    "slot": "HELMET",
+    "class": "RELIC",
+    "cost": 24000,
+    "primarySkills": {
+      "attack": 6,
+      "defense": 6,
+      "power": 6,
+      "knowledge": 6
+    }
+  },
+  "DRAGON_WING_TABARD": {
+    "name": "Dragon Wing Tabard",
+    "slot": "CAPE",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "power": 2,
+      "knowledge": 2
+    }
+  },
+  "NECKLACE_OF_DRAGONTEETH": {
+    "name": "Necklace of Dragonteeth",
+    "slot": "NECKLACE",
+    "class": "MAJOR",
+    "cost": 6000,
+    "primarySkills": {
+      "power": 3,
+      "knowledge": 3
+    }
+  },
+  "CELESTIAL_NECKLACE_OF_BLISS": {
+    "name": "Celestial Necklace of Bliss",
+    "slot": "NECKLACE",
+    "class": "RELIC",
+    "cost": 12000,
+    "primarySkills": {
+      "attack": 3,
+      "defense": 3,
+      "power": 3,
+      "knowledge": 3
+    }
+  },
+  "CENTAURS_AXE": {
+    "name": "Centaur's Axe",
+    "slot": "WEAPON",
+    "class": "TREASURE",
+    "cost": 2000,
+    "primarySkills": {
+      "attack": 2
+    }
+  },
+  "BLACKSHARD_OF_THE_DEAD_KNIGHT": {
+    "name": "Blackshard of the Dead Knight",
+    "slot": "WEAPON",
+    "class": "MINOR",
+    "cost": 3000,
+    "primarySkills": {
+      "attack": 3
+    }
+  },
+  "GREATER_GNOLLS_FLAIL": {
+    "name": "Greater Gnoll's Flail",
+    "slot": "WEAPON",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "attack": 4
+    }
+  },
+  "RED_DRAGON_FLAME_TONGUE": {
+    "name": "Red Dragon Flame Tongue",
+    "slot": "WEAPON",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "attack": 2,
+      "defense": 2
+    }
+  },
+  "OGRES_CLUB_OF_HAVOC": {
+    "name": "Ogre's Club of Havoc",
+    "slot": "WEAPON",
+    "class": "MAJOR",
+    "cost": 5000,
+    "primarySkills": {
+      "attack": 5
+    }
+  },
+  "SWORD_OF_HELLFIRE": {
+    "name": "Sword of Hellfire",
+    "slot": "WEAPON",
+    "class": "MAJOR",
+    "cost": 6000,
+    "primarySkills": {
+      "attack": 6
+    }
+  },
+  "TITANS_GLADIUS": {
+    "name": "Titan's Gladius",
+    "slot": "WEAPON",
+    "class": "RELIC",
+    "cost": 10000,
+    "primarySkills": {
+      "attack": 12,
+      "defense": -3
+    }
+  },
+  "SWORD_OF_JUDGEMENT": {
+    "name": "Sword of Judgement",
+    "slot": "WEAPON",
+    "class": "RELIC",
+    "cost": 20000,
+    "primarySkills": {
+      "attack": 5,
+      "defense": 5,
+      "power": 5,
+      "knowledge": 5
+    }
+  },
+  "SHIELD_OF_THE_DWARVEN_LORDS": {
+    "name": "Shield of the Dwarven Lords",
+    "slot": "SHIELD",
+    "class": "TREASURE",
+    "cost": 2000,
+    "primarySkills": {
+      "defense": 2
+    }
+  },
+  "SHIELD_OF_THE_YAWNING_DEAD": {
+    "name": "Shield of the Yawning Dead",
+    "slot": "SHIELD",
+    "class": "MINOR",
+    "cost": 3000,
+    "primarySkills": {
+      "defense": 3
+    }
+  },
+  "BUCKLER_OF_THE_GNOLL_KING": {
+    "name": "Buckler of the Gnoll King",
+    "slot": "SHIELD",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "defense": 4
+    }
+  },
+  "TARG_OF_THE_RAMPAGING_OGRE": {
+    "name": "Targ of the Rampaging Ogre",
+    "slot": "SHIELD",
+    "class": "MAJOR",
+    "cost": 5000,
+    "primarySkills": {
+      "defense": 5
+    }
+  },
+  "SHIELD_OF_THE_DAMNED": {
+    "name": "Shield of the Damned",
+    "slot": "SHIELD",
+    "class": "MAJOR",
+    "cost": 6000,
+    "primarySkills": {
+      "defense": 6
+    }
+  },
+  "DRAGON_SCALE_SHIELD": {
+    "name": "Dragon Scale Shield",
+    "slot": "SHIELD",
+    "class": "MAJOR",
+    "cost": 6000,
+    "primarySkills": {
+      "attack": 3,
+      "defense": 3
+    }
+  },
+  "SENTINELS_SHIELD": {
+    "name": "Sentinel's Shield",
+    "slot": "SHIELD",
+    "class": "RELIC",
+    "cost": 10000,
+    "primarySkills": {
+      "attack": -3,
+      "defense": 12
+    }
+  },
+  "LIONS_SHIELD_OF_COURAGE": {
+    "name": "Lion's Shield of Courage",
+    "slot": "SHIELD",
+    "class": "RELIC",
+    "cost": 16000,
+    "primarySkills": {
+      "attack": 4,
+      "defense": 4,
+      "power": 4,
+      "knowledge": 4
+    }
+  },
+  "BREASTPLATE_OF_PETRIFIED_WOOD": {
+    "name": "Breastplate of Petrified Wood",
+    "slot": "TORSO",
+    "class": "TREASURE",
+    "cost": 1000,
+    "primarySkills": {
+      "power": 1
+    }
+  },
+  "RIB_CAGE": {
+    "name": "Rib Cage",
+    "slot": "TORSO",
+    "class": "MINOR",
+    "cost": 3000,
+    "primarySkills": {
+      "power": 2
+    }
+  },
+  "SCALES_OF_THE_GREATER_BASILISK": {
+    "name": "Scales of the Greater Basilisk",
+    "slot": "TORSO",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "power": 3
+    }
+  },
+  "ARMOR_OF_WONDER": {
+    "name": "Armor of Wonder",
+    "slot": "TORSO",
+    "class": "MINOR",
+    "cost": 4000,
+    "primarySkills": {
+      "attack": 1,
+      "defense": 1,
+      "power": 1,
+      "knowledge": 1
+    }
+  },
+  "TUNIC_OF_THE_CYCLOPS_KING": {
+    "name": "Tunic of the Cyclops King",
+    "slot": "TORSO",
+    "class": "MAJOR",
+    "cost": 5000,
+    "primarySkills": {
+      "power": 4
+    }
+  },
+  "BREASTPLATE_OF_BRIMSTONE": {
+    "name": "Breastplate of Brimstone",
+    "slot": "TORSO",
+    "class": "MAJOR",
+    "cost": 6000,
+    "primarySkills": {
+      "power": 5
+    }
+  },
+  "DRAGON_SCALE_ARMOR": {
+    "name": "Dragon Scale Armor",
+    "slot": "TORSO",
+    "class": "RELIC",
+    "cost": 8000,
+    "primarySkills": {
+      "attack": 4,
+      "defense": 4
+    }
+  },
+  "TITANS_CUIRASS": {
+    "name": "Titan's Cuirass",
+    "slot": "TORSO",
+    "class": "RELIC",
+    "cost": 10000,
+    "primarySkills": {
+      "power": 10,
+      "knowledge": -2
+    }
+  },
+  "QUIET_EYE_OF_THE_DRAGON": {
+    "name": "Quiet Eye of the Dragon",
+    "slot": "RING",
+    "class": "TREASURE",
+    "cost": 2000,
+    "primarySkills": {
+      "attack": 1,
+      "defense": 1
+    },
+    "stacks": true
+  },
+  "DRAGONBONE_GREAVES": {
+    "name": "Dragonbone Greaves",
+    "slot": "FEET",
+    "class": "TREASURE",
+    "cost": 2000,
+    "primarySkills": {
+      "power": 1,
+      "knowledge": 1
+    }
+  },
+  "SANDALS_OF_THE_SAINT": {
+    "name": "Sandals of the Saint",
+    "slot": "FEET",
+    "class": "RELIC",
+    "cost": 8000,
+    "primarySkills": {
+      "attack": 2,
+      "defense": 2,
+      "power": 2,
+      "knowledge": 2
+    }
+  }
+}

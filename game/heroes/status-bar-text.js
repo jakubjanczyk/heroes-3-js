@@ -2,6 +2,7 @@ import { describeMonsterGroup } from './monster-count.js'
 import { TREASURE_CHEST_NAME } from './treasure-chest.js'
 
 const DEFINITIONS_KEY_BY_KIND = Object.freeze({
+  ARTIFACT: 'artifacts',
   MONSTER: 'monsters',
   RESOURCE: 'resources',
   MINE: 'mines',
