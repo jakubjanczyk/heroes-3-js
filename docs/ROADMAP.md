@@ -861,21 +861,46 @@ Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-
 - [x] Hero level 10 needed, 8 / 6 / 4 with Basic / Advanced / Expert Diplomacy; a hero turned away can come back
 
 ### 7.8 Artifacts on Map
-- [ ] Artifacts placed as entities on adventure map
-- [ ] Picking up an artifact: hero walks to it, artifact goes to inventory
-- [ ] Some artifacts are guarded (fight monsters first)
-- [ ] Artifact categories: weapon, helm, armor, shield, ring, amulet, boots, cape, necklace, misc
-- [ ] Artifact effects: stat bonuses, special abilities
-- [ ] Hero equipment screen: slots for each category
-- [ ] Equipped artifacts apply bonuses automatically
-- [ ] Key artifacts:
-  - Boots of Speed: +600 MP
-  - Ring of Vitality: +1 creature health
-  - Sword of Hellfire: +6 Attack
-  - Armor of Wonder: +1 to all stats
-  - Cape of Conjuring: +3 Power
-  - etc. (progressive implementation)
-- [ ] Artifact sets (Grail components, combo artifacts) - stretch goal
+Built in seven parts. 134 artifacts without HotA's, each with a slot (Helmet, Cape, Necklace, Weapon, Shield, Torso, two Rings, Feet, five Misc), a class (Treasure, Minor, Major, Relic) and a cost; the HotA values in the wiki's tables are left out (Boots of Speed +600, Equestrian's Gloves +300). Two of the same artifact don't add up, except Quiet Eye of the Dragon and the resource artifacts.
+
+#### 7.8.1 On the map and worn
+- [ ] An artifact on the map blocks its tile and is picked up from the next one; shown with its name, visit cursor, status bar and right-click popup
+- [ ] Picking it up shows its picture and its own pickup text, puts it in the first free slot of its kind, else in the backpack, and takes it off the map
+- [ ] The hero screen's slots show what the hero wears
+- [ ] The 38 artifacts that only change primary skills (Centaur's Axe to Sword of Judgement), counted wherever primary skills are, battle included
+- [ ] Kept after a reload
+
+#### 7.8.2 Moving them on the hero screen
+- [ ] Click an artifact to take it, then put it in another slot of its kind or the backpack, swapping with what is there
+- [ ] The backpack's five visible slots and its arrows
+- [ ] Right-click an artifact for its description
+
+#### 7.8.3 Morale, luck and movement
+- [ ] The morale and luck artifacts (Clover of Fortune, Badge of Courage, Pendant of Courage, Still Eye of the Dragon, ...), and the Hourglass of the Evil Hour and Spirit of Oppression that cancel positive luck and morale (4.9)
+- [ ] Boots of Speed (+600) and Equestrian's Gloves (+300): land movement points when worn at the start of a day
+
+#### 7.8.4 Guarded artifacts
+- [ ] Guards set by the scenario; entering always asks whether to fight them (`core.genrltxt.420`, text not found yet: check in the game)
+- [ ] Winning picks the artifact up; guards already beaten stay beaten after a retreat or defeat
+
+#### 7.8.5 Artifacts from elsewhere and a full backpack
+- [ ] The Treasure Chest's 5% artifact: a random Treasure-class artifact into the backpack, no choice; a full backpack gets the gold-or-experience chest instead (7.7)
+- [ ] The backpack holds 64; with it full nothing more can be picked up (`core.advevent.2`, text not found yet: check in the game)
+- [ ] The tavern's "… with N artifacts" counts them (4.5.4)
+
+#### 7.8.6 Between heroes
+- [ ] The exchange screen's paper dolls and backpacks (4.5.3): moving artifacts from one hero to the other, and the swap buttons
+
+#### 7.8.7 Combination artifacts
+- [ ] The 12 combinations: Admiral's Hat, Angelic Alliance, Armor of the Damned, Bow of the Sharpshooter, Cloak of the Undead King, Cornucopia, Elixir of Life, Power of the Dragon Father, Ring of the Magi, Statue of Legion, Titan's Thunder, Wizard's Well
+- [ ] With all the parts worn, right-clicking one offers to combine them (`core.genrltxt.732`); right-clicking the combination offers to take it apart (`core.genrltxt.733`); texts not found yet. Check in the game whether the offer also comes when the last part is put on
+- [ ] A combination holds all its parts' slots, takes one backpack slot, and gives its parts' bonuses plus its own
+- [ ] Only the combinations whose own bonus already exists by then; the rest come with their features below
+
+#### 7.8 later
+- [ ] Resource artifacts (3.2), battle artifacts such as Ring of Vitality and Ring of the Wayfarer (5.6), spell artifacts and immunities (4.8, 5.8), the Necromancy and boat artifacts
+- [ ] War machines, the spell book and the Grail
+- [ ] A beaten hero's artifacts going to the winner (4.5.5, needs enemy heroes)
 
 ### 7.9 Map Portals & Teleporters
 - [ ] **Monolith One-Way Entrance/Exit**: teleport between paired locations
@@ -1134,7 +1159,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 37. Permanent bonus objects (7.7), in five parts: free once-per-hero objects, choices (Arena, schools), Tree of Knowledge, Witch Hut, Library of Enlightenment
 38. Morale and luck (4.9): worked out and shown, then used in battle
 39. Stat-boosting objects (7.6)
-40. Artifacts on map (7.8)
+40. Artifacts on map (7.8), in seven parts: on the map and worn, moving them on the hero screen, morale, luck and movement, guards, chests and a full backpack, between heroes, combination artifacts
 41. Obstacles & decorations (7.3)
 
 ### Phase 6 - "Real Competition"
