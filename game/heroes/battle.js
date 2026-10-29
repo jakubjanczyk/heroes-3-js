@@ -83,10 +83,15 @@ export function createBattle({
   heroArmy,
   heroSkills,
   heroSecondarySkills,
+  heroBattleBonuses,
   monsterArmy,
   definitions
 }) {
-  const hero = { army: heroArmy ?? [], secondarySkills: heroSecondarySkills }
+  const hero = {
+    army: heroArmy ?? [],
+    secondarySkills: heroSecondarySkills,
+    battleBonuses: heroBattleBonuses
+  }
   return {
     stacks: [
       ...createStacks({

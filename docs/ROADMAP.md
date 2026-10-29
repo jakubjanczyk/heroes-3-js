@@ -803,16 +803,30 @@ The game's only three; see `docs/notes/2026-10-27-resource-generators.md`.
 - [ ] Pictures on the map (10.1) and their visit sounds (10.4)
 
 ### 7.6 Stat-Boosting Objects
-- [ ] **Fountain of Youth**: +1 movement point for current turn, +1 morale until next battle
-- [ ] **Rally Flag**: +1 morale, +1 luck, +400 movement points for current day
-- [ ] **Idol of Fortune**: +1 morale, +1 luck until next battle
-- [ ] **Temple**: +2 morale if visited on day 7
-- [ ] **Faerie Ring**: +1 luck until next battle
-- [ ] **Swan Pond**: +2 luck until next battle
-- [ ] **Fountain of Fortune**: random +1 to +3 luck until next battle
-- [ ] **Stables**: +400 movement points for current week, Cavalier upgrade
-- [ ] Bonuses are temporary (specified duration per object type)
-- [ ] Bonus tracking per hero per object with cooldown
+Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-boosting-objects.md`.
+- [x] A bonus from an object can't be taken again while the hero still has one from an object of the same kind; bonuses of different kinds add up
+
+#### 7.6.1 Until the next battle
+- [x] **Faerie Ring**: luck +1
+- [x] **Swan Pond**: luck +2, and the hero loses the rest of the day's movement points
+- [x] **Idol of Fortune**: luck +1 on days 1, 3, 5, morale +1 on days 2, 4, 6, both on day 7
+- [x] **Temple**: morale +1, +2 on day 7
+- [x] The bonuses count in battle and show in the morale and luck popups; they are gone once a battle ends, so the hero can take them again
+
+#### 7.6.2 Movement points
+- [ ] **Fountain of Youth**: morale +1 until the next battle, +400 movement points until the end of the day
+- [ ] **Rally Flag**: morale +1, luck +1, +400 movement points
+- [ ] **Oasis** (morale +1, +800) and **Watering Hole** (morale +1, +400), if wanted: they have more than one entrance tile
+- [ ] Movement points above the maximum until the end of the day
+
+#### 7.6.3 Fountain of Fortune
+- [ ] Luck -1, +1, +2 or +3 until the next battle, rolled per fountain each week
+
+#### 7.6.4 Stables
+- [ ] +400 movement points now and at the start of each day until the end of the week; another Stables does nothing that week
+- [ ] Cavaliers upgraded to Champions for free, on any visit
+
+- [ ] Later: the Buoy and the Mermaids on water (7.10)
 
 ### 7.7 Permanent Bonus Objects (One-Time)
 Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-27-permanent-bonus-objects.md`.

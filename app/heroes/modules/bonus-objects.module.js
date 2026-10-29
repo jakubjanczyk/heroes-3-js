@@ -4,6 +4,7 @@ import {
   bonusObjectTaughtSkill,
   describeBonus,
   describePrice,
+  givesBonusUntilNextBattle,
   hasVisitedBonusObject,
   meetsMinimumHeroLevel,
   rollBonusObjectPrice
@@ -313,7 +314,9 @@ export const registerBonusObjectsModule = defineModule(
               (event.detail.scenario?.entities ?? [])
                 .filter(
                   (entity) =>
-                    isBonusObject(entity) && !bonusObjectTaughtSkill(definitions, entity.type)
+                    isBonusObject(entity) &&
+                    !bonusObjectTaughtSkill(definitions, entity.type) &&
+                    !givesBonusUntilNextBattle(definitions, entity.type)
                 )
                 .map((entity) => [entity.id, entity.type])
             )
