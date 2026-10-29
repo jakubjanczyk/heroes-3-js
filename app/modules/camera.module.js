@@ -12,7 +12,10 @@ import {
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_CAMERA_UPDATED,
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
   APP_UI_MAP_EDGE_SCROLLED,
+  APP_UI_NOTICE_OPENED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED,
   APP_UI_SYSTEM_OPTIONS_CLOSED,
@@ -36,6 +39,7 @@ export const registerCameraModule = defineModule(
     let detachCameraInput = null
     let isSystemOptionsOpen = false
     let isMapCovered = false
+    let openDialogCount = 0
 
     function centerOnSelectedHero() {
       const current = state.get()
@@ -65,6 +69,10 @@ export const registerCameraModule = defineModule(
           height: viewport?.clientHeight ?? 0
         }
       })
+    }
+
+    function dialogOpened() {
+      openDialogCount += 1
     }
 
     function emitWorldMotionUpdated({ followHero = undefined, stepDurationMs = undefined } = {}) {
@@ -107,9 +115,9 @@ export const registerCameraModule = defineModule(
 
             const inputCamera = {
               moveBy(dx, dy) {
-                // Arrow keys and edge scrolling must not move the map behind the System options popup
-                // or a screen covering it, such as the battle.
-                if (isSystemOptionsOpen || isMapCovered) {
+                // Arrow keys and edge scrolling must not move the map behind a dialog, the System
+                // options popup or a screen covering it, such as the battle.
+                if (isSystemOptionsOpen || isMapCovered || openDialogCount > 0) {
                   return
                 }
 
@@ -186,6 +194,14 @@ export const registerCameraModule = defineModule(
             isMapCovered = false
           }
         },
+        { type: APP_UI_INTERACTION_MODAL_OPENED, handler: dialogOpened },
+        { type: APP_UI_NOTICE_OPENED, handler: dialogOpened },
+        {
+          type: APP_UI_INTERACTION_MODAL_CLOSED,
+          handler: () => {
+            openDialogCount = Math.max(0, openDialogCount - 1)
+          }
+        },
         {
           type: APP_COMMAND_CAMERA_PAN_BY,
           handler: (event) => {
@@ -259,6 +275,9 @@ export const registerCameraModule = defineModule(
       APP_UI_SYSTEM_OPTIONS_CLOSED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_INTERACTION_MODAL_OPENED,
+      APP_UI_NOTICE_OPENED,
+      APP_UI_INTERACTION_MODAL_CLOSED,
       APP_COMMAND_CAMERA_PAN_BY,
       APP_COMMAND_CAMERA_CENTER_ON_TILE,
       APP_FACT_MOVE_STARTED,
