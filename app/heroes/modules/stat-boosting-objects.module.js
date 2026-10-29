@@ -35,6 +35,16 @@ const MESSAGES_BY_TYPE = Object.freeze({
   TEMPLE: {
     gives: 'A visit and a prayer at the temple raises the morale of your troops.',
     visited: "It doesn't help to pray twice before a battle. Come back another day."
+  },
+  FOUNTAIN_OF_YOUTH: {
+    gives:
+      'You drink from the fountain of youth. Your troops feel refreshed and their spirits lift. You can travel a bit further today.',
+    visited: 'You drink from the fountain of youth again, but nothing more happens.'
+  },
+  RALLY_FLAG: {
+    gives:
+      'You rally your troops around this flag, renewing their strength and lifting their spirits. You feel at your peak, and can travel a bit further today.',
+    visited: 'You rally your troops around this flag.'
   }
 })
 
@@ -53,15 +63,24 @@ function describeRewards(bonus) {
 }
 
 // Each object gives its morale or luck to a hero who has none from an object of its kind; the
-// bonus lasts until the hero's next battle. The Swan Pond also ends the hero's day.
+// bonus lasts until the hero's next battle. The Swan Pond also ends the hero's day, and the
+// movement points some give can take the hero above their maximum until the day ends.
 export const registerStatBoostingObjectsModule = defineModule(
   ({ emit, state }) => {
     let definitions = {}
     let entityTypes = new Map()
 
-    function endMovement(heroId) {
-      const { max } = heroMovementPoints(state.get(), heroId)
-      emit(APP_FACT_MOVEMENT_POINTS_CHANGED, { heroId, value: 0, max })
+    function changeMovementPoints(heroId, { endsMovement, movementPoints }) {
+      if (!endsMovement && !movementPoints) {
+        return
+      }
+
+      const { value, max } = heroMovementPoints(state.get(), heroId)
+      emit(APP_FACT_MOVEMENT_POINTS_CHANGED, {
+        heroId,
+        value: endsMovement ? 0 : value + movementPoints,
+        max
+      })
     }
 
     function visit({ heroId, entityId }) {
@@ -79,9 +98,7 @@ export const registerStatBoostingObjectsModule = defineModule(
 
       const bonus = bonusUntilNextBattle(definitions, type, current)
       emit(APP_FACT_HERO_BATTLE_BONUS_GAINED, { heroId, entityId, entityType: type, ...bonus })
-      if (bonusObjectDefinition(definitions, type).endsMovement) {
-        endMovement(heroId)
-      }
+      changeMovementPoints(heroId, bonusObjectDefinition(definitions, type))
       emit(APP_UI_NOTICE_OPENED, {
         title: null,
         message: messages.gives,

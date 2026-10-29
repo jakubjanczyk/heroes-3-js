@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest'
 import {
   attackMonsterAt,
   confirmTileClickByDispatch,
+  expectHeroAt,
   holdRightButtonOn,
   hoverTile,
   readBonusObjectName,
@@ -49,6 +50,11 @@ const IDOL_OF_FORTUNE_GIVES =
   "You've found an ancient and weathered stone idol. Kissing it is supposed to bring luck or happiness, so you do. The stone is very cold to the touch."
 const TEMPLE_GIVES = 'A visit and a prayer at the temple raises the morale of your troops.'
 const TEMPLE_VISITED = "It doesn't help to pray twice before a battle. Come back another day."
+const FOUNTAIN_OF_YOUTH_GIVES =
+  'You drink from the fountain of youth. Your troops feel refreshed and their spirits lift. You can travel a bit further today.'
+const RALLY_FLAG_VISITED = 'You rally your troops around this flag.'
+const RALLY_FLAG_GIVES =
+  'You rally your troops around this flag, renewing their strength and lifting their spirits. You feel at your peak, and can travel a bit further today.'
 
 const gameDefinitions = {
   hero: readGameData('hero.json'),
@@ -76,11 +82,19 @@ const aBoostedHero = ({ army = TWO_TOWNS, skills = [] } = {}) =>
 // stands at (0, 2), out of the way of both.
 function setupMapWith(
   type,
-  { hero = aBoostedHero(), others = [], secondType, monster, eventLog, appConfig = {} } = {}
+  {
+    hero = aBoostedHero(),
+    others = [],
+    secondType,
+    monster,
+    eventLog,
+    appConfig = {},
+    width = 6
+  } = {}
 ) {
   return setupMovementBehaviorApp({
     loadGameOptions: aScenario()
-      .withSize(6, 3)
+      .withSize(width, 3)
       .withEntities(
         hero,
         ...others,
@@ -526,5 +540,150 @@ describe('Faerie Ring, Swan Pond, Idol of Fortune and Temple', () => {
 
       expect(await readHeroScreenMoraleAndLuck(reloaded.user)).toEqual(['Morale +2', 'Luck 0'])
     })
+  })
+})
+
+describe('Fountain of Youth and Rally Flag', () => {
+  test.each([
+    { type: 'FOUNTAIN_OF_YOUTH', name: 'Fountain of Youth' },
+    { type: 'RALLY_FLAG', name: 'Rally Flag' }
+  ])('shows the $name on the map', async ({ type, name }) => {
+    await setupMapWith(type)
+
+    expect(readBonusObjectName()).toBe(name)
+  })
+
+  test('entering the Fountain of Youth shows its message with +1 under the morale picture', async () => {
+    await setupMapWith('FOUNTAIN_OF_YOUTH')
+
+    await enterEntrance()
+
+    expect(readMessage()).toBe(FOUNTAIN_OF_YOUTH_GIVES)
+    expect(readMessageRewards()).toEqual(['+1 Morale'])
+  })
+
+  test('entering the Rally Flag shows its message with +1 under the morale and luck pictures', async () => {
+    await setupMapWith('RALLY_FLAG')
+
+    await enterEntrance()
+
+    expect(readMessage()).toBe(RALLY_FLAG_GIVES)
+    expect(readMessageRewards()).toEqual(['+1 Morale', '+1 Luck'])
+  })
+
+  // 1500, less 100 for the step onto the entrance, and 400 more.
+  test.each([
+    { type: 'FOUNTAIN_OF_YOUTH', name: 'Fountain of Youth' },
+    { type: 'RALLY_FLAG', name: 'Rally Flag' }
+  ])('entering the $name gives the hero 400 movement points, above the maximum', async ({
+    type
+  }) => {
+    const { user } = await setupMapWith(type)
+
+    await enterAndClose(user)
+
+    expectMovementPoints(1800)
+  })
+
+  // Sixteen straight steps along the row cost 1600, more than the maximum, and leave 200.
+  test('the extra movement points take the hero further than the maximum that day', async () => {
+    const { user } = await setupMapWith('RALLY_FLAG', { width: 20 })
+    await enterAndClose(user)
+
+    await walkTo(18, 1)
+
+    expectHeroAt(18, 1)
+    expectMovementPoints(200)
+  })
+
+  test("the next day the hero's movement points are back to the maximum", async () => {
+    const { user } = await setupMapWith('RALLY_FLAG')
+    await enterAndClose(user)
+
+    await endTurns(user, 1)
+
+    expectMovementPoints(1500)
+  })
+
+  test("the Rally Flag's morale and luck show on the hero screen", async () => {
+    const { user } = await setupMapWith('RALLY_FLAG')
+
+    await enterAndClose(user)
+
+    expect(await readHeroScreenMoraleAndLuck(user)).toEqual(['Morale +1', 'Luck +1'])
+  })
+
+  test("the Rally Flag's morale adds to the Temple's", async () => {
+    const { user } = await setupMapWith('RALLY_FLAG', { secondType: 'TEMPLE' })
+    await enterAndClose(user)
+
+    await walkTo(4, 1)
+    await closeInteractionModal(user)
+
+    expect(await readHeroScreenMoraleAndLuck(user)).toEqual(['Morale +2', 'Luck +1'])
+  })
+
+  // 1800 after the first visit, less two steps of 100 off the entrance and back.
+  test('entering again before a battle shows the second message and gives no movement points', async () => {
+    const { user } = await setupMapWith('RALLY_FLAG')
+    await enterAndClose(user)
+
+    await enterAgain()
+
+    expect(readMessage()).toBe(RALLY_FLAG_VISITED)
+    expect(readMessageRewards()).toEqual([])
+    expectMovementPoints(1600)
+  })
+
+  test("after a battle the hero can take the Rally Flag's bonus again the same day", async () => {
+    const { user } = await setupMapWith('RALLY_FLAG', {
+      hero: aBoostedHero({ army: ARMY_THAT_WINS }),
+      monster: aWeakMonster()
+    })
+    await enterAndClose(user)
+    await fightAndWin(user)
+
+    await walkTo(2, 2)
+    await enterEntrance()
+
+    expect(readMessage()).toBe(RALLY_FLAG_GIVES)
+    expect(readMessageRewards()).toEqual(['+1 Morale', '+1 Luck'])
+  })
+
+  // 1800 after the first visit. Attacking the monster from the entrance takes the diagonal step
+  // to (1, 2) for 141, where the hero stays; (2, 2) and the entrance cost 100 each, and the
+  // second visit gives 400 again: 1800 - 341 + 400.
+  test('after a battle the Rally Flag gives its movement points again', async () => {
+    const { user } = await setupMapWith('RALLY_FLAG', {
+      hero: aBoostedHero({ army: ARMY_THAT_WINS }),
+      monster: aWeakMonster()
+    })
+    await enterAndClose(user)
+    await fightAndWin(user)
+
+    await walkTo(2, 2)
+    await enterAndClose(user)
+
+    expectMovementPoints(1859)
+  })
+
+  test('the right-click popup names the object, what it gives and that the hero has not visited it', async () => {
+    const { user } = await setupMapWith('RALLY_FLAG')
+
+    expect(await readPopupOn(user, 2, 1)).toEqual([
+      'Rally Flag',
+      '+1 Morale and Luck until the next battle, +400 movement points today',
+      '(Not visited)'
+    ])
+  })
+
+  test('the extra movement points are kept after a reload', async () => {
+    const session = { eventLog: createMemoryEventLog() }
+    const { user } = await setupMapWith('RALLY_FLAG', session)
+    await enterAndClose(user)
+
+    await setupMapWith('RALLY_FLAG', session)
+
+    expectMovementPoints(1800)
   })
 })

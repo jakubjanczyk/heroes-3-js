@@ -163,7 +163,10 @@ export const registerHeroPanelModule = defineModule(
           const { value, max } = movementPoints
           movementBar.setAttribute('aria-valuenow', String(value))
           movementBar.setAttribute('aria-valuemax', String(max))
-          movementBar.style.setProperty('--movement-fill', `${max > 0 ? (value / max) * 100 : 0}%`)
+          movementBar.style.setProperty(
+            '--movement-fill',
+            `${max > 0 ? Math.min(100, (value / max) * 100) : 0}%`
+          )
         }
       }
       renderNextHeroButton()

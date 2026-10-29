@@ -10,6 +10,12 @@ const FOOTPRINT_BY_TYPE = Object.freeze({
   FAERIE_RING: RIGHT_OF_ENTRANCE,
   SWAN_POND: RIGHT_OF_ENTRANCE,
   TEMPLE: RIGHT_OF_ENTRANCE,
+  RALLY_FLAG: Object.freeze([{ x: -1, y: 0 }]),
+  FOUNTAIN_OF_YOUTH: Object.freeze([
+    { x: -1, y: 0 },
+    { x: -1, y: -1 },
+    { x: 0, y: -1 }
+  ]),
   MARLETTO_TOWER: Object.freeze([{ x: -1, y: 0 }]),
   MERCENARY_CAMP: Object.freeze([
     { x: -1, y: 0 },
