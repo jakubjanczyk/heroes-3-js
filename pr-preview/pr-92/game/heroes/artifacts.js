@@ -54,8 +54,9 @@ export function artifactPrimarySkills(artifacts, definitions) {
   return skills
 }
 
-function wornSlotKind(slotId) {
-  return ARTIFACT_SLOTS.find((slot) => slot.id === slotId)?.kind
+export function fitsSlot(artifactId, slotId, definitions) {
+  const kind = definitions?.artifacts?.[artifactId]?.slot
+  return ARTIFACT_SLOTS.some((slot) => slot.id === slotId && slot.kind === kind)
 }
 
 // A place is a worn slot, `{ slot: 'WEAPON' }`, or a backpack frame, `{ backpack: 0 }`.
@@ -84,7 +85,7 @@ export function takeArtifact(artifacts, place) {
 
 function putOnSlot(artifacts, slotId, definitions) {
   const { held } = artifacts
-  if (definitions?.artifacts?.[held]?.slot !== wornSlotKind(slotId)) {
+  if (!fitsSlot(held, slotId, definitions)) {
     return null
   }
   return {

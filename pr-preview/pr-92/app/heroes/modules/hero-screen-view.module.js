@@ -1,3 +1,4 @@
+import { fitsSlot } from '../../../game/heroes/artifacts.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
@@ -168,7 +169,11 @@ export const registerHeroScreenViewModule = defineModule(
     function showArtifacts(hero) {
       const { worn = {}, backpack = [], held } = hero?.artifacts ?? {}
       for (const frame of heroScreen.querySelectorAll('[data-artifact-slot]')) {
-        showArtifactIn(frame, worn[frame.dataset.artifactSlot])
+        const slot = frame.dataset.artifactSlot
+        showArtifactIn(frame, worn[slot])
+        frame.dataset.highlighted = String(
+          Boolean(held && !worn[slot] && fitsSlot(held, slot, definitions))
+        )
       }
       heroScreen.querySelectorAll('.hero-screen__backpack-slots > li').forEach((frame, index) => {
         showArtifactIn(frame, backpack[index])
