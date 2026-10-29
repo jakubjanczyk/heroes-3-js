@@ -4,7 +4,6 @@ import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcome
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
-import { registerBonusObjectsModule } from './modules/bonus-objects.module.js'
 import { registerDwellingRecruitViewModule } from './modules/dwelling-recruit-view.module.js'
 import { registerDwellingsModule } from './modules/dwellings.module.js'
 import { registerHeroArmyModule } from './modules/hero-army.module.js'
@@ -19,8 +18,6 @@ import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
 import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
-import { registerResourceGeneratorsModule } from './modules/resource-generators.module.js'
-import { registerStatBoostingObjectsModule } from './modules/stat-boosting-objects.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTavernModule } from './modules/tavern.module.js'
@@ -32,7 +29,7 @@ import { registerTownListModule } from './modules/town-list.module.js'
 import { registerTownRecruitViewModule } from './modules/town-recruit-view.module.js'
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
-import { registerWitchHutsModule } from './modules/witch-huts.module.js'
+import { registerVisitableObjectsModule } from './modules/visitable-objects.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
 
 export const heroesAppContent = Object.freeze({
@@ -49,10 +46,7 @@ export const heroesAppContent = Object.freeze({
     registerTurnModule,
     registerMinesModule,
     registerDwellingsModule,
-    registerResourceGeneratorsModule,
-    registerBonusObjectsModule,
-    registerWitchHutsModule,
-    registerStatBoostingObjectsModule,
+    registerVisitableObjectsModule,
     registerHeroLevelsModule,
     registerHeroArmyModule,
     registerBattleModule,

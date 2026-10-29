@@ -19,7 +19,7 @@ Take it from the game's object table, as homm3tools (a map tool) ships it, and p
    - A clear passable bit blocks the tile. A set action bit is the entrance, which is blocked too and visited by stepping onto it. Tiles of the grid with neither are walkable.
 4. Decode it with a throwaway script in the scratchpad, not in the repo. Before trusting the output, decode an object the repo already has and compare: Marletto Tower must come out `#E`, the Water Wheel `###` over `##E`.
 5. Port it:
-   - Write the blocked tiles into the object's footprint table as offsets from the entrance, `y` negative upwards. The scenario tile is the entrance.
+   - Write the blocked tiles into the object's footprint as offsets from the entrance, `y` negative upwards. The scenario tile is the entrance. For a bonus object or resource generator that is its `footprint` in `game/data/bonus-objects.json` or `game/data/resource-generators.json`; other kinds keep a footprint table in their entity behaviour.
    - Put the grid in the note (`E` the entrance, `#` blocked, `.` part of the picture that can be walked on, bottom row last), saying it's from the game's object table (homm3tools' copy).
    - An object with more than one entrance tile, or none, is unusual: say so in the note and ask how to handle it.
 
@@ -33,6 +33,16 @@ Follow the `game-sources` skill. For a map object, VCMI's `config/objects/<file>
 - the visit rules: `visitMode`, `selectMode` and `resetParameters`.
 
 On the wiki, an object's `{{AMLocation}}` template lists the visit message first, then the visited-again message. Several messages in one field are separated by `* * *`.
+
+## Bonus objects and resource generators
+
+These are data only. Follow "Adding an object" in `docs/notes/2026-10-29-visitable-objects.md`: it lists the fields, the reward types, and the steps from the lookup to the screenshots. Map the game's rules onto the fields:
+
+- the visit rules (`visitMode`, `resetParameters`) onto `visits`;
+- the limiters onto `requires` and `cost`, and `canRefuse` onto `choices` or `asksFirst`;
+- the rewards onto reward types; the messages onto `gives`, `visited`, `offer`, `tooPoor` and the `requires` keys.
+
+Write code only for a part the lists don't have (a new reward type, say), as the note says. After that, the object stays data.
 
 ## Writing it down
 

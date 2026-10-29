@@ -37,6 +37,7 @@ export const registerWorldModule = defineModule(
 
                 const { map, staticOccupancy } = buildWorld({
                   scenario,
+                  definitions,
                   entityBehaviors,
                   terrainTypes,
                   roadTypes

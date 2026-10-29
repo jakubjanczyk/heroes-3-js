@@ -12,10 +12,9 @@ import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings
 import { describeMonsterGroupInText } from '../../game/heroes/monster-count.js'
 import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.js'
 import {
-  APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED,
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
-  APP_COMMAND_RESOURCE_GENERATOR_VISIT_REQUESTED,
+  APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
@@ -76,8 +75,7 @@ export const heroesOutcomeEvents = Object.freeze([
   APP_FACT_TOWN_VISITED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
-  APP_COMMAND_RESOURCE_GENERATOR_VISIT_REQUESTED,
-  APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED,
+  APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
   APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
 ])
 
@@ -134,7 +132,7 @@ export const heroesOutcomeEffects = Object.freeze({
   [INTERACTION_OUTCOME_KIND_RESOURCE_GENERATOR_VISITED]: (outcome) => ({
     facts: [
       {
-        type: APP_COMMAND_RESOURCE_GENERATOR_VISIT_REQUESTED,
+        type: APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
         detail: { heroId: outcome.heroId, entityId: outcome.entityId }
       }
     ]
@@ -142,7 +140,7 @@ export const heroesOutcomeEffects = Object.freeze({
   [INTERACTION_OUTCOME_KIND_BONUS_OBJECT_VISITED]: (outcome) => ({
     facts: [
       {
-        type: APP_COMMAND_BONUS_OBJECT_VISIT_REQUESTED,
+        type: APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
         detail: { heroId: outcome.heroId, entityId: outcome.entityId }
       }
     ]
