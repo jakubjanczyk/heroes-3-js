@@ -1,4 +1,5 @@
 import {
+  INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP,
   INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
   INTERACTION_OUTCOME_KIND_BONUS_OBJECT_VISITED,
   INTERACTION_OUTCOME_KIND_DWELLING_VISITED,
@@ -15,6 +16,7 @@ import {
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
+  APP_FACT_ARTIFACT_PICKED_UP,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_VISITED,
@@ -68,6 +70,7 @@ function toEntityFactDetail(outcome) {
 
 // Every event the outcomes below can emit, declared so the interaction module may emit them.
 export const heroesOutcomeEvents = Object.freeze([
+  APP_FACT_ARTIFACT_PICKED_UP,
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
   APP_FACT_BATTLE_STARTED,
@@ -80,6 +83,14 @@ export const heroesOutcomeEvents = Object.freeze([
 ])
 
 export const heroesOutcomeEffects = Object.freeze({
+  [INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP]: (outcome) => ({
+    facts: [
+      {
+        type: APP_FACT_ARTIFACT_PICKED_UP,
+        detail: { ...toEntityFactDetail(outcome), artifact: outcome.entityType }
+      }
+    ]
+  }),
   [INTERACTION_OUTCOME_KIND_BATTLE_STARTED]: (outcome) => ({
     facts: [
       {

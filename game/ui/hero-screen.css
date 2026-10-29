@@ -318,8 +318,11 @@
 .hero-screen__artifact {
   --w: 44;
   --h: 44;
+
+  pointer-events: auto;
 }
 
+.hero-screen__artifacts,
 .hero-screen__backpack {
   --x: 0;
   --y: 0;
@@ -327,6 +330,27 @@
   --h: 584;
 
   pointer-events: none;
+}
+
+.hero-screen__artifacts,
+.hero-screen__backpack-slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* No pictures yet: a worn artifact shows its name in its frame. */
+.hero-screen__artifact-picture {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  padding: 1px;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--trim-gold);
+  font-size: 7px;
+  line-height: 1;
+  text-align: center;
 }
 
 .hero-screen__backpack-arrow {

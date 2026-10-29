@@ -1,3 +1,4 @@
+import * as artifact from './artifact.js'
 import * as bonusObject from './bonus-object.js'
 import * as dwelling from './dwelling.js'
 import * as hero from './hero.js'
@@ -9,6 +10,7 @@ import * as town from './town.js'
 import * as treasureChest from './treasure-chest.js'
 
 const presentationByKind = Object.freeze({
+  ARTIFACT: artifact,
   BONUS_OBJECT: bonusObject,
   DWELLING: dwelling,
   HERO: hero,
