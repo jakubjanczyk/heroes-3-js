@@ -148,7 +148,7 @@ What a visit tells the player. Small pickups go to the info box (2.4b); a dialog
 - [x] Resource pickup: no dialog; the info box shows the resource and the amount (2.4b). A dialog only when the scenario gives the pile its own message
 - [x] Mine capture: no dialog; the info box shows the mine's name and the resource's picture with its daily amount for 3 seconds (2.4b); see `docs/notes/2026-10-25-info-box-mine-capture.md`
 - [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
-- [ ] Artifact pickup: dialog with the artifact's picture and its pickup text (with artifacts, 7.8)
+- [ ] Artifact pickup: no message, the artifact just goes to the hero; a message only when the backpack is full (7.8.1, 7.8.5)
 - [ ] Dwelling visit: asks whether to recruit, then opens the recruit window (6.3.3) (with map dwellings, 7.4)
 - [ ] (Not in H3, optional extra) Floating number over the map on a pickup
 
@@ -865,7 +865,7 @@ Built in seven parts. 134 artifacts without HotA's, each with a slot (Helmet, Ca
 
 #### 7.8.1 On the map and worn
 - [ ] An artifact on the map blocks its tile and is picked up from the next one; shown with its name, visit cursor, status bar and right-click popup
-- [ ] Picking it up shows its picture and its own pickup text, puts it in the first free slot of its kind, else in the backpack, and takes it off the map
+- [ ] Picking it up asks and shows nothing: it goes to the first free slot of its kind, else to the backpack, and leaves the map
 - [ ] The hero screen's slots show what the hero wears
 - [ ] The 38 artifacts that only change primary skills (Centaur's Axe to Sword of Judgement), counted wherever primary skills are, battle included
 - [ ] Kept after a reload
