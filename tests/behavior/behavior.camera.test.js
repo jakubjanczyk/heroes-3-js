@@ -1,13 +1,20 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
-import { confirmTileClickByDispatch, expectHeroAt } from './adventure-map.utils.js'
+import {
+  confirmTileClickByDispatch,
+  expectHeroAt,
+  getMapViewCentreTile,
+  holdMouseOverMap,
+  panCamera
+} from './adventure-map.utils.js'
+import { takeFromTreasureChestDialog } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
   flushMicrotasks,
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
-import { aHero, aScenario } from './builders.js'
+import { aHero, aScenario, aTreasureChest } from './builders.js'
 
 const aPanScenario = () => aScenario().withSize(60, 40).withEntities(aHero().at(20, 15))
 
@@ -110,6 +117,48 @@ describe('camera behavior', () => {
     )
 
     expect(worldElement?.style?.transform).toBe(before)
+  })
+
+  describe('with a dialog open over the map', () => {
+    async function openChestDialog() {
+      const app = await setupMovementBehaviorApp({
+        loadGameOptions: aPanScenario()
+          .withEntities(aHero().at(20, 15), aTreasureChest().at(21, 15))
+          .build(),
+        viewportSize: { width: 1000, height: 700 }
+      })
+      confirmTileClickByDispatch(21, 15)
+      await waitMs()
+      return app
+    }
+
+    test('given the chest dialog is open when the mouse stays at the map edge then the map does not scroll', async () => {
+      await openChestDialog()
+      const before = getMapViewCentreTile()
+
+      await holdMouseOverMap(5, 350)
+
+      expect(getMapViewCentreTile()).toEqual(before)
+    })
+
+    test('given the chest dialog is open when the player presses arrow keys then the map does not scroll', async () => {
+      await openChestDialog()
+      const before = getMapViewCentreTile()
+
+      panCamera('ArrowRight', 20)
+
+      expect(getMapViewCentreTile()).toEqual(before)
+    })
+
+    test('given the chest dialog was closed when the mouse stays at the map edge then the map scrolls again', async () => {
+      const { user } = await openChestDialog()
+      await takeFromTreasureChestDialog(user, 'gold')
+      const before = getMapViewCentreTile()
+
+      await holdMouseOverMap(5, 350)
+
+      expect(getMapViewCentreTile().x).toBeLessThan(before.x)
+    })
   })
 
   test('given hero moves when movement completes then camera remains centered on latest hero tile', async () => {
