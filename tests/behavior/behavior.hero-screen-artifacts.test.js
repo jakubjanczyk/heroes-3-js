@@ -16,6 +16,7 @@ import {
   readHeroScreenArtifacts,
   readHeroScreenBackpack,
   readHeroScreenHeldArtifact,
+  readHeroScreenHighlightedSlots,
   readHeroScreenPrimarySkills,
   readHeroScreenStatusBar
 } from './hero-screen.utils.js'
@@ -139,6 +140,33 @@ describe('hero screen artifacts behavior', () => {
 
       expect(readHeroScreenArtifacts()).toEqual({ Weapon: "Centaur's Axe" })
       expect(readHeroScreenHeldArtifact()).toBe('Sword of Hellfire')
+    })
+  })
+
+  describe('highlighting where it can go', () => {
+    test('given a held ring then the empty ring slots are highlighted and no other slot is', async () => {
+      const { user } = await startOnHeroScreen(aHeroWearing([RING, AXE]))
+
+      await clickHeroScreenArtifactSlot(user, 'Right ring')
+
+      expect(readHeroScreenHighlightedSlots()).toEqual(['Right ring', 'Left ring'])
+    })
+
+    test('given a held artifact whose slot holds another artifact then that slot is not highlighted', async () => {
+      const { user } = await startOnHeroScreen(aHeroWearing([SWORD, AXE]))
+
+      await clickHeroScreenBackpackFrame(user, 1)
+
+      expect(readHeroScreenHighlightedSlots()).toEqual([])
+    })
+
+    test('given the held artifact is put down then no slot is highlighted', async () => {
+      const { user } = await startOnHeroScreen(aHeroWearing([RING]))
+      await clickHeroScreenArtifactSlot(user, 'Right ring')
+
+      await clickHeroScreenArtifactSlot(user, 'Left ring')
+
+      expect(readHeroScreenHighlightedSlots()).toEqual([])
     })
   })
 

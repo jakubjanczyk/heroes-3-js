@@ -201,3 +201,12 @@ export function readHeroScreenHeldArtifact() {
       .replace(/^Held: /, '') ?? null
   )
 }
+
+// The worn slots lit up as places the held artifact can go, e.g. ['Right ring', 'Left ring'].
+export function readHeroScreenHighlightedSlots() {
+  const list = within(getHeroScreen()).getByRole('list', { name: 'Artifacts' })
+  return within(list)
+    .getAllByRole('listitem')
+    .filter((slot) => slot.dataset.highlighted === 'true')
+    .map((slot) => slot.getAttribute('aria-label'))
+}

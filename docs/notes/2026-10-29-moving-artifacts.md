@@ -8,6 +8,7 @@ The texts are checked against the game's own text files as the Heroes 3 wiki hos
 
 - **Taking.** Clicking an artifact, worn or in the backpack, takes it onto the pointer: the pointer shows its picture and its place empties. A held artifact counts for nothing. One taken from the backpack closes the gap: the ones after it move one place left.
 - **Putting on.** Clicking a slot of the held artifact's kind puts it there. Either ring slot takes a ring, any of the five misc slots a misc artifact. A slot of another kind does nothing and the artifact stays held.
+- **Highlighting.** While an artifact is held, the empty worn slots it can go in light up; the backpack never does. The open-source engine also lights up occupied slots of its kind (those would swap); we light only empty ones, as the user remembers the game.
 - **Swapping.** If that slot holds an artifact, the two swap: the held one goes on and the other is now held.
 - **The backpack.** Clicking a backpack frame puts the held artifact in at that place, never swapping: the one there and those after it move one place right. A frame past the last artifact puts it at the end.
 - **The arrows** move the whole backpack round by one: right sends the first artifact to the end, left brings the last to the front. They do nothing with five or fewer. The new order is kept.
