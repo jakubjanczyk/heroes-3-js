@@ -72,8 +72,9 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - Behavior tests are the main safety net. Add a unit test only when it catches something a behavior test can't, for example:
   - subtle algorithms (pathfinding)
   - storage and browser APIs behavior tests don't use (IndexedDB event log, native dialog quirks, music)
-  - validation of real data files or of inputs a player can't produce (scenario loading)
   - layering rules (`tests/architecture/`)
+- Don't write tests that check the data files (`game/data/*.json`) or that a scenario with bad data fails to load: we write both ourselves for now, so a mistake shows up in the behavior tests or the game. Add them once data or scenarios come from elsewhere (a map editor, players' maps).
+- Behavior tests for data-driven features (map objects, artifacts) build their own definitions with the builders rather than use a real entry: test how the rule works (an artifact with a negative bonus can't take a skill below its minimum), not what one entry holds. Adding an entry to the data must not need new code or tests.
 - Don't write unit tests for module wiring (module X reacts to event A by emitting B or calling a fake); they break on every refactor and duplicate behavior tests.
 - A new map object of a kind that already has tests doesn't get its own generic tests: that it's drawn with its name, that a tile it blocks has no route, that the entrance can be walked onto. Its data says that, and the shared code is already tested. Test what the object itself does.
 - If the user provides behavior scenarios/cases, implement those first and identify additional important missing cases.

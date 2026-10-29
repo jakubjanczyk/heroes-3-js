@@ -130,3 +130,26 @@ export async function hoverOnHeroScreenBox(user, label) {
 export async function holdRightButtonOnHeroScreenBox(user, label) {
   await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenBox(label) })
 }
+
+function readArtifactsIn(listName) {
+  const list = within(getHeroScreen()).getByRole('list', { name: listName })
+  return within(list)
+    .getAllByRole('listitem')
+    .map((frame) => [frame, frame.querySelector('[role="img"]')?.getAttribute('aria-label')])
+    .filter(([, artifact]) => artifact)
+}
+
+// What the hero wears, as { '<slot>': '<artifact>' }, e.g. { Weapon: "Centaur's Axe" }.
+export function readHeroScreenArtifacts() {
+  return Object.fromEntries(
+    readArtifactsIn('Artifacts').map(([frame, artifact]) => [
+      frame.getAttribute('aria-label'),
+      artifact
+    ])
+  )
+}
+
+// The artifacts in the backpack's frames, left to right.
+export function readHeroScreenBackpack() {
+  return readArtifactsIn('Backpack').map(([, artifact]) => artifact)
+}

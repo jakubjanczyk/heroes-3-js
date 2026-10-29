@@ -23,11 +23,19 @@ import {
   startBattle,
   waitForBattleResults
 } from './battle.utils.js'
-import { aBonusObject, aHero, aMonster, aScenario, aTown } from './builders.js'
+import {
+  aBonusObject,
+  aHero,
+  aMonster,
+  anArtifactDefinition,
+  aScenario,
+  aTown
+} from './builders.js'
 import {
   clickHeroInHeroList,
   closeHeroScreen,
   readHeroScreenArmy,
+  readHeroScreenArtifacts,
   readHeroScreenPrimarySkills,
   readHeroScreenSecondarySkills,
   readHeroScreenTitle
@@ -44,7 +52,8 @@ const gameDefinitions = {
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json'),
   tavern: readGameData('tavern.json'),
-  bonusObjects: readGameData('bonus-objects.json')
+  bonusObjects: readGameData('bonus-objects.json'),
+  artifacts: { AXE: anArtifactDefinition().withName("Centaur's Axe").withSlot('WEAPON').build() }
 }
 
 const BEATEN_HERO = 'Christian'
@@ -56,7 +65,7 @@ const HIGHEST_ROLLS = () => 0.99
 
 // Christian, a level 4 Knight with primary and secondary skills of his own, attacks the Swordsmen
 // with a lone Skeleton and loses. Whitemoon's entrance is at (4, 3), away from both heroes.
-const aDefeatScenario = () =>
+const aDefeatScenario = ({ artifacts = [] } = {}) =>
   aScenario()
     .withSize(16, 7)
     .withEntities(
@@ -70,6 +79,7 @@ const aDefeatScenario = () =>
           { skill: 'LOGISTICS', level: 'BASIC' }
         ])
         .withArmy([{ creature: 'SKELETON', count: 1 }])
+        .withArtifacts(artifacts)
         .at(0, 0),
       aHero().withId('hero-2').withName(OTHER_HERO).at(0, 6),
       aMonster().withType('SWORDSMAN').withCount(2).withStacks(1).at(1, 0),
@@ -153,6 +163,14 @@ describe('hero defeat behavior', () => {
     await hireBeatenHeroAgain(user)
 
     expect(readHeroScreenArmy()).toEqual(['Pikemen 20', '', '', '', '', '', ''])
+  })
+
+  test('given a beaten hero wearing an artifact is hired again then they wear nothing', async () => {
+    const { user } = await loseBattle(aDefeatScenario({ artifacts: ['AXE'] }))
+
+    await hireBeatenHeroAgain(user)
+
+    expect(readHeroScreenArtifacts()).toEqual({})
   })
 
   test('given a hero lost a battle when the page reloads then the tavern can still offer them', async () => {
