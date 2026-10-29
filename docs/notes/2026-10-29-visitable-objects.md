@@ -1,8 +1,6 @@
 # Visitable objects from their data (2026-10-29)
 
-The bonus objects (7.6, 7.7) and resource generators (7.5) used to have four modules, one per family. Each module had its own message table and its own flow, and the footprints sat in code. Now one module runs them all from the object's data in `game/data/bonus-objects.json` and `game/data/resource-generators.json`. An object made of the parts below needs no code.
-
-This replaces the "how it's built" parts of `2026-10-27-permanent-bonus-objects.md`, `2026-10-27-resource-generators.md` and `2026-10-28-stat-boosting-objects.md`. Their game rules still hold.
+Bonus objects (7.6, 7.7) and resource generators (7.5) are data only: one module plays every object from its entry in `game/data/bonus-objects.json` or `game/data/resource-generators.json`. Each object's game rules are in its own note (`2026-10-27-permanent-bonus-objects.md`, `2026-10-27-resource-generators.md`, `2026-10-28-stat-boosting-objects.md`).
 
 ## An object's data
 
@@ -54,6 +52,31 @@ Anywhere in `cost`, `rewards` or `requires`, a value written as `"{name}"` is th
 A reward with `"everyVisit": true` is also given on a visit turned away because the hero has used the object (the Stables upgrade Cavaliers on every visit).
 
 `game/heroes/visitable-objects/check-definition.test.js` checks every object's data: known visit limits, reward and requirement types, the messages its visit can show, and a roll for each `{name}`.
+
+## Adding an object
+
+1. **Look it up.** Follow the `new-map-object` skill for the tiles it blocks and the `game-sources` skill for its rules, numbers and message texts. Write them in a note in `docs/notes/`: what it gives, when a hero can take it again, what turns a hero away, each message word for word, and the tiles. Ask when the sources disagree or say nothing.
+2. **Pick the file.** A bonus object (`"kind": "BONUS_OBJECT"` in a scenario) goes in `bonus-objects.json`, a resource generator (`"kind": "RESOURCE_GENERATOR"`) in `resource-generators.json`. The key is the entity's `type`, such as `"WATERING_HOLE"`.
+3. **Map the rules onto the fields above**, one question at a time:
+   - When can a hero take it again? That is `visits`.
+   - What turns a hero away? Each check is a `requires` entry; a price is `cost`.
+   - Does the player choose? Use `choices` for a pick and `asksFirst` for a yes/no question before paying.
+   - What does it give? Each thing is a `rewards` entry. Something given even on a visit turned away (the Stables' upgrade) gets `"everyVisit": true`.
+   - Is anything random, and fixed once drawn? That is a `rolls` entry, per game or per week, used as `"{name}"`. A roll each visit (the Windmill's resources) belongs in the reward itself.
+   - Which messages can the visit show? Each is a `messages` key: `gives`, `visited`, `offer`, `tooPoor`, the `requires` keys, and `<key>.<reward type>` for a wording that depends on a reward.
+   - The popup's line: `description`, when the rewards' own lines don't say it. The game's lines aren't online, so it's our own wording; say so in the note.
+4. **Add it to the demo map** (`scenarios/scenario.json`) where the starting hero can walk to it, on tiles its footprint can cover.
+5. **Check it.** `npm test` runs `game/heroes/visitable-objects/check-definition.test.js` over every entry, and fails on an unknown type, a missing message or a placeholder with no roll. Add behavior tests only for what the object itself does that no other object does (a new message rule, a new reward); its name on the map, its blocked tiles and the visit limit are covered by the objects already tested.
+6. **See it in the app.** Walk a hero there in the real app and screenshot the message, the popup and the status bar, as `AGENTS.md` asks.
+
+When a rule doesn't fit any field, add the part once, with a behavior test through the object that needs it:
+
+- **A reward type:** its `gain` (and `describe`, if the popup should list it) in `rewards.js`; the events that give it in `EVENTS_BY_GAIN` in the module, adding them to the module's `produces` (then `node scripts/module-contracts.mjs` updates `docs/v1/ARCHITECTURE.md`); its picture in `visit-rewards.js`, if the message shows one; and the state it changes, if no fact does that yet.
+- **A requirement:** a function in `REQUIREMENTS` in `visits.js`, `true` when the hero may go in.
+- **A visit limit:** a function in `VISIT_LIMITS` in `visits.js`; add it to `LIMITS_OF_EACH_HERO` if the status bar should say "(Visited)" for it.
+- **A kind of roll:** `rollValue` and `VALUE_TEXT_BY_KIND` (how it reads in a message) in `definitions.js`.
+
+Then list it in the tables above, and in `check-definition.js` if it brings a message of its own.
 
 ## How it's built
 

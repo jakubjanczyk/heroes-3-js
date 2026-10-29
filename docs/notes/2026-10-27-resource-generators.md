@@ -1,7 +1,5 @@
 # Resource generators (2026-10-27)
 
-How these objects are built has changed since: see `2026-10-29-visitable-objects.md`. The game rules below still hold.
-
 Roadmap 7.5: map objects that give resources once a week.
 
 ## How Heroes 3 does it
@@ -20,10 +18,11 @@ Checked against the Heroes 3 wiki (heroes.thelazy.net: Windmill, Water Wheel, My
 
 ## What we do
 
-- A scenario entity `{ "kind": "RESOURCE_GENERATOR", "type": "WINDMILL" }` (or `WATER_WHEEL`, `MYSTICAL_GARDEN`); `game/data/resource-generators.json` names them. The scenario tile is the entrance, which the hero steps onto. The rest follows the game's object table (`Objects.txt`, checked against homm3tools' copy of it); bottom row last, `E` the entrance, `#` blocked, `.` part of the picture that can be walked on:
+How an object is made from its data is in `2026-10-29-visitable-objects.md`; what is decided here:
+
+- The scenario tile is the entrance, which the hero steps onto. The rest follows the game's object table (`Objects.txt`, checked against homm3tools' copy of it); bottom row last, `E` the entrance, `#` blocked, `.` part of the picture that can be walked on:
   - Windmill `E.`: only the entrance blocks.
   - Water Wheel `###` / `##E`: two rows of three, the entrance bottom right.
   - Mystical Garden `#E#`.
-- The reward is rolled when the hero enters (`config.random`, `Math.random` by default; `game/heroes/resource-generators.js`) and saved as `fact.resourceGenerator.visited` with the resources, which the kingdom adds. A reload replays it without rolling again.
-- The `resourceGenerators` state slice marks an object visited and clears every mark on the first day of a week.
+- The reward is rolled when the hero enters and saved with the visit, so a reload replays it without rolling again. Every object is ready again on the first day of a week.
 - No pictures yet: the object shows its name across its tiles, as the dwellings do (the Windmill across its entrance and the tile right of it).

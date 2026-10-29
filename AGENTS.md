@@ -54,6 +54,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Follow the `game-sources` skill (`.claude/skills/game-sources/SKILL.md`) whenever a game fact not yet in the repo is planned or built (a rule, number, message text, or creature, hero, skill, spell, artifact or building data), without waiting to be asked. It lists where to look (the repo's notes, the wiki's raw page source, VCMI's config and source, a web search) and how to check. Ask when the sources disagree or say nothing.
 - For a new map object, also follow the `new-map-object` skill (`.claude/skills/new-map-object/SKILL.md`), which takes the object's size from the game's object table online.
+- A bonus object or resource generator is data only: add its entry to `game/data/bonus-objects.json` or `game/data/resource-generators.json` as "Adding an object" in `docs/notes/2026-10-29-visitable-objects.md` says. Write code only for a part no object has yet (a new reward type, requirement, visit limit or roll).
 
 ## Testing Guidelines
 

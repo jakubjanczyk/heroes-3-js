@@ -36,13 +36,13 @@ On the wiki, an object's `{{AMLocation}}` template lists the visit message first
 
 ## Bonus objects and resource generators
 
-These are data only: name, footprint, visit limit, requirements, cost, rewards, rolled values and messages all go in the object's entry in `game/data/bonus-objects.json` or `game/data/resource-generators.json`. `docs/notes/2026-10-29-visitable-objects.md` lists the fields and reward types. Map what the game's rules say onto them:
+These are data only. Follow "Adding an object" in `docs/notes/2026-10-29-visitable-objects.md`: it lists the fields, the reward types, and the steps from the lookup to the screenshots. Map the game's rules onto the fields:
 
 - the visit rules (`visitMode`, `resetParameters`) onto `visits`;
 - the limiters onto `requires` and `cost`, and `canRefuse` onto `choices` or `asksFirst`;
 - the rewards onto reward types; the messages onto `gives`, `visited`, `offer`, `tooPoor` and the `requires` keys.
 
-Write code only for a part the list doesn't have (a new reward type, say): add it once, then the object stays data. `game/heroes/visitable-objects/check-definition.test.js` checks the entry.
+Write code only for a part the lists don't have (a new reward type, say), as the note says. After that, the object stays data.
 
 ## Writing it down
 

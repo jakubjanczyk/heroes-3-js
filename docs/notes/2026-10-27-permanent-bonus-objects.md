@@ -1,7 +1,5 @@
 # Permanent bonus objects (2026-10-27)
 
-How these objects are built has changed since: see `2026-10-29-visitable-objects.md`. The game rules below still hold.
-
 Roadmap 7.7: map objects that each hero can use once, for a bonus that stays. The Treasure Chest is done (2026-10-19-treasure-chests-and-hero-levels.md); this note covers the rest.
 
 ## How Heroes 3 does it
@@ -104,54 +102,16 @@ Checked against the Heroes 3 wiki's page source and a second source's object rul
 
 ## What we do
 
-Built in five parts, each its own change. Nothing here needs a feature we don't have.
+Built in five parts, all done: the free ones, the choices, the Tree of Knowledge, the Witch Hut and the Library of Enlightenment. How an object is made from its data is in `2026-10-29-visitable-objects.md`; what is decided here:
 
-1. **Once per hero, free:** Learning Stone, Mercenary Camp, Marletto Tower, Star Axis, Garden of Revelation.
-2. **Choices:** Arena, School of War, School of Magic.
-3. **Tree of Knowledge.**
-4. **Witch Hut.**
-5. **Library of Enlightenment.**
-
-### Part 1 (done)
-
-- A scenario entity `{ "kind": "BONUS_OBJECT", "type": "LEARNING_STONE" }` (or `MERCENARY_CAMP`, `MARLETTO_TOWER`, `STAR_AXIS`, `GARDEN_OF_REVELATION`); `game/data/bonus-objects.json` names each and says what it gives (`{ "experience": 1000 }`, `{ "primarySkills": { "attack": 1 } }`). Parts 2 to 5 add their objects to the same file.
-- The scenario tile is the entrance, which the hero steps onto; the blocked tiles are the table's above, as footprint offsets in `game/heroes/bonus-objects.js` (the footprint is read without the game data). Each shows its name on the map across its tiles, as the dwellings and resource generators do.
-- A visit is saved as `fact.hero.bonusObject.visited` (`heroId`, `entityId`, `primarySkills`). The `heroDetails` slice keeps the hero's `visitedBonusObjects` and adds the primary skills to a `bonusPrimarySkills` count that `getHeroPrimarySkills` adds in, as it adds the level-ups. Experience goes through `command.hero.experience.gain.requested`, as the chest's does, so level-ups work the same.
+- Each object's message has no title, the text, and the reward's picture with "+1" or "1000" under it, then OK. The primary skill pictures are the hero box's icons; experience uses the chest's banner. A level-up popup comes after the message.
+- The right-click popup says what the object gives ("+1 Attack", "+1000 Experience", our own wording), then "(Visited)" or "(Not visited)" for the selected hero; the status bar reads "Mercenary Camp (Not visited)". The Arena has no line, as in the game; the schools read "+1 Attack or +1 Defense for 1000 gold" and "+1 Power or +1 Knowledge for 1000 gold", the Library "+2 Attack, Defense, Power and Knowledge" (our own wording).
 - A beaten hero hired again starts over, as with their level and skills (2026-10-26-defeated-hero.md): the bonuses and the visited list go.
-- The message is the notice the resource generators use: no title, the text, the reward's picture with "+1" or "1000" under it, OK. The primary skill pictures are the hero box's icons; experience uses the chest's banner. A Learning Stone's level-up popup comes after its message.
-- The right-click popup says what the object gives ("+1 Attack", "+1000 Experience", our own wording), then "(Visited)" or "(Not visited)" for the selected hero; the status bar reads "Mercenary Camp (Not visited)". The demo map has one of each.
-
-### Part 2 (done)
-
-- `ARENA`, `SCHOOL_OF_WAR` and `SCHOOL_OF_MAGIC` in `game/data/bonus-objects.json` list their `choices` (each a `gives`, e.g. `{ "primarySkills": { "attack": 2 } }`) and the schools their `cost` (`{ "GOLD_PILE": 1000 }`).
-- Entering opens the chest's choice dialog with the object's message, both bonuses as pictures with "+2" or "+1" under them, and the checkmark. The schools' dialog also has a Cancel button (the cross); cancelling costs nothing and leaves the school unvisited. The dialog is a notice with a subject; picking and confirming saves `fact.resources.spent` for the school's gold, then the same `fact.hero.bonusObject.visited` with the picked skill.
-- A school with less than 1000 gold in the treasury shows its too-poor message with OK only and stays unvisited.
-- The popup's line: the Arena has none, as in the game; the schools read "+1 Attack or +1 Defense for 1000 gold" and "+1 Power or +1 Knowledge for 1000 gold" (our own wording, `description` in the data file).
+- Arena and schools: the chest's choice dialog with both bonuses as pictures. The schools' dialog also has Cancel; cancelling costs nothing and leaves the school unvisited. A school with less than 1000 gold shows its too-poor message with OK only.
+- Tree of Knowledge: the price is rolled once per game, unless the scenario sets the entity's `price`. A free tree gives the level straight away; a paid one asks Yes / No with the experience picture; too little shows the "I need" message and the tree stays unvisited. A reload rolls nothing new.
+- Witch Hut: the skill is rolled once per game, evenly from every skill but Leadership and Necromancy, unless the scenario sets the entity's `skill` (banned ones included). No question first (being able to refuse is Horn of the Abyss); the "already know" message wins over the "too wise" one for a hero with 8 skills that include the hut's. The message shows the skill's initials with "Basic" and its name. The status bar reads "Witch Hut (Archery)" once a hero of the player has been inside, whether or not they learned it; there is no per-hero line.
+- Library of Enlightenment: a hero below the level gets the "neither famous nor diplomatic enough" message and can come back once high enough. Diplomacy does nothing else yet.
 - The demo map has one of each.
-
-### Part 3 (done)
-
-- `TREE_OF_KNOWLEDGE` in `game/data/bonus-objects.json` lists its `prices`, each a `chance` in percent and a `cost` (`{}` when free). A scenario may set an entity's `price` (`{ "GEMS_PILE": 10 }`).
-- Once the saved facts have been replayed, boot emits `command.game.setup.requested`; the bonus objects module rolls (`config.random`) the price of every tree that has none yet and saves them as `fact.bonusObject.prices.rolled`, kept in the `bonusObjectPrices` slice. A reload rolls nothing new, as the saved fact already set them.
-- A free tree saves the visit, shows its message with the experience missing under the experience picture and OK, then gives the experience, so the level-up popup follows. A paid tree asks with the same picture and Yes / No; Yes spends the price (`fact.resources.spent`) and gives the level. Too little shows the "I need" message with OK only, and the tree stays unvisited.
-- The demo map has one, with its price rolled.
-
-### Part 4 (done)
-
-- `WITCH_HUT` in `game/data/bonus-objects.json` has `teachesSkill`: the `level` taught and the skills `neverRolled`. A scenario may set an entity's `skill` (`"ARCHERY"`), banned ones included.
-- On `command.game.setup.requested` the witch huts module rolls the skill of every hut that has none, evenly from the skill list but the banned ones, and saves them as `fact.witchHut.skills.rolled`, kept in the `witchHuts` slice.
-- Entering saves `fact.witchHut.visited` (`heroId`, `entityId`, `player`), even when the hero is turned away, so the slice knows which players have seen the skill. A hero without the skill and with room for it learns it through `fact.hero.secondarySkill.learned`, and the message shows the skill's initials with "Basic" and its name under them. The bonus objects module leaves huts to this module.
-- Checked against the Heroes 3 wiki's Witch Hut page and a second source's object rules: no question first (being able to refuse is Horn of the Abyss), and the "already know" message wins over the "too wise" one for a hero with 8 skills that include the hut's.
-- The status bar reads "Witch Hut (Archery)" and the popup "Witch Hut" / "(Archery)", with no per-hero line.
-- The demo map has one, with its skill rolled.
-
-### Part 5 (done)
-
-- `LIBRARY_OF_ENLIGHTENMENT` in `game/data/bonus-objects.json` gives the four skills and has a `minimumHeroLevel`: the `level`, and the lower levels `withDiplomacy` at Basic, Advanced and Expert. Diplomacy does nothing else yet.
-- A hero below the level gets the "neither famous nor diplomatic enough" message with OK and nothing is saved, so the Library stays unvisited for them and they can come back once they are high enough.
-- Admitted, the message shows the four skill pictures with "+2" under each, as the free objects' messages do.
-- The popup's line reads "+2 Attack, Defense, Power and Knowledge" (our own wording; the game's line isn't online).
-- The demo map has one, at (3, 10).
 
 ## Not yet
 
