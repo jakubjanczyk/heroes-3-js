@@ -86,6 +86,13 @@ function angelsModifier(creatures) {
   return raising ? [{ text: `${raising.definition.namePlural} in army`, value: 1 }] : []
 }
 
+function objectBonusModifiers(hero, kind, definitions) {
+  return (hero?.battleBonuses ?? []).map((bonus) => ({
+    text: `${definitions?.bonusObjects?.[bonus.entityType]?.name ?? bonus.entityType} Visit`,
+    value: bonus[kind]
+  }))
+}
+
 function stateOf(value) {
   if (value > 0) {
     return 'good'
@@ -116,14 +123,19 @@ export function getHeroMorale({ entity, definitions }) {
       ...skillModifier(entity, 'LEADERSHIP', definitions),
       ...townsModifier(creatures),
       ...undeadModifier(creatures),
-      ...angelsModifier(creatures)
+      ...angelsModifier(creatures),
+      ...objectBonusModifiers(entity, 'morale', definitions)
     ],
     { min: MIN_MORALE, max: MAX_MORALE }
   )
 }
 
 export function getHeroLuck({ entity, definitions }) {
-  return describe('luck', skillModifier(entity, 'LUCK', definitions), {
+  const modifiers = [
+    ...skillModifier(entity, 'LUCK', definitions),
+    ...objectBonusModifiers(entity, 'luck', definitions)
+  ]
+  return describe('luck', modifiers, {
     min: MIN_LUCK,
     max: MAX_LUCK
   })

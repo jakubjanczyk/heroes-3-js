@@ -40,5 +40,30 @@
   "WITCH_HUT": {
     "name": "Witch Hut",
     "teachesSkill": { "level": "BASIC", "neverRolled": ["LEADERSHIP", "NECROMANCY"] }
+  },
+  "FAERIE_RING": {
+    "name": "Faerie Ring",
+    "description": "+1 Luck until the next battle",
+    "untilNextBattle": [{ "luck": 1 }]
+  },
+  "SWAN_POND": {
+    "name": "Swan Pond",
+    "description": "+2 Luck until the next battle",
+    "untilNextBattle": [{ "luck": 2 }],
+    "endsMovement": true
+  },
+  "IDOL_OF_FORTUNE": {
+    "name": "Idol of Fortune",
+    "description": "+1 Luck or Morale, depending on the day",
+    "untilNextBattle": [
+      { "days": [1, 3, 5], "luck": 1 },
+      { "days": [2, 4, 6], "morale": 1 },
+      { "days": [7], "morale": 1, "luck": 1 }
+    ]
+  },
+  "TEMPLE": {
+    "name": "Temple",
+    "description": "+1 Morale, +2 on day 7",
+    "untilNextBattle": [{ "days": [7], "morale": 2 }, { "morale": 1 }]
   }
 }
