@@ -24,7 +24,7 @@ function detailsOf(hero, definitions) {
     bonusPrimarySkills: {},
     visitedBonusObjects: [],
     battleBonuses: [],
-    weekMovementPoints: 0
+    weekBonus: null
   }
 }
 
@@ -34,7 +34,7 @@ function endWeekBonuses(heroes, { turnNumber }) {
   }
 
   return Object.fromEntries(
-    Object.entries(heroes).map(([heroId, hero]) => [heroId, { ...hero, weekMovementPoints: 0 }])
+    Object.entries(heroes).map(([heroId, hero]) => [heroId, { ...hero, weekBonus: null }])
   )
 }
 
@@ -68,15 +68,17 @@ export const heroDetailsSlice = {
       secondarySkills: learnSecondarySkill(hero.secondarySkills, { skill, level }),
       pendingLevelUp: null
     })),
-    'fact.hero.bonusObject.visited': updateHero((hero, { entityId, primarySkills = {} }) => ({
-      bonusPrimarySkills: addSkills(hero.bonusPrimarySkills, primarySkills),
+    'fact.hero.bonusObject.visited': updateHero((hero, { entityId }) => ({
       visitedBonusObjects: [...hero.visitedBonusObjects, entityId]
+    })),
+    'fact.hero.primarySkills.gained': updateHero((hero, { primarySkills }) => ({
+      bonusPrimarySkills: addSkills(hero.bonusPrimarySkills, primarySkills)
     })),
     'fact.hero.battleBonus.gained': updateHero((hero, { entityType, morale = 0, luck = 0 }) => ({
       battleBonuses: [...hero.battleBonuses, { entityType, morale, luck }]
     })),
-    'fact.hero.weekBonus.gained': updateHero((_hero, { movementPoints }) => ({
-      weekMovementPoints: movementPoints
+    'fact.hero.weekBonus.gained': updateHero((_hero, { entityType, movementPoints }) => ({
+      weekBonus: { entityType, movementPoints }
     })),
     'fact.turn.ended': endWeekBonuses,
     'fact.battle.ended': (heroes, detail) =>

@@ -1,9 +1,9 @@
-import { bonusObjectFootprint } from '../../../../game/heroes/bonus-objects.js'
+import { visitableFootprint } from '../../../../game/heroes/visitable-objects/definitions.js'
 import { typeToClass } from './shared.js'
 
 // No pictures yet: the object shows its name across its entrance and the tiles it blocks.
 export function getEntityLayerStyle({ entity, map, definitions = {} }) {
-  const columns = [0, ...bonusObjectFootprint(entity.type).map((offset) => offset.x)]
+  const columns = [0, ...visitableFootprint(definitions, entity).map((offset) => offset.x)]
   const leftColumn = Math.min(...columns)
   const width = map.tileWidth * (Math.max(...columns) - leftColumn + 1)
   const height = map.tileHeight

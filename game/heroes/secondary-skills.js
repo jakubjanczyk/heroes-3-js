@@ -21,7 +21,7 @@ export function describeSecondarySkill({ skill, level }, definitions) {
   }
 }
 
-const MAX_SECONDARY_SKILLS = 8
+export const MAX_SECONDARY_SKILLS = 8
 const NEXT_LEVEL = Object.freeze({ BASIC: 'ADVANCED', ADVANCED: 'EXPERT' })
 
 function pickUpgrade({ secondarySkills, offered, random }) {

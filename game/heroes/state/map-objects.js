@@ -1,17 +1,17 @@
-import {
-  isBonusObject,
-  isDwelling,
-  isMine,
-  isResourceGenerator
-} from '../../domain/entity-queries.js'
+import { isDwelling, isMine } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
-import { bonusObjectTaughtSkill, rollsLuckEachWeek } from '../bonus-objects.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
   flaggedDwellingCountsByCreature,
   guardsOfDwelling,
   weeklyGrowthOfDwelling
 } from '../map-dwellings.js'
+import {
+  isVisitableObject,
+  rollsPer,
+  scenarioValues,
+  visitableDefinition
+} from '../visitable-objects/definitions.js'
 
 export const minesSlice = {
   key: 'mines',
@@ -80,106 +80,62 @@ export const dwellingsSlice = {
   }
 }
 
-function renewWeeklyVisits(generators, { turnNumber }) {
+function forgetWeeklyVisits(objects, { turnNumber }, { definitions }) {
   if (calendarDateOfTurn(turnNumber).day !== 1) {
-    return generators
+    return objects
   }
 
   return Object.fromEntries(
-    Object.entries(generators).map(([generatorId, generator]) => [
-      generatorId,
-      { ...generator, visited: false }
-    ])
+    Object.entries(objects).map(([entityId, object]) => {
+      const weekly = rollsPer(visitableDefinition(definitions, object), 'week').map(
+        ([name]) => name
+      )
+      const values = Object.fromEntries(
+        Object.entries(object.values).filter(([name]) => !weekly.includes(name))
+      )
+      return [entityId, { ...object, values, visitedThisWeek: false }]
+    })
   )
 }
 
-// Each generator gives once a week, to whichever hero enters it first.
-export const resourceGeneratorsSlice = {
-  key: 'resourceGenerators',
-  initial: ({ scenario }) =>
-    Object.fromEntries(
-      (scenario?.entities ?? [])
-        .filter(isResourceGenerator)
-        .map((generator) => [generator.id, { type: generator.type, visited: false }])
-    ),
-  on: {
-    'fact.resourceGenerator.visited': (generators, { entityId }) =>
-      generators[entityId]
-        ? { ...generators, [entityId]: { ...generators[entityId], visited: true } }
-        : generators,
-    'fact.turn.ended': renewWeeklyVisits
-  }
+function updateObject(objects, entityId, update) {
+  const object = objects[entityId]
+  return object ? { ...objects, [entityId]: { ...object, ...update(object) } } : objects
 }
 
-// What each Tree of Knowledge asks for a level: set by the scenario, or rolled once per game.
-export const bonusObjectPricesSlice = {
-  key: 'bonusObjectPrices',
-  initial: ({ scenario }) =>
-    Object.fromEntries(
-      (scenario?.entities ?? [])
-        .filter((entity) => isBonusObject(entity) && entity.price)
-        .map((bonusObject) => [bonusObject.id, bonusObject.price])
-    ),
-  on: {
-    'fact.bonusObject.prices.rolled': (prices, { prices: rolled }) => ({ ...rolled, ...prices })
-  }
-}
-
-function forgetWeeklyLuck(fountains, { turnNumber }) {
-  if (calendarDateOfTurn(turnNumber).day !== 1) {
-    return fountains
-  }
-
-  return Object.fromEntries(
-    Object.keys(fountains).map((fountainId) => [fountainId, { luck: null }])
-  )
-}
-
-// The luck each Fountain of Fortune gives this week: rolled on the week's first visit, the same
-// for every hero who drinks there until the week ends.
-export const fountainsOfFortuneSlice = {
-  key: 'fountainsOfFortune',
+// Each bonus object and resource generator: the values it rolled (a Tree of Knowledge's price,
+// a Witch Hut's skill, this week's luck of a Fountain of Fortune), the players whose heroes have
+// been inside and whether any hero has this week.
+export const visitableObjectsSlice = {
+  key: 'visitableObjects',
   initial: ({ scenario, definitions }) =>
     Object.fromEntries(
-      (scenario?.entities ?? [])
-        .filter((entity) => isBonusObject(entity) && rollsLuckEachWeek(definitions, entity.type))
-        .map((fountain) => [fountain.id, { luck: null }])
+      (scenario?.entities ?? []).filter(isVisitableObject).map((entity) => [
+        entity.id,
+        {
+          kind: entity.kind,
+          type: entity.type,
+          values: scenarioValues(definitions, entity),
+          visitedBy: [],
+          visitedThisWeek: false
+        }
+      ])
     ),
   on: {
-    'fact.hero.battleBonus.gained': (fountains, { entityId, luck = 0 }) =>
-      fountains[entityId] ? { ...fountains, [entityId]: { luck } } : fountains,
-    'fact.turn.ended': forgetWeeklyLuck
-  }
-}
-
-function updateWitchHut(huts, hutId, update) {
-  const hut = huts[hutId]
-  return hut ? { ...huts, [hutId]: { ...hut, ...update(hut) } } : huts
-}
-
-// The skill each Witch Hut teaches, set by the scenario or rolled once per game, and the players
-// whose heroes have been inside and so know it.
-export const witchHutsSlice = {
-  key: 'witchHuts',
-  initial: ({ scenario, definitions }) =>
-    Object.fromEntries(
-      (scenario?.entities ?? [])
-        .filter(
-          (entity) => isBonusObject(entity) && bonusObjectTaughtSkill(definitions, entity.type)
-        )
-        .map((hut) => [hut.id, { skill: hut.skill ?? null, visitedBy: [] }])
-    ),
-  on: {
-    'fact.witchHut.skills.rolled': (huts, { skills }) =>
-      Object.entries(skills).reduce(
-        (updated, [hutId, skill]) =>
-          updateWitchHut(updated, hutId, (hut) => ({ skill: hut.skill ?? skill })),
-        huts
+    'fact.mapObject.values.rolled': (objects, { values }) =>
+      Object.entries(values).reduce(
+        (updated, [entityId, rolled]) =>
+          updateObject(updated, entityId, (object) => ({
+            values: { ...rolled, ...object.values }
+          })),
+        objects
       ),
-    'fact.witchHut.visited': (huts, { entityId, player = DEFAULT_PLAYER }) =>
-      updateWitchHut(huts, entityId, ({ visitedBy }) => ({
-        visitedBy: visitedBy.includes(player) ? visitedBy : [...visitedBy, player]
-      }))
+    'fact.mapObject.visited': (objects, { entityId, player = DEFAULT_PLAYER }) =>
+      updateObject(objects, entityId, ({ visitedBy }) => ({
+        visitedBy: visitedBy.includes(player) ? visitedBy : [...visitedBy, player],
+        visitedThisWeek: true
+      })),
+    'fact.turn.ended': forgetWeeklyVisits
   }
 }
 
@@ -232,16 +188,16 @@ export function mineIdsOf(state, player) {
   return Object.keys(state.mines).filter((mineId) => state.mines[mineId].owner === player)
 }
 
-export function isResourceGeneratorVisited(state, generatorId) {
-  return state.resourceGenerators[generatorId]?.visited ?? false
+export function visitableValues(state, entityId) {
+  return state.visitableObjects?.[entityId]?.values ?? {}
 }
 
-export function bonusObjectPrice(state, entityId) {
-  return state.bonusObjectPrices[entityId] ?? null
+export function wasVisitedThisWeek(state, entityId) {
+  return state.visitableObjects?.[entityId]?.visitedThisWeek ?? false
 }
 
-export function witchHutSkill(state, entityId) {
-  return state.witchHuts[entityId]?.skill ?? null
+export function hasBeenInside(state, entityId, player) {
+  return state.visitableObjects?.[entityId]?.visitedBy.includes(player) ?? false
 }
 
 export function monsterCount(state, entityId) {
