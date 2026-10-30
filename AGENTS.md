@@ -2,12 +2,18 @@
 
 ## Project Structure & Module Organization
 
-- `docs/v1/` — V1 scope and implementation plan (`docs/v1/SPEC.md`, `docs/v1/IMPLEMENTATION_PLAN.md`).
-- `docs/v1/tasks/` — Shipable milestone tasks + tracker (`docs/v1/tasks/TRACKER.md`).
-- `initial_docs/` — Reference material (do not treat as current requirements).
+- `docs/ROADMAP.md` — what is built and what comes next, milestone by milestone.
+- `docs/notes/` — one note per feature: the game's rules as checked against the sources, what we decided and what is left.
 - `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`).
 - Co-located test files — Vitest tests (`**/*.test.js` next to source files).
-- Planned runtime code (per `docs/v1/IMPLEMENTATION_PLAN.md`) will live in `engine/` (infrastructure) and `game/` (experience rules). Keep the boundary strict: `engine/` must not import from `game/`.
+- `engine/` (infrastructure: bus, store), `game/` (rules, pure functions; `game/heroes/` is this game's content) and `app/` (modules wiring the rules to the page).
+
+## Architecture
+
+- Modules talk only through the event bus (`app/events.js`): `command.*` asks, `fact.*` is what happened (the saved facts are listed there and replayed on load), `ui.*` is for the screen. A module never calls another one.
+- Each module declares what it `consumes` and `produces`, and is a `domain` module (decides, emits facts) or a `view` module (draws, emits commands).
+- The game state is rebuilt from the saved facts by the slices (`game/state/`, `game/heroes/state/`); only fact handlers change it, and modules only read it through `state.get()` and its queries.
+- `engine/` never imports from `game/`, and core `game/` code never imports `game/heroes/` (`tests/architecture/`).
 
 ## Build, Test, and Development Commands
 
@@ -88,7 +94,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines, and no session links.
 - PRs should include:
   - a short description of user-visible behavior
-  - links to relevant docs/tasks (e.g. `docs/v1/tasks/T05-move-hero.md`)
+  - links to the roadmap item and the feature's note (e.g. `docs/notes/2026-10-30-combination-artifacts.md`)
   - screenshots or a short screencast when UI behavior changes
 - Don't open a PR for a docs-only change (roadmap, notes, these guidelines): commit it on the working branch and let it ship with the feature it plans.
 - When a feature or fix is finished (tests and lint passing, changes pushed), open a PR without waiting to be asked, then share its preview URL with the user. The PR preview workflow comments the URL on the PR once it has deployed (`https://jakubjanczyk.github.io/heroes-3-js/pr-preview/pr-<number>/`); take it from that comment.

@@ -1,11 +1,13 @@
 import {
   ARTIFACT_SLOTS,
-  fitsSlot,
+  canWear,
   hasFullBackpack,
+  layoutOf,
   putBackHeldArtifact,
   putHeldArtifact,
   putOnArtifact,
   scrollBackpack,
+  swapIntoSlot,
   takeArtifact
 } from './artifacts.js'
 
@@ -25,13 +27,10 @@ export function takeArtifactFrom(artifacts, side, place) {
 // An artifact swapped out of the other hero's slot is held by the hero who picked up the first.
 function putOnOtherHero(holder, receiver, place, definitions) {
   if (place.slot) {
-    if (!fitsSlot(holder.held, place.slot, definitions)) {
-      return null
-    }
-    return {
-      holder: { ...holder, held: receiver.worn[place.slot] ?? null },
-      receiver: { ...receiver, worn: { ...receiver.worn, [place.slot]: holder.held } }
-    }
+    const swapped = swapIntoSlot(receiver, holder.held, place.slot, definitions)
+    return (
+      swapped && { holder: { ...holder, held: swapped.swappedOut }, receiver: swapped.artifacts }
+    )
   }
   if (hasFullBackpack(receiver)) {
     return null
@@ -69,18 +68,20 @@ export function scrollBackpackOf(artifacts, side, direction) {
   return scrolled && { ...artifacts, [side]: scrolled }
 }
 
-function hasRoomFor(artifacts, artifactId, definitions) {
-  const kind = definitions?.artifacts?.[artifactId]?.slot
-  return (
-    !hasFullBackpack(artifacts) ||
-    ARTIFACT_SLOTS.some((slot) => slot.kind === kind && !artifacts.worn[slot.id])
-  )
+const hasRoomFor = (artifacts, artifactId, definitions) =>
+  !hasFullBackpack(artifacts) || canWear(artifacts, artifactId, definitions)
+
+function keepWorn(kept, slotId, artifactId, layout) {
+  const worn = { ...kept.worn, [slotId]: artifactId }
+  return layout
+    ? { ...kept, worn, combined: { ...kept.combined, [slotId]: layout } }
+    : { ...kept, worn }
 }
 
 // Worn artifacts go first, in slot order, then the backpack; those with no room stay.
 export function sendAllArtifacts(artifacts, fromSide, definitions) {
   const toSide = OTHER_SIDE[fromSide]
-  let giver = { ...artifacts[fromSide], worn: {}, backpack: [] }
+  let giver = { ...artifacts[fromSide], worn: {}, combined: {}, backpack: [] }
   let receiver = artifacts[toSide]
   const send = (artifactId, keep) => {
     if (hasRoomFor(receiver, artifactId, definitions)) {
@@ -93,7 +94,7 @@ export function sendAllArtifacts(artifacts, fromSide, definitions) {
   for (const { id } of ARTIFACT_SLOTS) {
     const artifactId = artifacts[fromSide].worn[id]
     if (artifactId) {
-      send(artifactId, (kept) => ({ ...kept, worn: { ...kept.worn, [id]: artifactId } }))
+      send(artifactId, (kept) => keepWorn(kept, id, artifactId, layoutOf(artifacts[fromSide], id)))
     }
   }
   for (const artifactId of artifacts[fromSide].backpack) {
@@ -108,7 +109,7 @@ export function sendAllArtifacts(artifacts, fromSide, definitions) {
 export function swapAllArtifacts(artifacts) {
   const { left, right } = artifacts
   return {
-    left: { ...left, worn: right.worn, backpack: right.backpack },
-    right: { ...right, worn: left.worn, backpack: left.backpack }
+    left: { ...left, worn: right.worn, combined: right.combined, backpack: right.backpack },
+    right: { ...right, worn: left.worn, combined: left.combined, backpack: left.backpack }
   }
 }

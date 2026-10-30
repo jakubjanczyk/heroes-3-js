@@ -133,6 +133,13 @@ export function readMessage() {
   return getInteractionModalMessage()?.textContent ?? null
 }
 
+// The lines under the open message's text, such as the question it asks.
+export function readMessageDetails() {
+  return [...(getInteractionModal()?.querySelectorAll('.interaction-modal__detail') ?? [])].map(
+    (line) => line.textContent
+  )
+}
+
 // What the open message gives, as the player reads it under its pictures, e.g. ['3 Ore'] or
 // ['+1 Attack'] or ['Basic Archery'].
 export function readMessageRewards() {

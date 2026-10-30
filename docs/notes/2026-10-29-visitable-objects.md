@@ -71,7 +71,7 @@ A reward with `"everyVisit": true` is also given on a visit turned away because 
 
 When a rule doesn't fit any field, add the part once, with a behavior test through the object that needs it:
 
-- **A reward type:** its `gain` (and `describe`, if the popup should list it) in `rewards.js`; the events that give it in `EVENTS_BY_GAIN` in the module, adding them to the module's `produces` (then `node scripts/module-contracts.mjs` updates `docs/v1/ARCHITECTURE.md`); its picture in `visit-rewards.js`, if the message shows one; and the state it changes, if no fact does that yet.
+- **A reward type:** its `gain` (and `describe`, if the popup should list it) in `rewards.js`; the events that give it in `EVENTS_BY_GAIN` in the module, adding them to the module's `produces`; its picture in `visit-rewards.js`, if the message shows one; and the state it changes, if no fact does that yet.
 - **A requirement:** a function in `REQUIREMENTS` in `visits.js`, `true` when the hero may go in.
 - **A visit limit:** a function in `VISIT_LIMITS` in `visits.js`; add it to `LIMITS_OF_EACH_HERO` if the status bar should say "(Visited)" for it.
 - **A kind of roll:** `rollValue` and `VALUE_TEXT_BY_KIND` (how it reads in a message) in `definitions.js`.

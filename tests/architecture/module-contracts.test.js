@@ -2,10 +2,6 @@ import { describe, expect, test } from 'vitest'
 
 import { defineModule } from '../../app/modules/shared/module-runtime.js'
 import { createBus } from '../../engine/bus.js'
-import {
-  readDocumentedModuleContractsTable,
-  renderModuleContractsTable
-} from '../../scripts/module-contracts.mjs'
 
 const contract = { id: 'probe', phase: 'domain', consumes: ['fact.declared'], produces: [] }
 
@@ -51,12 +47,5 @@ describe('module contracts', () => {
     bus.emit('fact.declared', {})
 
     expect(emitted).toEqual(['fact.fromContent'])
-  })
-
-  test('the module table in ARCHITECTURE.md matches the declared contracts', () => {
-    expect(
-      readDocumentedModuleContractsTable(),
-      'run `node scripts/module-contracts.mjs` to update docs/v1/ARCHITECTURE.md'
-    ).toBe(renderModuleContractsTable())
   })
 })

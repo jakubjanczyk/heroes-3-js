@@ -326,7 +326,8 @@
           "creature": "ARCHER",
           "count": 4
         }
-      ]
+      ],
+      "artifacts": ["THUNDER_HELMET", "TITANS_CUIRASS", "SENTINELS_SHIELD"]
     },
     {
       "id": "town-1",
@@ -698,6 +699,15 @@
           "count": 4
         }
       ]
+    },
+    {
+      "id": "artifact-10",
+      "kind": "ARTIFACT",
+      "type": "TITANS_GLADIUS",
+      "tile": {
+        "x": 10,
+        "y": 15
+      }
     },
     {
       "id": "resource-1",

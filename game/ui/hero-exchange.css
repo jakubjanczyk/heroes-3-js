@@ -339,6 +339,12 @@
   text-align: center;
 }
 
+/* A slot taken by a combination worn in another. */
+.hero-exchange__artifact-picture[data-lock="true"] {
+  opacity: 0.55;
+  font-style: italic;
+}
+
 /* An empty slot the held artifact can go in. */
 .hero-exchange__artifact[data-highlighted="true"] {
   box-shadow:
