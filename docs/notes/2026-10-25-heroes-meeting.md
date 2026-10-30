@@ -19,7 +19,7 @@ Roadmap 4.5.3: two of the player's heroes meet on the map and trade creatures on
   - Swap (`swapArmies`) trades the armies slot for slot.
 - The screen asks with `command.heroes.*` (`stackMove`, `stackSplit`, `stackSend`, `armySend`, `armiesSwap`), each naming `heroIds: { left, right }`. `hero-army.module.js` applies them and emits `fact.hero.army.changed` for each hero whose army changed, which is saved, so a reload keeps the armies. The screen isn't saved.
 - `app/heroes/modules/hero-exchange-view.module.js` draws it from `#hero-exchange-template` in `index.html`, styled in `game/ui/hero-exchange.css` the way the hero screen is: every part placed in the game's pixels and the window scaled as a whole.
-- What the game has no data for yet is an empty frame: specialty, spell points, morale, luck, secondary skills, the artifact swap buttons, the paper dolls and their slots, the double arrows, the backpacks and the two buttons beside the status bar.
+- What the game has no data for yet is an empty frame: specialty, spell points, morale, luck, secondary skills and the two buttons beside the status bar. The artifacts came with 7.8.6 (`2026-10-30-artifacts-between-heroes.md`).
 
 ## Not yet
 

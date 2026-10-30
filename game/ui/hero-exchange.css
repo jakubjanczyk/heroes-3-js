@@ -239,6 +239,8 @@
 
 .hero-exchange__slot-arrow,
 .hero-exchange__army-button,
+.hero-exchange__artifact-button,
+.hero-exchange__backpack-arrow,
 .hero-exchange__close {
   appearance: none;
   display: grid;
@@ -304,10 +306,56 @@
   stroke-linejoin: round;
 }
 
+.hero-exchange__artifacts,
+.hero-exchange__backpack-slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .hero-exchange__backpack {
   display: grid;
-  grid-template-columns: 0.5fr repeat(5, 1fr) 0.5fr;
+  grid-template-columns: 0.5fr 5fr 0.5fr;
   gap: calc(4 * var(--px));
+}
+
+.hero-exchange__backpack-slots {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: calc(4 * var(--px));
+}
+
+/* No pictures yet: an artifact shows its name in its frame. */
+.hero-exchange__artifact-picture {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  padding: 1px;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--trim-gold);
+  font-size: calc(7 * var(--px));
+  line-height: 1;
+  text-align: center;
+}
+
+/* An empty slot the held artifact can go in. */
+.hero-exchange__artifact[data-highlighted="true"] {
+  box-shadow:
+    inset 0 0 0 2px var(--trim-gold),
+    0 0 6px rgb(217 180 90 / 0.8);
+}
+
+/* The artifact on the pointer, centred on it. */
+.hero-exchange__held-artifact {
+  position: absolute;
+  z-index: 1;
+  inline-size: calc(40 * var(--px));
+  block-size: calc(40 * var(--px));
+  translate: -50% -50%;
+  pointer-events: none;
+  background: rgb(0 0 0 / 0.6);
+  outline: 1px solid var(--trim-gold);
 }
 
 .hero-exchange__status-bar {

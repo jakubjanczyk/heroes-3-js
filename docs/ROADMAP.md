@@ -907,7 +907,11 @@ See `docs/notes/2026-10-30-chest-artifacts-and-a-full-backpack.md`.
 - The tavern's "… with N artifacts" moved to 4.5.5: no hero in the tavern has artifacts yet
 
 #### 7.8.6 Between heroes
-- [ ] The exchange screen's paper dolls and backpacks (4.5.3): moving artifacts from one hero to the other, and the swap buttons
+See `docs/notes/2026-10-30-artifacts-between-heroes.md`.
+- [x] The exchange screen's paper dolls and backpacks (4.5.3): moving artifacts from one hero to the other, highlighted slots on both, descriptions and status bar
+- [x] Move all artifacts to either hero and swap artifacts; what has no room stays; a full backpack takes nothing
+- [x] A held artifact goes back to the hero who picked it up when the screen closes; kept after a reload
+- [ ] The modifier keys that move only worn artifacts or only the backpack
 
 #### 7.8.7 Combination artifacts
 - [ ] The 12 combinations: Admiral's Hat, Angelic Alliance, Armor of the Damned, Bow of the Sharpshooter, Cloak of the Undead King, Cornucopia, Elixir of Life, Power of the Dragon Father, Ring of the Magi, Statue of Legion, Titan's Thunder, Wizard's Well

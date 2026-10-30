@@ -101,3 +101,91 @@ export function readHeroExchangeStatusBar() {
 export function readHeroExchangeMoraleAndLuck(heroName) {
   return readMoraleAndLuck(getHeroSide(heroName))
 }
+
+function readArtifactFrames(list) {
+  return within(list)
+    .getAllByRole('listitem')
+    .map((frame) => [frame, frame.querySelector('[role="img"]')?.getAttribute('aria-label')])
+}
+
+function getArtifactSlots(heroName) {
+  return within(getHeroSide(heroName)).getByRole('list', { name: `${heroName}'s artifacts` })
+}
+
+function getBackpack(heroName) {
+  return within(getHeroSide(heroName)).getByRole('list', { name: `${heroName}'s backpack` })
+}
+
+// What the hero wears, as { '<slot>': '<artifact>' }, e.g. { Weapon: "Centaur's Axe" }.
+export function readHeroExchangeArtifacts(heroName) {
+  return Object.fromEntries(
+    readArtifactFrames(getArtifactSlots(heroName))
+      .filter(([, artifact]) => artifact)
+      .map(([frame, artifact]) => [frame.getAttribute('aria-label'), artifact])
+  )
+}
+
+// The artifacts in the backpack's frames, left to right.
+export function readHeroExchangeBackpack(heroName) {
+  return readArtifactFrames(getBackpack(heroName))
+    .map(([, artifact]) => artifact)
+    .filter(Boolean)
+}
+
+function getArtifactSlot(heroName, slot) {
+  return within(getArtifactSlots(heroName)).getByRole('listitem', { name: slot })
+}
+
+function getBackpackFrame(heroName, frame) {
+  return within(getBackpack(heroName)).getAllByRole('listitem')[frame - 1]
+}
+
+// A slot by its name, e.g. 'Weapon' or 'Left ring'.
+export async function clickHeroExchangeArtifactSlot(user, heroName, slot) {
+  await user.click(getArtifactSlot(heroName, slot))
+}
+
+// Frames count from 1, as the player sees them from the left.
+export async function clickHeroExchangeBackpackFrame(user, heroName, frame) {
+  await user.click(getBackpackFrame(heroName, frame))
+}
+
+export async function clickHeroExchangeBackpackArrow(user, heroName, direction) {
+  await user.click(
+    within(getHeroSide(heroName)).getByRole('button', { name: `Scroll backpack ${direction}` })
+  )
+}
+
+export async function hoverHeroExchangeArtifactSlot(user, heroName, slot) {
+  await user.hover(getArtifactSlot(heroName, slot))
+}
+
+export async function holdRightButtonOnHeroExchangeArtifactSlot(user, heroName, slot) {
+  await user.pointer({ keys: '[MouseRight>]', target: getArtifactSlot(heroName, slot) })
+}
+
+export async function holdRightButtonOnHeroExchangeBackpackFrame(user, heroName, frame) {
+  await user.pointer({ keys: '[MouseRight>]', target: getBackpackFrame(heroName, frame) })
+}
+
+export async function hoverHeroExchangeButton(user, name) {
+  await user.hover(within(getHeroExchange()).getByRole('button', { name }))
+}
+
+// The artifact on the pointer, or null when nothing is held.
+export function readHeroExchangeHeldArtifact() {
+  return (
+    within(getHeroExchange())
+      .queryByRole('img', { name: /^Held: / })
+      ?.getAttribute('aria-label')
+      .replace(/^Held: /, '') ?? null
+  )
+}
+
+// The worn slots lit up as places the held artifact can go, e.g. ['Right ring', 'Left ring'].
+export function readHeroExchangeHighlightedSlots(heroName) {
+  return within(getArtifactSlots(heroName))
+    .getAllByRole('listitem')
+    .filter((slot) => slot.dataset.highlighted === 'true')
+    .map((slot) => slot.getAttribute('aria-label'))
+}
