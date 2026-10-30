@@ -377,6 +377,7 @@ See `docs/notes/2026-10-26-defeated-hero.md`.
 - [ ] Native terrain: an all-native army pays 100 on its terrain
 - [ ] Logistics skill increases total MP:
   - Basic: +10%, Advanced: +20%, Expert: +30%
+- [ ] A click while the hero walks stops them at the next tile
 
 ### 4.7 Hero Secondary Skills
 Built in three parts; see `docs/notes/2026-10-26-secondary-skills.md`.
@@ -1061,6 +1062,7 @@ Visual and audio excellence. Last mile.
 - [ ] Sprite sheets for animated entities
 - [ ] Direction-aware hero sprite (facing direction of movement)
 - [ ] Town sprites per faction
+- [ ] (Not in H3, optional extra) Draw the map with WebGL if the DOM gets too slow
 - [ ] Mine sprites per type
 - [ ] Resource pile sprites per type
 
