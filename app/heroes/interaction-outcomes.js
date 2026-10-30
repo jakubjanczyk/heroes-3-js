@@ -1,3 +1,4 @@
+import { BATTLE_DEFENDER_ARTIFACT_GUARDS } from '../../game/heroes/artifacts.js'
 import {
   INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP,
   INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
@@ -59,6 +60,35 @@ function askToFightGuards(outcome) {
   }
 }
 
+const GUARDED_ARTIFACT_MESSAGE =
+  "Through a clearing you observe an ancient artifact. Unfortunately, it's guarded. " +
+  'Do you want to fight the guards for the artifact?'
+
+function askToFightArtifactGuards(outcome) {
+  return {
+    modal: {
+      interactionKind: outcome.kind,
+      entityId: outcome.entityId,
+      entityType: outcome.entityType,
+      title: 'Artifact',
+      message: GUARDED_ARTIFACT_MESSAGE,
+      isQuestion: true
+    },
+    factsOnModalClosed: [],
+    eventsByChoice: {
+      yes: [
+        {
+          type: APP_FACT_BATTLE_STARTED,
+          detail: {
+            ...toEntityFactDetail(outcome),
+            defender: { kind: BATTLE_DEFENDER_ARTIFACT_GUARDS, stacks: outcome.guards }
+          }
+        }
+      ]
+    }
+  }
+}
+
 function toEntityFactDetail(outcome) {
   return {
     heroId: outcome.heroId,
@@ -83,14 +113,17 @@ export const heroesOutcomeEvents = Object.freeze([
 ])
 
 export const heroesOutcomeEffects = Object.freeze({
-  [INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP]: (outcome) => ({
-    facts: [
-      {
-        type: APP_FACT_ARTIFACT_PICKED_UP,
-        detail: { ...toEntityFactDetail(outcome), artifact: outcome.entityType }
-      }
-    ]
-  }),
+  [INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP]: (outcome) =>
+    outcome.guards
+      ? askToFightArtifactGuards(outcome)
+      : {
+          facts: [
+            {
+              type: APP_FACT_ARTIFACT_PICKED_UP,
+              detail: { ...toEntityFactDetail(outcome), artifact: outcome.entityType }
+            }
+          ]
+        },
   [INTERACTION_OUTCOME_KIND_BATTLE_STARTED]: (outcome) => ({
     facts: [
       {

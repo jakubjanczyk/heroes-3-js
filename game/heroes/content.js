@@ -16,6 +16,7 @@ import { fogSlice } from './state/fog.js'
 import { heroDetailsSlice } from './state/hero-details.js'
 import { kingdomsSlice } from './state/kingdoms.js'
 import {
+  artifactGuardsSlice,
   dwellingsSlice,
   minesSlice,
   monsterCountsSlice,
@@ -50,6 +51,7 @@ export const heroesContent = Object.freeze({
     dwellingsSlice,
     visitableObjectsSlice,
     monsterCountsSlice,
+    artifactGuardsSlice,
     kingdomsSlice,
     tavernSlice,
     fogSlice

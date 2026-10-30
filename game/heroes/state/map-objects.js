@@ -1,4 +1,4 @@
-import { isDwelling, isMine } from '../../domain/entity-queries.js'
+import { isDwelling, isEntityKind, isMine } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
@@ -149,6 +149,27 @@ export const monsterCountsSlice = {
       [entityId]: count
     })
   }
+}
+
+// The stacks guarding each artifact the scenario guards, fewer after a battle the guards won.
+export const artifactGuardsSlice = {
+  key: 'artifactGuards',
+  initial: ({ scenario }) =>
+    Object.fromEntries(
+      (scenario?.entities ?? [])
+        .filter((entity) => isEntityKind(entity, 'ARTIFACT') && entity.guards?.length > 0)
+        .map((artifact) => [artifact.id, artifact.guards])
+    ),
+  on: {
+    'fact.artifact.guards.changed': (guards, { entityId, stacks }) => ({
+      ...guards,
+      [entityId]: stacks
+    })
+  }
+}
+
+export function artifactGuards(state, artifactId) {
+  return state.artifactGuards?.[artifactId] ?? []
 }
 
 export function mineOwner(state, mineId) {
