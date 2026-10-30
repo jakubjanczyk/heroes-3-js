@@ -1,0 +1,46 @@
+{
+  "WINDMILL": {
+    "name": "Windmill",
+    "picture": { "left": 0, "right": 1, "rows": 1 },
+    "visits": "oncePerWeek",
+    "rewards": [
+      {
+        "type": "resources",
+        "anyOf": ["ORE_PILE", "MERCURY_PILE", "SULFUR_PILE", "CRYSTAL_PILE", "GEMS_PILE"],
+        "amount": { "min": 3, "max": 6 }
+      }
+    ],
+    "messages": {
+      "gives": "The keeper of the mill announces: \"Milord, I have been working very hard to provide you with these resources, come back next week for more.\"",
+      "visited": "The keeper of the mill announces: \"Milord, I am sorry, there are no resources currently available. Please try again next week.\""
+    }
+  },
+  "WATER_WHEEL": {
+    "name": "Water Wheel",
+    "footprint": [
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 }
+    ],
+    "visits": "oncePerWeek",
+    "rewards": [
+      { "type": "resources", "resources": { "GOLD_PILE": 1000 }, "firstWeek": { "GOLD_PILE": 500 } }
+    ],
+    "messages": {
+      "gives": "The keeper of the mill announces: \"Milord, I have been working very hard to provide you with this gold, come back next week for more.\"",
+      "visited": "The keeper of the mill announces: \"Milord, I am sorry, there is no gold currently available. Please try again next week.\""
+    }
+  },
+  "MYSTICAL_GARDEN": {
+    "name": "Mystical Garden",
+    "footprint": [{ "x": -1, "y": 0 }, { "x": 1, "y": 0 }],
+    "visits": "oncePerWeek",
+    "rewards": [{ "type": "resources", "oneOf": [{ "GEMS_PILE": 5 }, { "GOLD_PILE": 500 }] }],
+    "messages": {
+      "gives": "The sound of music brings you to a small garden, where you are able to sneak up on a leprechaun who is happily dancing about in the clearing. You capture him, and in exchange for his freedom he guides you to a small pot filled with precious things.",
+      "visited": "The sound of music brings you to a small garden, where you attempt to sneak up on a leprechaun who is happily dancing about in the clearing. You try to capture him, but his nimbleness allows him to elude you."
+    }
+  }
+}
