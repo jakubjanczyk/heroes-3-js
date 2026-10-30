@@ -409,5 +409,103 @@
       "knowledge": 2
     },
     "description": "Worn on the feet, the Sandals of the Saint increase all four primary skills by +2."
+  },
+  "CLOVER_OF_FORTUNE": {
+    "name": "Clover of Fortune",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 1000,
+    "luck": 1,
+    "description": "The Clover of Fortune increases your Luck by +1."
+  },
+  "CARDS_OF_PROPHECY": {
+    "name": "Cards of Prophecy",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 1000,
+    "luck": 1,
+    "description": "The Cards of Prophecy increase your Luck by +1."
+  },
+  "LADYBIRD_OF_LUCK": {
+    "name": "Ladybird of Luck",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 1000,
+    "luck": 1,
+    "description": "The Ladybird of Luck increases your Luck by +1."
+  },
+  "BADGE_OF_COURAGE": {
+    "name": "Badge of Courage",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 1000,
+    "morale": 1,
+    "description": "The Badge of Courage increases your Morale by +1."
+  },
+  "CREST_OF_VALOR": {
+    "name": "Crest of Valor",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 1000,
+    "morale": 1,
+    "description": "The Crest of Valor increases your Morale by +1."
+  },
+  "GLYPH_OF_GALLANTRY": {
+    "name": "Glyph of Gallantry",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 1000,
+    "morale": 1,
+    "description": "The Glyph of Gallantry increases your Morale by +1."
+  },
+  "STILL_EYE_OF_THE_DRAGON": {
+    "name": "Still Eye of the Dragon",
+    "slot": "RING",
+    "class": "TREASURE",
+    "cost": 2000,
+    "morale": 1,
+    "luck": 1,
+    "description": "Worn on the finger, this item increases your Luck and Morale by +1."
+  },
+  "PENDANT_OF_COURAGE": {
+    "name": "Pendant of Courage",
+    "slot": "NECKLACE",
+    "class": "MAJOR",
+    "cost": 7000,
+    "morale": 3,
+    "luck": 3,
+    "description": "When worn, this item bestows +3 Luck and Morale to your hero's troops."
+  },
+  "SPIRIT_OF_OPPRESSION": {
+    "name": "Spirit of Oppression",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 2000,
+    "cancelsInBattle": ["morale"],
+    "description": "This item negates all Morale bonuses during combat for both you and your opponent."
+  },
+  "HOURGLASS_OF_THE_EVIL_HOUR": {
+    "name": "Hourglass of the Evil Hour",
+    "slot": "MISC",
+    "class": "TREASURE",
+    "cost": 2000,
+    "cancelsInBattle": ["luck"],
+    "description": "This item negates all Luck bonuses during combat for both you and your opponent."
+  },
+  "BOOTS_OF_SPEED": {
+    "name": "Boots of Speed",
+    "slot": "FEET",
+    "class": "MINOR",
+    "cost": 6000,
+    "landMovementPoints": 600,
+    "description": "Worn on the feet, these boots increase your hero's movement rate over land."
+  },
+  "EQUESTRIANS_GLOVES": {
+    "name": "Equestrian's Gloves",
+    "slot": "RING",
+    "class": "MINOR",
+    "cost": 3000,
+    "landMovementPoints": 300,
+    "description": "Worn on the hands, these gloves increase your hero's movement rate over land."
   }
 }
