@@ -7,10 +7,17 @@ import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
   APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED,
   APP_COMMAND_HEROES_ARMY_SEND_REQUESTED,
+  APP_COMMAND_HEROES_ARTIFACT_PUT_BACK_REQUESTED,
+  APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED,
+  APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED,
+  APP_COMMAND_HEROES_ARTIFACTS_SEND_REQUESTED,
+  APP_COMMAND_HEROES_ARTIFACTS_SWAP_REQUESTED,
+  APP_COMMAND_HEROES_BACKPACK_SCROLL_REQUESTED,
   APP_COMMAND_HEROES_STACK_MOVE_REQUESTED,
   APP_COMMAND_HEROES_STACK_SEND_REQUESTED,
   APP_COMMAND_HEROES_STACK_SPLIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -18,6 +25,13 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
+import {
+  createHeldArtifactPicture,
+  placeOfArtifactFrame,
+  renderArtifactPicture,
+  renderDescriptionPopup,
+  showArtifactFrames
+} from '../presentation/artifacts.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
 import { showMoraleOrLuck } from '../presentation/morale-and-luck.js'
 import {
@@ -28,8 +42,14 @@ import {
 const SIDES = ['left', 'right']
 const OTHER_SIDE = { left: 'right', right: 'left' }
 const SELECT_TEXT = { left: 'Select %s', right: 'Select %s' }
-const EXCHANGE_BUTTONS =
-  '.hero-exchange__slot-arrow, .hero-exchange__army-button, .hero-exchange__close'
+const ARTIFACT_PICTURE = 'hero-exchange__artifact-picture'
+const EXCHANGE_BUTTONS = [
+  '.hero-exchange__slot-arrow',
+  '.hero-exchange__army-button',
+  '.hero-exchange__artifact-button',
+  '.hero-exchange__backpack-arrow',
+  '.hero-exchange__close'
+].join(', ')
 
 function statusSourceAt(target) {
   return target?.closest?.('[data-status]') ?? null
@@ -47,6 +67,18 @@ function renderSecondarySkill(document, skill) {
   return icon
 }
 
+function artifactFrameAt(target) {
+  return (
+    target?.closest?.('[data-artifact-slot]') ??
+    target?.closest?.('.hero-exchange__backpack-slots > li') ??
+    null
+  )
+}
+
+function artifactAt(target) {
+  return target?.closest?.('.hero-exchange [data-artifact]') ?? null
+}
+
 function sideOf(element) {
   return element.closest('[data-side]').dataset.side
 }
@@ -58,7 +90,12 @@ export const registerHeroExchangeViewModule = defineModule(
     let exchange = null
     let heroIds = null
     let rearranging = null
+    let popup = null
     let definitions = {}
+    const heldPicture = createHeldArtifactPicture({
+      document,
+      className: `${ARTIFACT_PICTURE} hero-exchange__held-artifact`
+    })
 
     function heroOn(side) {
       return heroById(state.get(), heroIds[side])
@@ -89,15 +126,84 @@ export const registerHeroExchangeViewModule = defineModule(
       element.querySelectorAll('.hero-exchange__slot-arrow').forEach((arrow, index) => {
         arrow.setAttribute('aria-label', `Move slot ${index + 1} to ${otherName}`)
       })
-      const moveAll = exchange.querySelector(`[data-exchange-action="${OTHER_SIDE[side]}"]`)
-      moveAll.setAttribute('aria-label', `Move all to ${otherName}`)
-      moveAll.dataset.status = `Move all to ${otherName}`
+      labelButton(`[data-exchange-action="${OTHER_SIDE[side]}"]`, `Move all to ${otherName}`)
+      labelButton(
+        `[data-artifacts-action="${OTHER_SIDE[side]}"]`,
+        `Move all artifacts to ${otherName}`
+      )
+      element
+        .querySelector('.hero-exchange__artifacts')
+        .setAttribute('aria-label', `${hero.name}'s artifacts`)
+      element
+        .querySelector('.hero-exchange__backpack-slots')
+        .setAttribute('aria-label', `${hero.name}'s backpack`)
+    }
 
-      for (const { key, value } of getHeroPrimarySkills({ entity: hero, definitions })) {
+    function labelButton(selector, text) {
+      const button = exchange.querySelector(selector)
+      button.setAttribute('aria-label', text)
+      button.dataset.status = text
+    }
+
+    function showPrimarySkills(side) {
+      for (const { key, value } of getHeroPrimarySkills({ entity: heroOn(side), definitions })) {
         exchange.querySelector(
           `[data-skill="${key}"] .hero-exchange__skill-value[data-side="${side}"]`
         ).textContent = String(value)
       }
+    }
+
+    function heldArtifactId() {
+      return SIDES.map((side) => heroOn(side).artifacts?.held).find(Boolean) ?? null
+    }
+
+    function showArtifacts() {
+      const held = heldArtifactId()
+      for (const side of SIDES) {
+        const element = sideElement(side)
+        showArtifactFrames({
+          slotFrames: element.querySelectorAll('[data-artifact-slot]'),
+          backpackFrames: element.querySelectorAll('.hero-exchange__backpack-slots > li'),
+          artifacts: heroOn(side).artifacts,
+          held,
+          definitions,
+          renderPicture: (artifact) => renderArtifactPicture(document, artifact, ARTIFACT_PICTURE)
+        })
+        showPrimarySkills(side)
+      }
+      heldPicture.show(
+        exchange.querySelector('.hero-exchange__window'),
+        definitions?.artifacts?.[held]
+      )
+    }
+
+    function clickArtifactFrame(frame) {
+      emit(
+        heldArtifactId()
+          ? APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED
+          : APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED,
+        { heroIds, side: sideOf(frame), place: placeOfArtifactFrame(frame) }
+      )
+    }
+
+    function openPopup(source) {
+      closePopup()
+      const artifact = definitions?.artifacts?.[source.dataset.artifact]
+      popup = renderDescriptionPopup(document, {
+        title: artifact.name,
+        description: artifact.description
+      })
+      gameShell.append(popup)
+
+      const sourceBox = source.getBoundingClientRect()
+      const { width } = popup.getBoundingClientRect()
+      popup.style.left = `${Math.max(0, sourceBox.left + sourceBox.width / 2 - width / 2)}px`
+      popup.style.top = `${sourceBox.bottom}px`
+    }
+
+    function closePopup() {
+      popup?.remove()
+      popup = null
     }
 
     function fillSecondarySkills(element, hero) {
@@ -170,6 +276,7 @@ export const registerHeroExchangeViewModule = defineModule(
       })
       SIDES.forEach(fillHero)
       showArmies()
+      showArtifacts()
       gameShell.append(exchange)
       exchange.focus()
       emit(APP_UI_ADVENTURE_MAP_COVERED, {})
@@ -180,10 +287,15 @@ export const registerHeroExchangeViewModule = defineModule(
         return
       }
 
+      closePopup()
+      if (heldArtifactId()) {
+        emit(APP_COMMAND_HEROES_ARTIFACT_PUT_BACK_REQUESTED, { heroIds })
+      }
       exchange.remove()
       exchange = null
       heroIds = null
       rearranging = null
+      heldPicture.forget()
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
     }
 
@@ -194,6 +306,18 @@ export const registerHeroExchangeViewModule = defineModule(
     function clickButton(button) {
       if (button.classList.contains('hero-exchange__close')) {
         close()
+        return
+      }
+      if (button.classList.contains('hero-exchange__backpack-arrow')) {
+        emit(APP_COMMAND_HEROES_BACKPACK_SCROLL_REQUESTED, {
+          heroIds,
+          side: sideOf(button),
+          direction: button.dataset.direction
+        })
+        return
+      }
+      if (button.classList.contains('hero-exchange__artifact-button')) {
+        clickArtifactButton(button.dataset.artifactsAction)
         return
       }
       if (button.classList.contains('hero-exchange__slot-arrow')) {
@@ -218,6 +342,14 @@ export const registerHeroExchangeViewModule = defineModule(
       }
     }
 
+    function clickArtifactButton(action) {
+      if (action === 'swap') {
+        emit(APP_COMMAND_HEROES_ARTIFACTS_SWAP_REQUESTED, { heroIds })
+      } else {
+        emit(APP_COMMAND_HEROES_ARTIFACTS_SEND_REQUESTED, { heroIds, fromSide: OTHER_SIDE[action] })
+      }
+    }
+
     return {
       subscriptions: [
         {
@@ -231,6 +363,14 @@ export const registerHeroExchangeViewModule = defineModule(
           handler: () => {
             if (exchange) {
               showArmies()
+            }
+          }
+        },
+        {
+          type: APP_FACT_HERO_ARTIFACTS_CHANGED,
+          handler: () => {
+            if (exchange) {
+              showArtifacts()
             }
           }
         },
@@ -256,12 +396,45 @@ export const registerHeroExchangeViewModule = defineModule(
               return
             }
 
+            const artifactFrame = artifactFrameAt(event.target)
+            if (artifactFrame) {
+              rearranging.unselect()
+              clickArtifactFrame(artifactFrame)
+              return
+            }
+
             const armySlot = armySlotAt(event.target)
             if (armySlot) {
               rearranging.clickSlot(armySlot, event)
             }
           }
         },
+        {
+          target: gameShell,
+          type: 'pointermove',
+          handler: (event) => heldPicture.follow(event)
+        },
+        {
+          target: gameShell,
+          type: 'pointerdown',
+          handler: (event) => {
+            const source = artifactAt(event.target)
+            if (exchange?.contains(source) && event.button === 2) {
+              openPopup(source)
+            }
+          }
+        },
+        {
+          target: gameShell,
+          type: 'contextmenu',
+          handler: (event) => {
+            if (exchange?.contains(artifactAt(event.target))) {
+              event.preventDefault()
+            }
+          }
+        },
+        { target: env.window, type: 'pointerup', handler: closePopup },
+        { target: env.window, type: 'pointercancel', handler: closePopup },
         {
           target: gameShell,
           type: 'mouseover',
@@ -294,9 +467,11 @@ export const registerHeroExchangeViewModule = defineModule(
         }
       ],
       dispose: () => {
+        closePopup()
         exchange?.remove()
         exchange = null
         rearranging = null
+        heldPicture.forget()
       }
     }
   },
@@ -306,6 +481,7 @@ export const registerHeroExchangeViewModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_ARMY_CHANGED,
+      APP_FACT_HERO_ARTIFACTS_CHANGED,
       APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
     ],
     produces: [
@@ -313,7 +489,19 @@ export const registerHeroExchangeViewModule = defineModule(
       APP_COMMAND_HEROES_STACK_SPLIT_REQUESTED,
       APP_COMMAND_HEROES_STACK_SEND_REQUESTED,
       APP_COMMAND_HEROES_ARMY_SEND_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACT_PUT_BACK_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACTS_SEND_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACTS_SWAP_REQUESTED,
+      APP_COMMAND_HEROES_BACKPACK_SCROLL_REQUESTED,
       APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACT_PUT_BACK_REQUESTED,
+      APP_COMMAND_HEROES_BACKPACK_SCROLL_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACTS_SEND_REQUESTED,
+      APP_COMMAND_HEROES_ARTIFACTS_SWAP_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED
     ]

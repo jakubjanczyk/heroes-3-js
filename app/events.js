@@ -27,6 +27,15 @@ export const APP_COMMAND_HEROES_STACK_SPLIT_REQUESTED = 'command.heroes.stackSpl
 export const APP_COMMAND_HEROES_STACK_SEND_REQUESTED = 'command.heroes.stackSend.requested'
 export const APP_COMMAND_HEROES_ARMY_SEND_REQUESTED = 'command.heroes.armySend.requested'
 export const APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED = 'command.heroes.armiesSwap.requested'
+// With `side`, the hero clicked on; places as for one hero.
+export const APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED = 'command.heroes.artifactTake.requested'
+export const APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED = 'command.heroes.artifactPut.requested'
+export const APP_COMMAND_HEROES_ARTIFACT_PUT_BACK_REQUESTED =
+  'command.heroes.artifactPutBack.requested'
+export const APP_COMMAND_HEROES_BACKPACK_SCROLL_REQUESTED =
+  'command.heroes.backpackScroll.requested'
+export const APP_COMMAND_HEROES_ARTIFACTS_SEND_REQUESTED = 'command.heroes.artifactsSend.requested'
+export const APP_COMMAND_HEROES_ARTIFACTS_SWAP_REQUESTED = 'command.heroes.artifactsSwap.requested'
 export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoCombat.requested'
 export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove.requested'
 export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
