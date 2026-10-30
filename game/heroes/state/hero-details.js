@@ -86,6 +86,7 @@ export const heroDetailsSlice = {
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
+    'fact.hero.artifacts.changed': updateHero((_hero, { artifacts }) => ({ artifacts })),
     'fact.artifact.pickedUp': (heroes, detail, { definitions }) =>
       updateHero((hero, { artifact }) => ({
         artifacts: putOnArtifact(hero.artifacts, artifact, definitions)

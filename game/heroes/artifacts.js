@@ -53,3 +53,82 @@ export function artifactPrimarySkills(artifacts, definitions) {
   }
   return skills
 }
+
+export function fitsSlot(artifactId, slotId, definitions) {
+  const kind = definitions?.artifacts?.[artifactId]?.slot
+  return ARTIFACT_SLOTS.some((slot) => slot.id === slotId && slot.kind === kind)
+}
+
+// A place is a worn slot, `{ slot: 'WEAPON' }`, or a backpack frame, `{ backpack: 0 }`.
+export function takeArtifact(artifacts, place) {
+  if (artifacts.held) {
+    return null
+  }
+  if (place.slot) {
+    const held = artifacts.worn[place.slot]
+    if (!held) {
+      return null
+    }
+    const { [place.slot]: _taken, ...worn } = artifacts.worn
+    return { ...artifacts, worn, held }
+  }
+  const held = artifacts.backpack[place.backpack]
+  if (!held) {
+    return null
+  }
+  return {
+    ...artifacts,
+    backpack: artifacts.backpack.filter((_artifact, index) => index !== place.backpack),
+    held
+  }
+}
+
+function putOnSlot(artifacts, slotId, definitions) {
+  const { held } = artifacts
+  if (!fitsSlot(held, slotId, definitions)) {
+    return null
+  }
+  return {
+    ...artifacts,
+    worn: { ...artifacts.worn, [slotId]: held },
+    held: artifacts.worn[slotId] ?? null
+  }
+}
+
+function putInBackpack(artifacts, frame) {
+  const backpack = [...artifacts.backpack]
+  backpack.splice(frame, 0, artifacts.held)
+  return { ...artifacts, backpack, held: null }
+}
+
+export function putHeldArtifact(artifacts, place, definitions) {
+  if (!artifacts.held) {
+    return null
+  }
+  return place.slot
+    ? putOnSlot(artifacts, place.slot, definitions)
+    : putInBackpack(artifacts, place.backpack)
+}
+
+export function putBackHeldArtifact(artifacts, definitions) {
+  if (!artifacts.held) {
+    return null
+  }
+  return putOnArtifact({ ...artifacts, held: null }, artifacts.held, definitions)
+}
+
+export const BACKPACK_FRAMES = 5
+
+export function scrollBackpack(artifacts, direction) {
+  const { backpack } = artifacts
+  if (backpack.length <= BACKPACK_FRAMES) {
+    return null
+  }
+  return {
+    ...artifacts,
+    backpack:
+      direction === 'left'
+        ? [backpack.at(-1), ...backpack.slice(0, -1)]
+        : [...backpack.slice(1), backpack[0]]
+  }
+}
