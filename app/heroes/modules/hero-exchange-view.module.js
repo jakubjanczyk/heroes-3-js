@@ -1,3 +1,4 @@
+import { combinationQuestionAt } from '../../../game/heroes/combination-artifacts.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
@@ -5,6 +6,7 @@ import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
+  APP_COMMAND_HERO_ARTIFACT_COMBINATION_REQUESTED,
   APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED,
   APP_COMMAND_HEROES_ARMY_SEND_REQUESTED,
   APP_COMMAND_HEROES_ARTIFACT_PUT_BACK_REQUESTED,
@@ -186,8 +188,22 @@ export const registerHeroExchangeViewModule = defineModule(
       )
     }
 
+    // Right-clicking an artifact that can be assembled or taken apart asks instead.
+    function askAboutCombination(source) {
+      const hero = heroOn(sideOf(source))
+      const place = placeOfArtifactFrame(source)
+      if (!combinationQuestionAt(hero?.artifacts, place, definitions)) {
+        return false
+      }
+      emit(APP_COMMAND_HERO_ARTIFACT_COMBINATION_REQUESTED, { heroId: hero.id, place })
+      return true
+    }
+
     function openPopup(source) {
       closePopup()
+      if (askAboutCombination(source)) {
+        return
+      }
       const artifact = definitions?.artifacts?.[source.dataset.artifact]
       popup = renderDescriptionPopup(document, {
         title: artifact.name,
@@ -485,6 +501,7 @@ export const registerHeroExchangeViewModule = defineModule(
       APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
     ],
     produces: [
+      APP_COMMAND_HERO_ARTIFACT_COMBINATION_REQUESTED,
       APP_COMMAND_HEROES_STACK_MOVE_REQUESTED,
       APP_COMMAND_HEROES_STACK_SPLIT_REQUESTED,
       APP_COMMAND_HEROES_STACK_SEND_REQUESTED,

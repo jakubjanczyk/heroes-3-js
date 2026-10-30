@@ -1,6 +1,7 @@
-import { fitsSlot } from '../../../game/heroes/artifacts.js'
+import { canPutOn, lockedSlots } from '../../../game/heroes/artifacts.js'
 
 const EMPTY_ARTIFACT_FRAME_TEXT = 'Empty'
+const LOCK = 'Locked'
 
 export function renderArtifactPicture(document, artifact, className, label = artifact.name) {
   const picture = document.createElement('span')
@@ -8,6 +9,9 @@ export function renderArtifactPicture(document, artifact, className, label = art
   picture.setAttribute('role', 'img')
   picture.setAttribute('aria-label', label)
   picture.textContent = artifact.name
+  if (artifact.isLock) {
+    picture.dataset.lock = 'true'
+  }
   return picture
 }
 
@@ -29,6 +33,12 @@ function showArtifactIn(frame, artifact, renderPicture) {
   }
 }
 
+function showLockIn(frame, combination, renderPicture) {
+  frame.replaceChildren(renderPicture({ name: LOCK, isLock: true }))
+  frame.dataset.status = `Locked by ${combination?.name ?? ''}`.trim()
+  delete frame.dataset.artifact
+}
+
 // The held artifact may belong to another hero on the same screen.
 export function showArtifactFrames({
   slotFrames,
@@ -39,13 +49,18 @@ export function showArtifactFrames({
   renderPicture
 }) {
   const { worn = {}, backpack = [] } = artifacts ?? {}
+  const locked = lockedSlots(artifacts)
   const definitionOf = (artifactId) =>
     definitions?.artifacts?.[artifactId] && { ...definitions.artifacts[artifactId], id: artifactId }
   for (const frame of slotFrames) {
     const slot = frame.dataset.artifactSlot
-    showArtifactIn(frame, definitionOf(worn[slot]), renderPicture)
+    if (locked[slot]) {
+      showLockIn(frame, definitionOf(locked[slot]), renderPicture)
+    } else {
+      showArtifactIn(frame, definitionOf(worn[slot]), renderPicture)
+    }
     frame.dataset.highlighted = String(
-      Boolean(held && !worn[slot] && fitsSlot(held, slot, definitions))
+      Boolean(held && artifacts && canPutOn(artifacts, held, slot, definitions))
     )
   }
   backpackFrames.forEach((frame, index) => {
