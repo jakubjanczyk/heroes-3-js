@@ -1,3 +1,4 @@
+import { artifactLandMovementPoints, startingArtifacts } from './artifacts.js'
 import { artifactBehavior } from './entity-behaviors/artifact.js'
 import { bonusObjectBehavior } from './entity-behaviors/bonus-object.js'
 import { dwellingBehavior } from './entity-behaviors/dwelling.js'
@@ -38,6 +39,8 @@ export const heroesContent = Object.freeze({
     treasureChestBehavior
   ]),
   movementRules: heroesMovementRules,
+  startingMovementPointsBonus: ({ hero, definitions }) =>
+    artifactLandMovementPoints(startingArtifacts(hero.artifacts, definitions), definitions),
   primarySkills: PRIMARY_SKILLS,
   roadTypes: heroesRoadTypes,
   stateSlices: Object.freeze([

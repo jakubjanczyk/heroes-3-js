@@ -1,5 +1,6 @@
 import { toMovementPointsOrNull } from '../domain/value-objects/movement-points.js'
 import { activePlayer, heroIdsOf, heroMovementPoints, turnNumber } from '../state/queries.js'
+import { artifactLandMovementPoints } from './artifacts.js'
 import { calendarDateOfTurn } from './calendar.js'
 
 export function decideSpendMovementPoints(state, { heroId, amount }) {
@@ -17,15 +18,26 @@ function weekMovementPointsOn(state, heroId, nextTurnNumber) {
   return isNewWeek ? 0 : (state.heroDetails?.[heroId]?.weekBonus?.movementPoints ?? 0)
 }
 
+function bonusMovementPointsOn(state, heroId, nextTurnNumber, definitions) {
+  return (
+    weekMovementPointsOn(state, heroId, nextTurnNumber) +
+    artifactLandMovementPoints(state.heroDetails?.[heroId]?.artifacts, definitions)
+  )
+}
+
 // The new day, and every hero of the player whose turn ends back to full movement points, more
-// for the rest of the week after the Stables.
-export function decideEndTurn(state) {
+// for the rest of the week after the Stables and for the artifacts worn as the day starts.
+export function decideEndTurn(state, definitions) {
   const nextTurnNumber = turnNumber(state) + 1
   return {
     turnNumber: nextTurnNumber,
     movementPoints: heroIdsOf(state, activePlayer(state)).map((heroId) => {
       const { max } = heroMovementPoints(state, heroId)
-      return { heroId, value: max + weekMovementPointsOn(state, heroId, nextTurnNumber), max }
+      return {
+        heroId,
+        value: max + bonusMovementPointsOn(state, heroId, nextTurnNumber, definitions),
+        max
+      }
     })
   }
 }

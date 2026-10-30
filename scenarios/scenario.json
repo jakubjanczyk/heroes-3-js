@@ -644,6 +644,33 @@
       }
     },
     {
+      "id": "artifact-6",
+      "kind": "ARTIFACT",
+      "type": "STILL_EYE_OF_THE_DRAGON",
+      "tile": {
+        "x": 3,
+        "y": 2
+      }
+    },
+    {
+      "id": "artifact-7",
+      "kind": "ARTIFACT",
+      "type": "BOOTS_OF_SPEED",
+      "tile": {
+        "x": 2,
+        "y": 4
+      }
+    },
+    {
+      "id": "artifact-8",
+      "kind": "ARTIFACT",
+      "type": "SPIRIT_OF_OPPRESSION",
+      "tile": {
+        "x": 5,
+        "y": 4
+      }
+    },
+    {
       "id": "resource-1",
       "kind": "RESOURCE",
       "type": "GOLD_PILE",

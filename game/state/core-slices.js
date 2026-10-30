@@ -60,12 +60,17 @@ const playersSlice = {
   }
 }
 
+// What a hero starts the game with above the maximum, as the content decides (worn artifacts).
+function startingMovementPointsBonus(hero, { config, definitions }) {
+  return config?.content?.startingMovementPointsBonus?.({ hero, definitions }) ?? 0
+}
+
 const heroesSlice = {
   key: 'heroes',
-  initial: ({ scenario, config }) => {
-    const max = maxMovementPointsOf(config)
+  initial: (world) => {
+    const max = maxMovementPointsOf(world.config)
     return Object.fromEntries(
-      entitiesOf(scenario)
+      entitiesOf(world.scenario)
         .filter(isHero)
         .map((hero) => [
           hero.id,
@@ -73,7 +78,7 @@ const heroesSlice = {
             owner: hero.owner ?? DEFAULT_PLAYER,
             tile: hero.tile,
             removed: false,
-            movementPoints: { value: max, max }
+            movementPoints: { value: max + startingMovementPointsBonus(hero, world), max }
           }
         ])
     )

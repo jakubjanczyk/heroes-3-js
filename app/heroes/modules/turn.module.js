@@ -20,6 +20,7 @@ export const registerTurnModule = defineModule(
     const shouldApplyPostMoveGrace = Number(config?.movementStepDelayMs ?? 220) > 0
 
     let isMoving = false
+    let definitions = {}
     let moveStartedAt = 0
     let suppressEndTurnUntil = 0
 
@@ -27,9 +28,10 @@ export const registerTurnModule = defineModule(
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
-          handler: () => {
+          handler: (event) => {
             isMoving = false
             suppressEndTurnUntil = 0
+            definitions = event.detail?.definitions ?? {}
           }
         },
         {
@@ -69,7 +71,7 @@ export const registerTurnModule = defineModule(
               return
             }
 
-            const outcome = decideEndTurn(state.get())
+            const outcome = decideEndTurn(state.get(), definitions)
             emitAll([
               { type: APP_FACT_TURN_ENDED, detail: { turnNumber: outcome.turnNumber } },
               ...outcome.movementPoints.map((detail) => ({
