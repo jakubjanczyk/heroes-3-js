@@ -1,6 +1,19 @@
 import { clearLayerContainer, getLayerElementFactory, setStyleVar } from './dom-layer-utils.js'
 import { getMapCenteredOrigin, getTileCenter } from './layout.js'
 
+// Parts sit at tile offsets from the entity's tile, for a picture drawn tile by tile.
+function appendParts(entityEl, entity, parts, makeElement) {
+  for (const offset of parts) {
+    const partEl = makeElement('div')
+    partEl.className = 'entity-part'
+    partEl.dataset.tileX = String(entity.tile.x + offset.x)
+    partEl.dataset.tileY = String(entity.tile.y + offset.y)
+    setStyleVar(partEl, '--part-x', String(offset.x))
+    setStyleVar(partEl, '--part-y', String(offset.y))
+    entityEl.appendChild(partEl)
+  }
+}
+
 function createEntityElement(entityEl, entity, entityStyle, center) {
   entityEl.className = entityStyle.className
   entityEl.dataset.entityId = entity.id
@@ -45,7 +58,9 @@ export function renderEntityLayer({ container, map, entities, createElement, get
     const entityStyle = getEntityStyle({ entity, map })
     if (entityStyle) {
       const center = getTileCenter({ map, tile: entity.tile, origin })
-      container.appendChild(createEntityElement(makeElement('div'), entity, entityStyle, center))
+      const entityEl = createEntityElement(makeElement('div'), entity, entityStyle, center)
+      appendParts(entityEl, entity, entityStyle.parts ?? [], makeElement)
+      container.appendChild(entityEl)
     }
   }
 }

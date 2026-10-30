@@ -43,6 +43,47 @@
     min-block-size: 0;
   }
 
+  /* Tiles an obstacle blocks: a darker shade of their terrain. */
+  & .minimap-tile--blocked.terrain-tile--grass {
+    background: oklch(0.34 0.12 140);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--rock {
+    background: oklch(0.2 0.012 290);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--dirt {
+    background: oklch(0.31 0.07 65);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--sand {
+    background: oklch(0.51 0.09 90);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--snow {
+    background: oklch(0.6 0.015 240);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--swamp {
+    background: oklch(0.27 0.06 160);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--rough {
+    background: oklch(0.38 0.05 75);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--subterranean {
+    background: oklch(0.25 0.04 50);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--lava {
+    background: oklch(0.27 0.1 30);
+  }
+
+  & .minimap-tile--blocked.terrain-tile--water {
+    background: oklch(0.29 0.11 245);
+  }
+
   & .minimap-tile--unexplored {
     background: black;
   }
