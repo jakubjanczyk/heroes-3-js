@@ -149,7 +149,7 @@ What a visit tells the player. Small pickups go to the info box (2.4b); a dialog
 - [x] Mine capture: no dialog; the info box shows the mine's name and the resource's picture with its daily amount for 3 seconds (2.4b); see `docs/notes/2026-10-25-info-box-mine-capture.md`
 - [ ] Monster defeat: no message of its own; the battle results window says it (5.9). A monster guarding a treasure says what the hero found after the battle (`core.advevent.183`, with monster loot, 5.9)
 - [x] Artifact pickup: no message, the artifact just goes to the hero (7.8.1)
-- [ ] A message when the backpack is full (7.8.5)
+- [x] A message when the backpack is full: "You cannot pick up this artifact, you already have a full load!" (7.8.5)
 - [ ] Dwelling visit: asks whether to recruit, then opens the recruit window (6.3.3) (with map dwellings, 7.4)
 - [ ] (Not in H3, optional extra) Floating number over the map on a pickup
 
@@ -355,6 +355,7 @@ See `docs/notes/2026-10-26-defeated-hero.md`.
 - [ ] A beaten hero's artifacts go to the winning hero (with artifacts, 7.8, and enemy heroes, 8.1)
 - [ ] A hero who retreats is in the player's tavern straight away, with their level, skills, spells and artifacts, but only one creature of their default stack; no experience from the battle. Retreating on day 7 after the turn has passed puts them in one of the tavern's places instead of a new hero
 - [ ] A hero who surrenders is in the player's tavern straight away with everything, the army left to them included (5.7)
+- [ ] The tavern's "… with N artifacts" counts them (`core.genrltxt.215`), once a hero can come back with artifacts
 - [ ] A hero hired again on the day they were beaten, retreated or surrendered keeps the movement points they had left
 - [ ] Losing the last hero: the defeat case of victory conditions (8.5)
 
@@ -834,7 +835,7 @@ Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-bo
 ### 7.7 Permanent Bonus Objects (One-Time)
 Once per hero, a bonus that stays. Built in five parts; see `docs/notes/2026-10-27-permanent-bonus-objects.md`.
 - [x] **Treasure Chest**: choose its gold or experience (1000 gold or 500 XP, 1500 or 1000, 2000 or 1500); the chest disappears
-  - [ ] Random tier when the scenario sets none (H3: 32% / 32% / 31%), and the 5% artifact chest (needs artifacts, 7.8)
+  - [x] Random tier when the scenario sets none (32% / 32% / 31%), and the 5% artifact chest (7.8.5)
 
 #### 7.7.1 Once per hero, free
 - [x] **Learning Stone**: +1000 experience
@@ -898,10 +899,12 @@ See `docs/notes/2026-10-30-guarded-artifacts.md`.
 - [x] Winning picks the artifact up; guards already beaten stay beaten after a retreat or defeat, and after a reload
 - [ ] A map maker's own guard text, and guards that attack without asking when there is none (9.1)
 
-#### 7.8.5 Artifacts from elsewhere and a full backpack
-- [ ] The Treasure Chest's 5% artifact: a random Treasure-class artifact into the backpack, no choice; a full backpack gets the gold-or-experience chest instead (7.7)
-- [ ] The backpack holds 64; with it full nothing more can be picked up (`core.advevent.2`, text not found yet: check in the game)
-- [ ] The tavern's "… with N artifacts" counts them (4.5.4)
+#### 7.8.5 Artifacts from chests and a full backpack
+See `docs/notes/2026-10-30-chest-artifacts-and-a-full-backpack.md`.
+- [x] The Treasure Chest's 5% artifact: a random Treasure-class artifact, no choice, put on as a picked-up one is; a full backpack gets one of the three gold-or-experience chests instead (7.7)
+- [x] The backpack holds 64; with it full nothing more can be picked up, even with its slot free (`core.advevent.2`); guards beaten with a full backpack leave the artifact on the map
+- [ ] (Not in H3, optional extra) A window showing the whole backpack, opened from the hero screen, as some remakes have; the game itself shows only five at a time
+- The tavern's "… with N artifacts" moved to 4.5.5: no hero in the tavern has artifacts yet
 
 #### 7.8.6 Between heroes
 - [ ] The exchange screen's paper dolls and backpacks (4.5.3): moving artifacts from one hero to the other, and the swap buttons

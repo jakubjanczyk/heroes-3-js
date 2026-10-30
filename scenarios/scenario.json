@@ -589,6 +589,16 @@
       }
     },
     {
+      "id": "chest-4",
+      "kind": "TREASURE_CHEST",
+      "type": "TREASURE_CHEST",
+      "tier": "artifact",
+      "tile": {
+        "x": 4,
+        "y": 2
+      }
+    },
+    {
       "id": "chest-3",
       "kind": "TREASURE_CHEST",
       "type": "TREASURE_CHEST",

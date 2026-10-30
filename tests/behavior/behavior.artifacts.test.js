@@ -13,9 +13,11 @@ import {
   readInfoPopupLines
 } from './adventure-map.utils.js'
 import {
+  closeInteractionModal,
   expectInteractionModalClosed,
   expectStatusBarText,
   getHeroInfoBox,
+  readMessage,
   readPrimarySkills,
   readSelectedHeroInHeroList
 } from './adventure-panels.utils.js'
@@ -413,6 +415,50 @@ describe('artifacts behavior', () => {
       await pointAtBattleHexSide(user, 6, 11, 'left')
 
       expect(getBattleStatusBarText()).toBe('Attack Pikemen (damage 24-48)')
+    })
+  })
+
+  describe('a full backpack', () => {
+    const FULL_LOAD = 'You cannot pick up this artifact, you already have a full load!'
+
+    // The first axe is worn and the rest go to the backpack.
+    const aHeroWithAxesInBackpack = (count) => aHero().withArtifacts(new Array(count + 1).fill(AXE))
+
+    test('given a hero with 64 artifacts in the backpack when they try to pick up an artifact then the message says they have a full load', async () => {
+      await setupApp(
+        anArtifactScenario({
+          hero: aHeroWithAxesInBackpack(64),
+          artifact: anArtifact().withType(RING)
+        })
+      )
+
+      await pickUpArtifactAt(1, 0)
+
+      expect(readMessage()).toBe(FULL_LOAD)
+    })
+
+    test("given a hero with a full backpack and a free slot for the artifact when they try to pick it up then it stays on the map and they don't wear it", async () => {
+      const { user } = await setupApp(
+        anArtifactScenario({
+          hero: aHeroWithAxesInBackpack(64),
+          artifact: anArtifact().withType(RING)
+        })
+      )
+
+      await pickUpArtifactAt(1, 0)
+      await closeInteractionModal(user)
+
+      expect(readArtifactName()).toBe('Ring')
+      expect((await readArtifactsOnHeroScreen(user)).worn).toEqual({ Weapon: "Centaur's Axe" })
+    })
+
+    test('given a hero with 63 artifacts in the backpack when they pick up one that goes in the backpack then it leaves the map without a message', async () => {
+      await setupApp(anArtifactScenario({ hero: aHeroWithAxesInBackpack(63) }))
+
+      await pickUpArtifactAt(1, 0)
+
+      expect(getArtifactEntity()).toBeNull()
+      expectInteractionModalClosed()
     })
   })
 

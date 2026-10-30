@@ -6,6 +6,7 @@ import {
   guardsOfDwelling,
   weeklyGrowthOfDwelling
 } from '../map-dwellings.js'
+import { scenarioChestContents } from '../treasure-chest.js'
 import {
   isVisitableObject,
   rollsPer,
@@ -223,4 +224,23 @@ export function hasBeenInside(state, entityId, player) {
 
 export function monsterCount(state, entityId) {
   return state.monsterCounts[entityId] ?? null
+}
+
+// What each treasure chest holds: its tier, or for an artifact chest the artifact and the tier
+// it gives instead to a hero with a full backpack.
+export const treasureChestsSlice = {
+  key: 'treasureChests',
+  initial: ({ scenario }) =>
+    Object.fromEntries(
+      (scenario?.entities ?? [])
+        .filter((entity) => isEntityKind(entity, 'TREASURE_CHEST'))
+        .map((chest) => [chest.id, scenarioChestContents(chest)])
+    ),
+  on: {
+    'fact.treasureChests.rolled': (chests, { contents }) => ({ ...chests, ...contents })
+  }
+}
+
+export function treasureChestContents(state, chestId) {
+  return state.treasureChests?.[chestId] ?? null
 }

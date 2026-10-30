@@ -18,6 +18,11 @@ export const ARTIFACT_SLOTS = Object.freeze([
 
 export const BATTLE_DEFENDER_ARTIFACT_GUARDS = 'ARTIFACT_GUARDS'
 
+export const BACKPACK_CAPACITY = 64
+
+export const hasFullBackpack = (artifacts) =>
+  (artifacts?.backpack?.length ?? 0) >= BACKPACK_CAPACITY
+
 export const NO_ARTIFACTS = Object.freeze({ worn: Object.freeze({}), backpack: Object.freeze([]) })
 
 export function putOnArtifact(artifacts, artifactId, definitions) {

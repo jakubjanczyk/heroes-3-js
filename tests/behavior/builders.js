@@ -104,7 +104,7 @@ export const aBonusObject = () =>
     placeable
   )
 
-// Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience.
+// Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience; or 'artifact'.
 export const aTreasureChest = () =>
   builder(
     {
@@ -114,7 +114,13 @@ export const aTreasureChest = () =>
       tier: 2,
       tile: { x: 1, y: 0 }
     },
-    placeable
+    (chest) => ({
+      ...placeable(chest),
+      // The game rolls what the chest holds.
+      withRandomContents() {
+        delete chest.tier
+      }
+    })
   )
 
 // The artifact's `type` names its entry in the scenario's `artifacts` definitions.
@@ -122,13 +128,17 @@ export const anArtifact = () =>
   builder({ id: 'artifact-1', kind: 'ARTIFACT', type: 'ARTIFACT', tile: { x: 1, y: 0 } }, placeable)
 
 // slot: HELMET, CAPE, NECKLACE, WEAPON, SHIELD, TORSO, RING, FEET or MISC.
+// class: TREASURE, MINOR, MAJOR or RELIC.
 export const anArtifactDefinition = () =>
-  builder({ name: 'Artifact', slot: 'WEAPON', primarySkills: {} }, (artifact) => ({
-    // Two worn copies both count, as with Quiet Eye of the Dragon.
-    stacking() {
-      artifact.stacks = true
-    }
-  }))
+  builder(
+    { name: 'Artifact', slot: 'WEAPON', class: 'TREASURE', primarySkills: {} },
+    (artifact) => ({
+      // Two worn copies both count, as with Quiet Eye of the Dragon.
+      stacking() {
+        artifact.stacks = true
+      }
+    })
+  )
 
 export const aScenario = () =>
   builder(
