@@ -91,6 +91,12 @@ export const heroDetailsSlice = {
       updateHero((hero, { artifact }) => ({
         artifacts: putOnArtifact(hero.artifacts, artifact, definitions)
       }))(heroes, detail),
+    'fact.treasureChest.opened': (heroes, detail, { definitions }) =>
+      detail.artifact
+        ? updateHero((hero, { artifact }) => ({
+            artifacts: putOnArtifact(hero.artifacts, artifact, definitions)
+          }))(heroes, detail)
+        : heroes,
     'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({
       ...heroes,
       [heroId]: detailsOf({ name, heroClass, army }, definitions)

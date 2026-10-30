@@ -1,4 +1,4 @@
-import { BATTLE_DEFENDER_ARTIFACT_GUARDS } from '../../../game/heroes/artifacts.js'
+import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../../game/heroes/artifacts.js'
 import {
   attackStack,
   createBattle,
@@ -226,6 +226,11 @@ export const registerBattleModule = defineModule(
           entityType,
           owner: heroOwner(state.get(), heroId)
         })
+      } else if (
+        isArtifactGuards(fought) &&
+        hasFullBackpack(heroById(state.get(), heroId)?.artifacts)
+      ) {
+        emit(APP_FACT_ARTIFACT_GUARDS_CHANGED, { entityId, stacks: [] })
       } else if (isArtifactGuards(fought)) {
         emit(APP_FACT_ARTIFACT_PICKED_UP, {
           heroId,
