@@ -893,8 +893,10 @@ See `docs/notes/2026-10-30-morale-luck-and-movement-artifacts.md`.
 - [ ] Badge of Courage's immunity to mind spells (5.8)
 
 #### 7.8.4 Guarded artifacts
-- [ ] Guards set by the scenario; entering always asks whether to fight them (`core.genrltxt.420`, text not found yet: check in the game)
-- [ ] Winning picks the artifact up; guards already beaten stay beaten after a retreat or defeat
+See `docs/notes/2026-10-30-guarded-artifacts.md`.
+- [x] Guards set by the scenario, up to seven stacks; entering always asks whether to fight them (`core.genrltxt.420`, the guards left unnamed)
+- [x] Winning picks the artifact up; guards already beaten stay beaten after a retreat or defeat, and after a reload
+- [ ] A map maker's own guard text, and guards that attack without asking when there is none (9.1)
 
 #### 7.8.5 Artifacts from elsewhere and a full backpack
 - [ ] The Treasure Chest's 5% artifact: a random Treasure-class artifact into the backpack, no choice; a full backpack gets the gold-or-experience chest instead (7.7)

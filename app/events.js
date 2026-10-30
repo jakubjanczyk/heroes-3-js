@@ -82,6 +82,7 @@ export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
 export const APP_FACT_ARTIFACT_PICKED_UP = 'fact.artifact.pickedUp'
+export const APP_FACT_ARTIFACT_GUARDS_CHANGED = 'fact.artifact.guards.changed'
 export const APP_FACT_TOWN_VISITED = 'fact.town.visited'
 export const APP_FACT_TOWN_OPENED = 'fact.town.opened'
 export const APP_FACT_TOWN_LEFT = 'fact.town.left'
@@ -177,6 +178,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_ARTIFACT_PICKED_UP,
+  APP_FACT_ARTIFACT_GUARDS_CHANGED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_LEFT,

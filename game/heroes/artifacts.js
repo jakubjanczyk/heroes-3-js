@@ -16,6 +16,8 @@ export const ARTIFACT_SLOTS = Object.freeze([
   { id: 'MISC_5', kind: 'MISC' }
 ])
 
+export const BATTLE_DEFENDER_ARTIFACT_GUARDS = 'ARTIFACT_GUARDS'
+
 export const NO_ARTIFACTS = Object.freeze({ worn: Object.freeze({}), backpack: Object.freeze([]) })
 
 export function putOnArtifact(artifacts, artifactId, definitions) {
