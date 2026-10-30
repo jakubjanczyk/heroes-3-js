@@ -27,11 +27,14 @@ export function buildWorld(
     entities: scenario.entities,
     map,
     getFootprintOffsets: entityBehaviors.getFootprintOffsets,
+    occupiesOwnTile: entityBehaviors.occupiesOwnTile,
     definitions
   })
   assertFootprintsOnPassableTerrain({ footprintBlockers, entities: scenario.entities, map })
   const occupancy = createOccupancyIndex([
-    ...scenario.entities.filter((entity) => !isHero(entity)),
+    ...scenario.entities.filter(
+      (entity) => !isHero(entity) && (entityBehaviors.occupiesOwnTile?.(entity) ?? true)
+    ),
     ...footprintBlockers
   ])
 

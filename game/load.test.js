@@ -64,7 +64,8 @@ describe('bootstrap', () => {
       tavern: { cost: { GOLD_PILE: 2500 } },
       heroes: { ORRIN: { name: 'Orrin', heroClass: 'KNIGHT' } },
       secondarySkills: { LEADERSHIP: { name: 'Leadership' } },
-      artifacts: { CENTAURS_AXE: { name: "Centaur's Axe", slot: 'WEAPON' } }
+      artifacts: { CENTAURS_AXE: { name: "Centaur's Axe", slot: 'WEAPON' } },
+      obstacles: { MOUNTAIN_1: { name: 'Mountain', look: 'mountain', blocks: [{ x: 0, y: 0 }] } }
     }
 
     const fetch = createFakeFetch({
@@ -82,7 +83,8 @@ describe('bootstrap', () => {
       './game/data/tavern.json': definitions.tavern,
       './game/data/heroes.json': definitions.heroes,
       './game/data/secondary-skills.json': definitions.secondarySkills,
-      './game/data/artifacts.json': definitions.artifacts
+      './game/data/artifacts.json': definitions.artifacts,
+      './game/data/obstacles.json': definitions.obstacles
     })
 
     const loaded = await loadGame({ fetch })

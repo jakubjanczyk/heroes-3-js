@@ -4,8 +4,16 @@ export const FOOTPRINT_BLOCKER_KIND = 'FOOTPRINT_BLOCKER'
 
 // One blocker per footprint tile, skipping tiles off the map or already taken by an entity
 // or an earlier footprint.
-export function createFootprintBlockers({ entities, map, getFootprintOffsets, definitions }) {
-  const occupied = new Set((entities ?? []).map((entity) => tileKey(entity.tile)))
+export function createFootprintBlockers({
+  entities,
+  map,
+  getFootprintOffsets,
+  occupiesOwnTile = () => true,
+  definitions
+}) {
+  const occupied = new Set(
+    (entities ?? []).filter(occupiesOwnTile).map((entity) => tileKey(entity.tile))
+  )
   const blockers = []
 
   for (const entity of entities ?? []) {

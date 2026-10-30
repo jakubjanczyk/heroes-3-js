@@ -104,6 +104,11 @@ export const aBonusObject = () =>
     placeable
   )
 
+// The tile is the bottom-right corner of the obstacle's picture; its type is a key of the
+// scenario's own `obstacles` definitions.
+export const anObstacle = () =>
+  builder({ id: 'obstacle-1', kind: 'OBSTACLE', type: 'MOUNTAIN', tile: { x: 1, y: 0 } }, placeable)
+
 // Tier 1, 2 or 3: 1000, 1500 or 2000 gold, or 500, 1000 or 1500 experience; or 'artifact'.
 export const aTreasureChest = () =>
   builder(
