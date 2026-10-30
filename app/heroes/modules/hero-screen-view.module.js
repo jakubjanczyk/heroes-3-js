@@ -1,4 +1,3 @@
-import { fitsSlot } from '../../../game/heroes/artifacts.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
@@ -23,6 +22,13 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
+import {
+  createHeldArtifactPicture,
+  placeOfArtifactFrame,
+  renderArtifactPicture,
+  renderDescriptionPopup,
+  showArtifactFrames
+} from '../presentation/artifacts.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
 import { renderMoraleOrLuckPopup, showMoraleOrLuck } from '../presentation/morale-and-luck.js'
 import {
@@ -32,7 +38,7 @@ import {
 
 const DEFAULT_HERO_NAME = 'Hero'
 const SELECT_TEXT = { hero: 'Select %s' }
-const EMPTY_ARTIFACT_FRAME_TEXT = 'Empty'
+const ARTIFACT_PICTURE = 'hero-screen__artifact-picture'
 
 function statusSourceAt(target) {
   return target?.closest?.('[data-status]') ?? null
@@ -58,13 +64,6 @@ function artifactFrameAt(target) {
   )
 }
 
-function placeOfArtifactFrame(frame) {
-  if (frame.dataset.artifactSlot) {
-    return { slot: frame.dataset.artifactSlot }
-  }
-  return { backpack: [...frame.parentElement.children].indexOf(frame) }
-}
-
 function artifactAt(target) {
   return target?.closest?.('[data-artifact]') ?? null
 }
@@ -84,29 +83,6 @@ function renderSecondarySkill(slot, document, skill) {
   slot.dataset.status = secondarySkillStatusText(skill)
 }
 
-function renderArtifactPicture(document, artifact, label = artifact.name) {
-  const picture = document.createElement('span')
-  picture.className = 'hero-screen__artifact-picture'
-  picture.setAttribute('role', 'img')
-  picture.setAttribute('aria-label', label)
-  picture.textContent = artifact.name
-  return picture
-}
-
-function renderSkillPopup(document, { title, description }) {
-  const popup = document.createElement('div')
-  popup.className = 'info-popup info-popup--skill message-box'
-  popup.setAttribute('role', 'tooltip')
-  const heading = document.createElement('h2')
-  heading.className = 'info-popup__title'
-  heading.textContent = title
-  const text = document.createElement('p')
-  text.className = 'info-popup__line'
-  text.textContent = description
-  popup.append(heading, text)
-  return popup
-}
-
 export const registerHeroScreenViewModule = defineModule(
   ({ emit, env, state }) => {
     const document = env.document
@@ -114,8 +90,10 @@ export const registerHeroScreenViewModule = defineModule(
     let heroScreen = null
     let rearranging = null
     let popup = null
-    let heldPicture = null
-    let pointer = { x: 0, y: 0 }
+    const heldPicture = createHeldArtifactPicture({
+      document,
+      className: `${ARTIFACT_PICTURE} hero-screen__held-artifact`
+    })
     let definitions = {}
     let isMapCovered = false
     // Whether this screen covered the map, so closing it uncovers only what it covered: over the
@@ -155,50 +133,20 @@ export const registerHeroScreenViewModule = defineModule(
       }
     }
 
-    function showArtifactIn(frame, artifactId) {
-      const artifact = definitions?.artifacts?.[artifactId]
-      frame.replaceChildren(...(artifact ? [renderArtifactPicture(document, artifact)] : []))
-      frame.dataset.status = artifact ? `View ${artifact.name} Info` : EMPTY_ARTIFACT_FRAME_TEXT
-      if (artifact) {
-        frame.dataset.artifact = artifactId
-      } else {
-        delete frame.dataset.artifact
-      }
-    }
-
     function showArtifacts(hero) {
-      const { worn = {}, backpack = [], held } = hero?.artifacts ?? {}
-      for (const frame of heroScreen.querySelectorAll('[data-artifact-slot]')) {
-        const slot = frame.dataset.artifactSlot
-        showArtifactIn(frame, worn[slot])
-        frame.dataset.highlighted = String(
-          Boolean(held && !worn[slot] && fitsSlot(held, slot, definitions))
-        )
-      }
-      heroScreen.querySelectorAll('.hero-screen__backpack-slots > li').forEach((frame, index) => {
-        showArtifactIn(frame, backpack[index])
+      const held = hero?.artifacts?.held
+      showArtifactFrames({
+        slotFrames: heroScreen.querySelectorAll('[data-artifact-slot]'),
+        backpackFrames: heroScreen.querySelectorAll('.hero-screen__backpack-slots > li'),
+        artifacts: hero?.artifacts,
+        held,
+        definitions,
+        renderPicture: (artifact) => renderArtifactPicture(document, artifact, ARTIFACT_PICTURE)
       })
-      showHeldArtifact(definitions?.artifacts?.[held])
-    }
-
-    function showHeldArtifact(artifact) {
-      heldPicture?.remove()
-      heldPicture = artifact
-        ? renderArtifactPicture(document, artifact, `Held: ${artifact.name}`)
-        : null
-      if (heldPicture) {
-        heldPicture.classList.add('hero-screen__held-artifact')
-        heroScreen.querySelector('.hero-screen__window').append(heldPicture)
-        moveHeldArtifact()
-      }
-    }
-
-    function moveHeldArtifact() {
-      if (heldPicture) {
-        const heroWindow = heldPicture.parentElement.getBoundingClientRect()
-        heldPicture.style.left = `${pointer.x - heroWindow.left}px`
-        heldPicture.style.top = `${pointer.y - heroWindow.top}px`
-      }
+      heldPicture.show(
+        heroScreen.querySelector('.hero-screen__window'),
+        definitions?.artifacts?.[held]
+      )
     }
 
     function clickArtifactFrame(frame) {
@@ -251,13 +199,13 @@ export const registerHeroScreenViewModule = defineModule(
       }
       const artifact = definitions?.artifacts?.[source.dataset.artifact]
       if (artifact) {
-        return renderSkillPopup(document, {
+        return renderDescriptionPopup(document, {
           title: artifact.name,
           description: artifact.description
         })
       }
       const skill = describedSkills(selectedHero())[Number(source.dataset.skillIndex)]
-      return renderSkillPopup(document, skill)
+      return renderDescriptionPopup(document, skill)
     }
 
     function openPopup(source) {
@@ -325,7 +273,7 @@ export const registerHeroScreenViewModule = defineModule(
       }
       heroScreen.remove()
       heroScreen = null
-      heldPicture = null
+      heldPicture.forget()
       rearranging = null
       if (coversMap) {
         coversMap = false
@@ -422,8 +370,7 @@ export const registerHeroScreenViewModule = defineModule(
           target: gameShell,
           type: 'pointermove',
           handler: (event) => {
-            pointer = { x: event.clientX, y: event.clientY }
-            moveHeldArtifact()
+            heldPicture.follow(event)
           }
         },
         {
@@ -482,7 +429,7 @@ export const registerHeroScreenViewModule = defineModule(
         closePopup()
         heroScreen?.remove()
         heroScreen = null
-        heldPicture = null
+        heldPicture.forget()
         rearranging = null
       }
     }
