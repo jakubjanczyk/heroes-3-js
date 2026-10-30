@@ -914,10 +914,13 @@ See `docs/notes/2026-10-30-artifacts-between-heroes.md`.
 - [ ] The modifier keys that move only worn artifacts or only the backpack
 
 #### 7.8.7 Combination artifacts
-- [ ] The 12 combinations: Admiral's Hat, Angelic Alliance, Armor of the Damned, Bow of the Sharpshooter, Cloak of the Undead King, Cornucopia, Elixir of Life, Power of the Dragon Father, Ring of the Magi, Statue of Legion, Titan's Thunder, Wizard's Well
-- [ ] With all the parts worn, right-clicking one offers to combine them (`core.genrltxt.732`); right-clicking the combination offers to take it apart (`core.genrltxt.733`); texts not found yet. Check in the game whether the offer also comes when the last part is put on
-- [ ] A combination holds all its parts' slots, takes one backpack slot, and gives its parts' bonuses plus its own
-- [ ] Only the combinations whose own bonus already exists by then; the rest come with their features below
+See `docs/notes/2026-10-30-combination-artifacts.md`.
+- [x] Angelic Alliance, Armor of the Damned, Power of the Dragon Father and Titan's Thunder, whose parts are all in the game
+- [x] With all the parts worn, putting the last one on or right-clicking one asks to combine them (`core.genrltxt.732`); right-clicking the combination, worn or in the backpack, asks to take it apart (`core.genrltxt.733`), the parts going back where they were worn
+- [x] A combination holds all its parts' slots, the others shown locked; it takes one backpack slot and gives its parts' bonuses plus its own
+- [x] The Dragon Father's +6 to all primary skills; the Angelic Alliance's good and neutral towns counting as one for the wearer's morale
+- [ ] Their spell effects (5.8): the Dragon Father's immunity, the Alliance's Prayer, the Armor of the Damned's curses, Titan's Thunder's bolt and spell book
+- [ ] The other eight combinations, with the artifacts they are made of: Admiral's Hat, Bow of the Sharpshooter, Cloak of the Undead King, Cornucopia, Elixir of Life, Ring of the Magi, Statue of Legion, Wizard's Well
 
 #### 7.8 later
 - [ ] Resource artifacts (3.2), battle artifacts such as Ring of Vitality and Ring of the Wayfarer (5.6), spell artifacts and immunities (4.8, 5.8), the Necromancy and boat artifacts

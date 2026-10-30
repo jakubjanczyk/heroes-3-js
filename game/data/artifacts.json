@@ -507,5 +507,66 @@
     "cost": 3000,
     "landMovementPoints": 300,
     "description": "Worn on the hands, these gloves increase your hero's movement rate over land."
+  },
+  "ANGELIC_ALLIANCE": {
+    "name": "Angelic Alliance",
+    "slot": "WEAPON",
+    "class": "RELIC",
+    "cost": 84000,
+    "parts": [
+      "HELM_OF_HEAVENLY_ENLIGHTENMENT",
+      "CELESTIAL_NECKLACE_OF_BLISS",
+      "ARMOR_OF_WONDER",
+      "SANDALS_OF_THE_SAINT",
+      "SWORD_OF_JUDGEMENT",
+      "LIONS_SHIELD_OF_COURAGE"
+    ],
+    "townsCountAsOne": ["CASTLE", "RAMPART", "TOWER", "FORTRESS", "STRONGHOLD"],
+    "description": "Allows Rampart, Tower, Fortress, Stronghold and Castle creatures to be mixed without a morale penalty, for the player.  Casts Expert Prayer at the start of combat."
+  },
+  "ARMOR_OF_THE_DAMNED": {
+    "name": "Armor of the Damned",
+    "slot": "TORSO",
+    "class": "RELIC",
+    "cost": 12000,
+    "parts": [
+      "SKULL_HELMET",
+      "RIB_CAGE",
+      "BLACKSHARD_OF_THE_DEAD_KNIGHT",
+      "SHIELD_OF_THE_YAWNING_DEAD"
+    ],
+    "description": "All opponents have these spells effective on them for fifty turns: Slow, Curse, Weakness, and Misfortune."
+  },
+  "POWER_OF_THE_DRAGON_FATHER": {
+    "name": "Power of the Dragon Father",
+    "slot": "TORSO",
+    "class": "RELIC",
+    "cost": 42000,
+    "parts": [
+      "CROWN_OF_DRAGONTOOTH",
+      "NECKLACE_OF_DRAGONTEETH",
+      "DRAGON_SCALE_ARMOR",
+      "DRAGON_WING_TABARD",
+      "DRAGONBONE_GREAVES",
+      "RED_DRAGON_FLAME_TONGUE",
+      "DRAGON_SCALE_SHIELD",
+      "QUIET_EYE_OF_THE_DRAGON",
+      "STILL_EYE_OF_THE_DRAGON"
+    ],
+    "primarySkills": {
+      "attack": 6,
+      "defense": 6,
+      "power": 6,
+      "knowledge": 6
+    },
+    "description": "+6 to all primary skills, all troops are immune to 1-4th level spells."
+  },
+  "TITANS_THUNDER": {
+    "name": "Titan's Thunder",
+    "slot": "WEAPON",
+    "class": "RELIC",
+    "cost": 40000,
+    "parts": ["THUNDER_HELMET", "TITANS_CUIRASS", "TITANS_GLADIUS", "SENTINELS_SHIELD"],
+    "description": "Hero gains the ability to cast Lightning Bolt for 600 points of damage, does not cost any spell points, adds a spell book into their inventory (permanently)."
   }
 }

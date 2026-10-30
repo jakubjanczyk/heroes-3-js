@@ -1,4 +1,4 @@
-import { artifactBonuses } from './artifacts.js'
+import { artifactBonuses, artifactTownsCountingAsOne } from './artifacts.js'
 import { describeSecondarySkill } from './secondary-skills.js'
 
 const MAX_MORALE = 3
@@ -70,9 +70,15 @@ function armyCreatures(hero, definitions) {
   }))
 }
 
-// Neutral creatures count as a town of their own.
-function townsModifier(creatures) {
-  const towns = new Set(creatures.map(({ creature, definition }) => definition.faction ?? creature))
+const TOWNS_COUNTED_AS_ONE = 'TOWNS_COUNTED_AS_ONE'
+
+// Neutral creatures count as a town of their own; an artifact can make several towns count as one.
+function townsModifier(creatures, townsCountingAsOne) {
+  const townOf = ({ creature, definition }) => {
+    const town = definition.faction ?? creature
+    return townsCountingAsOne.has(town) ? TOWNS_COUNTED_AS_ONE : town
+  }
+  const towns = new Set(creatures.map(townOf))
   if (towns.size === 0) {
     return []
   }
@@ -130,7 +136,7 @@ export function getHeroMorale({ entity, definitions }) {
     [
       ...skillModifier(entity, 'LEADERSHIP', definitions),
       ...artifactModifiers(entity, 'morale', definitions),
-      ...townsModifier(creatures),
+      ...townsModifier(creatures, artifactTownsCountingAsOne(entity?.artifacts, definitions)),
       ...undeadModifier(creatures),
       ...angelsModifier(creatures),
       ...objectBonusModifiers(entity, 'morale', definitions)

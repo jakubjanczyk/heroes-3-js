@@ -353,6 +353,12 @@
   text-align: center;
 }
 
+/* A slot taken by a combination worn in another. */
+.hero-screen__artifact-picture[data-lock="true"] {
+  opacity: 0.55;
+  font-style: italic;
+}
+
 .hero-screen__backpack-arrow {
   --w: 21;
   --h: 44;

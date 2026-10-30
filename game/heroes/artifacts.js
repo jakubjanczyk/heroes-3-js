@@ -25,12 +25,115 @@ export const hasFullBackpack = (artifacts) =>
 
 export const NO_ARTIFACTS = Object.freeze({ worn: Object.freeze({}), backpack: Object.freeze([]) })
 
+const definitionOf = (artifactId, definitions) => definitions?.artifacts?.[artifactId]
+
+const kindOf = (artifactId, definitions) => definitionOf(artifactId, definitions)?.slot
+
+export const kindOfSlot = (slotId) => ARTIFACT_SLOTS.find((slot) => slot.id === slotId)?.kind
+
+export const partsOf = (artifactId, definitions) =>
+  definitionOf(artifactId, definitions)?.parts ?? []
+
+const isCombination = (artifactId, definitions) => partsOf(artifactId, definitions).length > 0
+
+// Where each part of a worn combination was put on, by the slot the combination is worn in.
+const layoutsOf = (artifacts) => artifacts.combined ?? {}
+
+export const layoutOf = (artifacts, slotId) => layoutsOf(artifacts)[slotId] ?? null
+
+// The combination locking each slot its parts take besides its own.
+export function lockedSlots(artifacts) {
+  const locked = {}
+  for (const [slotId, layout] of Object.entries(layoutsOf(artifacts ?? {}))) {
+    for (const partSlotId of Object.keys(layout)) {
+      if (partSlotId !== slotId) {
+        locked[partSlotId] = artifacts.worn[slotId]
+      }
+    }
+  }
+  return locked
+}
+
+const isSlotFree = (artifacts, slotId) => !artifacts.worn[slotId] && !lockedSlots(artifacts)[slotId]
+
+// The combination's own slot goes to a part of its kind; the other parts need free slots.
+function layoutAt(artifacts, combinationId, slotId, definitions) {
+  const parts = [...partsOf(combinationId, definitions)]
+  const ownPart = parts.findIndex((part) => kindOf(part, definitions) === kindOfSlot(slotId))
+  if (ownPart < 0) {
+    return null
+  }
+  const layout = { [slotId]: parts.splice(ownPart, 1)[0] }
+  for (const part of parts) {
+    const slot = ARTIFACT_SLOTS.find(
+      ({ id, kind }) =>
+        kind === kindOf(part, definitions) && !layout[id] && isSlotFree(artifacts, id)
+    )
+    if (!slot) {
+      return null
+    }
+    layout[slot.id] = part
+  }
+  return layout
+}
+
+function wearAt(artifacts, artifactId, slotId, definitions) {
+  const worn = { ...artifacts.worn, [slotId]: artifactId }
+  if (!isCombination(artifactId, definitions)) {
+    return { ...artifacts, worn }
+  }
+  const layout = layoutAt(artifacts, artifactId, slotId, definitions)
+  return layout && { ...artifacts, worn, combined: { ...layoutsOf(artifacts), [slotId]: layout } }
+}
+
+function takeOff(artifacts, slotId) {
+  const { [slotId]: _taken, ...worn } = artifacts.worn
+  const { [slotId]: _layout, ...combined } = layoutsOf(artifacts)
+  return { ...artifacts, worn, combined }
+}
+
+export function fitsSlot(artifactId, slotId, definitions) {
+  const kind = kindOf(artifactId, definitions)
+  return Boolean(kind) && kindOfSlot(slotId) === kind
+}
+
+// An empty slot the artifact can be put on, its parts' slots free too for a combination.
+export function canPutOn(artifacts, artifactId, slotId, definitions) {
+  return (
+    fitsSlot(artifactId, slotId, definitions) &&
+    isSlotFree(artifacts, slotId) &&
+    Boolean(wearAt(artifacts, artifactId, slotId, definitions))
+  )
+}
+
+function wearInFirstFreeSlot(artifacts, artifactId, definitions) {
+  for (const { id } of ARTIFACT_SLOTS) {
+    if (canPutOn(artifacts, artifactId, id, definitions)) {
+      return wearAt(artifacts, artifactId, id, definitions)
+    }
+  }
+  return null
+}
+
+export const canWear = (artifacts, artifactId, definitions) =>
+  Boolean(wearInFirstFreeSlot(artifacts, artifactId, definitions))
+
 export function putOnArtifact(artifacts, artifactId, definitions) {
-  const kind = definitions?.artifacts?.[artifactId]?.slot
-  const freeSlot = ARTIFACT_SLOTS.find((slot) => slot.kind === kind && !artifacts.worn[slot.id])
-  return freeSlot
-    ? { ...artifacts, worn: { ...artifacts.worn, [freeSlot.id]: artifactId } }
-    : { ...artifacts, backpack: [...artifacts.backpack, artifactId] }
+  return (
+    wearInFirstFreeSlot(artifacts, artifactId, definitions) ?? {
+      ...artifacts,
+      backpack: [...artifacts.backpack, artifactId]
+    }
+  )
+}
+
+// Puts the artifact on that slot, swapping out what is worn there; null when it can't go there.
+export function swapIntoSlot(artifacts, artifactId, slotId, definitions) {
+  if (!fitsSlot(artifactId, slotId, definitions) || lockedSlots(artifacts)[slotId]) {
+    return null
+  }
+  const wearing = wearAt(takeOff(artifacts, slotId), artifactId, slotId, definitions)
+  return wearing && { artifacts: wearing, swappedOut: artifacts.worn[slotId] ?? null }
 }
 
 export function startingArtifacts(artifactIds = [], definitions) {
@@ -40,9 +143,13 @@ export function startingArtifacts(artifactIds = [], definitions) {
   )
 }
 
-// Two of the same artifact count once, unless it is one that adds up.
+// A combination counts with its parts. Two of the same artifact count once, unless it is one that
+// adds up.
 function countedArtifacts(artifacts, definitions) {
-  const worn = Object.values(artifacts?.worn ?? {})
+  const worn = Object.values(artifacts?.worn ?? {}).flatMap((artifactId) => [
+    artifactId,
+    ...partsOf(artifactId, definitions)
+  ])
   return worn.filter(
     (artifactId, index) =>
       definitions?.artifacts?.[artifactId]?.stacks || worn.indexOf(artifactId) === index
@@ -75,6 +182,12 @@ export function artifactBonusTotal(artifacts, key, definitions) {
   return artifactBonuses(artifacts, key, definitions).reduce((sum, { value }) => sum + value, 0)
 }
 
+export function artifactTownsCountingAsOne(artifacts, definitions) {
+  return new Set(
+    countedDefinitions(artifacts, definitions).flatMap((artifact) => artifact.townsCountAsOne ?? [])
+  )
+}
+
 export const artifactLandMovementPoints = (artifacts, definitions) =>
   artifactBonusTotal(artifacts, 'landMovementPoints', definitions)
 
@@ -85,11 +198,6 @@ export function artifactsCancelInBattle(artifacts, kind, definitions) {
   )
 }
 
-export function fitsSlot(artifactId, slotId, definitions) {
-  const kind = definitions?.artifacts?.[artifactId]?.slot
-  return ARTIFACT_SLOTS.some((slot) => slot.id === slotId && slot.kind === kind)
-}
-
 // A place is a worn slot, `{ slot: 'WEAPON' }`, or a backpack frame, `{ backpack: 0 }`.
 export function takeArtifact(artifacts, place) {
   if (artifacts.held) {
@@ -97,11 +205,7 @@ export function takeArtifact(artifacts, place) {
   }
   if (place.slot) {
     const held = artifacts.worn[place.slot]
-    if (!held) {
-      return null
-    }
-    const { [place.slot]: _taken, ...worn } = artifacts.worn
-    return { ...artifacts, worn, held }
+    return held ? { ...takeOff(artifacts, place.slot), held } : null
   }
   const held = artifacts.backpack[place.backpack]
   if (!held) {
@@ -115,15 +219,8 @@ export function takeArtifact(artifacts, place) {
 }
 
 function putOnSlot(artifacts, slotId, definitions) {
-  const { held } = artifacts
-  if (!fitsSlot(held, slotId, definitions)) {
-    return null
-  }
-  return {
-    ...artifacts,
-    worn: { ...artifacts.worn, [slotId]: held },
-    held: artifacts.worn[slotId] ?? null
-  }
+  const swapped = swapIntoSlot({ ...artifacts, held: null }, artifacts.held, slotId, definitions)
+  return swapped && { ...swapped.artifacts, held: swapped.swappedOut }
 }
 
 function putInBackpack(artifacts, frame) {

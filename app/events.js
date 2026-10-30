@@ -20,6 +20,9 @@ export const APP_COMMAND_HERO_ARTIFACT_TAKE_REQUESTED = 'command.hero.artifactTa
 export const APP_COMMAND_HERO_ARTIFACT_PUT_REQUESTED = 'command.hero.artifactPut.requested'
 export const APP_COMMAND_HERO_ARTIFACT_PUT_BACK_REQUESTED = 'command.hero.artifactPutBack.requested'
 export const APP_COMMAND_HERO_BACKPACK_SCROLL_REQUESTED = 'command.hero.backpackScroll.requested'
+// A right-click on an artifact that can be assembled into a combination, or taken apart.
+export const APP_COMMAND_HERO_ARTIFACT_COMBINATION_REQUESTED =
+  'command.hero.artifactCombination.requested'
 // Between two heroes on the exchange screen; each names the heroes as `heroIds: { left, right }`
 // and the armies as 'left' and 'right'.
 export const APP_COMMAND_HEROES_STACK_MOVE_REQUESTED = 'command.heroes.stackMove.requested'

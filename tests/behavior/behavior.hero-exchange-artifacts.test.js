@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
-import { readSelectedHeroInHeroList } from './adventure-panels.utils.js'
+import { readMessageDetails, readSelectedHeroInHeroList } from './adventure-panels.utils.js'
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, anArtifactDefinition, aScenario } from './builders.js'
 import {
@@ -38,6 +38,9 @@ const SWORD = 'SWORD'
 const SHIELD = 'SHIELD'
 const RING = 'RING'
 const CHARM = 'CHARM'
+const HELMET_PART = 'HELMET_PART'
+const BOOTS_PART = 'BOOTS_PART'
+const COMBINATION = 'COMBINATION'
 
 const weapon = (name, attack = 0) =>
   anArtifactDefinition().withName(name).withSlot('WEAPON').withPrimarySkills({ attack }).build()
@@ -53,6 +56,13 @@ const artifactDefinitions = {
   [SHIELD]: anArtifactDefinition().withName('Shield').withSlot('SHIELD').build(),
   [RING]: anArtifactDefinition().withName('Ring').withSlot('RING').build(),
   [CHARM]: anArtifactDefinition().withName('Charm').withSlot('MISC').build(),
+  [HELMET_PART]: anArtifactDefinition().withName('Thunder Helmet').withSlot('HELMET').build(),
+  [BOOTS_PART]: anArtifactDefinition().withName('Storm Boots').withSlot('FEET').build(),
+  [COMBINATION]: anArtifactDefinition()
+    .withName('Storm Crown')
+    .withSlot('HELMET')
+    .withParts([HELMET_PART, BOOTS_PART])
+    .build(),
   A: weapon('A'),
   B: weapon('B'),
   C: weapon('C'),
@@ -215,6 +225,58 @@ describe('hero exchange artifacts behavior', () => {
       await clickHeroExchangeArtifactSlot(user, RIGHT_HERO, 'Weapon')
 
       expect(readHeroExchangePrimarySkills()[0]).toBe('2 Attack 4')
+    })
+  })
+
+  describe('combination artifacts', () => {
+    test('given the right hero wears every part but one when the player moves the last one onto the right hero’s slot then the question to assemble is asked', async () => {
+      const { user } = await startOnHeroExchange(
+        aMeetingScenario({ left: [BOOTS_PART], right: [HELMET_PART] })
+      )
+      await clickHeroExchangeArtifactSlot(user, LEFT_HERO, 'Feet')
+
+      await clickHeroExchangeArtifactSlot(user, RIGHT_HERO, 'Feet')
+
+      expect(readMessageDetails()).toEqual([
+        'You possess all of the components needed to assemble the Storm Crown.  Do you wish to assemble this artifact?'
+      ])
+    })
+
+    test('given the left hero wears a combination when the player moves it to the right hero’s free slot then the right hero’s slots are locked and the left hero’s are free', async () => {
+      const { user } = await startOnHeroExchange(aMeetingScenario({ left: [COMBINATION] }))
+      await clickHeroExchangeArtifactSlot(user, LEFT_HERO, 'Helmet')
+
+      await clickHeroExchangeArtifactSlot(user, RIGHT_HERO, 'Helmet')
+
+      expect(readBothHeroes()).toEqual([
+        { worn: {}, backpack: [] },
+        { worn: { Helmet: 'Storm Crown', Feet: 'Locked' }, backpack: [] }
+      ])
+    })
+
+    test('given the right hero wears every part when the player right-clicks one of them then the question to assemble is asked', async () => {
+      const { user } = await startOnHeroExchange(
+        aMeetingScenario({ right: [HELMET_PART, BOOTS_PART] })
+      )
+
+      await holdRightButtonOnHeroExchangeArtifactSlot(user, RIGHT_HERO, 'Feet')
+
+      expect(readMessageDetails()).toEqual([
+        'You possess all of the components needed to assemble the Storm Crown.  Do you wish to assemble this artifact?'
+      ])
+    })
+
+    test('given the left hero wears a combination when the player moves all artifacts right and one of its slots is taken on the right hero then it goes to the right hero’s backpack', async () => {
+      const { user } = await startOnHeroExchange(
+        aMeetingScenario({ left: [COMBINATION], right: [BOOTS_PART] })
+      )
+
+      await clickHeroExchangeButton(user, `Move all artifacts to ${RIGHT_HERO}`)
+
+      expect(readBothHeroes()).toEqual([
+        { worn: {}, backpack: [] },
+        { worn: { Feet: 'Storm Boots' }, backpack: ['Storm Crown'] }
+      ])
     })
   })
 
