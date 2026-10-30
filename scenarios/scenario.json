@@ -671,6 +671,25 @@
       }
     },
     {
+      "id": "artifact-9",
+      "kind": "ARTIFACT",
+      "type": "SWORD_OF_JUDGEMENT",
+      "tile": {
+        "x": 8,
+        "y": 12
+      },
+      "guards": [
+        {
+          "creature": "MONK",
+          "count": 1
+        },
+        {
+          "creature": "PIKEMAN",
+          "count": 4
+        }
+      ]
+    },
+    {
       "id": "resource-1",
       "kind": "RESOURCE",
       "type": "GOLD_PILE",

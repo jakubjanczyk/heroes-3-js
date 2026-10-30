@@ -1,3 +1,4 @@
+import { BATTLE_DEFENDER_ARTIFACT_GUARDS } from '../../../game/heroes/artifacts.js'
 import {
   attackStack,
   createBattle,
@@ -48,6 +49,8 @@ import {
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+  APP_FACT_ARTIFACT_GUARDS_CHANGED,
+  APP_FACT_ARTIFACT_PICKED_UP,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_BATTLE_FINISHED,
@@ -78,15 +81,23 @@ const DEFAULT_HERO_NAME = 'Hero'
 
 const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
 
-// A battle started before battles named their defender was against a monster on the map.
+const isDwellingGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_DWELLING_GUARDS
+const isArtifactGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_ARTIFACT_GUARDS
+
+// A battle started before battles named their defender was against a monster on the map. The
+// results window names an artifact's guards by their first stack.
 function defenderOf(started) {
+  if (isArtifactGuards(started)) {
+    return started.defender.stacks[0]
+  }
   return started.defender ?? { creature: started.entityType, count: started.count }
 }
 
-const isDwellingGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_DWELLING_GUARDS
-
 function defenderArmy({ started, heroArmy, definitions }) {
   const defender = defenderOf(started)
+  if (isArtifactGuards(started)) {
+    return started.defender.stacks.map(({ creature, count }) => ({ creature, count }))
+  }
   if (isDwellingGuards(started)) {
     return [{ creature: defender.creature, count: defender.count }]
   }
@@ -199,43 +210,63 @@ export const registerBattleModule = defineModule(
       })
     }
 
-    // Beaten guards leave the dwelling to the hero's player, who may recruit there straight away.
+    // Beaten guards leave the dwelling to the hero's player, who may recruit there straight away,
+    // or the artifact to the hero.
     function winBattle() {
-      const { entityId, entityType, tile } = started
+      const fought = started
+      const { entityId, entityType, tile } = fought
       const experience = getExperienceForWin(battle)
       const army = getHeroArmyAfterBattle(battle, heroById(state.get(), heroId)?.army ?? [])
-      const guarded = isDwellingGuards(started)
       emit(APP_FACT_BATTLE_ENDED, { entityId, heroId, winner: 'attacker' })
       emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
-      if (guarded) {
+      if (isDwellingGuards(fought)) {
         emit(APP_FACT_DWELLING_GUARDS_CHANGED, { entityId, count: 0 })
         emit(APP_FACT_DWELLING_FLAGGED, {
           entityId,
           entityType,
           owner: heroOwner(state.get(), heroId)
         })
+      } else if (isArtifactGuards(fought)) {
+        emit(APP_FACT_ARTIFACT_PICKED_UP, {
+          heroId,
+          entityId,
+          entityType,
+          tile,
+          artifact: entityType
+        })
+        emit(APP_FACT_ENTITY_REMOVED, { entityId })
       } else {
         emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
         emit(APP_FACT_ENTITY_REMOVED, { entityId })
       }
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
-      if (guarded) {
+      if (isDwellingGuards(fought)) {
         emit(APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED, { heroId, entityId })
       }
     }
 
+    function emitDefenderLeft(fought, survivors) {
+      const { entityId } = fought
+      if (isArtifactGuards(fought)) {
+        const stacks = survivors.map(({ creature, count }) => ({ creature, count }))
+        emit(APP_FACT_ARTIFACT_GUARDS_CHANGED, { entityId, stacks })
+        return
+      }
+      const count = survivors.reduce((sum, stack) => sum + stack.count, 0)
+      const fact = isDwellingGuards(fought)
+        ? APP_FACT_DWELLING_GUARDS_CHANGED
+        : APP_FACT_MONSTER_COUNT_CHANGED
+      emit(fact, { entityId, count })
+    }
+
     // Beaten or retreated: the hero leaves the map and the defender keeps what it has left.
     function loseBattle() {
-      const { entityId } = started
-      const guarded = isDwellingGuards(started)
-      const count = battle.stacks
-        .filter((stack) => stack.side === 'defender')
-        .reduce((sum, stack) => sum + stack.count, 0)
-      emit(APP_FACT_BATTLE_ENDED, { entityId, heroId, winner: 'defender' })
-      emit(guarded ? APP_FACT_DWELLING_GUARDS_CHANGED : APP_FACT_MONSTER_COUNT_CHANGED, {
-        entityId,
-        count
-      })
+      const fought = started
+      const survivors = battle.stacks.filter(
+        (stack) => stack.side === 'defender' && stack.count > 0
+      )
+      emit(APP_FACT_BATTLE_ENDED, { entityId: fought.entityId, heroId, winner: 'defender' })
+      emitDefenderLeft(fought, survivors)
       emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
     }
 
@@ -706,6 +737,8 @@ export const registerBattleModule = defineModule(
       APP_FACT_MONSTER_COUNT_CHANGED,
       APP_FACT_DWELLING_GUARDS_CHANGED,
       APP_FACT_DWELLING_FLAGGED,
+      APP_FACT_ARTIFACT_PICKED_UP,
+      APP_FACT_ARTIFACT_GUARDS_CHANGED,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_ENTITY_REMOVED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
