@@ -33,6 +33,7 @@ The game has several pictures per obstacle and a set for each terrain; the terra
 - A scenario entity `{ "kind": "OBSTACLE", "type": "PINE_TREES_3", "tile": <bottom-right corner> }`. `game/data/obstacles.json` gives each type its `name`, `look` (its colour on the map) and `blocks`, the tiles it blocks as offsets from that corner. A new shape is data only.
 - No pictures yet: each blocked tile is filled with its kind's colour (mountain, trees, lake, rock, crater).
 - The demo map's walls were rock terrain, which is the underground's solid rock. Each rock tile now has the terrain around it, and the walls are mountains, largest shapes first. No mountain shape is two tiles wide and straight, so the gaps they leave are the one- and two-tile rocks. The blocked tiles are the same as before.
+- 45 clumps of trees on the demo map's open ground, each kind only on the terrains the game's map editor lets it grow on (Oak Trees on grass, dirt and swamp; Pine Trees on grass, dirt and snow; Trees on grass, rough, sand and swamp). None stands next to an object or a road, and none cuts off a tile or object a hero could reach.
 - The game restricts each picture to some terrains in its map editor; we don't check where a scenario puts an obstacle.
 
 ## Not yet

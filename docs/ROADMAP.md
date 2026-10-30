@@ -767,7 +767,7 @@ See `docs/notes/2026-10-30-obstacles.md`.
 - [x] The status bar and right-click popup name it over a tile it blocks; the terrain over the others
 - [x] The minimap shows the tiles it blocks in a darker shade of their terrain
 - [x] Obstacle data in `game/data/obstacles.json`; a new shape is data only
-- [x] The demo map's rock walls are mountains, the gaps filled with small rocks
+- [x] The demo map's rock walls are mountains, the gaps filled with small rocks; trees on its open ground
 - [ ] The other terrain sets' pictures and the decorations that block nothing, once there are pictures (10.1)
 - [ ] The darker minimap shade for what other objects block besides their entrance
 

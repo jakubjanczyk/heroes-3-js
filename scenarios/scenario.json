@@ -4128,6 +4128,411 @@
         "x": 50,
         "y": 60
       }
+    },
+    {
+      "id": "obstacle-296",
+      "kind": "OBSTACLE",
+      "type": "TREES_3",
+      "tile": {
+        "x": 3,
+        "y": 24
+      }
+    },
+    {
+      "id": "obstacle-297",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_3",
+      "tile": {
+        "x": 12,
+        "y": 29
+      }
+    },
+    {
+      "id": "obstacle-298",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_4",
+      "tile": {
+        "x": 33,
+        "y": 29
+      }
+    },
+    {
+      "id": "obstacle-299",
+      "kind": "OBSTACLE",
+      "type": "TREES_2",
+      "tile": {
+        "x": 15,
+        "y": 30
+      }
+    },
+    {
+      "id": "obstacle-300",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 18,
+        "y": 49
+      }
+    },
+    {
+      "id": "obstacle-301",
+      "kind": "OBSTACLE",
+      "type": "TREES_2",
+      "tile": {
+        "x": 46,
+        "y": 62
+      }
+    },
+    {
+      "id": "obstacle-302",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_1",
+      "tile": {
+        "x": 35,
+        "y": 59
+      }
+    },
+    {
+      "id": "obstacle-303",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_6",
+      "tile": {
+        "x": 27,
+        "y": 43
+      }
+    },
+    {
+      "id": "obstacle-304",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_2",
+      "tile": {
+        "x": 62,
+        "y": 45
+      }
+    },
+    {
+      "id": "obstacle-305",
+      "kind": "OBSTACLE",
+      "type": "TREES_1",
+      "tile": {
+        "x": 32,
+        "y": 8
+      }
+    },
+    {
+      "id": "obstacle-306",
+      "kind": "OBSTACLE",
+      "type": "TREES_2",
+      "tile": {
+        "x": 31,
+        "y": 56
+      }
+    },
+    {
+      "id": "obstacle-307",
+      "kind": "OBSTACLE",
+      "type": "TREES_3",
+      "tile": {
+        "x": 59,
+        "y": 55
+      }
+    },
+    {
+      "id": "obstacle-308",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_2",
+      "tile": {
+        "x": 38,
+        "y": 2
+      }
+    },
+    {
+      "id": "obstacle-309",
+      "kind": "OBSTACLE",
+      "type": "TREES_1",
+      "tile": {
+        "x": 2,
+        "y": 28
+      }
+    },
+    {
+      "id": "obstacle-310",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_2",
+      "tile": {
+        "x": 33,
+        "y": 3
+      }
+    },
+    {
+      "id": "obstacle-311",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 10,
+        "y": 20
+      }
+    },
+    {
+      "id": "obstacle-312",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 12,
+        "y": 48
+      }
+    },
+    {
+      "id": "obstacle-313",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_7",
+      "tile": {
+        "x": 32,
+        "y": 62
+      }
+    },
+    {
+      "id": "obstacle-314",
+      "kind": "OBSTACLE",
+      "type": "TREES_1",
+      "tile": {
+        "x": 63,
+        "y": 42
+      }
+    },
+    {
+      "id": "obstacle-315",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_2",
+      "tile": {
+        "x": 28,
+        "y": 10
+      }
+    },
+    {
+      "id": "obstacle-316",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 2,
+        "y": 36
+      }
+    },
+    {
+      "id": "obstacle-317",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_5",
+      "tile": {
+        "x": 22,
+        "y": 50
+      }
+    },
+    {
+      "id": "obstacle-318",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_3",
+      "tile": {
+        "x": 23,
+        "y": 62
+      }
+    },
+    {
+      "id": "obstacle-319",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_2",
+      "tile": {
+        "x": 23,
+        "y": 43
+      }
+    },
+    {
+      "id": "obstacle-320",
+      "kind": "OBSTACLE",
+      "type": "TREES_2",
+      "tile": {
+        "x": 19,
+        "y": 1
+      }
+    },
+    {
+      "id": "obstacle-321",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_4",
+      "tile": {
+        "x": 40,
+        "y": 62
+      }
+    },
+    {
+      "id": "obstacle-322",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 1,
+        "y": 24
+      }
+    },
+    {
+      "id": "obstacle-323",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_5",
+      "tile": {
+        "x": 60,
+        "y": 18
+      }
+    },
+    {
+      "id": "obstacle-324",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_6",
+      "tile": {
+        "x": 37,
+        "y": 43
+      }
+    },
+    {
+      "id": "obstacle-325",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 46,
+        "y": 25
+      }
+    },
+    {
+      "id": "obstacle-326",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_3",
+      "tile": {
+        "x": 24,
+        "y": 31
+      }
+    },
+    {
+      "id": "obstacle-327",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_4",
+      "tile": {
+        "x": 6,
+        "y": 31
+      }
+    },
+    {
+      "id": "obstacle-328",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_5",
+      "tile": {
+        "x": 51,
+        "y": 2
+      }
+    },
+    {
+      "id": "obstacle-329",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_2",
+      "tile": {
+        "x": 3,
+        "y": 20
+      }
+    },
+    {
+      "id": "obstacle-330",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_7",
+      "tile": {
+        "x": 44,
+        "y": 4
+      }
+    },
+    {
+      "id": "obstacle-331",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_6",
+      "tile": {
+        "x": 29,
+        "y": 39
+      }
+    },
+    {
+      "id": "obstacle-332",
+      "kind": "OBSTACLE",
+      "type": "TREES_2",
+      "tile": {
+        "x": 53,
+        "y": 31
+      }
+    },
+    {
+      "id": "obstacle-333",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_1",
+      "tile": {
+        "x": 36,
+        "y": 2
+      }
+    },
+    {
+      "id": "obstacle-334",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_3",
+      "tile": {
+        "x": 6,
+        "y": 34
+      }
+    },
+    {
+      "id": "obstacle-335",
+      "kind": "OBSTACLE",
+      "type": "TREES_1",
+      "tile": {
+        "x": 6,
+        "y": 27
+      }
+    },
+    {
+      "id": "obstacle-336",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_2",
+      "tile": {
+        "x": 34,
+        "y": 61
+      }
+    },
+    {
+      "id": "obstacle-337",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_1",
+      "tile": {
+        "x": 18,
+        "y": 45
+      }
+    },
+    {
+      "id": "obstacle-338",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_6",
+      "tile": {
+        "x": 24,
+        "y": 59
+      }
+    },
+    {
+      "id": "obstacle-339",
+      "kind": "OBSTACLE",
+      "type": "PINE_TREES_1",
+      "tile": {
+        "x": 27,
+        "y": 29
+      }
+    },
+    {
+      "id": "obstacle-340",
+      "kind": "OBSTACLE",
+      "type": "OAK_TREES_1",
+      "tile": {
+        "x": 47,
+        "y": 52
+      }
     }
   ]
 }
