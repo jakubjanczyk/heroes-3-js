@@ -356,6 +356,41 @@
 .hero-screen__backpack-arrow {
   --w: 21;
   --h: 44;
+
+  appearance: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  pointer-events: auto;
+  cursor: inherit;
+
+  & svg {
+    inline-size: 90%;
+    fill: none;
+    stroke: var(--trim-gold);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/* An empty slot the held artifact can go in. */
+.hero-screen__artifact[data-highlighted="true"] {
+  box-shadow:
+    inset 0 0 0 2px var(--trim-gold),
+    0 0 6px rgb(217 180 90 / 0.8);
+}
+
+/* The artifact on the pointer, centred on it. */
+.hero-screen__held-artifact {
+  position: absolute;
+  z-index: 1;
+  inline-size: calc(44 * var(--px));
+  block-size: calc(44 * var(--px));
+  translate: -50% -50%;
+  pointer-events: none;
+  background: rgb(0 0 0 / 0.6);
+  outline: 1px solid var(--trim-gold);
 }
 
 .hero-screen__button-frame {
