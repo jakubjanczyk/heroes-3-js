@@ -23,4 +23,4 @@ Clicking the minimap centres the view on that point, and holding the button whil
 - The hero is a red marker that follows hero moves, including moves replayed on reload.
 - Monsters and resources are not shown.
 - Pressing on the minimap (mouse, touch or pen, via pointer events) and moving pans the camera; the drag continues outside the minimap (clamped to the map edges) until the pointer is released. `touch-action: none` stops touch drags from scrolling the page, and the mobile tap highlight is turned off so a tap does not flash the minimap.
-- Our blocked tiles are their own terrain types (rock, water), so rule 3 adds nothing yet. Fog of war (rule 1) waits for fog.
+- Rule 3 applies to obstacles (`2026-10-30-obstacles.md`); not yet to the blocked tiles of other objects. Fog of war (rule 1) waits for fog.

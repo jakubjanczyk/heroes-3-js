@@ -5,6 +5,7 @@ import { dwellingBehavior } from './entity-behaviors/dwelling.js'
 import { heroBehavior } from './entity-behaviors/hero.js'
 import { mineBehavior } from './entity-behaviors/mine.js'
 import { monsterBehavior } from './entity-behaviors/monster.js'
+import { obstacleBehavior } from './entity-behaviors/obstacle.js'
 import { resourceBehavior } from './entity-behaviors/resource.js'
 import { resourceGeneratorBehavior } from './entity-behaviors/resource-generator.js'
 import { townBehavior } from './entity-behaviors/town.js'
@@ -35,6 +36,7 @@ export const heroesContent = Object.freeze({
     heroBehavior,
     mineBehavior,
     monsterBehavior,
+    obstacleBehavior,
     resourceBehavior,
     resourceGeneratorBehavior,
     townBehavior,

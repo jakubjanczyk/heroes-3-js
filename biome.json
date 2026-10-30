@@ -11,7 +11,8 @@
       "!!**/dist",
       "!!**/coverage",
       "!!**/.specify",
-      "!!**/docs_bkp"
+      "!!**/docs_bkp",
+      "!scenarios/scenario.json"
     ]
   },
   "formatter": {

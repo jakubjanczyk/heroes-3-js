@@ -5,6 +5,14 @@
   background-image: var(--entity-background-image, none);
 }
 
+.entity-part {
+  position: absolute;
+  inset-inline-start: calc(var(--part-x) * var(--entity-width));
+  inset-block-start: calc(var(--part-y) * var(--entity-height));
+  inline-size: var(--entity-width);
+  block-size: var(--entity-height);
+}
+
 .entity--hero {
   z-index: var(--z-entity-hero);
   border-radius: 50%;

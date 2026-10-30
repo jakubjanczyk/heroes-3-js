@@ -761,11 +761,15 @@ Rich adventure map with meaningful locations.
 - [x] Roads connect towns and key locations in scenarios
 
 ### 7.3 Obstacles & Multi-Tile Objects
-- [ ] Mountains: large multi-tile impassable obstacles (visual variety)
-- [ ] Trees/forests: 1-2 tile obstacles
-- [ ] Rocks, ruins, lakes: decorative blocking objects
-- [ ] Multi-tile rendering: object anchored at one tile, rendered spanning multiple
-- [ ] Obstacle data in scenario JSON with footprint definitions
+See `docs/notes/2026-10-30-obstacles.md`.
+- [x] Mountains, Oak Trees, Pine Trees, Trees, Lakes, Rocks and Craters: the game's 41 base shapes, each blocking only some tiles of its picture
+- [x] Placed by the bottom-right corner of the picture, as the game's maps do; drawn tile by tile in the kind's colour
+- [x] The status bar and right-click popup name it over a tile it blocks; the terrain over the others
+- [x] The minimap shows the tiles it blocks in a darker shade of their terrain
+- [x] Obstacle data in `game/data/obstacles.json`; a new shape is data only
+- [x] The demo map's rock walls are mountains, the gaps filled with small rocks; trees on its open ground
+- [ ] The other terrain sets' pictures and the decorations that block nothing, once there are pictures (10.1)
+- [ ] The darker minimap shade for what other objects block besides their entrance
 
 ### 7.4 Creature Dwellings on Map
 Castle's seven dwellings only; other factions' come with them (6.5). Built in four parts; see `docs/notes/2026-10-26-map-dwellings.md`.

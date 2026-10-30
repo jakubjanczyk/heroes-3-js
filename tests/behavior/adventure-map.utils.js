@@ -81,6 +81,15 @@ export function readArtifactName(entityId = 'artifact-1') {
 }
 
 // Each line of the right-click popup, e.g. ['Mercenary Camp', '+1 Attack', '(Not visited)'].
+// The tiles an obstacle is drawn over.
+export function readObstacleTiles(entityId = 'obstacle-1') {
+  const obstacle = document.querySelector(`.entity--obstacle[data-entity-id="${entityId}"]`)
+  return [...(obstacle?.querySelectorAll('[data-tile-x]') ?? [])].map((part) => ({
+    x: Number(part.dataset.tileX),
+    y: Number(part.dataset.tileY)
+  }))
+}
+
 export function readInfoPopupLines() {
   const popup = screen.queryByRole('tooltip')
   expect(popup).not.toBeNull()

@@ -4,6 +4,7 @@ import { TREASURE_CHEST_NAME } from './treasure-chest.js'
 const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   ARTIFACT: 'artifacts',
   MONSTER: 'monsters',
+  OBSTACLE: 'obstacles',
   RESOURCE: 'resources',
   MINE: 'mines',
   DWELLING: 'dwellings',

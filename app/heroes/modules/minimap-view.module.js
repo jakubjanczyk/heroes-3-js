@@ -54,10 +54,15 @@ export const registerMinimapViewModule = defineModule(
     let dragTile = null
     let lastCameraUpdate = null
 
-    function getFlaggedObjectCovering(tile) {
+    function getObjectCovering(tile) {
       const occupant = staticOccupancy?.getAt(tile)
-      const entity =
-        occupant?.kind === FOOTPRINT_BLOCKER_KIND ? entitiesById.get(occupant.ownerId) : occupant
+      return occupant?.kind === FOOTPRINT_BLOCKER_KIND
+        ? entitiesById.get(occupant.ownerId)
+        : occupant
+    }
+
+    function getFlaggedObjectCovering(tile) {
+      const entity = getObjectCovering(tile)
       return isMine(entity) || isDwelling(entity) ? entity : null
     }
 
@@ -74,6 +79,9 @@ export const registerMinimapViewModule = defineModule(
       const terrainName = map.getTerrainType(tile)?.name
       if (terrainName) {
         classNames.push(`terrain-tile--${terrainName}`)
+      }
+      if (getObjectCovering(tile)?.kind === 'OBSTACLE') {
+        classNames.push('minimap-tile--blocked')
       }
       // A tile covered by a mine or dwelling takes its owner's colour instead of the terrain's.
       const flaggedObject = getFlaggedObjectCovering(tile)

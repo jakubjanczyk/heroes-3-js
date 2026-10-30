@@ -10,6 +10,10 @@ export function createEntityBehaviors(behaviors = []) {
     return typeof offsets === 'function' ? offsets(entity, definitions) : offsets
   }
 
+  function occupiesOwnTile(entity) {
+    return behaviorByKind.get(entity?.kind)?.occupiesOwnTile !== false
+  }
+
   function guardsSurroundings(entity) {
     return behaviorByKind.get(entity?.kind)?.guardsSurroundings === true
   }
@@ -32,6 +36,7 @@ export function createEntityBehaviors(behaviors = []) {
     getFootprintOffsets,
     guardsSurroundings,
     isArrivalInteractionEntity,
+    occupiesOwnTile,
     resolveArrivalOutcome
   })
 }

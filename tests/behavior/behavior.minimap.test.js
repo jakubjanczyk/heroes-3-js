@@ -22,7 +22,16 @@ import {
   startBattle,
   waitForBattleResults
 } from './battle.utils.js'
-import { aDwelling, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
+import {
+  aDwelling,
+  aHero,
+  aMine,
+  aMonster,
+  anObstacle,
+  aResource,
+  aScenario,
+  aTown
+} from './builders.js'
 import { ALL_TERRAINS, GRASS, SAND } from './terrain-codes.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
@@ -145,6 +154,12 @@ function expectAreaCloseTo(actual, expected) {
 function backgroundOf(element) {
   expect(element).toBeTruthy()
   return window.getComputedStyle(element).backgroundColor
+}
+
+// The lightness and hue of an `oklch(L C H)` colour.
+function lightnessAndHue(colour) {
+  const [, lightness, , hue] = colour.match(/oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/)
+  return { lightness: Number(lightness), hue: Number(hue) }
 }
 
 function mockMinimapBounds(bounds = DEFAULT_MINIMAP_BOUNDS) {
@@ -420,6 +435,25 @@ describe('minimap behavior', () => {
       const colours = GUARDHOUSE_TILES.map(([x, y]) => backgroundOf(getMinimapTile(x, y)))
 
       expect(colours).toEqual(new Array(3).fill(NEUTRAL_GREY))
+    })
+
+    test('given an obstacle when the minimap renders then the tiles it blocks are a darker shade of their terrain', async () => {
+      await loadAppStyles()
+      await setupApp(
+        aScenario()
+          .withSize(4)
+          .withTiles([GRASS, SAND, SAND, GRASS])
+          .withEntities(aHero().at(0, 0), anObstacle().withType('ROCK').at(3, 0))
+          .withDefinitions({
+            obstacles: { ROCK: { name: 'Rock', look: 'rock', blocks: [{ x: -1, y: 0 }] } }
+          })
+          .build()
+      )
+
+      const blocked = lightnessAndHue(backgroundOf(getMinimapTile(2, 0)))
+      const terrain = lightnessAndHue(backgroundOf(getMinimapTile(1, 0)))
+      expect(blocked.hue).toBe(terrain.hue)
+      expect(blocked.lightness).toBeLessThan(terrain.lightness)
     })
 
     test('given a dwelling when the minimap renders then the tiles of its picture it does not block keep the terrain colour', async () => {
