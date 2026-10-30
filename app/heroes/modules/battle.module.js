@@ -454,6 +454,7 @@ export const registerBattleModule = defineModule(
               heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
               heroSecondarySkills: hero?.secondarySkills,
               heroBattleBonuses: hero?.battleBonuses,
+              heroArtifacts: hero?.artifacts,
               monsterArmy: defenderArmy({ started, heroArmy: hero?.army, definitions }),
               definitions
             })

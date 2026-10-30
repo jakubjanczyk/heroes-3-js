@@ -1,3 +1,4 @@
+import { artifactBonuses } from './artifacts.js'
 import { describeSecondarySkill } from './secondary-skills.js'
 
 const MAX_MORALE = 3
@@ -53,6 +54,13 @@ function skillModifier(hero, skill, definitions) {
 
   const { title } = describeSecondarySkill(known, definitions)
   return [{ text: title, value: SKILL_BONUS[known.level] ?? 0 }]
+}
+
+function artifactModifiers(hero, kind, definitions) {
+  return artifactBonuses(hero?.artifacts, kind, definitions).map(({ name, value }) => ({
+    text: name,
+    value
+  }))
 }
 
 function armyCreatures(hero, definitions) {
@@ -121,6 +129,7 @@ export function getHeroMorale({ entity, definitions }) {
     'morale',
     [
       ...skillModifier(entity, 'LEADERSHIP', definitions),
+      ...artifactModifiers(entity, 'morale', definitions),
       ...townsModifier(creatures),
       ...undeadModifier(creatures),
       ...angelsModifier(creatures),
@@ -133,6 +142,7 @@ export function getHeroMorale({ entity, definitions }) {
 export function getHeroLuck({ entity, definitions }) {
   const modifiers = [
     ...skillModifier(entity, 'LUCK', definitions),
+    ...artifactModifiers(entity, 'luck', definitions),
     ...objectBonusModifiers(entity, 'luck', definitions)
   ]
   return describe('luck', modifiers, {

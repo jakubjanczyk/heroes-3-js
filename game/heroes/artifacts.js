@@ -42,16 +42,40 @@ function countedArtifacts(artifacts, definitions) {
   )
 }
 
+const countedDefinitions = (artifacts, definitions) =>
+  countedArtifacts(artifacts, definitions).map(
+    (artifactId) => definitions?.artifacts?.[artifactId] ?? {}
+  )
+
 export function artifactPrimarySkills(artifacts, definitions) {
   const skills = {}
-  for (const artifactId of countedArtifacts(artifacts, definitions)) {
-    for (const [key, value] of Object.entries(
-      definitions?.artifacts?.[artifactId]?.primarySkills ?? {}
-    )) {
+  for (const artifact of countedDefinitions(artifacts, definitions)) {
+    for (const [key, value] of Object.entries(artifact.primarySkills ?? {})) {
       skills[key] = (skills[key] ?? 0) + value
     }
   }
   return skills
+}
+
+// What each worn artifact gives to one value, such as `morale` or `landMovementPoints`.
+export function artifactBonuses(artifacts, key, definitions) {
+  return countedDefinitions(artifacts, definitions)
+    .filter((artifact) => artifact[key])
+    .map((artifact) => ({ name: artifact.name, value: artifact[key] }))
+}
+
+export function artifactBonusTotal(artifacts, key, definitions) {
+  return artifactBonuses(artifacts, key, definitions).reduce((sum, { value }) => sum + value, 0)
+}
+
+export const artifactLandMovementPoints = (artifacts, definitions) =>
+  artifactBonusTotal(artifacts, 'landMovementPoints', definitions)
+
+// `kind` is morale or luck.
+export function artifactsCancelInBattle(artifacts, kind, definitions) {
+  return countedDefinitions(artifacts, definitions).some((artifact) =>
+    (artifact.cancelsInBattle ?? []).includes(kind)
+  )
 }
 
 export function fitsSlot(artifactId, slotId, definitions) {

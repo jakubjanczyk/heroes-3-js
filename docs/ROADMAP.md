@@ -885,8 +885,12 @@ See `docs/notes/2026-10-29-moving-artifacts.md`.
 - [ ] Check in the game how moving works: taken from one source only
 
 #### 7.8.3 Morale, luck and movement
-- [ ] The morale and luck artifacts (Clover of Fortune, Badge of Courage, Pendant of Courage, Still Eye of the Dragon, ...), and the Hourglass of the Evil Hour and Spirit of Oppression that cancel positive luck and morale (4.9)
-- [ ] Boots of Speed (+600) and Equestrian's Gloves (+300): land movement points when worn at the start of a day
+See `docs/notes/2026-10-30-morale-luck-and-movement-artifacts.md`.
+- [x] The morale and luck artifacts (Clover of Fortune, Cards of Prophecy, Ladybird of Luck, Badge of Courage, Crest of Valor, Glyph of Gallantry, Still Eye of the Dragon, Pendant of Courage), listed by name in the morale and luck popups
+- [x] The Hourglass of the Evil Hour and Spirit of Oppression: in battle, positive luck or morale is 0 on both sides; penalties stay; the hero screen still shows the usual values
+- [x] Boots of Speed (+600) and Equestrian's Gloves (+300): land movement points over the maximum when worn at the start of a day, day 1 included
+- [x] Two of the same count once; a new artifact with morale, luck, movement or a battle cancel is data only
+- [ ] Badge of Courage's immunity to mind spells (5.8)
 
 #### 7.8.4 Guarded artifacts
 - [ ] Guards set by the scenario; entering always asks whether to fight them (`core.genrltxt.420`, text not found yet: check in the game)
