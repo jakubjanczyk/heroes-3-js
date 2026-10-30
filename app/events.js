@@ -107,6 +107,8 @@ export const APP_FACT_HERO_BATTLE_BONUS_GAINED = 'fact.hero.battleBonus.gained'
 // Movement points the hero gets now and at the start of each day until the week ends.
 export const APP_FACT_HERO_WEEK_BONUS_GAINED = 'fact.hero.weekBonus.gained'
 export const APP_FACT_TREASURE_CHEST_OPENED = 'fact.treasureChest.opened'
+// What the chests the scenario leaves to chance hold, rolled once per game.
+export const APP_FACT_TREASURE_CHESTS_ROLLED = 'fact.treasureChests.rolled'
 export const APP_FACT_HERO_EXPERIENCE_GAINED = 'fact.hero.experience.gained'
 export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
 export const APP_FACT_HERO_SECONDARY_SKILL_LEARNED = 'fact.hero.secondarySkill.learned'
@@ -199,6 +201,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_BATTLE_BONUS_GAINED,
   APP_FACT_HERO_WEEK_BONUS_GAINED,
   APP_FACT_TREASURE_CHEST_OPENED,
+  APP_FACT_TREASURE_CHESTS_ROLLED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
   APP_FACT_HERO_LEVELED_UP,
   APP_FACT_HERO_SECONDARY_SKILL_LEARNED,

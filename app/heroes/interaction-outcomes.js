@@ -33,6 +33,19 @@ const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +
   'distribute it to the peasants for experience. Which do you choose?'
 
+function findArtifactInChest(outcome, opened) {
+  return {
+    modal: {
+      interactionKind: outcome.kind,
+      entityId: outcome.entityId,
+      entityType: outcome.entityType,
+      title: TREASURE_CHEST_TITLE,
+      message: `After scouring the area, you fall upon a hidden chest, containing the ancient artifact '${outcome.artifactName}'.`
+    },
+    factsOnModalClosed: [opened({ choice: 'artifact', artifact: outcome.artifact })]
+  }
+}
+
 function askToFightGuards(outcome) {
   const { creature, count } = outcome.guards
   const guards = describeMonsterGroupInText(count, outcome.creaturePlural)
@@ -89,6 +102,38 @@ function askToFightArtifactGuards(outcome) {
   }
 }
 
+const FULL_LOAD_MESSAGE = 'You cannot pick up this artifact, you already have a full load!'
+
+function tellBackpackIsFull(outcome) {
+  return {
+    modal: {
+      interactionKind: outcome.kind,
+      entityId: outcome.entityId,
+      entityType: outcome.entityType,
+      title: null,
+      message: FULL_LOAD_MESSAGE
+    },
+    factsOnModalClosed: []
+  }
+}
+
+function pickUpArtifact(outcome) {
+  if (outcome.guards) {
+    return askToFightArtifactGuards(outcome)
+  }
+  if (outcome.cannotCarry) {
+    return tellBackpackIsFull(outcome)
+  }
+  return {
+    facts: [
+      {
+        type: APP_FACT_ARTIFACT_PICKED_UP,
+        detail: { ...toEntityFactDetail(outcome), artifact: outcome.entityType }
+      }
+    ]
+  }
+}
+
 function toEntityFactDetail(outcome) {
   return {
     heroId: outcome.heroId,
@@ -113,17 +158,7 @@ export const heroesOutcomeEvents = Object.freeze([
 ])
 
 export const heroesOutcomeEffects = Object.freeze({
-  [INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP]: (outcome) =>
-    outcome.guards
-      ? askToFightArtifactGuards(outcome)
-      : {
-          facts: [
-            {
-              type: APP_FACT_ARTIFACT_PICKED_UP,
-              detail: { ...toEntityFactDetail(outcome), artifact: outcome.entityType }
-            }
-          ]
-        },
+  [INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP]: pickUpArtifact,
   [INTERACTION_OUTCOME_KIND_BATTLE_STARTED]: (outcome) => ({
     facts: [
       {
@@ -194,12 +229,18 @@ export const heroesOutcomeEffects = Object.freeze({
   }),
   // The player picks the gold or the experience; nothing happens until they confirm with OK.
   [INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND]: (outcome) => {
-    const { gold, experience } = outcome.rewards
     const opened = (detail) => ({
       type: APP_FACT_TREASURE_CHEST_OPENED,
       detail: { ...toEntityFactDetail(outcome), ...detail }
     })
+    if (outcome.artifact) {
+      return findArtifactInChest(outcome, opened)
+    }
+    if (!outcome.rewards) {
+      return null
+    }
 
+    const { gold, experience } = outcome.rewards
     return {
       modal: {
         interactionKind: outcome.kind,

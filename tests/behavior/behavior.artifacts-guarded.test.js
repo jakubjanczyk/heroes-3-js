@@ -171,6 +171,20 @@ describe('guarded artifacts', () => {
     })
   })
 
+  test('winning with a full backpack leaves the artifact on the map, and walking to it again says the hero has a full load', async () => {
+    // One axe worn and 64 in the backpack.
+    const hero = aHero().withArmy(ARMY_THAT_WINS).withArtifacts(new Array(65).fill('AXE'))
+    const { user } = await setupGuardedArtifact({ hero })
+    await beatGuards(user)
+
+    await walkToArtifact()
+
+    expect(getArtifactEntity()).toBeTruthy()
+    expect(getInteractionModalMessage().textContent).toBe(
+      'You cannot pick up this artifact, you already have a full load!'
+    )
+  })
+
   // Experience for a win is the health of the creatures killed: 9 Monks of 30 each.
   test('winning gives the hero the experience for the battle', async () => {
     const { user } = await setupGuardedArtifact({ hero: aHero().withArmy(ARMY_THAT_WINS) })
