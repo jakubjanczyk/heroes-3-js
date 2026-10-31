@@ -434,8 +434,9 @@ In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
 - [x] Kept after a reload
 
 ##### 4.8.2.2 Learning spells
-- [ ] A visiting hero with a spell book learns the guild's spells; up to level 2 without Wisdom, Wisdom opening levels 3, 4 and 5
-- [ ] The Mage Guild sells a spell book for 500 gold
+- [x] A visiting hero with a spell book learns the guild's spells; up to level 2 without Wisdom, Wisdom opening levels 3, 4 and 5; also when a guild level is built while the hero is in the town, and a hero hired in the tavern
+- [x] The Mage Guild sells a spell book for 500 gold: clicking it with a hero without one in the town asks (`core.genrltxt.214`), or says the hero is short of cash (`core.genrltxt.213`); the guild opens either way
+- [ ] Learning on gaining Wisdom while in a town, and the town's garrison hero (6.4)
 
 ##### 4.8.2.3 Wisdom and magic schools on level-up
 - [ ] Level-up offers Wisdom at least every 6 levels and a magic school at least every 4 (4.7.2)

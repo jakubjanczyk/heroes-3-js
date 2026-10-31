@@ -1,6 +1,6 @@
 const LEVEL_NAMES = Object.freeze({ BASIC: 'Basic', ADVANCED: 'Advanced', EXPERT: 'Expert' })
 
-function heroOfTheGame(heroes, name) {
+export function heroOfTheGame(heroes, name) {
   return Object.values(heroes ?? {}).find((hero) => hero.name === name)
 }
 

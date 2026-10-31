@@ -148,6 +148,13 @@ export function readMessageRewards() {
     .map((picture) => picture.getAttribute('aria-label'))
 }
 
+// The pictures the open message shows under its text, by the names under them, e.g. ['Spell Book'].
+export function readMessagePictures() {
+  return within(getInteractionModal())
+    .queryAllByRole('img')
+    .map((picture) => picture.getAttribute('aria-label'))
+}
+
 // The bonuses the open message lets the player pick from, e.g. ['+2 Attack', '+2 Defense'].
 export function readMessageChoices() {
   return within(getInteractionModal())
