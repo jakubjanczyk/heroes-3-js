@@ -425,12 +425,29 @@ See `docs/notes/2026-10-31-spell-book-and-spell-points.md`.
 - [x] Kept after a reload
 
 #### 4.8.2 Mage Guild
-- [ ] Each guild level rolls its spells when built: five of level 1, four of level 2, three of level 3, two of level 4 (Castle stops at 4), with Castle's odds and the spells it never gets
-- [ ] Clicking the Mage Guild opens its screen showing the spells
-- [ ] The Mage Guild sells a spell book for 500 gold
+In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
+
+##### 4.8.2.1 The guild's spells and its screen
+- [ ] Each guild level rolls its spells: five of level 1, four of level 2, three of level 3, two of level 4 (Castle stops at 4), with Castle's odds and the spells it never gets
+- [ ] Clicking the Mage Guild opens its screen: the spells on scrolls by level, closed scrolls for the levels not built yet
+- [ ] Hovering a spell names it in the status bar; clicking or right-clicking it shows its description
+- [ ] Kept after a reload
+
+##### 4.8.2.2 Learning spells
 - [ ] A visiting hero with a spell book learns the guild's spells; up to level 2 without Wisdom, Wisdom opening levels 3, 4 and 5
+- [ ] The Mage Guild sells a spell book for 500 gold
+
+##### 4.8.2.3 Wisdom and magic schools on level-up
 - [ ] Level-up offers Wisdom at least every 6 levels and a magic school at least every 4 (4.7.2)
-- [ ] Scholar: two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
+
+##### 4.8.2.4 Scholar
+- [ ] Two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
+
+##### 4.8.2 later, with the other factions (6.5)
+- [ ] Each faction's highest guild level (Stronghold and Fortress 3, Castle 4, the others 5); the screen has no closed scrolls above it
+- [ ] Each faction's odds and the spells it never gets
+- [ ] Tower's Library: one more spell of each level
+- [ ] Each faction's own Mage Guild screen
 
 #### 4.8.3 to 4.8.7
 The combat spells, in 5.8.
@@ -682,7 +699,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
 - [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count)
 - [ ] **Resource Silo**: provides +1 of a specific resource per day (faction-dependent)
 - [ ] **Blacksmith**: provides ballista (first aid tent/ammo cart) to visiting heroes
-- [ ] **Mage Guild** (levels 1-5): teaches spells to visiting heroes
+- [ ] **Mage Guild** (levels 1-5): teaches spells to visiting heroes (4.8.2)
   - Each level unlocks random spells of that tier
   - Higher tiers require lower tiers built first
 
@@ -771,6 +788,7 @@ Stages, one PR each, done in this order:
 - [ ] Faction-specific town background art
 - [ ] Faction-specific creature lineup and stats
 - [ ] Faction-specific special buildings
+- [ ] Mage Guild per faction: highest level, spell odds, Tower's Library (4.8.2 later)
 
 ---
 
@@ -1235,7 +1253,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 41. Obstacles & decorations (7.3)
 
 ### Phase 6 - "Real Competition"
-42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild, casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
+42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild (in four parts: the guild's spells and screen, learning spells, Wisdom and magic schools on level-up, Scholar), casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
 43. Player system (8.1)
 44. AI basics (8.3)
 45. AI decision making (8.4)
