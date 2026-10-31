@@ -416,9 +416,10 @@ Each comes with the feature it changes; the note has every skill's numbers.
 70 spells: 15 combat damage spells, 45 other combat spells and 10 adventure map spells, each with a level (1-5), a school (Air, Earth, Fire, Water; Magic Arrow and Visions are in all four) and a cost, lower with any level of the school's skill (Magic Arrow 5, or 4). The combat spells are 5.8. Built in eight parts; each part's note checks its rules.
 
 #### 4.8.1 Spell book and spell points
-- [ ] The 70 spells' data (`game/data/spells.json`): name, level, school, cost with and without the school, description
+See `docs/notes/2026-10-31-spell-book-and-spell-points.md`.
+- [ ] The 70 spells' data (`game/data/spells.json`): name, level, schools, cost and description at each level of the school's skill
 - [ ] Spell points: 10 × Knowledge, more with Intelligence; 1 back each day, more with Mysticism; all back when the hero starts the day in a town with a Mage Guild
-- [ ] Spell points shown on the hero screen, in its spell points frame
+- [ ] Spell points shown on the hero screen, in its spell points frame, and in the hero list, the info box, the hero popup and the exchange screen
 - [ ] A scenario hero may start with a spell book and spells; the demo map's first hero has a spell book
 - [ ] The spell book window: the school tabs, pages, right-click description of each spell; opened by the adventure map's Cast spell button. Nothing can be cast yet
 - [ ] Kept after a reload
