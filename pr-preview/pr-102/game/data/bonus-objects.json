@@ -1,0 +1,284 @@
+{
+  "LEARNING_STONE": {
+    "name": "Learning Stone",
+    "visits": "oncePerHero",
+    "rewards": [{ "type": "experience", "amount": 1000 }],
+    "messages": {
+      "gives": "A smooth stone on the face of this pillar begins to swirl as you approach. Looking into it, you are amazed to see answers to questions you have pondered for years. The stone suddenly goes still, but you realize you have learned much.",
+      "visited": "You approach the pillar, hoping to gain more insight, but the stone now does nothing more than reflect the sunlight."
+    }
+  },
+  "MERCENARY_CAMP": {
+    "name": "Mercenary Camp",
+    "footprint": [{ "x": -1, "y": 0 }, { "x": 1, "y": 0 }],
+    "visits": "oncePerHero",
+    "rewards": [{ "type": "primarySkills", "attack": 1 }],
+    "messages": {
+      "gives": "You've come upon a camp of mercenaries practicing their combat tactics. They welcome you and your troops and invite you to train with them.",
+      "visited": "You've come upon a camp of mercenaries practicing their combat tactics. \"You're too advanced for us,\" the mercenary captain says. \"We can teach you nothing more.\""
+    }
+  },
+  "MARLETTO_TOWER": {
+    "name": "Marletto Tower",
+    "footprint": [{ "x": -1, "y": 0 }],
+    "visits": "oncePerHero",
+    "rewards": [{ "type": "primarySkills", "defense": 1 }],
+    "messages": {
+      "gives": "The soldiers living in the tower teach you a few new defensive tricks.",
+      "visited": "\"I'm sorry sir,\" the leader of the soldiers says, \"but you already know everything we have to teach.\""
+    }
+  },
+  "STAR_AXIS": {
+    "name": "Star Axis",
+    "visits": "oncePerHero",
+    "rewards": [{ "type": "primarySkills", "power": 1 }],
+    "messages": {
+      "gives": "You've found several of the best astrologers of the land gathered at a Star Axis. Happy to have some company, they teach you how to use the Sun, Moon, and Stars to enhance your spell casting ability.",
+      "visited": "You've found several of the best astrologers of the land gathered at a Star Axis. You spend some time chatting with them, but soon realize that there is nothing new for you to learn from them."
+    }
+  },
+  "GARDEN_OF_REVELATION": {
+    "name": "Garden of Revelation",
+    "visits": "oncePerHero",
+    "rewards": [{ "type": "primarySkills", "knowledge": 1 }],
+    "messages": {
+      "gives": "A monk sitting in the center of a garden invites you to meditate with him. You do, and after a short time you feel enlightened.",
+      "visited": "You enter the garden, and the monk, recognizing you, says, \"My child, the blessing of knowledge comes but once in a person's lifetime.\""
+    }
+  },
+  "ARENA": {
+    "name": "Arena",
+    "footprint": [
+      { "x": -1, "y": 0 },
+      { "x": 1, "y": 0 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": 1, "y": -1 }
+    ],
+    "visits": "oncePerHero",
+    "choices": [
+      [{ "type": "primarySkills", "attack": 2 }],
+      [{ "type": "primarySkills", "defense": 2 }]
+    ],
+    "messages": {
+      "offer": "You enter the arena and face a pack of vicious lions. You handily defeat them, to the wild cheers of the crowd. Impressed by your skill, the aged trainer of gladiators agrees to train you in a skill of your choice.",
+      "visited": "The Arena guards prevent you from entering. \"You've already beaten our best. Begone from here.\""
+    }
+  },
+  "SCHOOL_OF_WAR": {
+    "name": "School of War",
+    "description": "+1 Attack or +1 Defense for 1000 gold",
+    "footprint": [
+      { "x": -1, "y": 0 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": 1, "y": -1 },
+      { "x": -1, "y": -2 },
+      { "x": 0, "y": -2 }
+    ],
+    "visits": "oncePerHero",
+    "cost": { "GOLD_PILE": 1000 },
+    "choices": [
+      [{ "type": "primarySkills", "attack": 1 }],
+      [{ "type": "primarySkills", "defense": 1 }]
+    ],
+    "messages": {
+      "offer": "The battle-scarred instructor of this school of war grunts as you walk past. For a fee of 1000 gold he can teach you your choice of new attack or defense skills.",
+      "tooPoor": "The battle-scarred instructor of this school of war grunts as you walk past. He could teach you some new combat tactics, but he charges 1000 gold, which you currently do not have.",
+      "visited": "The head instructor laughs out loud when you ask to receive more training. \"You should be teaching here!\" he shouts."
+    }
+  },
+  "SCHOOL_OF_MAGIC": {
+    "name": "School of Magic",
+    "description": "+1 Power or +1 Knowledge for 1000 gold",
+    "visits": "oncePerHero",
+    "cost": { "GOLD_PILE": 1000 },
+    "choices": [
+      [{ "type": "primarySkills", "power": 1 }],
+      [{ "type": "primarySkills", "knowledge": 1 }]
+    ],
+    "messages": {
+      "offer": "The tingle of magic fills the air of this school of mystical arts. An acolyte offers to sign you up for the next class for 1000 gold. You will have your choice of increasing your knowledge, or learning to better focus your powers.",
+      "tooPoor": "The tingle of magic fills the air of this school of mystical arts. An acolyte informs you that he could sign you up for the next class, but that you do not have the required tuition of 1000 gold.",
+      "visited": "An old wizard appears out of thin air. \"Master,\" he says, \"you have learned all that we could possibly teach you.\""
+    }
+  },
+  "TREE_OF_KNOWLEDGE": {
+    "name": "Tree of Knowledge",
+    "visits": "oncePerHero",
+    "rolls": {
+      "price": {
+        "per": "game",
+        "as": "resources",
+        "weighted": [
+          { "chance": 34, "value": {} },
+          { "chance": 33, "value": { "GOLD_PILE": 2000 } },
+          { "chance": 33, "value": { "GEMS_PILE": 10 } }
+        ]
+      }
+    },
+    "cost": "{price}",
+    "asksFirst": true,
+    "rewards": [{ "type": "level" }],
+    "messages": {
+      "gives": "Upon your approach, the tree opens its eyes in delight. \"Ahh, an adventurer! Allow me to teach you a little of what I have learned over the ages.\"",
+      "offer": "Upon your approach, the tree opens its eyes in delight. \"Ahh, an adventurer! I will be happy to teach you a little of what I have learned over the ages for a mere {price}.\" (Just bury it around my roots.)",
+      "tooPoor": "Tears brim in the eyes of the tree. \"I need {price}.\" it whispers. (sniff) \"Well, come back when you can pay me.\"",
+      "visited": "Upon your approach, the tree opens its eyes in delight. \"It is good to see you, my student. I hope my teachings have helped you.\""
+    }
+  },
+  "LIBRARY_OF_ENLIGHTENMENT": {
+    "name": "Library of Enlightenment",
+    "description": "+2 Attack, Defense, Power and Knowledge",
+    "footprint": [
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 },
+      { "x": 1, "y": 0 },
+      { "x": 0, "y": -1 },
+      { "x": 1, "y": -1 }
+    ],
+    "visits": "oncePerHero",
+    "requires": [
+      {
+        "type": "minimumHeroLevel",
+        "level": 10,
+        "withDiplomacy": { "BASIC": 8, "ADVANCED": 6, "EXPERT": 4 },
+        "message": "tooLowLevel"
+      }
+    ],
+    "rewards": [{ "type": "primarySkills", "attack": 2, "defense": 2, "power": 2, "knowledge": 2 }],
+    "messages": {
+      "gives": "The caretaker admits you into the Library of Enlightenment. You are able to learn much in the short time you spend here.",
+      "tooLowLevel": "The caretaker opens the door and looks you up and down. \"You are neither famous nor diplomatic enough to be admitted to the Library of Enlightenment,\" he sniffs. \"Come back when you think yourself worthy.\"",
+      "visited": "Recognizing you, the caretaker refuses to admit you. \"The Library of Enlightenment,\" he says, \"may be visited but once.\""
+    }
+  },
+  "WITCH_HUT": {
+    "name": "Witch Hut",
+    "visits": "always",
+    "statusText": "({skill})",
+    "rolls": {
+      "skill": { "per": "game", "as": "secondarySkill", "except": ["LEADERSHIP", "NECROMANCY"] }
+    },
+    "requires": [
+      { "type": "lacksSecondarySkill", "skill": "{skill}", "message": "alreadyKnown" },
+      { "type": "hasRoomForSecondarySkill", "message": "tooWise" }
+    ],
+    "rewards": [{ "type": "secondarySkill", "skill": "{skill}", "level": "BASIC" }],
+    "messages": {
+      "gives": "An ancient witch living in a strange hut welcomes you, offering to teach you {skill} for her own inscrutable purposes.",
+      "alreadyKnown": "You approach the strange hut and observe a witch inside studying an ancient tome on {skill}. As you approach, she turns and speaks. \"You already know that which I would teach you. I can help you no further.\"",
+      "tooWise": "You approach the strange hut and observe a witch inside studying an ancient tome on {skill}. As you approach, she turns and focuses her one glass eye on you. \"HA!\" she screeches, \"I would not presume to try to teach new tricks to someone so clearly as wise as you.\" You leave, but can't quite shake the feeling that you have just been insulted."
+    }
+  },
+  "FAERIE_RING": {
+    "name": "Faerie Ring",
+    "description": "+1 Luck until the next battle",
+    "footprint": [{ "x": 1, "y": 0 }],
+    "visits": "whileBonusLasts",
+    "rewards": [{ "type": "battleBonus", "luck": 1 }],
+    "messages": {
+      "gives": "You enter a faerie ring, and your army gains luck for its next battle.",
+      "visited": "You enter a faerie ring, but nothing happens."
+    }
+  },
+  "SWAN_POND": {
+    "name": "Swan Pond",
+    "description": "+2 Luck until the next battle",
+    "footprint": [{ "x": 1, "y": 0 }],
+    "visits": "whileBonusLasts",
+    "rewards": [{ "type": "battleBonus", "luck": 2 }, { "type": "endsMovement" }],
+    "messages": {
+      "gives": "Childhood stories said that a scarlet swan was a portent of good fortune. You decide to rest here for the remainder of the day.",
+      "visited": "Childhood stories said that a scarlet swan was a portent of good fortune. However, you are still blessed with luck from your last visit here. Since there is nothing more to gain here, you move on."
+    }
+  },
+  "IDOL_OF_FORTUNE": {
+    "name": "Idol of Fortune",
+    "description": "+1 Luck or Morale, depending on the day",
+    "visits": "whileBonusLasts",
+    "rewards": [
+      {
+        "type": "battleBonus",
+        "byDay": [
+          { "days": [1, 3, 5], "luck": 1 },
+          { "days": [2, 4, 6], "morale": 1 },
+          { "days": [7], "morale": 1, "luck": 1 }
+        ]
+      }
+    ],
+    "messages": {
+      "gives": "You've found an ancient and weathered stone idol. Kissing it is supposed to bring luck or happiness, so you do. The stone is very cold to the touch.",
+      "visited": "You've found an ancient and weathered stone idol. It is supposed to grant luck or happiness to visitors, but since the stars are already shining upon you, it does nothing."
+    }
+  },
+  "TEMPLE": {
+    "name": "Temple",
+    "description": "+1 Morale, +2 on day 7",
+    "footprint": [{ "x": 1, "y": 0 }],
+    "visits": "whileBonusLasts",
+    "rewards": [
+      { "type": "battleBonus", "byDay": [{ "days": [7], "morale": 2 }, { "morale": 1 }] }
+    ],
+    "messages": {
+      "gives": "A visit and a prayer at the temple raises the morale of your troops.",
+      "visited": "It doesn't help to pray twice before a battle. Come back another day."
+    }
+  },
+  "FOUNTAIN_OF_YOUTH": {
+    "name": "Fountain of Youth",
+    "description": "+1 Morale until the next battle, +400 movement points today",
+    "footprint": [{ "x": -1, "y": 0 }, { "x": -1, "y": -1 }, { "x": 0, "y": -1 }],
+    "visits": "whileBonusLasts",
+    "rewards": [
+      { "type": "battleBonus", "morale": 1 },
+      { "type": "movementPoints", "amount": 400 }
+    ],
+    "messages": {
+      "gives": "You drink from the fountain of youth. Your troops feel refreshed and their spirits lift. You can travel a bit further today.",
+      "visited": "You drink from the fountain of youth again, but nothing more happens."
+    }
+  },
+  "RALLY_FLAG": {
+    "name": "Rally Flag",
+    "description": "+1 Morale and Luck until the next battle, +400 movement points today",
+    "footprint": [{ "x": -1, "y": 0 }],
+    "visits": "whileBonusLasts",
+    "rewards": [
+      { "type": "battleBonus", "morale": 1, "luck": 1 },
+      { "type": "movementPoints", "amount": 400 }
+    ],
+    "messages": {
+      "gives": "You rally your troops around this flag, renewing their strength and lifting their spirits. You feel at your peak, and can travel a bit further today.",
+      "visited": "You rally your troops around this flag."
+    }
+  },
+  "FOUNTAIN_OF_FORTUNE": {
+    "name": "Fountain of Fortune",
+    "description": "-1 to +3 Luck until the next battle",
+    "visits": "whileBonusLasts",
+    "rolls": { "luck": { "per": "week", "as": "number", "anyOf": [-1, 1, 2, 3] } },
+    "rewards": [{ "type": "battleBonus", "luck": "{luck}" }],
+    "messages": {
+      "gives": "As you drink the bittersweet water, you feel your luck changing.",
+      "visited": "You drink from the enchanted fountain, but nothing happens."
+    }
+  },
+  "STABLES": {
+    "name": "Stables",
+    "description": "+400 movement points each day until the end of the week",
+    "footprint": [{ "x": -1, "y": 0 }],
+    "visits": "whileBonusLasts",
+    "rewards": [
+      { "type": "weekMovementPoints", "amount": 400 },
+      { "type": "upgradeCreatures", "upgrades": { "CAVALIER": "CHAMPION" }, "everyVisit": true }
+    ],
+    "messages": {
+      "gives": "The stablemaster offers to provide your army with horses, increasing your movement for the remainder of the week.",
+      "gives.upgradeCreatures": "The stablemaster offers to provide your army with horses, increasing your movement for the remainder of the week and upgrading all your Cavaliers to Champions.",
+      "visited": "You have already visited the stables this week.",
+      "visited.upgradeCreatures": "The stablemaster upgrades all your Cavaliers to Champions."
+    }
+  }
+}
