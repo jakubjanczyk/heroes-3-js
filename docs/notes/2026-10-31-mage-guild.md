@@ -114,6 +114,7 @@ Checked against the Heroes 3 wiki's raw page source (Scholar, Wisdom, and the `G
 - A spell's picture is its name on a scroll, as in the Mage Guild. The spells the hero who walked up learns come first, then the ones they teach.
 - The Scholar picture is the skill's stand-in (its initials), as the Witch Hut's.
 - The pictures fill the windows in order: the Scholar, the spells the scholar learns, then those they teach, 8 to a window. The windows after the first have no text and no Scholar picture (the user). The screenshot shows a taught spell in the first window while some learned ones wait, which this order doesn't do; nobody could say why.
+- The demo map's Valeska has Advanced Scholar and a spell book, so meeting Lord Haart shows it.
 - The meeting asks for the teaching with `command.heroes.spellsTeach.requested`, and `scholar.module.js` decides it.
 
 ### Not checked
