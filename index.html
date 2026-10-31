@@ -38,6 +38,7 @@
     <link rel="preload" href="./game/ui/hero-screen.css" as="style" />
     <link rel="preload" href="./game/ui/hero-exchange.css" as="style" />
     <link rel="preload" href="./game/ui/spell-book.css" as="style" />
+    <link rel="preload" href="./game/ui/mage-guild.css" as="style" />
     <link rel="preload" href="./game/ui/secondary-skill-icon.css" as="style" />
     <link rel="preload" href="./game/ui/morale-luck.css" as="style" />
     <link rel="preload" href="./app/modules/dev/bus-dev-panel.css" as="style" />
@@ -96,6 +97,7 @@
     <link rel="modulepreload" href="./game/heroes/hero-army.js" />
     <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
     <link rel="modulepreload" href="./game/heroes/treasury.js" />
+    <link rel="modulepreload" href="./game/heroes/state/mage-guilds.js" />
     <link rel="modulepreload" href="./game/heroes/state/tavern.js" />
     <link rel="modulepreload" href="./game/heroes/terrain-types.js" />
     <link rel="modulepreload" href="./app/heroes/interaction-outcomes.js" />
@@ -164,6 +166,10 @@
     <link rel="modulepreload" href="./game/heroes/status-bar-text.js" />
     <link rel="modulepreload" href="./game/heroes/visitable-objects/visits.js" />
     <link rel="modulepreload" href="./game/heroes/visitable-objects/rewards.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/mage-guild.module.js" />
+    <link rel="modulepreload" href="./game/heroes/mage-guild.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/mage-guild-view.module.js" />
+    <link rel="modulepreload" href="./app/heroes/presentation/mage-guild-room.js" />
     <link rel="modulepreload" href="./app/heroes/modules/mines.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/minimap-view.module.js" />
     <link rel="modulepreload" href="./engine/layers/dom-layer-utils.js" />
@@ -656,6 +662,32 @@
             </button>
           </div>
           <p class="tavern-window__status" role="status" aria-label="Tavern status bar"></p>
+        </section>
+      </div>
+    </template>
+
+    <!--
+      The Mage Guild over the town screen: a stone room with a window onto the town's land, the
+      scrolls of each level in their own places (on the shelf under the table, in the niches, on
+      the bookshelf, in the arches, on the table), the status bar and the exit button.
+    -->
+    <template id="mage-guild-template">
+      <div class="town-hall-backdrop mage-guild-backdrop">
+        <section class="mage-guild" role="dialog" aria-modal="true" aria-label="Mage Guild" tabindex="-1">
+          <div class="mage-guild__room" aria-hidden="true">
+            <div class="mage-guild__window" style="--x: 332; --y: 76; --w: 150; --h: 210"></div>
+            <div class="mage-guild__niches" style="--x: 38; --y: 40; --w: 100; --h: 482"></div>
+            <div class="mage-guild__arches" style="--x: 172; --y: 30; --w: 104; --h: 316"></div>
+            <div class="mage-guild__bookshelf" style="--x: 548; --y: 18; --w: 236; --h: 362"></div>
+            <div class="mage-guild__telescope" style="--x: 262; --y: 262; --w: 124; --h: 112"></div>
+            <div class="mage-guild__bottles" style="--x: 330; --y: 236; --w: 200; --h: 140"></div>
+            <div class="mage-guild__table" style="--x: 146; --y: 372; --w: 654; --h: 184"></div>
+          </div>
+          <div class="mage-guild__levels"></div>
+          <p class="mage-guild__status" role="status" aria-label="Mage Guild status bar" style="--x: 7; --y: 556; --w: 737; --h: 40"></p>
+          <button class="mage-guild__close" type="button" data-mage-guild-action="close" aria-label="Close" aria-keyshortcuts="Escape Enter" data-status="Exit Mage Guild" style="--x: 748; --y: 556; --w: 46; --h: 40">
+            <svg viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+          </button>
         </section>
       </div>
     </template>
