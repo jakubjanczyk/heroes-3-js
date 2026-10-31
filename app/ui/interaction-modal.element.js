@@ -185,9 +185,10 @@ function renderQuestionButtons(host, { isQuestion, canCancel }) {
   }
 }
 
-function renderChoicePicture(document, { picture, initials }) {
+function renderChoicePicture(document, { picture, initials, isSpellScroll }) {
   const icon = document.createElement('span')
   icon.className = 'interaction-modal__choice-picture'
+  icon.classList.toggle('interaction-modal__choice-picture--spell-scroll', Boolean(isSpellScroll))
   icon.setAttribute('aria-hidden', 'true')
   if (picture) {
     icon.style.backgroundImage = `url('${picture}')`

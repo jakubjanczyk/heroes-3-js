@@ -443,9 +443,9 @@ In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
 - [x] The upgrade offer drawn by the class's weights, as the new skill is (it was an even pick)
 
 ##### 4.8.2.4 Scholar
-- [ ] Two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
-- [ ] The message over the exchange screen naming the spells learned and taught, with the Scholar's picture and the spells', 8 pictures at a time, OK for the next ones
-- [ ] Kept after a reload
+- [x] Two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
+- [x] The message over the exchange screen naming the spells learned and taught, with the Scholar's picture and the spells', 8 pictures at a time, OK for the next ones
+- [x] Kept after a reload
 - [ ] A visiting hero and the town's garrison hero (6.4)
 
 ##### 4.8.2 later, with the other factions (6.5)
