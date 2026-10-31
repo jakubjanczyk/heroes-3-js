@@ -102,7 +102,7 @@ Checked against the Heroes 3 wiki's raw page source (List of spells, each spell'
 ### Where spell points show
 
 - **Hero screen.** The Spell Points frame shows "current/maximum" (engine) under the label "Spell Points" (`core.genrltxt.387`). Hovering it, the status bar says "View Spell Points Info" (`HeroScrn.txt`). Right-clicking it shows "{Spell Points}  Lord Haart currently has 10 spell points out of a maximum of 10.  The maximum number of spell points is 10 times your Knowledge.  It is occasionally possible to have more than your maximum spell points from special events or locations." (`core.genrltxt.205`).
-- **The hero list** has a blue spell points bar to the right of the portrait, on the other side from the movement bar (engine, `IMANA`). It goes up one step per 5 points: a fixed number of points, not a share of the maximum.
+- **The hero list** has a blue spell points bar to the right of the portrait, on the other side from the movement bar (engine, `IMANA`). It goes up one step per 5 points: a fixed number of points, not a share of the maximum. In the game it grows up to some point, then up to three "+" appear on top of it (the user); the rule for them isn't online. For now we draw it as a share of the hero's maximum, as the movement bar is, and check the game's rule much later (10.1).
 - **The info box and the right-click hero popup** show the number under morale and luck (engine).
 - **The exchange screen** shows each hero's spell points by their primary skills (engine). Its right-click is the same text as on the hero screen.
 
@@ -110,7 +110,7 @@ Checked against the Heroes 3 wiki's raw page source (List of spells, each spell'
 
 - **It is an artifact in its own slot** (`artraits.txt`: "{Spell Book}  Left-click on the spell book to view your spells."). It can't be traded or lost in a defeat (wiki, Spell Book). Might heroes (Knights) start without one, Alchemists and Death Knights with one (wiki). In custom scenarios the map maker can give a hero one, with spells.
 - **On the hero screen** it sits in the spell book frame. Clicking it opens the book; hovering, the status bar says "View Spells" (`HeroScrn.txt`).
-- **On the adventure map** the Cast spell button opens it on the adventure spells ("{Cast Spell}  Cast a non-combat spell", `Help.txt`). The engine disables the button for a hero with no spell book.
+- **On the adventure map** the Cast spell button opens it on the adventure spells ("{Cast Spell}  Cast a non-combat spell", `Help.txt`). The engine disables the button for a hero with no spell book; we do the same (decided with the user).
 
 ### The spell book window
 
@@ -132,17 +132,13 @@ Checked against the open-source engine's spell book window and the `Help.txt` bu
 - **Data.** `game/data/spells.json`: the 70 spells keyed like the other data (`MAGIC_ARROW`), in the game's order, each with `name`, `level`, `schools`, `kind` (`adventure` or `combat`), `costs` (four numbers, none to Expert) and `descriptions` (four texts). Titan's Lightning Bolt has `special: true`, so nothing ever puts it in a book or a guild.
 - **A hero's spell book** is the hero's `spellBook` (true or false) and `spells` (the spells in it), not an entry in the artifacts: it can't be moved, traded or lost, so the artifact code needn't know it. The hero screen draws it in the spell book frame.
 - **Spell points** are part of the hero's state: `spellPoints`, set to the maximum when the hero comes into play (scenario, tavern) and changed only by facts. The new day's refill or regeneration is worked out from the saved facts on `fact.turn.ended`, as weekly bonuses already are, so a reload gets the same numbers.
-- **The scenario.** A hero may have `"spellBook": true` and `"spells": ["MAGIC_ARROW", …]`; spells without a spell book are a scenario mistake. The demo map's first hero, Lord Haart (Knowledge 1, so 10 spell points), gets a spell book with spells that fill both pages of combat spells and every school tab, and some he can't afford yet.
+- **The scenario.** A hero may have `"spellBook": true` and `"spells": ["MAGIC_ARROW", …]`; spells without a spell book are a scenario mistake. The demo map's first hero, Lord Haart (Knowledge 1, so 10 spell points), gets a spell book with spells that show the window's cases:
+  - combat: Magic Arrow (in all four schools), Haste, Shield, Stone Skin, Slow, Bloodlust, Curse, Bless, Cure, Dispel, Lightning Bolt, Ice Bolt, Fireball, Teleport (the cost that changes with every skill level), Prayer and Implosion. Sixteen, so All needs a second spread; every level 1 to 5 and every school tab has some; Fireball, Teleport, Prayer and Implosion cost more than his 10 points;
+  - adventure: View Air, View Earth, Visions (in all four schools), Town Portal and Dimension Door, the last two more than he can afford.
 - **The hero classes.** Knights start without a spell book, as now. Starting spells by hero come with the heroes that have them (Clerics, 6.5).
-- **Shown** on the hero screen, in the hero list's bar, in the info box and hero popup, and on the exchange screen, as above.
+- **Shown** on the hero screen, in the hero list's bar (a share of the maximum for now), in the info box and hero popup, and on the exchange screen, as above.
 - **The window** as above, with stand-in pictures: each spell's picture is its name's initials in its school's colour, until there are pictures (10.1).
 - **Fixing an older note.** `2026-10-26-secondary-skills.md` said Mysticism gives "+2 / 3 / 4" a day; it is 2 / 3 / 4 in place of the 1.
-
-## To ask
-
-- **Cast spell with no spell book.** The engine disables the button. We don't know what the game itself does (disabled, or a message): we'll disable it unless you know otherwise.
-- **The hero list's spell points bar** grows by a fixed 5 points a step in the engine, but how many steps it has (the frames of `IMANA`) isn't online. We'd draw it as a share of the hero's maximum, as the movement bar is, unless you know the game's steps.
-- **Lord Haart's spells.** Proposed: Magic Arrow, Haste, Shield, Stone Skin, Slow, Bloodlust, Curse, Bless, Cure, Dispel, Lightning Bolt, Ice Bolt, Fireball and Prayer (14 combat spells, so All needs a second spread, and Fireball and Prayer cost more than his 10), and View Air, View Earth, Visions and Town Portal.
 
 ## Not checked
 

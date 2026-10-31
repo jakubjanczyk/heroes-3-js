@@ -1108,6 +1108,7 @@ Visual and audio excellence. Last mile.
 - [ ] (Not in H3, optional extra) Draw the map with WebGL if the DOM gets too slow
 - [ ] Mine sprites per type
 - [ ] Resource pile sprites per type
+- [ ] The hero list's spell points bar as the game draws it: it grows up to some point, then up to three "+" appear on top. Check the rule in the game; until then it is a share of the hero's maximum, as the movement bar is (`docs/notes/2026-10-31-spell-book-and-spell-points.md`)
 
 ### 10.2 Terrain Sprites
 - [ ] Tile textures per terrain type (grass, dirt, snow, etc.)
