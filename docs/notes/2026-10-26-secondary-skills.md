@@ -105,6 +105,6 @@ What we do:
 
 - Skill pictures; the initials stand in.
 - The hero's portrait in the level-up popup; the initial stands in.
-- Guaranteed Wisdom and magic school offers.
+- Guaranteed Wisdom and magic school offers: 4.8.2.3, see `2026-10-31-mage-guild.md`.
 - The effects (4.7.3), the Witch Hut and other ways to learn a skill (7.7).
 - The other Knights (Tyris), the Clerics and the other factions' heroes.
