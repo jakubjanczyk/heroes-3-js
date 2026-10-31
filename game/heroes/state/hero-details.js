@@ -1,13 +1,20 @@
-import { isHero } from '../../domain/entity-queries.js'
+import { sameTile } from '../../../engine/tile-utils.js'
+import { isHero, isTown } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
 import { putOnArtifact, startingArtifacts } from '../artifacts.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
 import { learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
+import { maxSpellPoints, spellPointsOnNewDay } from '../spell-points.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
 function detailsOf(hero, definitions) {
+  const details = startingDetailsOf(hero, definitions)
+  return { ...details, spellPoints: maxSpellPoints({ entity: details, definitions }) }
+}
+
+function startingDetailsOf(hero, definitions) {
   const name = hero.name ?? definitions?.hero?.name ?? DEFAULT_HERO_NAME
   return {
     name,
@@ -19,6 +26,8 @@ function detailsOf(hero, definitions) {
     ),
     army: hero.army ?? [],
     artifacts: startingArtifacts(hero.artifacts, definitions),
+    spellBook: Boolean(hero.spellBook),
+    spells: hero.spellBook ? (hero.spells ?? []) : [],
     experience: hero.experience ?? 0,
     level: levelForExperience(hero.experience ?? 0),
     levelUpSkills: [],
@@ -38,6 +47,40 @@ function endWeekBonuses(heroes, { turnNumber }) {
   return Object.fromEntries(
     Object.entries(heroes).map(([heroId, hero]) => [heroId, { ...hero, weekBonus: null }])
   )
+}
+
+function hasMageGuild(town) {
+  return (town?.built ?? []).some((buildingId) => buildingId.startsWith('MAGE_GUILD_'))
+}
+
+function isInTownWithMageGuild(heroId, { scenario, previousState }) {
+  const tile = previousState.heroes[heroId]?.tile
+  return (scenario?.entities ?? []).some(
+    (entity) =>
+      isTown(entity) &&
+      sameTile(entity.tile, tile) &&
+      hasMageGuild(previousState.towns?.byId?.[entity.id])
+  )
+}
+
+function regainSpellPoints(heroes, context) {
+  return Object.fromEntries(
+    Object.entries(heroes).map(([heroId, hero]) => [
+      heroId,
+      {
+        ...hero,
+        spellPoints: spellPointsOnNewDay({
+          entity: { ...context.previousState.heroes[heroId], ...hero },
+          definitions: context.definitions,
+          isInTownWithMageGuild: isInTownWithMageGuild(heroId, context)
+        })
+      }
+    ])
+  )
+}
+
+function startNewDay(heroes, detail, context) {
+  return regainSpellPoints(endWeekBonuses(heroes, detail), context)
 }
 
 function addSkills(skills, added) {
@@ -82,7 +125,7 @@ export const heroDetailsSlice = {
     'fact.hero.weekBonus.gained': updateHero((_hero, { entityType, movementPoints }) => ({
       weekBonus: { entityType, movementPoints }
     })),
-    'fact.turn.ended': endWeekBonuses,
+    'fact.turn.ended': startNewDay,
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),

@@ -4,6 +4,8 @@ import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
+import { hasSpellBook } from '../../../game/heroes/spell-book.js'
+import { describeSpellPoints, getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -20,7 +22,8 @@ import {
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_HERO_SCREEN_OPEN_REQUESTED,
-  APP_UI_SELECTED_HERO_CLICKED
+  APP_UI_SELECTED_HERO_CLICKED,
+  APP_UI_SPELL_BOOK_OPEN_REQUESTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
@@ -70,8 +73,17 @@ function artifactAt(target) {
   return target?.closest?.('[data-artifact]') ?? null
 }
 
+function spellPointsAt(target) {
+  return target?.closest?.('[data-spell-points]') ?? null
+}
+
 function popupSourceAt(target) {
-  return secondarySkillAt(target) ?? moraleOrLuckAt(target) ?? artifactAt(target)
+  return (
+    secondarySkillAt(target) ??
+    moraleOrLuckAt(target) ??
+    spellPointsAt(target) ??
+    artifactAt(target)
+  )
 }
 
 function renderSecondarySkill(slot, document, skill) {
@@ -125,7 +137,27 @@ export const registerHeroScreenViewModule = defineModule(
 
       showSecondarySkills(hero)
       showArtifacts(hero)
+      showSpellPoints(hero)
+      showSpellBook(hero)
       showArmy()
+    }
+
+    function showSpellBook(hero) {
+      const frame = heroScreen.querySelector('.hero-screen__spell-book')
+      frame.replaceChildren()
+      if (hasSpellBook(hero)) {
+        const picture = document.createElement('div')
+        picture.className = `${ARTIFACT_PICTURE} hero-screen__spell-book-picture`
+        picture.setAttribute('role', 'img')
+        picture.setAttribute('aria-label', 'Spell Book')
+        frame.append(picture)
+      }
+    }
+
+    function showSpellPoints(hero) {
+      const { value, max } = getHeroSpellPoints({ entity: hero, definitions })
+      heroScreen.querySelector('.hero-screen__spell-points .hero-screen__box-value').textContent =
+        `${value}/${max}`
     }
 
     function showPrimarySkills(hero) {
@@ -198,6 +230,16 @@ export const registerHeroScreenViewModule = defineModule(
       const kind = source.dataset.moraleLuck
       if (kind) {
         return renderMoraleOrLuckPopup(document, describeMoraleOrLuck[kind](selectedHero()))
+      }
+      if (spellPointsAt(source)) {
+        const hero = selectedHero()
+        return renderDescriptionPopup(
+          document,
+          describeSpellPoints({
+            name: hero?.name ?? DEFAULT_HERO_NAME,
+            ...getHeroSpellPoints({ entity: hero, definitions })
+          })
+        )
       }
       const artifact = definitions?.artifacts?.[source.dataset.artifact]
       if (artifact) {
@@ -327,6 +369,7 @@ export const registerHeroScreenViewModule = defineModule(
               const hero = selectedHero()
               showArtifacts(hero)
               showPrimarySkills(hero)
+              showSpellPoints(hero)
             }
           }
         },
@@ -357,6 +400,11 @@ export const registerHeroScreenViewModule = defineModule(
             event.stopPropagation()
             if (event.target.closest('.hero-screen__close')) {
               closeHeroScreen()
+              return
+            }
+
+            if (event.target.closest('.hero-screen__spell-book')) {
+              emit(APP_UI_SPELL_BOOK_OPEN_REQUESTED, { heroId: selectedHero()?.id })
               return
             }
 
@@ -474,7 +522,8 @@ export const registerHeroScreenViewModule = defineModule(
       APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
       APP_COMMAND_HERO_STACK_SPLIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
-      APP_UI_ADVENTURE_MAP_UNCOVERED
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_SPELL_BOOK_OPEN_REQUESTED
     ]
   }
 )

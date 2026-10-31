@@ -3,6 +3,7 @@ import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { startingSecondarySkills } from '../../../game/heroes/secondary-skills.js'
+import { maxSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { tavernOf } from '../../../game/heroes/state/tavern.js'
@@ -94,6 +95,7 @@ export const registerTavernModule = defineModule(
         skills: getHeroPrimarySkills({ entity: hero, definitions }),
         morale: getHeroMorale({ entity: withSkills, definitions }),
         luck: getHeroLuck({ entity: withSkills, definitions }),
+        spellPoints: maxSpellPoints({ entity: withSkills, definitions }),
         army: getHeroArmy({ entity: hero, definitions })
       }
     }
