@@ -167,6 +167,10 @@ export const aSpellDefinition = () =>
           title: `${level}${spell.name}`,
           text
         }))
+      },
+      // A spell with no chance in a town type never comes up in its Mage Guild.
+      inMageGuildOf(townType, chance) {
+        spell.mageGuildChances = { ...spell.mageGuildChances, [townType]: chance }
       }
     })
   )

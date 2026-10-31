@@ -5,6 +5,7 @@
     "schools": ["WATER"],
     "kind": "adventure",
     "costs": [8, 7, 7, 7],
+    "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
         "title": "Summon Boat",
@@ -30,6 +31,7 @@
     "schools": ["WATER"],
     "kind": "adventure",
     "costs": [8, 6, 6, 6],
+    "mageGuildChances": { "CASTLE": 6 },
     "descriptions": [
       {
         "title": "Scuttle Boat",
@@ -55,6 +57,7 @@
     "schools": ["AIR", "EARTH", "FIRE", "WATER"],
     "kind": "adventure",
     "costs": [4, 2, 2, 2],
+    "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
         "title": "Visions",
@@ -80,6 +83,7 @@
     "schools": ["EARTH"],
     "kind": "adventure",
     "costs": [2, 1, 1, 1],
+    "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
         "title": "View earth",
@@ -105,6 +109,7 @@
     "schools": ["AIR"],
     "kind": "adventure",
     "costs": [4, 2, 2, 2],
+    "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
         "title": "Disguise",
@@ -130,6 +135,7 @@
     "schools": ["AIR"],
     "kind": "adventure",
     "costs": [2, 1, 1, 1],
+    "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
         "title": "View Air",
@@ -180,6 +186,7 @@
     "schools": ["WATER"],
     "kind": "adventure",
     "costs": [12, 8, 8, 8],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Water Walk",
@@ -230,6 +237,7 @@
     "schools": ["EARTH"],
     "kind": "adventure",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Town Portal",
@@ -255,6 +263,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Quicksand",
@@ -280,6 +289,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [18, 15, 15, 15],
+    "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {
         "title": "Land Mine",
@@ -305,6 +315,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Force Field",
@@ -330,6 +341,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Fire Wall",
@@ -355,6 +367,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [20, 17, 17, 17],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Earthquake",
@@ -380,6 +393,7 @@
     "schools": ["AIR", "EARTH", "FIRE", "WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 30 },
     "descriptions": [
       {
         "title": "Magic Arrow",
@@ -405,6 +419,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "mageGuildChances": { "CASTLE": 50 },
     "descriptions": [
       {
         "title": "Ice Bolt",
@@ -430,6 +445,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Lightning Bolt",
@@ -480,6 +496,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [24, 20, 20, 20],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Chain Lightning",
@@ -505,6 +522,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 16 },
     "descriptions": [
       {
         "title": "Frost Ring",
@@ -530,6 +548,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {
         "title": "Fireball",
@@ -555,6 +574,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Inferno",
@@ -580,6 +600,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Meteor Shower",
@@ -630,6 +651,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 12 },
     "descriptions": [
       {
         "title": "Destroy Undead",
@@ -680,6 +702,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Shield",
@@ -705,6 +728,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Air Shield",
@@ -730,6 +754,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Fire Shield",
@@ -755,6 +780,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
+    "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
         "title": "Protection from Air",
@@ -780,6 +806,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
         "title": "Protection from Fire",
@@ -805,6 +832,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
         "title": "Protection from Water",
@@ -830,6 +858,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Protection from Earth",
@@ -855,6 +884,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 12 },
     "descriptions": [
       {
         "title": "Anti-magic",
@@ -880,6 +910,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Dispel",
@@ -930,6 +961,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Cure",
@@ -955,6 +987,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [20, 16, 16, 16],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Resurrection",
@@ -1030,6 +1063,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Bless",
@@ -1105,6 +1139,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "mageGuildChances": { "CASTLE": 6 },
     "descriptions": [
       {
         "title": "Precision",
@@ -1130,6 +1165,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
         "title": "Weakness",
@@ -1155,6 +1191,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Stone Skin",
@@ -1180,6 +1217,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "mageGuildChances": { "CASTLE": 6 },
     "descriptions": [
       {
         "title": "Disrupting Ray",
@@ -1205,6 +1243,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
         "title": "Prayer",
@@ -1230,6 +1269,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Mirth",
@@ -1255,6 +1295,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Sorrow",
@@ -1280,6 +1321,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Fortune",
@@ -1305,6 +1347,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Misfortune",
@@ -1330,6 +1373,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Haste",
@@ -1355,6 +1399,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Slow",
@@ -1380,6 +1425,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Slayer",
@@ -1405,6 +1451,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Frenzy",
@@ -1456,6 +1503,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [24, 20, 20, 20],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Counterstrike",
@@ -1481,6 +1529,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [20, 16, 16, 16],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Berserk",
@@ -1506,6 +1555,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [18, 15, 15, 15],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Hypnotize",
@@ -1531,6 +1581,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {
         "title": "Forgetfulness",
@@ -1556,6 +1607,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Blind",
@@ -1581,6 +1633,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [15, 12, 6, 3],
+    "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {
         "title": "Teleport",
@@ -1606,6 +1659,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
+    "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
         "title": "Remove Obstacle",
@@ -1631,6 +1685,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [24, 20, 20, 20],
+    "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
         "title": "Clone",

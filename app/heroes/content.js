@@ -15,6 +15,8 @@ import { registerHeroScreenViewModule } from './modules/hero-screen-view.module.
 import { registerHudModule } from './modules/hud.module.js'
 import { registerInfoBoxModule } from './modules/info-box.module.js'
 import { registerInfoPopupModule } from './modules/info-popup.module.js'
+import { registerMageGuildModule } from './modules/mage-guild.module.js'
+import { registerMageGuildViewModule } from './modules/mage-guild-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
@@ -57,6 +59,7 @@ export const heroesAppContent = Object.freeze({
     registerBattleModule,
     registerTownModule,
     registerTavernModule,
+    registerMageGuildModule,
     registerOwnerFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
@@ -74,6 +77,7 @@ export const heroesAppContent = Object.freeze({
     registerTownRecruitViewModule,
     registerDwellingRecruitViewModule,
     registerTavernViewModule,
+    registerMageGuildViewModule,
     registerHeroScreenViewModule,
     registerSpellBookViewModule,
     registerHeroExchangeViewModule,

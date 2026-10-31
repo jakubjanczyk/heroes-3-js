@@ -1,8 +1,9 @@
+import { isMageGuild } from './mage-guild.js'
 import { FORT_CHAIN, HALL_CHAIN } from './town-buildings.js'
 import { buildingsInEffect } from './town-income.js'
 
 // What clicking a building opens: the hall the Hall, the fort the Fort window, the Tavern the
-// tavern, a dwelling or its horde building (Griffin Bastion) the dwelling's recruit window. The
+// tavern, the Mage Guild its screen, a dwelling or its horde building (Griffin Bastion) the dwelling's recruit window. The
 // other buildings' screens don't exist yet, so clicking them does nothing.
 function openedBy(buildingId, building, monsters) {
   if (buildingId === 'TAVERN') {
@@ -13,6 +14,9 @@ function openedBy(buildingId, building, monsters) {
   }
   if (FORT_CHAIN.includes(buildingId)) {
     return { opens: 'fort' }
+  }
+  if (isMageGuild(buildingId)) {
+    return { opens: 'mage-guild' }
   }
 
   const tier = monsters?.[building.creature]?.tier ?? building.horde?.tier

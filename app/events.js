@@ -58,6 +58,7 @@ export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.req
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
 export const APP_COMMAND_TAVERN_HIRE_REQUESTED = 'command.tavern.hire.requested'
+export const APP_COMMAND_MAGE_GUILD_OPEN_REQUESTED = 'command.mageGuild.open.requested'
 export const APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED =
   'command.town.garrisonStackMove.requested'
 
@@ -130,6 +131,8 @@ export const APP_FACT_HERO_ARTIFACTS_CHANGED = 'fact.hero.artifacts.changed'
 export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
 // The heroes a player's taverns offer this week, and the barkeep's rumour.
 export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
+// The spells a town's Mage Guild has at one level, drawn the first time they are needed.
+export const APP_FACT_MAGE_GUILD_SPELLS_ROLLED = 'fact.mageGuild.spellsRolled'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -167,6 +170,7 @@ export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 export const APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED = 'ui.dwelling.recruit.openRequested'
 export const APP_UI_DWELLING_RECRUIT_UPDATED = 'ui.dwelling.recruit.updated'
 export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
+export const APP_UI_MAGE_GUILD_UPDATED = 'ui.mageGuild.updated'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
@@ -221,7 +225,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_HIRED,
-  APP_FACT_TAVERN_HEROES_OFFERED
+  APP_FACT_TAVERN_HEROES_OFFERED,
+  APP_FACT_MAGE_GUILD_SPELLS_ROLLED
 ])
 
 export function shouldPersistFactEvent(type) {
