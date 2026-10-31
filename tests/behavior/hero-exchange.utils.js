@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { confirmMove } from './adventure-map.utils.js'
-import { readArmySlots, readMoraleAndLuck } from './adventure-panels.utils.js'
+import { readArmySlots, readMoraleAndLuck, readSpellPoints } from './adventure-panels.utils.js'
 import { shiftClick } from './app.utils.js'
 
 export function queryHeroExchange() {
@@ -100,6 +100,10 @@ export function readHeroExchangeStatusBar() {
 
 export function readHeroExchangeMoraleAndLuck(heroName) {
   return readMoraleAndLuck(getHeroSide(heroName))
+}
+
+export function readHeroExchangeSpellPoints(heroName) {
+  return readSpellPoints(getHeroSide(heroName))
 }
 
 function readArtifactFrames(list) {

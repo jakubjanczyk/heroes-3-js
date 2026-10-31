@@ -109,7 +109,8 @@
   text-shadow: 0 1px 0 black;
 }
 
-.hero-exchange__experience {
+.hero-exchange__experience,
+.hero-exchange__spell-points {
   display: grid;
   grid-template-rows: 1fr auto;
   justify-items: center;

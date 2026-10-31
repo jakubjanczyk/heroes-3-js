@@ -3,8 +3,13 @@ import { showMoraleOrLuck } from './morale-and-luck.js'
 
 // Fills a container with the Heroes 3 hero box from `#hero-box-template` in index.html: the
 // portrait (the hero's initial until there are portraits), the name, the four primary skills
-// (an icon each with the value under it, as in the game), morale and luck, and the seven army slots.
-export function renderHeroBox(container, document, { name, skills, morale, luck, army }) {
+// (an icon each with the value under it, as in the game), morale and luck, the spell points and the
+// seven army slots.
+export function renderHeroBox(
+  container,
+  document,
+  { name, skills, morale, luck, spellPoints, army }
+) {
   const box = document.getElementById('hero-box-template').content.cloneNode(true)
 
   const portrait = box.querySelector('.hero-box__portrait')
@@ -19,6 +24,7 @@ export function renderHeroBox(container, document, { name, skills, morale, luck,
 
   showMoraleOrLuck(box.querySelector('.hero-box__morale'), document, 'morale', morale)
   showMoraleOrLuck(box.querySelector('.hero-box__luck'), document, 'luck', luck)
+  box.querySelector('.hero-box__spell-points').textContent = String(spellPoints)
 
   const slots = box.querySelectorAll('.army-slot')
   army.forEach((stack, index) => {

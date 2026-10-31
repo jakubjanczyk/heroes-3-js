@@ -4,6 +4,7 @@ import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
+import { describeSpellPoints, getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -70,8 +71,17 @@ function artifactAt(target) {
   return target?.closest?.('[data-artifact]') ?? null
 }
 
+function spellPointsAt(target) {
+  return target?.closest?.('[data-spell-points]') ?? null
+}
+
 function popupSourceAt(target) {
-  return secondarySkillAt(target) ?? moraleOrLuckAt(target) ?? artifactAt(target)
+  return (
+    secondarySkillAt(target) ??
+    moraleOrLuckAt(target) ??
+    spellPointsAt(target) ??
+    artifactAt(target)
+  )
 }
 
 function renderSecondarySkill(slot, document, skill) {
@@ -125,7 +135,14 @@ export const registerHeroScreenViewModule = defineModule(
 
       showSecondarySkills(hero)
       showArtifacts(hero)
+      showSpellPoints(hero)
       showArmy()
+    }
+
+    function showSpellPoints(hero) {
+      const { value, max } = getHeroSpellPoints({ entity: hero, definitions })
+      heroScreen.querySelector('.hero-screen__spell-points .hero-screen__box-value').textContent =
+        `${value}/${max}`
     }
 
     function showPrimarySkills(hero) {
@@ -198,6 +215,16 @@ export const registerHeroScreenViewModule = defineModule(
       const kind = source.dataset.moraleLuck
       if (kind) {
         return renderMoraleOrLuckPopup(document, describeMoraleOrLuck[kind](selectedHero()))
+      }
+      if (spellPointsAt(source)) {
+        const hero = selectedHero()
+        return renderDescriptionPopup(
+          document,
+          describeSpellPoints({
+            name: hero?.name ?? DEFAULT_HERO_NAME,
+            ...getHeroSpellPoints({ entity: hero, definitions })
+          })
+        )
       }
       const artifact = definitions?.artifacts?.[source.dataset.artifact]
       if (artifact) {
@@ -327,6 +354,7 @@ export const registerHeroScreenViewModule = defineModule(
               const hero = selectedHero()
               showArtifacts(hero)
               showPrimarySkills(hero)
+              showSpellPoints(hero)
             }
           }
         },

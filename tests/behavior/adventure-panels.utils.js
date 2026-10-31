@@ -453,3 +453,14 @@ export function readMoraleAndLuck(container) {
     return `${name} ${box.textContent.trim()}`
   })
 }
+
+// The hero's spell points as the box shows them, e.g. '20'.
+export function readSpellPoints(container) {
+  return within(container).getByRole('group', { name: 'Spell points' }).textContent.trim()
+}
+
+// The spell points bar beside the hero's portrait: how far it is filled, out of its full length.
+export function readHeroListSpellPoints() {
+  const bar = within(getHeroList()).getByRole('progressbar', { name: 'Spell points' })
+  return { value: bar.getAttribute('aria-valuenow'), max: bar.getAttribute('aria-valuemax') }
+}

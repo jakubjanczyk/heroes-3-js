@@ -2,6 +2,7 @@ import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
   builtIn,
@@ -247,6 +248,7 @@ export const registerInfoBoxModule = defineModule(
         skills: getHeroPrimarySkills({ entity: hero, definitions }),
         morale: getHeroMorale({ entity: hero, definitions }),
         luck: getHeroLuck({ entity: hero, definitions }),
+        spellPoints: getHeroSpellPoints({ entity: hero, definitions }).value,
         army
       })
       startRearranging({ hero: army }, (move) => emit(APP_COMMAND_HERO_STACK_MOVE_REQUESTED, move))
