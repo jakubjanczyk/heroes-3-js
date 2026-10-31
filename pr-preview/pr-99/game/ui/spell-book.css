@@ -22,10 +22,6 @@
   }
 }
 
-.game-shell:has(.spell-book) .adventure-panel {
-  visibility: hidden;
-}
-
 .spell-book__window {
   --px: calc(100cqw / 620);
   --air: #6b5bc4;
