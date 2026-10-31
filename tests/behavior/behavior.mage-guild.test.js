@@ -301,6 +301,24 @@ describe('mage guild behavior', () => {
       expect(queryMageGuildMessage()).toBeNull()
     })
 
+    test("while a spell's description is open, clicking another spell keeps it", async () => {
+      const { user } = await startInMageGuild(aGuildScenario())
+      await clickMageGuildSpell(user, 'Haste')
+
+      await clickMageGuildSpell(user, 'Bless')
+
+      expect(readMageGuildMessage()).toEqual(['Haste', 'Haste description.'])
+    })
+
+    test("while a spell's description is open, Close leaves the guild open", async () => {
+      const { user } = await startInMageGuild(aGuildScenario())
+      await clickMageGuildSpell(user, 'Haste')
+
+      await closeMageGuild(user)
+
+      expect(queryMageGuild()).not.toBeNull()
+    })
+
     test('holding the right button on a spell shows its description', async () => {
       const { user } = await startInMageGuild(aGuildScenario())
 

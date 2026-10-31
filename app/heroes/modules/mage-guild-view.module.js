@@ -104,13 +104,21 @@ export const registerMageGuildViewModule = defineModule(
         : null
     }
 
+    // A spell's description, as any message, leaves nothing else to click until OK.
+    function isBehindMessage(target) {
+      const message = part('.mage-guild__message')
+      return Boolean(message) && !message.contains(target)
+    }
+
     function closeMessage() {
-      part('.mage-guild__message')?.remove()
+      part('.mage-guild__message-cover')?.remove()
       part('.mage-guild').focus()
     }
 
     function showMessage({ name, description }) {
-      part('.mage-guild__message')?.remove()
+      part('.mage-guild__message-cover')?.remove()
+      const cover = document.createElement('div')
+      cover.className = 'mage-guild__message-cover'
       const message = document.createElement('div')
       message.className = 'mage-guild__message message-box'
       message.setAttribute('role', 'alertdialog')
@@ -127,7 +135,8 @@ export const registerMageGuildViewModule = defineModule(
       ok.setAttribute('aria-keyshortcuts', 'Enter Escape')
       ok.textContent = 'OK'
       message.append(heading, text, ok)
-      part('.mage-guild').append(message)
+      cover.append(message)
+      part('.mage-guild').append(cover)
       ok.focus()
     }
 
@@ -151,7 +160,7 @@ export const registerMageGuildViewModule = defineModule(
         emit(APP_COMMAND_MAGE_GUILD_OPEN_REQUESTED, { entityId: townId })
         return
       }
-      if (!guildWindow?.contains(target)) {
+      if (!guildWindow?.contains(target) || isBehindMessage(target)) {
         return
       }
 
@@ -208,7 +217,8 @@ export const registerMageGuildViewModule = defineModule(
           type: 'pointerdown',
           handler: (event) => {
             const source = event.target?.closest?.('.mage-guild__scroll')
-            const spell = guildWindow?.contains(source) ? spellAt(source) : null
+            const spell =
+              guildWindow?.contains(source) && !isBehindMessage(source) ? spellAt(source) : null
             if (spell && event.button === 2) {
               openPopup(source, spell)
             }
