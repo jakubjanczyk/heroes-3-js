@@ -114,3 +114,8 @@ export function createHeldArtifactPicture({ document, className }) {
     }
   }
 }
+
+// A red book with a dark spine, as the hero screen's spell book frame draws it.
+const SPELL_BOOK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 42"><rect x="4" y="4" width="28" height="34" fill="#6b1d1d" stroke="#8a6a2a"/><rect x="16" y="4" width="4" height="34" fill="#3a0d0d"/><rect x="8" y="10" width="5" height="3" fill="#c9a24a"/><rect x="23" y="10" width="5" height="3" fill="#c9a24a"/></svg>`
+
+export const SPELL_BOOK_PICTURE = `data:image/svg+xml,${encodeURIComponent(SPELL_BOOK_SVG)}`
