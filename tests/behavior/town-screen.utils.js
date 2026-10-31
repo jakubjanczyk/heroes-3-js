@@ -423,3 +423,89 @@ export async function hireHero(user, heroName) {
 export function readTavernStatusBar() {
   return within(getTavern()).getByRole('status', { name: 'Tavern status bar' }).textContent
 }
+
+export function queryMageGuild() {
+  return screen.queryByRole('dialog', { name: 'Mage Guild' })
+}
+
+function getMageGuild() {
+  const mageGuild = queryMageGuild()
+  expect(mageGuild).toBeTruthy()
+  return mageGuild
+}
+
+export async function openMageGuild(user, buildingName = 'Mage Guild Level 1') {
+  await clickBuildingOnPicture(user, buildingName)
+  getMageGuild()
+}
+
+function getMageGuildCloseButton() {
+  return within(getMageGuild()).getByRole('button', { name: 'Close' })
+}
+
+export async function closeMageGuild(user) {
+  await user.click(getMageGuildCloseButton())
+}
+
+export async function hoverMageGuildCloseButton(user) {
+  await user.hover(getMageGuildCloseButton())
+}
+
+// Each level's scrolls: the spells' names in alphabetical order, then "Closed scroll" for each
+// place of a level not built yet.
+export function readMageGuildLevels() {
+  return Object.fromEntries(
+    within(getMageGuild())
+      .getAllByRole('group')
+      .map((level) => [
+        level.getAttribute('aria-label'),
+        [
+          ...within(level)
+            .queryAllByRole('button')
+            .map((spell) => spell.getAttribute('aria-label'))
+            .sort(),
+          ...within(level)
+            .queryAllByRole('img')
+            .map((scroll) => scroll.getAttribute('aria-label'))
+        ]
+      ])
+  )
+}
+
+function getMageGuildSpell(spellName) {
+  return within(getMageGuild()).getByRole('button', { name: spellName })
+}
+
+export async function clickMageGuildSpell(user, spellName) {
+  await user.click(getMageGuildSpell(spellName))
+}
+
+export async function hoverMageGuildSpell(user, spellName) {
+  await user.hover(getMageGuildSpell(spellName))
+}
+
+export async function holdRightButtonOnMageGuildSpell(user, spellName) {
+  await user.pointer({ keys: '[MouseRight>]', target: getMageGuildSpell(spellName) })
+}
+
+export function readMageGuildStatusBar() {
+  return within(getMageGuild()).getByRole('status', { name: 'Mage Guild status bar' }).textContent
+}
+
+function getMageGuildMessage() {
+  return within(getMageGuild()).getByRole('alertdialog')
+}
+
+// What the guild says on clicking a spell, as [title, text].
+export function readMageGuildMessage() {
+  const message = getMageGuildMessage()
+  return [within(message).getByRole('heading').textContent, message.querySelector('p').textContent]
+}
+
+export function queryMageGuildMessage() {
+  return within(getMageGuild()).queryByRole('alertdialog')
+}
+
+export async function closeMageGuildMessage(user) {
+  await user.click(within(getMageGuildMessage()).getByRole('button', { name: 'OK' }))
+}

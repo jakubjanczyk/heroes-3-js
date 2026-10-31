@@ -428,10 +428,10 @@ See `docs/notes/2026-10-31-spell-book-and-spell-points.md`.
 In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
 
 ##### 4.8.2.1 The guild's spells and its screen
-- [ ] Each guild level rolls its spells: five of level 1, four of level 2, three of level 3, two of level 4 (Castle stops at 4), with Castle's odds and the spells it never gets
-- [ ] Clicking the Mage Guild opens its screen: the spells on scrolls by level, closed scrolls for the levels not built yet
-- [ ] Hovering a spell names it in the status bar; clicking or right-clicking it shows its description
-- [ ] Kept after a reload
+- [x] Each guild level rolls its spells: five of level 1, four of level 2, three of level 3, two of level 4 (Castle stops at 4), with Castle's odds and the spells it never gets
+- [x] Clicking the Mage Guild opens its screen: the spells on scrolls by level, closed scrolls for the levels not built yet
+- [x] Hovering a spell names it in the status bar; clicking or right-clicking it shows its description
+- [x] Kept after a reload
 
 ##### 4.8.2.2 Learning spells
 - [ ] A visiting hero with a spell book learns the guild's spells; up to level 2 without Wisdom, Wisdom opening levels 3, 4 and 5
@@ -750,7 +750,8 @@ Stages, one PR each, done in this order:
 - [x] Hovering a building highlights it and shows its name in the status bar
 - [x] Clicking a dwelling opens its recruit window, the fort the Fort window, the hall the Hall
 - [x] Clicking the Tavern opens the tavern window (4.5.4)
-- [ ] Clicking the other buildings opens their screens as they come: Marketplace and Resource Silo, Mage Guild (4.8), Blacksmith, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
+- [x] Clicking the Mage Guild opens its screen (4.8.2.1)
+- [ ] Clicking the other buildings opens their screens as they come: Marketplace and Resource Silo, Blacksmith, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
 - [ ] Right-click info on a building (6.1)
 - [ ] A building just built fades in, as in H3
 

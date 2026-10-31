@@ -21,19 +21,20 @@ Checked against the Heroes 3 wiki's raw page source (Mage Guild, its Spell proba
 
 ### The screen
 
-- **Opening it.** Clicking the Mage Guild on the town picture (engine). It fills the screen.
+- **Opening it.** Clicking the Mage Guild on the town picture (engine).
 - **The picture** (the user's screenshot of Castle): a stone room with a window onto the town's landscape. The scrolls sit where each level's spells go: level 1 on the shelf under the table (five), level 2 in the niches of the left column (four), level 3 on the bookshelf (three), level 4 in the arches of the middle column (two). The engine puts them at the same places for Castle.
 - **A spell's scroll** shows its picture (engine: the spell scroll images). We have no spell pictures yet, so the scroll shows the spell's name (decided with the user).
 - **Levels not built yet** show closed scrolls in their places, as many as the level will have (engine; the screenshot shows two closed scrolls for Castle's level 4). A town's levels above its highest have no scrolls at all (engine: it only goes up to the town's highest level).
 - **Hovering a spell** shows its name in the status bar at the bottom (engine).
 - **Clicking a spell** shows its description in a message with OK; **right-clicking** shows it in a popup while the button is held. Both show the description at no skill in its school (engine). Not checked against a second source.
-- **The bottom bar** shows the kingdom's resources and the date, and the exit button on the right: "Exit Mage Guild" (`core.genrltxt.593`, wiki Translation Data). Enter and Escape close it too (engine).
+- **The bottom bar** has the status bar and the exit button on the right: "Exit Mage Guild" (`core.genrltxt.593`, wiki Translation Data). Enter and Escape close it too (engine). Under it, the kingdom's resources and the date.
 
 ## What we do
 
 - **Data.** Each spell in `game/data/spells.json` gets its weight per town (`mageGuildChances`, `{ "CASTLE": 30 }`); a town missing from it never gets the spell. Only Castle's weights for now.
 - **Rolling.** A guild level's spells are drawn the first time they are needed (the screen opened, later a hero visiting) and saved as a fact, as the tavern's heroes are. A level drawn once never changes; building the next level draws only that level. The player sees the same as when they are drawn at the start, and a town that starts the scenario with a guild needs nothing extra.
-- **The screen** is drawn with CSS: the stone room, the window, the shelves, the niches and the bookshelf, with the scrolls at Castle's places. A scroll is the spell's name on a parchment; a closed scroll is a rolled one.
+- **The screen** is a window over the town screen, as the Hall and the Tavern are; the resources and the date stay in the HUD under it (decided with the user). It keeps the game's 800 x 600 layout, drawn with CSS: the stone room, the window, the niches, the arches, the bookshelf and the table, with the scrolls at Castle's places. A scroll is the spell's name on a parchment; a closed scroll is two rolled ones.
+- **The highest level** is the last guild level the town type's Hall offers: Castle's stops at 4, so its screen has no place for level 5.
 
 ## Not checked
 
