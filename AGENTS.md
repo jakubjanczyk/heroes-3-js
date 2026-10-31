@@ -4,7 +4,7 @@
 
 - `docs/ROADMAP.md` — what is built and what comes next, milestone by milestone.
 - `docs/notes/` — one note per feature: the game's rules as checked against the sources, what we decided and what is left.
-- `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`).
+- `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`, and `scripts/screenshot.mjs`, which plays the app in Chromium on desktop and phone sizes and saves screenshots).
 - Co-located test files — Vitest tests (`**/*.test.js` next to source files).
 - `engine/` (infrastructure: bus, store), `game/` (rules, pure functions; `game/heroes/` is this game's content) and `app/` (modules wiring the rules to the page).
 
@@ -97,5 +97,6 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - links to the roadmap item and the feature's note (e.g. `docs/notes/2026-10-30-combination-artifacts.md`)
   - screenshots or a short screencast when UI behavior changes
 - Don't open a PR for a docs-only change (roadmap, notes, these guidelines): commit it on the working branch and let it ship with the feature it plans.
-- When a feature or fix is finished (tests and lint passing, changes pushed), open a PR without waiting to be asked, then share its preview URL with the user. The PR preview workflow comments the URL on the PR once it has deployed (`https://jakubjanczyk.github.io/heroes-3-js/pr-preview/pr-<number>/`); take it from that comment.
-- When the work changes what the player sees, finish by showing the user screenshots of it working in the real app, not only passing tests. Run the app (`npm run dev:static`), play it in Playwright's Chromium the way a player would (walk the hero there, click, right-click), and screenshot each visible outcome: the message, the screen that changed, the popup or status bar. Send them to the user with a short caption saying what each one shows. If something can't be reached or shown that way (a new map object nobody can walk to, say), that is a bug to fix, not a screenshot to skip. Skip the screenshots only when nothing visible changed (docs, refactors, internal rules).
+- A session that asks what's next on the roadmap follows the `next-part` skill (`.claude/skills/next-part/SKILL.md`); finishing a part, and merging it later, follows the `ship` skill (`.claude/skills/ship/SKILL.md`).
+- When a feature or fix is finished (tests and lint passing, changes pushed), open a PR without waiting to be asked, then share its preview URL with the user. The PR preview workflow comments the URL on the PR once it has deployed (`https://jakubjanczyk.github.io/heroes-3-js/pr-preview/pr-<number>/`); take it from that comment, which comes after the turn ends: subscribe to the PR so it wakes the session.
+- When the work changes what the player sees, finish by showing the user screenshots of it working in the real app, not only passing tests. Play it in Playwright's Chromium the way a player would (walk the hero there, click, right-click) with `scripts/screenshot.mjs`, as the `ship` skill shows, and screenshot each visible outcome on desktop and phone sizes: the message, the screen that changed, the popup or status bar. Send them to the user with a short caption saying what each one shows. If something can't be reached or shown that way (a new map object nobody can walk to, say), that is a bug to fix, not a screenshot to skip. Skip the screenshots only when nothing visible changed (docs, refactors, internal rules).
