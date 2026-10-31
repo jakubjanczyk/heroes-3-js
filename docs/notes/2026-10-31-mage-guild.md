@@ -102,25 +102,29 @@ Checked against the Heroes 3 wiki's raw page source (Scholar, Wisdom, and the `G
 - **Wisdom still limits.** Each hero learns only the levels their own Wisdom lets them (2 without it, then 3, 4, 5), whatever the Scholar's level (the engine: the lower of the two limits). The wiki says Wisdom is needed to learn level 3 and above, from any source but scrolls and Tomes.
 - **Both need a spell book.** Without one on either hero nothing is taught (the engine). A spell the hero already knows isn't learned again.
 - **When.** Every time the two heroes meet, as the exchange screen opens (the engine). Later, also when a hero walks into a town with a garrison hero (6.4).
-- **The window.** When the exchange screen opens and at least one spell is taught, a window over it shows the spells taught, a picture each with its name, and no text (the user, from the game). It holds at most 8 spells (the user remembers 6 or 8; the engine's message window takes at most 8 pictures); with more, OK shows the next ones until all are shown. The exchange screen stays open under it.
-- The engine instead writes one message from the game's texts (`core.genrltxt.139` to `142`, `147`, `148`: "%s, who has studied magic extensively, learns … from %s and teaches … to %s"), with the Scholar skill's picture and every spell under it. We follow the game as the user remembers it.
-- The spells are listed in the game's spell order (the engine keeps them by spell number).
+- **The window.** When the exchange screen opens and at least one spell is taught, a message opens over it (a screenshot from the user, the engine). Its text, as the screenshot shows it: "Coronius, who has studied magic extensively, learns Armageddon, Counterstrike, Animate Dead, Forgetfulness, Frost Ring, Hypnotize, Visions, Curse and View Earth from Mephala, and teaches Slayer to Mephala."
+  - The hero with the higher Scholar is the subject; on a tie, the hero who walked up (the engine).
+  - "learns … from %s" only when they learn something, "teaches … to %s" only when they teach something, ", and " between the two, a full stop at the end (the screenshot). The game's text lines (`core.genrltxt.139` to `142`, `147`, `148`, wiki Translation Data) have " and " with no comma and no full stop; the screenshot's punctuation may be Horn of the Abyss's.
+  - The spells in each list are joined with ", " and the last two with " and ", ordered by level from the highest, then by name (the screenshot; the engine orders them by spell number).
+  - Under the text: the Scholar skill's picture captioned with its level ("Expert Scholar", the higher of the two heroes'), then the spells' pictures with their names; at most 8 pictures in a window (the screenshot, the engine's message window). With more, OK shows the next ones (the user).
 
 ### What we do
 
 - Taught spells are saved as `fact.hero.spells.learned` for each hero who learns any, so a reload keeps them and replays no message.
 - A spell's picture is its name on a scroll, as in the Mage Guild. The spells the hero who walked up learns come first, then the ones they teach.
-- The spell order is the order of `spells.json`.
+- The Scholar picture is the skill's stand-in (its initials), as the Witch Hut's.
 
 ### Not checked
 
 - That Wisdom limits what Scholar teaches comes from the engine only; the wiki's Scholar page says nothing on it.
-- The window comes from the user's memory of the game; how many spells it holds (6 or 8) and their order aren't confirmed by a second source.
+- The window's text and pictures come from one screenshot, which looks like Horn of the Abyss (its Scholar popup lists the weekly spell, a Horn of the Abyss rule). Which spells the next window shows isn't confirmed.
 
 ## Not yet
 
 - A hero learning spells on gaining Wisdom while in a town (a level-up there), and a hero in the town's garrison (6.4).
 - Scholar between a visiting hero and the town's garrison hero (6.4).
+- Eagle Eye (8.1) shows the spells it learns in a window like Scholar's; reuse this one.
+- Horn of the Abyss's Scholar (a chance to learn a spell each week, spells lasting into the next combat) is left out.
 - A hero learning spells on gaining Wisdom in a town: a hero can't gain a level in a town yet (no town building or garrison gives experience).
 - Other factions: their highest level, their weights and spells they never get, Tower's Library (one more spell of each level), Conflux's Aurora Borealis (every spell), their own screens (6.5).
 - Banned spells and map makers choosing a town's spells (9.1).

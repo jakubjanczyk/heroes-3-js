@@ -444,7 +444,7 @@ In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
 
 ##### 4.8.2.4 Scholar
 - [ ] Two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
-- [ ] A window over the exchange screen showing the spells taught, 8 at a time, OK for the next ones
+- [ ] The message over the exchange screen naming the spells learned and taught, with the Scholar's picture and the spells', 8 pictures at a time, OK for the next ones
 - [ ] Kept after a reload
 - [ ] A visiting hero and the town's garrison hero (6.4)
 
@@ -464,7 +464,7 @@ The combat spells, in 5.8.
 #### 4.8 later
 - [ ] Map objects: the Shrines of Magic Incantation, Gesture and Thought, Magic Well, Magic Spring, Pyramid, spells from Pandora's Box (7.7)
 - [ ] Artifacts: the spell scrolls, the Charm, Talisman and Mystic Orb of Mana, the Tomes and Orbs, Wizard's Well, Titan's Thunder's spell book and bolt (7.8)
-- [ ] Eagle Eye: learning a spell an enemy hero casts in battle (8.1)
+- [ ] Eagle Eye: learning a spell an enemy hero casts in battle (8.1), shown in a window like Scholar's
 
 ### 4.9 Morale and Luck
 See `docs/notes/2026-10-28-morale-and-luck.md` and, for battle, `docs/notes/2026-10-28-morale-and-luck-in-battle.md`.
