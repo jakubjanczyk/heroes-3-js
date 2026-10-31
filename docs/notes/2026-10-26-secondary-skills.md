@@ -38,7 +38,7 @@ Checked against the Heroes 3 wiki (heroes.thelazy.net: Secondary skill, Castle, 
 
 ## For later
 
-**4.7.2: choosing on level-up** (done). One offer is a skill the hero has at Basic or Advanced, picked at random; the other is weighted by the class's table. With 8 skills, both are upgrades. A skill banned for the class (Necromancy outside Necropolis) has weight 0 here. The weights:
+**4.7.2: choosing on level-up** (done). One offer is a skill the hero has at Basic or Advanced, drawn by the class's weights; the other is weighted by the class's table. With 8 skills, both are upgrades. A skill banned for the class (Necromancy outside Necropolis) has weight 0 here. The weights:
 
 | Skill | Knight | Cleric | | Skill | Knight | Cleric |
 |---|---|---|---|---|---|---|
@@ -91,11 +91,11 @@ The wiki's Knight table also lists Interference (5), a Horn of the Abyss skill w
 
 ## Choosing on level-up (4.7.2)
 
-How the game does it: each level-up popup ("Christian has gained a level.", "Christian is now a level 21 Knight.", the primary skill gained) shows two skills with "or" between them, the skill's picture over its level and name ("Basic" over "Navigation"). Nothing is picked at first and the checkmark is disabled until the player picks one. When the hero can only learn one skill it is the only one shown; when there is nothing left to learn there is none, and the checkmark just closes the popup. The game also makes sure Wisdom comes up at least every 6 levels and a magic school every 4; we leave that out for now.
+How the game does it: each level-up popup ("Christian has gained a level.", "Christian is now a level 21 Knight.", the primary skill gained) shows two skills with "or" between them, the skill's picture over its level and name ("Basic" over "Navigation"). Nothing is picked at first and the checkmark is disabled until the player picks one. When the hero can only learn one skill it is the only one shown; when there is nothing left to learn there is none, and the checkmark just closes the popup. The game also makes sure Wisdom comes up at least every 6 levels and a magic school every 4; that came with 4.8.2.3 (`2026-10-31-mage-guild.md`).
 
 What we do:
 
-- `offerSecondarySkills` (`game/heroes/secondary-skills.js`): the first offer is an upgrade of one of the hero's Basic or Advanced skills, picked evenly, or a new skill when there is none; the second is a new skill by the class's `secondarySkillWeights` (`hero-classes.json`, the Knight's from the table above), or another upgrade when the hero has 8 skills. A new skill is never one the hero has, nor one weighted 0. The two offers are never the same skill.
+- `offerSecondarySkills` (`game/heroes/secondary-skills.js`): the first offer is an upgrade of one of the hero's Basic or Advanced skills, drawn by the class's weights (a skill weighted 0 counts as 1; until 4.8.2.3 it was picked evenly), or a new skill when there is none; the second is a new skill by the class's `secondarySkillWeights` (`hero-classes.json`, the Knight's from the table above), or another upgrade when the hero has 8 skills. A new skill is never one the hero has, nor one weighted 0. The two offers are never the same skill.
 - Levels are taken one at a time. `hero-levels.module.js` rolls a level's primary skill and its offers and logs them in `fact.hero.leveledUp` (`skillOffers`), then opens the popup. The pick is logged as `fact.hero.secondarySkill.learned` (`skill`, `level`), which adds the skill in the next slot or raises it in its own; only then is the next level rolled, so its offers count the pick.
 - The popup tells the hero-levels module what was picked through `ui.interaction.modal.confirmed`, which the modal sends with the popup's `subject` just before `ui.interaction.modal.closed`. So the next level-up popup is already queued when the interaction module, which waits for every popup to close, would start the next queued battle.
 - The `heroDetails` slice keeps each hero's `level` and the `pendingLevelUp` not yet picked. After a reload, a pending level-up's popup opens again with the same offers.

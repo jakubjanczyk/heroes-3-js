@@ -2,6 +2,7 @@ import { levelForExperience, rollPrimarySkill } from '../../../game/heroes/hero-
 import { PRIMARY_SKILLS } from '../../../game/heroes/primary-skills.js'
 import {
   describeSecondarySkill,
+  dueSkillGuarantees,
   offerSecondarySkills
 } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -64,7 +65,12 @@ export const registerHeroLevelsModule = defineModule(
         skillOffers: offerSecondarySkills({
           secondarySkills: hero.secondarySkills,
           weights: heroClass?.secondarySkillWeights,
-          random
+          random,
+          guaranteed: dueSkillGuarantees({
+            heroClass,
+            level,
+            lastOfferedLevels: hero.lastOfferedLevels
+          })
         })
       }
       emit(APP_FACT_HERO_LEVELED_UP, { heroId, ...levelUp })

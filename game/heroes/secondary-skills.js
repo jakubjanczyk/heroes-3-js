@@ -24,42 +24,103 @@ export function describeSecondarySkill({ skill, level }, definitions) {
 export const MAX_SECONDARY_SKILLS = 8
 const NEXT_LEVEL = Object.freeze({ BASIC: 'ADVANCED', ADVANCED: 'EXPERT' })
 
-function pickUpgrade({ secondarySkills, offered, random }) {
-  const upgradable = secondarySkills.filter(
-    ({ skill, level }) => NEXT_LEVEL[level] && !offered.includes(skill)
-  )
-  if (upgradable.length === 0) {
-    return null
-  }
-
-  const { skill, level } = upgradable[Math.floor(random() * upgradable.length)]
-  return { skill, level: NEXT_LEVEL[level] }
-}
-
-function pickNewSkill({ secondarySkills, weights, offered, random }) {
-  if (secondarySkills.length >= MAX_SECONDARY_SKILLS) {
-    return null
-  }
-
-  const known = new Set(secondarySkills.map(({ skill }) => skill))
-  const candidates = Object.entries(weights ?? {}).filter(
-    ([skill, weight]) => weight > 0 && !known.has(skill) && !offered.includes(skill)
-  )
-  const total = candidates.reduce((sum, [, weight]) => sum + weight, 0)
+function drawWeighted(candidates, random) {
+  const total = candidates.reduce((sum, { weight }) => sum + weight, 0)
   if (total === 0) {
     return null
   }
 
   const roll = random() * total
   let threshold = 0
-  for (const [skill, weight] of candidates) {
-    threshold += weight
+  for (const candidate of candidates) {
+    threshold += candidate.weight
     if (roll < threshold) {
-      return { skill, level: 'BASIC' }
+      return candidate
     }
   }
 
-  return { skill: candidates.at(-1)[0], level: 'BASIC' }
+  return candidates.at(-1)
+}
+
+function narrowToGuaranteed(candidates, guaranteed) {
+  for (const skills of guaranteed) {
+    const due = candidates.filter(({ skill }) => skills.includes(skill))
+    if (due.length > 0) {
+      return due
+    }
+  }
+
+  return candidates
+}
+
+// A skill the class can't learn but the hero already has is still upgraded now and then.
+function upgradeCandidates({ secondarySkills, weights, offered }) {
+  return secondarySkills
+    .filter(({ skill, level }) => NEXT_LEVEL[level] && !offered.includes(skill))
+    .map(({ skill, level }) => ({
+      skill,
+      level: NEXT_LEVEL[level],
+      weight: Math.max(1, weights?.[skill] ?? 0)
+    }))
+}
+
+function newSkillCandidates({ secondarySkills, weights, offered }) {
+  if (secondarySkills.length >= MAX_SECONDARY_SKILLS) {
+    return []
+  }
+
+  const known = new Set(secondarySkills.map(({ skill }) => skill))
+  return Object.entries(weights ?? {})
+    .filter(([skill, weight]) => weight > 0 && !known.has(skill) && !offered.includes(skill))
+    .map(([skill, weight]) => ({ skill, level: 'BASIC', weight }))
+}
+
+function pickFrom(candidatesOf) {
+  return ({ guaranteed, random, ...hero }) => {
+    const candidates = narrowToGuaranteed(candidatesOf(hero), guaranteed)
+    const picked = drawWeighted(candidates, random)
+    return picked && { skill: picked.skill, level: picked.level }
+  }
+}
+
+const pickUpgrade = pickFrom(upgradeCandidates)
+const pickNewSkill = pickFrom(newSkillCandidates)
+
+export const WISDOM = 'WISDOM'
+export const MAGIC_SCHOOLS = Object.freeze([
+  'FIRE_MAGIC',
+  'AIR_MAGIC',
+  'WATER_MAGIC',
+  'EARTH_MAGIC'
+])
+
+const GUARANTEE_INTERVALS = Object.freeze({
+  MIGHT: Object.freeze({ wisdom: 6, magicSchool: 4 }),
+  MAGIC: Object.freeze({ wisdom: 3, magicSchool: 3 })
+})
+
+// Wisdom comes before the magic schools when both are due.
+export function dueSkillGuarantees({ heroClass, level, lastOfferedLevels = {} }) {
+  const intervals = GUARANTEE_INTERVALS[heroClass?.kind]
+  if (!intervals) {
+    return []
+  }
+
+  const lastOffered = (skills) =>
+    Math.max(0, ...skills.map((skill) => lastOfferedLevels[skill] ?? 0))
+  return [
+    { skills: [WISDOM], interval: intervals.wisdom },
+    { skills: [...MAGIC_SCHOOLS], interval: intervals.magicSchool }
+  ]
+    .filter(({ skills, interval }) => level - lastOffered(skills) >= interval)
+    .map(({ skills }) => skills)
+}
+
+export function lastOfferedLevelsAfter(lastOfferedLevels, { level, skillOffers }) {
+  return {
+    ...lastOfferedLevels,
+    ...Object.fromEntries(skillOffers.map(({ skill }) => [skill, level]))
+  }
 }
 
 export function learnSecondarySkill(secondarySkills, learned) {
@@ -69,15 +130,16 @@ export function learnSecondarySkill(secondarySkills, learned) {
     : [...secondarySkills, learned]
 }
 
-export function offerSecondarySkills({ secondarySkills, weights, random }) {
-  const pick = (first, second, offered) =>
-    first({ secondarySkills, weights, offered, random }) ??
-    second({ secondarySkills, weights, offered, random })
-  const firstOffer = pick(pickUpgrade, pickNewSkill, [])
+export function offerSecondarySkills({ secondarySkills, weights, random, guaranteed = [] }) {
+  const pick = (first, second, offered, due) =>
+    first({ secondarySkills, weights, offered, random, guaranteed: due }) ??
+    second({ secondarySkills, weights, offered, random, guaranteed: due })
+  const firstOffer = pick(pickUpgrade, pickNewSkill, [], guaranteed)
   if (!firstOffer) {
     return []
   }
 
-  const secondOffer = pick(pickNewSkill, pickUpgrade, [firstOffer.skill])
+  const stillDue = guaranteed.filter((skills) => !skills.includes(firstOffer.skill))
+  const secondOffer = pick(pickNewSkill, pickUpgrade, [firstOffer.skill], stillDue)
   return secondOffer ? [firstOffer, secondOffer] : [firstOffer]
 }

@@ -84,8 +84,8 @@ Checked against the Heroes 3 wiki's raw page source (Secondary skill, Wisdom, He
 ### What we do
 
 - Each hero class says whether it is might or magic (`"kind": "MIGHT"` in `hero-classes.json`); might is 6 and 4 levels, magic 3 and 3.
-- The levels Wisdom and a school were last offered are worked out from the level-ups already saved (their offers), so nothing new is saved and a reload counts the same. A hero starts as if last offered them at level 0, whatever level they start at: the engine plays a map's high-level hero through the level-ups they skipped, we don't, so a scenario hero starting at level 5 without Wisdom is offered it at level 6 (to be confirmed with the user).
-- The upgrade offer stays an even pick among the hero's Basic and Advanced skills when nothing is due (4.7.2).
+- The levels Wisdom and a school were last offered are worked out from the level-ups already saved (their offers), so nothing new is saved and a reload counts the same. A hero starts as if last offered them at level 0, whatever level they start at: the engine plays a map's high-level hero through the level-ups they skipped, we don't, so a scenario hero starting at level 5 without Wisdom is offered it at level 6 (decided with the user).
+- The upgrade offer is drawn by the class's weights among the hero's Basic and Advanced skills, a skill weighted 0 counting as 1 (wiki, Secondary skill step 4 and Hero class; the engine). 4.7.2 had picked it evenly; fixed with this part.
 
 ### Not checked
 
