@@ -4,7 +4,7 @@ import { updateHero } from '../../state/core-slices.js'
 import { putOnArtifact, startingArtifacts } from '../artifacts.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
-import { learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
+import { heroOfTheGame, learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
 import { maxSpellPoints, spellPointsOnNewDay } from '../spell-points.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
@@ -12,6 +12,13 @@ const DEFAULT_HERO_NAME = 'Hero'
 function detailsOf(hero, definitions) {
   const details = startingDetailsOf(hero, definitions)
   return { ...details, spellPoints: maxSpellPoints({ entity: details, definitions }) }
+}
+
+// A scenario may give a hero a spell book; otherwise the game's hero of that name brings theirs.
+function startingSpellBook(hero, name, definitions) {
+  const source = hero.spellBook === undefined ? heroOfTheGame(definitions?.heroes, name) : hero
+  const spellBook = Boolean(source?.spellBook)
+  return { spellBook, spells: spellBook ? (source.spells ?? []) : [] }
 }
 
 function startingDetailsOf(hero, definitions) {
@@ -26,8 +33,7 @@ function startingDetailsOf(hero, definitions) {
     ),
     army: hero.army ?? [],
     artifacts: startingArtifacts(hero.artifacts, definitions),
-    spellBook: Boolean(hero.spellBook),
-    spells: hero.spellBook ? (hero.spells ?? []) : [],
+    ...startingSpellBook(hero, name, definitions),
     experience: hero.experience ?? 0,
     level: levelForExperience(hero.experience ?? 0),
     levelUpSkills: [],
@@ -128,6 +134,10 @@ export const heroDetailsSlice = {
     'fact.turn.ended': startNewDay,
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
+    'fact.hero.spellBook.bought': updateHero(() => ({ spellBook: true })),
+    'fact.hero.spells.learned': updateHero((hero, { spells }) => ({
+      spells: [...new Set([...hero.spells, ...spells])]
+    })),
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
     'fact.hero.artifacts.changed': updateHero((_hero, { artifacts }) => ({ artifacts })),
     'fact.artifact.pickedUp': (heroes, detail, { definitions }) =>

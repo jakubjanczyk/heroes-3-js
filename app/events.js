@@ -133,6 +133,8 @@ export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
 export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
 // The spells a town's Mage Guild has at one level, drawn the first time they are needed.
 export const APP_FACT_MAGE_GUILD_SPELLS_ROLLED = 'fact.mageGuild.spellsRolled'
+export const APP_FACT_HERO_SPELL_BOOK_BOUGHT = 'fact.hero.spellBook.bought'
+export const APP_FACT_HERO_SPELLS_LEARNED = 'fact.hero.spells.learned'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -226,7 +228,9 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_HIRED,
   APP_FACT_TAVERN_HEROES_OFFERED,
-  APP_FACT_MAGE_GUILD_SPELLS_ROLLED
+  APP_FACT_MAGE_GUILD_SPELLS_ROLLED,
+  APP_FACT_HERO_SPELL_BOOK_BOUGHT,
+  APP_FACT_HERO_SPELLS_LEARNED
 ])
 
 export function shouldPersistFactEvent(type) {
