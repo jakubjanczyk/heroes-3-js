@@ -247,11 +247,17 @@
   }
 }
 
+.mage-guild__message-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgb(0 0 0 / 0.35);
+}
+
 .mage-guild__message {
   position: absolute;
   inset-inline: 28%;
   inset-block-start: 30%;
-  z-index: 1;
   display: grid;
   gap: calc(8 * var(--px));
   padding: calc(14 * var(--px));
