@@ -444,6 +444,9 @@ In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
 
 ##### 4.8.2.4 Scholar
 - [ ] Two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
+- [ ] The message naming the spells learned and taught, with the Scholar's picture and the spells'
+- [ ] Kept after a reload
+- [ ] A visiting hero and the town's garrison hero (6.4)
 
 ##### 4.8.2 later, with the other factions (6.5)
 - [ ] Each faction's highest guild level (Stronghold and Fortress 3, Castle 4, the others 5); the screen has no closed scrolls above it

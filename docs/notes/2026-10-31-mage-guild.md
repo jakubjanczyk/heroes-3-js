@@ -1,6 +1,6 @@
 # Mage Guild (2026-10-31)
 
-Roadmap 4.8.2, the second of eight parts of hero magic (4.8, 5.8), built in four parts of its own: the guild's spells and its screen (4.8.2.1), learning spells and buying a spell book (4.8.2.2), Wisdom and magic schools on level-up (4.8.2.3), Scholar (4.8.2.4). This note covers parts 1 to 3; Scholar adds its section when it is planned.
+Roadmap 4.8.2, the second of eight parts of hero magic (4.8, 5.8), built in four parts of its own: the guild's spells and its screen (4.8.2.1), learning spells and buying a spell book (4.8.2.2), Wisdom and magic schools on level-up (4.8.2.3), Scholar (4.8.2.4). This note covers all four.
 
 ## How Heroes 3 does it
 
@@ -91,10 +91,39 @@ Checked against the Heroes 3 wiki's raw page source (Secondary skill, Wisdom, He
 
 - The wiki and the engine agree on everything above; the order of the two slots (upgrade first) and that Wisdom offered in the first slot frees the second for a school come from the engine only.
 
+## Scholar (4.8.2.4)
+
+Checked against the Heroes 3 wiki's raw page source (Scholar, Wisdom, and the `GENRLTXT.TXT` page of Translation Data), against an open-source engine's Scholar code and its skill config, and against the skill's own descriptions already in `secondary-skills.json`.
+
+### How Heroes 3 does it
+
+- **What it does.** Two heroes who meet teach each other spells: up to level 2 with Basic Scholar, 3 with Advanced, 4 with Expert (wiki, Scholar; the engine's skill config; the skill's descriptions). Level 5 spells are never taught.
+- **One Scholar is enough.** The higher Scholar of the two heroes counts, and it works both ways: each hero learns the other's spells (wiki: "both gathering heroes learn spells in the teammate's spell book"; the engine).
+- **Wisdom still limits.** Each hero learns only the levels their own Wisdom lets them (2 without it, then 3, 4, 5), whatever the Scholar's level (the engine: the lower of the two limits). The wiki says Wisdom is needed to learn level 3 and above, from any source but scrolls and Tomes.
+- **Both need a spell book.** Without one on either hero nothing is taught (the engine). A spell the hero already knows isn't learned again.
+- **When.** Every time the two heroes meet, as the exchange screen opens (the engine). Later, also when a hero walks into a town with a garrison hero (6.4).
+- **The message**, only when at least one spell is taught, built from the game's texts (`core.genrltxt.139` to `142`, `147`, `148`; wiki, Translation Data):
+  - the hero with the higher Scholar is the subject; on a tie, the hero who walked up;
+  - "%s, who has studied magic extensively, " + "learns " + the spells + " from %s" when they learn any, then " and " when both happen, then "teaches " + the spells + " to %s" when they teach any;
+  - the spells are joined with ", " and the last two with " and ": "Bless, Cure and Haste";
+  - so: "Orrin, who has studied magic extensively, learns Bless from Valeska and teaches Haste and Slow to Valeska". The texts end with no full stop;
+  - under it the Scholar skill's picture at the higher of the two heroes' Scholar levels, then one picture per spell taught, the learned ones first (the engine).
+- The spells are listed in the game's spell order (the engine keeps them by spell number).
+
+### What we do
+
+- Taught spells are saved as `fact.hero.spells.learned` for each hero who learns any, so a reload keeps them and replays no message.
+- The Scholar picture is the skill's stand-in (its initials), with "Advanced" / "Scholar" under it, as the Witch Hut's. A spell's picture is its name on a scroll, as in the Mage Guild.
+- The spell order is the order of `spells.json`.
+
+### Not checked
+
+- That Wisdom limits what Scholar teaches, the subject of the message, the pictures under it and when it opens come from the engine only; the wiki's Scholar page says nothing on them.
+
 ## Not yet
 
 - A hero learning spells on gaining Wisdom while in a town (a level-up there), and a hero in the town's garrison (6.4).
-- Scholar (4.8.2.4).
+- Scholar between a visiting hero and the town's garrison hero (6.4).
 - A hero learning spells on gaining Wisdom in a town: a hero can't gain a level in a town yet (no town building or garrison gives experience).
 - Other factions: their highest level, their weights and spells they never get, Tower's Library (one more spell of each level), Conflux's Aurora Borealis (every spell), their own screens (6.5).
 - Banned spells and map makers choosing a town's spells (9.1).
