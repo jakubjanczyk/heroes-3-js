@@ -220,13 +220,23 @@
   font-size: calc(11 * var(--px));
 }
 
-/* An icon on the left, the label and the value beside it. */
 .hero-screen__experience {
   --x: 18;
   --y: 228;
   --w: 136;
   --h: 42;
+}
 
+.hero-screen__spell-points {
+  --x: 162;
+  --y: 228;
+  --w: 136;
+  --h: 42;
+}
+
+/* An icon on the left, the label and the value beside it. */
+.hero-screen__experience,
+.hero-screen__spell-points {
   display: grid;
   grid-template-columns: calc(42 * var(--px)) 1fr;
   grid-template-rows: 1fr 1fr;
@@ -251,13 +261,6 @@
   align-self: start;
   font-size: calc(11 * var(--px));
   font-variant-numeric: tabular-nums;
-}
-
-.hero-screen__spell-points {
-  --x: 162;
-  --y: 228;
-  --w: 136;
-  --h: 42;
 }
 
 .hero-screen__secondary-skills {

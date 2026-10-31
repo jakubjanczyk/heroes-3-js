@@ -210,3 +210,18 @@ export function readHeroScreenHighlightedSlots() {
     .filter((slot) => slot.dataset.highlighted === 'true')
     .map((slot) => slot.getAttribute('aria-label'))
 }
+
+function getHeroScreenSpellBookFrame() {
+  return within(getHeroScreen()).getByRole('button', { name: 'Spell book' })
+}
+
+// The spell book in its frame, or null when the frame is empty.
+export function readHeroScreenSpellBook() {
+  return (
+    within(getHeroScreenSpellBookFrame()).queryByRole('img')?.getAttribute('aria-label') ?? null
+  )
+}
+
+export async function clickHeroScreenSpellBook(user) {
+  await user.click(getHeroScreenSpellBookFrame())
+}

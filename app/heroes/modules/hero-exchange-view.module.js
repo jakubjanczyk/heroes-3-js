@@ -4,6 +4,7 @@ import { levelForExperience } from '../../../game/heroes/hero-experience.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
+import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
   APP_COMMAND_HERO_ARTIFACT_COMBINATION_REQUESTED,
@@ -119,6 +120,8 @@ export const registerHeroExchangeViewModule = defineModule(
       portrait.textContent = hero.name.charAt(0)
       element.querySelector('.hero-exchange__experience .hero-exchange__box-value').textContent =
         String(hero.experience)
+      element.querySelector('.hero-exchange__spell-points .hero-exchange__box-value').textContent =
+        String(getHeroSpellPoints({ entity: hero, definitions }).value)
       element
         .querySelector('.hero-exchange__army')
         .setAttribute('aria-label', `${hero.name}'s army`)

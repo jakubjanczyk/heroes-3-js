@@ -71,7 +71,7 @@ The wiki's Knight table also lists Interference (5), a Horn of the Abyss skill w
 | Navigation | movement at sea +50 / 100 / 150% | 7.10 |
 | Leadership | morale +1 / 2 / 3 | morale |
 | Wisdom | learn spells of level 3 / 4 / 5 | 4.8 |
-| Mysticism | spell points back each day +2 / 3 / 4 | 4.8 |
+| Mysticism | 2 / 3 / 4 spell points back each day, in place of 1 | 4.8 |
 | Luck | luck +1 / 2 / 3 | luck |
 | Ballistics | control of the catapult, more shots and accuracy | 5.10 |
 | Eagle Eye | 40 / 50 / 60% chance to learn a spell cast in battle, up to level 2 / 3 / 4 | 4.8 |

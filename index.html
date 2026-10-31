@@ -116,6 +116,7 @@
         <div class="hero-box__morale"></div>
         <div class="hero-box__luck"></div>
       </div>
+      <div class="hero-box__spell-points" role="group" aria-label="Spell points" title="Spell points"></div>
       <ul class="hero-box__army" aria-label="Army" data-army="hero">
         <li class="army-slot"></li>
         <li class="army-slot"></li>
@@ -537,6 +538,48 @@
       the formation and tactics buttons) stay empty, as in the game for a hero without
       them. The primary skill icons are the hero box's stand-ins.
     -->
+    <template id="spell-book-template">
+      <section class="spell-book" role="dialog" aria-modal="true" aria-label="Spell book" tabindex="-1">
+        <div class="spell-book__window">
+          <div class="spell-book__book" aria-hidden="true" style="--x: 18; --y: 40; --w: 548; --h: 370">
+            <div class="spell-book__sheet spell-book__sheet--left"></div>
+            <div class="spell-book__sheet spell-book__sheet--right"></div>
+          </div>
+          <button class="spell-book__corner spell-book__corner--previous" type="button" aria-label="Previous page" data-status="Turn to the previous page" data-turn="-1" style="--x: 66; --y: 58; --w: 36; --h: 36"></button>
+          <ul class="spell-book__page" aria-label="Left page" style="--x: 117; --y: 90; --w: 150; --h: 272"></ul>
+          <ul class="spell-book__page" aria-label="Right page" style="--x: 336; --y: 90; --w: 150; --h: 272"></ul>
+          <button class="spell-book__corner spell-book__corner--next" type="button" aria-label="Next page" data-status="Turn to the next page" data-turn="1" style="--x: 486; --y: 58; --w: 36; --h: 36"></button>
+          <div class="spell-book__bookmarks" role="group" aria-label="Schools">
+            <button class="spell-book__bookmark" type="button" aria-label="Air" aria-pressed="false" data-school="AIR" data-status="Turn to view Air spells" style="--x: 549; --y: 90; --w: 58; --h: 40">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3"/></svg>
+            </button>
+            <button class="spell-book__bookmark" type="button" aria-label="Earth" aria-pressed="false" data-school="EARTH" data-status="Turn to view Earth spells" style="--x: 549; --y: 147; --w: 58; --h: 40">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 20 4c-1 9-6 15-15 15zM5 19l8-8"/></svg>
+            </button>
+            <button class="spell-book__bookmark" type="button" aria-label="Fire" aria-pressed="false" data-school="FIRE" data-status="Turn to view Fire spells" style="--x: 549; --y: 206; --w: 58; --h: 40">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 6 6 6 11a6 6 0 0 1-12 0c0-3 2-4 3-6 1 2 2 3 3 3 0-3-1-5 0-8z"/></svg>
+            </button>
+            <button class="spell-book__bookmark" type="button" aria-label="Water" aria-pressed="false" data-school="WATER" data-status="Turn to view Water spells" style="--x: 549; --y: 266; --w: 58; --h: 40">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/></svg>
+            </button>
+            <button class="spell-book__bookmark" type="button" aria-label="All" aria-pressed="false" data-school="ALL" data-status="Show all spell schools" style="--x: 549; --y: 326; --w: 58; --h: 40">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></svg>
+            </button>
+          </div>
+          <button class="spell-book__ribbon" type="button" aria-label="Combat spells" aria-pressed="false" data-kind="combat" data-status="Turn to view combat spells" style="--x: 221; --y: 400; --w: 36; --h: 56">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l14 14M19 4L5 18M3 16l5 5M16 21l5-5"/></svg>
+          </button>
+          <button class="spell-book__ribbon" type="button" aria-label="Adventure spells" aria-pressed="false" data-kind="adventure" data-status="Turn to view adventure map spells" style="--x: 355; --y: 400; --w: 36; --h: 56">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20L18 6M18 6c-4-3-9-2-12 1 4-1 8 0 12-1z"/></svg>
+          </button>
+          <div class="spell-book__ribbon spell-book__spell-points" role="group" aria-label="Spell points" data-status="Hero's remaining spell points" style="--x: 418; --y: 400; --w: 36; --h: 56"></div>
+          <button class="spell-book__ribbon spell-book__close" type="button" aria-label="Close" aria-keyshortcuts="Enter Escape" data-status="Close the Spell Book" style="--x: 479; --y: 400; --w: 36; --h: 56">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M6.5 6.5l11 11"/></svg>
+          </button>
+          <p class="spell-book__status-bar" role="status" aria-label="Spell book status bar" style="--x: 10; --y: 568; --w: 600; --h: 20"></p>
+        </div>
+      </section>
+    </template>
     <template id="hero-screen-template">
       <section class="hero-screen" role="dialog" aria-modal="true" aria-label="Hero screen" tabindex="-1">
         <div class="hero-screen__window">
@@ -576,7 +619,11 @@
             <span class="hero-screen__label">Experience</span>
             <span class="hero-screen__box-value"></span>
           </div>
-          <div class="hero-screen__box hero-screen__spell-points" aria-hidden="true"></div>
+          <div class="hero-screen__box hero-screen__spell-points" role="group" aria-label="Spell Points" data-status="View Spell Points Info" data-spell-points>
+            <svg class="hero-screen__box-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c-3 5-6 8-6 12a6 6 0 0 0 12 0c0-4-3-7-6-12z"/></svg>
+            <span class="hero-screen__label">Spell Points</span>
+            <span class="hero-screen__box-value"></span>
+          </div>
           <ul class="hero-screen__secondary-skills" aria-label="Secondary skills">
             <li class="hero-screen__box hero-screen__secondary-skill"></li>
             <li class="hero-screen__box hero-screen__secondary-skill"></li>
@@ -612,7 +659,7 @@
           <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 22" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 68" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 114" aria-hidden="true"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 302" aria-hidden="true"></span>
+          <button class="hero-screen__slot hero-screen__artifact hero-screen__spell-book" type="button" style="--x: 545; --y: 302" aria-label="Spell book" data-status="View Spells"></button>
           <div class="hero-screen__backpack">
             <button class="hero-screen__slot hero-screen__backpack-arrow" type="button" style="--x: 314; --y: 357" data-direction="left" aria-label="Scroll backpack left">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg>
@@ -676,7 +723,10 @@
               <svg class="hero-exchange__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8-5.1-4.7 6.9-.8z"/></svg>
               <span class="hero-exchange__box-value"></span>
             </div>
-            <div class="hero-exchange__box" aria-hidden="true" style="--x: 93; --y: 38; --w: 36; --h: 44"></div>
+            <div class="hero-exchange__box hero-exchange__spell-points" role="group" aria-label="Spell points" data-status="View Spell Points Info" style="--x: 93; --y: 38; --w: 36; --h: 44">
+              <svg class="hero-exchange__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c-3 5-6 8-6 12a6 6 0 0 0 12 0c0-4-3-7-6-12z"/></svg>
+              <span class="hero-exchange__box-value"></span>
+            </div>
             <div class="hero-exchange__box hero-exchange__morale" style="--x: 133; --y: 38; --w: 36; --h: 44"></div>
             <div class="hero-exchange__box hero-exchange__luck" style="--x: 173; --y: 38; --w: 36; --h: 44"></div>
             <ul class="hero-exchange__secondary-skills" style="--x: 13; --y: 88; --w: 238; --h: 28">
@@ -753,7 +803,10 @@
               <svg class="hero-exchange__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8-5.1-4.7 6.9-.8z"/></svg>
               <span class="hero-exchange__box-value"></span>
             </div>
-            <div class="hero-exchange__box" aria-hidden="true" style="--x: 629; --y: 38; --w: 36; --h: 44"></div>
+            <div class="hero-exchange__box hero-exchange__spell-points" role="group" aria-label="Spell points" data-status="View Spell Points Info" style="--x: 629; --y: 38; --w: 36; --h: 44">
+              <svg class="hero-exchange__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c-3 5-6 8-6 12a6 6 0 0 0 12 0c0-4-3-7-6-12z"/></svg>
+              <span class="hero-exchange__box-value"></span>
+            </div>
             <div class="hero-exchange__box hero-exchange__morale" style="--x: 669; --y: 38; --w: 36; --h: 44"></div>
             <div class="hero-exchange__box hero-exchange__luck" style="--x: 709; --y: 38; --w: 36; --h: 44"></div>
             <ul class="hero-exchange__secondary-skills" style="--x: 549; --y: 88; --w: 238; --h: 28">

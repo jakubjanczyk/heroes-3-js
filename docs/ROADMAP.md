@@ -416,12 +416,13 @@ Each comes with the feature it changes; the note has every skill's numbers.
 70 spells: 15 combat damage spells, 45 other combat spells and 10 adventure map spells, each with a level (1-5), a school (Air, Earth, Fire, Water; Magic Arrow and Visions are in all four) and a cost, lower with any level of the school's skill (Magic Arrow 5, or 4). The combat spells are 5.8. Built in eight parts; each part's note checks its rules.
 
 #### 4.8.1 Spell book and spell points
-- [ ] The 70 spells' data (`game/data/spells.json`): name, level, school, cost with and without the school, description
-- [ ] Spell points: 10 × Knowledge, more with Intelligence; 1 back each day, more with Mysticism; all back when the hero starts the day in a town with a Mage Guild
-- [ ] Spell points shown on the hero screen, in its spell points frame
-- [ ] A scenario hero may start with a spell book and spells; the demo map's first hero has a spell book
-- [ ] The spell book window: the school tabs, pages, right-click description of each spell; opened by the adventure map's Cast spell button. Nothing can be cast yet
-- [ ] Kept after a reload
+See `docs/notes/2026-10-31-spell-book-and-spell-points.md`.
+- [x] The 70 spells' data (`game/data/spells.json`): name, level, schools, cost and description at each level of the school's skill
+- [x] Spell points: 10 × Knowledge, more with Intelligence; 1 back each day, more with Mysticism; all back when the hero starts the day in a town with a Mage Guild
+- [x] Spell points shown on the hero screen, in its spell points frame, and in the hero list, the info box, the hero popup and the exchange screen
+- [x] A scenario hero may start with a spell book and spells; the demo map's first hero has a spell book
+- [x] The spell book window: the school tabs, pages, right-click description of each spell; opened by the adventure map's Cast spell button. Nothing can be cast yet
+- [x] Kept after a reload
 
 #### 4.8.2 Mage Guild
 - [ ] Each guild level rolls its spells when built: five of level 1, four of level 2, three of level 3, two of level 4 (Castle stops at 4), with Castle's odds and the spells it never gets
@@ -1107,6 +1108,7 @@ Visual and audio excellence. Last mile.
 - [ ] (Not in H3, optional extra) Draw the map with WebGL if the DOM gets too slow
 - [ ] Mine sprites per type
 - [ ] Resource pile sprites per type
+- [ ] The hero list's spell points bar as the game draws it: it grows up to some point, then up to three "+" appear on top. Check the rule in the game; until then it is a share of the hero's maximum, as the movement bar is (`docs/notes/2026-10-31-spell-book-and-spell-points.md`)
 
 ### 10.2 Terrain Sprites
 - [ ] Tile textures per terrain type (grass, dirt, snow, etc.)
@@ -1122,6 +1124,7 @@ Visual and audio excellence. Last mile.
 - [ ] Resource pickup: floating icon/number
 - [ ] Level-up: sparkle/glow effect
 - [ ] Screen transitions: fade between adventure map and combat/town view
+- [ ] The spell book's pages turning when the player turns a page or a bookmark (4.8.1)
 
 ### 10.4 Sound Effects
 - [ ] Movement: footstep sounds per terrain type

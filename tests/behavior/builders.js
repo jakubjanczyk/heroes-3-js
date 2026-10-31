@@ -145,6 +145,32 @@ export const anArtifactDefinition = () =>
     })
   )
 
+// kind: combat or adventure. schools: AIR, EARTH, FIRE or WATER, all four for Magic Arrow.
+// costs and descriptions: at no skill, then Basic, Advanced and Expert in the spell's school.
+export const aSpellDefinition = () =>
+  builder(
+    {
+      name: 'Spell',
+      level: 1,
+      schools: ['AIR'],
+      kind: 'combat',
+      costs: [5, 4, 4, 4],
+      descriptions: ['', 'Basic ', 'Advanced ', 'Expert '].map((level) => ({
+        title: `${level}Spell`,
+        text: `${level}spell description.`
+      }))
+    },
+    (spell) => ({
+      // The same text at every level, with the game's titles: "Magic Arrow", "Basic Magic Arrow", …
+      describedAs(text) {
+        spell.descriptions = ['', 'Basic ', 'Advanced ', 'Expert '].map((level) => ({
+          title: `${level}${spell.name}`,
+          text
+        }))
+      }
+    })
+  )
+
 export const aScenario = () =>
   builder(
     {

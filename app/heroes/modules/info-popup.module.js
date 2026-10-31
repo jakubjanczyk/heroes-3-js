@@ -2,6 +2,7 @@ import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { flaggedObjectOwner, visitableValues } from '../../../game/heroes/state/map-objects.js'
 import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
@@ -67,6 +68,7 @@ export const registerInfoPopupModule = defineModule(
         skills: getHeroPrimarySkills({ entity, definitions }),
         morale: getHeroMorale({ entity, definitions }),
         luck: getHeroLuck({ entity, definitions }),
+        spellPoints: getHeroSpellPoints({ entity, definitions }).value,
         army: getHeroArmy({ entity, definitions })
       })
       popup.appendChild(box)

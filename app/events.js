@@ -159,6 +159,7 @@ export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
 // The player clicked the selected hero on the map, when the map takes clicks.
 export const APP_UI_SELECTED_HERO_CLICKED = 'ui.selectedHero.clicked'
 export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
+export const APP_UI_SPELL_BOOK_OPEN_REQUESTED = 'ui.spellBook.openRequested'
 // A hero walked onto another of the player's heroes: `heroId` came to `otherHeroId`.
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.

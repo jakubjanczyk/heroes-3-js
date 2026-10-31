@@ -19,6 +19,7 @@ import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
 import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
+import { registerSpellBookViewModule } from './modules/spell-book-view.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTavernModule } from './modules/tavern.module.js'
@@ -74,6 +75,7 @@ export const heroesAppContent = Object.freeze({
     registerDwellingRecruitViewModule,
     registerTavernViewModule,
     registerHeroScreenViewModule,
+    registerSpellBookViewModule,
     registerHeroExchangeViewModule,
     registerMusicModule
   ])
