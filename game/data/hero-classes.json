@@ -1,6 +1,7 @@
 {
   "KNIGHT": {
     "name": "Knight",
+    "kind": "MIGHT",
     "primarySkills": { "attack": 2, "defense": 2, "power": 1, "knowledge": 1 },
     "primarySkillChances": {
       "upToLevel9": { "attack": 35, "defense": 45, "power": 10, "knowledge": 10 },

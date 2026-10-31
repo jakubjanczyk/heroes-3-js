@@ -1,6 +1,6 @@
 # Mage Guild (2026-10-31)
 
-Roadmap 4.8.2, the second of eight parts of hero magic (4.8, 5.8), built in four parts of its own: the guild's spells and its screen (4.8.2.1), learning spells and buying a spell book (4.8.2.2), Wisdom and magic schools on level-up (4.8.2.3), Scholar (4.8.2.4). This note covers parts 1 and 2; the later parts add their sections when they are planned.
+Roadmap 4.8.2, the second of eight parts of hero magic (4.8, 5.8), built in four parts of its own: the guild's spells and its screen (4.8.2.1), learning spells and buying a spell book (4.8.2.2), Wisdom and magic schools on level-up (4.8.2.3), Scholar (4.8.2.4). This note covers parts 1 to 3; Scholar adds its section when it is planned.
 
 ## How Heroes 3 does it
 
@@ -66,9 +66,35 @@ Checked against the Heroes 3 wiki's raw page source (Mage Guild, Wisdom, Spell B
 - That the guild opens after No, and under the short-of-cash message, comes from the engine only.
 - When exactly spells are learned (the visit, a new level, buying the book) comes from the engine only; the wiki says only that guilds teach spells.
 
+## Wisdom and magic schools on level-up (4.8.2.3)
+
+Checked against the Heroes 3 wiki's raw page source (Secondary skill, Wisdom, Hero class) and against an open-source engine's level-up code and hero class config.
+
+### How Heroes 3 does it
+
+- **Wisdom.** A might hero who hasn't been offered Wisdom is offered it at level 6; a magic hero at level 3. Once offered, whether picked or not, it comes again at most 6 levels later for a might hero, 3 for a magic hero (wiki, Wisdom and Secondary skill; the engine).
+- **Magic schools.** The same for one of Fire, Air, Water and Earth Magic: every 4 levels for a might hero, every 3 for a magic hero (wiki; the engine). Which school is drawn by the class's weights among the schools the slot can offer (wiki, step 3; the engine).
+- **Counting.** The engine keeps a count per hero that starts at 1 and goes up by one at each level-up before the offers are drawn; Wisdom is due when it reaches 6 (3), a school at 4 (3). So a hero who starts at level 1 and is never offered them gets Wisdom at level 6 and a school at level 4, then every 6 and 4 levels after the last offer.
+- **Both slots.** The rule applies to each of the two offers, the upgrade and the new skill: the upgrade is Wisdom when it is due and the hero has it at Basic or Advanced; the new skill is Basic Wisdom when it is due and the hero can learn it (wiki, step 3; the engine draws each slot in turn).
+- **Wisdom first.** When both are due, a slot offers Wisdom; once Wisdom is offered in a slot, its count starts again, so the next slot can offer the school. When Wisdom takes the only slot a school could have, the school stays due for the next level-up (the engine).
+- **Any offer counts.** Wisdom or a school offered by chance starts its count again too (wiki, step 5; the engine).
+- **Can't offer it.** A hero with Expert Wisdom, or with 8 skills and no Wisdom, isn't offered it; the count goes on and the guarantee waits until a slot can offer it (the engine). The same for schools.
+- **Classes.** Knight is a might class, Cleric a magic one (the engine's class config; the wiki's Hero class page lists the levels: 4, 8, 12 for a might hero's school, 6, 12, 18 for Wisdom, 3, 6, 9 for a magic hero's). In Shadow of Death the Elementalist counts as might for this (wiki); not a Castle class.
+
+### What we do
+
+- Each hero class says whether it is might or magic (`"kind": "MIGHT"` in `hero-classes.json`); might is 6 and 4 levels, magic 3 and 3.
+- The levels Wisdom and a school were last offered are worked out from the level-ups already saved (their offers), so nothing new is saved and a reload counts the same. A hero starts as if last offered them at level 0, whatever level they start at: the engine plays a map's high-level hero through the level-ups they skipped, we don't, so a scenario hero starting at level 5 without Wisdom is offered it at level 6 (decided with the user).
+- The upgrade offer is drawn by the class's weights among the hero's Basic and Advanced skills, a skill weighted 0 counting as 1 (wiki, Secondary skill step 4 and Hero class; the engine). 4.7.2 had picked it evenly; fixed with this part.
+
+### Not checked
+
+- The wiki and the engine agree on everything above; the order of the two slots (upgrade first) and that Wisdom offered in the first slot frees the second for a school come from the engine only.
+
 ## Not yet
 
 - A hero learning spells on gaining Wisdom while in a town (a level-up there), and a hero in the town's garrison (6.4).
-- The Wisdom and magic school guarantees on level-up (4.8.2.3), Scholar (4.8.2.4).
+- Scholar (4.8.2.4).
+- A hero learning spells on gaining Wisdom in a town: a hero can't gain a level in a town yet (no town building or garrison gives experience).
 - Other factions: their highest level, their weights and spells they never get, Tower's Library (one more spell of each level), Conflux's Aurora Borealis (every spell), their own screens (6.5).
 - Banned spells and map makers choosing a town's spells (9.1).

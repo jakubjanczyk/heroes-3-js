@@ -4,7 +4,12 @@ import { updateHero } from '../../state/core-slices.js'
 import { putOnArtifact, startingArtifacts } from '../artifacts.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
-import { heroOfTheGame, learnSecondarySkill, startingSecondarySkills } from '../secondary-skills.js'
+import {
+  heroOfTheGame,
+  lastOfferedLevelsAfter,
+  learnSecondarySkill,
+  startingSecondarySkills
+} from '../secondary-skills.js'
 import { maxSpellPoints, spellPointsOnNewDay } from '../spell-points.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
@@ -37,6 +42,7 @@ function startingDetailsOf(hero, definitions) {
     experience: hero.experience ?? 0,
     level: levelForExperience(hero.experience ?? 0),
     levelUpSkills: [],
+    lastOfferedLevels: {},
     pendingLevelUp: null,
     bonusPrimarySkills: {},
     visitedBonusObjects: [],
@@ -113,6 +119,7 @@ export const heroDetailsSlice = {
     'fact.hero.leveledUp': updateHero((hero, { level, primarySkill, skillOffers = [] }) => ({
       level,
       levelUpSkills: [...hero.levelUpSkills, primarySkill],
+      lastOfferedLevels: lastOfferedLevelsAfter(hero.lastOfferedLevels, { level, skillOffers }),
       pendingLevelUp: skillOffers.length > 0 ? { level, primarySkill, skillOffers } : null
     })),
     'fact.hero.secondarySkill.learned': updateHero((hero, { skill, level }) => ({

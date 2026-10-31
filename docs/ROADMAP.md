@@ -395,7 +395,7 @@ Built in three parts; see `docs/notes/2026-10-26-secondary-skills.md`.
 - [x] Nothing picked at first and OK disabled until a pick; a single offer comes picked; with nothing to offer, OK is enabled
 - [x] Several levels at once show one popup each, the next offering skills after the last pick
 - [x] The choice saved as a fact, so a reload replays it; a popup open when the page closed shows again with the same offers
-- [ ] Guaranteed offers: Wisdom at least every 6 levels and a magic school at least every 4, unless the hero has them or can't learn them
+- [x] Guaranteed offers: Wisdom at least every 6 levels and a magic school at least every 4, unless the hero has them or can't learn them (4.8.2.3)
 - [x] The popup laid out as the game's: each line in a dark bar, the hero between two medals, the gained primary skill pictured over "Knowledge +1", the checkmark in the bottom right
 - [ ] The hero's portrait (4.4) and skill pictures in place of the initials
 
@@ -439,7 +439,8 @@ In four parts. See `docs/notes/2026-10-31-mage-guild.md`.
 - [ ] Learning on gaining Wisdom while in a town, and the town's garrison hero (6.4)
 
 ##### 4.8.2.3 Wisdom and magic schools on level-up
-- [ ] Level-up offers Wisdom at least every 6 levels and a magic school at least every 4 (4.7.2)
+- [x] Level-up offers Wisdom at least every 6 levels and a magic school at least every 4 (a magic class every 3), in either offer, Wisdom first (4.7.2)
+- [x] The upgrade offer drawn by the class's weights, as the new skill is (it was an even pick)
 
 ##### 4.8.2.4 Scholar
 - [ ] Two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)

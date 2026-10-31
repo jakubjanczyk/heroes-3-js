@@ -173,9 +173,11 @@ describe('secondary skills behavior', () => {
   })
 
   describe('on level-up', () => {
-    // Every roll 0.5. The upgrade is the middle one (rounded up) of the hero's Basic and Advanced
-    // skills. The new skill lands halfway through the Knight's weights of the skills the hero
-    // hasn't got, in the game's order: for Christian, 48.5 of 97 falls in Estates (48 to 54).
+    // Every roll 0.5. The upgrade lands halfway through the Knight's weights of the hero's Basic
+    // and Advanced skills, in the hero's order: for Christian, 7.5 of Leadership 10 and Artillery
+    // 5 falls in Leadership. The new skill lands halfway through the Knight's weights of the
+    // skills the hero hasn't got, in the game's order: for Christian, 48.5 of 97 falls in Estates
+    // (48 to 54).
     const HALFWAY_ROLLS = () => 0.5
 
     const chest = { x: 1, y: 6 }
@@ -223,7 +225,7 @@ describe('secondary skills behavior', () => {
 
       await levelUp(user)
 
-      expect(readLevelUpSkillOffers('Christian')).toEqual(['Advanced Artillery', 'Basic Estates'])
+      expect(readLevelUpSkillOffers('Christian')).toEqual(['Advanced Leadership', 'Basic Estates'])
     })
 
     test('given the level-up popup offers two skills then neither is picked and OK is disabled', async () => {
@@ -262,11 +264,11 @@ describe('secondary skills behavior', () => {
       const { user } = await setupLevelUpApp()
       await levelUp(user)
 
-      await learnSkill(user, 'Advanced Artillery')
+      await learnSkill(user, 'Advanced Leadership')
 
       expect((await readChristiansSkills(user)).slice(0, 3)).toEqual([
-        'Basic Leadership',
-        'Advanced Artillery',
+        'Advanced Leadership',
+        'Basic Artillery',
         EMPTY
       ])
     })
@@ -276,11 +278,11 @@ describe('secondary skills behavior', () => {
       await levelUp(user)
       await pickLevelUpSkill(user, 'Christian', 'Basic Estates')
 
-      await learnSkill(user, 'Advanced Artillery')
+      await learnSkill(user, 'Advanced Leadership')
 
       expect((await readChristiansSkills(user)).slice(0, 3)).toEqual([
-        'Basic Leadership',
-        'Advanced Artillery',
+        'Advanced Leadership',
+        'Basic Artillery',
         EMPTY
       ])
     })
@@ -335,10 +337,11 @@ describe('secondary skills behavior', () => {
 
       await levelUp(user)
 
-      // The 5th of 8 is Diplomacy; then the 4th of the 7 left is Logistics.
+      // 22 of 44 falls in Logistics (20 to 25); then, without Logistics, 19.5 of 39 in Archery
+      // (15 to 20).
       expect(readLevelUpSkillOffers('Christian')).toEqual([
-        'Advanced Diplomacy',
-        'Advanced Logistics'
+        'Advanced Logistics',
+        'Advanced Archery'
       ])
     })
 
@@ -419,8 +422,165 @@ describe('secondary skills behavior', () => {
 
       await learnSkill(user, 'Advanced Leadership')
 
-      // Without Leadership, 51 of 102 falls in Estates (48 to 54).
-      expect(readLevelUpSkillOffers('Christian')).toEqual(['Expert Leadership', 'Basic Estates'])
+      // Level 4 is due a magic school: 5 of the Knight's 10 for Fire, Air, Water and Earth Magic
+      // falls in Water Magic (4 to 8).
+      expect(readLevelUpSkillOffers('Christian')).toEqual([
+        'Expert Leadership',
+        'Basic Water Magic'
+      ])
+    })
+
+    describe('Wisdom and magic schools', () => {
+      // Every hero starts as if last offered Wisdom and a magic school at level 0. A Knight is due
+      // Wisdom 6 levels after the last offer and a school 4 levels after it. A due school lands
+      // halfway through the Knight's weights of the schools the slot can offer: 5 of Fire 1,
+      // Air 3, Water 4 and Earth 2 falls in Water Magic (4 to 8).
+      const secondChest = { x: 2, y: 6 }
+
+      const aTwoChestScenario = ({ hero, experience }) =>
+        aLevelUpScenario({ hero, experience, chestTier: 3 }).withEntities(
+          hero.withExperience(experience).at(0, 6),
+          aTreasureChest().withTier(3).at(1, 6),
+          aTreasureChest().withId('chest-2').withTier(3).at(2, 6)
+        )
+
+      // 4700 experience is level 5; a tier 3 chest's 1500 takes it to 6200, level 6.
+      const toLevel6 = (hero) => aLevelUpScenario({ hero, experience: 4700, chestTier: 3 })
+      // 2000 is level 3; 1500 more takes it to 3500, level 4.
+      const toLevel4 = (hero) => aLevelUpScenario({ hero, experience: 2000, chestTier: 3 })
+
+      const christian = (skills = [basic('LEADERSHIP'), basic('ARTILLERY')]) =>
+        aHero().withName('Christian').withSecondarySkills(skills)
+
+      test('given a Knight without Wisdom reaches level 6 when the popup opens then the new skill offered is Basic Wisdom', async () => {
+        const { user } = await setupLevelUpApp(toLevel6(christian()))
+
+        await levelUp(user)
+
+        expect(readLevelUpSkillOffers('Christian')).toEqual(['Advanced Leadership', 'Basic Wisdom'])
+      })
+
+      test('given a Knight with Basic Wisdom reaches level 6 when the popup opens then the upgrade offered is Advanced Wisdom', async () => {
+        const { user } = await setupLevelUpApp(
+          toLevel6(christian([basic('LEADERSHIP'), basic('ARTILLERY'), basic('WISDOM')]))
+        )
+
+        await levelUp(user)
+
+        // Wisdom offered as the upgrade leaves the new skill for the school also due at level 6.
+        expect(readLevelUpSkillOffers('Christian')).toEqual([
+          'Advanced Wisdom',
+          'Basic Water Magic'
+        ])
+      })
+
+      test('given a Knight with no magic school reaches level 4 when the popup opens then the new skill offered is a magic school', async () => {
+        const { user } = await setupLevelUpApp(toLevel4(christian()))
+
+        await levelUp(user)
+
+        expect(readLevelUpSkillOffers('Christian')).toEqual([
+          'Advanced Leadership',
+          'Basic Water Magic'
+        ])
+      })
+
+      test('given a Knight with Basic Air Magic reaches level 4 when the popup opens then the upgrade offered is Advanced Air Magic', async () => {
+        const { user } = await setupLevelUpApp(
+          toLevel4(christian([basic('LEADERSHIP'), basic('ARTILLERY'), basic('AIR_MAGIC')]))
+        )
+
+        await levelUp(user)
+
+        // The new skill is drawn as usual: 47 of 94 falls in Eagle Eye (46 to 48).
+        expect(readLevelUpSkillOffers('Christian')).toEqual([
+          'Advanced Air Magic',
+          'Basic Eagle Eye'
+        ])
+      })
+
+      test('given a Knight with no skills reaches level 6 when the popup opens then it offers Basic Wisdom and a magic school', async () => {
+        const { user } = await setupLevelUpApp(toLevel6(christian([])))
+
+        await levelUp(user)
+
+        expect(readLevelUpSkillOffers('Christian')).toEqual(['Basic Wisdom', 'Basic Water Magic'])
+      })
+
+      test('given a Knight with skills to upgrade reaches level 6 with Wisdom and a school both due then the new skill is Basic Wisdom and the next level-up offers a magic school', async () => {
+        // 6199 is level 5; 1500 takes it to 7699, level 6, and 1500 more to 9199, level 7.
+        const { user } = await setupLevelUpApp(
+          aTwoChestScenario({ hero: christian(), experience: 6199 })
+        )
+        await levelUp(user)
+        await learnSkill(user, 'Basic Wisdom')
+
+        await takeFromTreasureChest(user, secondChest, 'experience')
+
+        // The upgrade: 9 of Leadership 10, Artillery 5 and Wisdom 3 falls in Leadership.
+        expect(readLevelUpSkillOffers('Christian')).toEqual([
+          'Advanced Leadership',
+          'Basic Water Magic'
+        ])
+      })
+
+      test('given a magic school was offered at level 4 and not picked when the hero reaches level 5 then no magic school is guaranteed', async () => {
+        // 3100 is level 3; 1500 takes it to 4600, levels 4 and 5 at once.
+        const { user } = await setupLevelUpApp(
+          aLevelUpScenario({ hero: christian(), experience: 3100, chestTier: 3 })
+        )
+        await levelUp(user)
+
+        await learnSkill(user, 'Advanced Leadership')
+
+        expect(readLevelUpSkillOffers('Christian')).toEqual(['Expert Leadership', 'Basic Estates'])
+      })
+
+      test('given a Knight with Expert Wisdom reaches level 6 when the popup opens then Wisdom is not offered', async () => {
+        const { user } = await setupLevelUpApp(
+          toLevel6(christian([basic('LEADERSHIP'), basic('ARTILLERY'), expert('WISDOM')]))
+        )
+
+        await levelUp(user)
+
+        // The school also due at level 6 takes the new skill.
+        expect(readLevelUpSkillOffers('Christian')).toEqual([
+          'Advanced Leadership',
+          'Basic Water Magic'
+        ])
+      })
+
+      test('given a hero of a magic class with no skills reaches level 3 when the popup opens then it offers Basic Wisdom and a magic school', async () => {
+        // A magic class is due both every 3 levels. 1000 is level 2; 1500 more is level 3.
+        const cleric = { ...gameDefinitions.heroClasses.KNIGHT, name: 'Cleric', kind: 'MAGIC' }
+        const scenario = aLevelUpScenario({
+          hero: aHero().withName('Adela').withHeroClass('CLERIC').withSecondarySkills([]),
+          experience: 1000,
+          chestTier: 3
+        }).withDefinitions({
+          ...gameDefinitions,
+          heroClasses: { ...gameDefinitions.heroClasses, CLERIC: cleric }
+        })
+        const { user } = await setupLevelUpApp(scenario)
+
+        await levelUp(user)
+
+        expect(readLevelUpSkillOffers('Adela')).toEqual(['Basic Wisdom', 'Basic Water Magic'])
+      })
+
+      test('given a magic school was offered at level 4 when the page reloads and the hero reaches level 5 then no magic school is guaranteed', async () => {
+        // 2000 is level 3; 1500 takes it to 3500, level 4, and 1500 more to 5000, level 5.
+        const scenario = aTwoChestScenario({ hero: christian(), experience: 2000 })
+        const eventLog = createMemoryEventLog()
+        const { user } = await setupLevelUpApp(scenario, { eventLog })
+        await levelUp(user)
+        await learnSkill(user, 'Advanced Leadership')
+
+        const reloaded = await setupLevelUpApp(scenario, { eventLog })
+        await takeFromTreasureChest(reloaded.user, secondChest, 'experience')
+
+        expect(readLevelUpSkillOffers('Christian')).toEqual(['Expert Leadership', 'Basic Estates'])
+      })
     })
 
     describe('reload', () => {
@@ -447,7 +607,10 @@ describe('secondary skills behavior', () => {
 
         await setupApp(aLevelUpScenario(), { eventLog, random: LOWEST_ROLLS })
 
-        expect(readLevelUpSkillOffers('Christian')).toEqual(['Advanced Artillery', 'Basic Estates'])
+        expect(readLevelUpSkillOffers('Christian')).toEqual([
+          'Advanced Leadership',
+          'Basic Estates'
+        ])
       })
     })
   })
