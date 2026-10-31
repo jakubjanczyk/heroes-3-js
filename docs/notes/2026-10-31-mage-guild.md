@@ -102,23 +102,20 @@ Checked against the Heroes 3 wiki's raw page source (Scholar, Wisdom, and the `G
 - **Wisdom still limits.** Each hero learns only the levels their own Wisdom lets them (2 without it, then 3, 4, 5), whatever the Scholar's level (the engine: the lower of the two limits). The wiki says Wisdom is needed to learn level 3 and above, from any source but scrolls and Tomes.
 - **Both need a spell book.** Without one on either hero nothing is taught (the engine). A spell the hero already knows isn't learned again.
 - **When.** Every time the two heroes meet, as the exchange screen opens (the engine). Later, also when a hero walks into a town with a garrison hero (6.4).
-- **The message**, only when at least one spell is taught, built from the game's texts (`core.genrltxt.139` to `142`, `147`, `148`; wiki, Translation Data):
-  - the hero with the higher Scholar is the subject; on a tie, the hero who walked up;
-  - "%s, who has studied magic extensively, " + "learns " + the spells + " from %s" when they learn any, then " and " when both happen, then "teaches " + the spells + " to %s" when they teach any;
-  - the spells are joined with ", " and the last two with " and ": "Bless, Cure and Haste";
-  - so: "Orrin, who has studied magic extensively, learns Bless from Valeska and teaches Haste and Slow to Valeska". The texts end with no full stop;
-  - under it the Scholar skill's picture at the higher of the two heroes' Scholar levels, then one picture per spell taught, the learned ones first (the engine).
+- **The window.** When the exchange screen opens and at least one spell is taught, a window over it shows the spells taught, a picture each with its name, and no text (the user, from the game). It holds at most 8 spells (the user remembers 6 or 8; the engine's message window takes at most 8 pictures); with more, OK shows the next ones until all are shown. The exchange screen stays open under it.
+- The engine instead writes one message from the game's texts (`core.genrltxt.139` to `142`, `147`, `148`: "%s, who has studied magic extensively, learns … from %s and teaches … to %s"), with the Scholar skill's picture and every spell under it. We follow the game as the user remembers it.
 - The spells are listed in the game's spell order (the engine keeps them by spell number).
 
 ### What we do
 
 - Taught spells are saved as `fact.hero.spells.learned` for each hero who learns any, so a reload keeps them and replays no message.
-- The Scholar picture is the skill's stand-in (its initials), with "Advanced" / "Scholar" under it, as the Witch Hut's. A spell's picture is its name on a scroll, as in the Mage Guild.
+- A spell's picture is its name on a scroll, as in the Mage Guild. The spells the hero who walked up learns come first, then the ones they teach.
 - The spell order is the order of `spells.json`.
 
 ### Not checked
 
-- That Wisdom limits what Scholar teaches, the subject of the message, the pictures under it and when it opens come from the engine only; the wiki's Scholar page says nothing on them.
+- That Wisdom limits what Scholar teaches comes from the engine only; the wiki's Scholar page says nothing on it.
+- The window comes from the user's memory of the game; how many spells it holds (6 or 8) and their order aren't confirmed by a second source.
 
 ## Not yet
 
