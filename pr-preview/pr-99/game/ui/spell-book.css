@@ -1,0 +1,334 @@
+/*
+ * The spell book over whatever opened it, the map or the hero screen. The open book keeps the
+ * game's 620 x 595 pixels: parts are placed in them with --x, --y, --w and --h, and fonts are sized
+ * in them too (--px), so it scales as one picture. No pictures yet: the pages are drawn in CSS and
+ * each spell's picture is its initials in its school's colour.
+ */
+.spell-book {
+  grid-row: 1 / span 2;
+  grid-column: 1 / -1;
+  z-index: 30;
+  min-block-size: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-xs);
+  background: rgb(0 0 0 / 0.5);
+  container-type: size;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.game-shell:has(.spell-book) .adventure-panel {
+  visibility: hidden;
+}
+
+.spell-book__window {
+  --px: calc(100cqw / 620);
+  --air: #7fb4e6;
+  --earth: #b08a52;
+  --fire: #e2643a;
+  --water: #4e8fd6;
+  --all: #c9a85a;
+
+  position: relative;
+  inline-size: min(88cqw, 100cqh * 620 / 595);
+  aspect-ratio: 620 / 595;
+  container-type: inline-size;
+  border-radius: calc(12 * var(--px));
+  background:
+    linear-gradient(90deg, transparent 49.2%, rgb(60 30 10 / 0.45) 50%, transparent 50.8%),
+    radial-gradient(ellipse at 28% 50%, #f1dfb4 0 60%, #d9bf88 100%) left / 50% 100% no-repeat,
+    radial-gradient(ellipse at 72% 50%, #f1dfb4 0 60%, #d9bf88 100%) right / 50% 100% no-repeat;
+  box-shadow:
+    0 0 0 calc(10 * var(--px)) #5b2f17,
+    0 0 0 calc(12 * var(--px)) var(--trim-gold-dark),
+    0 0.75rem 2rem rgb(0 0 0 / 0.7);
+  color: #3a2410;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.spell-book__page {
+  position: absolute;
+  inset-block-start: calc(70 * 100% / 595);
+  inline-size: calc(230 * 100% / 620);
+  block-size: calc(330 * 100% / 595);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: calc(6 * var(--px));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spell-book__page--left {
+  inset-inline-start: calc(60 * 100% / 620);
+}
+
+.spell-book__page--right {
+  inset-inline-start: calc(330 * 100% / 620);
+}
+
+.spell-book__spell {
+  appearance: none;
+  inline-size: 100%;
+  block-size: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto auto auto;
+  justify-items: center;
+  gap: calc(1 * var(--px));
+  padding: calc(2 * var(--px));
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: calc(10 * var(--px));
+  line-height: 1.1;
+  cursor: inherit;
+
+  &:focus-visible {
+    outline: 1px dotted #5b2f17;
+  }
+}
+
+.spell-book__spell-picture {
+  --school: var(--all);
+
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  block-size: calc(52 * var(--px));
+  border: calc(2 * var(--px)) solid color-mix(in oklab, var(--school) 60%, black);
+  border-radius: calc(4 * var(--px));
+  background: radial-gradient(
+    circle at 40% 35%,
+    color-mix(in oklab, var(--school) 70%, white),
+    var(--school)
+  );
+  color: white;
+  font-size: calc(18 * var(--px));
+  font-weight: 700;
+  text-shadow: 0 1px 0 black;
+}
+
+[data-school="AIR"] > .spell-book__spell-picture {
+  --school: var(--air);
+}
+
+[data-school="EARTH"] > .spell-book__spell-picture {
+  --school: var(--earth);
+}
+
+[data-school="FIRE"] > .spell-book__spell-picture {
+  --school: var(--fire);
+}
+
+[data-school="WATER"] > .spell-book__spell-picture {
+  --school: var(--water);
+}
+
+/* The name over the level and the cost: yellow over white, or white over orange when the hero
+   can't afford the spell. On parchment the yellow and white are drawn darker. */
+.spell-book__spell-line--1 {
+  color: #7a4f00;
+  font-weight: 700;
+}
+
+.spell-book__spell[aria-description] {
+  & .spell-book__spell-line--1 {
+    color: #3a2410;
+  }
+
+  & .spell-book__spell-line--2,
+  & .spell-book__spell-line--3 {
+    color: #c2410c;
+  }
+}
+
+/* A school's first spread starts with its picture in the place of two spells. */
+.spell-book__school-heading {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  border-block-end: calc(2 * var(--px)) solid currentcolor;
+
+  & h3 {
+    margin: 0;
+    font-size: calc(22 * var(--px));
+    font-variant: small-caps;
+  }
+}
+
+.spell-book__school-heading[data-school="AIR"] {
+  color: #2f6aa3;
+}
+
+.spell-book__school-heading[data-school="EARTH"] {
+  color: #6b4a1f;
+}
+
+.spell-book__school-heading[data-school="FIRE"] {
+  color: #a8331a;
+}
+
+.spell-book__school-heading[data-school="WATER"] {
+  color: #1f5899;
+}
+
+.spell-book__corner {
+  position: absolute;
+  inset-block-start: calc(14 * 100% / 595);
+  inline-size: calc(40 * 100% / 620);
+  aspect-ratio: 1;
+  border: 0;
+  background: linear-gradient(135deg, #c9a46a 50%, transparent 50%);
+  cursor: inherit;
+}
+
+.spell-book__corner--previous {
+  inset-inline-start: calc(14 * 100% / 620);
+}
+
+.spell-book__corner--next {
+  inset-inline-end: calc(14 * 100% / 620);
+  background: linear-gradient(225deg, #c9a46a 50%, transparent 50%);
+}
+
+.spell-book__bookmarks {
+  position: absolute;
+  inset-inline-start: 100%;
+  inset-block-start: calc(70 * 100% / 595);
+  display: grid;
+  gap: calc(4 * var(--px));
+}
+
+.spell-book__bookmark {
+  --school: var(--all);
+
+  inline-size: calc(52 * var(--px));
+  block-size: calc(52 * var(--px));
+  padding: 0 0 0 calc(6 * var(--px));
+  border: calc(1 * var(--px)) solid #1a0f08;
+  border-radius: 0 calc(6 * var(--px)) calc(6 * var(--px)) 0;
+  background: color-mix(in oklab, var(--school) 70%, #3a2410);
+  color: white;
+  font: inherit;
+  font-size: calc(11 * var(--px));
+  text-shadow: 0 1px 0 black;
+  cursor: inherit;
+
+  &[aria-pressed="true"] {
+    background: var(--school);
+    translate: calc(6 * var(--px)) 0;
+  }
+}
+
+.spell-book__bookmark[data-school="AIR"] {
+  --school: var(--air);
+}
+
+.spell-book__bookmark[data-school="EARTH"] {
+  --school: var(--earth);
+}
+
+.spell-book__bookmark[data-school="FIRE"] {
+  --school: var(--fire);
+}
+
+.spell-book__bookmark[data-school="WATER"] {
+  --school: var(--water);
+}
+
+.spell-book__buttons {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(420 * 100% / 595);
+  display: flex;
+  justify-content: center;
+  gap: calc(20 * var(--px));
+}
+
+.spell-book__button,
+.spell-book__spell-points {
+  display: grid;
+  place-items: center;
+  inline-size: calc(48 * var(--px));
+  block-size: calc(56 * var(--px));
+  border: calc(2 * var(--px)) solid var(--trim-gold-dark);
+  border-radius: calc(4 * var(--px));
+  background: linear-gradient(180deg, #6b3d1d, #3a1f0d);
+  color: var(--trim-gold);
+  cursor: inherit;
+
+  & svg {
+    inline-size: 70%;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+  }
+
+  &[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--trim-gold);
+  }
+}
+
+.spell-book__spell-points {
+  box-sizing: border-box;
+  font-size: calc(16 * var(--px));
+  font-variant-numeric: tabular-nums;
+}
+
+.spell-book__status-bar {
+  position: absolute;
+  inset-inline: calc(60 * 100% / 620);
+  inset-block-end: calc(40 * 100% / 595);
+  min-block-size: 1.2em;
+  margin: 0;
+  font-size: calc(13 * var(--px));
+  text-align: center;
+}
+
+.spell-book__message {
+  position: absolute;
+  inset-inline: 20%;
+  inset-block-start: 30%;
+  z-index: 1;
+  display: grid;
+  gap: calc(8 * var(--px));
+  padding: calc(14 * var(--px));
+  font-size: calc(13 * var(--px));
+
+  & h2 {
+    margin: 0;
+    font-size: calc(15 * var(--px));
+    color: var(--hud-text-gold);
+  }
+
+  & p {
+    margin: 0;
+  }
+}
+
+.spell-book__message-ok {
+  justify-self: center;
+  padding: calc(4 * var(--px)) calc(18 * var(--px));
+  border: calc(2 * var(--px)) solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #6b3d1d, #3a1f0d);
+  color: var(--trim-gold);
+  font: inherit;
+  cursor: inherit;
+}
+
+/* The spell book in its frame on the hero screen. */
+.hero-screen__spell-book {
+  appearance: none;
+  padding: 0;
+  cursor: inherit;
+}
+
+.hero-screen__spell-book-picture {
+  background: linear-gradient(90deg, #6b1d1d 0 45%, #3a0d0d 45% 55%, #6b1d1d 55%);
+  border: 1px solid var(--trim-gold-dark);
+}
