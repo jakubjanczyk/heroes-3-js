@@ -135,8 +135,8 @@ export const registerSpellBookViewModule = defineModule(
         ...spells.map(renderSpell)
       ]
       const onLeft = schoolHeading ? SPELLS_PER_PAGE - 1 : SPELLS_PER_PAGE
-      part('.spell-book__page--left').replaceChildren(...places.slice(0, onLeft))
-      part('.spell-book__page--right').replaceChildren(...places.slice(onLeft))
+      part('[aria-label="Left page"]').replaceChildren(...places.slice(0, onLeft))
+      part('[aria-label="Right page"]').replaceChildren(...places.slice(onLeft))
 
       for (const bookmark of book.querySelectorAll('.spell-book__bookmark')) {
         bookmark.setAttribute(
