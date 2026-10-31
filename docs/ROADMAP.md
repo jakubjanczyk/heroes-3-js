@@ -413,19 +413,35 @@ Each comes with the feature it changes; the note has every skill's numbers.
 - [ ] Necromancy (with the Necropolis)
 
 ### 4.8 Hero Magic
-- [ ] Hero has mana points (max = Knowledge * 10)
-- [ ] Mana regenerates 1 per day (base), more with Mysticism
-- [ ] Spell book: shows all learned spells
-- [ ] Spells have level (1-5), school (earth/air/fire/water), mana cost
-- [ ] Spells learned from: Mage Guild in town, Scholar exchanges, map objects
-- [ ] Wisdom skill required for level 3+ spells (Adv for 4, Expert for 5)
-- [ ] Adventure map spells:
-  - **Summon Boat** - creates a boat at nearest shore
-  - **View Air/Earth** - reveals resources/terrain on map
-  - **Dimension Door** - teleport hero to a visible tile
-  - **Town Portal** - teleport to nearest/any owned town
-  - **Fly** - allows movement over any terrain
-- [ ] Combat spells: see Milestone 5
+70 spells: 15 combat damage spells, 45 other combat spells and 10 adventure map spells, each with a level (1-5), a school (Air, Earth, Fire, Water; Magic Arrow and Visions are in all four) and a cost, lower with any level of the school's skill (Magic Arrow 5, or 4). The combat spells are 5.8. Built in eight parts; each part's note checks its rules.
+
+#### 4.8.1 Spell book and spell points
+- [ ] The 70 spells' data (`game/data/spells.json`): name, level, school, cost with and without the school, description
+- [ ] Spell points: 10 × Knowledge, more with Intelligence; 1 back each day, more with Mysticism; all back when the hero starts the day in a town with a Mage Guild
+- [ ] Spell points shown on the hero screen, in its spell points frame
+- [ ] A scenario hero may start with a spell book and spells; the demo map's first hero has a spell book
+- [ ] The spell book window: the school tabs, pages, right-click description of each spell; opened by the adventure map's Cast spell button. Nothing can be cast yet
+- [ ] Kept after a reload
+
+#### 4.8.2 Mage Guild
+- [ ] Each guild level rolls its spells when built: five of level 1, four of level 2, three of level 3, two of level 4 (Castle stops at 4), with Castle's odds and the spells it never gets
+- [ ] Clicking the Mage Guild opens its screen showing the spells
+- [ ] The Mage Guild sells a spell book for 500 gold
+- [ ] A visiting hero with a spell book learns the guild's spells; up to level 2 without Wisdom, Wisdom opening levels 3, 4 and 5
+- [ ] Level-up offers Wisdom at least every 6 levels and a magic school at least every 4 (4.7.2)
+- [ ] Scholar: two heroes meeting teach each other spells up to level 2 / 3 / 4 (4.5.3)
+
+#### 4.8.3 to 4.8.7
+The combat spells, in 5.8.
+
+#### 4.8.8 Adventure map spells
+- [ ] View Air, View Earth, Visions, Dimension Door, Fly and Town Portal, cast from the spell book on the map
+- [ ] Summon Boat, Scuttle Boat and Water Walk with boats (7.10); Disguise with enemy heroes (8.1)
+
+#### 4.8 later
+- [ ] Map objects: the Shrines of Magic Incantation, Gesture and Thought, Magic Well, Magic Spring, Pyramid, spells from Pandora's Box (7.7)
+- [ ] Artifacts: the spell scrolls, the Charm, Talisman and Mystic Orb of Mana, the Tomes and Orbs, Wizard's Well, Titan's Thunder's spell book and bolt (7.8)
+- [ ] Eagle Eye: learning a spell an enemy hero casts in battle (8.1)
 
 ### 4.9 Morale and Luck
 See `docs/notes/2026-10-28-morale-and-luck.md` and, for battle, `docs/notes/2026-10-28-morale-and-luck-in-battle.md`.
@@ -564,17 +580,39 @@ See `docs/notes/2026-10-20-combat-ai.md`.
   - [ ] Cast spells when a hero leads the army (5.8)
 
 ### 5.8 Combat Spells
-- [ ] Hero can cast one spell per combat round (instead of a stack acting)
-- [ ] Spell targeting: single stack, hex area, all allies, all enemies, self
-- [ ] Damage spells: Magic Arrow, Lightning Bolt, Fireball, Chain Lightning, Armageddon, etc.
-- [ ] Buff spells: Haste, Shield, Bless, Bloodlust, Prayer, etc.
-- [ ] Debuff spells: Slow, Curse, Weakness, Blind, etc.
-- [ ] Summon spells: Fire/Earth/Air/Water Elemental
-- [ ] Resurrection spells: Resurrect, Animate Dead
-- [ ] Spell damage/duration affected by hero Power stat and magic school skill level
-- [ ] Mana cost deducted on cast
-- [ ] Spell book UI: grid of spell icons, click to select, click target to cast
-- [ ] Spell immunity: some creatures immune to certain spell levels or schools
+Parts 3 to 7 of hero magic (4.8).
+
+#### 4.8.3 Casting in battle, single-target damage
+- [ ] Cast spell works: once per round, on one of your stacks' turns, the stack acting afterwards
+- [ ] The battle spell book shows only combat spells; casting takes the spell points
+- [ ] Strength by Power and the school's skill level (no skill casts as Basic)
+- [ ] Magic Arrow, Lightning Bolt, Ice Bolt, Implosion and Destroy Undead
+- [ ] Sorcery's extra damage; the cast and the damage in the combat log
+
+#### 4.8.4 Spells that last
+- [ ] Bless, Bloodlust, Shield, Stone Skin, Air Shield, Precision, Haste, Prayer, Fortune, Mirth; Curse, Slow, Weakness, Disrupting Ray, Misfortune, Sorrow
+- [ ] They last as many rounds as the hero's Power; at Expert most hit all friendly or all enemy stacks
+- [ ] Cure, Dispel and the four Protections
+- [ ] The Angelic Alliance's Prayer (7.8.7)
+
+#### 4.8.5 Area damage
+- [ ] Fireball, Inferno, Meteor Shower, Frost Ring, Death Ripple, Chain Lightning and Armageddon
+- [ ] Targeting a hex shows the area hit; your own stacks are hit too
+
+#### 4.8.6 Immunities and Resistance
+- [ ] Undead immune to mind spells, creatures resisting some spell levels or schools
+- [ ] The Resistance skill's chance an enemy spell fails on a stack
+- [ ] Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity (7.8.7)
+
+#### 4.8.7 Control and special spells
+May split in two.
+- [ ] Blind, Berserk, Hypnotize, Forgetfulness, Frenzy, Slayer, Counterstrike, Fire Shield, Magic Mirror, Anti-Magic, Teleport, Clone and Sacrifice
+
+#### 5.8 later
+- [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3); Earthquake with sieges (5.10)
+- [ ] The four Summon Elemental spells, Resurrection and Animate Dead, with the elementals and the dead counted
+- [ ] Enemy heroes casting, and the combat AI and Auto combat casting (8.1, 5.7b)
+- [ ] The Armor of the Damned's curses (7.8.7)
 
 ### 5.9 Combat Resolution
 - [ ] **Victory**: all enemy stacks destroyed or fled
@@ -1194,33 +1232,32 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 41. Obstacles & decorations (7.3)
 
 ### Phase 6 - "Real Competition"
-42. Player system (8.1)
-43. AI basics (8.3)
-44. AI decision making (8.4)
-45. Victory conditions (8.5)
-46. Combat spells (5.8)
-47. Hero magic (4.8)
-48. Siege combat (5.10)
-49. Town factions (6.5)
-50. Smarter combat AI (5.7b)
+42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild, casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
+43. Player system (8.1)
+44. AI basics (8.3)
+45. AI decision making (8.4)
+46. Victory conditions (8.5)
+47. Siege combat (5.10)
+48. Town factions (6.5)
+49. Smarter combat AI (5.7b)
 
 ### Phase 7 - "Polish & Reusability"
-51. Engine public API (9.3)
-52. Scenario format v2 (9.1)
-53. Multiple scenarios + selector (9.2)
-54. Keyboard shortcuts (10.6)
-55. Save/Load system (10.7)
-56. Sound effects (10.4)
-57. Music per context (10.5)
-58. Entity sprites (10.1)
-59. Terrain sprites (10.2)
-60. Animations (10.3)
-61. Map portals (7.9)
-62. Water & boats (7.10)
-63. Hot-seat multiplayer (8.2)
-64. Map editor (9.6)
-65. Quieter event bus (9.4): no route events on hover
-66. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
+50. Engine public API (9.3)
+51. Scenario format v2 (9.1)
+52. Multiple scenarios + selector (9.2)
+53. Keyboard shortcuts (10.6)
+54. Save/Load system (10.7)
+55. Sound effects (10.4)
+56. Music per context (10.5)
+57. Entity sprites (10.1)
+58. Terrain sprites (10.2)
+59. Animations (10.3)
+60. Map portals (7.9)
+61. Water & boats (7.10)
+62. Hot-seat multiplayer (8.2)
+63. Map editor (9.6)
+64. Quieter event bus (9.4): no route events on hover
+65. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
 
 ---
 
