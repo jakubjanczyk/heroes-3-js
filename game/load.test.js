@@ -65,7 +65,8 @@ describe('bootstrap', () => {
       heroes: { ORRIN: { name: 'Orrin', heroClass: 'KNIGHT' } },
       secondarySkills: { LEADERSHIP: { name: 'Leadership' } },
       artifacts: { CENTAURS_AXE: { name: "Centaur's Axe", slot: 'WEAPON' } },
-      obstacles: { MOUNTAIN_1: { name: 'Mountain', look: 'mountain', blocks: [{ x: 0, y: 0 }] } }
+      obstacles: { MOUNTAIN_1: { name: 'Mountain', look: 'mountain', blocks: [{ x: 0, y: 0 }] } },
+      spells: { MAGIC_ARROW: { name: 'Magic Arrow', level: 1 } }
     }
 
     const fetch = createFakeFetch({
@@ -84,7 +85,8 @@ describe('bootstrap', () => {
       './game/data/heroes.json': definitions.heroes,
       './game/data/secondary-skills.json': definitions.secondarySkills,
       './game/data/artifacts.json': definitions.artifacts,
-      './game/data/obstacles.json': definitions.obstacles
+      './game/data/obstacles.json': definitions.obstacles,
+      './game/data/spells.json': definitions.spells
     })
 
     const loaded = await loadGame({ fetch })

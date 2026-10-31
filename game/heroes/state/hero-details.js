@@ -26,6 +26,8 @@ function startingDetailsOf(hero, definitions) {
     ),
     army: hero.army ?? [],
     artifacts: startingArtifacts(hero.artifacts, definitions),
+    spellBook: Boolean(hero.spellBook),
+    spells: hero.spellBook ? (hero.spells ?? []) : [],
     experience: hero.experience ?? 0,
     level: levelForExperience(hero.experience ?? 0),
     levelUpSkills: [],

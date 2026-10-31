@@ -66,9 +66,9 @@
   "MYSTICISM": {
     "name": "Mysticism",
     "descriptions": {
-      "BASIC": "The hero regains 2 more spell points each day.",
-      "ADVANCED": "The hero regains 3 more spell points each day.",
-      "EXPERT": "The hero regains 4 more spell points each day."
+      "BASIC": "The hero regains 2 spell points each day.",
+      "ADVANCED": "The hero regains 3 spell points each day.",
+      "EXPERT": "The hero regains 4 spell points each day."
     }
   },
   "LUCK": {

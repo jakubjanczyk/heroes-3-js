@@ -139,7 +139,8 @@ function createGameFetch({ scenario, definitions, musicTracks = [] }) {
     'heroes.json': definitions.heroes,
     'secondary-skills.json': definitions.secondarySkills,
     'artifacts.json': definitions.artifacts,
-    'obstacles.json': definitions.obstacles
+    'obstacles.json': definitions.obstacles,
+    'spells.json': definitions.spells
   }
   const routes = {
     'scenarios/scenario.json': scenario,

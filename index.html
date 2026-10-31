@@ -538,6 +538,36 @@
       the formation and tactics buttons) stay empty, as in the game for a hero without
       them. The primary skill icons are the hero box's stand-ins.
     -->
+    <template id="spell-book-template">
+      <section class="spell-book" role="dialog" aria-modal="true" aria-label="Spell book" tabindex="-1">
+        <div class="spell-book__window">
+          <button class="spell-book__corner spell-book__corner--previous" type="button" aria-label="Previous page" data-status="Turn to the previous page" data-turn="-1"></button>
+          <ul class="spell-book__page spell-book__page--left" aria-label="Left page"></ul>
+          <ul class="spell-book__page spell-book__page--right" aria-label="Right page"></ul>
+          <button class="spell-book__corner spell-book__corner--next" type="button" aria-label="Next page" data-status="Turn to the next page" data-turn="1"></button>
+          <div class="spell-book__bookmarks" role="group" aria-label="Schools">
+            <button class="spell-book__bookmark" type="button" aria-label="Air" aria-pressed="false" data-school="AIR" data-status="Turn to view Air spells">Air</button>
+            <button class="spell-book__bookmark" type="button" aria-label="Earth" aria-pressed="false" data-school="EARTH" data-status="Turn to view Earth spells">Earth</button>
+            <button class="spell-book__bookmark" type="button" aria-label="Fire" aria-pressed="false" data-school="FIRE" data-status="Turn to view Fire spells">Fire</button>
+            <button class="spell-book__bookmark" type="button" aria-label="Water" aria-pressed="false" data-school="WATER" data-status="Turn to view Water spells">Water</button>
+            <button class="spell-book__bookmark" type="button" aria-label="All" aria-pressed="false" data-school="ALL" data-status="Show all spell schools">All</button>
+          </div>
+          <div class="spell-book__buttons">
+            <button class="spell-book__button" type="button" aria-label="Combat spells" aria-pressed="false" data-kind="combat" data-status="Turn to view combat spells">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4l-9 9M20 4h-4M20 4v4M7 13l4 4M9 15l-5 5"/></svg>
+            </button>
+            <button class="spell-book__button" type="button" aria-label="Adventure spells" aria-pressed="false" data-kind="adventure" data-status="Turn to view adventure map spells">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l6-12 4 7 3-4 5 9z"/></svg>
+            </button>
+            <div class="spell-book__spell-points" role="group" aria-label="Spell points" data-status="Hero's remaining spell points"></div>
+            <button class="spell-book__button spell-book__close" type="button" aria-label="Close" aria-keyshortcuts="Enter Escape" data-status="Close the Spell Book">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+            </button>
+          </div>
+          <p class="spell-book__status-bar" role="status" aria-label="Spell book status bar"></p>
+        </div>
+      </section>
+    </template>
     <template id="hero-screen-template">
       <section class="hero-screen" role="dialog" aria-modal="true" aria-label="Hero screen" tabindex="-1">
         <div class="hero-screen__window">
@@ -617,7 +647,7 @@
           <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 22" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 68" aria-hidden="true"></span>
           <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 114" aria-hidden="true"></span>
-          <span class="hero-screen__slot hero-screen__artifact" style="--x: 545; --y: 302" aria-hidden="true"></span>
+          <button class="hero-screen__slot hero-screen__artifact hero-screen__spell-book" type="button" style="--x: 545; --y: 302" aria-label="Spell book" data-status="View Spells"></button>
           <div class="hero-screen__backpack">
             <button class="hero-screen__slot hero-screen__backpack-arrow" type="button" style="--x: 314; --y: 357" data-direction="left" aria-label="Scroll backpack left">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg>

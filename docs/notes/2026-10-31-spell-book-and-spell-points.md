@@ -104,7 +104,7 @@ Checked against the Heroes 3 wiki's raw page source (List of spells, each spell'
 - **Hero screen.** The Spell Points frame shows "current/maximum" (engine) under the label "Spell Points" (`core.genrltxt.387`). Hovering it, the status bar says "View Spell Points Info" (`HeroScrn.txt`). Right-clicking it shows "{Spell Points}  Lord Haart currently has 10 spell points out of a maximum of 10.  The maximum number of spell points is 10 times your Knowledge.  It is occasionally possible to have more than your maximum spell points from special events or locations." (`core.genrltxt.205`).
 - **The hero list** has a blue spell points bar to the right of the portrait, on the other side from the movement bar (engine, `IMANA`). It goes up one step per 5 points: a fixed number of points, not a share of the maximum. In the game it grows up to some point, then up to three "+" appear on top of it (the user); the rule for them isn't online. For now we draw it as a share of the hero's maximum, as the movement bar is, and check the game's rule much later (10.1).
 - **The info box and the right-click hero popup** show the number under morale and luck (engine).
-- **The exchange screen** shows each hero's spell points by their primary skills (engine). Its right-click is the same text as on the hero screen.
+- **The exchange screen** shows each hero's spell points by their primary skills (engine). Its right-click is the same text as on the hero screen (not yet here).
 
 ### The spell book
 
@@ -137,7 +137,10 @@ Checked against the open-source engine's spell book window and the `Help.txt` bu
   - adventure: View Air, View Earth, Visions (in all four schools), Town Portal and Dimension Door, the last two more than he can afford.
 - **The hero classes.** Knights start without a spell book, as now. Starting spells by hero come with the heroes that have them (Clerics, 6.5).
 - **Shown** on the hero screen, in the hero list's bar (a share of the maximum for now), in the info box and hero popup, and on the exchange screen, as above.
-- **The window** as above, with stand-in pictures: each spell's picture is its name's initials in its school's colour, until there are pictures (10.1).
+- **The window** as above, with stand-in pictures: each spell's picture is its name's initials in its school's colour, until there are pictures (10.1). The page corners are always there; on the first or last spread they do nothing.
+- **Remembering the place.** The book keeps the bookmark and spread it was left on, for adventure and for combat spells, until the page reloads. Opened from the map or the hero screen it always shows the adventure spells, and turning to the combat spells starts at their first spread, so for now only the bookmark shows; the page counts once the book opens in battle (4.8.3).
+- **A spell the hero can't afford** is drawn in other colours and read out as "Not enough spell points".
+- **Clicking a spell** shows its description or the "can't cast" message in a box over the book, closed with OK, Enter or Escape.
 - **Fixing an older note.** `2026-10-26-secondary-skills.md` said Mysticism gives "+2 / 3 / 4" a day; it is 2 / 3 / 4 in place of the 1.
 
 ## Not checked
@@ -148,6 +151,9 @@ Checked against the open-source engine's spell book window and the `Help.txt` bu
 - The costs come from one wiki, on two kinds of page (the List of spells and each spell's own page). The other fan sites with spell tables can't be reached from here.
 
 ## Not yet
+
+- The pages turning, as an animation (10.3).
+- The right-click on the exchange screen's spell points.
 
 - Wisdom, the school skills' Basic / Advanced / Expert effects beyond the cost, the Mage Guild and learning spells (4.8.2).
 - Casting: in battle from 4.8.3, on the map in 4.8.8.
