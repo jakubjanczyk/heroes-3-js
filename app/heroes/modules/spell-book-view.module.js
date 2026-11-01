@@ -285,7 +285,7 @@ export const registerSpellBookViewModule = defineModule(
       closePopup()
       popup = renderDescriptionPopup(document, {
         title: spell.description.title,
-        description: spell.description.text
+        description: spell.popupText
       })
       gameShell.append(popup)
       const sourceBox = source.getBoundingClientRect()

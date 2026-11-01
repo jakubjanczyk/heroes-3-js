@@ -122,6 +122,38 @@ describe('battle spells behavior', () => {
     expect(readBattleStacks()).toContainEqual(stackAt(left, PIKEMEN_HEX.row, PIKEMEN_HEX.column))
   })
 
+  // Magic Arrow at no skill with Power 2 does 30; Sorcery adds 5, 10 or 15%, rounded down.
+  test.each([
+    { level: 'Basic', damage: 31 },
+    { level: 'Advanced', damage: 33 },
+    { level: 'Expert', damage: 34 }
+  ])('given a hero with Power 2 and $level Sorcery when the hero casts Magic Arrow then it does $damage damage', async ({
+    level,
+    damage
+  }) => {
+    const hero = aCaster({ secondarySkills: [{ skill: 'SORCERY', level: level.toUpperCase() }] })
+    const { user } = await startBattle(aFight({ hero }))
+
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    expect(readCombatMessages().at(-1)).toMatch(`The Magic Arrow does ${damage} damage.`)
+  })
+
+  // Advanced Water Magic: 20 + 10 × Power 2 = 40, and Basic Sorcery's 5% makes it 42.
+  test('given a hero with Advanced Water Magic and Basic Sorcery when the hero casts Magic Arrow then Sorcery raises the Advanced damage', async () => {
+    const hero = aCaster({
+      secondarySkills: [
+        { skill: 'WATER_MAGIC', level: 'ADVANCED' },
+        { skill: 'SORCERY', level: 'BASIC' }
+      ]
+    })
+    const { user } = await startBattle(aFight({ hero }))
+
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    expect(readCombatMessages().at(-1)).toMatch('The Magic Arrow does 42 damage.')
+  })
+
   test('given a hero with 10 spell points when the hero casts Magic Arrow then 5 are left', async () => {
     const { user } = await startBattle(aFight())
 

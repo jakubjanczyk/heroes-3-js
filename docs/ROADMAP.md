@@ -633,8 +633,8 @@ In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 
 ##### 4.8.3.6 The other bolts and Sorcery
 - [x] Lightning Bolt, Ice Bolt and Implosion (data only, with 4.8.3.2)
-- [ ] Sorcery's extra damage
-- [ ] Right-clicking a damage spell adds " Does N points of damage."
+- [x] Sorcery's extra damage
+- [x] Right-clicking a damage spell adds " Does N points of damage." (the spell book only, not the Mage Guild)
 
 ##### 4.8.3.7 Destroy Undead
 - [ ] Not aimed: it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line

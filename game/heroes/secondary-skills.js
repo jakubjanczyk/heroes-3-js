@@ -9,6 +9,10 @@ export function startingSecondarySkills({ name, secondarySkills }, definitions) 
   return secondarySkills ?? heroOfTheGame(definitions?.heroes, name)?.secondarySkills ?? []
 }
 
+export function secondarySkillLevel(hero, skill) {
+  return (hero?.secondarySkills ?? []).find((learned) => learned.skill === skill)?.level ?? null
+}
+
 export function describeSecondarySkill({ skill, level }, definitions) {
   const skillDefinition = definitions?.secondarySkills?.[skill]
   const name = skillDefinition?.name ?? skill

@@ -1,3 +1,5 @@
+import { getHeroPrimarySkills } from './primary-skills.js'
+import { secondarySkillLevel } from './secondary-skills.js'
 import { getHeroSpellPoints } from './spell-points.js'
 
 export const SPELL_SCHOOLS = Object.freeze(['AIR', 'EARTH', 'FIRE', 'WATER'])
@@ -12,6 +14,7 @@ const SCHOOL_SKILLS = Object.freeze({
   WATER: 'WATER_MAGIC'
 })
 const SKILL_LEVELS = Object.freeze({ BASIC: 1, ADVANCED: 2, EXPERT: 3 })
+const SORCERY_BONUS_PERCENT = Object.freeze({ BASIC: 5, ADVANCED: 10, EXPERT: 15 })
 const SKILL_LEVEL_SHORT_NAMES = Object.freeze(['', 'Bas', 'Adv', 'Exp'])
 const SPELL_LEVEL_NAMES = Object.freeze(['', '1st lev', '2nd lev', '3rd lev', '4th lev', '5th lev'])
 
@@ -24,8 +27,7 @@ export function hasSpellBook(hero) {
 }
 
 export function skillLevelOf(hero, skillId) {
-  const skill = (hero?.secondarySkills ?? []).find((learned) => learned.skill === skillId)
-  return SKILL_LEVELS[skill?.level] ?? 0
+  return SKILL_LEVELS[secondarySkillLevel(hero, skillId)] ?? 0
 }
 
 const ALWAYS_LEARNABLE_LEVEL = 2
@@ -47,6 +49,25 @@ export function spellCost(hero, spell) {
   return spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
 }
 
+// No skill in the school casts as Basic: the data repeats Basic's base for it.
+export function spellDamage({ hero, spell, definitions }) {
+  if (!spell.damage) {
+    return 0
+  }
+  const power = getHeroPrimarySkills({ entity: hero, definitions }).find(
+    ({ key }) => key === 'power'
+  ).value
+  const { base, perPower } = spell.damage
+  const sorceryPercent = SORCERY_BONUS_PERCENT[secondarySkillLevel(hero, 'SORCERY')] ?? 0
+  return Math.floor(
+    ((base[spellSkillLevel(hero, spell)] + perPower * power) * (100 + sorceryPercent)) / 100
+  )
+}
+
+function popupText(description, damage) {
+  return damage > 0 ? `${description} Does ${damage} points of damage.` : description
+}
+
 function schoolSortIndex(spell) {
   return Math.min(...(spell.schools ?? []).map((school) => SCHOOL_SORT_ORDER.indexOf(school)))
 }
@@ -57,10 +78,11 @@ function compareSpells(a, b) {
   )
 }
 
-function describeSpell(id, spell, { hero, spellPoints }) {
+function describeSpell(id, spell, { hero, spellPoints, definitions }) {
   const skillLevel = spellSkillLevel(hero, spell)
   const levelName = SPELL_LEVEL_NAMES[spell.level] ?? ''
   const cost = spellCost(hero, spell)
+  const description = spell.descriptions?.[skillLevel] ?? { title: spell.name, text: '' }
   return {
     id,
     name: spell.name,
@@ -69,7 +91,8 @@ function describeSpell(id, spell, { hero, spellPoints }) {
     canAfford: cost <= spellPoints,
     schools: spell.schools ?? [],
     statusText: `${spell.name} (${levelName})`,
-    description: spell.descriptions?.[skillLevel] ?? { title: spell.name, text: '' }
+    description,
+    popupText: popupText(description.text, spellDamage({ hero, spell, definitions }))
   }
 }
 
@@ -85,7 +108,7 @@ function spellsInBook({ hero, definitions, kind, school }) {
         (school === ALL_SCHOOLS || spell.schools?.includes(school))
     )
     .sort(([, a], [, b]) => compareSpells(a, b))
-    .map(([id, spell]) => describeSpell(id, spell, { hero, spellPoints }))
+    .map(([id, spell]) => describeSpell(id, spell, { hero, spellPoints, definitions }))
 }
 
 function spreadsOf(spells, school) {

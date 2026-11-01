@@ -7,28 +7,36 @@ import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
 import {
   clickSpell,
   clickSpellBookControl,
+  holdRightButtonOnSpell,
   openSpellBookFromMap,
   querySpellBook,
   querySpellBookControl,
   readSelectedSpellBookTabs,
   readSpellBookMessage,
   readSpellBookSpellNames,
-  readSpellBookSpellPoints
+  readSpellBookSpellPoints,
+  readSpellPopup
 } from './spell-book.utils.js'
 
-const spell = ({ name, schools = ['AIR'], kind = 'combat', costs = [5, 4, 4, 4] }) =>
-  aSpellDefinition()
+const spell = ({ name, schools = ['AIR'], kind = 'combat', costs = [5, 4, 4, 4], damage }) => {
+  const definition = aSpellDefinition()
     .withName(name)
     .withSchools(schools)
     .withKind(kind)
     .withCosts(costs)
     .describedAs(`${name} description.`)
-    .build()
+  return (damage ? definition.withDamage(damage) : definition).build()
+}
 
 const spellDefinitions = {
   HASTE: spell({ name: 'Haste' }),
   SLOW: spell({ name: 'Slow', schools: ['EARTH'] }),
   IMPLOSION: spell({ name: 'Implosion', schools: ['EARTH'], costs: [30, 25, 25, 25] }),
+  MAGIC_ARROW: spell({
+    name: 'Magic Arrow',
+    schools: ['AIR', 'EARTH', 'FIRE', 'WATER'],
+    damage: { base: [10, 10, 20, 30], perPower: 10 }
+  }),
   VIEW_AIR: spell({ name: 'View Air', kind: 'adventure', costs: [2, 1, 1, 1] }),
   VIEW_EARTH: spell({ name: 'View Earth', schools: ['EARTH'], kind: 'adventure' })
 }
@@ -123,6 +131,17 @@ describe('battle spell book behavior', () => {
     await clickSpell(user, 'Haste')
 
     expect(readSpellBookMessage()).toEqual(['Haste', 'Haste description.'])
+  })
+
+  // 10 + 10 × Power 2.
+  test('given the spell book in battle when the player holds the right button on Magic Arrow then the popup says how much damage it does', async () => {
+    const hero = aHeroWithSpells(['MAGIC_ARROW']).withPrimarySkills({ power: 2, knowledge: 1 })
+    const { user } = await startBattle(aFight(hero))
+    await openBattleSpellBook(user)
+
+    await holdRightButtonOnSpell(user, 'Magic Arrow')
+
+    expect(readSpellPopup()[1]).toBe('Magic Arrow description. Does 30 points of damage.')
   })
 
   test('given a hero with 10 spell points when the player clicks a spell costing 30 in battle then the book says they cannot cast it', async () => {
