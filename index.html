@@ -129,6 +129,7 @@
     <link rel="modulepreload" href="./game/heroes/battle-ai.js" />
     <link rel="modulepreload" href="./game/heroes/battle-results.js" />
     <link rel="modulepreload" href="./game/heroes/monster-stacks.js" />
+    <link rel="modulepreload" href="./game/heroes/spell-book.js" />
     <link rel="modulepreload" href="./app/heroes/modules/battle-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/morale-and-luck.js" />
     <link rel="modulepreload" href="./app/heroes/modules/dwelling-recruit-view.module.js" />
@@ -150,7 +151,6 @@
     <link rel="modulepreload" href="./app/heroes/presentation/primary-skill-icons.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-panel.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-screen-view.module.js" />
-    <link rel="modulepreload" href="./game/heroes/spell-book.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hud.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/info-box.module.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/captured-mine-box.js" />
@@ -412,7 +412,7 @@
             <span class="battle-bar__arrow battle-bar__arrow--up"></span>
             <span class="battle-bar__arrow battle-bar__arrow--down"></span>
           </div>
-          <button class="battle-button" type="button" aria-label="Cast spell" title="Cast spell (not available yet)" disabled>
+          <button class="battle-button" type="button" data-battle-action="cast-spell" aria-label="Cast spell" aria-keyshortcuts="C" title="Cast spell (C)" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H5zM19 4h-4a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h4z"/></svg>
           </button>
           <button class="battle-button" type="button" data-battle-action="wait" aria-label="Wait" aria-keyshortcuts="W" title="Wait (W)" disabled>

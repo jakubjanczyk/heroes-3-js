@@ -48,12 +48,17 @@ export const registerSpellBookViewModule = defineModule(
     let popup = null
     let isMapCovered = false
     let coversMap = false
-    // The book opens where the player last left it, for each kind of spell.
+    // The book opens where the player last left it: on the map for each kind of spell, and in
+    // battle, where it shows only the combat spells.
     const lastPlaces = {
       adventure: { school: ALL_SCHOOLS, spread: 0 },
-      combat: { school: ALL_SCHOOLS, spread: 0 }
+      combat: { school: ALL_SCHOOLS, spread: 0 },
+      battle: { school: ALL_SCHOOLS, spread: 0 }
     }
     let kind = 'adventure'
+    let inBattle = false
+
+    const place = () => lastPlaces[inBattle ? 'battle' : kind]
 
     function selectedHero() {
       return heroById(state.get(), selectedHeroIdOf(state.get(), viewingPlayer(state.get())))
@@ -122,14 +127,14 @@ export const registerSpellBookViewModule = defineModule(
         hero: bookHero(),
         definitions,
         kind,
-        school: lastPlaces[kind].school,
-        spread: lastPlaces[kind].spread
+        school: place().school,
+        spread: place().spread
       })
     }
 
     function showSpread() {
       const { spread, schoolHeading, spells } = currentSpread()
-      lastPlaces[kind].spread = spread
+      place().spread = spread
       const places = [
         ...(schoolHeading ? [renderSchoolHeading(schoolHeading)] : []),
         ...spells.map(renderSpell)
@@ -139,10 +144,7 @@ export const registerSpellBookViewModule = defineModule(
       part('[aria-label="Right page"]').replaceChildren(...places.slice(onLeft))
 
       for (const bookmark of book.querySelectorAll('.spell-book__bookmark')) {
-        bookmark.setAttribute(
-          'aria-pressed',
-          String(bookmark.dataset.school === lastPlaces[kind].school)
-        )
+        bookmark.setAttribute('aria-pressed', String(bookmark.dataset.school === place().school))
       }
       for (const button of book.querySelectorAll('[data-kind]')) {
         button.setAttribute('aria-pressed', String(button.dataset.kind === kind))
@@ -152,17 +154,19 @@ export const registerSpellBookViewModule = defineModule(
       )
     }
 
-    function open(id) {
+    function open(id, { kind: openOn = 'adventure' } = {}) {
       const hero = heroById(state.get(), id)
       if (!gameShell || book || !hasSpellBook(hero)) {
         return
       }
 
       heroId = id
-      kind = 'adventure'
+      kind = openOn
+      inBattle = openOn === 'combat'
       book = document
         .getElementById('spell-book-template')
         .content.firstElementChild.cloneNode(true)
+      part('[data-kind="adventure"]').disabled = inBattle
       showSpread()
       gameShell.append(book)
       book.focus()
@@ -226,7 +230,7 @@ export const registerSpellBookViewModule = defineModule(
     }
 
     function turnTo(spread) {
-      lastPlaces[kind].spread = spread
+      place().spread = spread
       showSpread()
     }
 
@@ -254,13 +258,13 @@ export const registerSpellBookViewModule = defineModule(
 
       const control = event.target.closest('button')
       if (control?.dataset.turn) {
-        turnTo(lastPlaces[kind].spread + Number(control.dataset.turn))
+        turnTo(place().spread + Number(control.dataset.turn))
       } else if (control?.dataset.school) {
-        lastPlaces[kind] = { school: control.dataset.school, spread: 0 }
+        Object.assign(place(), { school: control.dataset.school, spread: 0 })
         showSpread()
-      } else if (control?.dataset.kind) {
+      } else if (control?.dataset.kind && !inBattle) {
         kind = control.dataset.kind
-        lastPlaces[kind].spread = 0
+        place().spread = 0
         showSpread()
       }
     }
@@ -301,7 +305,7 @@ export const registerSpellBookViewModule = defineModule(
         { type: APP_FACT_HERO_HIRED, handler: renderCastSpellButton },
         {
           type: APP_UI_SPELL_BOOK_OPEN_REQUESTED,
-          handler: (event) => open(event.detail.heroId)
+          handler: (event) => open(event.detail.heroId, event.detail)
         },
         {
           type: APP_UI_ADVENTURE_MAP_COVERED,

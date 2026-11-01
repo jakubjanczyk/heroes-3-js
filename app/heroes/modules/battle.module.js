@@ -37,6 +37,7 @@ import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
+import { hasSpellBook } from '../../../game/heroes/spell-book.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -166,6 +167,7 @@ export const registerBattleModule = defineModule(
       if (moving) {
         emit(APP_UI_BATTLE_UPDATED, {
           tile: started.tile,
+          heroId,
           heroName: heroNameOf(),
           stacks: withHexes(
             moving.battle.stacks.map((stack) =>
@@ -182,6 +184,7 @@ export const registerBattleModule = defineModule(
           canWait: false,
           canDefend: false,
           canRetreat: false,
+          canCastSpell: false,
           results: null,
           autoCombat,
           stepDelayMs
@@ -193,6 +196,7 @@ export const registerBattleModule = defineModule(
       const canAct = isPlayersTurn()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
+        heroId,
         heroName: heroNameOf(),
         stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
@@ -204,6 +208,7 @@ export const registerBattleModule = defineModule(
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
         canRetreat: canAct,
+        canCastSpell: canAct && hasSpellBook(heroById(state.get(), heroId)),
         results: outcome ? describeResults() : null,
         autoCombat,
         stepDelayMs
