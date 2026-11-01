@@ -12,6 +12,7 @@ import {
 } from './app.utils.js'
 import {
   clickBattleButton,
+  getBattleButton,
   LOWEST_ROLLS,
   queryBattleScreen,
   readActiveStack,
@@ -139,5 +140,21 @@ describe('battle Auto combat behavior', () => {
     await waitForBattleToEnd()
 
     expect(queryBattleScreen()).toBeNull()
+  })
+  test('given Auto combat is on then Cast spell is disabled', async () => {
+    const scenario = aScenario()
+      .withSize(3)
+      .withEntities(
+        aHero()
+          .withSpellBook(true)
+          .withArmy([stack('ANGEL', 1)]),
+        aMonster().withType('PIKEMAN').withCount(10).withStacks(1).at(1, 0)
+      )
+      .withDefinitions({ monsters })
+    const { user } = await startBattle(scenario, { appConfig: { battleStepDelayMs: 30 } })
+
+    await clickBattleButton(user, 'Auto combat')
+
+    expect(getBattleButton('Cast spell').disabled).toBe(true)
   })
 })

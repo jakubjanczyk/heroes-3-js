@@ -7,6 +7,7 @@ import {
   clickBattleButton,
   clickBattleHex,
   closeBattleResults,
+  getBattleButton,
   readActiveStack,
   readBattleEffects,
   readBattleResultsSide,
@@ -74,6 +75,12 @@ async function castSpellAt(user, name, { row, column }) {
   await clickBattleHex(user, row, column)
 }
 
+// The book is shut for the rest of the round the hero cast in.
+async function playOnToNextRound(user) {
+  await clickBattleButton(user, 'Defend')
+  await waitMs(1000)
+}
+
 async function readBattleSpellPoints(user) {
   await clickBattleButton(user, 'Cast spell')
   return readSpellBookSpellPoints()
@@ -113,6 +120,7 @@ describe('battle spells behavior', () => {
     const { user } = await startBattle(aFight())
 
     await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+    await playOnToNextRound(user)
 
     expect(await readBattleSpellPoints(user)).toBe('5')
   })
@@ -211,6 +219,7 @@ describe('battle spells behavior', () => {
     await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
 
     const reloaded = await reloadBattle(scenario, { eventLog })
+    await playOnToNextRound(reloaded.user)
 
     expect(await readBattleSpellPoints(reloaded.user)).toBe('5')
   })
@@ -224,5 +233,49 @@ describe('battle spells behavior', () => {
     await waitMs()
 
     expect(readHeroListSpellPoints()).toEqual({ value: '5', max: '10' })
+  })
+  test('given the hero cast Magic Arrow this round then Cast spell is disabled', async () => {
+    const { user } = await startBattle(aFight())
+
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    expect(getBattleButton('Cast spell').disabled).toBe(true)
+  })
+
+  test("given the hero cast on one stack's turn when the hero's next stack acts in the same round then Cast spell is disabled", async () => {
+    // The Griffins (speed 6) act first, then the Swordsmen (speed 5), then the Pikemen.
+    const hero = aCaster().withArmy([stack('GRIFFIN', 2), stack('SWORDSMAN', 10)])
+    const { user } = await startBattle(aFight({ hero }))
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    await clickBattleButton(user, 'Defend')
+
+    expect([readActiveStack().stack, getBattleButton('Cast spell').disabled]).toEqual([
+      'Swordsmen 10',
+      true
+    ])
+  })
+
+  test('given the hero cast Magic Arrow last round when the next round starts then Cast spell is enabled again', async () => {
+    const { user } = await startBattle(aFight())
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    await playOnToNextRound(user)
+
+    expect([readActiveStack().stack, getBattleButton('Cast spell').disabled]).toEqual([
+      'Swordsmen 10',
+      false
+    ])
+  })
+
+  test('given the hero cast Magic Arrow this round when the page reloads then Cast spell is disabled', async () => {
+    const eventLog = createMemoryEventLog()
+    const scenario = aFight()
+    const { user } = await startBattle(scenario, { eventLog })
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    await reloadBattle(scenario, { eventLog })
+
+    expect(getBattleButton('Cast spell').disabled).toBe(true)
   })
 })

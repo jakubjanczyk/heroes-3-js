@@ -621,8 +621,8 @@ In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 - [x] A burst of light over the stack a spell hit, until the spells' own animations (10.3)
 
 ##### 4.8.3.3 Once a round
-- [ ] The hero casts once a round ("Your hero has already cast a spell this round."); the same stack still takes its turn
-- [ ] Cast spell is off with Auto combat on
+- [x] The hero casts once a round: Cast spell is off until the next round; the same stack still takes its turn
+- [x] Cast spell is off with Auto combat on
 
 ##### 4.8.3.4 Aiming
 - [ ] Hovering an enemy stack: "Cast Magic Arrow on Pikemen" and the spell cursor; elsewhere "Select Spell Target" (a click there cancels the spell, 4.8.3.2)

@@ -277,6 +277,11 @@
       inset 1px 1px 0 var(--trim-gold-dark),
       0 0 0 1px black;
   }
+
+  &:disabled {
+    color: color-mix(in oklab, var(--trim-gold) 50%, #6a6a6a);
+    filter: grayscale(0.6);
+  }
 }
 
 .battle-bar__log {
