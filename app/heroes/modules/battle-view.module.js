@@ -23,7 +23,8 @@ import {
   APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_BATTLE_UPDATED,
   APP_UI_RESTORE_COMPLETED,
-  APP_UI_RESTORE_STARTED
+  APP_UI_RESTORE_STARTED,
+  APP_UI_SPELL_BOOK_OPEN_REQUESTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
@@ -431,8 +432,9 @@ export const registerBattleViewModule = defineModule(
       setTimeout(() => effect.remove(), EFFECT_MS)
     }
 
-    function showActions({ canWait, canDefend, canRetreat, autoCombat }) {
+    function showActions({ canWait, canDefend, canRetreat, canCastSpell, autoCombat }) {
       const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
+      button('cast-spell').disabled = !canCastSpell
       button('wait').disabled = !canWait
       button('defend').disabled = !canDefend
       button('retreat').disabled = !canRetreat
@@ -546,6 +548,8 @@ export const registerBattleViewModule = defineModule(
     function pressBattleButton(action) {
       if (COMMAND_BY_ACTION[action]) {
         emit(COMMAND_BY_ACTION[action], {})
+      } else if (action === 'cast-spell') {
+        emit(APP_UI_SPELL_BOOK_OPEN_REQUESTED, { heroId: shown.heroId, kind: 'combat' })
       } else if (action === 'retreat') {
         openRetreatDialog()
       } else if (action === 'confirm-retreat' || action === 'cancel-retreat') {
@@ -672,7 +676,8 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
-      APP_UI_ADVENTURE_MAP_UNCOVERED
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_SPELL_BOOK_OPEN_REQUESTED
     ]
   }
 )
