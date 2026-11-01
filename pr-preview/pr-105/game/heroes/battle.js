@@ -559,6 +559,7 @@ export function castDamageSpell(battle, { heroName, spellName, targetId, damage 
   return {
     ...battle,
     stacks: battle.stacks.map((stack) => (stack.id === targetId ? damaged : stack)),
+    effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
     messages: [
       ...battle.messages,
       `${heroName} casts '${spellName}' on the ${target.name}.`,
