@@ -230,7 +230,7 @@ export const registerSpellBookViewModule = defineModule(
       }
       if (inBattle && canCastInBattle(definitions.spells?.[spell.id])) {
         close()
-        emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id })
+        emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name })
         return
       }
       showMessage(spell.description)
