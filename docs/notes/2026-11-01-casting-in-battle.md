@@ -78,6 +78,13 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **The hit** shows as a burst of light over the stack for a second, a stand-in for the spell's own animation (10.3). A reload doesn't show it again.
 - **The fact** `fact.battle.spell.cast` names the hero, the spell, its target, the damage and the spell points it cost.
 
+### Once a round (4.8.3.3)
+
+- **The battle remembers the hero cast this round**; it forgets when the next round starts, as the stacks' retaliations come back. A good morale's extra turn, waiting and the hero's other stacks are all in the same round.
+- **Cast spell stays on** after the cast. Clicking it (or C) shows "Your hero has already cast a spell this round." in a box over the battle, closed with OK or Enter, with the same stack to act; the book doesn't open. The battlefield can't be played behind the box, as behind the retreat dialog.
+- **A reload** keeps it: the cast is a saved fact, so replaying it marks the round again.
+- **Auto combat** already turns Cast spell off (the player has no turn); this part adds its test.
+
 ### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
