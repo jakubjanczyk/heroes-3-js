@@ -98,7 +98,9 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **Right-clicking a damage spell** in the spell book adds " Does N points of damage." (`core.genrltxt.343`) after its description, with the damage this hero would do: skill level, Power and Sorcery (engine: the spell book's popup). On the map and in battle alike. A spell without damage shows its description only.
 - **Only the right-click popup.** Clicking a spell on the map still shows its plain description, and the Mage Guild's scrolls don't name a damage: the guild has no hero to work it out for (engine: its scroll popup shows the description alone).
 
-### Destroy Undead (4.8.3.7)
+### Destroy Undead (4.8.3.7, moved to 5.8 later)
+
+Planned, then left for much later (decided with the user).
 
 - **Data.** Destroy Undead gets its damage (10 / 10 / 20 / 50, and 10 per point of Power) and `"targets": "undead"` in `game/data/spells.json`. A spell with targets isn't aimed; a creature is undead by its `undead` ability, as for morale.
 - **Not aimed.** Clicking it in the battle book casts it at once: the book closes and every living undead stack on the battlefield, the hero's own included, takes the damage. No "Cast … on …" or spell cursor.

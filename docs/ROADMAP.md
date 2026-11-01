@@ -637,10 +637,10 @@ In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 - [x] Right-clicking a damage spell adds " Does N points of damage." (the spell book only, not the Mage Guild)
 
 ##### 4.8.3.7 Destroy Undead
-- [ ] Not aimed: it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line
+Moved to 5.8 later.
 
 #### 4.8.4 Spells that last
-In four parts.
+In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
 - [ ] 4.8.4.1 How a lasting spell works (it lasts as many rounds as the hero's Power, shown on the stack), with the spells that change a stat: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness
 - [ ] 4.8.4.2 Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow
 - [ ] 4.8.4.3 At Expert most hit all friendly or all enemy stacks
@@ -665,6 +665,7 @@ In three parts.
 - [ ] 4.8.7.3 Teleport, Clone and Sacrifice
 
 #### 5.8 later
+- [ ] Destroy Undead (planned in `docs/notes/2026-11-01-casting-in-battle.md`): not aimed, it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line
 - [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3); Earthquake with sieges (5.10)
 - [ ] The four Summon Elemental spells, Resurrection and Animate Dead, with the elementals and the dead counted
 - [ ] Enemy heroes casting, and the combat AI and Auto combat casting (8.1, 5.7b)
