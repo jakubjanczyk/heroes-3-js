@@ -122,6 +122,7 @@ export function createBattle({
       })
     ],
     actedStackIds: [],
+    heroCastThisRound: false,
     waitedStackIds: [],
     // The stacks whose morale took effect this round, for good or bad: it does so once a round.
     moraleStackIds: [],
@@ -175,7 +176,7 @@ function startNextTurn(battle) {
   }
 }
 
-// A new round also gives every stack its retaliations back.
+// A new round also gives every stack its retaliations back, and the hero a spell to cast.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
   if (livingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
@@ -185,6 +186,7 @@ export function endTurn(battle, stackId) {
   return startNextTurn({
     ...battle,
     actedStackIds: [],
+    heroCastThisRound: false,
     waitedStackIds: [],
     moraleStackIds: [],
     extraTurnStackId: null,
@@ -558,6 +560,7 @@ export function castDamageSpell(battle, { heroName, spellName, targetId, damage 
   const { damaged, ...losses } = damageStack(battle, targetId, damage)
   return {
     ...battle,
+    heroCastThisRound: true,
     stacks: battle.stacks.map((stack) => (stack.id === targetId ? damaged : stack)),
     effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
     messages: [

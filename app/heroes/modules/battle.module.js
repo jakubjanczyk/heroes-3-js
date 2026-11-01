@@ -214,7 +214,8 @@ export const registerBattleModule = defineModule(
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
         canRetreat: canAct,
-        canCastSpell: canAct && hasSpellBook(heroById(state.get(), heroId)),
+        canCastSpell:
+          canAct && !battle.heroCastThisRound && hasSpellBook(heroById(state.get(), heroId)),
         results: outcome ? describeResults() : null,
         autoCombat,
         stepDelayMs
@@ -469,6 +470,7 @@ export const registerBattleModule = defineModule(
       const spell = definitions.spells?.[spellId]
       const cost = spell && spellCost(hero, spell)
       const canCast =
+        !battle.heroCastThisRound &&
         hasSpellBook(hero) &&
         hero.spells.includes(spellId) &&
         canCastInBattle(spell) &&

@@ -81,7 +81,7 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 ### Once a round (4.8.3.3)
 
 - **The battle remembers the hero cast this round**; it forgets when the next round starts, as the stacks' retaliations come back. A good morale's extra turn, waiting and the hero's other stacks are all in the same round.
-- **Cast spell stays on** after the cast. Clicking it (or C) shows "Your hero has already cast a spell this round." in a box over the battle, closed with OK or Enter, with the same stack to act; the book doesn't open. The battlefield can't be played behind the box, as behind the retreat dialog.
+- **Cast spell is off** for the rest of the round once the hero has cast (decided with the user, as the sources don't say what the original game does); C does nothing then either.
 - **A reload** keeps it: the cast is a saved fact, so replaying it marks the round again.
 - **Auto combat** already turns Cast spell off (the player has no turn); this part adds its test.
 
@@ -89,7 +89,7 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
 - **Spell points and the cast are saved** as one fact naming the hero, the spell, its target and the damage each stack took, so a reload replays it, and the hero's spell points go down by the spell's cost. They stay spent after the battle, won, lost or fled.
-- **The Cast spell button** works on the player's stack's turn for a hero with a spell book (keyboard C). It is off on the enemy's turns, while a stack walks, with Auto combat on, and for a hero without a spell book. Once the hero has cast this round it stays on and clicking it gives the "already cast" message in a box over the battle, closed with OK.
+- **The Cast spell button** works on the player's stack's turn for a hero with a spell book (keyboard C). It is off on the enemy's turns, while a stack walks, with Auto combat on, and for a hero without a spell book. Once the hero has cast this round it is off until the next round (4.8.3.3).
 - **Other combat spells** (Haste, Bless, Fireball, …) show their description when clicked in battle, until their parts (4.8.4, 4.8.5, 4.8.7).
 - **Aiming** uses a spell cursor over a stack it can hit; elsewhere the status bar asks for a target. Right-click or Escape cancels, saying "Spell cancelled" in the status bar; a click on anything but an enemy stack cancels too (4.8.3.2).
 - **A spell that kills the last enemy stack wins the battle**, as a strike does.
@@ -97,7 +97,7 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 
 ## Not checked
 
-- What the original game does when the Cast spell button is clicked after the hero has cast this round (message or a disabled button): the text exists (`core.genrltxt.128`); the engine refuses the cast.
+- What the original game does when the Cast spell button is clicked after the hero has cast this round (message or a disabled button): the text exists (`core.genrltxt.128`); the engine refuses the cast. We turn the button off.
 - Where "Spell cancelled" shows in the original game: the engine shows it as a popup.
 - The multipliers for Power come from one source (the wiki's spell pages; its Implosion page compares them: 75 for Implosion, 10 for Magic Arrow). The game's file isn't online and the engine reads it from there; the other fan wikis can't be reached from here.
 
