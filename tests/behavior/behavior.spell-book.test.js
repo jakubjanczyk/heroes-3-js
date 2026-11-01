@@ -37,18 +37,30 @@ import {
 
 const ALL_SCHOOLS = ['AIR', 'EARTH', 'FIRE', 'WATER']
 
-const spell = ({ name, level = 1, schools = ['AIR'], kind = 'combat', costs = [5, 4, 4, 4] }) =>
-  aSpellDefinition()
+const spell = ({
+  name,
+  level = 1,
+  schools = ['AIR'],
+  kind = 'combat',
+  costs = [5, 4, 4, 4],
+  damage
+}) => {
+  const definition = aSpellDefinition()
     .withName(name)
     .withLevel(level)
     .withSchools(schools)
     .withKind(kind)
     .withCosts(costs)
     .describedAs(`${name} description.`)
-    .build()
+  return (damage ? definition.withDamage(damage) : definition).build()
+}
 
 const spellDefinitions = {
-  MAGIC_ARROW: spell({ name: 'Magic Arrow', schools: ALL_SCHOOLS }),
+  MAGIC_ARROW: spell({
+    name: 'Magic Arrow',
+    schools: ALL_SCHOOLS,
+    damage: { base: [10, 10, 20, 30], perPower: 10 }
+  }),
   HASTE: spell({ name: 'Haste', costs: [6, 5, 5, 5] }),
   CURSE: spell({ name: 'Curse', schools: ['FIRE'], costs: [6, 5, 5, 5] }),
   SLOW: spell({ name: 'Slow', schools: ['EARTH'], costs: [6, 5, 5, 5] }),
@@ -251,6 +263,56 @@ describe('spell book behavior', () => {
       await holdRightButtonOnSpell(user, 'Fireball')
 
       expect(readSpellPopup()).toEqual(['Advanced Fireball', 'Fireball description.'])
+    })
+
+    // Magic Arrow: the base for the skill level + 10 × Power 2.
+    test('given a hero with Power 2 when the player holds the right button on Magic Arrow then the popup says it does 30 points of damage', async () => {
+      const { user } = await startInSpellBook(
+        aHeroWithSpells(['MAGIC_ARROW']).withPrimarySkills({ power: 2, knowledge: 1 })
+      )
+
+      await holdRightButtonOnSpell(user, 'Magic Arrow')
+
+      expect(readSpellPopup()).toEqual([
+        'Magic Arrow',
+        'Magic Arrow description. Does 30 points of damage.'
+      ])
+    })
+
+    // 30 with 15% more for Expert Sorcery is 34.5, rounded down.
+    test('given a hero with Expert Sorcery when the player holds the right button on Magic Arrow then the popup says it does 34 points of damage', async () => {
+      const { user } = await startInSpellBook(
+        aHeroWithSpells(['MAGIC_ARROW'], [expert('SORCERY')]).withPrimarySkills({
+          power: 2,
+          knowledge: 1
+        })
+      )
+
+      await holdRightButtonOnSpell(user, 'Magic Arrow')
+
+      expect(readSpellPopup()[1]).toBe('Magic Arrow description. Does 34 points of damage.')
+    })
+
+    // Advanced: 20 + 10 × Power 2.
+    test('given a hero with Advanced Fire Magic when the player holds the right button on Magic Arrow then the popup says the Advanced damage', async () => {
+      const { user } = await startInSpellBook(
+        aHeroWithSpells(['MAGIC_ARROW'], [advanced('FIRE_MAGIC')]).withPrimarySkills({
+          power: 2,
+          knowledge: 1
+        })
+      )
+
+      await holdRightButtonOnSpell(user, 'Magic Arrow')
+
+      expect(readSpellPopup()[1]).toBe('Magic Arrow description. Does 40 points of damage.')
+    })
+
+    test('given a spell without damage when the player holds the right button on it then the popup shows its description only', async () => {
+      const { user } = await startInSpellBook(aHeroWithSpells(['HASTE']))
+
+      await holdRightButtonOnSpell(user, 'Haste')
+
+      expect(readSpellPopup()).toEqual(['Haste', 'Haste description.'])
     })
 
     test('given a hero with 10 spell points when the player clicks a spell costing 15 then the book says they cannot cast it', async () => {

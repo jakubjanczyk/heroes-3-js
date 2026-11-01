@@ -92,6 +92,12 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **A click there, a right-click on the battlefield or Escape** cancels the spell (the click and Escape decided with the user): the status bar says "Spell cancelled" (`core.genrltxt.731`) until the mouse moves on, the spell points aren't spent and Cast spell is still on this round.
 - **The spell cursor** is our own pixel art, drawn by `scripts/build-cursors.mjs` like the others.
 
+### Sorcery and the damage in the description (4.8.3.6)
+
+- **Sorcery** raises the whole damage (the base and Power's share) by 5 / 10 / 15% at Basic / Advanced / Expert, rounded down (checked against the wiki's Sorcery page and the engine's skill config and damage rule; only the engine says how it rounds). Magic Arrow at no skill with Power 2 and Expert Sorcery: 30 × 1.15 = 34.5, so 34.
+- **Right-clicking a damage spell** in the spell book adds " Does N points of damage." (`core.genrltxt.343`) after its description, with the damage this hero would do: skill level, Power and Sorcery (engine: the spell book's popup). On the map and in battle alike. A spell without damage shows its description only.
+- **Only the right-click popup.** Clicking a spell on the map still shows its plain description, and the Mage Guild's scrolls don't name a damage: the guild has no hero to work it out for (engine: its scroll popup shows the description alone).
+
 ### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.

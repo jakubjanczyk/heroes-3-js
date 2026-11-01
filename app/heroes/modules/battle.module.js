@@ -35,12 +35,12 @@ import {
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
-import { canCastInBattle, spellDamage } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
-import { hasSpellBook, spellCost } from '../../../game/heroes/spell-book.js'
+import { hasSpellBook, spellCost, spellDamage } from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
