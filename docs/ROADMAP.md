@@ -606,6 +606,7 @@ See `docs/notes/2026-10-20-combat-ai.md`.
 Parts 3 to 7 of hero magic (4.8).
 
 #### 4.8.3 Casting in battle, single-target damage
+See `docs/notes/2026-11-01-casting-in-battle.md`.
 - [ ] Cast spell works: once per round, on one of your stacks' turns, the stack acting afterwards
 - [ ] The battle spell book shows only combat spells; casting takes the spell points
 - [ ] Strength by Power and the school's skill level (no skill casts as Basic)
