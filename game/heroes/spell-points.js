@@ -1,4 +1,5 @@
 import { getHeroPrimarySkills } from './primary-skills.js'
+import { secondarySkillLevel } from './secondary-skills.js'
 
 const SPELL_POINTS_PER_KNOWLEDGE = 10
 const INTELLIGENCE_BONUS_PERCENT = Object.freeze({ BASIC: 25, ADVANCED: 50, EXPERT: 100 })
@@ -6,15 +7,11 @@ const SPELL_POINTS_BACK_A_DAY = 1
 // In place of the 1 a day, not on top of it.
 const MYSTICISM_SPELL_POINTS_BACK_A_DAY = Object.freeze({ BASIC: 2, ADVANCED: 3, EXPERT: 4 })
 
-function skillLevelOf(hero, skill) {
-  return (hero?.secondarySkills ?? []).find((learned) => learned.skill === skill)?.level ?? null
-}
-
 export function maxSpellPoints({ entity, definitions }) {
   const knowledge = getHeroPrimarySkills({ entity, definitions }).find(
     ({ key }) => key === 'knowledge'
   ).value
-  const bonusPercent = INTELLIGENCE_BONUS_PERCENT[skillLevelOf(entity, 'INTELLIGENCE')] ?? 0
+  const bonusPercent = INTELLIGENCE_BONUS_PERCENT[secondarySkillLevel(entity, 'INTELLIGENCE')] ?? 0
   return Math.floor((knowledge * SPELL_POINTS_PER_KNOWLEDGE * (100 + bonusPercent)) / 100)
 }
 
@@ -34,7 +31,8 @@ export function spellPointsOnNewDay({ entity, definitions, isInTownWithMageGuild
   }
 
   const back =
-    MYSTICISM_SPELL_POINTS_BACK_A_DAY[skillLevelOf(entity, 'MYSTICISM')] ?? SPELL_POINTS_BACK_A_DAY
+    MYSTICISM_SPELL_POINTS_BACK_A_DAY[secondarySkillLevel(entity, 'MYSTICISM')] ??
+    SPELL_POINTS_BACK_A_DAY
   return Math.min(max, value + back)
 }
 
