@@ -85,6 +85,13 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **A reload** keeps it: the cast is a saved fact, so replaying it marks the round again.
 - **Auto combat** already turns Cast spell off (the player has no turn); this part adds its test.
 
+### Aiming (4.8.3.4)
+
+- **Over an enemy stack** the spell can hit, the status bar says "Cast Magic Arrow on Pikemen" (`core.genrltxt.27`, with the stack's name for its count, "Pikeman" for one), the cursor is the spell cursor and the stack's hexes light up, as for an attack.
+- **Anywhere else on the battlefield**, own stacks included, the status bar says "Select Spell Target" (`core.genrltxt.23`) and the cursor is the blocked one; a click there still cancels the spell (4.8.3.2).
+- **Right-click on the battlefield or Escape** cancels the spell: the status bar says "Spell cancelled" (`core.genrltxt.731`) until the mouse moves on, the spell points aren't spent and Cast spell is still on this round.
+- **The spell cursor** is our own pixel art, drawn by `scripts/build-cursors.mjs` like the others.
+
 ### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
