@@ -23,11 +23,19 @@ export function hasSpellBook(hero) {
   return Boolean(hero?.spellBook)
 }
 
-function schoolSkillLevel(hero, school) {
-  const skill = (hero?.secondarySkills ?? []).find(
-    (learned) => learned.skill === SCHOOL_SKILLS[school]
-  )
+export function skillLevelOf(hero, skillId) {
+  const skill = (hero?.secondarySkills ?? []).find((learned) => learned.skill === skillId)
   return SKILL_LEVELS[skill?.level] ?? 0
+}
+
+const ALWAYS_LEARNABLE_LEVEL = 2
+
+export function maxLearnableSpellLevel(hero) {
+  return ALWAYS_LEARNABLE_LEVEL + skillLevelOf(hero, 'WISDOM')
+}
+
+function schoolSkillLevel(hero, school) {
+  return skillLevelOf(hero, SCHOOL_SKILLS[school])
 }
 
 // A spell of several schools is cast with the best of the hero's skills in them.

@@ -16,6 +16,7 @@ import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.j
 import {
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
+  APP_COMMAND_HEROES_SPELLS_TEACH_REQUESTED,
   APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
   APP_FACT_ARTIFACT_PICKED_UP,
   APP_FACT_BATTLE_STARTED,
@@ -154,7 +155,8 @@ export const heroesOutcomeEvents = Object.freeze([
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
-  APP_UI_HERO_EXCHANGE_OPEN_REQUESTED
+  APP_UI_HERO_EXCHANGE_OPEN_REQUESTED,
+  APP_COMMAND_HEROES_SPELLS_TEACH_REQUESTED
 ])
 
 export const heroesOutcomeEffects = Object.freeze({
@@ -197,6 +199,10 @@ export const heroesOutcomeEffects = Object.freeze({
       {
         type: APP_UI_HERO_EXCHANGE_OPEN_REQUESTED,
         detail: { heroId: outcome.heroId, otherHeroId: outcome.entityId }
+      },
+      {
+        type: APP_COMMAND_HEROES_SPELLS_TEACH_REQUESTED,
+        detail: { heroIds: { left: outcome.heroId, right: outcome.entityId } }
       }
     ]
   }),
