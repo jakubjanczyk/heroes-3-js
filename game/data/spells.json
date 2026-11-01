@@ -393,6 +393,7 @@
     "schools": ["AIR", "EARTH", "FIRE", "WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "damage": { "base": [10, 10, 20, 30], "perPower": 10 },
     "mageGuildChances": { "CASTLE": 30 },
     "descriptions": [
       {
@@ -419,6 +420,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "damage": { "base": [10, 10, 20, 50], "perPower": 20 },
     "mageGuildChances": { "CASTLE": 50 },
     "descriptions": [
       {
@@ -445,6 +447,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "damage": { "base": [10, 10, 20, 50], "perPower": 25 },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -471,6 +474,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [30, 25, 25, 25],
+    "damage": { "base": [100, 100, 200, 300], "perPower": 75 },
     "descriptions": [
       {
         "title": "Implosion",

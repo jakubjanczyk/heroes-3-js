@@ -499,36 +499,40 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random, luck
   }
 }
 
-// "The Angels do 175 damage. 17 Pikemen perish."
-function describeStrike({ attacker, damage, killed, nameFor }) {
-  const dealt =
-    attacker.count === 1
-      ? `The ${attacker.name} does ${damage} damage.`
-      : `The ${attacker.name} do ${damage} damage.`
-  if (killed === 0) {
-    return dealt
-  }
+function describeLosses(killed, nameFor) {
+  return killed === 1 ? `One ${nameFor(1)} perishes.` : `${killed} ${nameFor(killed)} perish.`
+}
 
-  const perished =
-    killed === 1 ? `One ${nameFor(1)} perishes.` : `${killed} ${nameFor(killed)} perish.`
-  return `${dealt} ${perished}`
+// "The Angels do 175 damage. 17 Pikemen perish."
+function describeDamage(dealt, { killed, nameFor }) {
+  return killed === 0 ? dealt : `${dealt} ${describeLosses(killed, nameFor)}`
+}
+
+// The stack after taking the damage, and how many of its creatures died.
+function damageStack(battle, stackId, damage) {
+  const stack = battle.stacks.find(({ id }) => id === stackId)
+  const nameFor = (count) =>
+    describeStack({ creature: stack.creature, count }, battle.definitions).name
+  const wounded = takeDamage(stack, damage)
+  const killed = stack.count - wounded.count
+  // A corpse keeps the name it fell with.
+  const damaged = { ...wounded, name: wounded.count > 0 ? nameFor(wounded.count) : stack.name }
+  return { damaged, killed, nameFor }
 }
 
 function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliatorId) {
   const attacker = battle.stacks.find(({ id }) => id === attackerId)
-  const defender = battle.stacks.find(({ id }) => id === defenderId)
-  const nameFor = (count) =>
-    describeStack({ creature: defender.creature, count }, battle.definitions).name
-  const wounded = takeDamage(defender, damage)
-  const killed = defender.count - wounded.count
-  // A corpse keeps the name it fell with.
-  const struck = { ...wounded, name: wounded.count > 0 ? nameFor(wounded.count) : defender.name }
+  const { damaged, ...losses } = damageStack(battle, defenderId, damage)
+  const dealt =
+    attacker.count === 1
+      ? `The ${attacker.name} does ${damage} damage.`
+      : `The ${attacker.name} do ${damage} damage.`
 
   return {
     ...battle,
     stacks: battle.stacks.map((stack) => {
       if (stack.id === defenderId) {
-        return struck
+        return damaged
       }
 
       if (stack.id === attackerId && attackerId === retaliatorId) {
@@ -543,10 +547,29 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliat
     messages: [
       ...battle.messages,
       ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
-      describeStrike({ attacker, damage, killed, nameFor })
+      describeDamage(dealt, losses)
     ]
   }
 }
+
+// The hero's spell hits one stack; it doesn't use the active stack's turn.
+export function castDamageSpell(battle, { heroName, spellName, targetId, damage }) {
+  const target = battle.stacks.find(({ id }) => id === targetId)
+  const { damaged, ...losses } = damageStack(battle, targetId, damage)
+  return {
+    ...battle,
+    stacks: battle.stacks.map((stack) => (stack.id === targetId ? damaged : stack)),
+    effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
+    messages: [
+      ...battle.messages,
+      `${heroName} casts '${spellName}' on the ${target.name}.`,
+      describeDamage(`The ${spellName} does ${damage} damage.`, losses)
+    ]
+  }
+}
+
+export const isLivingEnemyOf = (battle, side, stackId) =>
+  livingStacks(battle).some((stack) => stack.id === stackId && stack.side !== side)
 
 // The attack itself, before the attacker's turn ends.
 export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
