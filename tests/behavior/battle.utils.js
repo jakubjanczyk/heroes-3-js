@@ -161,6 +161,10 @@ export async function shootAt(user, row, column) {
   await waitMs()
 }
 
+export async function rightClickBattleHex(user, row, column) {
+  await user.pointer({ keys: '[MouseRight]', target: getBattleHex(row, column) })
+}
+
 export async function hoverBattleHex(user, row, column) {
   await user.hover(getBattleHex(row, column))
 }

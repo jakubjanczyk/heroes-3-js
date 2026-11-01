@@ -85,20 +85,26 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **A reload** keeps it: the cast is a saved fact, so replaying it marks the round again.
 - **Auto combat** already turns Cast spell off (the player has no turn); this part adds its test.
 
+### Aiming (4.8.3.4)
+
+- **Over an enemy stack** the spell can hit, the status bar says "Cast Magic Arrow on Pikemen" (`core.genrltxt.27`, with the stack's name for its count, "Pikeman" for one), the cursor is the spell cursor and the stack's hexes light up, as for an attack.
+- **Anywhere else on the battlefield**, own stacks included, the status bar says "Select Spell Target" (`core.genrltxt.23`) and the cursor is the blocked one (decided with the user; the sources don't say).
+- **A click there, a right-click on the battlefield or Escape** cancels the spell (the click and Escape decided with the user): the status bar says "Spell cancelled" (`core.genrltxt.731`) until the mouse moves on, the spell points aren't spent and Cast spell is still on this round.
+- **The spell cursor** is our own pixel art, drawn by `scripts/build-cursors.mjs` like the others.
+
 ### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
 - **Spell points and the cast are saved** as one fact naming the hero, the spell, its target and the damage each stack took, so a reload replays it, and the hero's spell points go down by the spell's cost. They stay spent after the battle, won, lost or fled.
 - **The Cast spell button** works on the player's stack's turn for a hero with a spell book (keyboard C). It is off on the enemy's turns, while a stack walks, with Auto combat on, and for a hero without a spell book. Once the hero has cast this round it is off until the next round (4.8.3.3).
 - **Other combat spells** (Haste, Bless, Fireball, …) show their description when clicked in battle, until their parts (4.8.4, 4.8.5, 4.8.7).
-- **Aiming** uses a spell cursor over a stack it can hit; elsewhere the status bar asks for a target. Right-click or Escape cancels, saying "Spell cancelled" in the status bar; a click on anything but an enemy stack cancels too (4.8.3.2).
 - **A spell that kills the last enemy stack wins the battle**, as a strike does.
 - **Destroy Undead's log:** to decide (below).
 
 ## Not checked
 
 - What the original game does when the Cast spell button is clicked after the hero has cast this round (message or a disabled button): the text exists (`core.genrltxt.128`); the engine refuses the cast. We turn the button off.
-- Where "Spell cancelled" shows in the original game: the engine shows it as a popup.
+- Where "Spell cancelled" shows in the original game: the engine shows it as a popup. We show it in the status bar (decided with the user).
 - The multipliers for Power come from one source (the wiki's spell pages; its Implosion page compares them: 75 for Implosion, 10 for Magic Arrow). The game's file isn't online and the engine reads it from there; the other fan wikis can't be reached from here.
 
 ## Not yet

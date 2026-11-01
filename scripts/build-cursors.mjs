@@ -268,6 +268,26 @@ const BATTLE_QUERY_ROWS = [
 
 // In battle, over an enemy the stack can attack: a sword pointing in from the side it attacks
 // from. Drawn pointing right, from the left side.
+// The battle's spell cursor: a sparkle, aimed from its middle.
+const BATTLE_SPELL_ROWS = [
+  '.......k........',
+  '......kWk.......',
+  '..k...kYk...k...',
+  '.kWk..kYk..kWk..',
+  '..kYk.kYk.kYk...',
+  '...kYkYGYkYk....',
+  '....kYGWGYk.....',
+  'kkkkYGWWWGYkkkk.',
+  'kWYYGWWWWWGYYWk.',
+  'kkkkYGWWWGYkkkk.',
+  '....kYGWGYk.....',
+  '...kYkYGYkYk....',
+  '..kYk.kYk.kYk...',
+  '.kWk..kYk..kWk..',
+  '..k...kWk...k...',
+  '.......k........'
+]
+
 const BATTLE_ATTACK_FROM_LEFT_ROWS = [
   '................',
   '................',
@@ -516,6 +536,7 @@ const CURSORS = {
   'battle-fly': BATTLE_FLY_ROWS,
   'battle-blocked': drawBlockedSign(),
   'battle-query': BATTLE_QUERY_ROWS,
+  'battle-spell': BATTLE_SPELL_ROWS,
   'battle-shoot': drawShootArrow(),
   'battle-shoot-penalty': drawBrokenShootArrow(),
   'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,

@@ -14,7 +14,8 @@ import {
   startBattleWithStyles,
   waitForBattleResults
 } from './battle.utils.js'
-import { aHero, aMonster, aScenario } from './builders.js'
+import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
+import { clickSpell } from './spell-book.utils.js'
 
 const monsters = readGameData('monsters.json')
 
@@ -208,5 +209,50 @@ describe('battle cursor behavior', () => {
     await user.hover(ok)
 
     expect(getCursorOver(ok)).toBe('arrow')
+  })
+  describe('aiming a spell', () => {
+    const aCasterWithMagicArrow = () =>
+      aScenario()
+        .withSize(3)
+        .withEntities(
+          aHero()
+            .withSpellBook(true)
+            .withSpells(['MAGIC_ARROW'])
+            .withArmy([stack('SKELETON', 10)]),
+          aMonster().withType('PIKEMAN').withCount(10).withStacks(1).at(1, 0)
+        )
+        .withDefinitions({
+          monsters,
+          spells: {
+            MAGIC_ARROW: aSpellDefinition()
+              .withName('Magic Arrow')
+              .withDamage({ base: [10, 10, 20, 30], perPower: 10 })
+              .build()
+          }
+        })
+
+    async function pickMagicArrow(user) {
+      await clickBattleButton(user, 'Cast spell')
+      await clickSpell(user, 'Magic Arrow')
+      await waitMs()
+    }
+
+    test('given Magic Arrow is picked when the mouse is over an enemy stack then the cursor is the spell cursor', async () => {
+      const { user } = await startBattleWithStyles(aCasterWithMagicArrow())
+      await pickMagicArrow(user)
+
+      await hoverBattleHex(user, MONSTER.row, MONSTER.column)
+
+      expect(cursorOverHex(MONSTER.row, MONSTER.column)).toBe('battle-spell')
+    })
+
+    test('given Magic Arrow is picked when the mouse is over a hex the stack could walk to then the cursor is the blocked cursor', async () => {
+      const { user } = await startBattleWithStyles(aCasterWithMagicArrow())
+      await pickMagicArrow(user)
+
+      await hoverBattleHex(user, 6, 4)
+
+      expect(cursorOverHex(6, 4)).toBe('battle-blocked')
+    })
   })
 })

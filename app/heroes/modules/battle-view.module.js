@@ -71,7 +71,9 @@ export const registerBattleViewModule = defineModule(
     let retreatDialog = null
     let resultsWindow = null
     // A spell the player picked from the book, cast on the next enemy stack clicked.
-    let pickedSpellId = null
+    let pickedSpell = null
+    // Shown in the status bar until the mouse leaves the hex it was given on.
+    let statusNote = null
 
     function cloneTemplate(id) {
       return document.getElementById(id).content.firstElementChild.cloneNode(true)
@@ -181,10 +183,32 @@ export const registerBattleViewModule = defineModule(
         : ''
     }
 
+    function findSpellTarget(hex) {
+      const target = findLivingStackOn(hex)
+      const caster = findIdleActiveStack()
+      return target && caster && target.side !== caster.side ? target : null
+    }
+
+    function describeSpellAim(hex) {
+      const target = findSpellTarget(hex)
+      return target ? `Cast ${pickedSpell.name} on ${target.name}` : 'Select Spell Target'
+    }
+
+    function pickSpellCursor(hex) {
+      if (findSpellTarget(hex)) {
+        return 'spell'
+      }
+      return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
+    }
+
     function describeHex(hex) {
       const activeStack = findIdleActiveStack()
       if (!activeStack) {
         return ''
+      }
+
+      if (pickedSpell) {
+        return describeSpellAim(hex)
       }
 
       if (findLivingStackOn(hex)) {
@@ -216,6 +240,10 @@ export const registerBattleViewModule = defineModule(
         return null
       }
 
+      if (pickedSpell) {
+        return pickSpellCursor(hex)
+      }
+
       const stack = findLivingStackOn(hex)
       if (stack) {
         return pickStackCursor(hex, stack, activeStack)
@@ -233,6 +261,10 @@ export const registerBattleViewModule = defineModule(
     function findHighlightedHexes(hex) {
       if (!hex || !findIdleActiveStack() || pointerType === 'touch') {
         return []
+      }
+
+      if (pickedSpell) {
+        return findSpellTarget(hex)?.hexes ?? []
       }
 
       const target = findLivingStackOn(hex)
@@ -258,7 +290,7 @@ export const registerBattleViewModule = defineModule(
 
     function describeHoveredHex() {
       highlightHexes(findHighlightedHexes(hoveredHex))
-      statusBar.textContent = hoveredHex ? describeHex(hoveredHex) : ''
+      statusBar.textContent = statusNote ?? (hoveredHex ? describeHex(hoveredHex) : '')
       const cursor = hoveredHex ? pickCursor(hoveredHex) : null
       if (cursor) {
         battlefield.dataset.cursor = cursor
@@ -549,7 +581,8 @@ export const registerBattleViewModule = defineModule(
       battleScreen = null
       retreatDialog = null
       resultsWindow = null
-      pickedSpellId = null
+      pickedSpell = null
+      statusNote = null
       hexes = []
       battlefield = null
       stackElements = new Map()
@@ -562,7 +595,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function pressBattleButton(action) {
-      pickedSpellId = null
+      pickedSpell = null
       if (COMMAND_BY_ACTION[action]) {
         emit(COMMAND_BY_ACTION[action], {})
       } else if (action === 'cast-spell') {
@@ -577,22 +610,30 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    function cancelPickedSpell() {
+      pickedSpell = null
+      statusNote = 'Spell cancelled'
+      describeHoveredHex()
+    }
+
     // Clicking anywhere but an enemy stack cancels the spell.
     function castPickedSpellOn(hex) {
-      const target = findLivingStackOn(hex)
-      const caster = shown.stacks.find(({ id }) => id === shown.activeStackId)
-      if (target && caster && target.side !== caster.side) {
-        emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, {
-          spellId: pickedSpellId,
-          targetId: target.id
-        })
+      const target = findSpellTarget(hex)
+      if (!target) {
+        cancelPickedSpell()
+        return
       }
-      pickedSpellId = null
+
+      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, {
+        spellId: pickedSpell.id,
+        targetId: target.id
+      })
+      pickedSpell = null
     }
 
     // A click on a hex: move there, or shoot or attack the enemy standing on it.
     function orderActiveStackTo(hex) {
-      if (pickedSpellId) {
+      if (pickedSpell) {
         castPickedSpellOn(hex)
         return
       }
@@ -636,7 +677,7 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_UI_BATTLE_SPELL_PICKED,
           handler: (event) => {
-            pickedSpellId = event.detail.spellId
+            pickedSpell = { id: event.detail.spellId, name: event.detail.spellName }
           }
         },
         {
@@ -670,6 +711,26 @@ export const registerBattleViewModule = defineModule(
             }
           }
         },
+        {
+          target: gameShell,
+          type: 'contextmenu',
+          handler: (event) => {
+            if (pickedSpell && battlefield?.contains(event.target)) {
+              event.preventDefault()
+              cancelPickedSpell()
+            }
+          }
+        },
+        {
+          target: document,
+          type: 'keydown',
+          handler: (event) => {
+            if (pickedSpell && battleScreen && event.key === 'Escape') {
+              event.preventDefault()
+              cancelPickedSpell()
+            }
+          }
+        },
         ...['pointerdown', 'pointermove'].map((type) => ({
           target: gameShell,
           type,
@@ -686,7 +747,11 @@ export const registerBattleViewModule = defineModule(
             }
 
             pointer = { x: event.clientX, y: event.clientY }
-            hoveredHex = readHex(event.target)
+            const hex = readHex(event.target)
+            if (!hex || !hoveredHex || !isSameHex(hex, hoveredHex)) {
+              statusNote = null
+            }
+            hoveredHex = hex
             describeHoveredHex()
           }
         }))
