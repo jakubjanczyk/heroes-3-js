@@ -1,0 +1,100 @@
+{
+  "ORRIN": {
+    "name": "Orrin",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARCHERY",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "VALESKA": {
+    "name": "Valeska",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARCHERY",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "EDRIC": {
+    "name": "Edric",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARMORER",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "SYLVIA": {
+    "name": "Sylvia",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "NAVIGATION",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "LORD_HAART": {
+    "name": "Lord Haart",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ESTATES",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "SORSHA": {
+    "name": "Sorsha",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "OFFENSE",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "CHRISTIAN": {
+    "name": "Christian",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARTILLERY",
+        "level": "BASIC"
+      }
+    ]
+  }
+}
