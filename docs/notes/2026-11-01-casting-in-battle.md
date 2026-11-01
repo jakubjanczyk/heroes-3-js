@@ -98,6 +98,15 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **Right-clicking a damage spell** in the spell book adds " Does N points of damage." (`core.genrltxt.343`) after its description, with the damage this hero would do: skill level, Power and Sorcery (engine: the spell book's popup). On the map and in battle alike. A spell without damage shows its description only.
 - **Only the right-click popup.** Clicking a spell on the map still shows its plain description, and the Mage Guild's scrolls don't name a damage: the guild has no hero to work it out for (engine: its scroll popup shows the description alone).
 
+### Destroy Undead (4.8.3.7)
+
+- **Data.** Destroy Undead gets its damage (10 / 10 / 20 / 50, and 10 per point of Power) and `"targets": "undead"` in `game/data/spells.json`. A spell with targets isn't aimed; a creature is undead by its `undead` ability, as for morale.
+- **Not aimed.** Clicking it in the battle book casts it at once: the book closes and every living undead stack on the battlefield, the hero's own included, takes the damage. No "Cast … on …" or spell cursor.
+- **No undead on the battlefield:** the book stays open and says "That spell will affect no one!" (`core.genrltxt.185`); no spell points are spent and the hero may still cast this round.
+- **The rest is as for a bolt:** the cost (15, 12 with Air), Power, Air's level and Sorcery set the damage; once a round; a burst of light over each stack hit; the fact names no target, the stacks hit are worked out from the battle when it is replayed.
+- **The end of the battle.** Killing the last enemy stack wins it; killing the hero's last stack loses it, as when it falls to a strike.
+- **The combat log:** to decide (open question in the plan).
+
 ### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
