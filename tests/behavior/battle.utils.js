@@ -22,9 +22,18 @@ function battleAppConfig({ random, battleStepDelayMs, appConfig }) {
 
 // Starts the app on `scenario` and attacks its monster, so the battle screen is open. Damage
 // rolls are the lowest unless `random` says otherwise, and a beaten monster leaves the map at once.
+// `beforeAttack` plays the map first, with the app.
 export async function startBattle(
   scenario,
-  { random = LOWEST_ROLLS, battleStepDelayMs, appConfig = {}, eventLog, envWindow, withStyles } = {}
+  {
+    random = LOWEST_ROLLS,
+    battleStepDelayMs,
+    appConfig = {},
+    eventLog,
+    envWindow,
+    withStyles,
+    beforeAttack
+  } = {}
 ) {
   const loadGameOptions = scenario.build()
   const app = await setupMovementBehaviorApp({
@@ -37,6 +46,7 @@ export async function startBattle(
     await loadAppStyles()
   }
 
+  await beforeAttack?.(app)
   const { tile } = loadGameOptions.entities.find(({ kind }) => kind === 'MONSTER')
   await attackMonsterAt(tile.x, tile.y)
   return app

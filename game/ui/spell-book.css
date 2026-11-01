@@ -305,6 +305,10 @@
   &[aria-pressed="true"] {
     background: linear-gradient(90deg, #8a1c10, #e04a2c 40%, #9a2410);
   }
+
+  &:disabled {
+    filter: grayscale(0.8) brightness(0.6);
+  }
 }
 
 .spell-book__spell-points {

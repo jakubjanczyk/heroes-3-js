@@ -609,9 +609,9 @@ Parts 3 to 7 of hero magic (4.8).
 In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 
 ##### 4.8.3.1 The spell book in battle
-- [ ] The Cast spell button (C) opens the hero's spell book on the combat spells, on the player's turn; off for a hero without a spell book and on the enemy's turns
-- [ ] The book shows only combat spells in battle, with the hero's spell points; it reopens where it was left, apart from the map's place
-- [ ] Clicking a spell shows its description (nothing is cast yet), or says the hero can't afford it
+- [x] The Cast spell button (C) opens the hero's spell book on the combat spells, on the player's turn; off for a hero without a spell book and on the enemy's turns
+- [x] The book shows only combat spells in battle, with the hero's spell points; it reopens where it was left, apart from the map's place
+- [x] Clicking a spell shows its description (nothing is cast yet), or says the hero can't afford it
 
 ##### 4.8.3.2 Casting Magic Arrow
 - [ ] Picking Magic Arrow and clicking an enemy stack does 10 + 10 × Power (no skill casts as Basic) and takes the spell points
