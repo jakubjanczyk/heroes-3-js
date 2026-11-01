@@ -8,6 +8,7 @@ import {
   clickBattleHex,
   closeBattleResults,
   readActiveStack,
+  readBattleEffects,
   readBattleResultsSide,
   readBattleStacks,
   readCombatMessages,
@@ -124,6 +125,16 @@ describe('battle spells behavior', () => {
     expect(readCombatMessages().slice(-2)).toEqual([
       "Lord Haart casts 'Magic Arrow' on the Pikemen.",
       'The Magic Arrow does 30 damage. 3 Pikemen perish.'
+    ])
+  })
+
+  test('given the hero casts Magic Arrow then a flash of the spell shows over the Pikemen', async () => {
+    const { user } = await startBattle(aFight())
+
+    await castSpellAt(user, 'Magic Arrow', PIKEMEN_HEX)
+
+    expect(readBattleEffects()).toEqual([
+      { effect: 'Magic Arrow', row: PIKEMEN_HEX.row, column: PIKEMEN_HEX.column }
     ])
   })
 

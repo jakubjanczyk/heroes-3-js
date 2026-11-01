@@ -618,6 +618,7 @@ In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 - [x] The cast and the damage in the combat log; a spell that kills the last enemy stack wins the battle
 - [x] Kept after a reload, and the spell points stay spent after the battle
 - [x] Any combat spell with damage in its data is cast the same way
+- [x] A burst of light over the stack a spell hit, until the spells' own animations (10.3)
 
 ##### 4.8.3.3 Once a round
 - [ ] The hero casts once a round ("Your hero has already cast a spell this round."); the same stack still takes its turn
@@ -1176,6 +1177,7 @@ Visual and audio excellence. Last mile.
 - [ ] Hero walking: multi-frame stepping animation
 - [ ] Combat: attack, hit reaction, death per creature type
 - [ ] Spell effects: visual particles/overlays per spell
+- [ ] Casting spells in battle: the hero's casting pose and each spell's own animation from the hero to its target, in place of the burst of light over the stack it hit (4.8.3)
 - [ ] Town building construction: build animation
 - [ ] Resource pickup: floating icon/number
 - [ ] Level-up: sparkle/glow effect

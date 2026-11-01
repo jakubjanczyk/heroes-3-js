@@ -75,6 +75,7 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 
 - **Generic.** A combat spell with `damage` in `game/data/spells.json` (`base`: none, Basic, Advanced, Expert; `perPower`) is cast on one enemy stack; the others still show their description. Magic Arrow, Lightning Bolt, Ice Bolt and Implosion have it, so the school's skill level (the best school for Magic Arrow) already sets their damage and cost.
 - **Picking and aiming.** Clicking the spell in the battle book closes it; the next click on an enemy stack casts it. A click anywhere else cancels the spell (decided with the user), and so does a battle button.
+- **The hit** shows as a burst of light over the stack for a second, a stand-in for the spell's own animation (10.3). A reload doesn't show it again.
 - **The fact** `fact.battle.spell.cast` names the hero, the spell, its target, the damage and the spell points it cost.
 
 ### Later parts
@@ -96,6 +97,6 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 ## Not yet
 
 - Spells that last, area damage, immunities and Resistance, control spells (4.8.4 to 4.8.7).
-- The casting animation and the hero's casting pose (10.3).
+- The casting animation, each spell's own animation and the hero's casting pose (10.3), in place of the burst of light.
 - Enemy heroes casting, and the combat AI and Auto combat casting (8.1, 5.7b).
 - The Orbs (more damage for one school), hero specialties in spells, Golems' spell damage reduction (7.8, 6.5, with the creatures).

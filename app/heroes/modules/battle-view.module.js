@@ -418,20 +418,31 @@ export const registerBattleViewModule = defineModule(
       describeHoveredHex()
     }
 
-    function showEffect({ stackId, kind }) {
-      const stack = stackElements.get(stackId)?.stack
+    function renderEffect({ kind, spellName }) {
+      const effect = document.createElement('div')
+      effect.setAttribute('role', 'img')
+      effect.style.setProperty('--battle-effect-ms', `${EFFECT_MS}ms`)
+      if (kind === 'spellHit') {
+        effect.className = 'battle-effect spell-hit'
+        effect.setAttribute('aria-label', spellName)
+        return effect
+      }
+
       const { icon, label, state } = EFFECTS[kind]
+      effect.className = 'battle-effect morale-luck'
+      effect.dataset.state = state
+      effect.setAttribute('aria-label', label)
+      effect.append(renderMoraleOrLuckIcon(document, icon))
+      return effect
+    }
+
+    function showEffect(shownEffect) {
+      const stack = stackElements.get(shownEffect.stackId)?.stack
       if (!stack) {
         return
       }
 
-      const effect = document.createElement('div')
-      effect.className = 'battle-effect morale-luck'
-      effect.dataset.state = state
-      effect.setAttribute('role', 'img')
-      effect.setAttribute('aria-label', label)
-      effect.style.setProperty('--battle-effect-ms', `${EFFECT_MS}ms`)
-      effect.append(renderMoraleOrLuckIcon(document, icon))
+      const effect = renderEffect(shownEffect)
       stack.append(effect)
       setTimeout(() => effect.remove(), EFFECT_MS)
     }
