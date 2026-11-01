@@ -606,31 +606,61 @@ See `docs/notes/2026-10-20-combat-ai.md`.
 Parts 3 to 7 of hero magic (4.8).
 
 #### 4.8.3 Casting in battle, single-target damage
-See `docs/notes/2026-11-01-casting-in-battle.md`.
-- [ ] Cast spell works: once per round, on one of your stacks' turns, the stack acting afterwards
-- [ ] The battle spell book shows only combat spells; casting takes the spell points
-- [ ] Strength by Power and the school's skill level (no skill casts as Basic)
-- [ ] Magic Arrow, Lightning Bolt, Ice Bolt, Implosion and Destroy Undead
-- [ ] Sorcery's extra damage; the cast and the damage in the combat log
+In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
+
+##### 4.8.3.1 The spell book in battle
+- [ ] The Cast spell button (C) opens the hero's spell book on the combat spells, on the player's turn; off for a hero without a spell book and on the enemy's turns
+- [ ] The book shows only combat spells in battle, with the hero's spell points; it reopens where it was left, apart from the map's place
+- [ ] Clicking a spell shows its description (nothing is cast yet), or says the hero can't afford it
+
+##### 4.8.3.2 Casting Magic Arrow
+- [ ] Picking Magic Arrow and clicking an enemy stack does 10 + 10 × Power (no skill casts as Basic) and takes the spell points
+- [ ] The cast and the damage in the combat log; a spell that kills the last enemy stack wins the battle
+- [ ] Kept after a reload, and the spell points stay spent after the battle
+
+##### 4.8.3.3 Once a round
+- [ ] The hero casts once a round ("Your hero has already cast a spell this round."); the same stack still takes its turn
+- [ ] Cast spell is off with Auto combat on
+
+##### 4.8.3.4 Aiming
+- [ ] Hovering an enemy stack: "Cast Magic Arrow on Pikemen" and the spell cursor; elsewhere "Select Spell Target" and a click does nothing
+- [ ] Right-click or Escape cancels: "Spell cancelled"
+
+##### 4.8.3.5 School skill levels
+- [ ] Advanced and Expert raise the damage; Magic Arrow uses the hero's best school; the cost follows the skill
+
+##### 4.8.3.6 The other bolts and Sorcery
+- [ ] Lightning Bolt, Ice Bolt and Implosion (data only)
+- [ ] Sorcery's extra damage
+- [ ] Right-clicking a damage spell adds " Does N points of damage."
+
+##### 4.8.3.7 Destroy Undead
+- [ ] Not aimed: it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line
 
 #### 4.8.4 Spells that last
-- [ ] Bless, Bloodlust, Shield, Stone Skin, Air Shield, Precision, Haste, Prayer, Fortune, Mirth; Curse, Slow, Weakness, Disrupting Ray, Misfortune, Sorrow
-- [ ] They last as many rounds as the hero's Power; at Expert most hit all friendly or all enemy stacks
-- [ ] Cure, Dispel and the four Protections
+In four parts.
+- [ ] 4.8.4.1 How a lasting spell works (it lasts as many rounds as the hero's Power, shown on the stack), with the spells that change a stat: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness
+- [ ] 4.8.4.2 Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow
+- [ ] 4.8.4.3 At Expert most hit all friendly or all enemy stacks
+- [ ] 4.8.4.4 Cure, Dispel and the four Protections
 - [ ] The Angelic Alliance's Prayer (7.8.7)
 
 #### 4.8.5 Area damage
-- [ ] Fireball, Inferno, Meteor Shower, Frost Ring, Death Ripple, Chain Lightning and Armageddon
-- [ ] Targeting a hex shows the area hit; your own stacks are hit too
+In two parts. Your own stacks are hit too.
+- [ ] 4.8.5.1 Fireball, Inferno, Meteor Shower and Frost Ring: targeting a hex shows the area hit
+- [ ] 4.8.5.2 Death Ripple, Armageddon and Chain Lightning
 
 #### 4.8.6 Immunities and Resistance
-- [ ] Undead immune to mind spells, creatures resisting some spell levels or schools
-- [ ] The Resistance skill's chance an enemy spell fails on a stack
-- [ ] Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity (7.8.7)
+In three parts.
+- [ ] 4.8.6.1 Undead immune to mind spells, creatures resisting some spell levels or schools
+- [ ] 4.8.6.2 The Resistance skill's chance an enemy spell fails on a stack
+- [ ] 4.8.6.3 Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity (7.8.7)
 
 #### 4.8.7 Control and special spells
-May split in two.
-- [ ] Blind, Berserk, Hypnotize, Forgetfulness, Frenzy, Slayer, Counterstrike, Fire Shield, Magic Mirror, Anti-Magic, Teleport, Clone and Sacrifice
+In three parts.
+- [ ] 4.8.7.1 Blind, Berserk, Hypnotize, Forgetfulness, Frenzy
+- [ ] 4.8.7.2 Slayer, Counterstrike, Fire Shield, Magic Mirror, Anti-Magic
+- [ ] 4.8.7.3 Teleport, Clone and Sacrifice
 
 #### 5.8 later
 - [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3); Earthquake with sieges (5.10)

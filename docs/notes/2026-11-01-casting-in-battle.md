@@ -2,6 +2,16 @@
 
 Roadmap 4.8.3, the third of eight parts of hero magic (4.8, 5.8): the hero casts a spell in battle, once a round, and five damage spells work: Magic Arrow, Lightning Bolt, Ice Bolt, Implosion and Destroy Undead. Spells that last are 4.8.4, area damage 4.8.5, immunities and Resistance 4.8.6.
 
+Built in seven small parts (decided with the user):
+
+1. The spell book in battle: opened by Cast spell, combat spells only, nothing cast yet.
+2. Casting Magic Arrow at no skill: damage, spell points, the combat log, a reload.
+3. Once a round, and Cast spell off with Auto combat.
+4. Aiming: the status bar texts, the spell cursor, cancelling.
+5. School skill levels: Advanced and Expert damage, the best school, the cost.
+6. Lightning Bolt, Ice Bolt, Implosion, Sorcery, and the damage in the right-click description.
+7. Destroy Undead.
+
 ## How Heroes 3 does it
 
 Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt, Ice Bolt, Implosion, Destroy Undead, Sorcery, Primary skill, Spell damage reduction, and the `GENRLTXT.TXT` page of Translation Data), against the spell descriptions already in `game/data/spells.json` (the game's own `SPTRAITS.TXT` texts), and against an open-source engine's spell config, spell casting rules, battle log scripts and spell book window. Shadow of Death rules: the wiki marks Horn of the Abyss values, which are left out.
@@ -17,7 +27,7 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **The Cast spell button** opens the spell book on its combat spells. It remembers its own bookmark and spread for battles (4.8.1).
 - **Clicking a combat spell** the hero can afford closes the book and the hero aims it. A spell that costs more than the hero has says `core.genrltxt.206`, as on the map (4.8.1).
 - **A spell with no target** says "That spell will affect no one!" (`core.genrltxt.185`, engine) and the book stays open; for this part, Destroy Undead with no undead on the battlefield.
-- **Clicking an adventure spell in battle** shows its description, as a combat spell does on the map (engine).
+- **Clicking an adventure spell in battle** shows its description, as a combat spell does on the map (engine). We don't let the battle book turn to the adventure spells at all (decided with the user).
 - **Right-clicking a damage spell** adds " Does %d points of damage." (`core.genrltxt.343`) to its description, worked out for this hero's Power, skill and Sorcery (engine), on the map and in battle.
 
 ### Aiming
@@ -52,6 +62,16 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **Destroy Undead:** the game has its own line, "The %s spell does %d damage to all undead creatures." (`core.genrltxt.186`). The engine doesn't use it: it writes the damage line with the total damage and "N creatures perish" for all stacks together.
 
 ## What we do
+
+### The spell book in battle (4.8.3.1)
+
+- **Cast spell** on the battle bar (keyboard C) opens the hero's spell book on the combat spells. It works on the player's stacks' turns; it is off for a hero without a spell book, on the enemy's turns and while a stack walks. With Auto combat on the player has no turn, so it is off too.
+- **Combat spells only.** In battle the book's Adventure spells pennant is off; the Combat spells one shows as chosen.
+- **Its place.** The battle book reopens on the bookmark and spread it was left on in battle; the map's book keeps its own (4.8.1), until the page reloads.
+- **Clicking a spell** shows its description in the box over the book, as on the map, or the "That spell costs …" message. Casting starts in 4.8.3.2.
+- **Closing it** (Close, Enter or Escape) goes back to the battle with the same stack to act.
+
+### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
 - **Spell points and the cast are saved** as one fact naming the hero, the spell, its target and the damage each stack took, so a reload replays it, and the hero's spell points go down by the spell's cost. They stay spent after the battle, won, lost or fled.
