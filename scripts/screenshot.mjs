@@ -21,7 +21,9 @@ const VIEWPORTS = {
   }
 }
 
-const usage = `Usage: node scripts/screenshot.mjs <steps.mjs> [--out dir] [--viewports desktop,phone] [--port 8181]
+const usage = `Usage: node scripts/screenshot.mjs <steps.mjs> [--out dir] [--viewports desktop,phone] [--port 8181] [--video]
+
+--video also records each viewport's run to <out>/<viewport>.webm.
 
 The steps module:
   export const scenario = (demo) => ({ ...demo, ... })   // optional: an object, or a function of the demo scenario
@@ -32,7 +34,8 @@ const { values: options, positionals } = parseArgs({
   options: {
     out: { type: 'string', default: '/tmp/shots' },
     viewports: { type: 'string', default: 'desktop,phone' },
-    port: { type: 'string', default: '8181' }
+    port: { type: 'string', default: '8181' },
+    video: { type: 'boolean', default: false }
   }
 })
 
@@ -114,7 +117,11 @@ function createHelpers(page, viewportName) {
 }
 
 async function run(browser, baseUrl, scenario, viewportName) {
-  const context = await browser.newContext(VIEWPORTS[viewportName])
+  const { viewport } = VIEWPORTS[viewportName]
+  const context = await browser.newContext({
+    ...VIEWPORTS[viewportName],
+    ...(options.video ? { recordVideo: { dir: options.out, size: viewport } } : {})
+  })
   const page = await context.newPage()
   page.on('pageerror', (error) => console.error(`[${viewportName}] page error: ${error.message}`))
   if (scenario) {
@@ -136,6 +143,12 @@ async function run(browser, baseUrl, scenario, viewportName) {
     throw error
   } finally {
     await context.close()
+    if (options.video) {
+      const file = path.join(options.out, `${viewportName}.webm`)
+      await page.video().saveAs(file)
+      await page.video().delete()
+      console.log(file)
+    }
   }
 }
 

@@ -614,23 +614,25 @@ In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 - [x] Clicking a spell shows its description (nothing is cast yet), or says the hero can't afford it
 
 ##### 4.8.3.2 Casting Magic Arrow
-- [ ] Picking Magic Arrow and clicking an enemy stack does 10 + 10 × Power (no skill casts as Basic) and takes the spell points
-- [ ] The cast and the damage in the combat log; a spell that kills the last enemy stack wins the battle
-- [ ] Kept after a reload, and the spell points stay spent after the battle
+- [x] Picking Magic Arrow and clicking an enemy stack does 10 + 10 × Power (no skill casts as Basic) and takes the spell points; a click anywhere else cancels the spell
+- [x] The cast and the damage in the combat log; a spell that kills the last enemy stack wins the battle
+- [x] Kept after a reload, and the spell points stay spent after the battle
+- [x] Any combat spell with damage in its data is cast the same way
+- [x] A burst of light over the stack a spell hit, until the spells' own animations (10.3)
 
 ##### 4.8.3.3 Once a round
 - [ ] The hero casts once a round ("Your hero has already cast a spell this round."); the same stack still takes its turn
 - [ ] Cast spell is off with Auto combat on
 
 ##### 4.8.3.4 Aiming
-- [ ] Hovering an enemy stack: "Cast Magic Arrow on Pikemen" and the spell cursor; elsewhere "Select Spell Target" and a click does nothing
+- [ ] Hovering an enemy stack: "Cast Magic Arrow on Pikemen" and the spell cursor; elsewhere "Select Spell Target" (a click there cancels the spell, 4.8.3.2)
 - [ ] Right-click or Escape cancels: "Spell cancelled"
 
 ##### 4.8.3.5 School skill levels
-- [ ] Advanced and Expert raise the damage; Magic Arrow uses the hero's best school; the cost follows the skill
+- [x] Advanced and Expert raise the damage; Magic Arrow uses the hero's best school; the cost follows the skill (with 4.8.3.2)
 
 ##### 4.8.3.6 The other bolts and Sorcery
-- [ ] Lightning Bolt, Ice Bolt and Implosion (data only)
+- [x] Lightning Bolt, Ice Bolt and Implosion (data only, with 4.8.3.2)
 - [ ] Sorcery's extra damage
 - [ ] Right-clicking a damage spell adds " Does N points of damage."
 
@@ -1175,6 +1177,7 @@ Visual and audio excellence. Last mile.
 - [ ] Hero walking: multi-frame stepping animation
 - [ ] Combat: attack, hit reaction, death per creature type
 - [ ] Spell effects: visual particles/overlays per spell
+- [ ] Casting spells in battle: the hero's casting pose and each spell's own animation from the hero to its target, in place of the burst of light over the stack it hit (4.8.3)
 - [ ] Town building construction: build animation
 - [ ] Resource pickup: floating icon/number
 - [ ] Level-up: sparkle/glow effect
