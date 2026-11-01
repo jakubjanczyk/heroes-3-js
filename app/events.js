@@ -30,6 +30,7 @@ export const APP_COMMAND_HEROES_STACK_SPLIT_REQUESTED = 'command.heroes.stackSpl
 export const APP_COMMAND_HEROES_STACK_SEND_REQUESTED = 'command.heroes.stackSend.requested'
 export const APP_COMMAND_HEROES_ARMY_SEND_REQUESTED = 'command.heroes.armySend.requested'
 export const APP_COMMAND_HEROES_ARMIES_SWAP_REQUESTED = 'command.heroes.armiesSwap.requested'
+export const APP_COMMAND_HEROES_SPELLS_TEACH_REQUESTED = 'command.heroes.spellsTeach.requested'
 // With `side`, the hero clicked on; places as for one hero.
 export const APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED = 'command.heroes.artifactTake.requested'
 export const APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED = 'command.heroes.artifactPut.requested'

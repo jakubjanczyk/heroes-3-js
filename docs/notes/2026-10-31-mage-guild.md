@@ -1,6 +1,6 @@
 # Mage Guild (2026-10-31)
 
-Roadmap 4.8.2, the second of eight parts of hero magic (4.8, 5.8), built in four parts of its own: the guild's spells and its screen (4.8.2.1), learning spells and buying a spell book (4.8.2.2), Wisdom and magic schools on level-up (4.8.2.3), Scholar (4.8.2.4). This note covers parts 1 to 3; Scholar adds its section when it is planned.
+Roadmap 4.8.2, the second of eight parts of hero magic (4.8, 5.8), built in four parts of its own: the guild's spells and its screen (4.8.2.1), learning spells and buying a spell book (4.8.2.2), Wisdom and magic schools on level-up (4.8.2.3), Scholar (4.8.2.4). This note covers all four.
 
 ## How Heroes 3 does it
 
@@ -91,10 +91,43 @@ Checked against the Heroes 3 wiki's raw page source (Secondary skill, Wisdom, He
 
 - The wiki and the engine agree on everything above; the order of the two slots (upgrade first) and that Wisdom offered in the first slot frees the second for a school come from the engine only.
 
+## Scholar (4.8.2.4)
+
+Checked against the Heroes 3 wiki's raw page source (Scholar, Wisdom, and the `GENRLTXT.TXT` page of Translation Data), against an open-source engine's Scholar code and its skill config, and against the skill's own descriptions already in `secondary-skills.json`.
+
+### How Heroes 3 does it
+
+- **What it does.** Two heroes who meet teach each other spells: up to level 2 with Basic Scholar, 3 with Advanced, 4 with Expert (wiki, Scholar; the engine's skill config; the skill's descriptions). Level 5 spells are never taught.
+- **One Scholar is enough.** The higher Scholar of the two heroes counts, and it works both ways: each hero learns the other's spells (wiki: "both gathering heroes learn spells in the teammate's spell book"; the engine).
+- **Wisdom still limits.** Each hero learns only the levels their own Wisdom lets them (2 without it, then 3, 4, 5), whatever the Scholar's level (the engine: the lower of the two limits). The wiki says Wisdom is needed to learn level 3 and above, from any source but scrolls and Tomes.
+- **Both need a spell book.** Without one on either hero nothing is taught (the engine). A spell the hero already knows isn't learned again.
+- **When.** Every time the two heroes meet, as the exchange screen opens (the engine). Later, also when a hero walks into a town with a garrison hero (6.4).
+- **The window.** When the exchange screen opens and at least one spell is taught, a message opens over it (a screenshot from the user, the engine). Its text, as the screenshot shows it: "Coronius, who has studied magic extensively, learns Armageddon, Counterstrike, Animate Dead, Forgetfulness, Frost Ring, Hypnotize, Visions, Curse and View Earth from Mephala, and teaches Slayer to Mephala."
+  - The hero with the higher Scholar is the subject; on a tie, the hero who walked up (the engine).
+  - "learns … from %s" only when they learn something, "teaches … to %s" only when they teach something, ", and " between the two, a full stop at the end (the screenshot). The game's text lines (`core.genrltxt.139` to `142`, `147`, `148`, wiki Translation Data) have " and " with no comma and no full stop; the screenshot's punctuation may be Horn of the Abyss's.
+  - The spells in each list are joined with ", " and the last two with " and ", ordered by level from the highest, then by name (the screenshot; the engine orders them by spell number).
+  - Under the text: the Scholar skill's picture captioned with its level ("Expert Scholar", the higher of the two heroes'), then the spells' pictures with their names; at most 8 pictures in a window (the screenshot, the engine's message window). With more, OK shows the next ones (the user).
+
+### What we do
+
+- Taught spells are saved as `fact.hero.spells.learned` for each hero who learns any, so a reload keeps them and replays no message.
+- A spell's picture is its name on a scroll, as in the Mage Guild. The spells the hero who walked up learns come first, then the ones they teach.
+- The Scholar picture is the skill's stand-in (its initials), as the Witch Hut's.
+- The pictures fill the windows in order: the Scholar, the spells the scholar learns, then those they teach, 8 to a window. The windows after the first have no text and no Scholar picture (the user). The screenshot shows a taught spell in the first window while some learned ones wait, which this order doesn't do; nobody could say why.
+- The demo map's Valeska has Advanced Scholar and a spell book, so meeting Lord Haart shows it.
+- The meeting asks for the teaching with `command.heroes.spellsTeach.requested`, and `scholar.module.js` decides it.
+
+### Not checked
+
+- That Wisdom limits what Scholar teaches comes from the engine only; the wiki's Scholar page says nothing on it.
+- The window's text and pictures come from one screenshot, which looks like Horn of the Abyss (its Scholar popup lists the weekly spell, a Horn of the Abyss rule). Which spells the next window shows isn't confirmed.
+
 ## Not yet
 
 - A hero learning spells on gaining Wisdom while in a town (a level-up there), and a hero in the town's garrison (6.4).
-- Scholar (4.8.2.4).
+- Scholar between a visiting hero and the town's garrison hero (6.4).
+- Eagle Eye (8.1) shows the spells it learns in a window like Scholar's; reuse this one.
+- Horn of the Abyss's Scholar (a chance to learn a spell each week, spells lasting into the next combat) is left out.
 - A hero learning spells on gaining Wisdom in a town: a hero can't gain a level in a town yet (no town building or garrison gives experience).
 - Other factions: their highest level, their weights and spells they never get, Tower's Library (one more spell of each level), Conflux's Aurora Borealis (every spell), their own screens (6.5).
 - Banned spells and map makers choosing a town's spells (9.1).

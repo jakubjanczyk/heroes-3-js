@@ -49,6 +49,17 @@
   &:has(.interaction-modal__choices > :nth-child(4)) {
     inline-size: min(24rem, calc(100% - (2 * var(--space-lg))));
   }
+
+  /* Many pictures (the spells Scholar teaches) go wide, so the window stays short on a phone. */
+  &:has(.interaction-modal__rewards > :nth-child(5)) {
+    inline-size: min(36rem, calc(100% - (2 * var(--space-lg))));
+  }
+}
+
+/* A message taller than the screen scrolls, so its OK button can always be reached. */
+.interaction-modal__surface {
+  max-block-size: calc(100dvh - (2 * var(--space-md)));
+  overflow-y: auto;
 }
 
 /*
@@ -172,6 +183,22 @@
   &::before {
     content: attr(data-initials);
   }
+}
+
+/* A spell has no picture yet: a parchment between two rolled ends stands in, its name under it. */
+.interaction-modal__choice-picture--spell-scroll {
+  inline-size: 3.5rem;
+  aspect-ratio: 1;
+  background:
+    linear-gradient(
+      90deg,
+      #8a6a3a 0 8%,
+      #d8c08a 8% 16%,
+      transparent 16% 84%,
+      #d8c08a 84% 92%,
+      #8a6a3a 92%
+    ),
+    linear-gradient(180deg, #f2e4bc, #d9c08a);
 }
 
 /* Skills have two caption lines (level over name), so "or" sits higher to stay level with them. */
