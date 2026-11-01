@@ -46,6 +46,8 @@ export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAt
 export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackShoot.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
 export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
+// The hero casts the spell on the stack `targetId`.
+export const APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED = 'command.battle.spellCast.requested'
 export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
@@ -92,6 +94,8 @@ export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
 // Bad morale: the stack loses its turn.
 export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
+// The hero's spell, its target, the damage it did and the spell points it cost.
+export const APP_FACT_BATTLE_SPELL_CAST = 'fact.battle.spell.cast'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'
 export const APP_FACT_RESOURCE_COLLECTED = 'fact.resource.collected'
@@ -166,6 +170,8 @@ export const APP_UI_HERO_SELECTED = 'ui.hero.selected'
 export const APP_UI_SELECTED_HERO_CLICKED = 'ui.selectedHero.clicked'
 export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
 export const APP_UI_SPELL_BOOK_OPEN_REQUESTED = 'ui.spellBook.openRequested'
+// A spell picked from the book in battle, waiting for the player to click its target.
+export const APP_UI_BATTLE_SPELL_PICKED = 'ui.battle.spellPicked'
 // A hero walked onto another of the player's heroes: `heroId` came to `otherHeroId`.
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
@@ -196,6 +202,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_FROZE,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+  APP_FACT_BATTLE_SPELL_CAST,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,

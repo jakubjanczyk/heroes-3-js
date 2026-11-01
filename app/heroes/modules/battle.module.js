@@ -1,6 +1,7 @@
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../../game/heroes/artifacts.js'
 import {
   attackStack,
+  castDamageSpell,
   createBattle,
   defendStack,
   endTurn,
@@ -17,6 +18,7 @@ import {
   getStackReach,
   hasLivingStacks,
   hasWaited,
+  isLivingEnemyOf,
   moveStack,
   planStackAttack,
   planStackMove,
@@ -33,17 +35,20 @@ import {
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
+import { canCastInBattle, spellDamage } from '../../../game/heroes/battle-spells.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
-import { hasSpellBook } from '../../../game/heroes/spell-book.js'
+import { hasSpellBook, spellCost } from '../../../game/heroes/spell-book.js'
+import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
   APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+  APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
@@ -55,6 +60,7 @@ import {
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_BATTLE_FINISHED,
+  APP_FACT_BATTLE_SPELL_CAST,
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_FROZE,
@@ -458,6 +464,27 @@ export const registerBattleModule = defineModule(
       })
     }
 
+    function castSpell({ spellId, targetId }) {
+      const hero = heroById(state.get(), heroId)
+      const spell = definitions.spells?.[spellId]
+      const cost = spell && spellCost(hero, spell)
+      const canCast =
+        hasSpellBook(hero) &&
+        hero.spells.includes(spellId) &&
+        canCastInBattle(spell) &&
+        cost <= getHeroSpellPoints({ entity: hero, definitions }).value &&
+        isLivingEnemyOf(battle, getActiveStack(battle).side, targetId)
+      if (!canCast) {
+        return
+      }
+
+      const damage = spellDamage({ hero, spell, definitions })
+      emit(APP_FACT_BATTLE_SPELL_CAST, { heroId, spellId, targetId, damage, cost })
+      if (!hasLivingStacks(battle, 'defender')) {
+        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
+      }
+    }
+
     return {
       subscriptions: [
         {
@@ -536,6 +563,28 @@ export const registerBattleModule = defineModule(
             }
 
             battle = shootStack(battle, event.detail)
+            showBattle()
+          }
+        },
+        {
+          type: APP_FACT_BATTLE_SPELL_CAST,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            const { spellId, targetId, damage } = event.detail
+            const cast = castDamageSpell(battle, {
+              heroName: heroNameOf(),
+              spellName: definitions.spells?.[spellId]?.name ?? spellId,
+              targetId,
+              damage
+            })
+            // The same stack's turn goes on, its morale already rolled for.
+            if (badMoraleRolledFor === battle) {
+              badMoraleRolledFor = cast
+            }
+            battle = cast
             showBattle()
           }
         },
@@ -648,6 +697,14 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
+          handler: (event) => {
+            if (isPlayersTurn()) {
+              castSpell(event.detail)
+            }
+          }
+        },
+        {
           type: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
           handler: () => {
             const stack = isPlayersTurn() && getActiveStack(battle)
@@ -720,8 +777,10 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_DEFENDED,
       APP_FACT_BATTLE_STACK_FROZE,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+      APP_FACT_BATTLE_SPELL_CAST,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
+      APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
@@ -741,6 +800,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_DEFENDED,
       APP_FACT_BATTLE_STACK_FROZE,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+      APP_FACT_BATTLE_SPELL_CAST,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_FACT_MONSTER_DEFEATED,

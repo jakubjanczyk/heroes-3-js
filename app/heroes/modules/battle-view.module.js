@@ -12,6 +12,7 @@ import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
   APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+  APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
@@ -21,6 +22,7 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_BATTLE_SPELL_PICKED,
   APP_UI_BATTLE_UPDATED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED,
@@ -68,6 +70,8 @@ export const registerBattleViewModule = defineModule(
     let isRestoring = false
     let retreatDialog = null
     let resultsWindow = null
+    // A spell the player picked from the book, cast on the next enemy stack clicked.
+    let pickedSpellId = null
 
     function cloneTemplate(id) {
       return document.getElementById(id).content.firstElementChild.cloneNode(true)
@@ -534,6 +538,7 @@ export const registerBattleViewModule = defineModule(
       battleScreen = null
       retreatDialog = null
       resultsWindow = null
+      pickedSpellId = null
       hexes = []
       battlefield = null
       stackElements = new Map()
@@ -546,6 +551,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function pressBattleButton(action) {
+      pickedSpellId = null
       if (COMMAND_BY_ACTION[action]) {
         emit(COMMAND_BY_ACTION[action], {})
       } else if (action === 'cast-spell') {
@@ -560,8 +566,26 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    // Clicking anywhere but an enemy stack cancels the spell.
+    function castPickedSpellOn(hex) {
+      const target = findLivingStackOn(hex)
+      const caster = shown.stacks.find(({ id }) => id === shown.activeStackId)
+      if (target && caster && target.side !== caster.side) {
+        emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, {
+          spellId: pickedSpellId,
+          targetId: target.id
+        })
+      }
+      pickedSpellId = null
+    }
+
     // A click on a hex: move there, or shoot or attack the enemy standing on it.
     function orderActiveStackTo(hex) {
+      if (pickedSpellId) {
+        castPickedSpellOn(hex)
+        return
+      }
+
       if (!findLivingStackOn(hex)) {
         emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
         return
@@ -596,6 +620,12 @@ export const registerBattleViewModule = defineModule(
           type: APP_UI_BATTLE_UPDATED,
           handler: (event) => {
             showBattle(event.detail)
+          }
+        },
+        {
+          type: APP_UI_BATTLE_SPELL_PICKED,
+          handler: (event) => {
+            pickedSpellId = event.detail.spellId
           }
         },
         {
@@ -664,12 +694,14 @@ export const registerBattleViewModule = defineModule(
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
       APP_UI_BATTLE_UPDATED,
+      APP_UI_BATTLE_SPELL_PICKED,
       APP_FACT_BATTLE_ENDED
     ],
     produces: [
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+      APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,

@@ -71,13 +71,19 @@ Checked against the Heroes 3 wiki's raw page source (Magic Arrow, Lightning Bolt
 - **Clicking a spell** shows its description in the box over the book, as on the map, or the "That spell costs …" message. Casting starts in 4.8.3.2.
 - **Closing it** (Close, Enter or Escape) goes back to the battle with the same stack to act.
 
+### Casting a damage spell (4.8.3.2)
+
+- **Generic.** A combat spell with `damage` in `game/data/spells.json` (`base`: none, Basic, Advanced, Expert; `perPower`) is cast on one enemy stack; the others still show their description. Magic Arrow, Lightning Bolt, Ice Bolt and Implosion have it, so the school's skill level (the best school for Magic Arrow) already sets their damage and cost.
+- **Picking and aiming.** Clicking the spell in the battle book closes it; the next click on an enemy stack casts it. A click anywhere else cancels the spell (decided with the user), and so does a battle button.
+- **The fact** `fact.battle.spell.cast` names the hero, the spell, its target, the damage and the spell points it cost.
+
 ### Later parts
 
 - **Data.** Each damage spell in `game/data/spells.json` gets its damage: the base at each skill level (four numbers, none to Expert) and the multiplier for Power, and Destroy Undead its targets (every undead stack). Adding a damage spell later is data only, as far as its targets are ones we have.
 - **Spell points and the cast are saved** as one fact naming the hero, the spell, its target and the damage each stack took, so a reload replays it, and the hero's spell points go down by the spell's cost. They stay spent after the battle, won, lost or fled.
 - **The Cast spell button** works on the player's stack's turn for a hero with a spell book (keyboard C). It is off on the enemy's turns, while a stack walks, with Auto combat on, and for a hero without a spell book. Once the hero has cast this round it stays on and clicking it gives the "already cast" message in a box over the battle, closed with OK.
 - **Other combat spells** (Haste, Bless, Fireball, …) show their description when clicked in battle, until their parts (4.8.4, 4.8.5, 4.8.7).
-- **Aiming** uses a spell cursor over a stack it can hit; elsewhere the status bar asks for a target. Right-click or Escape cancels, saying "Spell cancelled" in the status bar.
+- **Aiming** uses a spell cursor over a stack it can hit; elsewhere the status bar asks for a target. Right-click or Escape cancels, saying "Spell cancelled" in the status bar; a click on anything but an enemy stack cancels too (4.8.3.2).
 - **A spell that kills the last enemy stack wins the battle**, as a strike does.
 - **Destroy Undead's log:** to decide (below).
 

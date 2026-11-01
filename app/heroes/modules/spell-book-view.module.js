@@ -1,3 +1,4 @@
+import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
 import {
   ALL_SCHOOLS,
   cannotAffordText,
@@ -13,6 +14,7 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_BATTLE_SPELL_PICKED,
   APP_UI_HERO_SELECTED,
   APP_UI_SPELL_BOOK_OPEN_REQUESTED
 } from '../../events.js'
@@ -35,8 +37,8 @@ function initialsOf(name) {
     .slice(0, 2)
 }
 
-// The spell book: the hero's spells two pages to a spread, by school and by kind. Nothing can be
-// cast yet, so clicking a spell the hero can afford shows its description.
+// The spell book: the hero's spells two pages to a spread, by school and by kind. In battle,
+// clicking a spell the hero can cast there picks it; any other spell shows its description.
 export const registerSpellBookViewModule = defineModule(
   ({ emit, env, state }) => {
     const document = env.document
@@ -226,6 +228,11 @@ export const registerSpellBookViewModule = defineModule(
         showMessage({ title: '', text: cannotAffordText(spell.cost, value) })
         return
       }
+      if (inBattle && canCastInBattle(definitions.spells?.[spell.id])) {
+        close()
+        emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id })
+        return
+      }
       showMessage(spell.description)
     }
 
@@ -381,6 +388,10 @@ export const registerSpellBookViewModule = defineModule(
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED
     ],
-    produces: [APP_UI_ADVENTURE_MAP_COVERED, APP_UI_ADVENTURE_MAP_UNCOVERED]
+    produces: [
+      APP_UI_ADVENTURE_MAP_COVERED,
+      APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_BATTLE_SPELL_PICKED
+    ]
   }
 )

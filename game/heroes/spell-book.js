@@ -43,6 +43,10 @@ export function spellSkillLevel(hero, spell) {
   return Math.max(0, ...(spell.schools ?? []).map((school) => schoolSkillLevel(hero, school)))
 }
 
+export function spellCost(hero, spell) {
+  return spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
+}
+
 function schoolSortIndex(spell) {
   return Math.min(...(spell.schools ?? []).map((school) => SCHOOL_SORT_ORDER.indexOf(school)))
 }
@@ -56,7 +60,7 @@ function compareSpells(a, b) {
 function describeSpell(id, spell, { hero, spellPoints }) {
   const skillLevel = spellSkillLevel(hero, spell)
   const levelName = SPELL_LEVEL_NAMES[spell.level] ?? ''
-  const cost = spell.costs?.[skillLevel] ?? spell.costs?.[0] ?? 0
+  const cost = spellCost(hero, spell)
   return {
     id,
     name: spell.name,
