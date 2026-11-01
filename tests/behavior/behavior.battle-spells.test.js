@@ -2,19 +2,25 @@
 import { describe, expect, test } from 'vitest'
 
 import { readHeroListSpellPoints } from './adventure-panels.utils.js'
-import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
+import { createMemoryEventLog, pressKey, readGameData, waitMs } from './app.utils.js'
 import {
   clickBattleButton,
   clickBattleHex,
   closeBattleResults,
   getBattleButton,
+  getBattleStatusBarText,
+  hoverBattleHex,
+  moveActiveStackTo,
   readActiveStack,
   readBattleEffects,
   readBattleResultsSide,
   readBattleStacks,
   readCombatMessages,
+  readHighlightedBattleHexes,
   reloadBattle,
+  rightClickBattleHex,
   startBattle,
+  startBattleWithStyles,
   waitForBattleResults
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
@@ -178,6 +184,65 @@ describe('battle spells behavior', () => {
     expect(readActiveStack()).toEqual(
       stackAt('Swordsmen 10', SWORDSMEN_HEX.row, SWORDSMEN_HEX.column)
     )
+  })
+
+  test('given Magic Arrow is picked when the player clicks an empty hex then the status bar says "Spell cancelled"', async () => {
+    const { user } = await startBattle(aFight())
+
+    await castSpellAt(user, 'Magic Arrow', { row: 6, column: 3 })
+
+    expect(getBattleStatusBarText()).toBe('Spell cancelled')
+  })
+
+  test('given Magic Arrow is picked when the mouse is over the Pikemen then the status bar names the spell and the Pikemen and their hex is lit', async () => {
+    const { user } = await startBattleWithStyles(aFight())
+    await pickSpell(user, 'Magic Arrow')
+
+    await hoverBattleHex(user, PIKEMEN_HEX.row, PIKEMEN_HEX.column)
+
+    expect([getBattleStatusBarText(), readHighlightedBattleHexes()]).toEqual([
+      'Cast Magic Arrow on Pikemen',
+      [PIKEMEN_HEX]
+    ])
+  })
+
+  test('given Magic Arrow is picked when the mouse is over an empty hex then the status bar asks for a target', async () => {
+    const { user } = await startBattle(aFight())
+    await pickSpell(user, 'Magic Arrow')
+
+    await hoverBattleHex(user, 6, 3)
+
+    expect(getBattleStatusBarText()).toBe('Select Spell Target')
+  })
+
+  test('given Magic Arrow is picked when the player right-clicks the battlefield then the spell is cancelled and a click on an empty hex walks there', async () => {
+    const { user } = await startBattle(aFight())
+    await pickSpell(user, 'Magic Arrow')
+
+    await rightClickBattleHex(user, 6, 3)
+    const statusBarText = getBattleStatusBarText()
+    await moveActiveStackTo(user, 6, 3)
+    await waitMs(1000)
+
+    expect([statusBarText, readBattleStacks()]).toEqual([
+      'Spell cancelled',
+      expect.arrayContaining([stackAt('Swordsmen 10', 6, 3)])
+    ])
+  })
+
+  test('given Magic Arrow is picked when the player presses Escape then the spell is cancelled and no spell points are spent', async () => {
+    const { user } = await startBattle(aFight())
+    await pickSpell(user, 'Magic Arrow')
+
+    await pressKey(user, '{Escape}')
+    const statusBarText = getBattleStatusBarText()
+    await clickBattleHex(user, PIKEMEN_HEX.row, PIKEMEN_HEX.column)
+
+    expect([statusBarText, readBattleStacks(), await readBattleSpellPoints(user)]).toEqual([
+      'Spell cancelled',
+      expect.arrayContaining([stackAt('Pikemen 10', PIKEMEN_HEX.row, PIKEMEN_HEX.column)]),
+      '10'
+    ])
   })
 
   test('given the player cancelled the spell when they click an empty hex then the stack walks there', async () => {

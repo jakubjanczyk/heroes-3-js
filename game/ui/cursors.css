@@ -169,6 +169,12 @@ button {
     help;
 }
 
+.battlefield[data-cursor="spell"] {
+  cursor:
+    url("../../assets/cursors/battle-spell.png") 15 17,
+    crosshair;
+}
+
 .battlefield[data-cursor="shoot"] {
   cursor:
     url("../../assets/cursors/battle-shoot.png") 16 16,

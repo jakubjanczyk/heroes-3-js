@@ -625,8 +625,8 @@ In seven parts. See `docs/notes/2026-11-01-casting-in-battle.md`.
 - [x] Cast spell is off with Auto combat on
 
 ##### 4.8.3.4 Aiming
-- [ ] Hovering an enemy stack: "Cast Magic Arrow on Pikemen" and the spell cursor; elsewhere "Select Spell Target" (a click there cancels the spell, 4.8.3.2)
-- [ ] Right-click or Escape cancels: "Spell cancelled"
+- [x] Hovering an enemy stack: "Cast Magic Arrow on Pikemen", the spell cursor and its hexes lit; elsewhere "Select Spell Target" and the blocked cursor (a click there cancels the spell, 4.8.3.2)
+- [x] Right-click, Escape or a click off a target cancels: "Spell cancelled" in the status bar
 
 ##### 4.8.3.5 School skill levels
 - [x] Advanced and Expert raise the damage; Magic Arrow uses the hero's best school; the cost follows the skill (with 4.8.3.2)
