@@ -1,5 +1,6 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
+import { getStackDefense, getStackSpeed } from './battle-stats.js'
 import {
   findHexPath,
   getFrontHexFor,
@@ -143,7 +144,7 @@ export const hasLivingStacks = (battle, side) =>
 
 // Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
 export function getTurnOrder(battle) {
-  return livingStacks(battle).sort((a, b) => b.speed - a.speed)
+  return livingStacks(battle).sort((a, b) => getStackSpeed(b) - getStackSpeed(a))
 }
 
 // The stacks that waited act once every other stack has, the slowest first.
@@ -169,9 +170,7 @@ function startNextTurn(battle) {
   return {
     ...battle,
     stacks: battle.stacks.map((stack) =>
-      stack.id === active.id
-        ? { ...stack, defense: stack.defense - stack.defenseBonus, defenseBonus: 0 }
-        : stack
+      stack.id === active.id ? { ...stack, defenseBonus: 0 } : stack
     )
   }
 }
@@ -274,8 +273,7 @@ export function defendStack(battle, stackId) {
         return stack
       }
 
-      const defenseBonus = Math.max(1, Math.floor(stack.defense / 5))
-      return { ...stack, defense: stack.defense + defenseBonus, defenseBonus }
+      return { ...stack, defenseBonus: Math.max(1, Math.floor(getStackDefense(stack) / 5)) }
     })
   }
   return endTurn(defended, stackId)
@@ -307,7 +305,7 @@ function canStandFor(battle, stack) {
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
-    speed: stack.speed,
+    speed: getStackSpeed(stack),
     flying: stack.flying,
     isFree: canStandFor(battle, stack)
   })
@@ -337,10 +335,10 @@ function planPathToFront(battle, stack, front) {
   }
 
   if (stack.flying) {
-    return getHexDistance(stack.hex, front) <= stack.speed ? [front] : null
+    return getHexDistance(stack.hex, front) <= getStackSpeed(stack) ? [front] : null
   }
 
-  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: stack.speed })
+  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: getStackSpeed(stack) })
 }
 
 // The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`

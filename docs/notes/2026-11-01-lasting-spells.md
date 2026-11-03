@@ -37,7 +37,7 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Shield, Stone 
 
 - **As many rounds as the hero's Power** (wiki, Primary skill: "1 point of Power skill equals 1 round of duration"; engine: the duration is the caster's Power, plus artifacts that lengthen spells). A hero with Power 0 counts as 1 (wiki).
 - **Counted down when a new round starts** (engine): cast in round 1 by a hero with Power 2, it lasts rounds 1 and 2 and is gone when round 3 starts.
-- **Counters:** Haste removes Slow and Slow removes Haste on the stack (wiki, Counter and the spells' pages; engine). The engine also makes Bloodlust and Weakness counter each other; the wiki lists them as neither counters nor opposites. See the open questions.
+- **Counters:** Haste removes Slow and Slow removes Haste on the stack (wiki, Counter and the spells' pages; engine). The engine also makes Bloodlust and Weakness counter each other; the wiki lists them as neither counters nor opposites (we follow the engine, decided with the user).
 
 ### Shown on the stack
 
@@ -56,16 +56,22 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Shield, Stone 
 - **The stack's stats** are worked out from its own and its spells' effects wherever they count: Speed for its reach and the turn order, Attack and Defense for the damage in the hover text and the strike. Defend's bonus moves to the same place.
 - **The count box** turns green for a stack with more helpful spells, red for more harmful, and a third colour when they are even (our own colours until the battle's graphics, 10.x).
 - **The rounds** run out when a new round starts; the box turns back.
-- **A reload** keeps the spells and the rounds left: the cast is a saved fact and the rounds are replayed.
+- **A reload** keeps the spells and the rounds left: the cast is a saved fact, with the effect and the rounds it was cast for, and the rounds are replayed.
+- **Counters and the even colour wait for enemy heroes casting (8.1).** The hero casts helpful spells only on own stacks and harmful ones only on enemy stacks, so no stack can have Haste and Slow, Bloodlust and Weakness, or a helpful and a harmful spell at once until then.
+
+## Decided with the user
+
+- **The same spell cast again** on a stack that has it keeps the longer of the two durations, as the engine does (the wiki says nothing).
+- **Bloodlust and Weakness counter each other**, as the engine has it: whichever was cast last stays (the wiki's Counter page doesn't list them).
+- **The count box colours** are our own: green, red, and yellow when even.
 
 ## Not checked
 
-- What happens when the same spell is cast again on a stack that has it (a new duration, or the longer of the two; the new level's value). The engine keeps the longer duration; the wiki says nothing.
-- Whether Bloodlust and Weakness counter each other (the engine says so, the wiki doesn't).
 - The count box's exact colours in the original game.
 
 ## Not yet
 
+- Counters (Haste and Slow, Bloodlust and Weakness) and the even colour of the count box, with enemy heroes casting (8.1).
 - Expert hitting all stacks (4.8.4.3); the other lasting spells (4.8.4.2, 4.8.4.4).
 - The creature window in battle with the spells and rounds left (4.3).
 - Artifacts that lengthen spells, hero specialties in these spells, creatures casting them (Master Genie, Ogre Mage) and war machines immune to them (7.8, 6.5, with the creatures).

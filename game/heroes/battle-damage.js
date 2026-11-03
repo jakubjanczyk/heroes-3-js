@@ -1,3 +1,5 @@
+import { getStackAttack, getStackDefense } from './battle-stats.js'
+
 // Kept in thousandths so the rounding is the game's, not the floating point's.
 const ATTACK_BONUS_PER_POINT = 50
 const ATTACK_BONUS_CAP = 3000
@@ -12,7 +14,7 @@ const NO_LUCK = () => 1
 const HALVED = 500
 
 function applyAttackAndDefense(baseDamage, { attacker, defender, halved = false, lucky = false }) {
-  const advantage = attacker.attack - defender.defense
+  const advantage = getStackAttack(attacker) - getStackDefense(defender)
   const bonus =
     Math.min(Math.max(advantage, 0) * ATTACK_BONUS_PER_POINT, ATTACK_BONUS_CAP) +
     (lucky ? LUCKY_BONUS : 0)
