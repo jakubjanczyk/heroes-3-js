@@ -45,3 +45,17 @@ export function getSpellBalance(stack) {
   }
   return stack.spells.some(({ helpful }) => helpful) ? 'helpful' : 'harmful'
 }
+
+const MORALE_AND_LUCK_LIMIT = 3
+
+const withSpells = (stack, kind) =>
+  (stack[kind] ?? 0) + (stack.cancelledInBattle?.includes(kind) ? 0 : spellEffect(stack, kind))
+
+const withinLimits = (value) =>
+  Math.max(-MORALE_AND_LUCK_LIMIT, Math.min(MORALE_AND_LUCK_LIMIT, value))
+
+export const getStackMorale = (stack) =>
+  stack.unaffectedByMorale ? 0 : withinLimits(withSpells(stack, 'morale'))
+
+// There is no bad luck: luck below 0 does nothing.
+export const getStackLuck = (stack) => Math.max(0, withinLimits(withSpells(stack, 'luck')))
