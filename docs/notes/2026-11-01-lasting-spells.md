@@ -67,6 +67,48 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Shield, Stone 
 - **Bloodlust and Weakness counter each other**, as the engine has it: whichever was cast last stays (the wiki's Counter page doesn't list them).
 - **The count box colours** are our own: green, red, and yellow when even.
 
+## Part 2: Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow
+
+Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglass of the Evil Hour, Spirit of Oppression) and against an open-source engine's spell config (`spells/timed.json`), its damage rules (Bless and Curse, Shield and Air Shield as separate factors), its stack's Attack and Defense, and its morale and luck limits. Costs are already in `game/data/spells.json`.
+
+| Spell | School, level | Target | None / Basic | Advanced | Expert |
+|---|---|---|---|---|---|
+| Bless | Water, 1 | own | each creature does its maximum damage | maximum + 1 | maximum + 1 |
+| Curse | Fire, 1 | enemy | each creature does its minimum damage | minimum − 1 (at least 1) | minimum − 1 |
+| Precision | Air, 2 | own | Attack +3 for shots | +6 | +6 |
+| Air Shield | Air, 3 | own | damage taken from shots −25% | −50% | −50% |
+| Disrupting Ray | Air, 2 | enemy | Defense −3, until the battle ends, adds up | −4 | −5 |
+| Prayer | Water, 4 | own | Attack, Defense and Speed +2 | +4 | +4 |
+| Fortune | Air, 2 | own | Luck +1 | +2 | +2 |
+| Misfortune | Fire, 3 | enemy | Luck −1 | −2 | −2 |
+| Mirth | Water, 3 | own | Morale +1 | +2 | +2 |
+| Sorrow | Earth, 4 | enemy | Morale −1 | −2 | −2 |
+
+- **Bless and Curse** change each creature's damage before the stack's count and Attack and Defense: Advanced Bless on Pikemen (1–3) makes every creature do 4, Advanced Curse makes it 1 (wiki: "maximum damage + 1", "minimum damage − 1 … cannot be reduced to below 1", the manual's "80%" is wrong; engine: the same shift per creature, at least 1). They count for every attack: strike, retaliation and shot. The damage shown on hover follows (Bless: one number).
+- **Precision** counts for shots only (wiki: "for ranged attacks"; engine: distance attacks only), not a shooter's melee attack.
+- **Air Shield** lessens shots only, as Shield lessens melee only; both on one stack each lessen their own kind (engine: two factors, each ignoring the other kind).
+- **Disrupting Ray** is the one spell that adds up: each cast takes 3, 4 or 5 more Defense and none of it runs out before the battle ends (wiki: "until end of combat", "the only cumulative spell"; engine: a permanent, cumulative effect). Its count box stays red for the rest of the battle.
+- **Attack and Defense never go below 0** for the damage (wiki, Disrupting Ray: "limited by zero defense level"; engine: a stack's Attack and Defense are at least 0). This also holds for Weakness from part 1.
+- **Prayer's Speed** changes reach and the turn order as Haste does.
+- **Morale and luck stay between −3 and +3** with the spells (engine: the totals are capped at the size of the chance tables, ±3; wiki, Morale and Luck pages). Negative luck does nothing (wiki, Misfortune: "no bad luck can occur in the game"), so Misfortune only lowers a positive luck; a monster has no luck, so against monsters it changes nothing but the count box.
+- **Undead** have no morale, so Mirth and Sorrow do nothing on them; their immunity to mind spells (they can't be targeted) is 4.8.6.1.
+- **Hourglass of the Evil Hour and Spirit of Oppression** keep cancelling positive luck and morale, the spells' included (engine: the total is capped at 0 battle-wide; wiki: Spirit of Oppression "also negates … Mirth and Sorrow", see the open question).
+- **Counters** (Bless and Curse, Fortune and Misfortune, Mirth and Sorrow; wiki and engine for Bless and Curse, engine for the others) wait for enemy heroes casting (8.1), like Haste and Slow.
+
+### What we do
+
+- Each spell's effect goes in `game/data/spells.json` like part 1's: `maximumDamage` / `minimumDamage` (the shift, or present at 0), `rangedAttack`, `rangedDamageTakenPercent`, `defense` with `cumulative` and no end for Disrupting Ray, `attack` + `defense` + `speed` for Prayer, `luck`, `morale`.
+- A stack's morale and luck in battle are worked out from its own and its spells' as its other stats are, capped at ±3, and below 0 for luck counts as 0.
+
+### Open questions
+
+- Precision: only on the hero's shooters (wiki: "the selected friendly ranged unit"), or on any own stack where it does nothing for one that can't shoot (engine: no limit)?
+- Spirit of Oppression with Sorrow: the engine keeps penalties (morale capped at 0, Sorrow still lowers it), as our artifact rule does; the wiki says it negates Sorrow too.
+
+### Not yet (part 2)
+
+- Expert hitting all stacks (4.8.4.3); counters (8.1); immunities, such as the wiki's undead immune to Bless and Curse (4.8.6.1); Halflings' luck and Minotaurs' morale not below +1 (6.5); Disrupting Ray surviving Dispel and Cure (4.8.4.4).
+
 ## Not checked
 
 - The count box's exact colours in the original game.
