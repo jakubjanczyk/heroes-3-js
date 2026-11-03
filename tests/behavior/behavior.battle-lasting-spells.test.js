@@ -103,10 +103,10 @@ const aCaster = ({ power = 2, secondarySkills = [], army = [stack('SWORDSMAN', 1
     .withSpells(Object.keys(spellDefinitions))
     .withArmy(army)
 
-const aFight = ({ hero = aCaster(), monster = 'PIKEMAN', count = 50 } = {}) =>
+const aFight = ({ hero = aCaster(), monster = 'PIKEMAN', count = 50, stacks = 1 } = {}) =>
   aScenario()
     .withSize(3)
-    .withEntities(hero, aMonster().withType(monster).withCount(count).withStacks(1).at(1, 0))
+    .withEntities(hero, aMonster().withType(monster).withCount(count).withStacks(stacks).at(1, 0))
     .withDefinitions(gameDefinitions)
 
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster's on column 15.
@@ -271,6 +271,22 @@ describe('battle lasting spells behavior', () => {
       await clickBattleButton(user, 'Defend')
 
       expect(readBattleStacks()).not.toContainEqual(cavaliers)
+    })
+
+    // Two stacks of 10 Pikemen start on rows 3 and 9 of column 15 and walk toward the Swordsmen:
+    // the slowed one 3 hexes (4 × 0.75), the other its full 4.
+    test('given the hero slows one of two Pikemen stacks when they walk then only that one walks less', async () => {
+      const { user } = await startBattle(aFight({ count: 20, stacks: 2 }))
+
+      await castSpellAt(user, 'Slow', { row: 3, column: 15 })
+      await playOnToNextRound(user)
+
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([
+          { stack: 'Pikemen 10', row: 3, column: 12 },
+          { stack: 'Pikemen 10', row: 9, column: 11 }
+        ])
+      )
     })
   })
 
