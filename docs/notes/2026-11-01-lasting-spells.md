@@ -54,6 +54,8 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Shield, Stone 
 - **Data.** Each of the six spells gets its effect in `game/data/spells.json`: which stat, its value at each skill level (none, Basic, Advanced, Expert) and whether it targets own or enemy stacks; Haste and Slow name each other as counters. Another stat spell later is data only.
 - **Casting** works as for the bolts: pick it in the battle book, hover a stack it can target ("Cast Haste on Swordsmen", the spell cursor, its hexes lit), click to cast; anywhere else says "Select Spell Target" and a click cancels. Spell points, once a round and the combat log line are as for the bolts.
 - **The stack's stats** are worked out from its own and its spells' effects wherever they count: Speed for its reach and the turn order, Attack and Defense for the damage in the hover text and the strike. Defend's bonus moves to the same place.
+- **The stack whose turn it is keeps it.** Haste can make another of the hero's stacks faster than the one acting: it acts next, not straight away (the engine's cast is not the stack's action; it ends no turn).
+- **A Power of 0** can't be set in our scenarios, so a hero casts for at least 1 round anyway.
 - **The count box** turns green for a stack with more helpful spells, red for more harmful, and a third colour when they are even (our own colours until the battle's graphics, 10.x).
 - **The rounds** run out when a new round starts; the box turns back.
 - **A reload** keeps the spells and the rounds left: the cast is a saved fact, with the effect and the rounds it was cast for, and the rounds are replayed.

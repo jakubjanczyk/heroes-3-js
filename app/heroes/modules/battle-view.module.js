@@ -70,7 +70,8 @@ export const registerBattleViewModule = defineModule(
     let isRestoring = false
     let retreatDialog = null
     let resultsWindow = null
-    // A spell the player picked from the book, cast on the next enemy stack clicked.
+    // A spell the player picked from the book, cast on the next stack clicked that it can target:
+    // an enemy stack, or for a helpful spell one of the hero's own.
     let pickedSpell = null
     // Shown in the status bar until the mouse leaves the hex it was given on.
     let statusNote = null
@@ -95,14 +96,17 @@ export const registerBattleViewModule = defineModule(
       return { stack, backHalf }
     }
 
-    function drawStack({ stack: element, backHalf }, { name, count }) {
+    function drawStack({ stack: element, backHalf }, { name, count, spellBalance }) {
       const isDead = count === 0
       const label = isDead ? `Dead ${name}` : name
       element.classList.toggle('battle-stack--dead', isDead)
       const creature = element.querySelector('.battle-stack__creature')
       creature.setAttribute('aria-label', label)
       creature.title = label
-      element.querySelector('.battle-stack__count').textContent = isDead ? '' : String(count)
+      const countBox = element.querySelector('.battle-stack__count')
+      countBox.textContent = isDead ? '' : String(count)
+      countBox.classList.toggle('battle-stack__count--helped', spellBalance === 'helpful')
+      countBox.classList.toggle('battle-stack__count--harmed', spellBalance === 'harmful')
       backHalf.setAttribute('aria-label', `${name} (back half)`)
     }
 
@@ -186,7 +190,11 @@ export const registerBattleViewModule = defineModule(
     function findSpellTarget(hex) {
       const target = findLivingStackOn(hex)
       const caster = findIdleActiveStack()
-      return target && caster && target.side !== caster.side ? target : null
+      if (!target || !caster) {
+        return null
+      }
+      const isOwn = target.side === caster.side
+      return isOwn === (pickedSpell.targetSide === 'own') ? target : null
     }
 
     function describeSpellAim(hex) {
@@ -677,7 +685,8 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_UI_BATTLE_SPELL_PICKED,
           handler: (event) => {
-            pickedSpell = { id: event.detail.spellId, name: event.detail.spellName }
+            const { spellId, spellName, targetSide } = event.detail
+            pickedSpell = { id: spellId, name: spellName, targetSide }
           }
         },
         {

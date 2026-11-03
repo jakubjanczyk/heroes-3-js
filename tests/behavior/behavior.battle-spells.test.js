@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest'
 import { readHeroListSpellPoints } from './adventure-panels.utils.js'
 import { createMemoryEventLog, pressKey, readGameData, waitMs } from './app.utils.js'
 import {
+  castSpellAt,
   clickBattleButton,
   clickBattleHex,
   closeBattleResults,
@@ -11,9 +12,12 @@ import {
   getBattleStatusBarText,
   hoverBattleHex,
   moveActiveStackTo,
+  pickSpell,
+  playOnToNextRound,
   readActiveStack,
   readBattleEffects,
   readBattleResultsSide,
+  readBattleSpellPoints,
   readBattleStacks,
   readCombatMessages,
   readHighlightedBattleHexes,
@@ -24,7 +28,6 @@ import {
   waitForBattleResults
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
-import { clickSpell, readSpellBookSpellPoints } from './spell-book.utils.js'
 
 const HERO = 'Lord Haart'
 
@@ -69,28 +72,6 @@ const aFight = ({ hero = aCaster(), pikemen = 10 } = {}) =>
 
 const SWORDSMEN_HEX = { row: 6, column: 1 }
 const PIKEMEN_HEX = { row: 6, column: 15 }
-
-async function pickSpell(user, name) {
-  await clickBattleButton(user, 'Cast spell')
-  await clickSpell(user, name)
-  await waitMs()
-}
-
-async function castSpellAt(user, name, { row, column }) {
-  await pickSpell(user, name)
-  await clickBattleHex(user, row, column)
-}
-
-// The book is shut for the rest of the round the hero cast in.
-async function playOnToNextRound(user) {
-  await clickBattleButton(user, 'Defend')
-  await waitMs(1000)
-}
-
-async function readBattleSpellPoints(user) {
-  await clickBattleButton(user, 'Cast spell')
-  return readSpellBookSpellPoints()
-}
 
 describe('battle spells behavior', () => {
   // Damage = the base for the school's skill level + 10 × Power 2; a Pikeman has 10 health.

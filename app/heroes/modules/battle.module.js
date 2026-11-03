@@ -2,6 +2,7 @@ import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../../game/
 import {
   attackStack,
   castDamageSpell,
+  castLastingSpell,
   createBattle,
   defendStack,
   endTurn,
@@ -18,7 +19,7 @@ import {
   getStackReach,
   hasLivingStacks,
   hasWaited,
-  isLivingEnemyOf,
+  isLivingStackOfSide,
   moveStack,
   planStackAttack,
   planStackMove,
@@ -35,12 +36,18 @@ import {
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
-import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle, isHelpful, spellTargetSide } from '../../../game/heroes/battle-spells.js'
+import { getSpellBalance } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
-import { hasSpellBook, spellCost, spellDamage } from '../../../game/heroes/spell-book.js'
+import {
+  hasSpellBook,
+  spellCost,
+  spellDamage,
+  spellLasting
+} from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
@@ -86,7 +93,12 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
 
-const withHexes = (stacks) => stacks.map((stack) => ({ ...stack, hexes: getStackHexes(stack) }))
+const withHexes = (stacks) =>
+  stacks.map((stack) => ({
+    ...stack,
+    hexes: getStackHexes(stack),
+    spellBalance: getSpellBalance(stack)
+  }))
 
 const isDwellingGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_DWELLING_GUARDS
 const isArtifactGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_ARTIFACT_GUARDS
@@ -465,6 +477,14 @@ export const registerBattleModule = defineModule(
       })
     }
 
+    function targetSideOf(spell) {
+      const ownSide = getActiveStack(battle).side
+      if (spellTargetSide(spell) === 'own') {
+        return ownSide
+      }
+      return ownSide === 'attacker' ? 'defender' : 'attacker'
+    }
+
     function castSpell({ spellId, targetId }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
@@ -475,16 +495,34 @@ export const registerBattleModule = defineModule(
         hero.spells.includes(spellId) &&
         canCastInBattle(spell) &&
         cost <= getHeroSpellPoints({ entity: hero, definitions }).value &&
-        isLivingEnemyOf(battle, getActiveStack(battle).side, targetId)
+        isLivingStackOfSide(battle, targetSideOf(spell), targetId)
       if (!canCast) {
         return
       }
 
-      const damage = spellDamage({ hero, spell, definitions })
-      emit(APP_FACT_BATTLE_SPELL_CAST, { heroId, spellId, targetId, damage, cost })
+      const cast = spell.lasting
+        ? spellLasting({ hero, spell, definitions })
+        : { damage: spellDamage({ hero, spell, definitions }) }
+      emit(APP_FACT_BATTLE_SPELL_CAST, { heroId, spellId, targetId, ...cast, cost })
       if (!hasLivingStacks(battle, 'defender')) {
         emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
       }
+    }
+
+    // A lasting spell's fact keeps its effects and rounds as they were when cast.
+    function castSpellOn(current, { spellId, targetId, damage, effects, rounds }) {
+      const spell = definitions.spells?.[spellId]
+      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId, targetId }
+      if (effects) {
+        return castLastingSpell(current, {
+          ...named,
+          spellId,
+          effects,
+          rounds,
+          helpful: isHelpful(spell)
+        })
+      }
+      return castDamageSpell(current, { ...named, damage })
     }
 
     return {
@@ -575,13 +613,7 @@ export const registerBattleModule = defineModule(
               return
             }
 
-            const { spellId, targetId, damage } = event.detail
-            const cast = castDamageSpell(battle, {
-              heroName: heroNameOf(),
-              spellName: definitions.spells?.[spellId]?.name ?? spellId,
-              targetId,
-              damage
-            })
+            const cast = castSpellOn(battle, event.detail)
             // The same stack's turn goes on, its morale already rolled for.
             if (badMoraleRolledFor === battle) {
               badMoraleRolledFor = cast

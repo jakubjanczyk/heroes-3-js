@@ -641,7 +641,8 @@ Moved to 5.8 later.
 
 #### 4.8.4 Spells that last
 In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
-- [ ] 4.8.4.1 How a lasting spell works (it lasts as many rounds as the hero's Power, shown on the stack), with the spells that change a stat: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness
+- [x] 4.8.4.1 How a lasting spell works (it lasts as many rounds as the hero's Power, shown on the stack), with the spells that change a stat: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness
+- [ ] Counters (Haste and Slow, Bloodlust and Weakness) and the count box's colour for a stack under both helpful and harmful spells, with enemy heroes casting (8.1)
 - [ ] 4.8.4.2 Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow
 - [ ] 4.8.4.3 At Expert most hit all friendly or all enemy stacks
 - [ ] 4.8.4.4 Cure, Dispel and the four Protections
