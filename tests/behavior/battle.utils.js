@@ -7,6 +7,7 @@ import { expect } from 'vitest'
 import { attackMonsterAt } from './adventure-map.utils.js'
 import { setupMovementBehaviorApp, waitMs } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
+import { clickSpell, readSpellBookSpellPoints } from './spell-book.utils.js'
 
 // Every damage roll comes out at the bottom of its range.
 export const LOWEST_ROLLS = () => 0
@@ -339,4 +340,40 @@ export async function retreat(user, { confirm = true } = {}) {
 export async function winBattle(user) {
   await user.click(getBattleButton('Auto combat'))
   await waitForBattleToEnd()
+}
+
+export async function pickSpell(user, name) {
+  await clickBattleButton(user, 'Cast spell')
+  await clickSpell(user, name)
+  await waitMs()
+}
+
+export async function castSpellAt(user, name, { row, column }) {
+  await pickSpell(user, name)
+  await clickBattleHex(user, row, column)
+}
+
+// The stack defends and the enemy plays its turn.
+export async function playOnToNextRound(user) {
+  await clickBattleButton(user, 'Defend')
+  await waitMs(1000)
+}
+
+// The book is shut for the rest of the round the hero cast in.
+export async function readBattleSpellPoints(user) {
+  await clickBattleButton(user, 'Cast spell')
+  return readSpellBookSpellPoints()
+}
+
+const COUNT_COLOURS = {
+  'rgb(90, 42, 168)': 'purple',
+  'rgb(31, 122, 46)': 'green',
+  'rgb(161, 35, 35)': 'red'
+}
+
+// The colour of the box with the stack's count; needs `loadAppStyles()`.
+export function readStackCountColour(row, column) {
+  const count = getBattleHex(row, column).querySelector('.battle-stack__count')
+  const colour = window.getComputedStyle(count).backgroundColor
+  return COUNT_COLOURS[colour] ?? colour
 }

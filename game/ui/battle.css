@@ -197,6 +197,17 @@
   text-align: center;
 }
 
+/* Our own colours for a stack under helpful or harmful spells. */
+.battle-stack__count--helped {
+  background: #1f7a2e;
+  border-color: #8fe39d;
+}
+
+.battle-stack__count--harmed {
+  background: #a12323;
+  border-color: #ff9c9c;
+}
+
 .battle-stack--dead {
   z-index: 0;
 }

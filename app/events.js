@@ -94,7 +94,8 @@ export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
 // Bad morale: the stack loses its turn.
 export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
-// The hero's spell, its target, the damage it did and the spell points it cost.
+// The hero's spell, its target, the spell points it cost, and the damage it did or, for a spell
+// that lasts, its effects and how many rounds they last.
 export const APP_FACT_BATTLE_SPELL_CAST = 'fact.battle.spell.cast'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'

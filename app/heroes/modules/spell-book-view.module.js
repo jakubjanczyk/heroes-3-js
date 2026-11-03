@@ -1,4 +1,4 @@
-import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle, spellTargetSide } from '../../../game/heroes/battle-spells.js'
 import {
   ALL_SCHOOLS,
   cannotAffordText,
@@ -228,9 +228,14 @@ export const registerSpellBookViewModule = defineModule(
         showMessage({ title: '', text: cannotAffordText(spell.cost, value) })
         return
       }
-      if (inBattle && canCastInBattle(definitions.spells?.[spell.id])) {
+      const definition = definitions.spells?.[spell.id]
+      if (inBattle && canCastInBattle(definition)) {
         close()
-        emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name })
+        emit(APP_UI_BATTLE_SPELL_PICKED, {
+          spellId: spell.id,
+          spellName: spell.name,
+          targetSide: spellTargetSide(definition)
+        })
         return
       }
       showMessage(spell.description)
