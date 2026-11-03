@@ -502,12 +502,13 @@ export const registerBattleModule = defineModule(
     }
 
     // A lasting spell's fact keeps its effects and rounds as they were when cast.
-    function castSpellOn(current, { spellId, targetId, damage, effects, rounds }) {
+    function castSpellOn(current, { spellId, targetId, targetIds, damage, effects, rounds }) {
       const spell = definitions.spells?.[spellId]
-      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId, targetId }
+      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId }
       if (effects) {
         return castLastingSpell(current, {
           ...named,
+          targetIds: targetIds ?? [targetId],
           spellId,
           effects,
           rounds,
@@ -515,7 +516,7 @@ export const registerBattleModule = defineModule(
           addsUp: Boolean(spell.lasting.addsUp)
         })
       }
-      return castDamageSpell(current, { ...named, damage })
+      return castDamageSpell(current, { ...named, targetId, damage })
     }
 
     return {
