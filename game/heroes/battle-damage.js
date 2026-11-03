@@ -1,4 +1,9 @@
-import { getMeleeDamageTakenPercent, getStackAttack, getStackDefense } from './battle-stats.js'
+import {
+  getCreatureDamage,
+  getDamageTakenPercent,
+  getStackAttack,
+  getStackDefense
+} from './battle-stats.js'
 
 // Kept in thousandths so the rounding is the game's, not the floating point's.
 const ATTACK_BONUS_PER_POINT = 50
@@ -26,7 +31,7 @@ function applyAttackAndDefense(
     DEFENSE_REDUCTION_CAP
   )
   const penalty = halved ? HALVED : 1000
-  const taken = melee ? getMeleeDamageTakenPercent(defender) * 10 : 1000
+  const taken = getDamageTakenPercent(defender, { melee }) * 10
   // In BigInt: a big stack's product of five factors goes past the integers a Number keeps exact.
   const scaled = [baseDamage, 1000 + bonus, 1000 - reduction, penalty, taken].map(BigInt)
   const damage = scaled.reduce((product, factor) => product * factor) / 1_000_000_000_000n
@@ -34,14 +39,15 @@ function applyAttackAndDefense(
 }
 
 export function getDamageRange({ attacker, defender, melee, halved }) {
+  const damage = getCreatureDamage(attacker)
   return {
-    min: applyAttackAndDefense(attacker.damage.min * attacker.count, {
+    min: applyAttackAndDefense(damage.min * attacker.count, {
       attacker,
       defender,
       melee,
       halved
     }),
-    max: applyAttackAndDefense(attacker.damage.max * attacker.count, {
+    max: applyAttackAndDefense(damage.max * attacker.count, {
       attacker,
       defender,
       melee,
@@ -52,7 +58,7 @@ export function getDamageRange({ attacker, defender, melee, halved }) {
 
 // A stack of more than 10 rolls 10 times, scaled to its count.
 export function rollDamage({ attacker, defender, random, melee, halved, lucky }) {
-  const { min, max } = attacker.damage
+  const { min, max } = getCreatureDamage(attacker)
   const rollCount = Math.min(attacker.count, MOST_ROLLS)
   let sum = 0
   for (let roll = 0; roll < rollCount; roll += 1) {

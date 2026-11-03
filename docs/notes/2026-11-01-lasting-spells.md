@@ -3,7 +3,7 @@
 Roadmap 4.8.4, the fourth of eight parts of hero magic (4.8, 5.8): spells that put an effect on a stack for some rounds. Built in four parts:
 
 1. How a lasting spell works, with the six spells that change a stat: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness.
-2. Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow.
+2. Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow, in two parts: (a) the six that change damage or a stat, (b) the four that change morale or luck.
 3. At Expert most of them hit all friendly or all enemy stacks.
 4. Cure, Dispel and the four Protections.
 
@@ -97,12 +97,19 @@ Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglas
 
 ### What we do
 
-- Each spell's effect goes in `game/data/spells.json` like part 1's: `maximumDamage` / `minimumDamage` (the shift, or present at 0), `rangedAttack`, `rangedDamageTakenPercent`, `defense` with `cumulative` and no end for Disrupting Ray, `attack` + `defense` + `speed` for Prayer, `luck`, `morale`.
-- A stack's morale and luck in battle are worked out from its own and its spells' as its other stats are, capped at ±3, and below 0 for luck counts as 0.
+- Each spell's effect goes in `game/data/spells.json` like part 1's: `maximumDamage` / `minimumDamage` (the shift added to each creature's damage; Bless at 0 still makes it the maximum), `rangedAttack`, `rangedDamageTakenPercent`, Prayer's `attack`, `defense` and `speed` together, and Disrupting Ray's `defense` with `untilBattleEnds` and `addsUp`. Prayer is data only.
+- Precision's `shootersOnly`: hovering a stack that can't shoot says "Select Spell Target", as for a stack of the wrong side.
+- A spell that lasts until the battle ends is saved with no rounds and never counted down.
+- The damage shown on hover is one number when the lowest and highest are the same, as with Bless ("Attack Pikemen (damage 121)"). Our own text, as the rest of the hover damage.
+- Part 2b: a stack's morale and luck in battle are worked out from its own and its spells', capped at ±3, and below 0 for luck counts as 0.
 
-### Open questions
+### Decided with the user
 
-- Precision: only on the hero's shooters (wiki: "the selected friendly ranged unit"), or on any own stack where it does nothing for one that can't shoot (engine: no limit)?
+- Split in two: (a) Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer; (b) Fortune, Misfortune, Mirth, Sorrow.
+- Precision targets only the hero's shooters (wiki: "the selected friendly ranged unit"; the engine has no limit).
+
+### Open questions (part b)
+
 - Spirit of Oppression with Sorrow: the engine keeps penalties (morale capped at 0, Sorrow still lowers it), as our artifact rule does; the wiki says it negates Sorrow too.
 
 ### Not yet (part 2)

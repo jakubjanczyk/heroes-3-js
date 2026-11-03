@@ -31,6 +31,19 @@ describe('battle damage', () => {
     expect(damage).toBe(expected)
   })
 
+  // 10 damage; Precision's +6 Attack would make it +30%.
+  test('Precision adds nothing to a melee strike', () => {
+    const precision = { spellId: 'PRECISION', effects: { rangedAttack: 6 }, roundsLeft: 1 }
+    const damage = rollDamage({
+      attacker: aStack({ spells: [precision] }),
+      defender: aStack(),
+      random: LOWEST_ROLLS,
+      melee: true
+    })
+
+    expect(damage).toBe(10)
+  })
+
   // 10 damage, +300% for 60 Attack against 0 Defense and +100% for luck.
   test('a lucky strike adds +100% on top of the attack bonus and outside its cap', () => {
     const damage = rollDamage({

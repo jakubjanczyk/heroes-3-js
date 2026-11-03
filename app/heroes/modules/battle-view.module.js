@@ -1,3 +1,4 @@
+import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
@@ -30,6 +31,8 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
+
+const describeDamageRange = ({ min, max }) => (min === max ? `${min}` : `${min}-${max}`)
 
 const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
 
@@ -178,12 +181,12 @@ export const registerBattleViewModule = defineModule(
       const shot = findShot(hex)
       if (shot) {
         const shotsLeft = activeStack.shots === 1 ? '1 shot' : `${activeStack.shots} shots`
-        return `Shoot ${shot.target.name} (${shotsLeft} left, damage ${shot.damage.min}-${shot.damage.max})`
+        return `Shoot ${shot.target.name} (${shotsLeft} left, damage ${describeDamageRange(shot.damage)})`
       }
 
       const attack = findAttack(hex, hexElementAt(hex))
       return attack
-        ? `Attack ${attack.target.name} (damage ${attack.damage.min}-${attack.damage.max})`
+        ? `Attack ${attack.target.name} (damage ${describeDamageRange(attack.damage)})`
         : ''
     }
 
@@ -193,8 +196,7 @@ export const registerBattleViewModule = defineModule(
       if (!target || !caster) {
         return null
       }
-      const isOwn = target.side === caster.side
-      return isOwn === (pickedSpell.targetSide === 'own') ? target : null
+      return isSpellTarget(pickedSpell, target, caster.side) ? target : null
     }
 
     function describeSpellAim(hex) {
@@ -685,8 +687,8 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_UI_BATTLE_SPELL_PICKED,
           handler: (event) => {
-            const { spellId, spellName, targetSide } = event.detail
-            pickedSpell = { id: spellId, name: spellName, targetSide }
+            const { spellId, spellName, targetSide, shootersOnly } = event.detail
+            pickedSpell = { id: spellId, name: spellName, targetSide, shootersOnly }
           }
         },
         {
