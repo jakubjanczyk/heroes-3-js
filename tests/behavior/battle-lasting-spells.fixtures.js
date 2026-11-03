@@ -1,6 +1,6 @@
 import { readGameData, waitMs } from './app.utils.js'
 import { attackBattleHexFrom, castSpellAt, moveActiveStackTo } from './battle.utils.js'
-import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
+import { aHero, aMonster, anArtifactDefinition, aScenario, aSpellDefinition } from './builders.js'
 
 export const HERO = 'Lord Haart'
 
@@ -96,13 +96,60 @@ const spellDefinitions = {
   })
 }
 
+const moraleAndLuckSpellDefinitions = {
+  FORTUNE: aLastingSpell({
+    name: 'Fortune',
+    schools: ['AIR'],
+    costs: [7, 5, 5, 5],
+    target: 'own',
+    effects: { luck: [1, 1, 2, 2] }
+  }),
+  MIRTH: aLastingSpell({
+    name: 'Mirth',
+    schools: ['WATER'],
+    costs: [12, 9, 9, 9],
+    target: 'own',
+    effects: { morale: [1, 1, 2, 2] }
+  }),
+  SORROW: aLastingSpell({
+    name: 'Sorrow',
+    schools: ['EARTH'],
+    costs: [16, 12, 12, 12],
+    target: 'enemy',
+    effects: { morale: [-1, -1, -2, -2] }
+  }),
+  DESPAIR: aLastingSpell({
+    name: 'Despair',
+    schools: ['EARTH'],
+    costs: [16, 12, 12, 12],
+    target: 'enemy',
+    effects: { morale: [-6, -6, -6, -6] }
+  })
+}
+
+export const MORALE_AND_LUCK_SPELLS = Object.keys(moraleAndLuckSpellDefinitions)
+
+const artifactDefinitions = {
+  SPIRIT: anArtifactDefinition()
+    .withName('Spirit of Oppression')
+    .withSlot('MISC')
+    .withCancelsInBattle(['morale'])
+    .build(),
+  HOURGLASS: anArtifactDefinition()
+    .withName('Hourglass of the Evil Hour')
+    .withSlot('MISC')
+    .withCancelsInBattle(['luck'])
+    .build()
+}
+
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
   heroes: readGameData('heroes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
-  spells: spellDefinitions
+  spells: { ...spellDefinitions, ...moraleAndLuckSpellDefinitions },
+  artifacts: artifactDefinitions
 }
 
 export const stack = (creature, count) => ({ creature, count })
@@ -112,15 +159,18 @@ export const stack = (creature, count) => ({ creature, count })
 export const aCaster = ({
   power = 2,
   secondarySkills = [],
-  army = [stack('SWORDSMAN', 10)]
+  army = [stack('SWORDSMAN', 10)],
+  spells = Object.keys(spellDefinitions),
+  artifacts = []
 } = {}) =>
   aHero()
     .withName(HERO)
     .withPrimarySkills({ power, knowledge: 2 })
     .withSecondarySkills(secondarySkills)
     .withSpellBook(true)
-    .withSpells(Object.keys(spellDefinitions))
+    .withSpells(spells)
     .withArmy(army)
+    .withArtifacts(artifacts)
 
 export const aFight = ({ hero = aCaster(), monster = 'PIKEMAN', count = 50, stacks = 1 } = {}) =>
   aScenario()

@@ -1295,6 +1295,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "lasting": { "target": "own", "effects": { "morale": [1, 1, 2, 2] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -1321,6 +1322,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "lasting": { "target": "enemy", "effects": { "morale": [-1, -1, -2, -2] } },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1347,6 +1349,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
+    "lasting": { "target": "own", "effects": { "luck": [1, 1, 2, 2] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -1373,6 +1376,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "lasting": { "target": "enemy", "effects": { "luck": [-1, -1, -2, -2] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {

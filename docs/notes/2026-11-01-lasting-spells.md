@@ -92,7 +92,7 @@ Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglas
 - **Prayer's Speed** changes reach and the turn order as Haste does.
 - **Morale and luck stay between −3 and +3** with the spells (engine: the totals are capped at the size of the chance tables, ±3; wiki, Morale and Luck pages). Negative luck does nothing (wiki, Misfortune: "no bad luck can occur in the game"), so Misfortune only lowers a positive luck; a monster has no luck, so against monsters it changes nothing but the count box.
 - **Undead** have no morale, so Mirth and Sorrow do nothing on them; their immunity to mind spells (they can't be targeted) is 4.8.6.1.
-- **Hourglass of the Evil Hour and Spirit of Oppression** keep cancelling positive luck and morale, the spells' included (engine: the total is capped at 0 battle-wide; wiki: Spirit of Oppression "also negates … Mirth and Sorrow", see the open question).
+- **Hourglass of the Evil Hour and Spirit of Oppression** keep cancelling positive luck and morale, and the spells' effects on them count for nothing, Sorrow's and Misfortune's too (wiki: Spirit of Oppression "also negates … Mirth and Sorrow"; the engine only caps the total at 0, so Sorrow still lowers it).
 - **Counters** (Bless and Curse, Fortune and Misfortune, Mirth and Sorrow; wiki and engine for Bless and Curse, engine for the others) wait for enemy heroes casting (8.1), like Haste and Slow.
 
 ### What we do
@@ -101,16 +101,14 @@ Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglas
 - Precision's `shootersOnly`: hovering a stack that can't shoot says "Select Spell Target", as for a stack of the wrong side.
 - A spell that lasts until the battle ends is saved with no rounds and never counted down.
 - The damage shown on hover is one number when the lowest and highest are the same, as with Bless ("Attack Pikemen (damage 121)"). Our own text, as the rest of the hover damage.
-- Part 2b: a stack's morale and luck in battle are worked out from its own and its spells', capped at ±3, and below 0 for luck counts as 0.
+- Part 2b: the four spells' effects are `morale` and `luck` in `game/data/spells.json`. A stack's morale and luck in battle are worked out from its army's and its spells', capped at ±3, and luck below 0 counts as 0 (`getStackMorale`, `getStackLuck`). With an artifact that cancels one of them, only the army's penalty is left and the spells add nothing. Misfortune is data only: it changes nothing until enemy heroes (8.1).
 
 ### Decided with the user
 
 - Split in two: (a) Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer; (b) Fortune, Misfortune, Mirth, Sorrow.
 - Precision targets only the hero's shooters (wiki: "the selected friendly ranged unit"; the engine has no limit).
+- Spirit of Oppression cancels Sorrow too, as the wiki says (the engine lets Sorrow lower morale below 0); Hourglass of the Evil Hour does the same with Fortune and Misfortune.
 
-### Open questions (part b)
-
-- Spirit of Oppression with Sorrow: the engine keeps penalties (morale capped at 0, Sorrow still lowers it), as our artifact rule does; the wiki says it negates Sorrow too.
 
 ### Not yet (part 2)
 
@@ -123,7 +121,7 @@ Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglas
 ## Not yet
 
 - Counters (Haste and Slow, Bloodlust and Weakness) and the even colour of the count box, with enemy heroes casting (8.1).
-- Expert hitting all stacks (4.8.4.3); the other lasting spells (4.8.4.2, 4.8.4.4).
+- Expert hitting all stacks (4.8.4.3); the other lasting spells (4.8.4.4).
 - The creature window in battle with the spells and rounds left (4.3).
 - Artifacts that lengthen spells, hero specialties in these spells, creatures casting them (Master Genie, Ogre Mage) and war machines immune to them (7.8, 6.5, with the creatures).
 - Destroy Undead (5.8 later).
