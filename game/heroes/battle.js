@@ -1,7 +1,7 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isSpellTarget } from './battle-spells.js'
-import { getStackDefense, getStackSpeed } from './battle-stats.js'
+import { getStackDefense, getStackMorale, getStackSpeed } from './battle-stats.js'
 import {
   findHexPath,
   getFrontHexFor,
@@ -45,7 +45,15 @@ const UNKNOWN_CREATURE = Object.freeze({
   abilities: []
 })
 
-function createStacks({ side, army, skills, morale = 0, luck = 0, definitions }) {
+function createStacks({
+  side,
+  army,
+  skills,
+  morale = 0,
+  luck = 0,
+  cancelledInBattle = [],
+  definitions
+}) {
   const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
   const startHexes = getStartHexes({ side, stackCount: stacks.length })
   return stacks.map(({ creature, count, slot }, index) => {
@@ -76,17 +84,19 @@ function createStacks({ side, army, skills, morale = 0, luck = 0, definitions })
       shooter,
       meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
       morale: unaffectedByMorale ? 0 : morale,
+      unaffectedByMorale,
       luck,
+      cancelledInBattle,
       spells: [],
       hex: startHexes[index]
     }
   })
 }
 
-// An artifact that cancels morale or luck in battle leaves only the penalties, on both sides.
-function battleValue(kind, value, heroArtifacts, definitions) {
-  return artifactsCancelInBattle(heroArtifacts, kind, definitions) ? Math.min(0, value) : value
-}
+// An artifact that cancels morale or luck in battle leaves only the armies' penalties, on both
+// sides, and the spells' effects on them count for nothing.
+const cancelledKinds = (heroArtifacts, definitions) =>
+  ['morale', 'luck'].filter((kind) => artifactsCancelInBattle(heroArtifacts, kind, definitions))
 
 // Morale and luck are the armies' as the battle starts. A monster has no hero, so no luck.
 export function createBattle({
@@ -104,7 +114,8 @@ export function createBattle({
     battleBonuses: heroBattleBonuses,
     artifacts: heroArtifacts
   }
-  const inBattle = (kind, value) => battleValue(kind, value, heroArtifacts, definitions)
+  const cancelledInBattle = cancelledKinds(heroArtifacts, definitions)
+  const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
   return {
     stacks: [
       ...createStacks({
@@ -113,6 +124,7 @@ export function createBattle({
         skills: heroSkills,
         morale: inBattle('morale', getHeroMorale({ entity: hero, definitions }).value),
         luck: inBattle('luck', getHeroLuck({ entity: hero, definitions }).value),
+        cancelledInBattle,
         definitions
       }),
       ...createStacks({
@@ -122,6 +134,7 @@ export function createBattle({
           'morale',
           getHeroMorale({ entity: { army: monsterArmy }, definitions }).value
         ),
+        cancelledInBattle,
         definitions
       })
     ],
@@ -233,22 +246,24 @@ const hadMorale = (battle, stackId) => battle.moraleStackIds.includes(stackId)
 export function getGoodMoraleChance(battle, stackId) {
   const stack = livingStacks(battle).find(({ id }) => id === stackId)
   const battleGoesOn = hasLivingStacks(battle, 'attacker') && hasLivingStacks(battle, 'defender')
-  if (!stack || !battleGoesOn || stack.morale <= 0 || hadMorale(battle, stackId)) {
+  const morale = stack ? getStackMorale(stack) : 0
+  if (!battleGoesOn || morale <= 0 || hadMorale(battle, stackId)) {
     return 0
   }
 
-  return stack.morale / MORALE_CHANCE_IN
+  return morale / MORALE_CHANCE_IN
 }
 
 // As the stack's turn starts; not when a stack that waited gets its turn back, nor on an extra
 // turn.
 export function getBadMoraleChance(battle, stackId) {
   const stack = livingStacks(battle).find(({ id }) => id === stackId)
-  if (!stack || stack.morale >= 0 || hasWaited(battle, stackId) || hadMorale(battle, stackId)) {
+  const morale = stack ? getStackMorale(stack) : 0
+  if (morale >= 0 || hasWaited(battle, stackId) || hadMorale(battle, stackId)) {
     return 0
   }
 
-  return (-stack.morale * BAD_MORALE_CHANCE_FACTOR) / MORALE_CHANCE_IN
+  return (-morale * BAD_MORALE_CHANCE_FACTOR) / MORALE_CHANCE_IN
 }
 
 const nameOf = (battle, stackId) => battle.stacks.find(({ id }) => id === stackId).name

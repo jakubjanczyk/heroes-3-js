@@ -2,7 +2,8 @@ import {
   getCreatureDamage,
   getDamageTakenPercent,
   getStackAttack,
-  getStackDefense
+  getStackDefense,
+  getStackLuck
 } from './battle-stats.js'
 
 // Kept in thousandths so the rounding is the game's, not the floating point's.
@@ -71,8 +72,10 @@ export function rollDamage({ attacker, defender, random, melee, halved, lucky })
 }
 
 // Luck +1 to +3 strikes lucky 1 to 3 times in 24.
-const rollsLucky = (stack, luckRandom) =>
-  (stack.luck ?? 0) > 0 && luckRandom() < stack.luck / LUCK_CHANCE_IN
+const rollsLucky = (stack, luckRandom) => {
+  const luck = getStackLuck(stack)
+  return luck > 0 && luckRandom() < luck / LUCK_CHANCE_IN
+}
 
 function rollStrike({ attacker, defender, random, luckRandom, melee, halved }) {
   const lucky = rollsLucky(attacker, luckRandom)
