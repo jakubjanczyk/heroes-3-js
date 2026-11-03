@@ -1,3 +1,5 @@
+import { getMeleeDamageTakenPercent, getStackAttack, getStackDefense } from './battle-stats.js'
+
 // Kept in thousandths so the rounding is the game's, not the floating point's.
 const ATTACK_BONUS_PER_POINT = 50
 const ATTACK_BONUS_CAP = 3000
@@ -11,8 +13,11 @@ const NO_LUCK = () => 1
 // A shot at a target more than 10 hexes away, and a shooter's melee attack, do half damage.
 const HALVED = 500
 
-function applyAttackAndDefense(baseDamage, { attacker, defender, halved = false, lucky = false }) {
-  const advantage = attacker.attack - defender.defense
+function applyAttackAndDefense(
+  baseDamage,
+  { attacker, defender, melee = false, halved = false, lucky = false }
+) {
+  const advantage = getStackAttack(attacker, { melee }) - getStackDefense(defender)
   const bonus =
     Math.min(Math.max(advantage, 0) * ATTACK_BONUS_PER_POINT, ATTACK_BONUS_CAP) +
     (lucky ? LUCKY_BONUS : 0)
@@ -21,29 +26,32 @@ function applyAttackAndDefense(baseDamage, { attacker, defender, halved = false,
     DEFENSE_REDUCTION_CAP
   )
   const penalty = halved ? HALVED : 1000
-  return Math.max(
-    1,
-    Math.floor((baseDamage * (1000 + bonus) * (1000 - reduction) * penalty) / 1_000_000_000)
-  )
+  const taken = melee ? getMeleeDamageTakenPercent(defender) * 10 : 1000
+  // In BigInt: a big stack's product of five factors goes past the integers a Number keeps exact.
+  const scaled = [baseDamage, 1000 + bonus, 1000 - reduction, penalty, taken].map(BigInt)
+  const damage = scaled.reduce((product, factor) => product * factor) / 1_000_000_000_000n
+  return Math.max(1, Number(damage))
 }
 
-export function getDamageRange({ attacker, defender, halved }) {
+export function getDamageRange({ attacker, defender, melee, halved }) {
   return {
     min: applyAttackAndDefense(attacker.damage.min * attacker.count, {
       attacker,
       defender,
+      melee,
       halved
     }),
     max: applyAttackAndDefense(attacker.damage.max * attacker.count, {
       attacker,
       defender,
+      melee,
       halved
     })
   }
 }
 
 // A stack of more than 10 rolls 10 times, scaled to its count.
-export function rollDamage({ attacker, defender, random, halved, lucky }) {
+export function rollDamage({ attacker, defender, random, melee, halved, lucky }) {
   const { min, max } = attacker.damage
   const rollCount = Math.min(attacker.count, MOST_ROLLS)
   let sum = 0
@@ -53,16 +61,16 @@ export function rollDamage({ attacker, defender, random, halved, lucky }) {
 
   const baseDamage =
     attacker.count > MOST_ROLLS ? Math.floor((sum * attacker.count) / MOST_ROLLS) : sum
-  return applyAttackAndDefense(baseDamage, { attacker, defender, halved, lucky })
+  return applyAttackAndDefense(baseDamage, { attacker, defender, melee, halved, lucky })
 }
 
 // Luck +1 to +3 strikes lucky 1 to 3 times in 24.
 const rollsLucky = (stack, luckRandom) =>
   (stack.luck ?? 0) > 0 && luckRandom() < stack.luck / LUCK_CHANCE_IN
 
-function rollStrike({ attacker, defender, random, luckRandom, halved }) {
+function rollStrike({ attacker, defender, random, luckRandom, melee, halved }) {
   const lucky = rollsLucky(attacker, luckRandom)
-  const damage = rollDamage({ attacker, defender, random, halved, lucky })
+  const damage = rollDamage({ attacker, defender, random, melee, halved, lucky })
   return { attackerId: attacker.id, defenderId: defender.id, damage, ...(lucky ? { lucky } : {}) }
 }
 
@@ -86,6 +94,7 @@ export function strikeSequence({ attacker, defender, random, luckRandom = NO_LUC
       defender: to,
       random,
       luckRandom,
+      melee: true,
       halved: from.meleePenalty
     })
     strikes.push(rolled)

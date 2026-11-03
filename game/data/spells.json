@@ -706,6 +706,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": { "target": "own", "effects": { "meleeDamageTakenPercent": [-15, -15, -30, -30] } },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -1118,6 +1119,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": { "target": "own", "effects": { "meleeAttack": [3, 3, 6, 6] } },
     "descriptions": [
       {
         "title": "Bloodlust",
@@ -1169,6 +1171,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "lasting": { "target": "enemy", "effects": { "attack": [-3, -3, -6, -6] } },
     "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
@@ -1195,6 +1198,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": { "target": "own", "effects": { "defense": [3, 3, 6, 6] } },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1377,6 +1381,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "lasting": { "target": "own", "effects": { "speed": [3, 3, 5, 5] } },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1403,6 +1408,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "lasting": { "target": "enemy", "effects": { "speedPercent": [-25, -25, -50, -50] } },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {

@@ -49,19 +49,29 @@ export function spellCost(hero, spell) {
   return spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
 }
 
+const powerOf = (hero, definitions) =>
+  getHeroPrimarySkills({ entity: hero, definitions }).find(({ key }) => key === 'power').value
+
 // No skill in the school casts as Basic: the data repeats Basic's base for it.
 export function spellDamage({ hero, spell, definitions }) {
   if (!spell.damage) {
     return 0
   }
-  const power = getHeroPrimarySkills({ entity: hero, definitions }).find(
-    ({ key }) => key === 'power'
-  ).value
+  const power = powerOf(hero, definitions)
   const { base, perPower } = spell.damage
   const sorceryPercent = SORCERY_BONUS_PERCENT[secondarySkillLevel(hero, 'SORCERY')] ?? 0
   return Math.floor(
     ((base[spellSkillLevel(hero, spell)] + perPower * power) * (100 + sorceryPercent)) / 100
   )
+}
+
+// Each effect's value at the hero's skill level, for as many rounds as the hero's Power.
+export function spellLasting({ hero, spell, definitions }) {
+  const level = spellSkillLevel(hero, spell)
+  const effects = Object.fromEntries(
+    Object.entries(spell.lasting.effects).map(([key, values]) => [key, values[level]])
+  )
+  return { effects, rounds: powerOf(hero, definitions) }
 }
 
 function popupText(description, damage) {

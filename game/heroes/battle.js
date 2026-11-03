@@ -1,5 +1,6 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
+import { getStackDefense, getStackSpeed } from './battle-stats.js'
 import {
   findHexPath,
   getFrontHexFor,
@@ -74,6 +75,7 @@ function createStacks({ side, army, skills, morale = 0, luck = 0, definitions })
       meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
       morale: unaffectedByMorale ? 0 : morale,
       luck,
+      spells: [],
       hex: startHexes[index]
     }
   })
@@ -126,7 +128,9 @@ export function createBattle({
     waitedStackIds: [],
     // The stacks whose morale took effect this round, for good or bad: it does so once a round.
     moraleStackIds: [],
-    extraTurnStackId: null,
+    // The stack whose turn goes on whatever the turn order says: its extra turn from good morale,
+    // or its turn after the hero cast a spell that changed the order.
+    turnStackId: null,
     // Each time morale or luck took effect, in order: { stackId, kind }.
     effects: [],
     messages: [],
@@ -143,14 +147,14 @@ export const hasLivingStacks = (battle, side) =>
 
 // Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
 export function getTurnOrder(battle) {
-  return livingStacks(battle).sort((a, b) => b.speed - a.speed)
+  return livingStacks(battle).sort((a, b) => getStackSpeed(b) - getStackSpeed(a))
 }
 
 // The stacks that waited act once every other stack has, the slowest first.
 export function getActiveStack(battle) {
-  const extraTurn = livingStacks(battle).find(({ id }) => id === battle.extraTurnStackId)
-  if (extraTurn) {
-    return extraTurn
+  const turnGoesOn = livingStacks(battle).find(({ id }) => id === battle.turnStackId)
+  if (turnGoesOn) {
+    return turnGoesOn
   }
 
   const yetToAct = getTurnOrder(battle).filter(({ id }) => !battle.actedStackIds.includes(id))
@@ -169,18 +173,24 @@ function startNextTurn(battle) {
   return {
     ...battle,
     stacks: battle.stacks.map((stack) =>
-      stack.id === active.id
-        ? { ...stack, defense: stack.defense - stack.defenseBonus, defenseBonus: 0 }
-        : stack
+      stack.id === active.id ? { ...stack, defenseBonus: 0 } : stack
     )
   }
+}
+
+// A spell cast for N rounds is gone as the (N + 1)th round from its cast starts.
+function countDownSpells(stack) {
+  const spells = (stack.spells ?? [])
+    .map((spell) => ({ ...spell, roundsLeft: spell.roundsLeft - 1 }))
+    .filter(({ roundsLeft }) => roundsLeft > 0)
+  return { ...stack, spells }
 }
 
 // A new round also gives every stack its retaliations back, and the hero a spell to cast.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
   if (livingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
-    return startNextTurn({ ...battle, actedStackIds, extraTurnStackId: null })
+    return startNextTurn({ ...battle, actedStackIds, turnStackId: null })
   }
 
   return startNextTurn({
@@ -189,9 +199,9 @@ export function endTurn(battle, stackId) {
     heroCastThisRound: false,
     waitedStackIds: [],
     moraleStackIds: [],
-    extraTurnStackId: null,
+    turnStackId: null,
     stacks: battle.stacks.map((stack) => ({
-      ...stack,
+      ...countDownSpells(stack),
       retaliationsLeft: stack.retaliationsPerRound
     }))
   })
@@ -201,7 +211,7 @@ export function waitStack(battle, stackId) {
   return startNextTurn({
     ...battle,
     waitedStackIds: [...battle.waitedStackIds, stackId],
-    extraTurnStackId: null
+    turnStackId: null
   })
 }
 
@@ -236,7 +246,7 @@ function giveExtraTurn(battle, stackId) {
   return {
     ...battle,
     moraleStackIds: [...battle.moraleStackIds, stackId],
-    extraTurnStackId: stackId,
+    turnStackId: stackId,
     effects: [...battle.effects, { stackId, kind: 'goodMorale' }],
     messages: [
       ...battle.messages,
@@ -274,8 +284,7 @@ export function defendStack(battle, stackId) {
         return stack
       }
 
-      const defenseBonus = Math.max(1, Math.floor(stack.defense / 5))
-      return { ...stack, defense: stack.defense + defenseBonus, defenseBonus }
+      return { ...stack, defenseBonus: Math.max(1, Math.floor(getStackDefense(stack) / 5)) }
     })
   }
   return endTurn(defended, stackId)
@@ -307,7 +316,7 @@ function canStandFor(battle, stack) {
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
-    speed: stack.speed,
+    speed: getStackSpeed(stack),
     flying: stack.flying,
     isFree: canStandFor(battle, stack)
   })
@@ -337,10 +346,10 @@ function planPathToFront(battle, stack, front) {
   }
 
   if (stack.flying) {
-    return getHexDistance(stack.hex, front) <= stack.speed ? [front] : null
+    return getHexDistance(stack.hex, front) <= getStackSpeed(stack) ? [front] : null
   }
 
-  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: stack.speed })
+  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: getStackSpeed(stack) })
 }
 
 // The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
@@ -475,7 +484,12 @@ export function getAttackTargets(battle, stack) {
     .map((target) => ({
       stackId: target.id,
       fromHexes: getHexesNextTo(target).filter((hex) => planAttackPosition(battle, stack, hex)),
-      damage: getDamageRange({ attacker: stack, defender: target, halved: stack.meleePenalty })
+      damage: getDamageRange({
+        attacker: stack,
+        defender: target,
+        melee: true,
+        halved: stack.meleePenalty
+      })
     }))
     .filter(({ fromHexes }) => fromHexes.length > 0)
 }
@@ -570,6 +584,36 @@ export function castDamageSpell(battle, { heroName, spellName, targetId, damage 
     ]
   }
 }
+
+// Cast again on a stack that has it, the spell takes the new effects and the longer duration.
+function putSpellOn(stack, { spellId, effects, rounds, helpful }) {
+  const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
+  const roundsLeft = Math.max(rounds, earlier?.roundsLeft ?? 0)
+  return {
+    ...stack,
+    spells: [
+      ...(stack.spells ?? []).filter((spell) => spell.spellId !== spellId),
+      { spellId, effects, roundsLeft, helpful }
+    ]
+  }
+}
+
+export function castLastingSpell(battle, { heroName, spellName, targetId, ...spell }) {
+  const target = battle.stacks.find(({ id }) => id === targetId)
+  return {
+    ...battle,
+    heroCastThisRound: true,
+    turnStackId: getActiveStack(battle)?.id ?? null,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === targetId ? putSpellOn(stack, spell) : stack
+    ),
+    effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
+    messages: [...battle.messages, `${heroName} casts '${spellName}' on the ${target.name}.`]
+  }
+}
+
+export const isLivingStackOfSide = (battle, side, stackId) =>
+  livingStacks(battle).some((stack) => stack.id === stackId && stack.side === side)
 
 export const isLivingEnemyOf = (battle, side, stackId) =>
   livingStacks(battle).some((stack) => stack.id === stackId && stack.side !== side)
