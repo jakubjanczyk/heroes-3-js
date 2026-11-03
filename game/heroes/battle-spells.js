@@ -6,3 +6,13 @@ export const canCastInBattle = (spell) =>
 export const spellTargetSide = (spell) => spell?.lasting?.target ?? 'enemy'
 
 export const isHelpful = (spell) => spellTargetSide(spell) === 'own'
+
+export const spellTargeting = (spell) => ({
+  targetSide: spellTargetSide(spell),
+  shootersOnly: Boolean(spell?.lasting?.shootersOnly)
+})
+
+export function isSpellTarget({ targetSide, shootersOnly }, target, casterSide) {
+  const isOwn = target.side === casterSide
+  return isOwn === (targetSide === 'own') && (!shootersOnly || target.shooter)
+}

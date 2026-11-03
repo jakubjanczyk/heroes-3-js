@@ -733,6 +733,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "lasting": { "target": "own", "effects": { "rangedDamageTakenPercent": [-25, -25, -50, -50] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -1068,6 +1069,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": { "target": "own", "effects": { "maximumDamage": [0, 0, 1, 1] } },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -1094,6 +1096,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "lasting": { "target": "enemy", "effects": { "minimumDamage": [0, 0, -1, -1] } },
     "descriptions": [
       {
         "title": "Curse",
@@ -1145,6 +1148,11 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
+    "lasting": {
+      "target": "own",
+      "shootersOnly": true,
+      "effects": { "rangedAttack": [3, 3, 6, 6] }
+    },
     "mageGuildChances": { "CASTLE": 6 },
     "descriptions": [
       {
@@ -1225,6 +1233,12 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "lasting": {
+      "target": "enemy",
+      "untilBattleEnds": true,
+      "addsUp": true,
+      "effects": { "defense": [-3, -3, -4, -5] }
+    },
     "mageGuildChances": { "CASTLE": 6 },
     "descriptions": [
       {
@@ -1251,6 +1265,10 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "lasting": {
+      "target": "own",
+      "effects": { "attack": [2, 2, 4, 4], "defense": [2, 2, 4, 4], "speed": [2, 2, 4, 4] }
+    },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {

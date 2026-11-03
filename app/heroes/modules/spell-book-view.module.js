@@ -1,4 +1,4 @@
-import { canCastInBattle, spellTargetSide } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle, spellTargeting } from '../../../game/heroes/battle-spells.js'
 import {
   ALL_SCHOOLS,
   cannotAffordText,
@@ -234,7 +234,7 @@ export const registerSpellBookViewModule = defineModule(
         emit(APP_UI_BATTLE_SPELL_PICKED, {
           spellId: spell.id,
           spellName: spell.name,
-          targetSide: spellTargetSide(definition)
+          ...spellTargeting(definition)
         })
         return
       }

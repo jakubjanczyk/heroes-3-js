@@ -1,5 +1,6 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
+import { isSpellTarget } from './battle-spells.js'
 import { getStackDefense, getStackSpeed } from './battle-stats.js'
 import {
   findHexPath,
@@ -72,6 +73,7 @@ function createStacks({ side, army, skills, morale = 0, luck = 0, definitions })
       defenseBonus: 0,
       shots: shooter ? definition.shots : 0,
       shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
+      shooter,
       meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
       morale: unaffectedByMorale ? 0 : morale,
       luck,
@@ -142,6 +144,12 @@ export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
+export function isLivingSpellTarget(battle, targeting, targetId) {
+  const target = livingStacks(battle).find(({ id }) => id === targetId)
+  const caster = getActiveStack(battle)
+  return Boolean(target && caster && isSpellTarget(targeting, target, caster.side))
+}
+
 export const hasLivingStacks = (battle, side) =>
   livingStacks(battle).some((stack) => stack.side === side)
 
@@ -178,11 +186,14 @@ function startNextTurn(battle) {
   }
 }
 
-// A spell cast for N rounds is gone as the (N + 1)th round from its cast starts.
+// A spell cast for N rounds is gone as the (N + 1)th round from its cast starts. One with no
+// rounds lasts until the battle ends.
 function countDownSpells(stack) {
   const spells = (stack.spells ?? [])
-    .map((spell) => ({ ...spell, roundsLeft: spell.roundsLeft - 1 }))
-    .filter(({ roundsLeft }) => roundsLeft > 0)
+    .map((spell) =>
+      spell.roundsLeft === null ? spell : { ...spell, roundsLeft: spell.roundsLeft - 1 }
+    )
+    .filter(({ roundsLeft }) => roundsLeft === null || roundsLeft > 0)
   return { ...stack, spells }
 }
 
@@ -585,10 +596,20 @@ export function castDamageSpell(battle, { heroName, spellName, targetId, damage 
   }
 }
 
-// Cast again on a stack that has it, the spell takes the new effects and the longer duration.
-function putSpellOn(stack, { spellId, effects, rounds, helpful }) {
+const addEffects = (earlier, effects) =>
+  Object.fromEntries(
+    Object.entries(effects).map(([key, value]) => [key, value + (earlier?.[key] ?? 0)])
+  )
+
+const longerOf = (rounds, earlier) =>
+  rounds === null || earlier === null ? null : Math.max(rounds, earlier ?? 0)
+
+// Cast again on a stack that has it, the spell takes the new effects and the longer duration; a
+// spell that adds up adds its effects to the earlier ones.
+function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp }) {
   const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
-  const roundsLeft = Math.max(rounds, earlier?.roundsLeft ?? 0)
+  const roundsLeft = longerOf(rounds, earlier?.roundsLeft)
+  const effects = addsUp ? addEffects(earlier?.effects, cast) : cast
   return {
     ...stack,
     spells: [
@@ -611,9 +632,6 @@ export function castLastingSpell(battle, { heroName, spellName, targetId, ...spe
     messages: [...battle.messages, `${heroName} casts '${spellName}' on the ${target.name}.`]
   }
 }
-
-export const isLivingStackOfSide = (battle, side, stackId) =>
-  livingStacks(battle).some((stack) => stack.id === stackId && stack.side === side)
 
 export const isLivingEnemyOf = (battle, side, stackId) =>
   livingStacks(battle).some((stack) => stack.id === stackId && stack.side !== side)

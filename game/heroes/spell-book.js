@@ -65,13 +65,14 @@ export function spellDamage({ hero, spell, definitions }) {
   )
 }
 
-// Each effect's value at the hero's skill level, for as many rounds as the hero's Power.
+// Each effect's value at the hero's skill level, for as many rounds as the hero's Power, or no
+// rounds for a spell that lasts until the battle ends.
 export function spellLasting({ hero, spell, definitions }) {
   const level = spellSkillLevel(hero, spell)
   const effects = Object.fromEntries(
     Object.entries(spell.lasting.effects).map(([key, values]) => [key, values[level]])
   )
-  return { effects, rounds: powerOf(hero, definitions) }
+  return { effects, rounds: spell.lasting.untilBattleEnds ? null : powerOf(hero, definitions) }
 }
 
 function popupText(description, damage) {

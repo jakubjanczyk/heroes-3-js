@@ -643,7 +643,8 @@ Moved to 5.8 later.
 In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
 - [x] 4.8.4.1 How a lasting spell works (it lasts as many rounds as the hero's Power, shown on the stack), with the spells that change a stat: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness
 - [ ] Counters (Haste and Slow, Bloodlust and Weakness) and the count box's colour for a stack under both helpful and harmful spells, with enemy heroes casting (8.1)
-- [ ] 4.8.4.2 Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer, Fortune, Misfortune, Mirth, Sorrow
+- [x] 4.8.4.2a Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer; Attack and Defense never below 0
+- [ ] 4.8.4.2b Fortune, Misfortune, Mirth, Sorrow
 - [ ] 4.8.4.3 At Expert most hit all friendly or all enemy stacks
 - [ ] 4.8.4.4 Cure, Dispel and the four Protections
 - [ ] The Angelic Alliance's Prayer (7.8.7)

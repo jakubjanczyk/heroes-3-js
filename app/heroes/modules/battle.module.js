@@ -19,7 +19,7 @@ import {
   getStackReach,
   hasLivingStacks,
   hasWaited,
-  isLivingStackOfSide,
+  isLivingSpellTarget,
   moveStack,
   planStackAttack,
   planStackMove,
@@ -36,7 +36,7 @@ import {
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
-import { canCastInBattle, isHelpful, spellTargetSide } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle, isHelpful, spellTargeting } from '../../../game/heroes/battle-spells.js'
 import { getSpellBalance } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
@@ -477,14 +477,6 @@ export const registerBattleModule = defineModule(
       })
     }
 
-    function targetSideOf(spell) {
-      const ownSide = getActiveStack(battle).side
-      if (spellTargetSide(spell) === 'own') {
-        return ownSide
-      }
-      return ownSide === 'attacker' ? 'defender' : 'attacker'
-    }
-
     function castSpell({ spellId, targetId }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
@@ -495,7 +487,7 @@ export const registerBattleModule = defineModule(
         hero.spells.includes(spellId) &&
         canCastInBattle(spell) &&
         cost <= getHeroSpellPoints({ entity: hero, definitions }).value &&
-        isLivingStackOfSide(battle, targetSideOf(spell), targetId)
+        isLivingSpellTarget(battle, spellTargeting(spell), targetId)
       if (!canCast) {
         return
       }
@@ -519,7 +511,8 @@ export const registerBattleModule = defineModule(
           spellId,
           effects,
           rounds,
-          helpful: isHelpful(spell)
+          helpful: isHelpful(spell),
+          addsUp: Boolean(spell.lasting.addsUp)
         })
       }
       return castDamageSpell(current, { ...named, damage })

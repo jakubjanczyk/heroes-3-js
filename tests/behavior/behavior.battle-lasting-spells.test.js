@@ -1,15 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
+import { createMemoryEventLog } from './app.utils.js'
 import {
-  attackBattleHexFrom,
   castSpellAt,
   clickBattleButton,
   getBattleStatusBarText,
   hoverBattleHex,
   isBattleHexReachable,
-  moveActiveStackTo,
   pickSpell,
   playOnToNextRound,
   pointAtBattleHexSide,
@@ -23,113 +21,17 @@ import {
   startBattle,
   startBattleWithStyles
 } from './battle.utils.js'
-import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
-
-const HERO = 'Lord Haart'
-
-const aLastingSpell = ({ name, schools, costs, target, effects }) =>
-  aSpellDefinition()
-    .withName(name)
-    .withSchools(schools)
-    .withCosts(costs)
-    .withLasting({ target, effects })
-    .describedAs(`${name} description.`)
-    .build()
-
-const spellDefinitions = {
-  HASTE: aLastingSpell({
-    name: 'Haste',
-    schools: ['AIR'],
-    costs: [6, 5, 5, 5],
-    target: 'own',
-    effects: { speed: [3, 3, 5, 5] }
-  }),
-  SLOW: aLastingSpell({
-    name: 'Slow',
-    schools: ['EARTH'],
-    costs: [6, 5, 5, 5],
-    target: 'enemy',
-    effects: { speedPercent: [-25, -25, -50, -50] }
-  }),
-  SHIELD: aLastingSpell({
-    name: 'Shield',
-    schools: ['EARTH'],
-    costs: [5, 4, 4, 4],
-    target: 'own',
-    effects: { meleeDamageTakenPercent: [-15, -15, -30, -30] }
-  }),
-  STONE_SKIN: aLastingSpell({
-    name: 'Stone Skin',
-    schools: ['EARTH'],
-    costs: [5, 4, 4, 4],
-    target: 'own',
-    effects: { defense: [3, 3, 6, 6] }
-  }),
-  BLOODLUST: aLastingSpell({
-    name: 'Bloodlust',
-    schools: ['FIRE'],
-    costs: [5, 4, 4, 4],
-    target: 'own',
-    effects: { meleeAttack: [3, 3, 6, 6] }
-  }),
-  WEAKNESS: aLastingSpell({
-    name: 'Weakness',
-    schools: ['WATER'],
-    costs: [8, 6, 6, 6],
-    target: 'enemy',
-    effects: { attack: [-3, -3, -6, -6] }
-  })
-}
-
-const gameDefinitions = {
-  hero: readGameData('hero.json'),
-  heroClasses: readGameData('hero-classes.json'),
-  heroes: readGameData('heroes.json'),
-  secondarySkills: readGameData('secondary-skills.json'),
-  monsters: readGameData('monsters.json'),
-  spells: spellDefinitions
-}
-
-const stack = (creature, count) => ({ creature, count })
-
-// Knowledge 2, so 20 spell points, and Power 2: a spell lasts two rounds. The hero's class gives
-// its stacks +2 Attack and +2 Defense.
-const aCaster = ({ power = 2, secondarySkills = [], army = [stack('SWORDSMAN', 10)] } = {}) =>
-  aHero()
-    .withName(HERO)
-    .withPrimarySkills({ power, knowledge: 2 })
-    .withSecondarySkills(secondarySkills)
-    .withSpellBook(true)
-    .withSpells(Object.keys(spellDefinitions))
-    .withArmy(army)
-
-const aFight = ({ hero = aCaster(), monster = 'PIKEMAN', count = 50, stacks = 1 } = {}) =>
-  aScenario()
-    .withSize(3)
-    .withEntities(hero, aMonster().withType(monster).withCount(count).withStacks(stacks).at(1, 0))
-    .withDefinitions(gameDefinitions)
-
-// With one stack each, the hero's stack starts on row 6, column 1 and the monster's on column 15.
-const OWN_HEX = { row: 6, column: 1 }
-const ENEMY_HEX = { row: 6, column: 15 }
-
-// The Swordsmen walk to column 5 and the Pikemen (speed 4) come to column 11, so next round the
-// Swordsmen can attack them from column 10.
-const PIKEMEN_CLOSE_BY = { row: 6, column: 11 }
-
-async function bringPikemenCloser(user) {
-  await moveActiveStackTo(user, 6, 5)
-  await waitMs(1000)
-}
-
-const SWORDSMEN_CLOSE_BY = { row: 6, column: 5 }
-
-async function attackPikemenAfter(user, spell, at) {
-  await bringPikemenCloser(user)
-  await castSpellAt(user, spell, at)
-  await attackBattleHexFrom(user, PIKEMEN_CLOSE_BY.row, PIKEMEN_CLOSE_BY.column, 'left')
-  await waitMs(1000)
-}
+import {
+  aCaster,
+  aFight,
+  attackPikemenAfter,
+  bringPikemenCloser,
+  ENEMY_HEX,
+  OWN_HEX,
+  PIKEMEN_CLOSE_BY,
+  SWORDSMEN_CLOSE_BY,
+  stack
+} from './battle-lasting-spells.fixtures.js'
 
 describe('battle lasting spells behavior', () => {
   describe('aiming', () => {
@@ -293,7 +195,8 @@ describe('battle lasting spells behavior', () => {
   describe('Attack and Defense', () => {
     // The Swordsmen's 81 damage leaves 42 Pikemen to strike back: their 42 lowest rolls, with
     // Attack 4 against the Swordsmen's Defense 14, do 42 × (1 − 10 × 2.5%) = 31.5, so 31 damage
-    // without a spell. Stone Skin and Weakness make the gap 13 (28.35) or 16 (25.2).
+    // without a spell. Stone Skin and Weakness make the gap 13 (28.35); Advanced Stone Skin makes
+    // it 16 (25.2). Advanced Weakness takes the Pikemen's Attack to 0, not −2: a gap of 14 (27.3).
     test.each([
       { spell: 'Stone Skin', level: 'no skill', secondarySkills: [], at: 'own', damage: 28 },
       {
@@ -309,7 +212,7 @@ describe('battle lasting spells behavior', () => {
         level: 'Advanced Water Magic',
         secondarySkills: [{ skill: 'WATER_MAGIC', level: 'ADVANCED' }],
         at: 'enemy',
-        damage: 25
+        damage: 27
       },
       // Shield takes 15% off at no skill, 30% at Advanced: 42 × 0.75 × 0.85 and 42 × 0.75 × 0.7.
       { spell: 'Shield', level: 'no skill', secondarySkills: [], at: 'own', damage: 26 },
