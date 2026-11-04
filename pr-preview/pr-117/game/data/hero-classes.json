@@ -1,0 +1,46 @@
+{
+  "KNIGHT": {
+    "name": "Knight",
+    "kind": "MIGHT",
+    "primarySkills": { "attack": 2, "defense": 2, "power": 1, "knowledge": 1 },
+    "primarySkillChances": {
+      "upToLevel9": { "attack": 35, "defense": 45, "power": 10, "knowledge": 10 },
+      "fromLevel10": { "attack": 30, "defense": 30, "power": 20, "knowledge": 20 }
+    },
+    "secondarySkillWeights": {
+      "PATHFINDING": 4,
+      "ARCHERY": 5,
+      "LOGISTICS": 5,
+      "SCOUTING": 4,
+      "DIPLOMACY": 4,
+      "NAVIGATION": 8,
+      "LEADERSHIP": 10,
+      "WISDOM": 3,
+      "MYSTICISM": 2,
+      "LUCK": 3,
+      "BALLISTICS": 8,
+      "EAGLE_EYE": 2,
+      "NECROMANCY": 0,
+      "ESTATES": 6,
+      "FIRE_MAGIC": 1,
+      "AIR_MAGIC": 3,
+      "WATER_MAGIC": 4,
+      "EARTH_MAGIC": 2,
+      "SCHOLAR": 1,
+      "TACTICS": 7,
+      "ARTILLERY": 5,
+      "LEARNING": 4,
+      "OFFENSE": 7,
+      "ARMORER": 5,
+      "INTELLIGENCE": 1,
+      "SORCERY": 1,
+      "RESISTANCE": 5,
+      "FIRST_AID": 2
+    },
+    "startingArmy": [
+      { "creature": "PIKEMAN", "min": 10, "max": 20 },
+      { "creature": "ARCHER", "min": 4, "max": 7 },
+      { "creature": "GRIFFIN", "min": 2, "max": 3 }
+    ]
+  }
+}
