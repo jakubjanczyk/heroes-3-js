@@ -9,6 +9,11 @@ export const getStackSpeed = (stack) =>
 const hasSpellEffect = (stack, key) =>
   (stack.spells ?? []).some(({ effects }) => effects[key] !== undefined)
 
+export const isBlind = (stack) => hasSpellEffect(stack, 'blind')
+
+export const getRetaliationDamagePercent = (stack) =>
+  100 + spellEffect(stack, 'retaliationDamagePercent')
+
 export const getStackAttack = (stack, { melee = false } = {}) =>
   Math.max(
     0,

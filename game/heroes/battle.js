@@ -1,7 +1,7 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isSpellTarget } from './battle-spells.js'
-import { getStackDefense, getStackMorale, getStackSpeed } from './battle-stats.js'
+import { getStackDefense, getStackMorale, getStackSpeed, isBlind } from './battle-stats.js'
 import {
   findHexPath,
   getAreaHexes,
@@ -160,6 +160,14 @@ export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
+// A blind stack loses its turns; once it can see again it takes its place by its speed.
+const actingStacks = (battle) => livingStacks(battle).filter((stack) => !isBlind(stack))
+
+const wakeUp = (stack) => ({
+  ...stack,
+  spells: (stack.spells ?? []).filter(({ effects }) => effects.blind === undefined)
+})
+
 export function spellTargetIds(battle, targeting) {
   const caster = getActiveStack(battle)
   return caster
@@ -217,7 +225,9 @@ export function getActiveStack(battle) {
     return turnGoesOn
   }
 
-  const yetToAct = getTurnOrder(battle).filter(({ id }) => !battle.actedStackIds.includes(id))
+  const yetToAct = getTurnOrder(battle).filter(
+    (stack) => !isBlind(stack) && !battle.actedStackIds.includes(stack.id)
+  )
   return yetToAct.find(({ id }) => !battle.waitedStackIds.includes(id)) ?? yetToAct.at(-1) ?? null
 }
 
@@ -252,7 +262,7 @@ function countDownSpells(stack) {
 // A new round also gives every stack its retaliations back, and the hero a spell to cast.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
-  if (livingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
+  if (actingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
     return startNextTurn({ ...battle, actedStackIds, turnStackId: null })
   }
 
@@ -613,7 +623,7 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliat
     ...battle,
     stacks: battle.stacks.map((stack) => {
       if (stack.id === defenderId) {
-        return damaged
+        return wakeUp(damaged)
       }
 
       if (stack.id === attackerId && attackerId === retaliatorId) {
@@ -652,9 +662,10 @@ export function castDamageSpell(battle, { heroName, spellName, hits, chained }) 
   const total = hits.reduce((sum, { damage }) => sum + damage, 0)
   return {
     ...cast,
-    stacks: cast.stacks.map(
-      (stack) => damaged.find((hit) => hit.damaged.id === stack.id)?.damaged ?? stack
-    ),
+    stacks: cast.stacks.map((stack) => {
+      const hit = damaged.find(({ damaged }) => damaged.id === stack.id)
+      return hit ? wakeUp(hit.damaged) : stack
+    }),
     messages: [
       ...cast.messages,
       describeDamage(`The ${spellName} does ${total} damage.`, describeSpellLosses(damaged))
@@ -696,7 +707,7 @@ const healTopCreature = (stack, healing) => ({
   topHealth: Math.min(stack.health, stack.topHealth + healing)
 })
 
-function castMessage(battle, { heroName, spellName, targetIds }) {
+function describeCast(battle, { heroName, spellName, targetIds }) {
   if (targetIds.length !== 1) {
     return `${heroName} casts '${spellName}'.`
   }
@@ -714,19 +725,31 @@ function spellHitEffects({ spellName, targetIds, chained }) {
 }
 
 // The spell changes its targets; the stack whose turn it is keeps it.
-function castOnStacks(battle, { heroName, spellName, targetIds, chained }, change) {
+function castOnStacks(battle, { heroName, spellName, targetIds, chained, castMessage }, change) {
+  const named = castMessage
+    ? targetIds.map((id) => castMessage.replace('%s', battle.stacks.find((s) => s.id === id).name))
+    : []
   return {
     ...battle,
     heroCastThisRound: true,
     turnStackId: getActiveStack(battle)?.id ?? null,
     stacks: battle.stacks.map((stack) => (targetIds.includes(stack.id) ? change(stack) : stack)),
     effects: [...battle.effects, ...spellHitEffects({ spellName, targetIds, chained })],
-    messages: [...battle.messages, castMessage(battle, { heroName, spellName, targetIds })]
+    messages: [
+      ...battle.messages,
+      describeCast(battle, { heroName, spellName, targetIds }),
+      ...named
+    ]
   }
 }
 
-export const castLastingSpell = (battle, { heroName, spellName, targetIds, ...spell }) =>
-  castOnStacks(battle, { heroName, spellName, targetIds }, (stack) => putSpellOn(stack, spell))
+export const castLastingSpell = (
+  battle,
+  { heroName, spellName, targetIds, castMessage, ...spell }
+) =>
+  castOnStacks(battle, { heroName, spellName, targetIds, castMessage }, (stack) =>
+    putSpellOn(stack, spell)
+  )
 
 export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, removeSpellsFrom)
 
