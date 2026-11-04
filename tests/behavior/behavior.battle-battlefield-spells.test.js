@@ -32,7 +32,8 @@ const spellDefinitions = {
     .withSchools(['EARTH'])
     .withCosts([10, 8, 8, 8])
     .withDamage({ base: [10, 10, 20, 30], perPower: 5 })
-    .withTargets('living')
+    .withTargets('all')
+    .withNotOnUndead(true)
     .describedAs('Death Ripple description.')
     .build()
 }

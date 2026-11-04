@@ -29,7 +29,7 @@ export const spellTargeting = (spell, skillLevel) => ({
   shootersOnly: Boolean(spell?.lasting?.shootersOnly),
   hurtOnly: Boolean(spell?.heals),
   withRemovableSpellOnly: Boolean(spell?.removesSpells),
-  livingOnly: spell?.targets === 'living'
+  notOnUndead: Boolean(spell?.notOnUndead)
 })
 
 const isOnTargetSide = (targetSide, target, casterSide) =>
@@ -41,6 +41,6 @@ export function isSpellTarget(targeting, target, casterSide) {
     (!targeting.shootersOnly || target.shooter) &&
     (!targeting.hurtOnly || isHurt(target)) &&
     (!targeting.withRemovableSpellOnly || hasRemovableSpell(target)) &&
-    (!targeting.livingOnly || !target.undead)
+    (!targeting.notOnUndead || !target.undead)
   )
 }

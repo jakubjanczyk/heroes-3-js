@@ -4,9 +4,10 @@ import { aHero, aMonster, anArtifactDefinition, aScenario, aSpellDefinition } fr
 
 export const HERO = 'Lord Haart'
 
-const aLastingSpell = ({ name, schools, costs, allAtExpert = true, ...lasting }) =>
+const aLastingSpell = ({ name, schools, costs, allAtExpert = true, notOnUndead, ...lasting }) =>
   aSpellDefinition()
     .withName(name)
+    .withNotOnUndead(notOnUndead)
     .withSchools(schools)
     .withCosts(costs)
     .withLasting(allAtExpert ? { ...lasting, allAtExpert } : lasting)
@@ -58,6 +59,7 @@ const spellDefinitions = {
   }),
   BLESS: aLastingSpell({
     name: 'Bless',
+    notOnUndead: true,
     schools: ['WATER'],
     costs: [5, 4, 4, 4],
     target: 'own',
@@ -65,6 +67,7 @@ const spellDefinitions = {
   }),
   CURSE: aLastingSpell({
     name: 'Curse',
+    notOnUndead: true,
     schools: ['FIRE'],
     costs: [6, 5, 5, 5],
     target: 'enemy',
@@ -108,6 +111,7 @@ const moraleAndLuckSpellDefinitions = {
   }),
   MIRTH: aLastingSpell({
     name: 'Mirth',
+    notOnUndead: true,
     schools: ['WATER'],
     costs: [12, 9, 9, 9],
     target: 'own',
@@ -115,6 +119,7 @@ const moraleAndLuckSpellDefinitions = {
   }),
   SORROW: aLastingSpell({
     name: 'Sorrow',
+    notOnUndead: true,
     schools: ['EARTH'],
     costs: [16, 12, 12, 12],
     target: 'enemy',
