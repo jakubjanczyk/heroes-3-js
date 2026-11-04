@@ -11,6 +11,7 @@ Don't take a game fact from memory or from a single source. Look it up as below,
 
 1. **The repo's own notes** (`docs/notes/`, and `docs/ROADMAP.md`). A note may already have the fact and say what it was checked against. Treat it as a starting point and check it like any other source; a note can be wrong.
 2. **The Heroes 3 wiki, raw page source:** `https://heroes.thelazy.net/index.php?title=<Page_Name>&action=raw`. Use it for exact message texts, numbers and rules. The rendered page, or a summary of it, splits and rewords texts, so always fetch the raw source.
+   - **Message texts** are in its copies of the game's text files: `Translation_Data/GENRLTXT.TXT` (messages, prompts, status bar and combat log lines), `Translation_Data/artraits.txt` (artifacts), `Translation_Data/ObjNames.txt` (map objects); `Translation_Data` itself lists the others. A text reference such as `core.genrltxt.214` names a row of `GENRLTXT.TXT`, counted from 0 after the heading row: in the raw source, text N is on line 6 + 2N (`sed -n "$((6 + 2 * 214))p"`). Check another file's layout against a text you know before counting rows in it. To find which text a screen shows, grep the VCMI clone (below) for the screen's code and read the reference it uses.
 3. **VCMI**, an open-source engine for the game. It doesn't contain the game's texts, but it does have the game's data and rules.
    - **Config files**, fetched with `curl -sSfL https://raw.githubusercontent.com/vcmi/vcmi/develop/config/<path>`:
      - `creatures/<faction>.json` for creatures;
@@ -26,6 +27,8 @@ Don't take a game fact from memory or from a single source. Look it up as below,
    - **Its C++ source**, for mechanics the configs don't spell out (damage, movement, battle order, AI). Clone it into the scratchpad (`git clone --depth 1 https://github.com/vcmi/vcmi.git`) and search it.
    - VCMI sometimes differs from the original game on purpose; its configs and code comments say so. Rules from Horn of the Abyss, a fan expansion, are left out unless asked for.
 4. **A web search**, for anything still unclear or where the sources above disagree.
+
+`mightandmagic.fandom.com`, `homm.fandom.com` and `theamazonbasin.com` answer `curl` with 403 from cloud sessions: read them with the web-fetch agent from the start.
 
 The game's own data files sit inside its archives and aren't online. So say "checked against …", never "the game's file says …", unless the source quotes the game itself.
 

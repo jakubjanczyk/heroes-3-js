@@ -8,7 +8,7 @@ description: Use when a feature or fix is implemented and its tests pass, to fin
 ## 1. Check
 
 - Run the full `npm test` and `npm run lint` once. Fix what fails; don't skip or loosen a test.
-- Tick the roadmap boxes the part finished in `docs/ROADMAP.md`, and update the note's "left" section.
+- Tick the roadmap boxes the change finished in `docs/ROADMAP.md`, also in later parts it finished on the way (data added for spells the part didn't cast, say), and update the note's "left" section.
 
 ## 2. Commit and push
 
@@ -39,8 +39,27 @@ Skip this step only when nothing the player sees changed.
 
    `node scripts/screenshot.mjs /path/to/steps.mjs --out /tmp/shots [--viewports desktop,phone]`
 
-   - The demo map's first hero starts walled in by objects. Move the hero next to what you show, as above, rather than walking across the map.
-   - Locate things by role and name, scoped to the dialog (`dialog().getByRole(...)`), since the town and other screens have several buttons with the same name.
+   - The demo map's first hero starts walled in by objects. Move the hero next to what you show, as above, rather than walking across the map. `node scripts/demo-map.mjs [x,y]` prints which tiles around it are free, and the scenario function's second argument has `freeTileNextTo(tile)`.
+   - Locate things by role and name, scoped to the dialog (`dialog().getByRole(...)`), since the town and other screens have several buttons with the same name (the map and the battle both have a Cast spell button).
+   - For a battle, use the battle helpers rather than your own selectors:
+
+     ```js
+     export const scenario = (demo, { withMonsterNextToHero }) =>
+       withMonsterNextToHero(demo, {
+         type: 'SKELETON',
+         count: 12,
+         // The demo hero has 10 spell points (Knowledge 1): raise Knowledge for costlier spells.
+         hero: { primarySkills: { attack: 1, defense: 1, power: 2, knowledge: 5 } }
+       })
+
+     export default async function ({ shot, startBattle, castSpell, clickHex, clickStack, battle }) {
+       await startBattle()
+       await castSpell('Magic Arrow', { on: 'Skeletons' }) // or { on: { row: 6, column: 15 } }
+       await shot('magic-arrow')
+     }
+     ```
+
+     `castSpell` turns the book's pages until the spell shows. `clickHex(row, column)` counts like the behavior tests (row 1 at the top, column 1 on the attacker's side) and clicks hexes that are out of reach too; `hex`, `stackHex(name)` and `battle()` give the locators.
    - When the steps fail, the script saves `<viewport>-failed.png` showing the page at that moment.
 2. Read every shot before sending it, and check it shows what the caption says.
 3. Send them with a caption each. Always include the phone shots of a new dialog or screen: the user tries previews on a phone.

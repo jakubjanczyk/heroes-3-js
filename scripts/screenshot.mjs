@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process'
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
+
+import { freeTilesNextTo, loadWorld, readDemoScenario } from './demo-map.mjs'
 
 // Playwright isn't a dependency of the repo: cloud sessions have it installed globally, which only
 // require() finds (through NODE_PATH).
@@ -26,8 +28,10 @@ const usage = `Usage: node scripts/screenshot.mjs <steps.mjs> [--out dir] [--vie
 --video also records each viewport's run to <out>/<viewport>.webm.
 
 The steps module:
-  export const scenario = (demo) => ({ ...demo, ... })   // optional: an object, or a function of the demo scenario
-  export default async function ({ page, shot, viewport, tile, clickTile, walkTo, dialog }) { ... }`
+  // Optional: an object, or a function of the demo scenario (it may be async).
+  export const scenario = (demo, { withMonsterNextToHero, freeTileNextTo }) => ({ ...demo, ... })
+  export default async function ({ page, shot, viewport, tile, clickTile, walkTo, dialog,
+    startBattle, battle, hex, stackHex, clickHex, clickStack, castSpell }) { ... }`
 
 const { values: options, positionals } = parseArgs({
   allowPositionals: true,
@@ -63,14 +67,98 @@ async function waitForServer(url, attempts = 50) {
   throw new Error(`The static server did not answer at ${url}`)
 }
 
+const SHOT_MONSTER_ID = 'monster-shot'
+
+function createScenarioHelpers(world) {
+  const freeTileNextTo = (tile) => {
+    const [free] = freeTilesNextTo(world, tile)
+    if (!free) throw new Error(`No free tile next to (${tile.x}, ${tile.y})`)
+    return free
+  }
+
+  // The demo hero starts walled in by objects, so the battle's monster is put right next to it.
+  // `hero` changes the hero (army, primarySkills, spells, secondarySkills, ...).
+  const withMonsterNextToHero = (demo, { type = 'SKELETON', count = 10, hero = {} } = {}) => {
+    const demoHero = demo.entities.find(({ id }) => id === 'hero-1')
+    const monster = {
+      id: SHOT_MONSTER_ID,
+      kind: 'MONSTER',
+      type,
+      count,
+      tile: freeTileNextTo(demoHero.tile)
+    }
+    return {
+      ...demo,
+      fogOfWar: false,
+      entities: [
+        ...demo.entities.map((entity) => (entity === demoHero ? { ...entity, ...hero } : entity)),
+        monster
+      ]
+    }
+  }
+
+  return { freeTileNextTo, withMonsterNextToHero }
+}
+
 async function loadScenario() {
   if (!stepsModule.scenario) return null
   if (typeof stepsModule.scenario !== 'function') return stepsModule.scenario
-  const demo = JSON.parse(await readFile(path.join(repoRoot, 'scenarios/scenario.json'), 'utf8'))
-  return stepsModule.scenario(demo)
+  const demo = await readDemoScenario()
+  return stepsModule.scenario(demo, createScenarioHelpers(await loadWorld(demo)))
 }
 
-function createHelpers(page, viewportName) {
+function createBattleHelpers(page, viewportName, scenario, walkTo) {
+  const battle = () => page.getByRole('dialog', { name: 'Battle' })
+  const battlefield = () => battle().getByRole('grid', { name: 'Battlefield' })
+  const book = () => page.getByRole('dialog', { name: 'Spell book' })
+
+  // Rows and columns are counted as in the behavior tests: row 1 at the top, column 1 on the
+  // attacker's side.
+  const hex = (row, column) =>
+    battlefield()
+      .locator(`[role="row"][aria-rowindex="${row}"]`)
+      .locator(`[role="gridcell"][aria-colindex="${column + 1}"]`)
+  const stackHex = (name) =>
+    battlefield()
+      .getByRole('gridcell')
+      .filter({ has: page.getByRole('img', { name, exact: true }) })
+      .first()
+
+  // The hex takes the pointer, not the stack drawn on it, and a hex out of reach is
+  // aria-disabled though the game still takes the click (to cast or shoot), hence force.
+  const press = (locator) =>
+    viewportName === 'phone' ? locator.tap({ force: true }) : locator.click({ force: true })
+  const clickHex = (row, column) => press(hex(row, column))
+  const clickStack = (name) => press(stackHex(name))
+
+  async function startBattle(monsterId = SHOT_MONSTER_ID) {
+    const monster = scenario?.entities.find(({ id }) => id === monsterId)
+    if (!monster) throw new Error(`No ${monsterId} on the map: use withMonsterNextToHero`)
+    await walkTo(monster.tile.x, monster.tile.y)
+    await battlefield().waitFor()
+    await page.waitForTimeout(500)
+  }
+
+  // Opens the battle's spell book, turns pages until the spell shows and casts it on a stack
+  // (by its name, "Skeletons") or a hex ({ row, column }). The hero needs the spell points.
+  async function castSpell(name, { on } = {}) {
+    await press(battle().getByRole('button', { name: 'Cast spell' }))
+    await book().waitFor()
+    const spell = book().getByRole('button', { name, exact: true })
+    for (let turned = 0; (await spell.count()) === 0; turned += 1) {
+      if (turned > 10) throw new Error(`"${name}" isn't in the hero's spell book`)
+      await press(book().getByRole('button', { name: 'Next page', exact: true }))
+    }
+    await press(spell)
+    if (typeof on === 'string') await clickStack(on)
+    else if (on) await clickHex(on.row, on.column)
+    await page.waitForTimeout(500)
+  }
+
+  return { battle, hex, stackHex, clickHex, clickStack, startBattle, castSpell }
+}
+
+function createHelpers(page, viewportName, scenario) {
   let shotCount = 0
   const tile = (x, y) => page.locator(`.terrain-tile[data-x="${x}"][data-y="${y}"]`)
 
@@ -113,7 +201,14 @@ function createHelpers(page, viewportName) {
     return file
   }
 
-  return { tile, clickTile, dialog, walkTo, shot }
+  return {
+    tile,
+    clickTile,
+    dialog,
+    walkTo,
+    shot,
+    ...createBattleHelpers(page, viewportName, scenario, walkTo)
+  }
 }
 
 async function run(browser, baseUrl, scenario, viewportName) {
@@ -134,7 +229,7 @@ async function run(browser, baseUrl, scenario, viewportName) {
     await stepsModule.default({
       page,
       viewport: viewportName,
-      ...createHelpers(page, viewportName)
+      ...createHelpers(page, viewportName, scenario)
     })
   } catch (error) {
     const file = path.join(options.out, `${viewportName}-failed.png`)
