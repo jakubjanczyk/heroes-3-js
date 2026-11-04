@@ -783,6 +783,12 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "notOnUndead": true,
+    "lasting": {
+      "target": "own",
+      "untilOwnTurn": true,
+      "effects": { "attackFromDefensePercent": [100, 100, 150, 200] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1693,6 +1699,13 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "notOnUndead": true,
+    "lasting": {
+      "target": "enemy",
+      "shootersOnly": true,
+      "allAtExpert": true,
+      "effects": { "shotDamagePercent": [-50, -50, -100, -100] }
+    },
     "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {

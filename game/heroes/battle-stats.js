@@ -14,16 +14,28 @@ export const isBlind = (stack) => hasSpellEffect(stack, 'blind')
 export const getRetaliationDamagePercent = (stack) =>
   100 + spellEffect(stack, 'retaliationDamagePercent')
 
+const getDefenseBeforeFrenzy = (stack) =>
+  Math.max(0, stack.defense + (stack.defenseBonus ?? 0) + spellEffect(stack, 'defense'))
+
+const isFrenzied = (stack) => hasSpellEffect(stack, 'attackFromDefensePercent')
+
+// Frenzy turns the stack's Defense into Attack and leaves it with none.
+const frenzyAttack = (stack) =>
+  Math.floor((getDefenseBeforeFrenzy(stack) * spellEffect(stack, 'attackFromDefensePercent')) / 100)
+
 export const getStackAttack = (stack, { melee = false } = {}) =>
   Math.max(
     0,
     stack.attack +
       spellEffect(stack, 'attack') +
-      spellEffect(stack, melee ? 'meleeAttack' : 'rangedAttack')
+      spellEffect(stack, melee ? 'meleeAttack' : 'rangedAttack') +
+      frenzyAttack(stack)
   )
 
-export const getStackDefense = (stack) =>
-  Math.max(0, stack.defense + (stack.defenseBonus ?? 0) + spellEffect(stack, 'defense'))
+export const getStackDefense = (stack) => (isFrenzied(stack) ? 0 : getDefenseBeforeFrenzy(stack))
+
+export const getShotDamagePercent = (stack) =>
+  Math.max(0, 100 + spellEffect(stack, 'shotDamagePercent'))
 
 export const getDamageTakenPercent = (stack, { melee = false } = {}) =>
   100 + spellEffect(stack, melee ? 'meleeDamageTakenPercent' : 'rangedDamageTakenPercent')

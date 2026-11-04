@@ -76,13 +76,21 @@ export function spellHealing({ hero, spell, definitions }) {
 }
 
 // Each effect's value at the hero's skill level, for as many rounds as the hero's Power, or no
-// rounds for a spell that lasts until the battle ends.
+// rounds for a spell that lasts until the battle ends. One that ends on the stack's turn in the
+// next round is cast for two.
+function lastingRounds({ untilBattleEnds, untilOwnTurn }, power) {
+  if (untilBattleEnds) {
+    return null
+  }
+  return untilOwnTurn ? 2 : power
+}
+
 export function spellLasting({ hero, spell, definitions }) {
   const level = spellSkillLevel(hero, spell)
   const effects = Object.fromEntries(
     Object.entries(spell.lasting.effects).map(([key, values]) => [key, values[level]])
   )
-  return { effects, rounds: spell.lasting.untilBattleEnds ? null : powerOf(hero, definitions) }
+  return { effects, rounds: lastingRounds(spell.lasting, powerOf(hero, definitions)) }
 }
 
 function popupText(description, damage) {
