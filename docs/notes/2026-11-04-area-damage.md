@@ -1,9 +1,11 @@
 # Area damage (2026-11-04)
 
-Roadmap 4.8.5, the fifth of eight parts of hero magic (4.8, 5.8): damage spells that hit every stack in an area of the battlefield, the hero's own stacks too. Built in two parts:
+Roadmap 4.8.5, the fifth of eight parts of hero magic (4.8, 5.8): damage spells that hit every stack in an area of the battlefield, the hero's own stacks too. Built in four parts (the last three one spell at a time, decided with the user):
 
 1. Fireball, Inferno, Meteor Shower and Frost Ring, aimed at a hex, with the four Protections (from Air, Earth, Fire and Water), which first count once an own stack can be hit (moved here from 4.8.4.4, see part 4 of `docs/notes/2026-11-01-lasting-spells.md`).
-2. Death Ripple, Armageddon and Chain Lightning.
+2. Armageddon.
+3. Death Ripple.
+4. Chain Lightning.
 
 Casting itself (the book, once a round, spell points, Sorcery, the cast fact) is 4.8.3, see `docs/notes/2026-11-01-casting-in-battle.md`; lasting spells and Expert hitting all stacks are 4.8.4.
 
@@ -83,7 +85,7 @@ Checked against the Heroes 3 wiki's raw page source (Fireball, Inferno (spell), 
 - Enemy heroes and the combat AI casting them (8.1, 5.7b).
 - Each spell's own animation (10.3).
 
-## Part 2: Death Ripple, Armageddon and Chain Lightning
+## Parts 2 to 4: Armageddon, Death Ripple and Chain Lightning
 
 Checked against the Heroes 3 wiki's raw page source (Death Ripple, Armageddon, Chain Lightning, Destroy Undead), the game's own descriptions already in `game/data/spells.json`, and an open-source engine's spell config (`spells/offensive.json`) and its rules for which stacks these spells hit, in what order, for how much, and what the combat log says. Shadow of Death values; the wiki's Horn of the Abyss Armageddon (40 per Power) is left out.
 
@@ -114,7 +116,7 @@ Checked against the Heroes 3 wiki's raw page source (Death Ripple, Armageddon, C
 - **Data.** Each gets its `damage`; Death Ripple `"targets": "living"` and Armageddon `"targets": "all"` (whole battlefield, no aiming; "living" leaves out the `undead` ability); Chain Lightning `"chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 }`. Destroy Undead would then be data only (`"targets": "undead"`), see the open questions.
 - **The fact** keeps `hits`, each stack's damage as it was when cast, as the area spells do, so a reload and a random tie replay the same.
 
-### Not yet (part 2)
+### Not yet (parts 2 to 4)
 
 - Immunities: Earth and Magma Elementals, Gold and Black Dragons, Efreet, Phoenixes, Pendant of Life and Pendant of Negativity, Armageddon's Blade (4.8.6, 7.8, 6.5). A stack that resists Chain Lightning, which it skips and keeps arcing (4.8.6.2).
 - War machines, spared by Death Ripple.
