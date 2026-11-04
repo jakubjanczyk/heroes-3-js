@@ -502,6 +502,17 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    function showStacks(battle, previous) {
+      const reachedLater = stacksAChainReachesLater(battle.effects ?? [])
+      for (const stack of battle.stacks) {
+        const before = previous?.stacks.find(({ id }) => id === stack.id)
+        showStack(reachedLater.has(stack.id) && before ? before : stack, {
+          from: before?.hex,
+          isActive: stack.id === battle.activeStackId
+        })
+      }
+    }
+
     function showBattle(battle) {
       if (!gameShell) {
         return
@@ -515,14 +526,7 @@ export const registerBattleViewModule = defineModule(
       shown = battle
       reachableKeys = new Set(battle.reachableHexes.map(hexKey))
 
-      const reachedLater = stacksAChainReachesLater(battle.effects ?? [])
-      for (const stack of battle.stacks) {
-        const before = previous?.stacks.find(({ id }) => id === stack.id)
-        showStack(reachedLater.has(stack.id) && before ? before : stack, {
-          from: before?.hex,
-          isActive: stack.id === battle.activeStackId
-        })
-      }
+      showStacks(battle, previous)
 
       for (const row of hexes) {
         for (const hexElement of row) {
