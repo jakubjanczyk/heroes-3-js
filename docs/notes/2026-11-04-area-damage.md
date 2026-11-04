@@ -83,9 +83,49 @@ Checked against the Heroes 3 wiki's raw page source (Fireball, Inferno (spell), 
 - Enemy heroes and the combat AI casting them (8.1, 5.7b).
 - Each spell's own animation (10.3).
 
+## Part 2: Death Ripple, Armageddon and Chain Lightning
+
+Checked against the Heroes 3 wiki's raw page source (Death Ripple, Armageddon, Chain Lightning, Destroy Undead), the game's own descriptions already in `game/data/spells.json`, and an open-source engine's spell config (`spells/offensive.json`) and its rules for which stacks these spells hit, in what order, for how much, and what the combat log says. Shadow of Death values; the wiki's Horn of the Abyss Armageddon (40 per Power) is left out.
+
+### The three spells
+
+| Spell | School, level | Cost (none / with the school) | Hits | None / Basic | Advanced | Expert | Per point of Power |
+|---|---|---|---|---|---|---|---|
+| Death Ripple | Earth, 2 | 10 / 8 | every living stack but the undead, both sides | 10 | 20 | 30 | 5 |
+| Armageddon | Fire, 4 | 24 / 20 | every living stack, both sides | 30 | 60 | 120 | 50 |
+| Chain Lightning | Air, 4 | 24 / 20 | an enemy stack, then the nearest stack to it, 4 stacks (5 at Advanced and Expert) | 25 | 50 | 100 | 40 |
+
+- **The damage** is the level's base + Power × the multiplier (wiki), raised by Sorcery as for the other damage spells. The steps agree with the game's descriptions (Death Ripple "10 points more than Basic", 20 at Expert; Armageddon 30 and 90; Chain Lightning 25 and 75). No skill casts as Basic. The costs are already in `game/data/spells.json`.
+- **Death Ripple and Armageddon aren't aimed** (engine: their range is the whole battlefield, no side picked; wiki: "all non-undead units", "all troops take"). War machines, which Death Ripple also spares, come with them.
+- **Chain Lightning's first target is an enemy stack**, aimed as a bolt is (engine: it picks the target's side as the bolts do; wiki: "strikes target troop").
+- **Then it jumps to the nearest living stack** it hasn't hit yet, friend or foe (wiki: "whether it is a friend or a foe"; engine: the closest hex of any stack not hit yet, counted from the hex of the stack it just hit). It stops early when no stack is left.
+- **Each jump halves the damage**: the first stack takes the whole damage, the second half, the third a quarter, and so on, each rounded down (wiki: up to 46 + 75 × Power at Basic, so 25 + 12 + 6 + 3; engine: the damage × 0.5 to the power of the stack's place in the chain, rounded down). A Protection from Air lessens each stack's share (engine: the protection first, then the halving).
+- **A tie** between two stacks as near: the wiki says one of them is picked at random; the engine picks the one further towards the other side, then the one in the nearer row. See the open questions.
+
+### Casting
+
+- **Death Ripple and Armageddon** are cast straight from the battle book, as an Expert lasting spell is (4.8.4.3): the book closes and every stack they hit takes the damage. With no stack to hit (Death Ripple against undead only), "That spell will affect no one!" (`core.genrltxt.185`) and the book stays open, nothing spent.
+- **Chain Lightning** is aimed as a bolt: "Cast Chain Lightning on Pikemen" over an enemy stack, "Select Spell Target" elsewhere, the cancelling as now.
+- **The combat log** is the area spells': "Lord Haart casts 'Armageddon'." when more than one stack is hit, the total damage and " 7 creatures perish." (`core.genrltxt.196`, `376`, `379`); with only one stack hit it names it, as Fireball does.
+- **A burst of light over each stack hit**, and the end of the battle as for the area spells: both sides' last stacks dying loses it.
+
+### What we do
+
+- **Data.** Each gets its `damage`; Death Ripple `"targets": "living"` and Armageddon `"targets": "all"` (whole battlefield, no aiming; "living" leaves out the `undead` ability); Chain Lightning `"chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 }`. Destroy Undead would then be data only (`"targets": "undead"`), see the open questions.
+- **The fact** keeps `hits`, each stack's damage as it was when cast, as the area spells do, so a reload and a random tie replay the same.
+
+### Not yet (part 2)
+
+- Immunities: Earth and Magma Elementals, Gold and Black Dragons, Efreet, Phoenixes, Pendant of Life and Pendant of Negativity, Armageddon's Blade (4.8.6, 7.8, 6.5). A stack that resists Chain Lightning, which it skips and keeps arcing (4.8.6.2).
+- War machines, spared by Death Ripple.
+- The Orbs, hero specialties (Septienna, Solmyr) and elementals' vulnerability (7.8, 6.5).
+- Each spell's own animation, Chain Lightning's ray from stack to stack (10.3).
+
 ## Not checked
 
 - The multipliers for Power come from the wiki only (as for the bolts, see `docs/notes/2026-11-01-casting-in-battle.md`).
 - Whether the original game lets an area spell be aimed at an empty hex: the engine does; the wiki says nothing.
 - What happens in the original game when a spell kills every stack on both sides.
+- Chain Lightning's tie between two stacks as near: random (wiki) or by side and row (engine).
+- Armageddon's and Death Ripple's multipliers for Power come from the wiki only.
 - Whether the original game's damage line holds the damage to what the stacks had left (the engine does); we add up the spell's damage, as for a bolt.
