@@ -89,7 +89,7 @@ export function getBattlefield() {
 export function readBattleStacks() {
   return within(getBattlefield())
     .queryAllByRole('img')
-    .filter((image) => !image.closest(BATTLE_EFFECT))
+    .filter((image) => image.closest('[role="gridcell"]') && !image.closest(BATTLE_EFFECT))
     .map((creature) => ({
       stack: describeBattleStack(creature),
       ...readHexPosition(creature.closest('[role="gridcell"]'))
@@ -125,6 +125,13 @@ export function readBattleEffects() {
     effect: effect.getAttribute('aria-label'),
     ...readHexPosition(effect.closest('[role="gridcell"]'))
   }))
+}
+
+// The bolts a chain spell draws from one stack to the next, named after the spell.
+export function readSpellBolts() {
+  return within(getBattlefield())
+    .queryAllByRole('img', { name: /bolt$/ })
+    .map((bolt) => bolt.getAttribute('aria-label'))
 }
 
 export function readActiveStack() {

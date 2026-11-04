@@ -119,18 +119,42 @@ Checked against the Heroes 3 wiki's raw page source (Death Ripple, Armageddon, C
 - **Part 2 is built:** Armageddon, and the demo map's first hero knows it.
 - **Part 3 is built:** Death Ripple, which leaves out every stack whose creature is undead; the demo map's first hero knows it.
 
+### Part 4: Chain Lightning
+
+Checked again for this part against the wiki's raw Chain Lightning page and the engine's spell config and its rules for picking the chain's stacks (`transformByChain`, the closest-hex rule) and their damage.
+
+- **Strikes:** 4 stacks with no skill or Basic Air Magic, 5 at Advanced and Expert (wiki; engine `chainLength` 4 / 5 / 5; the game's descriptions "Strikes four units" / "five units").
+- **The damage halves at each jump, rounded down each time:** the stack's place in the chain n (0 for the first) takes ⌊damage × 0.5ⁿ⌋ (engine). The wiki's "up to 46 + 75 × Power" at Basic is 25 + 12 + 6 + 3 and 40 + 20 + 10 + 5, which agrees; Advanced 96 (50 + 25 + 12 + 6 + 3), Expert 193.
+- **Sorcery and Protection from Air** change the damage before it is halved (engine: the spell's damage for that stack, then the halving).
+- **The first stack** is an enemy stack, aimed as a bolt is.
+- **Where the next jump is counted from:** the hex the bolt landed on. For the first stack that is the hex clicked (either half of a double-wide stack); after that, the hex of the next stack that was nearest. The next stack is the living stack not hit yet with a hex nearest to it, either side (wiki: "whether it is a friend or a foe"; engine: the closest hex among every hex of the stacks not hit yet). Corpses don't count.
+- **It stops early** when no living stack is left to jump to.
+- **A tie**, two hexes as near: the wiki picks one at random; the engine picks the hex furthest towards the other side from the stack just hit (a larger column when the stack just hit is the hero's, which starts on the left), then the one in the nearer row. See the open questions.
+- **The targets are picked before any damage**, so a stack killed on the way still passes the bolt on from its hex (engine: the chain is worked out, then each stack takes its damage).
+- **The combat log** is the area spells' (part 1). The hero always has a living stack besides the enemy target, so the chain hits at least two stacks: "Lord Haart casts 'Chain Lightning'.", the total damage and how many creatures perish (`core.genrltxt.196`, `376`, `379`).
+
+What we do:
+
+- **Data.** `"damage": { "base": [25, 25, 50, 100], "perPower": 40 }` and `"chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 }` in `game/data/spells.json`.
+- **Aiming** as a bolt: "Cast Chain Lightning on Pikemen" over an enemy stack, the spell cursor; hovering lights the target's hexes and only the target glows, as for a bolt: where the chain would jump isn't shown (decided with the user). "Select Spell Target" elsewhere, cancelling as now.
+- **A tie** between hexes as near is picked at random, as the wiki says (decided with the user).
+- **The fact** has the first `targetId` and `hits` in the chain's order, each with its share of the damage, so a reload replays it. A random tie replays the same.
+- **The bolt jumps from stack to stack**, 300 ms a jump: a jagged bolt is drawn from each stack hit to the next and the burst of light shows over a stack as the bolt reaches it and only then does its count drop, or the stack fall (both asked for by the user; the combat log has the whole cast at once). The end of the battle as for the other area spells.
+- **The demo map's first hero knows it.**
+- **Part 4 is built:** Chain Lightning; the demo map's first hero knows it.
+
 ### Not yet (parts 2 to 4)
 
 - Immunities: Earth and Magma Elementals, Gold and Black Dragons, Efreet, Phoenixes, Pendant of Life and Pendant of Negativity, Armageddon's Blade (4.8.6, 7.8, 6.5). A stack that resists Chain Lightning, which it skips and keeps arcing (4.8.6.2).
 - War machines, spared by Death Ripple.
 - The Orbs, hero specialties (Septienna, Solmyr) and elementals' vulnerability (7.8, 6.5).
-- Each spell's own animation, Chain Lightning's ray from stack to stack (10.3).
+- Each spell's own animation (10.3); Chain Lightning's bolt from stack to stack is drawn already.
 
 ## Not checked
 
 - The multipliers for Power come from the wiki only (as for the bolts, see `docs/notes/2026-11-01-casting-in-battle.md`).
 - Whether the original game lets an area spell be aimed at an empty hex: the engine does; the wiki says nothing.
 - What happens in the original game when a spell kills every stack on both sides.
-- Chain Lightning's tie between two stacks as near: random (wiki) or by side and row (engine).
+- Chain Lightning's tie between two hexes as near: random (wiki, which we follow) or towards the other side, then the nearer row (engine). Where the next jump is counted from (the hex the bolt landed on) comes from the engine only.
 - Armageddon's and Death Ripple's multipliers for Power come from the wiki only.
 - Whether the original game's damage line holds the damage to what the stacks had left (the engine does); we add up the spell's damage, as for a bolt.

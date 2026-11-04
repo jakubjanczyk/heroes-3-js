@@ -500,6 +500,8 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [24, 20, 20, 20],
+    "damage": { "base": [25, 25, 50, 100], "perPower": 40 },
+    "chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
