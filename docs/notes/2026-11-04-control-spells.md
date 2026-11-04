@@ -35,14 +35,16 @@ Roadmap 4.8.7.1: Blind, Berserk, Hypnotize, Forgetfulness and Frenzy, the mind s
 - The stack's Attack goes up by 100% (Basic), 150% (Advanced) or 200% (Expert) of its Defense, and its Defense drops to 0. Checked against the wiki and the engine.
 - Combat log: the usual cast line, as above.
 
-## Open for 4.8.7.1b
+## Decided for 4.8.7.1b
 
-- Frenzy's end: the wiki says "until the target's action turn in the next round"; the engine ends it the first time the stack attacks.
-- Forgetfulness at Advanced: the wiki says the original game, against its own description, hits every enemy shooter at Advanced (a bug); the engine keeps it single-target until Expert.
-- Forgetfulness on melee: the wiki says a forgetful shooter also does half melee damage, calls it "more like a bug" and says the game's combat log doesn't count it; the engine leaves melee alone.
+- Frenzy ends as the stack's turn starts in the round after the cast (the wiki), not on its first attack: it lasts through the enemy's turns, and a stack that defends while frenzied still has no Defense.
+- Forgetfulness hits one stack at Advanced, as its description says; all of the enemy's shooters only at Expert.
+- A forgetful shooter's melee attack is left alone: it does a shooter's usual half damage.
+- Frenzy's Attack bonus is worked out from the Defense the stack would have without it, Defend's bonus included.
 
 ## Left for later
 
-- 4.8.7.1b, 4.8.7.1c as above.
+- 4.8.7.1c as above.
+- Creatures immune to Forgetfulness or Frenzy we don't have yet (Titans, elementals, war machines), with them. Master Genies casting Frenzy, with the creatures (6.5). Pendant of Total Recall (7.8.3).
 - Unicorns casting Blind after attacking, with the creatures (6.5). Ballista and towers shooting a blind stack, with war machines and sieges.
 - Pendant of Second Sight, Badge of Courage (7.8.3).
