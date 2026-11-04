@@ -83,6 +83,10 @@ function boltPoints({ from, to }) {
   }).join(' ')
 }
 
+// A stack further down a chain is shown as it was until the bolt reaches it.
+const stacksAChainReachesLater = (effects) =>
+  new Set(effects.filter(({ place }) => place > 0).map(({ stackId }) => stackId))
+
 function renderSpellBolt(document, { spellName, from, to }) {
   const bolt = document.createElementNS(SVG, 'svg')
   bolt.setAttribute('class', 'battle-spell-bolt')
@@ -511,9 +515,11 @@ export const registerBattleViewModule = defineModule(
       shown = battle
       reachableKeys = new Set(battle.reachableHexes.map(hexKey))
 
+      const reachedLater = stacksAChainReachesLater(battle.effects ?? [])
       for (const stack of battle.stacks) {
-        showStack(stack, {
-          from: previous?.stacks.find(({ id }) => id === stack.id)?.hex,
+        const before = previous?.stacks.find(({ id }) => id === stack.id)
+        showStack(reachedLater.has(stack.id) && before ? before : stack, {
+          from: before?.hex,
           isActive: stack.id === battle.activeStackId
         })
       }
@@ -588,6 +594,14 @@ export const registerBattleViewModule = defineModule(
       battlefield.append(bolt)
       setTimeout(() => bolt.remove(), EFFECT_MS)
       showEffectOnStack(shownEffect)
+      showStackAsItIsNow(shownEffect.stackId)
+    }
+
+    function showStackAsItIsNow(stackId) {
+      const stack = shown?.stacks.find(({ id }) => id === stackId)
+      if (stack) {
+        showStack(stack, { from: stack.hex, isActive: stack.id === shown.activeStackId })
+      }
     }
 
     function showActions({ canWait, canDefend, canRetreat, canCastSpell, autoCombat }) {
