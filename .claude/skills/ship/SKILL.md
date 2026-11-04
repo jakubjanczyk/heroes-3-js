@@ -48,7 +48,7 @@ Skip this step only when nothing the player sees changed.
        withMonsterNextToHero(demo, {
          type: 'SKELETON',
          count: 12,
-         // The demo hero has 10 spell points (Knowledge 1): raise Knowledge for costlier spells.
+         // The demo hero has 50 spell points (Knowledge 5); `hero` changes its stats for the shot.
          hero: { primarySkills: { attack: 1, defense: 1, power: 2, knowledge: 5 } }
        })
 
