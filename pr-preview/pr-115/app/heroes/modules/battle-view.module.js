@@ -1,3 +1,4 @@
+import { areaTargetIds } from '../../../game/heroes/battle.js'
 import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
 import {
   BATTLEFIELD_COLUMNS,
@@ -301,6 +302,23 @@ export const registerBattleViewModule = defineModule(
       return isReachable(hex) ? [hex] : []
     }
 
+    function findStacksSpellWouldHit(hex) {
+      if (!hex || !pickedSpell || !findIdleActiveStack() || pointerType === 'touch') {
+        return []
+      }
+      if (canAimAreaAt(hex)) {
+        return areaTargetIds(shown, pickedSpell.targeting.area, hex)
+      }
+      const target = findSpellTarget(hex)
+      return target ? [target.id] : []
+    }
+
+    function showStacksSpellWouldHit(stackIds) {
+      for (const [stackId, { stack }] of stackElements) {
+        stack.classList.toggle('battle-stack--spell-target', stackIds.includes(stackId))
+      }
+    }
+
     function highlightHexes(highlighted) {
       for (const row of hexes) {
         for (const hexElement of row) {
@@ -315,6 +333,7 @@ export const registerBattleViewModule = defineModule(
 
     function describeHoveredHex() {
       highlightHexes(findHighlightedHexes(hoveredHex))
+      showStacksSpellWouldHit(findStacksSpellWouldHit(hoveredHex))
       statusBar.textContent = statusNote ?? (hoveredHex ? describeHex(hoveredHex) : '')
       const cursor = hoveredHex ? pickCursor(hoveredHex) : null
       if (cursor) {
