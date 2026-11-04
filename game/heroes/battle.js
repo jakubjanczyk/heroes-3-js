@@ -157,10 +157,13 @@ export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
-export function isLivingSpellTarget(battle, targeting, targetId) {
-  const target = livingStacks(battle).find(({ id }) => id === targetId)
+export function spellTargetIds(battle, targeting) {
   const caster = getActiveStack(battle)
-  return Boolean(target && caster && isSpellTarget(targeting, target, caster.side))
+  return caster
+    ? livingStacks(battle)
+        .filter((target) => isSpellTarget(targeting, target, caster.side))
+        .map(({ id }) => id)
+    : []
 }
 
 export const hasLivingStacks = (battle, side) =>
@@ -634,17 +637,27 @@ function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp }) 
   }
 }
 
-export function castLastingSpell(battle, { heroName, spellName, targetId, ...spell }) {
-  const target = battle.stacks.find(({ id }) => id === targetId)
+function castMessage(battle, { heroName, spellName, targetIds }) {
+  if (targetIds.length !== 1) {
+    return `${heroName} casts '${spellName}'.`
+  }
+  const target = battle.stacks.find(({ id }) => id === targetIds[0])
+  return `${heroName} casts '${spellName}' on the ${target.name}.`
+}
+
+export function castLastingSpell(battle, { heroName, spellName, targetIds, ...spell }) {
   return {
     ...battle,
     heroCastThisRound: true,
     turnStackId: getActiveStack(battle)?.id ?? null,
     stacks: battle.stacks.map((stack) =>
-      stack.id === targetId ? putSpellOn(stack, spell) : stack
+      targetIds.includes(stack.id) ? putSpellOn(stack, spell) : stack
     ),
-    effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
-    messages: [...battle.messages, `${heroName} casts '${spellName}' on the ${target.name}.`]
+    effects: [
+      ...battle.effects,
+      ...targetIds.map((stackId) => ({ stackId, kind: 'spellHit', spellName }))
+    ],
+    messages: [...battle.messages, castMessage(battle, { heroName, spellName, targetIds })]
   }
 }
 

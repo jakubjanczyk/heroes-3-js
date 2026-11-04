@@ -30,7 +30,7 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Shield, Stone 
 - **Shield** multiplies the melee damage the stack takes by 85% or 70% (wiki, Shield and its note on the damage formula; engine: a melee damage reduction). Shots aren't reduced.
 - **Bloodlust** counts only in melee: a strike or a retaliation, also a shooter's melee attack (wiki: "for hand-to-hand attacks"; engine: melee only).
 - **Haste and Slow change the turn order** for the rest of the round: the order goes by Speed (engine: the queue is worked out again).
-- **Expert hits all** friendly or enemy stacks: that is 4.8.4.3. Until then Expert casts on one stack with Expert's value.
+- **Expert hits all** friendly or enemy stacks: that is 4.8.4.3, see part 3 below.
 - **Target:** the helpful spells only on own stacks, the harmful ones only on enemy stacks (wiki: "selected allied / friendly / enemy unit"; engine: the spell's target follows whether it is positive or negative).
 
 ### How long it lasts
@@ -112,7 +112,36 @@ Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglas
 
 ### Not yet (part 2)
 
-- Expert hitting all stacks (4.8.4.3); counters (8.1); immunities, such as the wiki's undead immune to Bless and Curse (4.8.6.1); Halflings' luck and Minotaurs' morale not below +1 (6.5); Disrupting Ray surviving Dispel and Cure (4.8.4.4).
+- Counters (8.1); immunities, such as the wiki's undead immune to Bless and Curse (4.8.6.1); Halflings' luck and Minotaurs' morale not below +1 (6.5); Disrupting Ray surviving Dispel and Cure (4.8.4.4).
+
+## Part 3: Expert hits all friendly or all enemy stacks
+
+Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Precision, Prayer, Bless, Mirth, Disrupting Ray: each page's Expert effect), the game's own Expert descriptions already in `game/data/spells.json` ("Increases the speed of all friendly units", "Reduces the selected enemy unit's defense strength" for Disrupting Ray), and an open-source engine's spell config (`spells/timed.json`: the Expert level's range covers the whole battlefield) and its casting rules (a spell that hits everyone needs no target; the cast's description; a spell with nobody to affect can't be cast).
+
+- **Which spells.** All fifteen lasting spells built so far but Disrupting Ray: Haste, Slow, Shield, Stone Skin, Bloodlust, Weakness, Bless, Curse, Precision, Air Shield, Prayer, Fortune, Misfortune, Mirth, Sorrow. The three sources agree. Disrupting Ray stays on one stack at Expert (all three). Cure, Dispel and the Protections (4.8.4.4) and Counterstrike and Forgetfulness (4.8.7) also hit all at Expert, with their parts.
+- **Whose stacks.** A helpful spell goes on every one of the hero's living stacks, a harmful one on every living enemy stack (wiki: "all allied / all enemy units"; engine: a "smart" target that keeps helpful spells off enemies and harmful ones off friends). Precision only on the hero's shooters (wiki: "all friendly ranged units"; engine: its shooter condition), as at Basic and Advanced.
+- **No aiming.** The spell is cast as soon as it is picked in the book: the book closes and every stack gets it (engine: a spell that hits everyone takes no target).
+- **Nobody to affect.** With no stack it can go on (Expert Precision and no shooters), the book stays open and says "That spell will affect no one!" (`core.genrltxt.185`, engine); nothing is spent and the hero can still cast this round. This is the same rule 4.8.3 planned for Destroy Undead.
+- **The value** is Expert's on every stack, for as many rounds as the hero's Power; a stack that already has the spell keeps the longer duration, as for one stack.
+- **The cost** is Expert's, paid once (the costs in `game/data/spells.json`).
+- **The combat log:** "Lord Haart casts 'Haste'." (`core.genrltxt.196`, "%s casts '%s'."; engine). The engine writes the one-stack line ("… on the Swordsmen.", `195`) when only one stack is hit.
+
+### Decided with the user
+
+- When an Expert spell hits only one stack (one enemy stack left, or one shooter for Precision), the combat log names it, as the engine does: "Lord Haart casts 'Slow' on the Pikemen."
+- **Haste and Prayer** change the turn order for the rest of the round, as on one stack; the stack whose turn it is keeps it.
+
+### What we do
+
+- `game/data/spells.json`: each of the fifteen spells' `lasting` gets `allAtExpert: true`; another such spell is data only.
+- Picking one with Expert in its school casts it straight from the book; below Expert it is aimed as now.
+- The cast fact names every stack hit (`targetIds`), so a reload puts the spell back on the same stacks. The book asks the battle to cast, and closes when the cast is saved, or shows "That spell will affect no one!" when the battle finds no stack.
+- A burst of light over each stack hit.
+
+### Not yet (part 3)
+
+- Immunities that keep a stack out of an Expert spell, such as undead and Bless or mind spells (4.8.6.1).
+- Enemy heroes casting Expert spells on the player's stacks (8.1).
 
 ## Not checked
 
@@ -121,7 +150,7 @@ Checked against the Heroes 3 wiki's raw page source (each spell's page, Hourglas
 ## Not yet
 
 - Counters (Haste and Slow, Bloodlust and Weakness) and the even colour of the count box, with enemy heroes casting (8.1).
-- Expert hitting all stacks (4.8.4.3); the other lasting spells (4.8.4.4).
+- The other lasting spells (4.8.4.4).
 - The creature window in battle with the spells and rounds left (4.3).
 - Artifacts that lengthen spells, hero specialties in these spells, creatures casting them (Master Genie, Ogre Mage) and war machines immune to them (7.8, 6.5, with the creatures).
 - Destroy Undead (5.8 later).

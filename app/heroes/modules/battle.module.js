@@ -19,7 +19,6 @@ import {
   getStackReach,
   hasLivingStacks,
   hasWaited,
-  isLivingSpellTarget,
   moveStack,
   planStackAttack,
   planStackMove,
@@ -27,6 +26,7 @@ import {
   resolveAttack,
   resolveShot,
   shootStack,
+  spellTargetIds,
   waitStack
 } from '../../../game/heroes/battle.js'
 import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
@@ -43,6 +43,7 @@ import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwelli
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
+  castsOnAllStacks,
   hasSpellBook,
   spellCost,
   spellDamage,
@@ -83,6 +84,7 @@ import {
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_WORLD_READY,
+  APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
   APP_UI_BATTLE_UPDATED,
   APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
   APP_UI_RESTORE_COMPLETED,
@@ -477,6 +479,14 @@ export const registerBattleModule = defineModule(
       })
     }
 
+    function chooseSpellTargets(hero, spell, targetId) {
+      const targetIds = spellTargetIds(battle, spellTargeting(spell))
+      if (castsOnAllStacks(hero, spell)) {
+        return { targetIds }
+      }
+      return targetIds.includes(targetId) ? { targetId } : null
+    }
+
     function castSpell({ spellId, targetId }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
@@ -486,28 +496,33 @@ export const registerBattleModule = defineModule(
         hasSpellBook(hero) &&
         hero.spells.includes(spellId) &&
         canCastInBattle(spell) &&
-        cost <= getHeroSpellPoints({ entity: hero, definitions }).value &&
-        isLivingSpellTarget(battle, spellTargeting(spell), targetId)
-      if (!canCast) {
+        cost <= getHeroSpellPoints({ entity: hero, definitions }).value
+      const targets = canCast ? chooseSpellTargets(hero, spell, targetId) : null
+      if (!targets) {
+        return
+      }
+      if (targets.targetIds?.length === 0) {
+        emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
         return
       }
 
       const cast = spell.lasting
         ? spellLasting({ hero, spell, definitions })
         : { damage: spellDamage({ hero, spell, definitions }) }
-      emit(APP_FACT_BATTLE_SPELL_CAST, { heroId, spellId, targetId, ...cast, cost })
+      emit(APP_FACT_BATTLE_SPELL_CAST, { heroId, spellId, ...targets, ...cast, cost })
       if (!hasLivingStacks(battle, 'defender')) {
         emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
       }
     }
 
     // A lasting spell's fact keeps its effects and rounds as they were when cast.
-    function castSpellOn(current, { spellId, targetId, damage, effects, rounds }) {
+    function castSpellOn(current, { spellId, targetId, targetIds, damage, effects, rounds }) {
       const spell = definitions.spells?.[spellId]
-      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId, targetId }
+      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId }
       if (effects) {
         return castLastingSpell(current, {
           ...named,
+          targetIds: targetIds ?? [targetId],
           spellId,
           effects,
           rounds,
@@ -515,7 +530,7 @@ export const registerBattleModule = defineModule(
           addsUp: Boolean(spell.lasting.addsUp)
         })
       }
-      return castDamageSpell(current, { ...named, damage })
+      return castDamageSpell(current, { ...named, targetId, damage })
     }
 
     return {
@@ -839,7 +854,8 @@ export const registerBattleModule = defineModule(
       APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_ENTITY_REMOVED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
-      APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED
+      APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
+      APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE
     ]
   }
 )

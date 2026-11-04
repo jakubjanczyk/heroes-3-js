@@ -645,7 +645,7 @@ In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
 - [ ] Counters (Haste and Slow, Bloodlust and Weakness) and the count box's colour for a stack under both helpful and harmful spells, with enemy heroes casting (8.1)
 - [x] 4.8.4.2a Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer; Attack and Defense never below 0
 - [x] 4.8.4.2b Fortune, Misfortune, Mirth, Sorrow; morale and luck stay between −3 and +3, and an artifact that cancels them cancels the spells too
-- [ ] 4.8.4.3 At Expert most hit all friendly or all enemy stacks
+- [x] 4.8.4.3 At Expert all but Disrupting Ray hit all friendly or all enemy stacks (Precision: all the hero's shooters), cast straight from the book; "That spell will affect no one!" with no stack to go on
 - [ ] 4.8.4.4 Cure, Dispel and the four Protections
 - [ ] The Angelic Alliance's Prayer (7.8.7)
 
