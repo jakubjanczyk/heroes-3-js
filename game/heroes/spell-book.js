@@ -47,7 +47,8 @@ export function spellSkillLevel(hero, spell) {
 }
 
 export const castsOnAllStacks = (hero, spell) =>
-  Boolean(castRuleOf(spell)?.allAtExpert) && spellSkillLevel(hero, spell) === SKILL_LEVELS.EXPERT
+  Boolean(spell?.targets) ||
+  (Boolean(castRuleOf(spell)?.allAtExpert) && spellSkillLevel(hero, spell) === SKILL_LEVELS.EXPERT)
 
 export function spellCost(hero, spell) {
   return spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
