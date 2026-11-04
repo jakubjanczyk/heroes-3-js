@@ -4,9 +4,11 @@ import {
   BATTLEFIELD_ROWS,
   EDGE_COLUMNS,
   findNearestHexSide,
+  getAreaHexes,
   getHexDistance,
   getHexNeighbourOnSide,
   hexKey,
+  isOnBattlefield,
   isSameHex
 } from '../../../game/heroes/battlefield.js'
 import {
@@ -199,16 +201,29 @@ export const registerBattleViewModule = defineModule(
       return isSpellTarget(pickedSpell.targeting, target, caster.side) ? target : null
     }
 
+    // An area spell is aimed at any hex of the battlefield, empty or not.
+    const canAimAreaAt = (hex) => Boolean(pickedSpell.targeting.area) && isOnBattlefield(hex)
+
     function describeSpellAim(hex) {
+      if (canAimAreaAt(hex)) {
+        return `Cast ${pickedSpell.name}`
+      }
       const target = findSpellTarget(hex)
       return target ? `Cast ${pickedSpell.name} on ${target.name}` : 'Select Spell Target'
     }
 
     function pickSpellCursor(hex) {
-      if (findSpellTarget(hex)) {
+      if (canAimAreaAt(hex) || findSpellTarget(hex)) {
         return 'spell'
       }
       return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
+    }
+
+    function findSpellHexes(hex) {
+      if (canAimAreaAt(hex)) {
+        return getAreaHexes(hex, pickedSpell.targeting.area)
+      }
+      return findSpellTarget(hex)?.hexes ?? []
     }
 
     function describeHex(hex) {
@@ -274,7 +289,7 @@ export const registerBattleViewModule = defineModule(
       }
 
       if (pickedSpell) {
-        return findSpellTarget(hex)?.hexes ?? []
+        return findSpellHexes(hex)
       }
 
       const target = findLivingStackOn(hex)
@@ -626,8 +641,15 @@ export const registerBattleViewModule = defineModule(
       describeHoveredHex()
     }
 
-    // Clicking anywhere but an enemy stack cancels the spell.
+    // Clicking anywhere the spell can't be aimed at cancels it.
     function castPickedSpellOn(hex) {
+      if (canAimAreaAt(hex)) {
+        const spellId = pickedSpell.id
+        pickedSpell = null
+        emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, hex })
+        return
+      }
+
       const target = findSpellTarget(hex)
       if (!target) {
         cancelPickedSpell()

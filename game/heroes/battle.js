@@ -4,6 +4,7 @@ import { isSpellTarget } from './battle-spells.js'
 import { getStackDefense, getStackMorale, getStackSpeed } from './battle-stats.js'
 import {
   findHexPath,
+  getAreaHexes,
   getFrontHexFor,
   getHexDistance,
   getHexNeighbours,
@@ -164,6 +165,15 @@ export function spellTargetIds(battle, targeting) {
         .filter((target) => isSpellTarget(targeting, target, caster.side))
         .map(({ id }) => id)
     : []
+}
+
+export function areaTargetIds(battle, area, hex) {
+  const areaHexes = getAreaHexes(hex, area)
+  return livingStacks(battle)
+    .filter((stack) =>
+      getStackHexes(stack).some((own) => areaHexes.some((inArea) => isSameHex(own, inArea)))
+    )
+    .map(({ id }) => id)
 }
 
 export const hasLivingStacks = (battle, side) =>
@@ -597,19 +607,31 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliat
   }
 }
 
-// The hero's spell hits one stack; it doesn't use the active stack's turn.
-export function castDamageSpell(battle, { heroName, spellName, targetId, damage }) {
-  const target = battle.stacks.find(({ id }) => id === targetId)
-  const { damaged, ...losses } = damageStack(battle, targetId, damage)
+// Several stacks hit: the log counts creatures rather than naming any one stack's.
+function describeSpellLosses(damaged) {
+  const killed = damaged.reduce((sum, hit) => sum + hit.killed, 0)
+  const nameFor =
+    damaged.length === 1 ? damaged[0].nameFor : (count) => (count === 1 ? 'creature' : 'creatures')
+  return { killed, nameFor }
+}
+
+// Each stack hit takes its own damage: a Protection lessens it on the stack it is on.
+export function castDamageSpell(battle, { heroName, spellName, hits }) {
+  const targetIds = hits.map(({ stackId }) => stackId)
+  const cast = castOnStacks(battle, { heroName, spellName, targetIds }, (stack) => stack)
+  if (hits.length === 0) {
+    return cast
+  }
+  const damaged = hits.map(({ stackId, damage }) => damageStack(battle, stackId, damage))
+  const total = hits.reduce((sum, { damage }) => sum + damage, 0)
   return {
-    ...battle,
-    heroCastThisRound: true,
-    stacks: battle.stacks.map((stack) => (stack.id === targetId ? damaged : stack)),
-    effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
+    ...cast,
+    stacks: cast.stacks.map(
+      (stack) => damaged.find((hit) => hit.damaged.id === stack.id)?.damaged ?? stack
+    ),
     messages: [
-      ...battle.messages,
-      `${heroName} casts '${spellName}' on the ${target.name}.`,
-      describeDamage(`The ${spellName} does ${damage} damage.`, losses)
+      ...cast.messages,
+      describeDamage(`The ${spellName} does ${total} damage.`, describeSpellLosses(damaged))
     ]
   }
 }

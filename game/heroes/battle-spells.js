@@ -21,6 +21,7 @@ export const hasRemovableSpell = (stack) =>
   (stack.spells ?? []).some(({ removable }) => removable !== false)
 
 export const spellTargeting = (spell, skillLevel) => ({
+  area: spell?.area ?? null,
   targetSide: spellTargetSide(spell, skillLevel),
   shootersOnly: Boolean(spell?.lasting?.shootersOnly),
   hurtOnly: Boolean(spell?.heals),

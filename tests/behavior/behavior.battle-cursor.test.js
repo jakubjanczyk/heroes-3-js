@@ -211,13 +211,13 @@ describe('battle cursor behavior', () => {
     expect(getCursorOver(ok)).toBe('arrow')
   })
   describe('aiming a spell', () => {
-    const aCasterWithMagicArrow = () =>
+    const aCaster = () =>
       aScenario()
         .withSize(3)
         .withEntities(
           aHero()
             .withSpellBook(true)
-            .withSpells(['MAGIC_ARROW'])
+            .withSpells(['MAGIC_ARROW', 'FIREBALL'])
             .withArmy([stack('SKELETON', 10)]),
           aMonster().withType('PIKEMAN').withCount(10).withStacks(1).at(1, 0)
         )
@@ -227,18 +227,25 @@ describe('battle cursor behavior', () => {
             MAGIC_ARROW: aSpellDefinition()
               .withName('Magic Arrow')
               .withDamage({ base: [10, 10, 20, 30], perPower: 10 })
+              .build(),
+            FIREBALL: aSpellDefinition()
+              .withName('Fireball')
+              .withDamage({ base: [15, 15, 30, 60], perPower: 10 })
+              .withArea({ from: 0, to: 1 })
               .build()
           }
         })
 
-    async function pickMagicArrow(user) {
+    async function pickSpellNamed(user, name) {
       await clickBattleButton(user, 'Cast spell')
-      await clickSpell(user, 'Magic Arrow')
+      await clickSpell(user, name)
       await waitMs()
     }
 
+    const pickMagicArrow = (user) => pickSpellNamed(user, 'Magic Arrow')
+
     test('given Magic Arrow is picked when the mouse is over an enemy stack then the cursor is the spell cursor', async () => {
-      const { user } = await startBattleWithStyles(aCasterWithMagicArrow())
+      const { user } = await startBattleWithStyles(aCaster())
       await pickMagicArrow(user)
 
       await hoverBattleHex(user, MONSTER.row, MONSTER.column)
@@ -247,12 +254,21 @@ describe('battle cursor behavior', () => {
     })
 
     test('given Magic Arrow is picked when the mouse is over a hex the stack could walk to then the cursor is the blocked cursor', async () => {
-      const { user } = await startBattleWithStyles(aCasterWithMagicArrow())
+      const { user } = await startBattleWithStyles(aCaster())
       await pickMagicArrow(user)
 
       await hoverBattleHex(user, 6, 4)
 
       expect(cursorOverHex(6, 4)).toBe('battle-blocked')
+    })
+
+    test('given Fireball is picked when the mouse is over an empty hex then the cursor is the spell cursor', async () => {
+      const { user } = await startBattleWithStyles(aCaster())
+      await pickSpellNamed(user, 'Fireball')
+
+      await hoverBattleHex(user, 6, 4)
+
+      expect(cursorOverHex(6, 4)).toBe('battle-spell')
     })
   })
 })

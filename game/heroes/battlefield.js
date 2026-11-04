@@ -114,6 +114,20 @@ export function getHexDistance(from, to) {
   return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2
 }
 
+// The edge columns count too: a back half standing there is in the area.
+export function getAreaHexes(center, { from, to }) {
+  const hexes = []
+  for (let row = 0; row < BATTLEFIELD_ROWS; row += 1) {
+    for (let column = -1; column <= BATTLEFIELD_COLUMNS; column += 1) {
+      const distance = getHexDistance(center, { row, column })
+      if (distance >= from && distance <= to) {
+        hexes.push({ row, column })
+      }
+    }
+  }
+  return hexes
+}
+
 function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
   const steps = new Map([[hexKey(from), { hex: from, steps: 0, previous: null }]])
   const queue = [from]

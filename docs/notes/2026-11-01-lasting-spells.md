@@ -193,7 +193,7 @@ Checked against the Heroes 3 wiki's raw page source (Cure, Dispel, the four Prot
 ## Not yet
 
 - Counters (Haste and Slow, Bloodlust and Weakness) and the even colour of the count box, with enemy heroes casting (8.1).
-- The four Protections (4.8.5.1).
+- The four Protections: built with area damage (4.8.5.1), see `docs/notes/2026-11-04-area-damage.md`.
 - The creature window in battle with the spells and rounds left (4.3).
 - Artifacts that lengthen spells, hero specialties in these spells, creatures casting them (Master Genie, Ogre Mage) and war machines immune to them (7.8, 6.5, with the creatures).
 - Destroy Undead (5.8 later).

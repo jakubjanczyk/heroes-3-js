@@ -62,13 +62,18 @@ Checked against the Heroes 3 wiki's raw page source (Fireball, Inferno (spell), 
 - **Data.** Each of the four spells gets its `damage` (`base` at none, Basic, Advanced, Expert and `perPower`) and its `area` in `game/data/spells.json`: how far from the aimed hex it reaches and whether the aimed hex itself is hit (`{ "from": 0, "to": 1 }`, Inferno `{ "from": 0, "to": 2 }`, Frost Ring `{ "from": 1, "to": 1 }`). The Protections get a `lasting` with `spellDamageTakenPercent` for their school (70 / 70 / 50 / 50) and `allAtExpert`. Another area spell or protection later is data only.
 - **Aiming.** Picking an area spell in the battle book closes it; over any hex of the battlefield the status bar says "Cast Fireball", the cursor is the spell cursor and every hex of the area is lit. A click casts it there. Right-click and Escape cancel ("Spell cancelled"), as for the other spells. The edge columns past each side, where only back halves stand, can't be aimed at: "Select Spell Target" and the blocked cursor, and a click there cancels, as a click off a target does now.
 - **The hit.** A burst of light over each stack hit.
-- **The fact** names the aimed hex, every stack hit and the damage each took (a Protection makes them differ), so a reload hits the same stacks for the same damage.
+- **The fact** names the aimed hex and `hits`, every stack hit with the damage it took (a Protection makes them differ), so a reload hits the same stacks for the same damage. A bolt's fact keeps its target and its `hits` too; a bolt saved before this part, with a target and one damage, replays as one hit.
+- **The damage in the combat log** is the spell's damage added up over the stacks hit, as for a bolt: not held to what the stacks had left.
+- **A Protection's effect** is `fireSpellDamageTakenPercent` (and `air…`, `earth…`, `water…`), −30 or −50, in `lasting.effects` like Shield's `meleeDamageTakenPercent`.
 - **The end of the battle** is checked after the cast as after a strike, the hero's side too; a killed active stack passes the turn on.
 - **Single-target bolts** keep working as now: hovering a stack names it and only that stack is hit.
 
 ### Decided with the user
 
-(to fill in)
+- **A spell that kills the last stacks of both sides** loses the battle: the defeat window shows, the hero leaves the map, and so does the monster, with no creatures left (the engine: nobody wins).
+- **The edge columns** can't be aimed at: "Select Spell Target", the blocked cursor, and a click cancels the spell.
+- **Frost Ring aimed at one half of a double-wide stack** hits it through its other half, as the engine does.
+- **No damage estimate** in the status bar while aiming: "Cast Fireball" only, as the game's text has it.
 
 ### Not yet (part 1)
 
@@ -83,3 +88,4 @@ Checked against the Heroes 3 wiki's raw page source (Fireball, Inferno (spell), 
 - The multipliers for Power come from the wiki only (as for the bolts, see `docs/notes/2026-11-01-casting-in-battle.md`).
 - Whether the original game lets an area spell be aimed at an empty hex: the engine does; the wiki says nothing.
 - What happens in the original game when a spell kills every stack on both sides.
+- Whether the original game's damage line holds the damage to what the stacks had left (the engine does); we add up the spell's damage, as for a bolt.

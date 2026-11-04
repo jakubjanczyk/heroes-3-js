@@ -526,6 +526,8 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "damage": { "base": [15, 15, 30, 60], "perPower": 10 },
+    "area": { "from": 1, "to": 1 },
     "mageGuildChances": { "CASTLE": 16 },
     "descriptions": [
       {
@@ -552,6 +554,8 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
+    "damage": { "base": [15, 15, 30, 60], "perPower": 10 },
+    "area": { "from": 0, "to": 1 },
     "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {
@@ -578,6 +582,8 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "damage": { "base": [20, 20, 40, 80], "perPower": 10 },
+    "area": { "from": 0, "to": 2 },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -604,6 +610,8 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "damage": { "base": [25, 25, 50, 100], "perPower": 25 },
+    "area": { "from": 0, "to": 1 },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -794,6 +802,11 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "airSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
@@ -820,6 +833,11 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "fireSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
@@ -846,6 +864,11 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "waterSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
@@ -872,6 +895,11 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "earthSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
