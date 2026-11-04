@@ -641,7 +641,8 @@
     "kind": "combat",
     "costs": [10, 8, 8, 8],
     "damage": { "base": [10, 10, 20, 30], "perPower": 5 },
-    "targets": "living",
+    "targets": "all",
+    "notOnUndead": true,
     "descriptions": [
       {
         "title": "Death Ripple",
@@ -1120,6 +1121,7 @@
     "level": 1,
     "schools": ["WATER"],
     "kind": "combat",
+    "notOnUndead": true,
     "costs": [5, 4, 4, 4],
     "lasting": {
       "allAtExpert": true,
@@ -1151,6 +1153,7 @@
     "level": 1,
     "schools": ["FIRE"],
     "kind": "combat",
+    "notOnUndead": true,
     "costs": [6, 5, 5, 5],
     "lasting": {
       "allAtExpert": true,
@@ -1361,6 +1364,7 @@
     "level": 3,
     "schools": ["WATER"],
     "kind": "combat",
+    "notOnUndead": true,
     "costs": [12, 9, 9, 9],
     "lasting": { "allAtExpert": true, "target": "own", "effects": { "morale": [1, 1, 2, 2] } },
     "mageGuildChances": { "CASTLE": 4 },
@@ -1388,6 +1392,7 @@
     "level": 4,
     "schools": ["EARTH"],
     "kind": "combat",
+    "notOnUndead": true,
     "costs": [16, 12, 12, 12],
     "lasting": {
       "allAtExpert": true,
