@@ -196,7 +196,7 @@ export const registerBattleViewModule = defineModule(
       if (!target || !caster) {
         return null
       }
-      return isSpellTarget(pickedSpell, target, caster.side) ? target : null
+      return isSpellTarget(pickedSpell.targeting, target, caster.side) ? target : null
     }
 
     function describeSpellAim(hex) {
@@ -634,11 +634,9 @@ export const registerBattleViewModule = defineModule(
         return
       }
 
-      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, {
-        spellId: pickedSpell.id,
-        targetId: target.id
-      })
+      const spellId = pickedSpell.id
       pickedSpell = null
+      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId: target.id })
     }
 
     // A click on a hex: move there, or shoot or attack the enemy standing on it.
@@ -687,8 +685,8 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_UI_BATTLE_SPELL_PICKED,
           handler: (event) => {
-            const { spellId, spellName, targetSide, shootersOnly } = event.detail
-            pickedSpell = { id: spellId, name: spellName, targetSide, shootersOnly }
+            const { spellId, spellName, targeting } = event.detail
+            pickedSpell = { id: spellId, name: spellName, targeting }
           }
         },
         {

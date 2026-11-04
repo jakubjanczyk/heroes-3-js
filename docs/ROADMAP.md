@@ -646,12 +646,13 @@ In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
 - [x] 4.8.4.2a Bless, Curse, Precision, Air Shield, Disrupting Ray, Prayer; Attack and Defense never below 0
 - [x] 4.8.4.2b Fortune, Misfortune, Mirth, Sorrow; morale and luck stay between −3 and +3, and an artifact that cancels them cancels the spells too
 - [x] 4.8.4.3 At Expert all but Disrupting Ray hit all friendly or all enemy stacks (Precision: all the hero's shooters), cast straight from the book; "That spell will affect no one!" with no stack to go on
-- [ ] 4.8.4.4 Cure, Dispel and the four Protections
+- [x] 4.8.4.4 Dispel (removes every spell but Disrupting Ray: own stacks at Basic, either side's at Advanced, every stack at Expert) and Cure (heals the top creature 10 / 20 / 30 + 5 × Power, every own stack at Expert)
+- [ ] Cure removing harmful spells, with enemy heroes casting (8.1)
 - [ ] The Angelic Alliance's Prayer (7.8.7)
 
 #### 4.8.5 Area damage
 In two parts. Your own stacks are hit too.
-- [ ] 4.8.5.1 Fireball, Inferno, Meteor Shower and Frost Ring: targeting a hex shows the area hit
+- [ ] 4.8.5.1 Fireball, Inferno, Meteor Shower and Frost Ring: targeting a hex shows the area hit; the four Protections (from Air, Earth, Fire and Water), which first count when an own stack is hit (see part 4 of `docs/notes/2026-11-01-lasting-spells.md`)
 - [ ] 4.8.5.2 Death Ripple, Armageddon and Chain Lightning
 
 #### 4.8.6 Immunities and Resistance
@@ -668,7 +669,7 @@ In three parts.
 
 #### 5.8 later
 - [ ] Destroy Undead (planned in `docs/notes/2026-11-01-casting-in-battle.md`): not aimed, it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line
-- [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3); Earthquake with sieges (5.10)
+- [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3), and Expert Dispel clearing them; Earthquake with sieges (5.10)
 - [ ] The four Summon Elemental spells, Resurrection and Animate Dead, with the elementals and the dead counted
 - [ ] Enemy heroes casting, and the combat AI and Auto combat casting (8.1, 5.7b)
 - [ ] The Armor of the Damned's curses (7.8.7)

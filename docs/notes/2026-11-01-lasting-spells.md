@@ -143,6 +143,49 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Precision, Pra
 - Immunities that keep a stack out of an Expert spell, such as undead and Bless or mind spells (4.8.6.1).
 - Enemy heroes casting Expert spells on the player's stacks (8.1).
 
+## Part 4: Cure and Dispel
+
+Checked against the Heroes 3 wiki's raw page source (Cure, Dispel, the four Protections) and against an open-source engine's spell config (`spells/other.json`, `spells/timed.json`) and its rules for healing and for removing spells (which stacks can be targeted, which spells come off, a spell with nothing to do). Costs and descriptions are already in `game/data/spells.json`.
+
+### Dispel (Water, 1; 5, or 4 with Water Magic)
+
+- **Basic and none:** one of the hero's own stacks. **Advanced:** one stack of either side. **Expert:** every stack on the battlefield, both sides, cast straight from the book (wiki; engine; the game's descriptions say the same).
+- **It removes every spell on the stack**, helpful and harmful, except Disrupting Ray, which stays until the battle ends (wiki: "unaffected by Dispel"; engine: Disrupting Ray is a spell that can't be removed).
+- **A stack with no spell to remove can't be targeted** (engine: the target must have a spell Dispel can remove; the wiki says nothing). Hovering it says "Select Spell Target". Expert Dispel with no spell to remove anywhere says "That spell will affect no one!", as part 3.
+- What a removed spell did goes with it: Speed (reach and the turn order for the rest of the round), Attack, Defense, damage, morale and luck, and the count box's colour.
+- Expert Dispel also clears Fire Wall, Force Field, Land Mine and Quicksand (wiki, engine): with those spells (5.8 later).
+
+### Cure (Water, 1; 6, or 5 with Water Magic)
+
+- **Heals** 10 + 5 × Power hit points at Basic and with no skill, 20 + 5 × Power at Advanced, 30 + 5 × Power at Expert (wiki; the game's descriptions: "10 points more", "20 points more"). No Sorcery bonus (it raises damage only).
+- **Only the top creature's lost health**: creatures already killed don't come back (engine: Cure's healing stops at the top creature; Resurrection is the spell that raises them). So a stack whose top creature is unhurt has nothing to heal.
+- **Basic and Advanced:** one own stack. **Expert:** every own stack, cast straight from the book (wiki, engine).
+- **It also removes the harmful spells** on the stack, but not Disrupting Ray, and not the helpful ones (wiki, engine).
+- **A stack it can do nothing for can't be targeted** (engine: a stack must be hurt or have a harmful spell; the wiki says nothing): "Select Spell Target" over it, "That spell will affect no one!" for Expert Cure with no stack to help.
+- **The combat log** has only the cast line ("Lord Haart casts 'Cure' on the Swordsmen.", `core.genrltxt.195`; "Lord Haart casts 'Cure'.", `196`); the engine writes no healing line for a hero's spell.
+
+### The Protections
+
+- Protection from Air (2), Earth (3), Fire (1), Water (1): an own stack takes 30% less damage from spells of that school at Basic, 50% at Advanced and Expert, all own stacks at Expert, for Power rounds (wiki, engine; Horn of the Abyss's 50/75 left out). Magic Arrow is in every school, and one Protection counts against it (wiki, Protection from Water; engine: the first school with a Protection).
+
+### What we do
+
+- **Dispel and Cure in this part; the Protections with area damage (4.8.5.1).** The hero's damage spells hit only enemy stacks until then, so a Protection on an own stack could not change anything a player sees. Fireball and the other area spells hit own stacks too, and that is where the Protections first count.
+- **Cure removing harmful spells waits for enemy heroes casting (8.1)**, with the counters: until then the hero puts harmful spells only on enemy stacks and Cure goes only on own ones, so there is nothing for it to remove. Cure in this part heals.
+- `game/data/spells.json`: Dispel's `removesSpells` gives its targets at each skill level (`own`, `own`, `any`, `any`), Cure's `heals` its `base` hit points at each skill level and `perPower`, and both have `allAtExpert`. Disrupting Ray's `lasting` has `cannotBeRemoved`. Another healing or removing spell later is data only.
+- A stack keeps, with each spell on it, whether it can be removed. Hovering a stack Dispel can't go on, or one Cure has nothing to heal on, says "Select Spell Target", as for a stack of the wrong side.
+- The cast fact keeps the hit points healed, so a reload heals the same, and Dispel's targets, so a reload removes the same spells.
+
+### Decided with the user
+
+- **Advanced Cure** heals one stack (wiki, engine); the game's own Advanced description in `game/data/spells.json` says "all friendly units". The description stays as the game has it.
+- The Protections move to 4.8.5.1, and Cure removing harmful spells to 8.1.
+- Dispel can't target a stack with no spell it can remove, nor Cure a stack it can't heal (engine).
+
+### Not yet (part 4)
+
+- The Protections (4.8.5.1). Cure removing harmful spells (8.1). Expert Dispel clearing Fire Wall, Force Field, Land Mine and Quicksand (5.8 later). Sphere of Permanence (7.8). Cure and Dispel cast by creatures (6.5).
+
 ## Not checked
 
 - The count box's exact colours in the original game.
@@ -150,7 +193,7 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Precision, Pra
 ## Not yet
 
 - Counters (Haste and Slow, Bloodlust and Weakness) and the even colour of the count box, with enemy heroes casting (8.1).
-- The other lasting spells (4.8.4.4).
+- The four Protections (4.8.5.1).
 - The creature window in battle with the spells and rounds left (4.3).
 - Artifacts that lengthen spells, hero specialties in these spells, creatures casting them (Master Genie, Ogre Mage) and war machines immune to them (7.8, 6.5, with the creatures).
 - Destroy Undead (5.8 later).

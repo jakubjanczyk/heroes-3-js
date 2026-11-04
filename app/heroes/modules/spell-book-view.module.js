@@ -5,7 +5,8 @@ import {
   castsOnAllStacks,
   describeSpellBookSpread,
   hasSpellBook,
-  SPELL_AFFECTS_NO_ONE_TEXT
+  SPELL_AFFECTS_NO_ONE_TEXT,
+  spellSkillLevel
 } from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -239,12 +240,9 @@ export const registerSpellBookViewModule = defineModule(
         return
       }
       if (inBattle && canCastInBattle(definition)) {
+        const targeting = spellTargeting(definition, spellSkillLevel(bookHero(), definition))
         close()
-        emit(APP_UI_BATTLE_SPELL_PICKED, {
-          spellId: spell.id,
-          spellName: spell.name,
-          ...spellTargeting(definition)
-        })
+        emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name, targeting })
         return
       }
       showMessage(spell.description)
