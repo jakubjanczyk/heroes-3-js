@@ -62,7 +62,8 @@ function createStacks({
     const { abilities } = definition
     const retaliationsPerRound = getRetaliationsPerRound(abilities)
     const shooter = abilities.includes('ranged')
-    const unaffectedByMorale = abilities.includes('undead')
+    const undead = abilities.includes('undead')
+    const unaffectedByMorale = undead
     return {
       id: `${side}-${slot}`,
       side,
@@ -86,6 +87,7 @@ function createStacks({
       meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
       morale: unaffectedByMorale ? 0 : morale,
       unaffectedByMorale,
+      undead,
       luck,
       cancelledInBattle,
       spells: [],
