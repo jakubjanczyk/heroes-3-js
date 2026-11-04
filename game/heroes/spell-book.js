@@ -1,3 +1,4 @@
+import { castRuleOf } from './battle-spells.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
 import { secondarySkillLevel } from './secondary-skills.js'
 import { getHeroSpellPoints } from './spell-points.js'
@@ -45,6 +46,9 @@ export function spellSkillLevel(hero, spell) {
   return Math.max(0, ...(spell.schools ?? []).map((school) => schoolSkillLevel(hero, school)))
 }
 
+export const castsOnAllStacks = (hero, spell) =>
+  Boolean(castRuleOf(spell)?.allAtExpert) && spellSkillLevel(hero, spell) === SKILL_LEVELS.EXPERT
+
 export function spellCost(hero, spell) {
   return spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
 }
@@ -63,6 +67,11 @@ export function spellDamage({ hero, spell, definitions }) {
   return Math.floor(
     ((base[spellSkillLevel(hero, spell)] + perPower * power) * (100 + sorceryPercent)) / 100
   )
+}
+
+export function spellHealing({ hero, spell, definitions }) {
+  const { base, perPower } = spell.heals
+  return base[spellSkillLevel(hero, spell)] + perPower * powerOf(hero, definitions)
 }
 
 // Each effect's value at the hero's skill level, for as many rounds as the hero's Power, or no
@@ -153,6 +162,8 @@ export function describeSpellBookSpread({ hero, definitions, kind, school, sprea
     spells: spellsOnSpread(spells, school, shown)
   }
 }
+
+export const SPELL_AFFECTS_NO_ONE_TEXT = 'That spell will affect no one!'
 
 export function cannotAffordText(cost, spellPoints) {
   return `That spell costs ${cost} spell points.  Your hero only has ${spellPoints} spell points, and therefore can't cast the spell.`

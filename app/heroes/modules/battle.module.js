@@ -1,8 +1,11 @@
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../../game/heroes/artifacts.js'
 import {
+  areaTargetIds,
   attackStack,
   castDamageSpell,
+  castHealingSpell,
   castLastingSpell,
+  castRemovingSpell,
   createBattle,
   defendStack,
   endTurn,
@@ -19,7 +22,6 @@ import {
   getStackReach,
   hasLivingStacks,
   hasWaited,
-  isLivingSpellTarget,
   moveStack,
   planStackAttack,
   planStackMove,
@@ -27,6 +29,7 @@ import {
   resolveAttack,
   resolveShot,
   shootStack,
+  spellTargetIds,
   waitStack
 } from '../../../game/heroes/battle.js'
 import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
@@ -37,16 +40,19 @@ import {
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
 import { canCastInBattle, isHelpful, spellTargeting } from '../../../game/heroes/battle-spells.js'
-import { getSpellBalance } from '../../../game/heroes/battle-stats.js'
-import { getHexDistance } from '../../../game/heroes/battlefield.js'
+import { getSpellBalance, getSpellDamageTakenPercent } from '../../../game/heroes/battle-stats.js'
+import { getHexDistance, isOnBattlefield } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
+  castsOnAllStacks,
   hasSpellBook,
   spellCost,
   spellDamage,
-  spellLasting
+  spellHealing,
+  spellLasting,
+  spellSkillLevel
 } from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -83,6 +89,7 @@ import {
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_WORLD_READY,
+  APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
   APP_UI_BATTLE_UPDATED,
   APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
   APP_UI_RESTORE_COMPLETED,
@@ -99,6 +106,26 @@ const withHexes = (stacks) =>
     hexes: getStackHexes(stack),
     spellBalance: getSpellBalance(stack)
   }))
+
+function castDetail({ hero, spell, definitions }) {
+  if (spell.lasting) {
+    return spellLasting({ hero, spell, definitions })
+  }
+  if (spell.heals) {
+    return { healing: spellHealing({ hero, spell, definitions }) }
+  }
+  return {}
+}
+
+// The damage each stack hit takes, as it was when cast.
+function damageHits({ battle, hero, spell, definitions, targetIds }) {
+  const damage = spellDamage({ hero, spell, definitions })
+  return targetIds.map((stackId) => {
+    const stack = battle.stacks.find(({ id }) => id === stackId)
+    const percent = getSpellDamageTakenPercent(stack, spell.schools ?? [])
+    return { stackId, damage: Math.floor((damage * percent) / 100) }
+  })
+}
 
 const isDwellingGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_DWELLING_GUARDS
 const isArtifactGuards = (started) => started.defender?.kind === BATTLE_DEFENDER_ARTIFACT_GUARDS
@@ -288,7 +315,8 @@ export const registerBattleModule = defineModule(
       emit(fact, { entityId, count })
     }
 
-    // Beaten or retreated: the hero leaves the map and the defender keeps what it has left.
+    // Beaten or retreated: the hero leaves the map and the defender keeps what it has left. A
+    // monster a spell killed with the hero's last stack leaves the map too.
     function loseBattle() {
       const fought = started
       const survivors = battle.stacks.filter(
@@ -296,6 +324,9 @@ export const registerBattleModule = defineModule(
       )
       emit(APP_FACT_BATTLE_ENDED, { entityId: fought.entityId, heroId, winner: 'defender' })
       emitDefenderLeft(fought, survivors)
+      if (survivors.length === 0 && !isDwellingGuards(fought) && !isArtifactGuards(fought)) {
+        emit(APP_FACT_ENTITY_REMOVED, { entityId: fought.entityId })
+      }
       emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
     }
 
@@ -364,13 +395,14 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      if (!hasLivingStacks(battle, 'defender')) {
-        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
+      // A spell can kill the last stacks of both sides: nobody wins, and the hero is beaten.
+      if (!hasLivingStacks(battle, 'attacker')) {
+        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_LOST })
         return
       }
 
-      if (!hasLivingStacks(battle, 'attacker')) {
-        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_LOST })
+      if (!hasLivingStacks(battle, 'defender')) {
+        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
         return
       }
 
@@ -477,7 +509,31 @@ export const registerBattleModule = defineModule(
       })
     }
 
-    function castSpell({ spellId, targetId }) {
+    function chooseSpellTargets(hero, spell, { targetId, hex }) {
+      if (spell.area) {
+        return hex && isOnBattlefield(hex)
+          ? { hex, targetIds: areaTargetIds(battle, spell.area, hex) }
+          : null
+      }
+      const targetIds = spellTargetIds(battle, spellTargeting(spell, spellSkillLevel(hero, spell)))
+      if (castsOnAllStacks(hero, spell)) {
+        return targetIds.length === 0 ? { noOne: true } : { targetIds }
+      }
+      return targetIds.includes(targetId) ? { targetIds: [targetId] } : null
+    }
+
+    function castDetailOn(hero, spell, { hex, targetIds }) {
+      if (spell.damage) {
+        const hits = damageHits({ battle, hero, spell, definitions, targetIds })
+        return hex ? { hex, hits } : { targetId: targetIds[0], hits }
+      }
+      const cast = castDetail({ hero, spell, definitions })
+      return targetIds.length === 1 && !castsOnAllStacks(hero, spell)
+        ? { targetId: targetIds[0], ...cast }
+        : { targetIds, ...cast }
+    }
+
+    function castSpell({ spellId, targetId, hex }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
       const cost = spell && spellCost(hero, spell)
@@ -486,36 +542,56 @@ export const registerBattleModule = defineModule(
         hasSpellBook(hero) &&
         hero.spells.includes(spellId) &&
         canCastInBattle(spell) &&
-        cost <= getHeroSpellPoints({ entity: hero, definitions }).value &&
-        isLivingSpellTarget(battle, spellTargeting(spell), targetId)
-      if (!canCast) {
+        cost <= getHeroSpellPoints({ entity: hero, definitions }).value
+      const targets = canCast ? chooseSpellTargets(hero, spell, { targetId, hex }) : null
+      if (!targets) {
+        return
+      }
+      if (targets.noOne) {
+        emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
         return
       }
 
-      const cast = spell.lasting
-        ? spellLasting({ hero, spell, definitions })
-        : { damage: spellDamage({ hero, spell, definitions }) }
-      emit(APP_FACT_BATTLE_SPELL_CAST, { heroId, spellId, targetId, ...cast, cost })
-      if (!hasLivingStacks(battle, 'defender')) {
-        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
-      }
+      emit(APP_FACT_BATTLE_SPELL_CAST, {
+        heroId,
+        spellId,
+        ...castDetailOn(hero, spell, targets),
+        cost
+      })
+      continueBattle()
     }
 
-    // A lasting spell's fact keeps its effects and rounds as they were when cast.
-    function castSpellOn(current, { spellId, targetId, damage, effects, rounds }) {
+    // The fact keeps a lasting spell's effects and rounds, a healing spell's hit points and the
+    // damage each stack took, as they were when cast. A bolt saved before area spells has its
+    // target's damage rather than hits.
+    function castSpellOn(
+      current,
+      { spellId, targetId, targetIds, damage, hits, effects, rounds, healing }
+    ) {
       const spell = definitions.spells?.[spellId]
-      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId, targetId }
-      if (effects) {
+      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId }
+      const onStacks = { ...named, targetIds: targetIds ?? [targetId] }
+      if (spell?.lasting) {
         return castLastingSpell(current, {
-          ...named,
+          ...onStacks,
           spellId,
           effects,
           rounds,
           helpful: isHelpful(spell),
-          addsUp: Boolean(spell.lasting.addsUp)
+          addsUp: Boolean(spell.lasting.addsUp),
+          removable: !spell.lasting.cannotBeRemoved
         })
       }
-      return castDamageSpell(current, { ...named, damage })
+      if (spell?.removesSpells) {
+        return castRemovingSpell(current, onStacks)
+      }
+      if (spell?.heals) {
+        return castHealingSpell(current, { ...onStacks, healing })
+      }
+      return castDamageSpell(current, {
+        ...named,
+        hits: hits ?? [{ stackId: targetId, damage }]
+      })
     }
 
     return {
@@ -839,7 +915,8 @@ export const registerBattleModule = defineModule(
       APP_FACT_HERO_ARMY_CHANGED,
       APP_FACT_ENTITY_REMOVED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
-      APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED
+      APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED,
+      APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE
     ]
   }
 )

@@ -526,6 +526,8 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "damage": { "base": [15, 15, 30, 60], "perPower": 10 },
+    "area": { "from": 1, "to": 1 },
     "mageGuildChances": { "CASTLE": 16 },
     "descriptions": [
       {
@@ -552,6 +554,8 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
+    "damage": { "base": [15, 15, 30, 60], "perPower": 10 },
+    "area": { "from": 0, "to": 1 },
     "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {
@@ -578,6 +582,8 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "damage": { "base": [20, 20, 40, 80], "perPower": 10 },
+    "area": { "from": 0, "to": 2 },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -604,6 +610,8 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "damage": { "base": [25, 25, 50, 100], "perPower": 25 },
+    "area": { "from": 0, "to": 1 },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -706,7 +714,11 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
-    "lasting": { "target": "own", "effects": { "meleeDamageTakenPercent": [-15, -15, -30, -30] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "meleeDamageTakenPercent": [-15, -15, -30, -30] }
+    },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -733,7 +745,11 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
-    "lasting": { "target": "own", "effects": { "rangedDamageTakenPercent": [-25, -25, -50, -50] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "rangedDamageTakenPercent": [-25, -25, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -786,6 +802,11 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "airSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
@@ -812,6 +833,11 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "fireSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
@@ -838,6 +864,11 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "waterSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 3 },
     "descriptions": [
       {
@@ -864,6 +895,11 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "earthSpellDamageTakenPercent": [-30, -30, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -916,6 +952,10 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
+    "removesSpells": {
+      "targets": ["own", "own", "any", "any"],
+      "allAtExpert": true
+    },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -967,6 +1007,12 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
+    "heals": {
+      "target": "own",
+      "allAtExpert": true,
+      "base": [10, 10, 20, 30],
+      "perPower": 5
+    },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -1069,7 +1115,11 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
-    "lasting": { "target": "own", "effects": { "maximumDamage": [0, 0, 1, 1] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "maximumDamage": [0, 0, 1, 1] }
+    },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {
@@ -1096,7 +1146,11 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
-    "lasting": { "target": "enemy", "effects": { "minimumDamage": [0, 0, -1, -1] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "enemy",
+      "effects": { "minimumDamage": [0, 0, -1, -1] }
+    },
     "descriptions": [
       {
         "title": "Curse",
@@ -1122,7 +1176,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
-    "lasting": { "target": "own", "effects": { "meleeAttack": [3, 3, 6, 6] } },
+    "lasting": { "allAtExpert": true, "target": "own", "effects": { "meleeAttack": [3, 3, 6, 6] } },
     "descriptions": [
       {
         "title": "Bloodlust",
@@ -1149,6 +1203,7 @@
     "kind": "combat",
     "costs": [8, 6, 6, 6],
     "lasting": {
+      "allAtExpert": true,
       "target": "own",
       "shootersOnly": true,
       "effects": { "rangedAttack": [3, 3, 6, 6] }
@@ -1179,7 +1234,11 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
-    "lasting": { "target": "enemy", "effects": { "attack": [-3, -3, -6, -6] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "enemy",
+      "effects": { "attack": [-3, -3, -6, -6] }
+    },
     "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {
@@ -1206,7 +1265,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [5, 4, 4, 4],
-    "lasting": { "target": "own", "effects": { "defense": [3, 3, 6, 6] } },
+    "lasting": { "allAtExpert": true, "target": "own", "effects": { "defense": [3, 3, 6, 6] } },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1237,6 +1296,7 @@
       "target": "enemy",
       "untilBattleEnds": true,
       "addsUp": true,
+      "cannotBeRemoved": true,
       "effects": { "defense": [-3, -3, -4, -5] }
     },
     "mageGuildChances": { "CASTLE": 6 },
@@ -1266,6 +1326,7 @@
     "kind": "combat",
     "costs": [16, 12, 12, 12],
     "lasting": {
+      "allAtExpert": true,
       "target": "own",
       "effects": { "attack": [2, 2, 4, 4], "defense": [2, 2, 4, 4], "speed": [2, 2, 4, 4] }
     },
@@ -1295,7 +1356,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
-    "lasting": { "target": "own", "effects": { "morale": [1, 1, 2, 2] } },
+    "lasting": { "allAtExpert": true, "target": "own", "effects": { "morale": [1, 1, 2, 2] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -1322,7 +1383,11 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
-    "lasting": { "target": "enemy", "effects": { "morale": [-1, -1, -2, -2] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "enemy",
+      "effects": { "morale": [-1, -1, -2, -2] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1349,7 +1414,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
-    "lasting": { "target": "own", "effects": { "luck": [1, 1, 2, 2] } },
+    "lasting": { "allAtExpert": true, "target": "own", "effects": { "luck": [1, 1, 2, 2] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -1376,7 +1441,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
-    "lasting": { "target": "enemy", "effects": { "luck": [-1, -1, -2, -2] } },
+    "lasting": { "allAtExpert": true, "target": "enemy", "effects": { "luck": [-1, -1, -2, -2] } },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {
@@ -1403,7 +1468,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
-    "lasting": { "target": "own", "effects": { "speed": [3, 3, 5, 5] } },
+    "lasting": { "allAtExpert": true, "target": "own", "effects": { "speed": [3, 3, 5, 5] } },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1430,7 +1495,11 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [6, 5, 5, 5],
-    "lasting": { "target": "enemy", "effects": { "speedPercent": [-25, -25, -50, -50] } },
+    "lasting": {
+      "allAtExpert": true,
+      "target": "enemy",
+      "effects": { "speedPercent": [-25, -25, -50, -50] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {

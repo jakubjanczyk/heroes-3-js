@@ -2,18 +2,24 @@ import { canCastInBattle, spellTargeting } from '../../../game/heroes/battle-spe
 import {
   ALL_SCHOOLS,
   cannotAffordText,
+  castsOnAllStacks,
   describeSpellBookSpread,
-  hasSpellBook
+  hasSpellBook,
+  SPELL_AFFECTS_NO_ONE_TEXT,
+  spellSkillLevel
 } from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
+  APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
+  APP_FACT_BATTLE_SPELL_CAST,
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_SELECTED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
   APP_UI_BATTLE_SPELL_PICKED,
   APP_UI_HERO_SELECTED,
   APP_UI_SPELL_BOOK_OPEN_REQUESTED
@@ -229,13 +235,14 @@ export const registerSpellBookViewModule = defineModule(
         return
       }
       const definition = definitions.spells?.[spell.id]
+      if (inBattle && castsOnAllStacks(bookHero(), definition)) {
+        emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId: spell.id })
+        return
+      }
       if (inBattle && canCastInBattle(definition)) {
+        const targeting = spellTargeting(definition, spellSkillLevel(bookHero(), definition))
         close()
-        emit(APP_UI_BATTLE_SPELL_PICKED, {
-          spellId: spell.id,
-          spellName: spell.name,
-          ...spellTargeting(definition)
-        })
+        emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name, targeting })
         return
       }
       showMessage(spell.description)
@@ -313,6 +320,16 @@ export const registerSpellBookViewModule = defineModule(
           }
         },
         { type: APP_UI_HERO_SELECTED, handler: renderCastSpellButton },
+        // A spell cast from the book on every stack closes it; with no stack to go on, it stays.
+        { type: APP_FACT_BATTLE_SPELL_CAST, handler: close },
+        {
+          type: APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
+          handler: () => {
+            if (book) {
+              showMessage({ title: '', text: SPELL_AFFECTS_NO_ONE_TEXT })
+            }
+          }
+        },
         { type: APP_FACT_HERO_SELECTED, handler: renderCastSpellButton },
         { type: APP_FACT_HERO_HIRED, handler: renderCastSpellButton },
         {
@@ -386,6 +403,8 @@ export const registerSpellBookViewModule = defineModule(
     phase: 'view',
     consumes: [
       APP_FACT_WORLD_READY,
+      APP_FACT_BATTLE_SPELL_CAST,
+      APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
       APP_FACT_HERO_HIRED,
       APP_FACT_HERO_SELECTED,
       APP_UI_HERO_SELECTED,
@@ -396,7 +415,8 @@ export const registerSpellBookViewModule = defineModule(
     produces: [
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,
-      APP_UI_BATTLE_SPELL_PICKED
+      APP_UI_BATTLE_SPELL_PICKED,
+      APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED
     ]
   }
 )

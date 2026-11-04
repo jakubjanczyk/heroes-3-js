@@ -167,6 +167,11 @@
   animation: battle-stack-active 1s ease-in-out infinite alternate;
 }
 
+/* A stack the spell being aimed would hit. */
+.battle-stack--spell-target .battle-stack__creature {
+  box-shadow: 0 0 6px 3px rgba(255, 140, 40, 0.9);
+}
+
 @keyframes battle-stack-active {
   from {
     outline-color: oklch(0.92 0.17 98);

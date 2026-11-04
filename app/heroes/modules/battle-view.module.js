@@ -1,12 +1,15 @@
+import { areaTargetIds } from '../../../game/heroes/battle.js'
 import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
   EDGE_COLUMNS,
   findNearestHexSide,
+  getAreaHexes,
   getHexDistance,
   getHexNeighbourOnSide,
   hexKey,
+  isOnBattlefield,
   isSameHex
 } from '../../../game/heroes/battlefield.js'
 import {
@@ -196,19 +199,32 @@ export const registerBattleViewModule = defineModule(
       if (!target || !caster) {
         return null
       }
-      return isSpellTarget(pickedSpell, target, caster.side) ? target : null
+      return isSpellTarget(pickedSpell.targeting, target, caster.side) ? target : null
     }
 
+    // An area spell is aimed at any hex of the battlefield, empty or not.
+    const canAimAreaAt = (hex) => Boolean(pickedSpell.targeting.area) && isOnBattlefield(hex)
+
     function describeSpellAim(hex) {
+      if (canAimAreaAt(hex)) {
+        return `Cast ${pickedSpell.name}`
+      }
       const target = findSpellTarget(hex)
       return target ? `Cast ${pickedSpell.name} on ${target.name}` : 'Select Spell Target'
     }
 
     function pickSpellCursor(hex) {
-      if (findSpellTarget(hex)) {
+      if (canAimAreaAt(hex) || findSpellTarget(hex)) {
         return 'spell'
       }
       return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
+    }
+
+    function findSpellHexes(hex) {
+      if (canAimAreaAt(hex)) {
+        return getAreaHexes(hex, pickedSpell.targeting.area)
+      }
+      return findSpellTarget(hex)?.hexes ?? []
     }
 
     function describeHex(hex) {
@@ -274,7 +290,7 @@ export const registerBattleViewModule = defineModule(
       }
 
       if (pickedSpell) {
-        return findSpellTarget(hex)?.hexes ?? []
+        return findSpellHexes(hex)
       }
 
       const target = findLivingStackOn(hex)
@@ -284,6 +300,23 @@ export const registerBattleViewModule = defineModule(
       }
 
       return isReachable(hex) ? [hex] : []
+    }
+
+    function findStacksSpellWouldHit(hex) {
+      if (!hex || !pickedSpell || !findIdleActiveStack() || pointerType === 'touch') {
+        return []
+      }
+      if (canAimAreaAt(hex)) {
+        return areaTargetIds(shown, pickedSpell.targeting.area, hex)
+      }
+      const target = findSpellTarget(hex)
+      return target ? [target.id] : []
+    }
+
+    function showStacksSpellWouldHit(stackIds) {
+      for (const [stackId, { stack }] of stackElements) {
+        stack.classList.toggle('battle-stack--spell-target', stackIds.includes(stackId))
+      }
     }
 
     function highlightHexes(highlighted) {
@@ -300,6 +333,7 @@ export const registerBattleViewModule = defineModule(
 
     function describeHoveredHex() {
       highlightHexes(findHighlightedHexes(hoveredHex))
+      showStacksSpellWouldHit(findStacksSpellWouldHit(hoveredHex))
       statusBar.textContent = statusNote ?? (hoveredHex ? describeHex(hoveredHex) : '')
       const cursor = hoveredHex ? pickCursor(hoveredHex) : null
       if (cursor) {
@@ -626,19 +660,24 @@ export const registerBattleViewModule = defineModule(
       describeHoveredHex()
     }
 
-    // Clicking anywhere but an enemy stack cancels the spell.
+    // Clicking anywhere the spell can't be aimed at cancels it.
     function castPickedSpellOn(hex) {
+      if (canAimAreaAt(hex)) {
+        const spellId = pickedSpell.id
+        pickedSpell = null
+        emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, hex })
+        return
+      }
+
       const target = findSpellTarget(hex)
       if (!target) {
         cancelPickedSpell()
         return
       }
 
-      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, {
-        spellId: pickedSpell.id,
-        targetId: target.id
-      })
+      const spellId = pickedSpell.id
       pickedSpell = null
+      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId: target.id })
     }
 
     // A click on a hex: move there, or shoot or attack the enemy standing on it.
@@ -687,8 +726,8 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_UI_BATTLE_SPELL_PICKED,
           handler: (event) => {
-            const { spellId, spellName, targetSide, shootersOnly } = event.detail
-            pickedSpell = { id: spellId, name: spellName, targetSide, shootersOnly }
+            const { spellId, spellName, targeting } = event.detail
+            pickedSpell = { id: spellId, name: spellName, targeting }
           }
         },
         {
