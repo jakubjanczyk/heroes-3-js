@@ -181,6 +181,18 @@ export function readHighlightedBattleHexes() {
     .map(readHexPosition)
 }
 
+// The stacks drawn glowing as the spell being aimed would hit them, with the glow of the app's
+// stylesheet; needs `loadAppStyles()`.
+const SPELL_TARGET_GLOW = 'rgba(255, 140, 40, 0.9)'
+
+export function readStacksGlowingForSpell() {
+  return readBattleStacks().filter(({ row, column }) =>
+    [...getBattleHex(row, column).querySelectorAll('.battle-stack__creature')].some((creature) =>
+      window.getComputedStyle(creature).boxShadow.includes(SPELL_TARGET_GLOW)
+    )
+  )
+}
+
 export function getBattleStatusBarText() {
   return within(getBattleScreen()).getByRole('status', { name: 'Battle status bar' }).textContent
 }

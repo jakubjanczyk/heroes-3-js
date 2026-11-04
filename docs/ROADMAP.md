@@ -651,8 +651,8 @@ In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
 - [ ] The Angelic Alliance's Prayer (7.8.7)
 
 #### 4.8.5 Area damage
-In two parts. Your own stacks are hit too.
-- [ ] 4.8.5.1 Fireball, Inferno, Meteor Shower and Frost Ring: targeting a hex shows the area hit; the four Protections (from Air, Earth, Fire and Water), which first count when an own stack is hit (see part 4 of `docs/notes/2026-11-01-lasting-spells.md`)
+In two parts. Your own stacks are hit too. See `docs/notes/2026-11-04-area-damage.md`.
+- [x] 4.8.5.1 Fireball, Inferno, Meteor Shower and Frost Ring: targeting a hex shows the area hit; the four Protections (from Air, Earth, Fire and Water), which first count when an own stack is hit (see part 4 of `docs/notes/2026-11-01-lasting-spells.md`); a spell that kills the hero's last stack loses the battle, the last stacks of both sides too
 - [ ] 4.8.5.2 Death Ripple, Armageddon and Chain Lightning
 
 #### 4.8.6 Immunities and Resistance

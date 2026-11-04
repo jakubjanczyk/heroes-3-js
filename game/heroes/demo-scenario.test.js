@@ -57,7 +57,11 @@ describe('demo scenario loading', () => {
     })
 
     await expect(
-      loadGame({ fetch: readFromRepo, terrainTypes: heroesContent.terrainTypes })
+      loadGame({
+        fetch: readFromRepo,
+        terrainTypes: heroesContent.terrainTypes,
+        primarySkills: heroesContent.primarySkills
+      })
     ).resolves.toBeTruthy()
   })
 })
