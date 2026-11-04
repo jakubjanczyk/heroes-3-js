@@ -7,6 +7,8 @@
 - `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`, and `scripts/screenshot.mjs`, which plays the app in Chromium on desktop and phone sizes and saves screenshots).
 - Co-located test files — Vitest tests (`**/*.test.js` next to source files).
 - `engine/` (infrastructure: bus, store), `game/` (rules, pure functions; `game/heroes/` is this game's content) and `app/` (modules wiring the rules to the page).
+- A screen's parts: its markup is in `index.html` (one `role="dialog"` section per screen), its view module is `app/heroes/modules/<screen>-view.module.js`, its domain module `app/heroes/modules/<screen>.module.js`, its rules `game/heroes/` and its data `game/data/*.json`.
+- `scenarios/scenario.json` is the demo map; `node scripts/demo-map.mjs [x,y]` prints the tiles around the first hero (or x,y): what stands where and which tiles are free.
 
 ## Architecture
 
