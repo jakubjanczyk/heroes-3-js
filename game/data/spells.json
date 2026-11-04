@@ -689,6 +689,8 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [24, 20, 20, 20],
+    "damage": { "base": [30, 30, 60, 120], "perPower": 50 },
+    "targets": "all",
     "descriptions": [
       {
         "title": "Armageddon",
