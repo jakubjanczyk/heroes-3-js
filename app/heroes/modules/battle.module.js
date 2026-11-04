@@ -525,7 +525,10 @@ export const registerBattleModule = defineModule(
     function castDetailOn(hero, spell, { hex, targetIds }) {
       if (spell.damage) {
         const hits = damageHits({ battle, hero, spell, definitions, targetIds })
-        return hex ? { hex, hits } : { targetId: targetIds[0], hits }
+        if (hex || castsOnAllStacks(hero, spell)) {
+          return hex ? { hex, hits } : { hits }
+        }
+        return { targetId: targetIds[0], hits }
       }
       const cast = castDetail({ hero, spell, definitions })
       return targetIds.length === 1 && !castsOnAllStacks(hero, spell)

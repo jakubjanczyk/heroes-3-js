@@ -115,6 +115,8 @@ Checked against the Heroes 3 wiki's raw page source (Death Ripple, Armageddon, C
 
 - **Data.** Each gets its `damage`; Death Ripple `"targets": "living"` and Armageddon `"targets": "all"` (whole battlefield, no aiming; "living" leaves out the `undead` ability); Chain Lightning `"chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 }`. Destroy Undead would then be data only (`"targets": "undead"`), see the open questions.
 - **The fact** keeps `hits`, each stack's damage as it was when cast, as the area spells do, so a reload and a random tie replay the same.
+- **Cast straight from the book.** A spell with `targets` goes straight from the battle book as an Expert lasting spell does (part 2); its fact has `hits` and no target or hex.
+- **Part 2 is built:** Armageddon, and the demo map's first hero knows it.
 
 ### Not yet (parts 2 to 4)
 

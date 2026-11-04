@@ -5,8 +5,11 @@ export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? s
 export const canCastInBattle = (spell) =>
   Boolean(spell?.kind === 'combat' && (spell.damage || castRuleOf(spell)))
 
-// A damage spell hits an enemy stack.
+// A damage spell hits an enemy stack, unless it hits the whole battlefield.
 export function spellTargetSide(spell, skillLevel = 0) {
+  if (spell?.targets) {
+    return 'any'
+  }
   if (spell?.removesSpells) {
     return spell.removesSpells.targets[skillLevel]
   }

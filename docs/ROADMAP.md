@@ -653,7 +653,7 @@ In four parts. See `docs/notes/2026-11-01-lasting-spells.md`.
 #### 4.8.5 Area damage
 In four parts. Your own stacks are hit too. See `docs/notes/2026-11-04-area-damage.md`.
 - [x] 4.8.5.1 Fireball, Inferno, Meteor Shower and Frost Ring: targeting a hex shows the area hit; the four Protections (from Air, Earth, Fire and Water), which first count when an own stack is hit (see part 4 of `docs/notes/2026-11-01-lasting-spells.md`); a spell that kills the hero's last stack loses the battle, the last stacks of both sides too
-- [ ] 4.8.5.2 Armageddon: cast straight from the book, it hits every stack of both sides
+- [x] 4.8.5.2 Armageddon: cast straight from the book, it hits every stack of both sides
 - [ ] 4.8.5.3 Death Ripple: every stack but the undead
 - [ ] 4.8.5.4 Chain Lightning: an enemy stack, then the nearest stacks, half the damage at each jump
 
