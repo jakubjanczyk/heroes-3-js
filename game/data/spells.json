@@ -1719,6 +1719,12 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "notOnUndead": true,
+    "lasting": {
+      "target": "enemy",
+      "castMessage": "The %s cannot see!",
+      "effects": { "blind": [1, 1, 1, 1], "retaliationDamagePercent": [-50, -50, -75, -100] }
+    },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {

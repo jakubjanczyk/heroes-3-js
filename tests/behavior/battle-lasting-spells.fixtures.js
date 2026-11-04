@@ -168,6 +168,28 @@ const artifactDefinitions = {
     .build()
 }
 
+const controlSpellDefinitions = {
+  BLIND: aLastingSpell({
+    name: 'Blind',
+    notOnUndead: true,
+    schools: ['FIRE'],
+    costs: [10, 8, 8, 8],
+    target: 'enemy',
+    allAtExpert: false,
+    castMessage: 'The %s cannot see!',
+    effects: { blind: [1, 1, 1, 1], retaliationDamagePercent: [-50, -50, -75, -100] }
+  }),
+  MAGIC_ARROW: aSpellDefinition()
+    .withName('Magic Arrow')
+    .withSchools(['AIR', 'EARTH', 'FIRE', 'WATER'])
+    .withCosts([5, 4, 4, 4])
+    .withDamage({ base: [10, 10, 20, 30], perPower: 10 })
+    .describedAs('Magic Arrow description.')
+    .build()
+}
+
+export const CONTROL_SPELLS = Object.keys(controlSpellDefinitions)
+
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
@@ -177,7 +199,8 @@ const gameDefinitions = {
   spells: {
     ...spellDefinitions,
     ...moraleAndLuckSpellDefinitions,
-    ...removingAndHealingSpellDefinitions
+    ...removingAndHealingSpellDefinitions,
+    ...controlSpellDefinitions
   },
   artifacts: artifactDefinitions
 }

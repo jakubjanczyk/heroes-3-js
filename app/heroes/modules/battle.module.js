@@ -599,6 +599,7 @@ export const registerBattleModule = defineModule(
           rounds,
           helpful: isHelpful(spell),
           addsUp: Boolean(spell.lasting.addsUp),
+          castMessage: spell.lasting.castMessage,
           removable: !spell.lasting.cannotBeRemoved
         })
       }
