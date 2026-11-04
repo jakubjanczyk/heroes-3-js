@@ -196,7 +196,7 @@ export const registerBattleViewModule = defineModule(
       if (!target || !caster) {
         return null
       }
-      return isSpellTarget(pickedSpell, target, caster.side) ? target : null
+      return isSpellTarget(pickedSpell.targeting, target, caster.side) ? target : null
     }
 
     function describeSpellAim(hex) {
@@ -687,8 +687,8 @@ export const registerBattleViewModule = defineModule(
         {
           type: APP_UI_BATTLE_SPELL_PICKED,
           handler: (event) => {
-            const { spellId, spellName, targetSide, shootersOnly } = event.detail
-            pickedSpell = { id: spellId, name: spellName, targetSide, shootersOnly }
+            const { spellId, spellName, targeting } = event.detail
+            pickedSpell = { id: spellId, name: spellName, targeting }
           }
         },
         {

@@ -624,7 +624,7 @@ const longerOf = (rounds, earlier) =>
 
 // Cast again on a stack that has it, the spell takes the new effects and the longer duration; a
 // spell that adds up adds its effects to the earlier ones.
-function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp }) {
+function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp, removable }) {
   const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
   const roundsLeft = longerOf(rounds, earlier?.roundsLeft)
   const effects = addsUp ? addEffects(earlier?.effects, cast) : cast
@@ -632,10 +632,21 @@ function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp }) 
     ...stack,
     spells: [
       ...(stack.spells ?? []).filter((spell) => spell.spellId !== spellId),
-      { spellId, effects, roundsLeft, helpful }
+      { spellId, effects, roundsLeft, helpful, removable }
     ]
   }
 }
+
+const removeSpellsFrom = (stack) => ({
+  ...stack,
+  spells: (stack.spells ?? []).filter(({ removable }) => removable === false)
+})
+
+// Only the top creature is healed: creatures already killed stay dead.
+const healTopCreature = (stack, healing) => ({
+  ...stack,
+  topHealth: Math.min(stack.health, stack.topHealth + healing)
+})
 
 function castMessage(battle, { heroName, spellName, targetIds }) {
   if (targetIds.length !== 1) {
@@ -645,14 +656,13 @@ function castMessage(battle, { heroName, spellName, targetIds }) {
   return `${heroName} casts '${spellName}' on the ${target.name}.`
 }
 
-export function castLastingSpell(battle, { heroName, spellName, targetIds, ...spell }) {
+// The spell changes its targets; the stack whose turn it is keeps it.
+function castOnStacks(battle, { heroName, spellName, targetIds }, change) {
   return {
     ...battle,
     heroCastThisRound: true,
     turnStackId: getActiveStack(battle)?.id ?? null,
-    stacks: battle.stacks.map((stack) =>
-      targetIds.includes(stack.id) ? putSpellOn(stack, spell) : stack
-    ),
+    stacks: battle.stacks.map((stack) => (targetIds.includes(stack.id) ? change(stack) : stack)),
     effects: [
       ...battle.effects,
       ...targetIds.map((stackId) => ({ stackId, kind: 'spellHit', spellName }))
@@ -660,6 +670,14 @@ export function castLastingSpell(battle, { heroName, spellName, targetIds, ...sp
     messages: [...battle.messages, castMessage(battle, { heroName, spellName, targetIds })]
   }
 }
+
+export const castLastingSpell = (battle, { heroName, spellName, targetIds, ...spell }) =>
+  castOnStacks(battle, { heroName, spellName, targetIds }, (stack) => putSpellOn(stack, spell))
+
+export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, removeSpellsFrom)
+
+export const castHealingSpell = (battle, { healing, ...cast }) =>
+  castOnStacks(battle, cast, (stack) => healTopCreature(stack, healing))
 
 export const isLivingEnemyOf = (battle, side, stackId) =>
   livingStacks(battle).some((stack) => stack.id === stackId && stack.side !== side)

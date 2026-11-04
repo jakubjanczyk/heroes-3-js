@@ -172,12 +172,15 @@ Checked against the Heroes 3 wiki's raw page source (Cure, Dispel, the four Prot
 
 - **Dispel and Cure in this part; the Protections with area damage (4.8.5.1).** The hero's damage spells hit only enemy stacks until then, so a Protection on an own stack could not change anything a player sees. Fireball and the other area spells hit own stacks too, and that is where the Protections first count.
 - **Cure removing harmful spells waits for enemy heroes casting (8.1)**, with the counters: until then the hero puts harmful spells only on enemy stacks and Cure goes only on own ones, so there is nothing for it to remove. Cure in this part heals.
-- `game/data/spells.json`: Dispel and Cure get the rule they follow (removing spells; healing with its base at each skill level and its Power multiplier) and their targets at each skill level; Disrupting Ray gets a flag that it can't be removed. Another healing or removing spell later is data only.
-- The healing is a saved fact with the hit points it healed, so a reload shows the same stack.
+- `game/data/spells.json`: Dispel's `removesSpells` gives its targets at each skill level (`own`, `own`, `any`, `any`), Cure's `heals` its `base` hit points at each skill level and `perPower`, and both have `allAtExpert`. Disrupting Ray's `lasting` has `cannotBeRemoved`. Another healing or removing spell later is data only.
+- A stack keeps, with each spell on it, whether it can be removed. Hovering a stack Dispel can't go on, or one Cure has nothing to heal on, says "Select Spell Target", as for a stack of the wrong side.
+- The cast fact keeps the hit points healed, so a reload heals the same, and Dispel's targets, so a reload removes the same spells.
 
-### Asked
+### Decided with the user
 
 - **Advanced Cure** heals one stack (wiki, engine); the game's own Advanced description in `game/data/spells.json` says "all friendly units". The description stays as the game has it.
+- The Protections move to 4.8.5.1, and Cure removing harmful spells to 8.1.
+- Dispel can't target a stack with no spell it can remove, nor Cure a stack it can't heal (engine).
 
 ### Not yet (part 4)
 

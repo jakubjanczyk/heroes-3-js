@@ -92,6 +92,7 @@ const spellDefinitions = {
     target: 'enemy',
     untilBattleEnds: true,
     addsUp: true,
+    cannotBeRemoved: true,
     allAtExpert: false,
     effects: { defense: [-3, -3, -4, -5] }
   })
@@ -130,6 +131,25 @@ const moraleAndLuckSpellDefinitions = {
 
 export const MORALE_AND_LUCK_SPELLS = Object.keys(moraleAndLuckSpellDefinitions)
 
+const removingAndHealingSpellDefinitions = {
+  DISPEL: aSpellDefinition()
+    .withName('Dispel')
+    .withSchools(['WATER'])
+    .withCosts([5, 4, 4, 4])
+    .withRemovesSpells({ targets: ['own', 'own', 'any', 'any'], allAtExpert: true })
+    .describedAs('Dispel description.')
+    .build(),
+  CURE: aSpellDefinition()
+    .withName('Cure')
+    .withSchools(['WATER'])
+    .withCosts([6, 5, 5, 5])
+    .withHeals({ target: 'own', allAtExpert: true, base: [10, 10, 20, 30], perPower: 5 })
+    .describedAs('Cure description.')
+    .build()
+}
+
+export const REMOVING_AND_HEALING_SPELLS = Object.keys(removingAndHealingSpellDefinitions)
+
 const artifactDefinitions = {
   SPIRIT: anArtifactDefinition()
     .withName('Spirit of Oppression')
@@ -149,7 +169,11 @@ const gameDefinitions = {
   heroes: readGameData('heroes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
-  spells: { ...spellDefinitions, ...moraleAndLuckSpellDefinitions },
+  spells: {
+    ...spellDefinitions,
+    ...moraleAndLuckSpellDefinitions,
+    ...removingAndHealingSpellDefinitions
+  },
   artifacts: artifactDefinitions
 }
 
