@@ -8,7 +8,6 @@ import {
   hoverBattleHex,
   pickSpell,
   playOnToNextRound,
-  readBattleEffects,
   readBattleStacks,
   reloadBattle,
   startBattle
@@ -33,6 +32,16 @@ const readSwordsmen = () =>
 async function hurtTheSwordsmen(user) {
   await playOnToNextRound(user)
 }
+
+async function playOnToNextRoundWithBothStacks(user) {
+  await playOnToNextRound(user)
+  await playOnToNextRound(user)
+}
+
+const readOwnStacks = () =>
+  readBattleStacks()
+    .filter(({ column }) => column === OWN_HEX.column)
+    .map(({ stack }) => stack)
 
 async function castCureAndTakeTheNextVolley(user) {
   await castSpellAt(user, 'Cure', OWN_HEX)
@@ -102,19 +111,19 @@ describe('battle Cure behavior', () => {
   })
 
   describe('Expert', () => {
-    test("given two of the hero's stacks are hurt when an Expert Water hero picks Cure then a burst of light shows over both", async () => {
-      const hero = aHealer({ expert: true, army: [stack('SWORDSMAN', 10), stack('PIKEMAN', 20)] })
-      // Each of the two Archer stacks shoots a different one of the hero's stacks.
-      const { user } = await startBattle(aFight({ hero, monster: 'ARCHER', count: 20, stacks: 2 }))
-      await playOnToNextRound(user)
-      await playOnToNextRound(user)
-      const ownStacks = readBattleStacks().filter(({ column }) => column === OWN_HEX.column)
+    // Each of two stacks of 30 Archers shoots one of the hero's stacks: 22 damage leaves the top
+    // Swordsman 13 of 35, and 28 kill 2 Pikemen and leave the top one 2 of 10. Expert Cure with
+    // Power 2 heals 40, so both top creatures are whole, and the same volley again leaves 10
+    // Swordsmen and 26 Pikemen, where unhealed it would leave 9 and 25.
+    test("given two of the hero's stacks are hurt when an Expert Water hero picks Cure then the next volley leaves more of both", async () => {
+      const hero = aHealer({ expert: true, army: [stack('SWORDSMAN', 10), stack('PIKEMAN', 30)] })
+      const { user } = await startBattle(aFight({ hero, monster: 'ARCHER', count: 60, stacks: 2 }))
+      await playOnToNextRoundWithBothStacks(user)
 
       await pickSpell(user, 'Cure')
+      await playOnToNextRoundWithBothStacks(user)
 
-      expect(readBattleEffects()).toEqual(
-        ownStacks.map(({ row, column }) => ({ effect: 'Cure', row, column }))
-      )
+      expect(readOwnStacks()).toEqual(['Swordsmen 10', 'Pikemen 26'])
     })
   })
 
