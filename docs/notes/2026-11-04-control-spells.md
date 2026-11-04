@@ -20,6 +20,27 @@ Roadmap 4.8.7.1: Blind, Berserk, Hypnotize, Forgetfulness and Frenzy, the mind s
 - Combat log: "The %s cannot see!" (`core.genrltxt.556`, checked against the wiki's copy of GENRLTXT.TXT and the engine's reference to it).
 - Not at Expert on all stacks: it stays single-target at every level (engine: no mass effect).
 
+### Forgetfulness (Water, level 3, 12 / 9 spell points) — 4.8.7.1b
+
+- One enemy stack that shoots; a stack that can't shoot can't be targeted (like Precision's `shootersOnly`). Undead can't be targeted (mind spell). Checked against the wiki and the engine.
+- Lasts Power rounds. Checked against the wiki ("1 rnd/sp") and the engine (`N_TURNS`).
+- Basic: the stack's shots do half damage ("half of the unit forgets to shoot"). Checked against the spell's description, the wiki and the engine (shooting damage reduced by 50%).
+- Advanced and Expert: the stack can't shoot at all. It walks up and fights hand to hand, at the half damage a shooter's melee attack already does. Checked against the wiki and the engine (100% disables shooting).
+- Expert: every enemy stack that shoots. Checked against the description, the wiki and the engine (range X).
+- Combat log: the usual "%s casts '%s' on the %s." line; the game has no line of its own for it (the engine gives it none).
+
+### Frenzy (Fire, level 4, 16 / 12 spell points) — 4.8.7.1b
+
+- One own stack, at every level (no mass effect). Undead can't be targeted. Checked against the wiki ("target allied troop") and the engine (positive spell, single target).
+- The stack's Attack goes up by 100% (Basic), 150% (Advanced) or 200% (Expert) of its Defense, and its Defense drops to 0. Checked against the wiki and the engine.
+- Combat log: the usual cast line, as above.
+
+## Open for 4.8.7.1b
+
+- Frenzy's end: the wiki says "until the target's action turn in the next round"; the engine ends it the first time the stack attacks.
+- Forgetfulness at Advanced: the wiki says the original game, against its own description, hits every enemy shooter at Advanced (a bug); the engine keeps it single-target until Expert.
+- Forgetfulness on melee: the wiki says a forgetful shooter also does half melee damage, calls it "more like a bug" and says the game's combat log doesn't count it; the engine leaves melee alone.
+
 ## Left for later
 
 - 4.8.7.1b, 4.8.7.1c as above.
