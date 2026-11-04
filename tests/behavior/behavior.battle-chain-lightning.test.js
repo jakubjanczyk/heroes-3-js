@@ -96,9 +96,17 @@ const TWO_PIKEMEN_STACKS = [stack('PIKEMAN', 10), stack('PIKEMAN', 10)]
 const aFiveStackFight = ({ hero, count = 60, monster } = {}) =>
   aFight({ hero: hero ?? aCaster({ army: TWO_PIKEMEN_STACKS }), count, stacks: 3, monster })
 
+const readEnemyStacks = () => readBattleStacks().filter(({ column }) => column === 15)
+
 const TOP_ENEMY = hexAt(3, 15)
 const BOTTOM_ENEMY = hexAt(9, 15)
 const MIDDLE_ENEMY = hexAt(6, 15)
+
+// The bolt reaches the last of five stacks 1200 ms after the cast.
+async function castChainLightningAt(user, hex) {
+  await castSpellAt(user, 'Chain Lightning', hex)
+  await waitMs(1200)
+}
 
 describe('battle Chain Lightning behavior', () => {
   describe('aiming', () => {
@@ -138,7 +146,7 @@ describe('battle Chain Lightning behavior', () => {
     test("given five stacks on the battlefield when Chain Lightning is cast with Basic Air Magic then the target and the three nearest stacks in turn are hit, one of the hero's own among them", async () => {
       const { user } = await startBattle(aFiveStackFight())
 
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
 
       expect(readBattleStacks()).toEqual([
         stackAt('Pikemen 10', 3, 1),
@@ -156,7 +164,7 @@ describe('battle Chain Lightning behavior', () => {
       const hero = aCaster({ army: TWO_PIKEMEN_STACKS, power: 3, secondarySkills: AIR_ADVANCED })
       const { user } = await startBattle(aFiveStackFight({ hero }))
 
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
 
       expect(readBattleStacks()).toEqual([
         stackAt('Pikemen 9', 3, 1),
@@ -171,7 +179,7 @@ describe('battle Chain Lightning behavior', () => {
     test('given only two stacks are alive when Chain Lightning is cast then both are hit and it stops', async () => {
       const { user } = await startBattle(aFight({ count: 50 }))
 
-      await castSpellAt(user, 'Chain Lightning', hexAt(6, 15))
+      await castChainLightningAt(user, hexAt(6, 15))
 
       expect([readBattleStacks(), readCombatMessages().at(-1)]).toEqual([
         [stackAt('Swordsmen 9', 6, 1), stackAt('Pikemen 40', 6, 15)],
@@ -187,11 +195,11 @@ describe('battle Chain Lightning behavior', () => {
       const army = [stack('SWORDSMAN', 10), stack('SWORDSMAN', 10)]
       const hero = aCaster({ army, knowledge: 5 })
       const { user } = await startBattle(aFiveStackFight({ hero, monster: 'ARCHER', count: 15 }))
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
       await playOnToNextRound(user)
       await playOnToNextRound(user)
 
-      await castSpellAt(user, 'Chain Lightning', BOTTOM_ENEMY)
+      await castChainLightningAt(user, BOTTOM_ENEMY)
 
       expect(readCombatMessages().slice(-2)).toEqual([
         "Lord Haart casts 'Chain Lightning'.",
@@ -204,7 +212,7 @@ describe('battle Chain Lightning behavior', () => {
     test('given the second stack is killed by its share when Chain Lightning is cast then the bolt still jumps on from it to the stack nearest to it', async () => {
       const { user } = await startBattle(aFiveStackFight({ count: 15 }))
 
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
 
       expect(readBattleStacks()).toEqual([
         stackAt('Pikemen 10', 3, 1),
@@ -219,10 +227,10 @@ describe('battle Chain Lightning behavior', () => {
     // for the 52 (5 of 20 killed) and the other gets 26 (2 killed).
     test('given two stacks are as near when Chain Lightning jumps then a roll picks which is hit next', async () => {
       const low = await startBattle(aFiveStackFight())
-      await castSpellAt(low.user, 'Chain Lightning', MIDDLE_ENEMY)
+      await castChainLightningAt(low.user, MIDDLE_ENEMY)
       const withLowRoll = readBattleStacks().filter(({ column }) => column === 15)
       const high = await startBattle(aFiveStackFight(), { random: HIGHEST_ROLLS })
-      await castSpellAt(high.user, 'Chain Lightning', MIDDLE_ENEMY)
+      await castChainLightningAt(high.user, MIDDLE_ENEMY)
       const withHighRoll = readBattleStacks().filter(({ column }) => column === 15)
 
       expect([withLowRoll, withHighRoll]).toEqual([
@@ -261,13 +269,41 @@ describe('battle Chain Lightning behavior', () => {
     })
   })
 
+  describe('the stacks hit', () => {
+    // Three stacks of 5 Pikemen: 105 and 52 kill the first two, 26 kills 2 of the third.
+    test('given Chain Lightning kills a stack further down the chain then it falls only when the bolt reaches it', async () => {
+      const { user } = await startBattle(aFiveStackFight({ count: 15 }))
+
+      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      const shown = [readEnemyStacks()]
+      for (let jump = 0; jump < 2; jump += 1) {
+        await waitMs(300)
+        shown.push(readEnemyStacks())
+      }
+
+      expect(shown).toEqual([
+        [stackAt('Dead Pikemen', 3, 15), stackAt('Pikemen 5', 6, 15), stackAt('Pikemen 5', 9, 15)],
+        [
+          stackAt('Dead Pikemen', 3, 15),
+          stackAt('Dead Pikemen', 6, 15),
+          stackAt('Pikemen 5', 9, 15)
+        ],
+        [
+          stackAt('Dead Pikemen', 3, 15),
+          stackAt('Dead Pikemen', 6, 15),
+          stackAt('Pikemen 3', 9, 15)
+        ]
+      ])
+    })
+  })
+
   describe('damage', () => {
     // Power 1: 25 + 40 = 65, then 32, 16 and 8.
     test('given Power 1 and no Air Magic when Chain Lightning hits four stacks then they take 65, 32, 16 and 8', async () => {
       const hero = aCaster({ army: TWO_PIKEMEN_STACKS, power: 1 })
       const { user } = await startBattle(aFiveStackFight({ hero }))
 
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
 
       expect(readCombatMessages().at(-1)).toMatch(/^The Chain Lightning does 121 damage\./)
     })
@@ -281,7 +317,7 @@ describe('battle Chain Lightning behavior', () => {
       await playOnToNextRound(user)
       await playOnToNextRound(user)
 
-      await castSpellAt(user, 'Chain Lightning', BOTTOM_ENEMY)
+      await castChainLightningAt(user, BOTTOM_ENEMY)
 
       expect(readCombatMessages().at(-1)).toMatch(/^The Chain Lightning does 192 damage\./)
     })
@@ -291,7 +327,7 @@ describe('battle Chain Lightning behavior', () => {
     test('given Chain Lightning hits several stacks then the combat log reads the cast, the total damage and how many creatures perish', async () => {
       const { user } = await startBattle(aFiveStackFight())
 
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
 
       expect(readCombatMessages().slice(-2)).toEqual([
         "Lord Haart casts 'Chain Lightning'.",
@@ -304,7 +340,7 @@ describe('battle Chain Lightning behavior', () => {
     test('given Chain Lightning kills the last enemy stack then the hero wins', async () => {
       const { user } = await startBattle(aFight({ count: 5 }))
 
-      await castSpellAt(user, 'Chain Lightning', hexAt(6, 15))
+      await castChainLightningAt(user, hexAt(6, 15))
       await waitForBattleResults()
 
       expect(readBattleResultsSide('Attacker')).toEqual(['Lord Haart', 'Victorious'])
@@ -314,7 +350,7 @@ describe('battle Chain Lightning behavior', () => {
       const hero = aCaster({ army: [stack('PIKEMAN', 5)] })
       const { user } = await startBattle(aFight({ hero, count: 50 }))
 
-      await castSpellAt(user, 'Chain Lightning', hexAt(6, 15))
+      await castChainLightningAt(user, hexAt(6, 15))
       await waitForBattleResults()
 
       expect(readBattleResultsSide('Attacker')).toEqual(['Lord Haart', 'Defeated'])
@@ -326,7 +362,7 @@ describe('battle Chain Lightning behavior', () => {
       const eventLog = createMemoryEventLog()
       const scenario = aFiveStackFight()
       const { user } = await startBattle(scenario, { eventLog })
-      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      await castChainLightningAt(user, TOP_ENEMY)
 
       await reloadBattle(scenario, { eventLog })
 

@@ -89,7 +89,7 @@ export function getBattlefield() {
 export function readBattleStacks() {
   return within(getBattlefield())
     .queryAllByRole('img')
-    .filter((image) => !image.closest(BATTLE_EFFECT))
+    .filter((image) => image.closest('[role="gridcell"]') && !image.closest(BATTLE_EFFECT))
     .map((creature) => ({
       stack: describeBattleStack(creature),
       ...readHexPosition(creature.closest('[role="gridcell"]'))
