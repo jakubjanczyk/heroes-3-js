@@ -106,6 +106,16 @@ describe('battle Dispel behavior', () => {
       expect(reachesOnlyTheirOwnSpeed()).toEqual([true, false])
     })
 
+    test('given the hero casts Dispel on the Swordsmen then the status bar stops asking for a spell target', async () => {
+      const { user } = await startBattle(aFight({ hero: aDispeller() }))
+      await castSpellAt(user, 'Haste', OWN_HEX)
+      await playOnToNextRound(user)
+
+      await castSpellAt(user, 'Dispel', OWN_HEX)
+
+      expect(getBattleStatusBarText()).toBe('')
+    })
+
     // The Swordsmen's 60-90 with Attack 12 against the Pikemen's Defense 2 (5 − 3) is +50%: 90-135;
     // without Disrupting Ray it would be +35%, 81-121.
     test('given Disrupting Ray and Slow on the Pikemen when the hero casts Advanced Dispel on them then their Defense stays lowered', async () => {
