@@ -677,7 +677,7 @@ export const registerBattleViewModule = defineModule(
 
       const spellId = pickedSpell.id
       pickedSpell = null
-      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId: target.id })
+      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId: target.id, hex })
     }
 
     // A click on a hex: move there, or shoot or attack the enemy standing on it.

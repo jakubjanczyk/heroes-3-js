@@ -6,6 +6,7 @@ import {
   castHealingSpell,
   castLastingSpell,
   castRemovingSpell,
+  chainTargetIds,
   createBattle,
   defendStack,
   endTurn,
@@ -41,7 +42,7 @@ import {
 } from '../../../game/heroes/battle-results.js'
 import { canCastInBattle, isHelpful, spellTargeting } from '../../../game/heroes/battle-spells.js'
 import { getSpellBalance, getSpellDamageTakenPercent } from '../../../game/heroes/battle-stats.js'
-import { getHexDistance, isOnBattlefield } from '../../../game/heroes/battlefield.js'
+import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
@@ -118,12 +119,15 @@ function castDetail({ hero, spell, definitions }) {
 }
 
 // The damage each stack hit takes, as it was when cast.
+// Each jump of a chain spell halves what the stack before it took.
 function damageHits({ battle, hero, spell, definitions, targetIds }) {
   const damage = spellDamage({ hero, spell, definitions })
-  return targetIds.map((stackId) => {
+  const factor = spell.chain?.factor ?? 1
+  return targetIds.map((stackId, place) => {
     const stack = battle.stacks.find(({ id }) => id === stackId)
     const percent = getSpellDamageTakenPercent(stack, spell.schools ?? [])
-    return { stackId, damage: Math.floor((damage * percent) / 100) }
+    const lessened = Math.floor((damage * percent) / 100)
+    return { stackId, damage: Math.floor(lessened * factor ** place) }
   })
 }
 
@@ -519,7 +523,20 @@ export const registerBattleModule = defineModule(
       if (castsOnAllStacks(hero, spell)) {
         return targetIds.length === 0 ? { noOne: true } : { targetIds }
       }
-      return targetIds.includes(targetId) ? { targetIds: [targetId] } : null
+      if (!targetIds.includes(targetId)) {
+        return null
+      }
+      return spell.chain
+        ? { targetIds: chainOf(hero, spell, { targetId, hex }) }
+        : { targetIds: [targetId] }
+    }
+
+    function chainOf(hero, spell, { targetId, hex }) {
+      const target = battle.stacks.find(({ id }) => id === targetId)
+      const landedOn =
+        hex && getStackHexes(target).some((own) => isSameHex(own, hex)) ? hex : target.hex
+      const strikes = spell.chain.strikes[spellSkillLevel(hero, spell)]
+      return chainTargetIds(battle, { targetId, hex: landedOn, strikes, random })
     }
 
     function castDetailOn(hero, spell, { hex, targetIds }) {

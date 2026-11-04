@@ -178,6 +178,30 @@ export function areaTargetIds(battle, area, hex) {
     .map(({ id }) => id)
 }
 
+function nearestHexes(from, stacks) {
+  const hexes = stacks.flatMap((stack) => getStackHexes(stack).map((hex) => ({ stack, hex })))
+  const nearest = Math.min(...hexes.map(({ hex }) => getHexDistance(from, hex)))
+  return hexes.filter(({ hex }) => getHexDistance(from, hex) === nearest)
+}
+
+// The bolt jumps from the hex it landed on to the nearest hex of a living stack it hasn't hit yet,
+// either side's; a tie between hexes as near is rolled.
+export function chainTargetIds(battle, { targetId, hex, strikes, random }) {
+  const hitIds = [targetId]
+  let from = hex
+  while (hitIds.length < strikes) {
+    const left = livingStacks(battle).filter(({ id }) => !hitIds.includes(id))
+    if (left.length === 0) {
+      break
+    }
+    const ties = nearestHexes(from, left)
+    const next = ties[Math.min(ties.length - 1, Math.floor(random() * ties.length))]
+    hitIds.push(next.stack.id)
+    from = next.hex
+  }
+  return hitIds
+}
+
 export const hasLivingStacks = (battle, side) =>
   livingStacks(battle).some((stack) => stack.side === side)
 

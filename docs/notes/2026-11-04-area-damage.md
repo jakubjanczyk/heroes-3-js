@@ -136,10 +136,12 @@ Checked again for this part against the wiki's raw Chain Lightning page and the 
 What we do:
 
 - **Data.** `"damage": { "base": [25, 25, 50, 100], "perPower": 40 }` and `"chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 }` in `game/data/spells.json`.
-- **Aiming** as a bolt: "Cast Chain Lightning on Pikemen" over an enemy stack, the spell cursor; hovering lights the target's hexes and **every stack the chain would hit glows**, as for the area spells (not on a touch screen). "Select Spell Target" elsewhere, cancelling as now.
-- **The fact** has the first `targetId` and `hits` in the chain's order, each with its share of the damage, so a reload replays it.
+- **Aiming** as a bolt: "Cast Chain Lightning on Pikemen" over an enemy stack, the spell cursor; hovering lights the target's hexes and only the target glows, as for a bolt: where the chain would jump isn't shown (decided with the user). "Select Spell Target" elsewhere, cancelling as now.
+- **A tie** between hexes as near is picked at random, as the wiki says (decided with the user).
+- **The fact** has the first `targetId` and `hits` in the chain's order, each with its share of the damage, so a reload replays it. A random tie replays the same.
 - **A burst of light over each stack hit**; the end of the battle as for the other area spells.
 - **The demo map's first hero knows it.**
+- **Part 4 is built:** Chain Lightning; the demo map's first hero knows it.
 
 ### Not yet (parts 2 to 4)
 
@@ -153,6 +155,6 @@ What we do:
 - The multipliers for Power come from the wiki only (as for the bolts, see `docs/notes/2026-11-01-casting-in-battle.md`).
 - Whether the original game lets an area spell be aimed at an empty hex: the engine does; the wiki says nothing.
 - What happens in the original game when a spell kills every stack on both sides.
-- Chain Lightning's tie between two hexes as near: random (wiki) or towards the other side, then the nearer row (engine). Where the next jump is counted from (the hex the bolt landed on) comes from the engine only.
+- Chain Lightning's tie between two hexes as near: random (wiki, which we follow) or towards the other side, then the nearer row (engine). Where the next jump is counted from (the hex the bolt landed on) comes from the engine only.
 - Armageddon's and Death Ripple's multipliers for Power come from the wiki only.
 - Whether the original game's damage line holds the damage to what the stacks had left (the engine does); we add up the spell's damage, as for a bolt.
