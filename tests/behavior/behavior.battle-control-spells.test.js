@@ -15,6 +15,7 @@ import {
   readBattleStacks,
   readCombatMessages,
   readStackCountColour,
+  readStackCountColours,
   reloadBattle,
   shootAt,
   startBattle,
@@ -244,15 +245,32 @@ describe('battle control spells behavior', () => {
       ])
     })
 
-    test('given an Expert Water hero casts Forgetfulness then no Archer stack shoots and the combat log names no target', async () => {
+    test('given an Expert Water hero casts Forgetfulness then both Archer stacks turn red, the Swordsmen do not, and neither Archer stack shoots', async () => {
       const hero = aBlinder({ secondarySkills: WATER('EXPERT') })
-      const { user } = await startBattle(aFight({ hero, monster: 'ARCHER', count: 20, stacks: 2 }))
+      const { user } = await startBattleWithStyles(
+        aFight({ hero, monster: 'ARCHER', count: 20, stacks: 2 })
+      )
 
       await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
       const message = readCombatMessages().at(-1)
+      const colours = readStackCountColours()
+      const archerColours = colours.filter(({ stack }) => stack === 'Archers 10')
       await playOnToNextRound(user)
 
-      expect([message, archersDamage()]).toEqual(["Lord Haart casts 'Forgetfulness'.", []])
+      expect([
+        message,
+        colours,
+        archerColours.map(({ colour }) => colour),
+        archersDamage()
+      ]).toEqual([
+        "Lord Haart casts 'Forgetfulness'.",
+        expect.arrayContaining([
+          { stack: 'Swordsmen 10', colour: 'purple' },
+          { stack: 'Archers 10', colour: 'red' }
+        ]),
+        ['red', 'red'],
+        []
+      ])
     })
 
     test('given a hero with Power 1 and Advanced Water cast Forgetfulness on the Archers when the next round starts then they shoot again', async () => {
