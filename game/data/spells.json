@@ -783,12 +783,6 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
-    "notOnUndead": true,
-    "lasting": {
-      "target": "own",
-      "untilOwnTurn": true,
-      "effects": { "attackFromDefensePercent": [100, 100, 150, 200] }
-    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1569,6 +1563,12 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "notOnUndead": true,
+    "lasting": {
+      "target": "own",
+      "untilOwnTurn": true,
+      "effects": { "attackFromDefensePercent": [100, 100, 150, 200] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
