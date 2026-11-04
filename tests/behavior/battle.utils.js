@@ -377,3 +377,10 @@ export function readStackCountColour(row, column) {
   const colour = window.getComputedStyle(count).backgroundColor
   return COUNT_COLOURS[colour] ?? colour
 }
+
+export function readStackCountColours() {
+  return readBattleStacks().map(({ stack, row, column }) => ({
+    stack,
+    colour: readStackCountColour(row, column)
+  }))
+}

@@ -125,13 +125,17 @@ Checked against the Heroes 3 wiki's raw page source (Haste, Slow, Precision, Pra
 - **The value** is Expert's on every stack, for as many rounds as the hero's Power; a stack that already has the spell keeps the longer duration, as for one stack.
 - **The cost** is Expert's, paid once (the costs in `game/data/spells.json`).
 - **The combat log:** "Lord Haart casts 'Haste'." (`core.genrltxt.196`, "%s casts '%s'."; engine). The engine writes the one-stack line ("… on the Swordsmen.", `195`) when only one stack is hit.
+
+### Decided with the user
+
+- When an Expert spell hits only one stack (one enemy stack left, or one shooter for Precision), the combat log names it, as the engine does: "Lord Haart casts 'Slow' on the Pikemen."
 - **Haste and Prayer** change the turn order for the rest of the round, as on one stack; the stack whose turn it is keeps it.
 
 ### What we do
 
 - `game/data/spells.json`: each of the fifteen spells' `lasting` gets `allAtExpert: true`; another such spell is data only.
 - Picking one with Expert in its school casts it straight from the book; below Expert it is aimed as now.
-- The cast fact names every stack hit, so a reload puts the spell back on the same stacks.
+- The cast fact names every stack hit (`targetIds`), so a reload puts the spell back on the same stacks. The book asks the battle to cast, and closes when the cast is saved, or shows "That spell will affect no one!" when the battle finds no stack.
 - A burst of light over each stack hit.
 
 ### Not yet (part 3)

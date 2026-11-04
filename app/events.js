@@ -46,7 +46,8 @@ export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAt
 export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackShoot.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
 export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
-// The hero casts the spell on the stack `targetId`.
+// The hero casts the spell on the stack `targetId`, or on every stack it can go on when the spell
+// hits them all at the hero's skill level.
 export const APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED = 'command.battle.spellCast.requested'
 export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
@@ -94,7 +95,7 @@ export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
 // Bad morale: the stack loses its turn.
 export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
-// The hero's spell, its target, the spell points it cost, and the damage it did or, for a spell
+// The hero's spell, its target (`targetIds` for a spell that hit every stack), the spell points it cost, and the damage it did or, for a spell
 // that lasts, its effects and how many rounds they last.
 export const APP_FACT_BATTLE_SPELL_CAST = 'fact.battle.spell.cast'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
@@ -173,6 +174,7 @@ export const APP_UI_HERO_SCREEN_OPEN_REQUESTED = 'ui.heroScreen.openRequested'
 export const APP_UI_SPELL_BOOK_OPEN_REQUESTED = 'ui.spellBook.openRequested'
 // A spell picked from the book in battle, waiting for the player to click its target.
 export const APP_UI_BATTLE_SPELL_PICKED = 'ui.battle.spellPicked'
+export const APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE = 'ui.battle.spellAffectsNoOne'
 // A hero walked onto another of the player's heroes: `heroId` came to `otherHeroId`.
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.

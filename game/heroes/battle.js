@@ -157,10 +157,13 @@ export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
-export function isLivingSpellTarget(battle, targeting, targetId) {
-  const target = livingStacks(battle).find(({ id }) => id === targetId)
+export function spellTargetIds(battle, targeting) {
   const caster = getActiveStack(battle)
-  return Boolean(target && caster && isSpellTarget(targeting, target, caster.side))
+  return caster
+    ? livingStacks(battle)
+        .filter((target) => isSpellTarget(targeting, target, caster.side))
+        .map(({ id }) => id)
+    : []
 }
 
 export const hasLivingStacks = (battle, side) =>

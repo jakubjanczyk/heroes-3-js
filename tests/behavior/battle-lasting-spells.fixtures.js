@@ -4,12 +4,12 @@ import { aHero, aMonster, anArtifactDefinition, aScenario, aSpellDefinition } fr
 
 export const HERO = 'Lord Haart'
 
-const aLastingSpell = ({ name, schools, costs, ...lasting }) =>
+const aLastingSpell = ({ name, schools, costs, allAtExpert = true, ...lasting }) =>
   aSpellDefinition()
     .withName(name)
     .withSchools(schools)
     .withCosts(costs)
-    .withLasting(lasting)
+    .withLasting(allAtExpert ? { ...lasting, allAtExpert } : lasting)
     .describedAs(`${name} description.`)
     .build()
 
@@ -92,6 +92,7 @@ const spellDefinitions = {
     target: 'enemy',
     untilBattleEnds: true,
     addsUp: true,
+    allAtExpert: false,
     effects: { defense: [-3, -3, -4, -5] }
   })
 }

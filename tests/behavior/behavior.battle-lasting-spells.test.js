@@ -98,8 +98,8 @@ describe('battle lasting spells behavior', () => {
     test.each([
       { level: 'no skill', secondarySkills: [], farthest: 9 },
       {
-        level: 'Expert Air Magic',
-        secondarySkills: [{ skill: 'AIR_MAGIC', level: 'EXPERT' }],
+        level: 'Advanced Air Magic',
+        secondarySkills: [{ skill: 'AIR_MAGIC', level: 'ADVANCED' }],
         farthest: 11
       }
     ])('given the hero has $level when the hero casts Haste on the Swordsmen then they reach column $farthest and no farther', async ({
