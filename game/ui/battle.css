@@ -511,6 +511,41 @@
 }
 
 /* A stand-in for the spell's own animation: a burst of light over the stack it hit. */
+.battle-spell-bolt {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: spell-bolt var(--battle-effect-ms, 1s) ease-out forwards;
+}
+
+.battle-spell-bolt__glow {
+  stroke: rgb(100 140 255 / 55%);
+  stroke-width: 10px;
+}
+
+.battle-spell-bolt__core {
+  stroke: rgb(255 255 255 / 95%);
+  stroke-width: 3px;
+}
+
+@keyframes spell-bolt {
+  from,
+  40% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 .battle-effect.spell-hit {
   inset-block-end: 20%;
   inline-size: 56px;

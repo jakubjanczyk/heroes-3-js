@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import { createMemoryEventLog, readGameData } from './app.utils.js'
+import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
 import {
   castSpellAt,
   clickBattleHex,
@@ -9,10 +9,12 @@ import {
   hoverBattleHex,
   pickSpell,
   playOnToNextRound,
+  readBattleEffects,
   readBattleResultsSide,
   readBattleSpellPoints,
   readBattleStacks,
   readCombatMessages,
+  readSpellBolts,
   readStacksGlowingForSpell,
   reloadBattle,
   startBattle,
@@ -226,6 +228,35 @@ describe('battle Chain Lightning behavior', () => {
       expect([withLowRoll, withHighRoll]).toEqual([
         [stackAt('Pikemen 15', 3, 15), stackAt('Pikemen 10', 6, 15), stackAt('Pikemen 18', 9, 15)],
         [stackAt('Pikemen 18', 3, 15), stackAt('Pikemen 10', 6, 15), stackAt('Pikemen 15', 9, 15)]
+      ])
+    })
+  })
+
+  describe('the bolt', () => {
+    // The bolt takes 300 ms to jump from one stack to the next.
+    test('given Chain Lightning is cast then the bolt jumps from stack to stack, a burst over each as it reaches it', async () => {
+      const { user } = await startBattle(aFiveStackFight())
+
+      await castSpellAt(user, 'Chain Lightning', TOP_ENEMY)
+      const shown = [[readBattleEffects(), readSpellBolts()]]
+      for (let jump = 0; jump < 3; jump += 1) {
+        await waitMs(300)
+        shown.push([readBattleEffects(), readSpellBolts()])
+      }
+
+      const burst = (row, column) => ({ effect: 'Chain Lightning', row, column })
+      const bolt = 'Chain Lightning bolt'
+      expect(shown).toEqual([
+        [[burst(3, 15)], []],
+        [[burst(3, 15), burst(6, 15)], [bolt]],
+        [
+          [burst(3, 15), burst(6, 15), burst(9, 15)],
+          [bolt, bolt]
+        ],
+        [
+          [burst(3, 15), burst(6, 15), burst(9, 1), burst(9, 15)],
+          [bolt, bolt, bolt]
+        ]
       ])
     })
   })

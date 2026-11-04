@@ -642,9 +642,9 @@ function describeSpellLosses(damaged) {
 }
 
 // Each stack hit takes its own damage: a Protection lessens it on the stack it is on.
-export function castDamageSpell(battle, { heroName, spellName, hits }) {
+export function castDamageSpell(battle, { heroName, spellName, hits, chained }) {
   const targetIds = hits.map(({ stackId }) => stackId)
-  const cast = castOnStacks(battle, { heroName, spellName, targetIds }, (stack) => stack)
+  const cast = castOnStacks(battle, { heroName, spellName, targetIds, chained }, (stack) => stack)
   if (hits.length === 0) {
     return cast
   }
@@ -704,17 +704,23 @@ function castMessage(battle, { heroName, spellName, targetIds }) {
   return `${heroName} casts '${spellName}' on the ${target.name}.`
 }
 
+// A chain spell's hits come one after another, each from the stack hit before it.
+function spellHitEffects({ spellName, targetIds, chained }) {
+  return targetIds.map((stackId, place) =>
+    chained && place > 0
+      ? { stackId, kind: 'spellHit', spellName, place, from: targetIds[place - 1] }
+      : { stackId, kind: 'spellHit', spellName }
+  )
+}
+
 // The spell changes its targets; the stack whose turn it is keeps it.
-function castOnStacks(battle, { heroName, spellName, targetIds }, change) {
+function castOnStacks(battle, { heroName, spellName, targetIds, chained }, change) {
   return {
     ...battle,
     heroCastThisRound: true,
     turnStackId: getActiveStack(battle)?.id ?? null,
     stacks: battle.stacks.map((stack) => (targetIds.includes(stack.id) ? change(stack) : stack)),
-    effects: [
-      ...battle.effects,
-      ...targetIds.map((stackId) => ({ stackId, kind: 'spellHit', spellName }))
-    ],
+    effects: [...battle.effects, ...spellHitEffects({ spellName, targetIds, chained })],
     messages: [...battle.messages, castMessage(battle, { heroName, spellName, targetIds })]
   }
 }

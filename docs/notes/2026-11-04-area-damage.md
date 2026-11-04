@@ -139,7 +139,7 @@ What we do:
 - **Aiming** as a bolt: "Cast Chain Lightning on Pikemen" over an enemy stack, the spell cursor; hovering lights the target's hexes and only the target glows, as for a bolt: where the chain would jump isn't shown (decided with the user). "Select Spell Target" elsewhere, cancelling as now.
 - **A tie** between hexes as near is picked at random, as the wiki says (decided with the user).
 - **The fact** has the first `targetId` and `hits` in the chain's order, each with its share of the damage, so a reload replays it. A random tie replays the same.
-- **A burst of light over each stack hit**; the end of the battle as for the other area spells.
+- **The bolt jumps from stack to stack**, 300 ms a jump: a jagged bolt is drawn from each stack hit to the next and the burst of light shows over a stack as the bolt reaches it (asked for by the user; the damage and the counts change at once). The end of the battle as for the other area spells.
 - **The demo map's first hero knows it.**
 - **Part 4 is built:** Chain Lightning; the demo map's first hero knows it.
 
@@ -148,7 +148,7 @@ What we do:
 - Immunities: Earth and Magma Elementals, Gold and Black Dragons, Efreet, Phoenixes, Pendant of Life and Pendant of Negativity, Armageddon's Blade (4.8.6, 7.8, 6.5). A stack that resists Chain Lightning, which it skips and keeps arcing (4.8.6.2).
 - War machines, spared by Death Ripple.
 - The Orbs, hero specialties (Septienna, Solmyr) and elementals' vulnerability (7.8, 6.5).
-- Each spell's own animation, Chain Lightning's ray from stack to stack (10.3).
+- Each spell's own animation (10.3); Chain Lightning's bolt from stack to stack is drawn already.
 
 ## Not checked
 

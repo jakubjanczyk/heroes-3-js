@@ -127,6 +127,13 @@ export function readBattleEffects() {
   }))
 }
 
+// The bolts a chain spell draws from one stack to the next, named after the spell.
+export function readSpellBolts() {
+  return within(getBattlefield())
+    .queryAllByRole('img', { name: /bolt$/ })
+    .map((bolt) => bolt.getAttribute('aria-label'))
+}
+
 export function readActiveStack() {
   const active = within(getBattlefield()).getAllByRole('img', { current: true })
   expect(active).toHaveLength(1)

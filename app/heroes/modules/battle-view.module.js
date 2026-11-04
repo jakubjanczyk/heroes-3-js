@@ -41,6 +41,7 @@ const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-lef
 
 // The game plays a short animation over the stack; ours is the morale or luck picture, faded out.
 const EFFECT_MS = 1000
+const CHAIN_JUMP_MS = 300
 
 const EFFECTS = Object.freeze({
   goodMorale: { icon: 'morale', label: 'Good morale', state: 'good' },
@@ -57,6 +58,46 @@ const COMMAND_BY_ACTION = {
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
+
+const SVG = 'http://www.w3.org/2000/svg'
+
+function centreWithin(container, element) {
+  const outer = container.getBoundingClientRect()
+  const inner = element.getBoundingClientRect()
+  return {
+    x: inner.left + inner.width / 2 - outer.left,
+    y: inner.top + inner.height / 2 - outer.top
+  }
+}
+
+// A jagged line: a few points pushed off the straight path, either way in turn.
+function boltPoints({ from, to }) {
+  const length = Math.hypot(to.x - from.x, to.y - from.y) || 1
+  const across = { x: -(to.y - from.y) / length, y: (to.x - from.x) / length }
+  const bends = 6
+  return Array.from({ length: bends + 1 }, (_, bend) => {
+    const along = bend / bends
+    const offset =
+      bend === 0 || bend === bends ? 0 : (bend % 2 ? 1 : -1) * Math.min(14, length / 10)
+    return `${from.x + (to.x - from.x) * along + across.x * offset},${from.y + (to.y - from.y) * along + across.y * offset}`
+  }).join(' ')
+}
+
+function renderSpellBolt(document, { spellName, from, to }) {
+  const bolt = document.createElementNS(SVG, 'svg')
+  bolt.setAttribute('class', 'battle-spell-bolt')
+  bolt.setAttribute('role', 'img')
+  bolt.setAttribute('aria-label', `${spellName} bolt`)
+  const points = boltPoints({ from, to })
+  for (const kind of ['glow', 'core']) {
+    const line = document.createElementNS(SVG, 'polyline')
+    line.setAttribute('class', `battle-spell-bolt__${kind}`)
+    line.setAttribute('points', points)
+    bolt.append(line)
+  }
+  return bolt
+}
+
 export const registerBattleViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document
@@ -513,6 +554,14 @@ export const registerBattleViewModule = defineModule(
     }
 
     function showEffect(shownEffect) {
+      if (shownEffect.place) {
+        setTimeout(() => showChainJump(shownEffect), shownEffect.place * CHAIN_JUMP_MS)
+        return
+      }
+      showEffectOnStack(shownEffect)
+    }
+
+    function showEffectOnStack(shownEffect) {
       const stack = stackElements.get(shownEffect.stackId)?.stack
       if (!stack) {
         return
@@ -521,6 +570,24 @@ export const registerBattleViewModule = defineModule(
       const effect = renderEffect(shownEffect)
       stack.append(effect)
       setTimeout(() => effect.remove(), EFFECT_MS)
+    }
+
+    function showChainJump(shownEffect) {
+      const from = stackElements.get(shownEffect.from)?.stack
+      const to = stackElements.get(shownEffect.stackId)?.stack
+      if (!battlefield || !from || !to) {
+        return
+      }
+
+      const bolt = renderSpellBolt(document, {
+        spellName: shownEffect.spellName,
+        from: centreWithin(battlefield, from),
+        to: centreWithin(battlefield, to)
+      })
+      bolt.style.setProperty('--battle-effect-ms', `${EFFECT_MS}ms`)
+      battlefield.append(bolt)
+      setTimeout(() => bolt.remove(), EFFECT_MS)
+      showEffectOnStack(shownEffect)
     }
 
     function showActions({ canWait, canDefend, canRetreat, canCastSpell, autoCombat }) {
