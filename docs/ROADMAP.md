@@ -659,7 +659,8 @@ In four parts. Your own stacks are hit too. See `docs/notes/2026-11-04-area-dama
 
 #### 4.8.6 Immunities and Resistance
 In three parts.
-- [ ] 4.8.6.1 Undead immune to mind spells, creatures resisting some spell levels or schools
+- [x] 4.8.6.1 Undead immune to Bless, Curse, Mirth and Sorrow: not a target, and left out at Expert. See `docs/notes/2026-11-04-spell-immunities.md`
+- [ ] Creatures resisting some spell levels or schools, and Golems' spell damage reduction, with the creatures (6.5)
 - [ ] 4.8.6.2 The Resistance skill's chance an enemy spell fails on a stack
 - [ ] 4.8.6.3 Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity (7.8.7)
 
