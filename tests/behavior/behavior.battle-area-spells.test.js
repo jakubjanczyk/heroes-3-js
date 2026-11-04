@@ -20,6 +20,7 @@ import {
   readCombatMessages,
   readHighlightedBattleHexes,
   readStackCountColours,
+  readStacksGlowingForSpell,
   reloadBattle,
   startBattle,
   startBattleWithStyles,
@@ -207,6 +208,57 @@ describe('battle area spells behavior', () => {
         hexAt(7, 7),
         hexAt(7, 8)
       ])
+    })
+
+    test("given the hero's stacks stand side by side when the mouse is over the middle one with Fireball picked then the three stacks it would hit glow", async () => {
+      const { user } = await startBattleWithStyles(
+        aFight({ hero: aCaster({ army: SEVEN_PIKEMEN }) })
+      )
+      await pickSpell(user, 'Fireball')
+
+      await hoverBattleHex(user, OWN_HEX.row, OWN_HEX.column)
+
+      expect(readStacksGlowingForSpell()).toEqual([
+        stackAt('Pikemen 10', 5, 1),
+        stackAt('Pikemen 10', 6, 1),
+        stackAt('Pikemen 10', 7, 1)
+      ])
+    })
+
+    test("given the hero's stacks stand side by side when the mouse is over the middle one with Frost Ring picked then only the two next to it glow", async () => {
+      const { user } = await startBattleWithStyles(
+        aFight({ hero: aCaster({ army: SEVEN_PIKEMEN }) })
+      )
+      await pickSpell(user, 'Frost Ring')
+
+      await hoverBattleHex(user, OWN_HEX.row, OWN_HEX.column)
+
+      expect(readStacksGlowingForSpell()).toEqual([
+        stackAt('Pikemen 10', 5, 1),
+        stackAt('Pikemen 10', 7, 1)
+      ])
+    })
+
+    test('given Fireball is picked when the mouse moves from the Pikemen to an empty hex then no stack glows', async () => {
+      const { user } = await startBattleWithStyles(aFight())
+      await pickSpell(user, 'Fireball')
+      await hoverBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+      const glowingOverPikemen = readStacksGlowingForSpell()
+
+      await hoverBattleHex(user, 6, 8)
+
+      expect([glowingOverPikemen, readStacksGlowingForSpell()]).toEqual([
+        [stackAt('Pikemen 50', 6, 15)],
+        []
+      ])
+    })
+
+    test('given Fireball is cast on the Pikemen then they no longer glow', async () => {
+      const { user } = await startBattleWithStyles(aFight())
+
+      await castSpellAt(user, 'Fireball', ENEMY_HEX)
+
+      expect(readStacksGlowingForSpell()).toEqual([])
     })
 
     test('given Fireball is picked when the player clicks the edge column then the spell is cancelled', async () => {
