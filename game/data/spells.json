@@ -638,6 +638,8 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
+    "damage": { "base": [10, 10, 20, 30], "perPower": 5 },
+    "targets": "living",
     "descriptions": [
       {
         "title": "Death Ripple",

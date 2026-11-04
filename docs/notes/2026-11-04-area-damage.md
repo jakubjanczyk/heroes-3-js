@@ -117,6 +117,7 @@ Checked against the Heroes 3 wiki's raw page source (Death Ripple, Armageddon, C
 - **The fact** keeps `hits`, each stack's damage as it was when cast, as the area spells do, so a reload and a random tie replay the same.
 - **Cast straight from the book.** A spell with `targets` goes straight from the battle book as an Expert lasting spell does (part 2); its fact has `hits` and no target or hex.
 - **Part 2 is built:** Armageddon, and the demo map's first hero knows it.
+- **Part 3 is built:** Death Ripple, which leaves out every stack whose creature is undead; the demo map's first hero knows it.
 
 ### Not yet (parts 2 to 4)
 

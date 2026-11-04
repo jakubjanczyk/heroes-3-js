@@ -10,7 +10,11 @@ import {
   startBattle
 } from './battle.utils.js'
 import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
-import { querySpellBook } from './spell-book.utils.js'
+import {
+  querySpellBook,
+  readSpellBookMessage,
+  readSpellBookSpellPoints
+} from './spell-book.utils.js'
 
 const spellDefinitions = {
   ARMAGEDDON: aSpellDefinition()
@@ -21,6 +25,15 @@ const spellDefinitions = {
     .withDamage({ base: [30, 30, 60, 120], perPower: 50 })
     .withTargets('all')
     .describedAs('Armageddon description.')
+    .build(),
+  DEATH_RIPPLE: aSpellDefinition()
+    .withName('Death Ripple')
+    .withLevel(2)
+    .withSchools(['EARTH'])
+    .withCosts([10, 8, 8, 8])
+    .withDamage({ base: [10, 10, 20, 30], perPower: 5 })
+    .withTargets('living')
+    .describedAs('Death Ripple description.')
     .build()
 }
 
@@ -48,13 +61,10 @@ const aCaster = ({ army = [stack('SWORDSMAN', 10)], secondarySkills = [] } = {})
     .withSpells(Object.keys(spellDefinitions))
     .withArmy(army)
 
-const aFight = ({ hero = aCaster(), pikemen = 50, stacks = 1 } = {}) =>
+const aFight = ({ hero = aCaster(), monster = 'PIKEMAN', pikemen = 50, stacks = 1 } = {}) =>
   aScenario()
     .withSize(3)
-    .withEntities(
-      hero,
-      aMonster().withType('PIKEMAN').withCount(pikemen).withStacks(stacks).at(1, 0)
-    )
+    .withEntities(hero, aMonster().withType(monster).withCount(pikemen).withStacks(stacks).at(1, 0))
     .withDefinitions(gameDefinitions)
 
 const SWORDSMEN_AND_PIKEMEN = [stack('SWORDSMAN', 10), stack('PIKEMAN', 30)]
@@ -113,6 +123,68 @@ describe('battle battlefield spells behavior', () => {
       expect(readBattleStacks()).toEqual([
         stackAt('Swordsmen 7', 6, 1),
         stackAt('Pikemen 37', 6, 15)
+      ])
+    })
+  })
+  // Death Ripple does 10 + 2 × 5 = 20 at Power 2: 2 Pikemen of 10 health, and wounds a Swordsman of 35.
+  describe('Death Ripple', () => {
+    test('given the hero has Pikemen and Skeletons when Death Ripple is clicked in the battle book then the book closes and every stack but the undead Skeletons is hit', async () => {
+      const hero = aCaster({ army: [stack('PIKEMAN', 30), stack('SKELETON', 20)] })
+      const { user } = await startBattle(aFight({ hero }))
+
+      await pickSpell(user, 'Death Ripple')
+
+      expect([querySpellBook(), readBattleStacks()]).toEqual([
+        null,
+        [stackAt('Pikemen 28', 3, 1), stackAt('Pikemen 48', 6, 15), stackAt('Skeletons 20', 9, 1)]
+      ])
+    })
+
+    // Expert: 30 + 2 × 5 = 40, a Swordsman (35) and 5 of the next one's health, or 4 Pikemen.
+    test('given the hero has Expert Earth Magic and Power 2 when Death Ripple is cast then each stack takes 40 damage', async () => {
+      const hero = aCaster({ secondarySkills: [{ skill: 'EARTH_MAGIC', level: 'EXPERT' }] })
+      const { user } = await startBattle(aFight({ hero }))
+
+      await pickSpell(user, 'Death Ripple')
+
+      expect(readBattleStacks()).toEqual([
+        stackAt('Swordsmen 9', 6, 1),
+        stackAt('Pikemen 46', 6, 15)
+      ])
+    })
+
+    test('given Death Ripple hits several stacks then the combat log reads the cast, the total damage and how many creatures perish', async () => {
+      const { user } = await startBattle(aFight())
+
+      await pickSpell(user, 'Death Ripple')
+
+      expect(readCombatMessages().slice(-2)).toEqual([
+        "Lord Haart casts 'Death Ripple'.",
+        'The Death Ripple does 40 damage. 2 creatures perish.'
+      ])
+    })
+
+    test('given the hero has only Skeletons when Death Ripple is cast then the combat log names the Pikemen as the one stack hit', async () => {
+      const hero = aCaster({ army: [stack('SKELETON', 20)] })
+      const { user } = await startBattle(aFight({ hero }))
+
+      await pickSpell(user, 'Death Ripple')
+
+      expect(readCombatMessages().slice(-2)).toEqual([
+        "Lord Haart casts 'Death Ripple' on the Pikemen.",
+        'The Death Ripple does 20 damage. 2 Pikemen perish.'
+      ])
+    })
+
+    test('given every stack on the battlefield is undead when Death Ripple is clicked then the book stays open, says the spell will affect no one and keeps all 30 spell points', async () => {
+      const hero = aCaster({ army: [stack('SKELETON', 20)] })
+      const { user } = await startBattle(aFight({ hero, monster: 'SKELETON' }))
+
+      await pickSpell(user, 'Death Ripple')
+
+      expect([readSpellBookMessage(), readSpellBookSpellPoints()]).toEqual([
+        ['', 'That spell will affect no one!'],
+        '30'
       ])
     })
   })
