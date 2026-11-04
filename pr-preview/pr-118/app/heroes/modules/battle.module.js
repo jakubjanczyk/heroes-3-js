@@ -610,7 +610,8 @@ export const registerBattleModule = defineModule(
       }
       return castDamageSpell(current, {
         ...named,
-        hits: hits ?? [{ stackId: targetId, damage }]
+        hits: hits ?? [{ stackId: targetId, damage }],
+        chained: Boolean(spell?.chain)
       })
     }
 
