@@ -676,7 +676,7 @@ In three parts.
   - [x] 4.8.7.2d Anti-Magic: an own stack no spell of level 1-3 / 1-4 / any reaches but Dispel; casting it removes the harmful spells on it
 - [ ] 4.8.7.3 Teleport, Clone and Sacrifice, one part each (see `docs/notes/2026-11-05-teleport-clone-sacrifice.md`):
   - [x] 4.8.7.3a Teleport: an own stack, then a free hex it moves to at once
-  - [ ] 4.8.7.3b Clone
+  - [x] 4.8.7.3b Clone: a copy of an own stack for Power rounds, gone when hit or when its original dies
   - [ ] 4.8.7.3c Sacrifice, with the dead counted
 
 #### 5.8 later

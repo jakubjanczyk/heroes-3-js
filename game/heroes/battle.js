@@ -12,6 +12,8 @@ import {
   isBlind
 } from './battle-stats.js'
 import {
+  BATTLEFIELD_COLUMNS,
+  BATTLEFIELD_ROWS,
   findHexPath,
   getAreaHexes,
   getFrontHexFor,
@@ -80,6 +82,7 @@ function createStacks({
       ...describeStack({ creature, count }, definitions),
       initialCount: count,
       speed: definition.speed,
+      tier: definition.tier ?? 1,
       flying: abilities.includes('flying'),
       doubleWide: abilities.includes('doubleWide'),
       attack: definition.attack + (skills?.attack ?? 0),
@@ -229,8 +232,9 @@ export function chainTargetIds(battle, { targeting, targetId, hex, strikes, rand
   return hitIds
 }
 
+// A clone doesn't keep its side in the battle.
 export const hasLivingStacks = (battle, side) =>
-  livingStacks(battle).some((stack) => stack.side === side)
+  livingStacks(battle).some((stack) => stack.side === side && !stack.cloneOf)
 
 // Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
 export function getTurnOrder(battle) {
@@ -298,10 +302,12 @@ export function endTurn(battle, stackId) {
     waitedStackIds: [],
     moraleStackIds: [],
     turnStackId: null,
-    stacks: battle.stacks.map((stack) => ({
-      ...countDownSpells(stack),
-      retaliationsUsed: 0
-    }))
+    stacks: withoutGoneClones(
+      battle.stacks.map((stack) => ({
+        ...countDownSpells(stack),
+        retaliationsUsed: 0
+      }))
+    )
   })
 }
 
@@ -624,13 +630,38 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random, luck
   }
 }
 
+const CLONE_SPELL = 'CLONE'
+
+// A clone is gone once it is hit, its original dies or its rounds are over.
+const isCloneGone = (clone, stacks) =>
+  !isAlive(clone) ||
+  !stacks.some((stack) => stack.id === clone.cloneOf && isAlive(stack)) ||
+  !(clone.spells ?? []).some(({ spellId }) => spellId === CLONE_SPELL)
+
+function withoutGoneClones(stacks) {
+  const goneIds = stacks
+    .filter((stack) => stack.cloneOf && isCloneGone(stack, stacks))
+    .map(({ id }) => id)
+  if (goneIds.length === 0) {
+    return stacks
+  }
+  return stacks
+    .filter(({ id }) => !goneIds.includes(id))
+    .map((stack) => (goneIds.includes(stack.cloneId) ? { ...stack, cloneId: null } : stack))
+}
+
+const clearGoneClones = (battle) => ({ ...battle, stacks: withoutGoneClones(battle.stacks) })
+
 function describeLosses(killed, nameFor) {
   return killed === 1 ? `One ${nameFor(1)} perishes.` : `${killed} ${nameFor(killed)} perish.`
 }
 
 // "The Angels do 175 damage. 17 Pikemen perish."
-function describeDamage(dealt, { killed, nameFor }) {
-  return killed === 0 ? dealt : `${dealt} ${describeLosses(killed, nameFor)}`
+function describeDamage(dealt, { killed, nameFor, clone }) {
+  if (clone) {
+    return [dealt, `The ${clone.name} perish.`]
+  }
+  return [killed === 0 ? dealt : `${dealt} ${describeLosses(killed, nameFor)}`]
 }
 
 // The stack after taking the damage, and how many of its creatures died.
@@ -642,7 +673,7 @@ function damageStack(battle, stackId, damage) {
   const killed = stack.count - wounded.count
   // A corpse keeps the name it fell with.
   const damaged = { ...wounded, name: wounded.count > 0 ? nameFor(wounded.count) : stack.name }
-  return { damaged, killed, nameFor }
+  return { damaged, killed, nameFor, clone: stack.cloneOf && damage > 0 ? stack : null }
 }
 
 function describeDealt(attacker, damage, fireShield) {
@@ -684,13 +715,16 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield
     messages: [
       ...battle.messages,
       ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
-      describeDamage(dealt, losses)
+      ...describeDamage(dealt, losses)
     ]
   }
 }
 
 // Several stacks hit: the log counts creatures rather than naming any one stack's.
 function describeSpellLosses(damaged) {
+  if (damaged.length === 1) {
+    return damaged[0]
+  }
   const killed = damaged.reduce((sum, hit) => sum + hit.killed, 0)
   const nameFor =
     damaged.length === 1 ? damaged[0].nameFor : (count) => (count === 1 ? 'creature' : 'creatures')
@@ -698,7 +732,9 @@ function describeSpellLosses(damaged) {
 }
 
 // Each stack hit takes its own damage: a Protection lessens it on the stack it is on.
-export function castDamageSpell(battle, { heroName, spellName, hits, chained }) {
+export const castDamageSpell = (battle, cast) => clearGoneClones(damageBySpell(battle, cast))
+
+function damageBySpell(battle, { heroName, spellName, hits, chained }) {
   const targetIds = hits.map(({ stackId }) => stackId)
   const cast = castOnStacks(battle, { heroName, spellName, targetIds, chained }, (stack) => stack)
   if (hits.length === 0) {
@@ -714,7 +750,7 @@ export function castDamageSpell(battle, { heroName, spellName, hits, chained }) 
     }),
     messages: [
       ...cast.messages,
-      describeDamage(`The ${spellName} does ${total} damage.`, describeSpellLosses(damaged))
+      ...describeDamage(`The ${spellName} does ${total} damage.`, describeSpellLosses(damaged))
     ]
   }
 }
@@ -840,6 +876,65 @@ export function teleportStack(battle, { destination, ...cast }) {
   return { ...teleported, effects }
 }
 
+const cloneIdOf = (original) => `${original.id}-clone`
+
+// The clone is a new stack of the creatures on the hero's side, free of the original's spells.
+function cloneOf(original, { destination, rounds }) {
+  return {
+    ...original,
+    id: cloneIdOf(original),
+    side: 'attacker',
+    initialCount: original.count,
+    hex: destination,
+    retaliationsUsed: 0,
+    defenseBonus: 0,
+    cloneOf: original.id,
+    cloneId: null,
+    spells: [
+      {
+        spellId: CLONE_SPELL,
+        effects: {},
+        roundsLeft: rounds,
+        helpful: true,
+        removable: false
+      }
+    ]
+  }
+}
+
+export function cloneStack(battle, { destination, rounds, ...cast }) {
+  const original = battle.stacks.find(({ id }) => id === cast.targetIds[0])
+  const cloned = castOnStacks(battle, cast, (stack) => ({ ...stack, cloneId: cloneIdOf(stack) }))
+  return {
+    ...cloned,
+    stacks: [...cloned.stacks, cloneOf(original, { destination, rounds })]
+  }
+}
+
+// The nearest hex to the original the clone fits on; on a tie the one further toward the enemy,
+// then the one nearest the original's row.
+export function findCloneHex(battle, original) {
+  const canStand = canStandFor(battle, { ...original, id: null, side: 'attacker' })
+  const hexes = []
+  for (let row = 0; row < BATTLEFIELD_ROWS; row += 1) {
+    for (let column = 0; column < BATTLEFIELD_COLUMNS; column += 1) {
+      if (canStand({ row, column })) {
+        hexes.push({ row, column })
+      }
+    }
+  }
+  const rank = (hex) => [
+    getHexDistance(original.hex, hex),
+    -hex.column,
+    Math.abs(hex.row - original.hex.row)
+  ]
+  const compare = (a, b) => {
+    const [first, second] = [rank(a), rank(b)]
+    return first[0] - second[0] || first[1] - second[1] || first[2] - second[2]
+  }
+  return hexes.sort(compare)[0] ?? null
+}
+
 export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, removeSpellsFrom)
 
 export const castHealingSpell = (battle, { healing, ...cast }) =>
@@ -852,7 +947,7 @@ export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
     (current, strike) => applyStrike(current, strike, targetId),
     moved
   )
-  return endOwnAttackSpells(attacked, stackId)
+  return clearGoneClones(endOwnAttackSpells(attacked, stackId))
 }
 
 export const attackStack = (battle, attack) => finishAction(resolveAttack(battle, attack), attack)
@@ -881,12 +976,12 @@ export function resolveShot(battle, { stackId, strikes }) {
     strikes.reduce((current, strike) => applyStrike(current, strike, null), battle),
     stackId
   )
-  return {
+  return clearGoneClones({
     ...shot,
     stacks: shot.stacks.map((stack) =>
       stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
     )
-  }
+  })
 }
 
 export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
