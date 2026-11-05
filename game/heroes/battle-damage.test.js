@@ -10,7 +10,8 @@ const aStack = (overrides = {}) => ({
   damage: { min: 10, max: 10 },
   health: 10,
   topHealth: 10,
-  retaliationsLeft: 1,
+  retaliationsPerRound: 1,
+  retaliationsUsed: 0,
   strikes: 1,
   ...overrides
 })

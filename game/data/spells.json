@@ -1625,6 +1625,11 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [24, 20, 20, 20],
+    "lasting": {
+      "allAtExpert": true,
+      "target": "own",
+      "effects": { "extraRetaliations": [1, 1, 2, 2] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {

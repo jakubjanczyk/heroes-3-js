@@ -247,6 +247,13 @@ const protectiveSpellDefinitions = {
     target: 'own',
     allAtExpert: false,
     effects: { attackAgainstKings: [8, 8, 8, 8], kingsReached: [1, 1, 2, 3] }
+  }),
+  COUNTERSTRIKE: aLastingSpell({
+    name: 'Counterstrike',
+    schools: ['AIR'],
+    costs: [24, 20, 20, 20],
+    target: 'own',
+    effects: { extraRetaliations: [1, 1, 2, 2] }
   })
 }
 

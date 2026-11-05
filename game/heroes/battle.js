@@ -88,7 +88,7 @@ function createStacks({
       topHealth: definition.health,
       strikes: abilities.includes('strikesTwice') ? 2 : 1,
       retaliationsPerRound,
-      retaliationsLeft: retaliationsPerRound,
+      retaliationsUsed: 0,
       defenseBonus: 0,
       shots: shooter ? definition.shots : 0,
       shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
@@ -291,7 +291,7 @@ export function endTurn(battle, stackId) {
     turnStackId: null,
     stacks: battle.stacks.map((stack) => ({
       ...countDownSpells(stack),
-      retaliationsLeft: stack.retaliationsPerRound
+      retaliationsUsed: 0
     }))
   })
 }
@@ -650,7 +650,7 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliat
       }
 
       if (stack.id === attackerId && attackerId === retaliatorId) {
-        return { ...stack, retaliationsLeft: stack.retaliationsLeft - 1 }
+        return { ...stack, retaliationsUsed: stack.retaliationsUsed + 1 }
       }
 
       return stack

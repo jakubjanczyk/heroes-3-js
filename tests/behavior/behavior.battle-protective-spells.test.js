@@ -7,11 +7,13 @@ import {
   getBattleStatusBarText,
   hoverBattleHex,
   moveActiveStackTo,
+  pickSpell,
   playOnToNextRound,
   pointAtBattleHexSide,
   readBattleSpellPoints,
   readCombatMessages,
   readStackCountColour,
+  readStackCountColours,
   reloadBattle,
   startBattle,
   startBattleWithStyles
@@ -24,6 +26,7 @@ import {
   OWN_HEX,
   PIKEMEN_CLOSE_BY,
   PROTECTIVE_SPELLS,
+  REMOVING_AND_HEALING_SPELLS,
   SWORDSMEN_CLOSE_BY,
   stack
 } from './battle-lasting-spells.fixtures.js'
@@ -142,6 +145,186 @@ describe('battle protective spells behavior', () => {
       await pointAtBattleHexSide(user, PIKEMEN_CLOSE_BY.row, PIKEMEN_CLOSE_BY.column, 'left')
 
       expect(getBattleStatusBarText()).toBe('Attack Devils (damage 105-157)')
+    })
+  })
+
+  describe('Counterstrike', () => {
+    const aCounterstrikeCaster = ({ level, army } = {}) =>
+      aCaster({
+        knowledge: 3,
+        spells: ['SLOW', ...PROTECTIVE_SPELLS, ...REMOVING_AND_HEALING_SPELLS],
+        secondarySkills: level ? [{ skill: 'AIR_MAGIC', level }] : [],
+        ...(army ? { army } : {})
+      })
+
+    // Tough enough to live through every strike back, so each one shows in the log.
+    const aRaider = (speed) =>
+      aCreatureDefinition()
+        .withName('Raider')
+        .withNamePlural('Raiders')
+        .withSpeed(speed)
+        .withHealth(100)
+        .build()
+
+    // Two Raiders in each stack.
+    const aFightWithRaiders = ({ hero, stacks = 3, speed = 5 }) =>
+      aFight({
+        hero,
+        monster: 'RAIDER',
+        count: 2 * stacks,
+        stacks,
+        creatures: { RAIDER: aRaider(speed) }
+      })
+
+    const strikesBackAfter = (messages, castLine) =>
+      messages
+        .slice(messages.indexOf(castLine) + 1)
+        .filter((message) => /^The (Swordsmen|Griffins) do/.test(message)).length
+
+    const CAST_ON_SWORDSMEN = "Lord Haart casts 'Counterstrike' on the Swordsmen."
+
+    // The Swordsmen cast and walk to column 6 and the Raiders (as fast) come to column 10; next
+    // round every Raider stack attacks the Swordsmen.
+    async function castThenTakeEveryRaidersAttack(user) {
+      await castSpellAt(user, 'Counterstrike', OWN_HEX)
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+      await playOnToNextRound(user)
+    }
+
+    test('given the hero casts Counterstrike on the Swordsmen then the combat log says so, 24 spell points are spent and their count box turns green', async () => {
+      const { user } = await startBattleWithStyles(
+        aFightWithRaiders({ hero: aCounterstrikeCaster() })
+      )
+
+      await castSpellAt(user, 'Counterstrike', OWN_HEX)
+      const colour = readStackCountColour(OWN_HEX.row, OWN_HEX.column)
+      const messages = readCombatMessages().slice(-1)
+      await playOnToNextRound(user)
+
+      expect([messages, colour, await readBattleSpellPoints(user)]).toEqual([
+        [CAST_ON_SWORDSMEN],
+        'green',
+        '6'
+      ])
+    })
+
+    test('given a hero with no Air skill cast Counterstrike on the Swordsmen when two enemy stacks attack them in one round then the Swordsmen strike back at both', async () => {
+      const { user } = await startBattle(
+        aFightWithRaiders({ hero: aCounterstrikeCaster(), stacks: 2 })
+      )
+
+      await castThenTakeEveryRaidersAttack(user)
+
+      expect(strikesBackAfter(readCombatMessages(), CAST_ON_SWORDSMEN)).toBe(2)
+    })
+
+    test('given a hero with no Air skill cast Counterstrike on the Swordsmen when a third enemy stack attacks them in that round then it gets no strike back', async () => {
+      const { user } = await startBattle(aFightWithRaiders({ hero: aCounterstrikeCaster() }))
+
+      await castThenTakeEveryRaidersAttack(user)
+
+      expect(strikesBackAfter(readCombatMessages(), CAST_ON_SWORDSMEN)).toBe(2)
+    })
+
+    test('given an Advanced Air hero cast Counterstrike on the Swordsmen when three enemy stacks attack them in one round then they strike back at all three', async () => {
+      const { user } = await startBattle(
+        aFightWithRaiders({ hero: aCounterstrikeCaster({ level: 'ADVANCED' }) })
+      )
+
+      await castThenTakeEveryRaidersAttack(user)
+
+      expect(strikesBackAfter(readCombatMessages(), CAST_ON_SWORDSMEN)).toBe(3)
+    })
+
+    test("given an Expert Air hero when Counterstrike is picked then it is cast straight from the book, every one of the hero's stacks has the helpful count box and 20 spell points are spent", async () => {
+      const hero = aCounterstrikeCaster({
+        level: 'EXPERT',
+        army: [stack('SWORDSMAN', 10), stack('ARCHER', 10)]
+      })
+      const { user } = await startBattleWithStyles(aFightWithRaiders({ hero, stacks: 1 }))
+
+      await pickSpell(user, 'Counterstrike')
+      const message = readCombatMessages().at(-1)
+      const colours = readStackCountColours()
+        .filter(({ stack }) => !stack.startsWith('Raiders'))
+        .map(({ colour }) => colour)
+      await playOnToNextRound(user)
+      await playOnToNextRound(user)
+
+      expect([message, colours, await readBattleSpellPoints(user)]).toEqual([
+        "Lord Haart casts 'Counterstrike'.",
+        ['green', 'green'],
+        '10'
+      ])
+    })
+
+    test('given the hero cast Counterstrike on Griffins when three enemy stacks attack them in one round then they strike back at all three', async () => {
+      const hero = aCounterstrikeCaster({ army: [stack('GRIFFIN', 10)] })
+      const { user } = await startBattle(aFightWithRaiders({ hero }))
+
+      await castThenTakeEveryRaidersAttack(user)
+
+      expect(
+        strikesBackAfter(readCombatMessages(), "Lord Haart casts 'Counterstrike' on the Griffins.")
+      ).toBe(3)
+    })
+
+    // The Raiders are faster than the Swordsmen but the third stack is slowed: the first two
+    // attack before the Swordsmen's turn and the third after it.
+    async function strikeBackThenCastBeforeTheSlowedRaiders(user) {
+      await castSpellAt(user, 'Slow', { row: 9, column: 9 })
+      await moveActiveStackTo(user, 7, 5)
+      await waitMs(1000)
+      await castSpellAt(user, 'Counterstrike', { row: 7, column: 5 })
+    }
+
+    const theSlowedRaidersAttack = async (user) => {
+      await playOnToNextRound(user)
+      const messages = readCombatMessages()
+      return messages.slice(messages.indexOf(CAST_ON_SWORDSMEN) + 1).slice(0, 2)
+    }
+
+    test('given the Swordsmen already struck back this round when the hero casts Counterstrike on them and another enemy stack attacks then they strike back again', async () => {
+      const { user } = await startBattle(
+        aFightWithRaiders({ hero: aCounterstrikeCaster(), speed: 6 })
+      )
+      await strikeBackThenCastBeforeTheSlowedRaiders(user)
+
+      expect(await theSlowedRaidersAttack(user)).toEqual([
+        'The Raiders do 1 damage.',
+        'The Swordsmen do 81 damage.'
+      ])
+    })
+
+    test('given Counterstrike is on the Swordsmen and they struck back once when the page reloads and another enemy stack attacks then they still strike back', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aFightWithRaiders({ hero: aCounterstrikeCaster(), speed: 6 })
+      const { user } = await startBattle(scenario, { eventLog })
+      await strikeBackThenCastBeforeTheSlowedRaiders(user)
+
+      await reloadBattle(scenario, { eventLog })
+
+      expect(await theSlowedRaidersAttack(user)).toEqual([
+        'The Raiders do 1 damage.',
+        'The Swordsmen do 81 damage.'
+      ])
+    })
+
+    test('given Counterstrike was cast on the Swordsmen last round when the hero dispels it and two enemy stacks attack them then only the first gets a strike back', async () => {
+      const { user } = await startBattle(
+        aFightWithRaiders({ hero: aCounterstrikeCaster(), stacks: 2 })
+      )
+      await castSpellAt(user, 'Counterstrike', OWN_HEX)
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+
+      await castSpellAt(user, 'Dispel', { row: 6, column: 6 })
+      await playOnToNextRound(user)
+
+      expect(
+        strikesBackAfter(readCombatMessages(), "Lord Haart casts 'Dispel' on the Swordsmen.")
+      ).toBe(1)
     })
   })
 })

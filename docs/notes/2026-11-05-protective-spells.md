@@ -29,7 +29,8 @@ Checked against the wiki (Counterstrike), the descriptions and the engine's spel
 - One own stack strikes back 1 more time each round (no skill and Basic) or 2 more times (Advanced). At Expert every own stack strikes back 2 more times, cast straight from the book. Checked against the wiki, the descriptions and the engine (val 1 / 2 / 2, range X at Expert).
 - Lasts Power rounds. Checked against the wiki and the engine.
 - The extra strikes back are there as soon as it is cast, in the round it is cast. Checked against the engine (the retaliations left are the total less those used); the wiki says nothing.
-- Once Dispel removes it, the extra strikes back still left this round stay until the round ends. Checked against the wiki; the engine takes them away straight off. To ask.
+- Once Dispel removes it, the extra strikes back still left this round go straight off. The wiki says they stay until the round ends; we follow the engine (decided).
+- A stack counts the strikes back it has used this round; those left are its own per round plus Counterstrike's extra, less those used. So a stack that already struck back can strike back again once the spell is cast, and casting it again adds nothing.
 - Royal Griffins already strike back without limit: it can be cast on them and does nothing. Checked against the wiki.
 - Combat log: the usual cast lines.
 
