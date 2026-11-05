@@ -11,6 +11,7 @@ import {
   pickSpell,
   playOnToNextRound,
   pointAtBattleHexSide,
+  readBattleEffects,
   readBattleResultsSide,
   readBattleSpellPoints,
   readCombatMessages,
@@ -569,6 +570,19 @@ describe('battle protective spells behavior', () => {
         'The Brutes do 130 damage. 3 Swordsmen perish.',
         'The Fire Shield does 26 damage. One Brute perishes.'
       ])
+    })
+
+    test('given the shielded Swordsmen attack an enemy stack when the Fire Shield burns it then a burst of light shows over the Swordsmen', async () => {
+      const { user } = await startBattle(aFightWithBrutes())
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+      await castSpellAt(user, 'Fire Shield', { row: 6, column: 6 })
+      // The cast's own burst fades first.
+      await waitMs(1000)
+
+      await attackBattleHexFrom(user, 6, 10, 'left')
+
+      expect(readBattleEffects()).toContainEqual({ effect: 'Fire Shield', row: 6, column: 9 })
     })
 
     test('given Fire Shield is on the Swordsmen when the page reloads and an enemy stack attacks them then the Fire Shield still burns it', async () => {

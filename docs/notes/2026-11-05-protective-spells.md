@@ -72,5 +72,5 @@ Checked against the wiki (Magic Mirror) and the engine's spell config.
 - The first and third groups of kings, Master Genies casting these spells, Efreet Sultans' own fire shield and creatures immune to fire, with the creatures (6.5). Coronius's Slayer specialty, with hero specialties.
 - Orb of Tempestuous Fire raising Fire Shield's damage, Ironfist of the Ogre (7.8).
 - Protection from Fire lessening Fire Shield's damage on the attacker is built, but only a berserk own stack can have it before enemy heroes cast (8.1); no test covers it yet.
-- A flame over the shielded stack when it burns, with the spells' animations (10.3).
+- A flame over the shielded stack when it burns, with the spells' animations (10.3); until then the spells' burst of light shows over it.
 - War machines, which none of these spells go on, with them.

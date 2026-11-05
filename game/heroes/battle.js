@@ -643,6 +643,14 @@ function describeDealt(attacker, damage, fireShield) {
     : `The ${attacker.name} do ${damage} damage.`
 }
 
+// A Fire Shield's burst shows over the stack it shields as it burns the striker.
+function strikeEffects({ attackerId, lucky, fireShield }) {
+  if (fireShield) {
+    return [{ stackId: attackerId, kind: 'spellHit', spellName: 'Fire Shield' }]
+  }
+  return lucky ? [{ stackId: attackerId, kind: 'goodLuck' }] : []
+}
+
 function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield }, retaliatorId) {
   const attacker = battle.stacks.find(({ id }) => id === attackerId)
   const { damaged, ...losses } = damageStack(battle, defenderId, damage)
@@ -661,9 +669,7 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield
 
       return stack
     }),
-    effects: lucky
-      ? [...battle.effects, { stackId: attackerId, kind: 'goodLuck' }]
-      : battle.effects,
+    effects: [...battle.effects, ...strikeEffects({ attackerId, lucky, fireShield })],
     messages: [
       ...battle.messages,
       ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
