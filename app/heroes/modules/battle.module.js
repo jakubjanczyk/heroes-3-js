@@ -40,17 +40,19 @@ import {
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
-import { canCastInBattle, isHelpful, spellTargeting } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle, isHelpful } from '../../../game/heroes/battle-spells.js'
 import {
   fightsFor,
   getSpellBalance,
-  getSpellDamageTakenPercent
+  getSpellDamageTakenPercent,
+  isBerserk
 } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
+  battleSpellTargeting,
   castsOnAllStacks,
   hasSpellBook,
   spellCost,
@@ -427,7 +429,7 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      if (fightsFor(stack) === 'defender' || autoCombat) {
+      if (!isPlayers(stack) || autoCombat) {
         playComputerTurn(stack)
       }
     }
@@ -442,7 +444,9 @@ export const registerBattleModule = defineModule(
       return chance > 0 && moraleRandom() < chance
     }
 
-    const isPlayers = (stack) => Boolean(stack) && fightsFor(stack) === 'attacker'
+    // A berserk stack's turn plays itself, whoever's it is.
+    const isPlayers = (stack) =>
+      Boolean(stack) && !isBerserk(stack) && fightsFor(stack) === 'attacker'
 
     const isPlayersTurn = () =>
       Boolean(battle) && !outcome && !moving && !autoCombat && isPlayers(getActiveStack(battle))
@@ -515,13 +519,24 @@ export const registerBattleModule = defineModule(
       })
     }
 
-    function chooseSpellTargets(hero, spell, { targetId, hex }) {
-      if (spell.area) {
-        return hex && isOnBattlefield(hex)
-          ? { hex, targetIds: areaTargetIds(battle, spell.area, hex) }
-          : null
+    function chooseAreaTargets(targeting, hex) {
+      if (!hex || !isOnBattlefield(hex)) {
+        return null
       }
-      const targetIds = spellTargetIds(battle, spellTargeting(spell, spellSkillLevel(hero, spell)))
+      const inArea = areaTargetIds(battle, targeting.area, hex)
+      if (!targeting.areaNeedsTarget) {
+        return { hex, targetIds: inArea }
+      }
+      const targetIds = spellTargetIds(battle, targeting).filter((id) => inArea.includes(id))
+      return targetIds.length > 0 ? { targetIds } : null
+    }
+
+    function chooseSpellTargets(hero, spell, { targetId, hex }) {
+      const targeting = battleSpellTargeting({ hero, spell, definitions })
+      if (targeting.area) {
+        return chooseAreaTargets(targeting, hex)
+      }
+      const targetIds = spellTargetIds(battle, targeting)
       if (castsOnAllStacks(hero, spell)) {
         return targetIds.length === 0 ? { noOne: true } : { targetIds }
       }
@@ -603,7 +618,9 @@ export const registerBattleModule = defineModule(
           addsUp: Boolean(spell.lasting.addsUp),
           castMessage: spell.lasting.castMessage,
           removable: !spell.lasting.cannotBeRemoved,
-          endsOnOwnTurn: Boolean(spell.lasting.untilOwnTurn)
+          endsOnOwnTurn: Boolean(spell.lasting.untilOwnTurn),
+          endsOnOwnAttack: Boolean(spell.lasting.untilOwnAttack),
+          endsSpellIds: spell.lasting.endsSpells ?? []
         })
       }
       if (spell?.removesSpells) {

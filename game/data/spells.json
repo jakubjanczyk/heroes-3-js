@@ -1647,6 +1647,19 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [20, 16, 16, 16],
+    "notOnUndead": true,
+    "area": [
+      { "from": 0, "to": 0 },
+      { "from": 0, "to": 0 },
+      { "from": 0, "to": 1 },
+      { "from": 0, "to": 2 }
+    ],
+    "lasting": {
+      "target": "any",
+      "untilOwnAttack": true,
+      "endsSpells": ["HYPNOTIZE"],
+      "effects": { "berserk": [1, 1, 1, 1] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {
@@ -1673,6 +1686,13 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [18, 15, 15, 15],
+    "notOnUndead": true,
+    "lasting": {
+      "target": "enemy",
+      "healthLimit": { "base": [10, 10, 20, 50], "perPower": 25 },
+      "endsSpells": ["BERSERK"],
+      "effects": { "hypnotized": [1, 1, 1, 1] }
+    },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {

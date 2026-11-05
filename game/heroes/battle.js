@@ -8,6 +8,7 @@ import {
   getStackDefense,
   getStackMorale,
   getStackSpeed,
+  isBerserk,
   isBlind
 } from './battle-stats.js'
 import {
@@ -504,41 +505,49 @@ function findWayToFront(battle, stack, front) {
   return way && { way, distance: way.length }
 }
 
-// Every hex next to a living enemy the stack can get to, in army slot order, which settles ties.
+// Every hex next to a living stack the stack can attack, in army slot order, which settles ties.
 export function getApproaches(battle, stack) {
-  return livingStacks(battle)
-    .filter((target) => areEnemies(target, stack))
-    .flatMap((target) =>
-      getHexesNextTo(target).flatMap((fromHex) => {
-        if (coversHex(stack, fromHex)) {
-          return [{ targetId: target.id, fromHex, way: [], distance: 0 }]
-        }
+  return attackableBy(battle, stack).flatMap((target) =>
+    getHexesNextTo(target).flatMap((fromHex) => {
+      if (coversHex(stack, fromHex)) {
+        return [{ targetId: target.id, fromHex, way: [], distance: 0 }]
+      }
 
-        const fronts = stack.doubleWide
-          ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
-          : [fromHex]
-        const ways = fronts.map((front) => findWayToFront(battle, stack, front)).filter(Boolean)
-        if (ways.length === 0) {
-          return []
-        }
+      const fronts = stack.doubleWide
+        ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
+        : [fromHex]
+      const ways = fronts.map((front) => findWayToFront(battle, stack, front)).filter(Boolean)
+      if (ways.length === 0) {
+        return []
+      }
 
-        const nearest = ways.reduce((best, way) => (way.distance < best.distance ? way : best))
-        return [{ targetId: target.id, fromHex, ...nearest }]
-      })
-    )
+      const nearest = ways.reduce((best, way) => (way.distance < best.distance ? way : best))
+      return [{ targetId: target.id, fromHex, ...nearest }]
+    })
+  )
 }
 
-const livingEnemiesOf = (battle, stack) =>
-  livingStacks(battle).filter((other) => areEnemies(other, stack))
+// A berserk stack attacks any stack, its own side's too.
+function attackableBy(battle, stack) {
+  const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
+  return isBerserk(stack) ? others : others.filter((other) => areEnemies(other, stack))
+}
 
-// A shooter with an enemy next to it can only fight hand to hand.
+// A stack that started on the other side from the one the shooter fights for: a hypnotized stack
+// doesn't stop its old side's shooters, and its old side stops it shooting. Any stack stops a
+// berserk shooter.
+const blocksShooter = (shooter, other) => isBerserk(shooter) || other.side !== fightsFor(shooter)
+
+// A shooter with a stack that blocks it next to it can only fight hand to hand.
 export function canShoot(battle, stack) {
   if (stack.shots === 0 || getShotDamagePercent(stack) === 0) {
     return false
   }
 
-  const enemies = livingEnemiesOf(battle, stack)
-  return !getHexesNextTo(stack).some((hex) => enemies.some((enemy) => coversHex(enemy, hex)))
+  const blockers = livingStacks(battle).filter(
+    (other) => other.id !== stack.id && blocksShooter(stack, other)
+  )
+  return !getHexesNextTo(stack).some((hex) => blockers.some((blocker) => coversHex(blocker, hex)))
 }
 
 // Measured from the shooter's hex to the nearest hex of the target.
@@ -553,7 +562,7 @@ export function getShotTargets(battle, stack) {
     return []
   }
 
-  return livingEnemiesOf(battle, stack).map((target) => {
+  return attackableBy(battle, stack).map((target) => {
     const distancePenalty = hasDistancePenalty(stack, target)
     return {
       stackId: target.id,
@@ -569,7 +578,7 @@ export function getAttackTargets(battle, stack) {
     return []
   }
 
-  return livingEnemiesOf(battle, stack)
+  return attackableBy(battle, stack)
     .map((target) => ({
       stackId: target.id,
       fromHexes: getHexesNextTo(target).filter((hex) => planAttackPosition(battle, stack, hex)),
@@ -586,12 +595,11 @@ export function getAttackTargets(battle, stack) {
 // The way there and every strike with its rolled damage, or null when the stack cannot attack
 // the target from `fromHex`.
 export function planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom }) {
-  const target = livingStacks(battle).find(({ id }) => id === targetId)
+  const target = attackableBy(battle, stack).find(({ id }) => id === targetId)
   const isNextToTarget =
     !canShoot(battle, stack) &&
     target &&
     fromHex &&
-    areEnemies(target, stack) &&
     getHexesNextTo(target).some((hex) => isSameHex(hex, fromHex))
   const path = isNextToTarget ? planAttackPosition(battle, stack, fromHex) : null
   if (!path) {
@@ -697,19 +705,48 @@ const longerOf = (rounds, earlier) =>
 
 // Cast again on a stack that has it, the spell takes the new effects and the longer duration; a
 // spell that adds up adds its effects to the earlier ones.
+// A spell that ends others (Berserk and Hypnotize end each other) takes them off the stack.
 function putSpellOn(
   stack,
-  { spellId, effects: cast, rounds, helpful, addsUp, removable, endsOnOwnTurn }
+  {
+    spellId,
+    effects: cast,
+    rounds,
+    helpful,
+    addsUp,
+    removable,
+    endsOnOwnTurn,
+    endsOnOwnAttack,
+    endsSpellIds = []
+  }
 ) {
   const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
   const roundsLeft = longerOf(rounds, earlier?.roundsLeft)
   const effects = addsUp ? addEffects(earlier?.effects, cast) : cast
+  const kept = (stack.spells ?? []).filter(
+    (spell) => spell.spellId !== spellId && !endsSpellIds.includes(spell.spellId)
+  )
   return {
     ...stack,
     spells: [
-      ...(stack.spells ?? []).filter((spell) => spell.spellId !== spellId),
-      { spellId, effects, roundsLeft, helpful, removable, endsOnOwnTurn }
+      ...kept,
+      { spellId, effects, roundsLeft, helpful, removable, endsOnOwnTurn, endsOnOwnAttack }
     ]
+  }
+}
+
+// A strike back is not the stack's own attack.
+function endOwnAttackSpells(battle, stackId) {
+  return {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === stackId
+        ? {
+            ...stack,
+            spells: (stack.spells ?? []).filter(({ endsOnOwnAttack }) => !endsOnOwnAttack)
+          }
+        : stack
+    )
   }
 }
 
@@ -776,14 +813,18 @@ export const castHealingSpell = (battle, { healing, ...cast }) =>
 // The attack itself, before the attacker's turn ends.
 export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
-  return strikes.reduce((current, strike) => applyStrike(current, strike, targetId), moved)
+  const attacked = strikes.reduce(
+    (current, strike) => applyStrike(current, strike, targetId),
+    moved
+  )
+  return endOwnAttackSpells(attacked, stackId)
 }
 
 export const attackStack = (battle, attack) => finishAction(resolveAttack(battle, attack), attack)
 
 // Every shot with its rolled damage, or null when the stack cannot shoot the target.
 export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
-  const target = livingEnemiesOf(battle, stack).find(({ id }) => id === targetId)
+  const target = attackableBy(battle, stack).find(({ id }) => id === targetId)
   if (!target || !canShoot(battle, stack)) {
     return null
   }
@@ -801,7 +842,10 @@ export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
 
 // The shot itself, before the shooter's turn ends.
 export function resolveShot(battle, { stackId, strikes }) {
-  const shot = strikes.reduce((current, strike) => applyStrike(current, strike, null), battle)
+  const shot = endOwnAttackSpells(
+    strikes.reduce((current, strike) => applyStrike(current, strike, null), battle),
+    stackId
+  )
   return {
     ...shot,
     stacks: shot.stacks.map((stack) =>

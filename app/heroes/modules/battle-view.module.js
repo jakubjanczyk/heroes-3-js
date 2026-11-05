@@ -239,17 +239,29 @@ export const registerBattleViewModule = defineModule(
         : ''
     }
 
-    function findSpellTarget(hex) {
-      const target = findLivingStackOn(hex)
+    function isPickedSpellTarget(target) {
       const caster = findIdleActiveStack()
-      if (!target || !caster) {
-        return null
-      }
-      return isSpellTarget(pickedSpell.targeting, target, fightsFor(caster)) ? target : null
+      return Boolean(caster) && isSpellTarget(pickedSpell.targeting, target, fightsFor(caster))
     }
 
-    // An area spell is aimed at any hex of the battlefield, empty or not.
-    const canAimAreaAt = (hex) => Boolean(pickedSpell.targeting.area) && isOnBattlefield(hex)
+    function findSpellTarget(hex) {
+      const target = findLivingStackOn(hex)
+      return target && isPickedSpellTarget(target) ? target : null
+    }
+
+    function stacksInAreaAt(hex) {
+      const inArea = areaTargetIds(shown, pickedSpell.targeting.area, hex)
+      return pickedSpell.targeting.areaNeedsTarget
+        ? inArea.filter((id) => isPickedSpellTarget(shown.stacks.find((stack) => stack.id === id)))
+        : inArea
+    }
+
+    // An area damage spell is aimed at any hex of the battlefield, empty or not; one that only goes
+    // on stacks needs one it can go on in its area.
+    const canAimAreaAt = (hex) =>
+      Boolean(pickedSpell.targeting.area) &&
+      isOnBattlefield(hex) &&
+      (!pickedSpell.targeting.areaNeedsTarget || stacksInAreaAt(hex).length > 0)
 
     function describeSpellAim(hex) {
       if (canAimAreaAt(hex)) {
@@ -353,7 +365,7 @@ export const registerBattleViewModule = defineModule(
         return []
       }
       if (canAimAreaAt(hex)) {
-        return areaTargetIds(shown, pickedSpell.targeting.area, hex)
+        return stacksInAreaAt(hex)
       }
       const target = findSpellTarget(hex)
       return target ? [target.id] : []

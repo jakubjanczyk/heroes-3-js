@@ -1,12 +1,12 @@
-import { canCastInBattle, spellTargeting } from '../../../game/heroes/battle-spells.js'
+import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
 import {
   ALL_SCHOOLS,
+  battleSpellTargeting,
   cannotAffordText,
   castsOnAllStacks,
   describeSpellBookSpread,
   hasSpellBook,
-  SPELL_AFFECTS_NO_ONE_TEXT,
-  spellSkillLevel
+  SPELL_AFFECTS_NO_ONE_TEXT
 } from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
@@ -240,7 +240,7 @@ export const registerSpellBookViewModule = defineModule(
         return
       }
       if (inBattle && canCastInBattle(definition)) {
-        const targeting = spellTargeting(definition, spellSkillLevel(bookHero(), definition))
+        const targeting = battleSpellTargeting({ hero: bookHero(), spell: definition, definitions })
         close()
         emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name, targeting })
         return

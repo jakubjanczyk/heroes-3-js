@@ -25,8 +25,18 @@ const isHurt = (stack) => stack.topHealth < stack.health
 export const hasRemovableSpell = (stack) =>
   (stack.spells ?? []).some(({ removable }) => removable !== false)
 
-export const spellTargeting = (spell, skillLevel) => ({
-  area: spell?.area ?? null,
+// An area that grows with the school's skill is given for each skill level.
+export const spellArea = (spell, skillLevel) =>
+  (Array.isArray(spell?.area) ? spell.area[skillLevel] : spell?.area) ?? null
+
+// A health limit is worked out for every creature at full health, a wounded one too.
+const stackHealth = (stack) => stack.count * stack.health
+
+export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) => ({
+  area: spellArea(spell, skillLevel),
+  // A spell that only goes on stacks needs one in its area; a damage spell may hit nothing.
+  areaNeedsTarget: Boolean(spell?.lasting && spell.area),
+  healthBelow,
   targetSide: spellTargetSide(spell, skillLevel),
   shootersOnly: Boolean(spell?.lasting?.shootersOnly),
   hurtOnly: Boolean(spell?.heals),
@@ -43,6 +53,7 @@ export function isSpellTarget(targeting, target, casterSide) {
     (!targeting.shootersOnly || target.shooter) &&
     (!targeting.hurtOnly || isHurt(target)) &&
     (!targeting.withRemovableSpellOnly || hasRemovableSpell(target)) &&
-    (!targeting.notOnUndead || !target.undead)
+    (!targeting.notOnUndead || !target.undead) &&
+    (!targeting.healthBelow || stackHealth(target) < targeting.healthBelow)
   )
 }
