@@ -1537,6 +1537,10 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
+    "lasting": {
+      "target": "own",
+      "effects": { "attackAgainstKings": [8, 8, 8, 8], "kingsReached": [1, 1, 2, 3] }
+    },
     "mageGuildChances": { "CASTLE": 5 },
     "descriptions": [
       {

@@ -25,7 +25,8 @@ function applyAttackAndDefense(
   baseDamage,
   { attacker, defender, melee = false, halved = false, lucky = false, dealtPercent = 100 }
 ) {
-  const advantage = getStackAttack(attacker, { melee }) - getStackDefense(defender)
+  const advantage =
+    getStackAttack(attacker, { melee, against: defender }) - getStackDefense(defender)
   const bonus =
     Math.min(Math.max(advantage, 0) * ATTACK_BONUS_PER_POINT, ATTACK_BONUS_CAP) +
     (lucky ? LUCKY_BONUS : 0)
