@@ -269,6 +269,7 @@
       "GEMS_PILE": 1
     },
     "aiValue": 5019,
+    "king": 2,
     "abilities": ["flying", "raisesMorale", "hatesDevils"]
   },
   "ARCHANGEL": {
@@ -290,6 +291,7 @@
       "GEMS_PILE": 3
     },
     "aiValue": 8776,
+    "king": 2,
     "abilities": ["flying", "doubleWide", "raisesMorale", "hatesDevils", "resurrects"]
   },
   "SKELETON": {
