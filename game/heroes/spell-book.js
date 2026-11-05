@@ -1,4 +1,4 @@
-import { castRuleOf } from './battle-spells.js'
+import { castRuleOf, spellTargeting } from './battle-spells.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
 import { secondarySkillLevel } from './secondary-skills.js'
 import { getHeroSpellPoints } from './spell-points.js'
@@ -78,8 +78,8 @@ export function spellHealing({ hero, spell, definitions }) {
 // Each effect's value at the hero's skill level, for as many rounds as the hero's Power, or no
 // rounds for a spell that lasts until the battle ends. One that ends on the stack's turn in the
 // next round is cast for two.
-function lastingRounds({ untilBattleEnds, untilOwnTurn }, power) {
-  if (untilBattleEnds) {
+function lastingRounds({ untilBattleEnds, untilOwnTurn, untilOwnAttack }, power) {
+  if (untilBattleEnds || untilOwnAttack) {
     return null
   }
   return untilOwnTurn ? 2 : power
@@ -92,6 +92,18 @@ export function spellLasting({ hero, spell, definitions }) {
   )
   return { effects, rounds: lastingRounds(spell.lasting, powerOf(hero, definitions)) }
 }
+
+function healthLimit({ hero, spell, definitions }) {
+  const limit = spell.lasting?.healthLimit
+  return limit
+    ? limit.base[spellSkillLevel(hero, spell)] + limit.perPower * powerOf(hero, definitions)
+    : null
+}
+
+export const battleSpellTargeting = ({ hero, spell, definitions }) =>
+  spellTargeting(spell, spellSkillLevel(hero, spell), {
+    healthBelow: healthLimit({ hero, spell, definitions })
+  })
 
 function popupText(description, damage) {
   return damage > 0 ? `${description} Does ${damage} points of damage.` : description

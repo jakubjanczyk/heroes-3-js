@@ -198,6 +198,36 @@ const controlSpellDefinitions = {
     untilOwnTurn: true,
     effects: { attackFromDefensePercent: [100, 100, 150, 200] }
   }),
+  BERSERK: aSpellDefinition()
+    .withName('Berserk')
+    .withNotOnUndead(true)
+    .withSchools(['FIRE'])
+    .withCosts([20, 16, 16, 16])
+    .withArea([
+      { from: 0, to: 0 },
+      { from: 0, to: 0 },
+      { from: 0, to: 1 },
+      { from: 0, to: 2 }
+    ])
+    .withLasting({
+      target: 'any',
+      untilOwnAttack: true,
+      endsSpells: ['HYPNOTIZE'],
+      effects: { berserk: [1, 1, 1, 1] }
+    })
+    .describedAs('Berserk description.')
+    .build(),
+  HYPNOTIZE: aLastingSpell({
+    name: 'Hypnotize',
+    notOnUndead: true,
+    schools: ['AIR'],
+    costs: [18, 15, 15, 15],
+    target: 'enemy',
+    allAtExpert: false,
+    healthLimit: { base: [10, 10, 20, 50], perPower: 25 },
+    endsSpells: ['BERSERK'],
+    effects: { hypnotized: [1, 1, 1, 1] }
+  }),
   MAGIC_ARROW: aSpellDefinition()
     .withName('Magic Arrow')
     .withSchools(['AIR', 'EARTH', 'FIRE', 'WATER'])
@@ -230,6 +260,7 @@ export const stack = (creature, count) => ({ creature, count })
 // its stacks +2 Attack and +2 Defense.
 export const aCaster = ({
   power = 2,
+  knowledge = 2,
   secondarySkills = [],
   army = [stack('SWORDSMAN', 10)],
   spells = Object.keys(spellDefinitions),
@@ -237,7 +268,7 @@ export const aCaster = ({
 } = {}) =>
   aHero()
     .withName(HERO)
-    .withPrimarySkills({ power, knowledge: 2 })
+    .withPrimarySkills({ power, knowledge })
     .withSecondarySkills(secondarySkills)
     .withSpellBook(true)
     .withSpells(spells)

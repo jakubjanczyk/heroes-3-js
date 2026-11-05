@@ -666,10 +666,10 @@ In three parts.
 
 #### 4.8.7 Control and special spells
 In three parts.
-- [ ] 4.8.7.1 Blind, Berserk, Hypnotize, Forgetfulness, Frenzy, in three parts (see `docs/notes/2026-11-04-control-spells.md`):
+- [x] 4.8.7.1 Blind, Berserk, Hypnotize, Forgetfulness, Frenzy, in three parts (see `docs/notes/2026-11-04-control-spells.md`):
   - [x] 4.8.7.1a Blind: an enemy stack loses its turns for Power rounds, until attacked or hit by a spell; it strikes back at 50% / 25% / not at all
   - [x] 4.8.7.1b Forgetfulness and Frenzy
-  - [ ] 4.8.7.1c Berserk and Hypnotize
+  - [x] 4.8.7.1c Berserk and Hypnotize: Berserk on every stack in its area attacks the nearest stack, either side's, until its own attack; Hypnotize puts an enemy stack below its health limit under the hero's control for Power rounds
 - [ ] 4.8.7.2 Slayer, Counterstrike, Fire Shield, Magic Mirror, Anti-Magic
 - [ ] 4.8.7.3 Teleport, Clone and Sacrifice
 
