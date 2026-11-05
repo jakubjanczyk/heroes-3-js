@@ -59,6 +59,10 @@ export const getStackDefense = (stack) => (isFrenzied(stack) ? 0 : getDefenseBef
 export const getShotDamagePercent = (stack) =>
   Math.max(0, 100 + spellEffect(stack, 'shotDamagePercent'))
 
+export const getFireShieldPercent = (stack) => spellEffect(stack, 'fireShieldPercent')
+
+export const getFireShieldSorceryPercent = (stack) => spellEffect(stack, 'sorceryPercent')
+
 export const getDamageTakenPercent = (stack, { melee = false } = {}) =>
   100 + spellEffect(stack, melee ? 'meleeDamageTakenPercent' : 'rangedDamageTakenPercent')
 

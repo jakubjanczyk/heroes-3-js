@@ -48,6 +48,7 @@ Checked against the wiki (Fire Shield, with its worked examples) and the engine'
 - A melee strike back on the shielded stack (when the shielded stack attacks) burns the stack striking back too: it is a melee hit on it. Checked against the engine (it answers every melee hit, strikes back included); the wiki says "all units trying to attack it in melee" and nothing about strikes back.
 - An attacker striking twice is burned after each strike. Checked against the engine (each strike is its own attack).
 - Combat log: "The Fire Shield does %d damage." (`core.genrltxt.376`, the spell damage line), then the creatures that perish. Checked against the wiki's copy of `GENRLTXT.TXT` and the engine's use of it.
+- Built: the burn is worked out with the strike, so it is saved and replayed with the attack. Sorcery is taken from the hero when the spell is cast (`raisedBySorcery` in the spell's data).
 
 ### Anti-Magic (Earth, level 3, 15 / 12 spell points) — 4.8.7.2d
 
@@ -70,4 +71,6 @@ Checked against the wiki (Magic Mirror) and the engine's spell config.
 - Magic Mirror, Cure removing harmful spells, with enemy heroes casting (8.1).
 - The first and third groups of kings, Master Genies casting these spells, Efreet Sultans' own fire shield and creatures immune to fire, with the creatures (6.5). Coronius's Slayer specialty, with hero specialties.
 - Orb of Tempestuous Fire raising Fire Shield's damage, Ironfist of the Ogre (7.8).
+- Protection from Fire lessening Fire Shield's damage on the attacker is built, but only a berserk own stack can have it before enemy heroes cast (8.1); no test covers it yet.
+- A flame over the shielded stack when it burns, with the spells' animations (10.3).
 - War machines, which none of these spells go on, with them.

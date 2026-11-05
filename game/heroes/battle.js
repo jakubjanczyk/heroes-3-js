@@ -634,13 +634,19 @@ function damageStack(battle, stackId, damage) {
   return { damaged, killed, nameFor }
 }
 
-function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliatorId) {
+function describeDealt(attacker, damage, fireShield) {
+  if (fireShield) {
+    return `The Fire Shield does ${damage} damage.`
+  }
+  return attacker.count === 1
+    ? `The ${attacker.name} does ${damage} damage.`
+    : `The ${attacker.name} do ${damage} damage.`
+}
+
+function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield }, retaliatorId) {
   const attacker = battle.stacks.find(({ id }) => id === attackerId)
   const { damaged, ...losses } = damageStack(battle, defenderId, damage)
-  const dealt =
-    attacker.count === 1
-      ? `The ${attacker.name} does ${damage} damage.`
-      : `The ${attacker.name} do ${damage} damage.`
+  const dealt = describeDealt(attacker, damage, fireShield)
 
   return {
     ...battle,
@@ -649,7 +655,7 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky }, retaliat
         return wakeUp(damaged)
       }
 
-      if (stack.id === attackerId && attackerId === retaliatorId) {
+      if (stack.id === attackerId && attackerId === retaliatorId && !fireShield) {
         return { ...stack, retaliationsUsed: stack.retaliationsUsed + 1 }
       }
 

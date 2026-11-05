@@ -254,6 +254,15 @@ const protectiveSpellDefinitions = {
     costs: [24, 20, 20, 20],
     target: 'own',
     effects: { extraRetaliations: [1, 1, 2, 2] }
+  }),
+  FIRE_SHIELD: aLastingSpell({
+    name: 'Fire Shield',
+    schools: ['FIRE'],
+    costs: [16, 12, 12, 12],
+    target: 'own',
+    allAtExpert: false,
+    raisedBySorcery: true,
+    effects: { fireShieldPercent: [20, 20, 25, 30] }
   })
 }
 
