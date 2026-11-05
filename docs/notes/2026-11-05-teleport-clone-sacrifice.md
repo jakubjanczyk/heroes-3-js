@@ -36,7 +36,7 @@ Checked against the wiki (Clone), the descriptions in `game/data/spells.json`, a
 - It lasts Power rounds, counted like the other spells' rounds, and is gone as the round after them starts. Checked against the wiki ("1 rnd/sp") and the engine.
 - Any damage makes it vanish at once, so it never strikes back. It also vanishes when the original dies. Checked against the wiki and the engine.
 - It can't be healed. Checked against the engine.
-- It doesn't count for the battle's end (a side with only clones left has lost), for casualties in the results window, for the hero's army after the battle or for experience. Checked against the engine (clones don't keep a side in the battle); the rest follows from it.
+- It doesn't count for the battle's end (a side with only clones left has lost), for casualties in the results window, for the hero's army after the battle or for experience. Checked against the engine (clones don't keep a side in the battle); the rest follows from it. Since a clone vanishes with its original, it can only be left alone on the hero's side when it is a clone of a hypnotized enemy stack.
 - Drawn with a pale blue tint so the player tells it apart; our own look, as the game tints it too.
 - Combat log: the usual cast line, "%s casts '%s' on the %s." (`core.genrltxt.195`).
 
