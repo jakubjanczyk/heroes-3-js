@@ -52,12 +52,18 @@ Checked against the wiki (Fire Shield, with its worked examples) and the engine'
 
 ### Anti-Magic (Earth, level 3, 15 / 12 spell points) — 4.8.7.2d
 
-Checked against the wiki (Anti-Magic), the descriptions and the engine's spell config and target rules.
+Checked against the wiki (Anti-Magic), the descriptions in `game/data/spells.json` and an open-source engine's spell config (`spells/timed.json`, `spells/other.json`), its target conditions, its Dispel and its chain rule.
 
-- One own stack, at every level. Lasts Power rounds.
-- The stack can't be the target of a spell of level 1 to 3 (no skill and Basic), 1 to 4 (Advanced) or any level (Expert), the hero's own spells too: it can't be picked, a spell hitting all stacks or an area leaves it out. Dispel still reaches it. Checked against the wiki and the engine.
-- Casting it removes the harmful spells on the stack, not the helpful ones. Checked against the wiki and the engine (dispels negative and neutral spells, not positive ones).
-- Combat log: the usual cast line.
+- One own stack, at every level (no mass effect). Undead can have it. Lasts Power rounds. Checked against the wiki ("allied troop", "1 rnd/sp") and the engine (range 0, `N_TURNS`).
+- The stack is immune to spells of level 1 to 3 (no skill and Basic), 1 to 4 (Advanced) or 1 to 5 (Expert), the hero's own spells too. Checked against the wiki and the engine (a level immunity of 3 / 4 / 5 that turns away every spell of that level or lower, whoever casts it).
+- An immune stack is not a target, as for the undead (4.8.6.1): hovering it shows "Select Spell Target" and the blocked cursor, a click cancels the spell; at Expert a spell on all stacks leaves it out, and with only immune stacks says "That spell will affect no one!". Checked against the engine (the same target condition).
+- Area damage (Fireball, Inferno, Meteor Shower, Frost Ring), Armageddon and Death Ripple leave the immune stack out: it takes no damage. Checked against the engine (the area's stacks pass the same condition).
+- Chain Lightning never jumps to an immune stack: it jumps to the nearest stack it can reach. Checked against the engine (an immune stack is skipped and the next nearest taken).
+- Casting Anti-Magic on the stack again is a spell of level 3, so the stack, now immune, can't be its target until the spell ends or is dispelled. Follows from the two sources' rule; neither says it outright.
+- Dispel still reaches the stack and removes Anti-Magic with the other spells. Checked against the wiki ("Spells that go through Anti-Magic: Dispel") and the engine (Dispel ignores immunity).
+- Casting it removes the harmful spells on the stack, not the helpful ones; Disrupting Ray stays, as with Dispel. Checked against the wiki ("removes negative spell effects (e.g. Curse) but not positive spell effects (e.g. Bless)") and the engine (dispels negative and neutral, not positive, never the persistent Disrupting Ray). The only harmful spell an own stack can have now is Berserk from the hero's own area Berserk (4.8.7.1c), and the harmful spells on an enemy stack the hero hypnotized.
+- The immunity doesn't stop Fire Shield burning the stack: the engine checks only school immunities there. Out of reach until enemy heroes cast, as only a berserk own stack could attack an own shielded one.
+- Combat log: the usual cast line (`core.genrltxt.195`); the engine gives it none of its own.
 
 ### Magic Mirror (Air, level 5, 25 / 20 spell points) — with 8.1
 
