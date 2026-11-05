@@ -938,6 +938,12 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
+    "notOnHypnotized": true,
+    "lasting": {
+      "target": "own",
+      "removesHarmfulSpells": true,
+      "effects": { "spellLevelImmunity": [3, 3, 4, 5] }
+    },
     "mageGuildChances": { "CASTLE": 12 },
     "descriptions": [
       {
@@ -968,6 +974,7 @@
       "targets": ["own", "own", "any", "any"],
       "allAtExpert": true
     },
+    "ignoresSpellLevelImmunity": true,
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {

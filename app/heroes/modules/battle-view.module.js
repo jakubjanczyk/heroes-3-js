@@ -250,7 +250,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function stacksInAreaAt(hex) {
-      const inArea = areaTargetIds(shown, pickedSpell.targeting.area, hex)
+      const inArea = areaTargetIds(shown, pickedSpell.targeting, hex)
       return pickedSpell.targeting.areaNeedsTarget
         ? inArea.filter((id) => isPickedSpellTarget(shown.stacks.find((stack) => stack.id === id)))
         : inArea

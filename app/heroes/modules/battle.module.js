@@ -523,7 +523,7 @@ export const registerBattleModule = defineModule(
       if (!hex || !isOnBattlefield(hex)) {
         return null
       }
-      const inArea = areaTargetIds(battle, targeting.area, hex)
+      const inArea = areaTargetIds(battle, targeting, hex)
       if (!targeting.areaNeedsTarget) {
         return { hex, targetIds: inArea }
       }
@@ -544,16 +544,16 @@ export const registerBattleModule = defineModule(
         return null
       }
       return spell.chain
-        ? { targetIds: chainOf(hero, spell, { targetId, hex }) }
+        ? { targetIds: chainOf(hero, spell, { targeting, targetId, hex }) }
         : { targetIds: [targetId] }
     }
 
-    function chainOf(hero, spell, { targetId, hex }) {
+    function chainOf(hero, spell, { targeting, targetId, hex }) {
       const target = battle.stacks.find(({ id }) => id === targetId)
       const landedOn =
         hex && getStackHexes(target).some((own) => isSameHex(own, hex)) ? hex : target.hex
       const strikes = spell.chain.strikes[spellSkillLevel(hero, spell)]
-      return chainTargetIds(battle, { targetId, hex: landedOn, strikes, random })
+      return chainTargetIds(battle, { targeting, targetId, hex: landedOn, strikes, random })
     }
 
     function castDetailOn(hero, spell, { hex, targetIds }) {
@@ -620,7 +620,8 @@ export const registerBattleModule = defineModule(
           removable: !spell.lasting.cannotBeRemoved,
           endsOnOwnTurn: Boolean(spell.lasting.untilOwnTurn),
           endsOnOwnAttack: Boolean(spell.lasting.untilOwnAttack),
-          endsSpellIds: spell.lasting.endsSpells ?? []
+          endsSpellIds: spell.lasting.endsSpells ?? [],
+          removesHarmful: Boolean(spell.lasting.removesHarmfulSpells)
         })
       }
       if (spell?.removesSpells) {
