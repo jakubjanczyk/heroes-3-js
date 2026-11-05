@@ -20,17 +20,18 @@ Roadmap 4.8.6.3, the last part of immunities and Resistance (4.8.6) that can be 
 ### Both
 
 - Only a worn artifact counts, not one in the backpack, as for every artifact (7.8.1).
-- The immunity is the hero's troops'. An enemy stack the hero hypnotized fights for the hero but isn't the hero's troop, so the hero's spells still reach it. Checked against the engine (the hero's bonuses go to the stacks of the hero's side, and Hypnotize doesn't change a stack's side); the wiki says nothing. To confirm with the user.
+- The immunity is the hero's troops'. An enemy stack the hero hypnotized fights for the hero but isn't the hero's troop, so the hero's spells still reach it. Checked against the engine (the hero's bonuses go to the stacks of the hero's side, and Hypnotize doesn't change a stack's side); the wiki says nothing. Decided with the user: follow the engine.
 - Neither artifact changes a message or a window: the spell's target rules are where it shows.
 
 ## What we do
 
 - Each of the seven mind spells gets `mind: true` in `game/data/spells.json`. Undead count as immune to mind spells, so those seven lose `notOnUndead`, which stays on Bless, Curse and Death Ripple (refactor first, no behaviour change).
-- Artifacts get `battleImmunities`: `{ "mindSpells": true }` for the Badge, `{ "spellLevel": 4 }` for the Dragon Father. The hero's stacks take them at the start of the battle, and the spell rules read them next to the undead and Anti-Magic. Another artifact with an immunity is data only.
+- Artifacts get `battleImmunities`: `{ "mindSpells": true }` for the Badge, `{ "spellLevel": 4 }` for the Dragon Father. The hero's stacks take them from the worn artifacts at the start of the battle, and the spell rules read them next to the undead and Anti-Magic. Another artifact with an immunity is data only.
+- Untested: Dispel reaching the Dragon Father's troops (they can't have a spell to remove) and a level 5 spell getting through (none goes on own stacks yet).
 
 ## Left for later
 
-- Resistance (4.8.6.2): its chance only counts against an enemy's spells, and no enemy casts yet: no enemy heroes (8.1), and no creature that casts among ours (Faerie Dragons and the others come with 6.5). It moves to "5.8 later".
+- Resistance (4.8.6.2): its chance only counts against an enemy's spells, and no enemy casts yet: no enemy heroes (8.1), and no creature that casts among ours (Faerie Dragons and the others come with 6.5). Moved to "5.8 later", decided with the user.
 - A level 5 spell on own stacks getting through the Dragon Father (Sacrifice, 4.8.7.3; Magic Mirror, 8.1), and Sacrifice failing because its raising is a level 4 Resurrection (wiki).
 - Creatures immune to mind spells or spell levels (Golems, Elementals, Dragons, Giants and Titans, 6.5).
 - The Orb of Vulnerability negating every immunity (7.8).

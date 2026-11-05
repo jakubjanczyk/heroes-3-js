@@ -661,7 +661,7 @@ In four parts. Your own stacks are hit too. See `docs/notes/2026-11-04-area-dama
 In three parts; the second, Resistance, waits for an enemy that casts (5.8 later).
 - [x] 4.8.6.1 Undead immune to Bless, Curse, Mirth and Sorrow: not a target, and left out at Expert. See `docs/notes/2026-11-04-spell-immunities.md`
 - [ ] Creatures resisting some spell levels or schools, and Golems' spell damage reduction, with the creatures (6.5)
-- [ ] 4.8.6.3 Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity (7.8.7)
+- [x] 4.8.6.3 Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity to spells of level 1-4 (7.8.7), the hero's own spells too. See `docs/notes/2026-11-05-artifact-spell-immunities.md`
 
 #### 4.8.7 Control and special spells
 In three parts.
@@ -1007,7 +1007,7 @@ See `docs/notes/2026-10-30-morale-luck-and-movement-artifacts.md`.
 - [x] The Hourglass of the Evil Hour and Spirit of Oppression: in battle, positive luck or morale is 0 on both sides; penalties stay; the hero screen still shows the usual values
 - [x] Boots of Speed (+600) and Equestrian's Gloves (+300): land movement points over the maximum when worn at the start of a day, day 1 included
 - [x] Two of the same count once; a new artifact with morale, luck, movement or a battle cancel is data only
-- [ ] Badge of Courage's immunity to mind spells (5.8)
+- [x] Badge of Courage's immunity to mind spells (4.8.6.3)
 
 #### 7.8.4 Guarded artifacts
 See `docs/notes/2026-10-30-guarded-artifacts.md`.
@@ -1035,7 +1035,8 @@ See `docs/notes/2026-10-30-combination-artifacts.md`.
 - [x] With all the parts worn, putting the last one on or right-clicking one asks to combine them (`core.genrltxt.732`); right-clicking the combination, worn or in the backpack, asks to take it apart (`core.genrltxt.733`), the parts going back where they were worn
 - [x] A combination holds all its parts' slots, the others shown locked; it takes one backpack slot and gives its parts' bonuses plus its own
 - [x] The Dragon Father's +6 to all primary skills; the Angelic Alliance's good and neutral towns counting as one for the wearer's morale
-- [ ] Their spell effects (5.8): the Dragon Father's immunity, the Alliance's Prayer, the Armor of the Damned's curses, Titan's Thunder's bolt and spell book
+- [x] The Dragon Father's immunity to spells of level 1-4 (4.8.6.3)
+- [ ] Their other spell effects (5.8): the Alliance's Prayer, the Armor of the Damned's curses, Titan's Thunder's bolt and spell book
 - [ ] The other eight combinations, with the artifacts they are made of: Admiral's Hat, Bow of the Sharpshooter, Cloak of the Undead King, Cornucopia, Elixir of Life, Ring of the Magi, Statue of Legion, Wizard's Well
 
 #### 7.8 later

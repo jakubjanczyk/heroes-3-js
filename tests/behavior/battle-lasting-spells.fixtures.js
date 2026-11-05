@@ -175,7 +175,18 @@ const artifactDefinitions = {
     .withName('Hourglass of the Evil Hour')
     .withSlot('MISC')
     .withCancelsInBattle(['luck'])
-    .build()
+    .build(),
+  MIND_GUARD: anArtifactDefinition()
+    .withName('Mind Guard')
+    .withSlot('SHIELD')
+    .withBattleImmunities({ mindSpells: true })
+    .build(),
+  SPELL_GUARD: anArtifactDefinition()
+    .withName('Spell Guard')
+    .withSlot('TORSO')
+    .withBattleImmunities({ spellLevel: 4 })
+    .build(),
+  PLAIN_SHIELD: anArtifactDefinition().withName('Plain Shield').withSlot('SHIELD').build()
 }
 
 const controlSpellDefinitions = {

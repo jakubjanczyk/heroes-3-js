@@ -16,7 +16,10 @@ const OTHER_SIDE = { attacker: 'defender', defender: 'attacker' }
 export const isHypnotized = (stack) => hasSpellEffect(stack, 'hypnotized')
 
 export const getSpellLevelImmunity = (stack) =>
-  Math.max(0, ...(stack.spells ?? []).map(({ effects }) => effects.spellLevelImmunity ?? 0))
+  Math.max(
+    stack.spellLevelImmunity ?? 0,
+    ...(stack.spells ?? []).map(({ effects }) => effects.spellLevelImmunity ?? 0)
+  )
 
 export const fightsFor = (stack) => (isHypnotized(stack) ? OTHER_SIDE[stack.side] : stack.side)
 

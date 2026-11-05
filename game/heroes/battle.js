@@ -1,4 +1,4 @@
-import { artifactsCancelInBattle } from './artifacts.js'
+import { artifactBattleImmunities, artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isImmuneTo, isSpellTarget } from './battle-spells.js'
 import {
@@ -62,6 +62,7 @@ function createStacks({
   morale = 0,
   luck = 0,
   cancelledInBattle = [],
+  immunities = { mindSpells: false, spellLevel: 0 },
   definitions
 }) {
   const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
@@ -97,7 +98,8 @@ function createStacks({
       morale: unaffectedByMorale ? 0 : morale,
       unaffectedByMorale,
       undead,
-      mindSpellImmune: undead,
+      mindSpellImmune: undead || immunities.mindSpells,
+      spellLevelImmunity: immunities.spellLevel,
       king: definition.king ?? null,
       luck,
       cancelledInBattle,
@@ -139,6 +141,7 @@ export function createBattle({
         morale: inBattle('morale', getHeroMorale({ entity: hero, definitions }).value),
         luck: inBattle('luck', getHeroLuck({ entity: hero, definitions }).value),
         cancelledInBattle,
+        immunities: artifactBattleImmunities(heroArtifacts, definitions),
         definitions
       }),
       ...createStacks({
