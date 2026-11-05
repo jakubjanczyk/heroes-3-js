@@ -1,4 +1,4 @@
-import { fightsFor } from './battle-stats.js'
+import { fightsFor, getSpellLevelImmunity, isHypnotized } from './battle-stats.js'
 
 // A combat spell does damage, lasts on stacks, removes their spells or heals them; each of the last
 // three says whose stacks it goes on and whether it hits all of them at Expert.
@@ -41,19 +41,28 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   shootersOnly: Boolean(spell?.lasting?.shootersOnly),
   hurtOnly: Boolean(spell?.heals),
   withRemovableSpellOnly: Boolean(spell?.removesSpells),
-  notOnUndead: Boolean(spell?.notOnUndead)
+  notOnUndead: Boolean(spell?.notOnUndead),
+  notOnHypnotized: Boolean(spell?.notOnHypnotized),
+  spellLevel: spell?.level ?? 0,
+  ignoresSpellLevelImmunity: Boolean(spell?.ignoresSpellLevelImmunity)
 })
 
 const isOnTargetSide = (targetSide, target, casterSide) =>
   targetSide === 'any' || (fightsFor(target) === casterSide) === (targetSide === 'own')
 
+// Anti-Magic turns away every spell of its level or lower, the hero's own too.
+export const isImmuneTo = (targeting, target) =>
+  (targeting.notOnUndead && target.undead) ||
+  (!targeting.ignoresSpellLevelImmunity && targeting.spellLevel <= getSpellLevelImmunity(target))
+
 export function isSpellTarget(targeting, target, casterSide) {
   return (
     isOnTargetSide(targeting.targetSide, target, casterSide) &&
+    !isImmuneTo(targeting, target) &&
+    (!targeting.notOnHypnotized || !isHypnotized(target)) &&
     (!targeting.shootersOnly || target.shooter) &&
     (!targeting.hurtOnly || isHurt(target)) &&
     (!targeting.withRemovableSpellOnly || hasRemovableSpell(target)) &&
-    (!targeting.notOnUndead || !target.undead) &&
     (!targeting.healthBelow || stackHealth(target) < targeting.healthBelow)
   )
 }

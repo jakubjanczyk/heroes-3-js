@@ -1,6 +1,6 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
-import { isSpellTarget } from './battle-spells.js'
+import { isImmuneTo, isSpellTarget } from './battle-spells.js'
 import {
   areEnemies,
   fightsFor,
@@ -187,11 +187,14 @@ export function spellTargetIds(battle, targeting) {
     : []
 }
 
-export function areaTargetIds(battle, area, hex) {
-  const areaHexes = getAreaHexes(hex, area)
+// A stack immune to the spell is left out, even when it stands in the area.
+export function areaTargetIds(battle, targeting, hex) {
+  const areaHexes = getAreaHexes(hex, targeting.area)
   return livingStacks(battle)
-    .filter((stack) =>
-      getStackHexes(stack).some((own) => areaHexes.some((inArea) => isSameHex(own, inArea)))
+    .filter(
+      (stack) =>
+        !isImmuneTo(targeting, stack) &&
+        getStackHexes(stack).some((own) => areaHexes.some((inArea) => isSameHex(own, inArea)))
     )
     .map(({ id }) => id)
 }
@@ -203,12 +206,14 @@ function nearestHexes(from, stacks) {
 }
 
 // The bolt jumps from the hex it landed on to the nearest hex of a living stack it hasn't hit yet,
-// either side's; a tie between hexes as near is rolled.
-export function chainTargetIds(battle, { targetId, hex, strikes, random }) {
+// either side's and not immune to the spell; a tie between hexes as near is rolled.
+export function chainTargetIds(battle, { targeting, targetId, hex, strikes, random }) {
   const hitIds = [targetId]
   let from = hex
   while (hitIds.length < strikes) {
-    const left = livingStacks(battle).filter(({ id }) => !hitIds.includes(id))
+    const left = livingStacks(battle).filter(
+      (stack) => !hitIds.includes(stack.id) && !isImmuneTo(targeting, stack)
+    )
     if (left.length === 0) {
       break
     }
@@ -718,7 +723,13 @@ const longerOf = (rounds, earlier) =>
 
 // Cast again on a stack that has it, the spell takes the new effects and the longer duration; a
 // spell that adds up adds its effects to the earlier ones.
-// A spell that ends others (Berserk and Hypnotize end each other) takes them off the stack.
+// A spell that ends others (Berserk and Hypnotize end each other) takes them off the stack, and
+// one that removes the harmful spells (Anti-Magic) takes off all of them but Disrupting Ray.
+const isEndedBy = (spell, { spellId, endsSpellIds = [], removesHarmful }) =>
+  spell.spellId === spellId ||
+  endsSpellIds.includes(spell.spellId) ||
+  Boolean(removesHarmful && !spell.helpful && spell.removable !== false)
+
 function putSpellOn(
   stack,
   {
@@ -730,15 +741,13 @@ function putSpellOn(
     removable,
     endsOnOwnTurn,
     endsOnOwnAttack,
-    endsSpellIds = []
+    ...ending
   }
 ) {
   const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
   const roundsLeft = longerOf(rounds, earlier?.roundsLeft)
   const effects = addsUp ? addEffects(earlier?.effects, cast) : cast
-  const kept = (stack.spells ?? []).filter(
-    (spell) => spell.spellId !== spellId && !endsSpellIds.includes(spell.spellId)
-  )
+  const kept = (stack.spells ?? []).filter((spell) => !isEndedBy(spell, { spellId, ...ending }))
   return {
     ...stack,
     spells: [

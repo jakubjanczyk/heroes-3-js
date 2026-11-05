@@ -142,6 +142,7 @@ const removingAndHealingSpellDefinitions = {
     .withSchools(['WATER'])
     .withCosts([5, 4, 4, 4])
     .withRemovesSpells({ targets: ['own', 'own', 'any', 'any'], allAtExpert: true })
+    .withIgnoresSpellLevelImmunity(true)
     .describedAs('Dispel description.')
     .build(),
   CURE: aSpellDefinition()
@@ -200,6 +201,7 @@ const controlSpellDefinitions = {
   }),
   BERSERK: aSpellDefinition()
     .withName('Berserk')
+    .withLevel(4)
     .withNotOnUndead(true)
     .withSchools(['FIRE'])
     .withCosts([20, 16, 16, 16])
@@ -263,10 +265,64 @@ const protectiveSpellDefinitions = {
     allAtExpert: false,
     raisedBySorcery: true,
     effects: { fireShieldPercent: [20, 20, 25, 30] }
-  })
+  }),
+  ANTI_MAGIC: aSpellDefinition()
+    .withName('Anti-Magic')
+    .withLevel(3)
+    .withSchools(['EARTH'])
+    .withCosts([15, 12, 12, 12])
+    .withNotOnHypnotized(true)
+    .withLasting({
+      target: 'own',
+      removesHarmfulSpells: true,
+      effects: { spellLevelImmunity: [3, 3, 4, 5] }
+    })
+    .describedAs('Anti-Magic description.')
+    .build()
 }
 
 export const PROTECTIVE_SPELLS = Object.keys(protectiveSpellDefinitions)
+
+const aDamageSpell = ({ name, level, schools, costs, damage }) =>
+  aSpellDefinition()
+    .withName(name)
+    .withLevel(level)
+    .withSchools(schools)
+    .withCosts(costs)
+    .withDamage(damage)
+    .describedAs(`${name} description.`)
+
+const damageSpellDefinitions = {
+  FIREBALL: aDamageSpell({
+    name: 'Fireball',
+    level: 3,
+    schools: ['FIRE'],
+    costs: [15, 12, 12, 12],
+    damage: { base: [15, 15, 30, 60], perPower: 10 }
+  })
+    .withArea({ from: 0, to: 1 })
+    .build(),
+  ARMAGEDDON: aDamageSpell({
+    name: 'Armageddon',
+    level: 4,
+    schools: ['FIRE'],
+    costs: [24, 20, 20, 20],
+    damage: { base: [30, 30, 60, 120], perPower: 50 }
+  })
+    .withTargets('all')
+    .build(),
+  CHAIN_LIGHTNING: aDamageSpell({
+    name: 'Chain Lightning',
+    level: 4,
+    schools: ['AIR'],
+    costs: [24, 20, 20, 20],
+    damage: { base: [25, 25, 50, 100], perPower: 40 }
+  })
+    .withChain({ strikes: [4, 4, 5, 5], factor: 0.5 })
+    .build()
+}
+
+export const DAMAGE_SPELLS = Object.keys(damageSpellDefinitions)
 
 const gameDefinitions = {
   hero: readGameData('hero.json'),
@@ -279,7 +335,8 @@ const gameDefinitions = {
     ...moraleAndLuckSpellDefinitions,
     ...removingAndHealingSpellDefinitions,
     ...controlSpellDefinitions,
-    ...protectiveSpellDefinitions
+    ...protectiveSpellDefinitions,
+    ...damageSpellDefinitions
   },
   artifacts: artifactDefinitions
 }

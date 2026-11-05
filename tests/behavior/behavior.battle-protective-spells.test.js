@@ -5,15 +5,19 @@ import { createMemoryEventLog, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   castSpellAt,
+  clickBattleButton,
   getBattleStatusBarText,
   hoverBattleHex,
+  isBattleHexReachable,
   moveActiveStackTo,
   pickSpell,
   playOnToNextRound,
   pointAtBattleHexSide,
+  readActiveStack,
   readBattleEffects,
   readBattleResultsSide,
   readBattleSpellPoints,
+  readBattleStacks,
   readCombatMessages,
   readStackCountColour,
   readStackCountColours,
@@ -26,6 +30,7 @@ import {
   aCaster,
   aFight,
   bringPikemenCloser,
+  DAMAGE_SPELLS,
   ENEMY_HEX,
   HERO,
   OWN_HEX,
@@ -597,6 +602,235 @@ describe('battle protective spells behavior', () => {
       await playOnToNextRound(user)
 
       expect(fireShieldLines()).toEqual(['The Fire Shield does 24 damage.'])
+    })
+  })
+  describe('Anti-Magic', () => {
+    const anAntiMagicCaster = ({ earth, fire, air, ...options } = {}) =>
+      aCaster({
+        spells: [
+          'HASTE',
+          'BLESS',
+          'ANTI_MAGIC',
+          'BERSERK',
+          'HYPNOTIZE',
+          ...DAMAGE_SPELLS,
+          ...REMOVING_AND_HEALING_SPELLS
+        ],
+        secondarySkills: [
+          ...(earth ? [{ skill: 'EARTH_MAGIC', level: earth }] : []),
+          ...(fire ? [{ skill: 'FIRE_MAGIC', level: fire }] : []),
+          ...(air ? [{ skill: 'AIR_MAGIC', level: air }] : [])
+        ],
+        ...options
+      })
+
+    const stackNamed = (name) => readBattleStacks().find(({ stack }) => stack.startsWith(name))
+
+    async function castAntiMagicOnTheSwordsmenThenPlayOn(user) {
+      await castSpellAt(user, 'Anti-Magic', OWN_HEX)
+      await playOnToNextRound(user)
+    }
+
+    test('given the hero casts Anti-Magic on the Swordsmen then the combat log says so, 15 spell points are spent and their count box turns green', async () => {
+      const { user } = await startBattleWithStyles(aFight({ hero: anAntiMagicCaster() }))
+
+      await castSpellAt(user, 'Anti-Magic', OWN_HEX)
+      const colour = readStackCountColour(OWN_HEX.row, OWN_HEX.column)
+      const messages = readCombatMessages().slice(-1)
+      await playOnToNextRound(user)
+
+      expect([messages, colour, await readBattleSpellPoints(user)]).toEqual([
+        ["Lord Haart casts 'Anti-Magic' on the Swordsmen."],
+        'green',
+        '5'
+      ])
+    })
+
+    test('given a hero with no Earth skill cast Anti-Magic on the Swordsmen when Haste is picked and they are clicked then the spell is cancelled and no spell points are spent', async () => {
+      const { user } = await startBattle(aFight({ hero: anAntiMagicCaster({ knowledge: 3 }) }))
+      await castAntiMagicOnTheSwordsmenThenPlayOn(user)
+
+      await castSpellAt(user, 'Haste', OWN_HEX)
+
+      expect([getBattleStatusBarText(), await readBattleSpellPoints(user)]).toEqual([
+        'Spell cancelled',
+        '15'
+      ])
+    })
+
+    // Expert Haste gives +5 speed: the Swordsmen would reach column 11 rather than column 6.
+    test("given an Expert Air hero cast Anti-Magic on the Swordsmen when Haste is picked then every other stack of the hero's has the helpful count box and the Swordsmen don't get Haste", async () => {
+      const hero = anAntiMagicCaster({
+        air: 'EXPERT',
+        knowledge: 3,
+        army: [stack('SWORDSMAN', 10), stack('ARCHER', 10)]
+      })
+      const { user } = await startBattleWithStyles(aFight({ hero }))
+      const swordsmen = stackNamed('Swordsmen')
+      await castSpellAt(user, 'Anti-Magic', swordsmen)
+      await playOnToNextRound(user)
+      await clickBattleButton(user, 'Defend')
+      await waitMs(1000)
+
+      await pickSpell(user, 'Haste')
+
+      expect([
+        readStackCountColour(stackNamed('Archers').row, stackNamed('Archers').column),
+        isBattleHexReachable(swordsmen.row, swordsmen.column + 5),
+        isBattleHexReachable(swordsmen.row, swordsmen.column + 6)
+      ]).toEqual(['green', true, false])
+    })
+
+    // Power 3, so Anti-Magic lasts into the third round. In the second round the Swordsmen attack
+    // the Pikemen and the two stacks trade blows, leaving 9 Swordsmen next to 35 Pikemen. A
+    // Fireball on the Pikemen does 15 + 3 × 10 = 45 and kills 4 of them.
+    test('given the Swordsmen have Anti-Magic when a Fireball hits them and an enemy stack then only the enemy stack takes damage', async () => {
+      const { user } = await startBattle(
+        aFight({ hero: anAntiMagicCaster({ power: 3, knowledge: 3 }) })
+      )
+      await castSpellAt(user, 'Anti-Magic', OWN_HEX)
+      await bringPikemenCloser(user)
+      await attackBattleHexFrom(user, PIKEMEN_CLOSE_BY.row, PIKEMEN_CLOSE_BY.column, 'left')
+      await waitMs(1000)
+
+      await castSpellAt(user, 'Fireball', PIKEMEN_CLOSE_BY)
+
+      expect([stackNamed('Swordsmen').stack, stackNamed('Pikemen').stack]).toEqual([
+        'Swordsmen 9',
+        'Pikemen 31'
+      ])
+    })
+
+    // Armageddon does 30 + 2 × 50 = 130: 3 of the 35-health Swordsmen and 13 Pikemen perish.
+    test('given the Swordsmen have Basic Anti-Magic when Armageddon is cast then they take its damage', async () => {
+      const { user } = await startBattle(
+        aFight({ hero: anAntiMagicCaster({ earth: 'BASIC', knowledge: 4 }) })
+      )
+      await castAntiMagicOnTheSwordsmenThenPlayOn(user)
+
+      await pickSpell(user, 'Armageddon')
+
+      expect([stackNamed('Swordsmen').stack, stackNamed('Pikemen').stack]).toEqual([
+        'Swordsmen 7',
+        'Pikemen 37'
+      ])
+    })
+
+    test('given the Swordsmen have Advanced Anti-Magic when Armageddon is cast then every other stack takes damage and the Swordsmen take none', async () => {
+      const { user } = await startBattle(
+        aFight({ hero: anAntiMagicCaster({ earth: 'ADVANCED', knowledge: 4 }) })
+      )
+      await castAntiMagicOnTheSwordsmenThenPlayOn(user)
+
+      await pickSpell(user, 'Armageddon')
+
+      expect([stackNamed('Swordsmen').stack, stackNamed('Pikemen').stack]).toEqual([
+        'Swordsmen 10',
+        'Pikemen 37'
+      ])
+    })
+
+    // The Swordsmen walk to column 5, six hexes from the Pikemen on column 11; the Archers stay
+    // on row 9 of column 1, further away. Chain Lightning does 25 + 2 × 40 = 105 to the Pikemen
+    // and half that, 52, to the next stack: 5 of the 10-health Archers perish.
+    test("given the Swordsmen have Advanced Anti-Magic and are the nearest stack to the Chain Lightning's target then the bolt jumps to the next nearest stack instead", async () => {
+      const hero = anAntiMagicCaster({
+        earth: 'ADVANCED',
+        knowledge: 4,
+        army: [stack('SWORDSMAN', 10), stack('ARCHER', 10)]
+      })
+      const { user } = await startBattle(aFight({ hero }))
+      await castSpellAt(user, 'Anti-Magic', stackNamed('Swordsmen'))
+      await moveActiveStackTo(user, 6, 5)
+      await waitMs(1000)
+      await clickBattleButton(user, 'Defend')
+      await waitMs(1000)
+
+      await castSpellAt(user, 'Chain Lightning', PIKEMEN_CLOSE_BY)
+      await waitMs(1200)
+
+      expect(['Swordsmen', 'Archers', 'Pikemen'].map((name) => stackNamed(name).stack)).toEqual([
+        'Swordsmen 10',
+        'Archers 5',
+        'Pikemen 40'
+      ])
+    })
+
+    // Power 4, so Anti-Magic would last into the third round.
+    test('given the Swordsmen have Anti-Magic when Dispel is cast on them then Anti-Magic is gone and Bless can be cast on them', async () => {
+      const { user } = await startBattle(
+        aFight({ hero: anAntiMagicCaster({ power: 4, knowledge: 3 }) })
+      )
+      await castAntiMagicOnTheSwordsmenThenPlayOn(user)
+      await castSpellAt(user, 'Dispel', OWN_HEX)
+      await playOnToNextRound(user)
+
+      await castSpellAt(user, 'Bless', OWN_HEX)
+
+      expect(readCombatMessages().slice(-1)).toEqual(["Lord Haart casts 'Bless' on the Swordsmen."])
+    })
+
+    // A Snail has speed 1, 4 with Haste. Power 4, so Haste lasts into the third round. The
+    // berserk Snails, six hexes from the Swordsmen, walk towards them in the second round
+    // without reaching them.
+    test("given the hero's Snails are berserk and hasted when the hero casts Anti-Magic on them then Berserk is gone and Haste stays", async () => {
+      const snail = aCreatureDefinition()
+        .withName('Snail')
+        .withNamePlural('Snails')
+        .withSpeed(1)
+        .build()
+      const hero = anAntiMagicCaster({
+        power: 4,
+        knowledge: 5,
+        army: [stack('SWORDSMAN', 10), stack('SNAIL', 10)]
+      })
+      const { user } = await startBattle(aFight({ hero, creatures: { SNAIL: snail } }))
+      await castSpellAt(user, 'Haste', stackNamed('Snails'))
+      await playOnToNextRound(user)
+      await clickBattleButton(user, 'Defend')
+      await waitMs(1000)
+      await castSpellAt(user, 'Berserk', stackNamed('Snails'))
+      await playOnToNextRound(user)
+      const snails = stackNamed('Snails')
+
+      await castSpellAt(user, 'Anti-Magic', snails)
+      await playOnToNextRound(user)
+
+      expect([
+        readActiveStack().stack,
+        isBattleHexReachable(snails.row, snails.column + 4)
+      ]).toEqual(['Snails 10', true])
+    })
+
+    // 5 Pikemen have 50 health, below Hypnotize's 10 + 2 × 25 = 60. The player plays the
+    // hypnotized Pikemen's turn too.
+    test('given an enemy stack the hero hypnotized when Anti-Magic is picked and it is clicked then the spell is cancelled and no spell points are spent', async () => {
+      const { user } = await startBattle(
+        aFight({ hero: anAntiMagicCaster({ knowledge: 4 }), count: 5 })
+      )
+      await castSpellAt(user, 'Hypnotize', ENEMY_HEX)
+      await playOnToNextRound(user)
+      await playOnToNextRound(user)
+      const pikemen = stackNamed('Pikemen')
+
+      await castSpellAt(user, 'Anti-Magic', pikemen)
+
+      expect([getBattleStatusBarText(), await readBattleSpellPoints(user)]).toEqual([
+        'Spell cancelled',
+        '22'
+      ])
+    })
+
+    test("given Anti-Magic is on the Swordsmen when the page reloads then Bless still can't be cast on them", async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aFight({ hero: anAntiMagicCaster() })
+      const { user } = await startBattle(scenario, { eventLog })
+      await castAntiMagicOnTheSwordsmenThenPlayOn(user)
+
+      await reloadBattle(scenario, { eventLog })
+      await castSpellAt(user, 'Bless', OWN_HEX)
+
+      expect(getBattleStatusBarText()).toBe('Spell cancelled')
     })
   })
 })
