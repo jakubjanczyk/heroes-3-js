@@ -73,13 +73,10 @@ Checked against the wiki (Hypnotize), the descriptions in `game/data/spells.json
 - A berserk stack, and the nearest stack it goes for, are worked out with the combat AI's rules (5.7b), only with every stack a target; ties go to the earlier army slot, attacker first, as the AI's do.
 - The count box of a berserk or hypnotized stack is red (a harmful spell), as for the other harmful spells.
 - The hypnotized stack keeps facing the way it did and stays where it stands.
-
-## Open for 4.8.7.1c
-
-- Hypnotize's health: the wiki says the stack counts as if every creature had full health; the engine counts the health it has left (a wounded top creature counts less). The wiki says "less than" the limit, the engine "at most".
-- Sorcery: the engine raises Hypnotize's health limit with it, the wiki's Sorcery page speaks only of damage.
-- Berserk aimed where the area holds no stack it can go on (an empty hex, undead only): cast and wasted, or not a target ("Select Spell Target")?
-- The battle when every stack the monster has left is hypnotized: the engine goes on (the monster's side still has a stack); the wiki says nothing.
+- Hypnotize's health counts every creature at full health, as the wiki says (the engine counts the health left), and the stack's must be less than the limit (the wiki; the engine allows it at the limit). Decided with the user.
+- Sorcery doesn't raise the limit: the wiki's Sorcery page speaks only of damage (the engine raises it). Decided with the user.
+- Berserk can't be aimed where its area holds no stack it can go on (an empty hex, undead only): "Select Spell Target" and the blocked cursor. Neither source settles it; decided with the user.
+- When every stack the monster has left is hypnotized, the battle goes on (the engine; the wiki says nothing): the monster's side still has a stack. Decided with the user.
 
 ## Left for later
 
