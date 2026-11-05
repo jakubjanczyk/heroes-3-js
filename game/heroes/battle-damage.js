@@ -2,6 +2,7 @@ import {
   getCreatureDamage,
   getDamageTakenPercent,
   getRetaliationDamagePercent,
+  getRetaliationsLeft,
   getShotDamagePercent,
   getStackAttack,
   getStackDefense,
@@ -125,7 +126,7 @@ export function strikeSequence({ attacker, defender, random, luckRandom = NO_LUC
   const target = strike(attacker, defender)
   // A blind stack strikes back weaker, or not at all.
   const retaliationPercent = getRetaliationDamagePercent(defender)
-  const retaliates = target.count > 0 && target.retaliationsLeft > 0 && retaliationPercent > 0
+  const retaliates = target.count > 0 && getRetaliationsLeft(target) > 0 && retaliationPercent > 0
   const striker = retaliates ? strike(target, attacker, retaliationPercent) : attacker
   if (attacker.strikes > 1 && striker.count > 0 && target.count > 0) {
     strike(striker, target)

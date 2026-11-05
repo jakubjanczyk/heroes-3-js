@@ -20,6 +20,12 @@ export const areEnemies = (stack, other) => fightsFor(stack) !== fightsFor(other
 
 export const isBlind = (stack) => hasSpellEffect(stack, 'blind')
 
+export const getRetaliationsLeft = (stack) =>
+  Math.max(
+    0,
+    stack.retaliationsPerRound + spellEffect(stack, 'extraRetaliations') - stack.retaliationsUsed
+  )
+
 export const getRetaliationDamagePercent = (stack) =>
   100 + spellEffect(stack, 'retaliationDamagePercent')
 
