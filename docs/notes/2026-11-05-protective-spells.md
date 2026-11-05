@@ -1,10 +1,11 @@
 # Protective spells
 
-Roadmap 4.8.7.2: Slayer, Counterstrike, Fire Shield, Magic Mirror and Anti-Magic, the spells the hero casts on own stacks to fight better or be safer from spells. Proposed in three parts:
+Roadmap 4.8.7.2: Slayer, Counterstrike, Fire Shield, Magic Mirror and Anti-Magic, the spells the hero casts on own stacks to fight better or be safer from spells. One part for each spell:
 
-- **4.8.7.2a Slayer and Counterstrike**
-- **4.8.7.2b Fire Shield**
-- **4.8.7.2c Anti-Magic**
+- **4.8.7.2a Slayer**
+- **4.8.7.2b Counterstrike**
+- **4.8.7.2c Fire Shield**
+- **4.8.7.2d Anti-Magic**
 
 Magic Mirror waits for enemy heroes casting (8.1): it only turns back an enemy's spells, and Castle's Mage Guild never has it.
 
@@ -21,7 +22,7 @@ Checked against the wiki (Slayer, King), the descriptions in `game/data/spells.j
 - Of our creatures only Angels and Archangels are kings (the second group); the creatures of the first and third groups come with the other factions (6.5).
 - Combat log: the usual cast line (`core.genrltxt.195`); the engine gives it none of its own.
 
-### Counterstrike (Air, level 4, 24 / 20 spell points) — 4.8.7.2a
+### Counterstrike (Air, level 4, 24 / 20 spell points) — 4.8.7.2b
 
 Checked against the wiki (Counterstrike), the descriptions and the engine's spell config and retaliation rules.
 
@@ -32,7 +33,7 @@ Checked against the wiki (Counterstrike), the descriptions and the engine's spel
 - Royal Griffins already strike back without limit: it can be cast on them and does nothing. Checked against the wiki.
 - Combat log: the usual cast lines.
 
-### Fire Shield (Fire, level 4, 16 / 12 spell points) — 4.8.7.2b
+### Fire Shield (Fire, level 4, 16 / 12 spell points) — 4.8.7.2c
 
 Checked against the wiki (Fire Shield, with its worked examples) and the engine's spell config and its fire shield rule.
 
@@ -43,7 +44,7 @@ Checked against the wiki (Fire Shield, with its worked examples) and the engine'
 - It answers the strike that kills the shielded stack too. Checked against the wiki's examples and the engine.
 - Combat log: "The Fire Shield does %d damage." (`core.genrltxt.376`, the spell damage line), then the creatures that perish. Checked against the wiki's copy of `GENRLTXT.TXT` and the engine's use of it.
 
-### Anti-Magic (Earth, level 3, 15 / 12 spell points) — 4.8.7.2c
+### Anti-Magic (Earth, level 3, 15 / 12 spell points) — 4.8.7.2d
 
 Checked against the wiki (Anti-Magic), the descriptions and the engine's spell config and target rules.
 

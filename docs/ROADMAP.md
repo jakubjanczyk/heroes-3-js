@@ -670,7 +670,11 @@ In three parts.
   - [x] 4.8.7.1a Blind: an enemy stack loses its turns for Power rounds, until attacked or hit by a spell; it strikes back at 50% / 25% / not at all
   - [x] 4.8.7.1b Forgetfulness and Frenzy
   - [x] 4.8.7.1c Berserk and Hypnotize: Berserk on every stack in its area attacks the nearest stack, either side's, until its own attack; Hypnotize puts an enemy stack below its health limit under the hero's control for Power rounds
-- [ ] 4.8.7.2 Slayer, Counterstrike, Fire Shield, Magic Mirror, Anti-Magic
+- [ ] 4.8.7.2 Slayer, Counterstrike, Fire Shield, Anti-Magic, one part each (see `docs/notes/2026-11-05-protective-spells.md`):
+  - [ ] 4.8.7.2a Slayer: an own stack's Attack is 8 higher against kings, the Angels from Advanced
+  - [ ] 4.8.7.2b Counterstrike: an own stack strikes back 1 / 2 more times each round, every own stack at Expert
+  - [ ] 4.8.7.2c Fire Shield: a stack hitting the shielded stack in melee takes 20% / 25% / 30% of the damage back
+  - [ ] 4.8.7.2d Anti-Magic: an own stack no spell of level 1-3 / 1-4 / any reaches but Dispel; casting it removes the harmful spells on it
 - [ ] 4.8.7.3 Teleport, Clone and Sacrifice
 
 #### 5.8 later
@@ -678,6 +682,7 @@ In three parts.
 - [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3), and Expert Dispel clearing them; Earthquake with sieges (5.10)
 - [ ] The four Summon Elemental spells, Resurrection and Animate Dead, with the elementals and the dead counted
 - [ ] Enemy heroes casting, and the combat AI and Auto combat casting (8.1, 5.7b)
+- [ ] Magic Mirror, with enemy heroes casting (8.1): it only turns back an enemy's spells
 - [ ] The Armor of the Damned's curses (7.8.7)
 
 ### 5.9 Combat Resolution
