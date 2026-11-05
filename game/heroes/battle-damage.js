@@ -120,7 +120,11 @@ function fireShieldDamage({ shielded, striker, damageWithoutDefences }) {
 }
 
 // The wounded top creature takes the damage first; what is left over wounds the next one.
+// Any damage dispels a clone.
 export function takeDamage(stack, damage) {
+  if (stack.cloneOf && damage > 0) {
+    return { ...stack, count: 0, topHealth: 0 }
+  }
   const healthLeft = Math.max(0, (stack.count - 1) * stack.health + stack.topHealth - damage)
   const count = Math.ceil(healthLeft / stack.health)
   return {

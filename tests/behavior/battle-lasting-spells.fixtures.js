@@ -311,6 +311,14 @@ const teleportDefinitions = {
     .withCosts([15, 12, 6, 3])
     .withTeleports(true)
     .describedAs('Teleport description.')
+    .build(),
+  CLONE: aSpellDefinition()
+    .withName('Clone')
+    .withLevel(4)
+    .withSchools(['WATER'])
+    .withCosts([24, 20, 20, 20])
+    .withClones({ highestTier: [5, 5, 6, 7] })
+    .describedAs('Clone description.')
     .build()
 }
 
