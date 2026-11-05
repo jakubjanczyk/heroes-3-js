@@ -675,7 +675,7 @@ In three parts.
   - [x] 4.8.7.2c Fire Shield: a stack hitting the shielded stack in melee takes 20% / 25% / 30% of the damage back
   - [x] 4.8.7.2d Anti-Magic: an own stack no spell of level 1-3 / 1-4 / any reaches but Dispel; casting it removes the harmful spells on it
 - [ ] 4.8.7.3 Teleport, Clone and Sacrifice, one part each (see `docs/notes/2026-11-05-teleport-clone-sacrifice.md`):
-  - [ ] 4.8.7.3a Teleport: an own stack, then a free hex it moves to at once
+  - [x] 4.8.7.3a Teleport: an own stack, then a free hex it moves to at once
   - [ ] 4.8.7.3b Clone
   - [ ] 4.8.7.3c Sacrifice, with the dead counted
 

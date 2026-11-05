@@ -1,11 +1,11 @@
-import { fightsFor, getSpellLevelImmunity, isHypnotized } from './battle-stats.js'
+import { fightsFor, getSpellLevelImmunity, isBerserk, isHypnotized } from './battle-stats.js'
 
 // A combat spell does damage, lasts on stacks, removes their spells or heals them; each of the last
 // three says whose stacks it goes on and whether it hits all of them at Expert.
 export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? spell?.heals
 
 export const canCastInBattle = (spell) =>
-  Boolean(spell?.kind === 'combat' && (spell.damage || castRuleOf(spell)))
+  Boolean(spell?.kind === 'combat' && (spell.damage || spell.teleports || castRuleOf(spell)))
 
 // A damage spell hits an enemy stack, unless it hits the whole battlefield.
 export function spellTargetSide(spell, skillLevel = 0) {
@@ -14,6 +14,9 @@ export function spellTargetSide(spell, skillLevel = 0) {
   }
   if (spell?.removesSpells) {
     return spell.removesSpells.targets[skillLevel]
+  }
+  if (spell?.teleports) {
+    return 'own'
   }
   return castRuleOf(spell)?.target ?? 'enemy'
 }
@@ -44,6 +47,7 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   notOnUndead: Boolean(spell?.notOnUndead),
   mind: Boolean(spell?.mind),
   notOnHypnotized: Boolean(spell?.notOnHypnotized),
+  teleports: Boolean(spell?.teleports),
   spellLevel: spell?.level ?? 0,
   ignoresSpellLevelImmunity: Boolean(spell?.ignoresSpellLevelImmunity)
 })
@@ -62,6 +66,8 @@ export function isSpellTarget(targeting, target, casterSide) {
     isOnTargetSide(targeting.targetSide, target, casterSide) &&
     !isImmuneTo(targeting, target) &&
     (!targeting.notOnHypnotized || !isHypnotized(target)) &&
+    // A berserk stack is no one's to move: it goes for the nearest stack.
+    (!targeting.teleports || !isBerserk(target)) &&
     (!targeting.shootersOnly || target.shooter) &&
     (!targeting.hurtOnly || isHurt(target)) &&
     (!targeting.withRemovableSpellOnly || hasRemovableSpell(target)) &&

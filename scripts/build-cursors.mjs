@@ -23,7 +23,9 @@ const PALETTE = {
   R: [190, 40, 30, 255],
   B: [150, 92, 44, 255],
   b: [92, 52, 22, 255],
-  M: [40, 26, 14, 255]
+  M: [40, 26, 14, 255],
+  C: [120, 200, 250, 255],
+  N: [30, 80, 170, 255]
 }
 
 // The pointer used everywhere off the map and over tiles the hero can't go to.
@@ -288,6 +290,26 @@ const BATTLE_SPELL_ROWS = [
   '.......k........'
 ]
 
+// Where Teleport would put the stack: a blue whirl, aimed from its middle.
+const BATTLE_TELEPORT_ROWS = [
+  '.....kkkkk......',
+  '...kkNNNNNkk....',
+  '..kNNCCCCCNNk...',
+  '.kNCCkkkkkCCNk..',
+  '.kNCk.....kCNk..',
+  'kNCk..kkk..kCNk.',
+  'kNCk.kCCCk.kCNk.',
+  'kNCk.kCWCk.kCNk.',
+  'kNCk.kCCNk.kCNk.',
+  'kNCk..kNNk.kCNk.',
+  '.kNCk..kk.kCNk..',
+  '.kNCCk...kCCNk..',
+  '..kNNCkkkCNNk...',
+  '...kkNNNNNkk....',
+  '.....kkkkk......',
+  '................'
+]
+
 const BATTLE_ATTACK_FROM_LEFT_ROWS = [
   '................',
   '................',
@@ -537,6 +559,7 @@ const CURSORS = {
   'battle-blocked': drawBlockedSign(),
   'battle-query': BATTLE_QUERY_ROWS,
   'battle-spell': BATTLE_SPELL_ROWS,
+  'battle-teleport': BATTLE_TELEPORT_ROWS,
   'battle-shoot': drawShootArrow(),
   'battle-shoot-penalty': drawBrokenShootArrow(),
   'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,

@@ -175,6 +175,12 @@ button {
     crosshair;
 }
 
+.battlefield[data-cursor="teleport"] {
+  cursor:
+    url("../../assets/cursors/battle-teleport.png") 15 15,
+    crosshair;
+}
+
 .battlefield[data-cursor="shoot"] {
   cursor:
     url("../../assets/cursors/battle-shoot.png") 16 16,

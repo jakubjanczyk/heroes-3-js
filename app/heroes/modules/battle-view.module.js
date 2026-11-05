@@ -1,4 +1,4 @@
-import { areaTargetIds } from '../../../game/heroes/battle.js'
+import { areaTargetIds, canStackStandOn, getStackHexes } from '../../../game/heroes/battle.js'
 import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
 import { areEnemies, fightsFor } from '../../../game/heroes/battle-stats.js'
 import {
@@ -85,6 +85,9 @@ function boltPoints({ from, to }) {
 }
 
 // A stack further down a chain is shown as it was until the bolt reaches it.
+const teleportedStacks = (effects) =>
+  new Set(effects.filter(({ teleported }) => teleported).map(({ stackId }) => stackId))
+
 const stacksAChainReachesLater = (effects) =>
   new Set(effects.filter(({ place }) => place > 0).map(({ stackId }) => stackId))
 
@@ -263,7 +266,22 @@ export const registerBattleViewModule = defineModule(
       isOnBattlefield(hex) &&
       (!pickedSpell.targeting.areaNeedsTarget || stacksInAreaAt(hex).length > 0)
 
+    // Teleport is aimed twice: at an own stack, then at the hex it goes to.
+    const findTeleportingStack = () =>
+      pickedSpell.teleportingId
+        ? shown.stacks.find(({ id }) => id === pickedSpell.teleportingId)
+        : null
+
+    const canTeleportTo = (hex) => canStackStandOn(shown, findTeleportingStack(), hex)
+
+    function describeTeleportAim(hex) {
+      return canTeleportTo(hex) ? 'Teleport Here' : 'Invalid Teleport Destination'
+    }
+
     function describeSpellAim(hex) {
+      if (findTeleportingStack()) {
+        return describeTeleportAim(hex)
+      }
       if (canAimAreaAt(hex)) {
         return `Cast ${pickedSpell.name}`
       }
@@ -272,6 +290,12 @@ export const registerBattleViewModule = defineModule(
     }
 
     function pickSpellCursor(hex) {
+      if (findTeleportingStack() && canTeleportTo(hex)) {
+        return 'teleport'
+      }
+      if (findTeleportingStack()) {
+        return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
+      }
       if (canAimAreaAt(hex) || findSpellTarget(hex)) {
         return 'spell'
       }
@@ -279,6 +303,10 @@ export const registerBattleViewModule = defineModule(
     }
 
     function findSpellHexes(hex) {
+      const teleporting = findTeleportingStack()
+      if (teleporting) {
+        return canTeleportTo(hex) ? getStackHexes(teleporting, hex) : []
+      }
       if (canAimAreaAt(hex)) {
         return getAreaHexes(hex, pickedSpell.targeting.area)
       }
@@ -362,6 +390,9 @@ export const registerBattleViewModule = defineModule(
 
     function findStacksSpellWouldHit(hex) {
       if (!hex || !pickedSpell || !findIdleActiveStack() || pointerType === 'touch') {
+        return []
+      }
+      if (findTeleportingStack()) {
         return []
       }
       if (canAimAreaAt(hex)) {
@@ -517,10 +548,12 @@ export const registerBattleViewModule = defineModule(
 
     function showStacks(battle, previous) {
       const reachedLater = stacksAChainReachesLater(battle.effects ?? [])
+      // A teleported stack is there at once, without walking.
+      const teleported = teleportedStacks(battle.effects ?? [])
       for (const stack of battle.stacks) {
         const before = previous?.stacks.find(({ id }) => id === stack.id)
         showStack(reachedLater.has(stack.id) && before ? before : stack, {
-          from: before?.hex,
+          from: teleported.has(stack.id) ? null : before?.hex,
           isActive: stack.id === battle.activeStackId
         })
       }
@@ -758,8 +791,22 @@ export const registerBattleViewModule = defineModule(
       describeHoveredHex()
     }
 
+    // A click where the stack can't go waits for one where it can.
+    function teleportPickedStackTo(hex) {
+      if (!canTeleportTo(hex)) {
+        return
+      }
+      const { id: spellId, teleportingId: targetId } = pickedSpell
+      pickedSpell = null
+      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId, destination: hex })
+    }
+
     // Clicking anywhere the spell can't be aimed at cancels it.
     function castPickedSpellOn(hex) {
+      if (findTeleportingStack()) {
+        teleportPickedStackTo(hex)
+        return
+      }
       if (canAimAreaAt(hex)) {
         const spellId = pickedSpell.id
         pickedSpell = null
@@ -770,6 +817,11 @@ export const registerBattleViewModule = defineModule(
       const target = findSpellTarget(hex)
       if (!target) {
         cancelPickedSpell()
+        return
+      }
+      if (pickedSpell.targeting.teleports) {
+        pickedSpell.teleportingId = target.id
+        describeHoveredHex()
         return
       }
 
