@@ -41,7 +41,11 @@ import {
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
 import { canCastInBattle, isHelpful, spellTargeting } from '../../../game/heroes/battle-spells.js'
-import { getSpellBalance, getSpellDamageTakenPercent } from '../../../game/heroes/battle-stats.js'
+import {
+  fightsFor,
+  getSpellBalance,
+  getSpellDamageTakenPercent
+} from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../../game/heroes/monster-stacks.js'
@@ -423,7 +427,7 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      if (stack.side === 'defender' || autoCombat) {
+      if (fightsFor(stack) === 'defender' || autoCombat) {
         playComputerTurn(stack)
       }
     }
@@ -438,12 +442,10 @@ export const registerBattleModule = defineModule(
       return chance > 0 && moraleRandom() < chance
     }
 
+    const isPlayers = (stack) => Boolean(stack) && fightsFor(stack) === 'attacker'
+
     const isPlayersTurn = () =>
-      Boolean(battle) &&
-      !outcome &&
-      !moving &&
-      !autoCombat &&
-      getActiveStack(battle)?.side === 'attacker'
+      Boolean(battle) && !outcome && !moving && !autoCombat && isPlayers(getActiveStack(battle))
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started

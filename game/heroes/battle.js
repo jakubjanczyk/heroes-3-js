@@ -2,6 +2,8 @@ import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isSpellTarget } from './battle-spells.js'
 import {
+  areEnemies,
+  fightsFor,
   getShotDamagePercent,
   getStackDefense,
   getStackMorale,
@@ -178,7 +180,7 @@ export function spellTargetIds(battle, targeting) {
   const caster = getActiveStack(battle)
   return caster
     ? livingStacks(battle)
-        .filter((target) => isSpellTarget(targeting, target, caster.side))
+        .filter((target) => isSpellTarget(targeting, target, fightsFor(caster)))
         .map(({ id }) => id)
     : []
 }
@@ -505,7 +507,7 @@ function findWayToFront(battle, stack, front) {
 // Every hex next to a living enemy the stack can get to, in army slot order, which settles ties.
 export function getApproaches(battle, stack) {
   return livingStacks(battle)
-    .filter((target) => target.side !== stack.side)
+    .filter((target) => areEnemies(target, stack))
     .flatMap((target) =>
       getHexesNextTo(target).flatMap((fromHex) => {
         if (coversHex(stack, fromHex)) {
@@ -527,7 +529,7 @@ export function getApproaches(battle, stack) {
 }
 
 const livingEnemiesOf = (battle, stack) =>
-  livingStacks(battle).filter((other) => other.side !== stack.side)
+  livingStacks(battle).filter((other) => areEnemies(other, stack))
 
 // A shooter with an enemy next to it can only fight hand to hand.
 export function canShoot(battle, stack) {
@@ -589,7 +591,7 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random, luck
     !canShoot(battle, stack) &&
     target &&
     fromHex &&
-    target.side !== stack.side &&
+    areEnemies(target, stack) &&
     getHexesNextTo(target).some((hex) => isSameHex(hex, fromHex))
   const path = isNextToTarget ? planAttackPosition(battle, stack, fromHex) : null
   if (!path) {
@@ -770,9 +772,6 @@ export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, re
 
 export const castHealingSpell = (battle, { healing, ...cast }) =>
   castOnStacks(battle, cast, (stack) => healTopCreature(stack, healing))
-
-export const isLivingEnemyOf = (battle, side, stackId) =>
-  livingStacks(battle).some((stack) => stack.id === stackId && stack.side !== side)
 
 // The attack itself, before the attacker's turn ends.
 export function resolveAttack(battle, { stackId, targetId, path, strikes }) {

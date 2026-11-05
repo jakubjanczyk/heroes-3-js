@@ -1,5 +1,6 @@
 import { areaTargetIds } from '../../../game/heroes/battle.js'
 import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
+import { areEnemies, fightsFor } from '../../../game/heroes/battle-stats.js'
 import {
   BATTLEFIELD_COLUMNS,
   BATTLEFIELD_ROWS,
@@ -244,7 +245,7 @@ export const registerBattleViewModule = defineModule(
       if (!target || !caster) {
         return null
       }
-      return isSpellTarget(pickedSpell.targeting, target, caster.side) ? target : null
+      return isSpellTarget(pickedSpell.targeting, target, fightsFor(caster)) ? target : null
     }
 
     // An area spell is aimed at any hex of the battlefield, empty or not.
@@ -292,7 +293,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function pickStackCursor(hex, stack, activeStack) {
-      if (stack.side === activeStack.side) {
+      if (!areEnemies(stack, activeStack)) {
         return 'query'
       }
 

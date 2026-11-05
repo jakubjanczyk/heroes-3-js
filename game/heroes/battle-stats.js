@@ -9,6 +9,10 @@ export const getStackSpeed = (stack) =>
 const hasSpellEffect = (stack, key) =>
   (stack.spells ?? []).some(({ effects }) => effects[key] !== undefined)
 
+export const fightsFor = (stack) => stack.side
+
+export const areEnemies = (stack, other) => fightsFor(stack) !== fightsFor(other)
+
 export const isBlind = (stack) => hasSpellEffect(stack, 'blind')
 
 export const getRetaliationDamagePercent = (stack) =>

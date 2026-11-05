@@ -1,3 +1,5 @@
+import { fightsFor } from './battle-stats.js'
+
 // A combat spell does damage, lasts on stacks, removes their spells or heals them; each of the last
 // three says whose stacks it goes on and whether it hits all of them at Expert.
 export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? spell?.heals
@@ -33,7 +35,7 @@ export const spellTargeting = (spell, skillLevel) => ({
 })
 
 const isOnTargetSide = (targetSide, target, casterSide) =>
-  targetSide === 'any' || (target.side === casterSide) === (targetSide === 'own')
+  targetSide === 'any' || (fightsFor(target) === casterSide) === (targetSide === 'own')
 
 export function isSpellTarget(targeting, target, casterSide) {
   return (
