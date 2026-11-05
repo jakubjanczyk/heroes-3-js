@@ -5,7 +5,10 @@ import { fightsFor, getSpellLevelImmunity, isBerserk, isHypnotized } from './bat
 export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? spell?.heals
 
 export const canCastInBattle = (spell) =>
-  Boolean(spell?.kind === 'combat' && (spell.damage || spell.teleports || castRuleOf(spell)))
+  Boolean(
+    spell?.kind === 'combat' &&
+      (spell.damage || spell.teleports || spell.clones || castRuleOf(spell))
+  )
 
 // A damage spell hits an enemy stack, unless it hits the whole battlefield.
 export function spellTargetSide(spell, skillLevel = 0) {
@@ -15,7 +18,7 @@ export function spellTargetSide(spell, skillLevel = 0) {
   if (spell?.removesSpells) {
     return spell.removesSpells.targets[skillLevel]
   }
-  if (spell?.teleports) {
+  if (spell?.teleports || spell?.clones) {
     return 'own'
   }
   return castRuleOf(spell)?.target ?? 'enemy'
@@ -48,9 +51,14 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   mind: Boolean(spell?.mind),
   notOnHypnotized: Boolean(spell?.notOnHypnotized),
   teleports: Boolean(spell?.teleports),
+  highestTierCloned: spell?.clones?.highestTier[skillLevel] ?? null,
   spellLevel: spell?.level ?? 0,
   ignoresSpellLevelImmunity: Boolean(spell?.ignoresSpellLevelImmunity)
 })
+
+// Only one clone of a stack at a time, and never a clone of a clone.
+const canBeCloned = (target, highestTier) =>
+  !target.cloneOf && !target.cloneId && target.tier <= highestTier
 
 const isOnTargetSide = (targetSide, target, casterSide) =>
   targetSide === 'any' || (fightsFor(target) === casterSide) === (targetSide === 'own')
@@ -67,7 +75,8 @@ export function isSpellTarget(targeting, target, casterSide) {
     !isImmuneTo(targeting, target) &&
     (!targeting.notOnHypnotized || !isHypnotized(target)) &&
     // A berserk stack is no one's to move: it goes for the nearest stack.
-    (!targeting.teleports || !isBerserk(target)) &&
+    (!(targeting.teleports || targeting.highestTierCloned) || !isBerserk(target)) &&
+    (!targeting.highestTierCloned || canBeCloned(target, targeting.highestTierCloned)) &&
     (!targeting.shootersOnly || target.shooter) &&
     (!targeting.hurtOnly || isHurt(target)) &&
     (!targeting.withRemovableSpellOnly || hasRemovableSpell(target)) &&

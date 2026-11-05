@@ -141,9 +141,10 @@ export const registerBattleViewModule = defineModule(
 
     // No creature pictures yet: a stack is drawn as monsters are on the map, with its count. The
     // back half of a double-wide creature only marks its hex for screen readers.
-    function createStack({ side, doubleWide }) {
+    function createStack({ side, doubleWide, cloneOf }) {
       const stack = cloneTemplate('battle-stack-template')
       stack.classList.add(`battle-stack--${side}`)
+      stack.classList.toggle('battle-stack--clone', Boolean(cloneOf))
       stack.classList.toggle('battle-stack--double-wide', Boolean(doubleWide))
       const backHalf = document.createElement('div')
       backHalf.className = 'battle-stack__back-half'
@@ -151,7 +152,11 @@ export const registerBattleViewModule = defineModule(
       return { stack, backHalf }
     }
 
-    function drawStack({ stack: element, backHalf }, { name, count, spellBalance }) {
+    function drawStack(
+      { stack: element, backHalf },
+      { name: creatureName, count, spellBalance, cloneOf }
+    ) {
+      const name = cloneOf ? `${creatureName} (clone)` : creatureName
       const isDead = count === 0
       const label = isDead ? `Dead ${name}` : name
       element.classList.toggle('battle-stack--dead', isDead)
@@ -546,7 +551,18 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    function removeGoneStacks(battle) {
+      for (const [stackId, { stack, backHalf }] of stackElements) {
+        if (!battle.stacks.some(({ id }) => id === stackId)) {
+          stack.remove()
+          backHalf.remove()
+          stackElements.delete(stackId)
+        }
+      }
+    }
+
     function showStacks(battle, previous) {
+      removeGoneStacks(battle)
       const reachedLater = stacksAChainReachesLater(battle.effects ?? [])
       // A teleported stack is there at once, without walking.
       const teleported = teleportedStacks(battle.effects ?? [])

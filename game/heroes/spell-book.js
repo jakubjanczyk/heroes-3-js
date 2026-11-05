@@ -86,6 +86,8 @@ function lastingRounds({ untilBattleEnds, untilOwnTurn, untilOwnAttack }, power)
   return untilOwnTurn ? 2 : power
 }
 
+export const cloneRounds = (hero, definitions) => powerOf(hero, definitions)
+
 export function spellLasting({ hero, spell, definitions }) {
   const level = spellSkillLevel(hero, spell)
   const effects = Object.fromEntries(

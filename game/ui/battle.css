@@ -141,6 +141,11 @@
 }
 
 /* A double-wide creature also covers the hex behind it: on the left for the attacker. */
+.battle-stack--clone .battle-stack__creature {
+  filter: sepia(1) hue-rotate(170deg) saturate(2.5) brightness(1.1);
+  opacity: 0.8;
+}
+
 .battle-stack--double-wide.battle-stack--attacker {
   inset-inline-start: -100%;
 }

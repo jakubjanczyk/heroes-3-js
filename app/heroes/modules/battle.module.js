@@ -8,9 +8,11 @@ import {
   castLastingSpell,
   castRemovingSpell,
   chainTargetIds,
+  cloneStack,
   createBattle,
   defendStack,
   endTurn,
+  findCloneHex,
   finishAction,
   freezeStack,
   getActiveStack,
@@ -56,6 +58,7 @@ import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   battleSpellTargeting,
   castsOnAllStacks,
+  cloneRounds,
   hasSpellBook,
   spellCost,
   spellDamage,
@@ -117,6 +120,9 @@ const withHexes = (stacks) =>
   }))
 
 function castDetail({ hero, spell, definitions }) {
+  if (spell.clones) {
+    return { rounds: cloneRounds(hero, definitions) }
+  }
   if (spell.lasting) {
     return spellLasting({ hero, spell, definitions })
   }
@@ -572,29 +578,41 @@ export const registerBattleModule = defineModule(
         : { targetIds, ...cast }
     }
 
-    function canTeleport(spell, { targetIds }, destination) {
+    // Where Teleport takes its stack, or where the clone stands: undefined when there is no such
+    // place, and nothing to keep for another spell.
+    function spellDestination(spell, { targetIds }, destination) {
       const target = battle.stacks.find(({ id }) => id === targetIds[0])
+      if (spell.teleports) {
+        return destination && canStackStandOn(battle, target, destination) ? destination : undefined
+      }
+      if (spell.clones) {
+        return findCloneHex(battle, target) ?? undefined
+      }
+      return null
+    }
+
+    function canHeroCast(hero, spell, spellId) {
       return (
-        !spell.teleports || Boolean(destination && canStackStandOn(battle, target, destination))
+        !battle.heroCastThisRound &&
+        hasSpellBook(hero) &&
+        hero.spells.includes(spellId) &&
+        canCastInBattle(spell) &&
+        spellCost(hero, spell) <= getHeroSpellPoints({ entity: hero, definitions }).value
       )
     }
 
     function castSpell({ spellId, targetId, hex, destination }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
-      const cost = spell && spellCost(hero, spell)
-      const canCast =
-        !battle.heroCastThisRound &&
-        hasSpellBook(hero) &&
-        hero.spells.includes(spellId) &&
-        canCastInBattle(spell) &&
-        cost <= getHeroSpellPoints({ entity: hero, definitions }).value
-      const targets = canCast ? chooseSpellTargets(hero, spell, { targetId, hex }) : null
-      if (!targets || (!targets.noOne && !canTeleport(spell, targets, destination))) {
+      const targets = canHeroCast(hero, spell, spellId)
+        ? chooseSpellTargets(hero, spell, { targetId, hex })
+        : null
+      if (targets?.noOne) {
+        emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
         return
       }
-      if (targets.noOne) {
-        emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
+      const goesTo = targets && spellDestination(spell, targets, destination)
+      if (goesTo === undefined || !targets) {
         return
       }
 
@@ -602,8 +620,8 @@ export const registerBattleModule = defineModule(
         heroId,
         spellId,
         ...castDetailOn(hero, spell, targets),
-        ...(spell.teleports ? { destination } : {}),
-        cost
+        ...(goesTo ? { destination: goesTo } : {}),
+        cost: spellCost(hero, spell)
       })
       continueBattle()
     }
@@ -636,6 +654,9 @@ export const registerBattleModule = defineModule(
       }
       if (spell?.teleports) {
         return teleportStack(current, { ...onStacks, destination })
+      }
+      if (spell?.clones) {
+        return cloneStack(current, { ...onStacks, destination, rounds })
       }
       if (spell?.removesSpells) {
         return castRemovingSpell(current, onStacks)
