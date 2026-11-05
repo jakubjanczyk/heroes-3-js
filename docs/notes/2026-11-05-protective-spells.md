@@ -43,7 +43,12 @@ Checked against the wiki (Fire Shield, with its worked examples) and the engine'
 - The share is worked out from the damage the strike would have done with the shielded stack's defences left out: its Defense when higher than the attacker's Attack, Shield and Air Shield; the attacker's Attack, Bless and luck count. Only as much as the shielded stack had health for counts. Checked against the wiki ("considering all attack bonuses of the attacker but not … defensive bonuses", its examples) and the engine (the damage with only the raising factors, capped at the health before the strike).
 - It is spell damage of the Fire school: Sorcery raises it and Protection from Fire on the attacker lowers it; no luck. Checked against the wiki and the engine.
 - It answers the strike that kills the shielded stack too. Checked against the wiki's examples and the engine.
+- The share is rounded down; a share of 0 does nothing and adds no log line. Checked against the wiki's examples (1.2 does 1) and the engine. The wiki also says the damage to the shielded stack must be above 3; the engine has no such rule, and with rounding down the two differ only when a 4-damage strike meets the 20% shield (0.8). We round down and leave the rule out (decided).
+- It burns after the strike and before the strike back; an attacker it kills doesn't strike back. Checked against the engine (it runs after the attack, the strike back only from a living stack); the wiki says nothing.
+- A melee strike back on the shielded stack (when the shielded stack attacks) burns the stack striking back too: it is a melee hit on it. Checked against the engine (it answers every melee hit, strikes back included); the wiki says "all units trying to attack it in melee" and nothing about strikes back.
+- An attacker striking twice is burned after each strike. Checked against the engine (each strike is its own attack).
 - Combat log: "The Fire Shield does %d damage." (`core.genrltxt.376`, the spell damage line), then the creatures that perish. Checked against the wiki's copy of `GENRLTXT.TXT` and the engine's use of it.
+- Built: the burn is worked out with the strike, so it is saved and replayed with the attack. Sorcery is taken from the hero when the spell is cast (`raisedBySorcery` in the spell's data).
 
 ### Anti-Magic (Earth, level 3, 15 / 12 spell points) — 4.8.7.2d
 
@@ -66,4 +71,6 @@ Checked against the wiki (Magic Mirror) and the engine's spell config.
 - Magic Mirror, Cure removing harmful spells, with enemy heroes casting (8.1).
 - The first and third groups of kings, Master Genies casting these spells, Efreet Sultans' own fire shield and creatures immune to fire, with the creatures (6.5). Coronius's Slayer specialty, with hero specialties.
 - Orb of Tempestuous Fire raising Fire Shield's damage, Ironfist of the Ogre (7.8).
+- Protection from Fire lessening Fire Shield's damage on the attacker is built, but only a berserk own stack can have it before enemy heroes cast (8.1); no test covers it yet.
+- A flame over the shielded stack when it burns, with the spells' animations (10.3); until then the spells' burst of light shows over it.
 - War machines, which none of these spells go on, with them.

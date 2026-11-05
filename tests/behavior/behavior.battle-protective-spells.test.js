@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 
 import { createMemoryEventLog, waitMs } from './app.utils.js'
 import {
+  attackBattleHexFrom,
   castSpellAt,
   getBattleStatusBarText,
   hoverBattleHex,
@@ -10,19 +11,23 @@ import {
   pickSpell,
   playOnToNextRound,
   pointAtBattleHexSide,
+  readBattleEffects,
+  readBattleResultsSide,
   readBattleSpellPoints,
   readCombatMessages,
   readStackCountColour,
   readStackCountColours,
   reloadBattle,
   startBattle,
-  startBattleWithStyles
+  startBattleWithStyles,
+  waitForBattleResults
 } from './battle.utils.js'
 import {
   aCaster,
   aFight,
   bringPikemenCloser,
   ENEMY_HEX,
+  HERO,
   OWN_HEX,
   PIKEMEN_CLOSE_BY,
   PROTECTIVE_SPELLS,
@@ -325,6 +330,273 @@ describe('battle protective spells behavior', () => {
       expect(
         strikesBackAfter(readCombatMessages(), "Lord Haart casts 'Dispel' on the Swordsmen.")
       ).toBe(1)
+    })
+  })
+
+  describe('Fire Shield', () => {
+    const aFireShieldCaster = ({ level, sorcery, army } = {}) =>
+      aCaster({
+        knowledge: 3,
+        spells: ['SHIELD', ...PROTECTIVE_SPELLS],
+        secondarySkills: [
+          ...(level ? [{ skill: 'FIRE_MAGIC', level }] : []),
+          ...(sorcery ? [{ skill: 'SORCERY', level: sorcery }] : [])
+        ],
+        ...(army ? { army } : {})
+      })
+
+    // As fast as the Swordsmen, each Brute does 10 and has 100 health.
+    const aBrute = ({ attack = 20, health = 100, abilities = [] } = {}) =>
+      aCreatureDefinition()
+        .withName('Brute')
+        .withNamePlural('Brutes')
+        .withAttack(attack)
+        .withDamage({ min: 10, max: 10 })
+        .withHealth(health)
+        .withSpeed(5)
+        .withAbilities(abilities)
+        .build()
+
+    const aFightWithBrutes = ({ hero = aFireShieldCaster(), count = 10, ...brute } = {}) =>
+      aFight({ hero, monster: 'BRUTE', count, creatures: { BRUTE: aBrute(brute) } })
+
+    const CAST_ON_SWORDSMEN = "Lord Haart casts 'Fire Shield' on the Swordsmen."
+
+    const messagesAfter = (castLine) => {
+      const messages = readCombatMessages()
+      return messages.slice(messages.lastIndexOf(castLine) + 1)
+    }
+
+    const fireShieldLines = () =>
+      readCombatMessages().filter((message) => message.startsWith('The Fire Shield'))
+
+    // The Swordsmen cast and walk to column 6 and the Brutes come to column 10; next round the
+    // Swordsmen defend and the Brutes attack them.
+    async function castThenTakeTheBrutesAttack(user) {
+      await castSpellAt(user, 'Fire Shield', OWN_HEX)
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+      await playOnToNextRound(user)
+    }
+
+    test('given the hero casts Fire Shield on the Swordsmen then the combat log says so, 16 spell points are spent and their count box turns green', async () => {
+      const { user } = await startBattleWithStyles(aFightWithBrutes())
+
+      await castSpellAt(user, 'Fire Shield', OWN_HEX)
+      const colour = readStackCountColour(OWN_HEX.row, OWN_HEX.column)
+      const messages = readCombatMessages().slice(-1)
+      await playOnToNextRound(user)
+
+      expect([messages, colour, await readBattleSpellPoints(user)]).toEqual([
+        [CAST_ON_SWORDSMEN],
+        'green',
+        '14'
+      ])
+    })
+
+    // The 10 Brutes do 100 with Attack 20 against the defending Swordsmen's Defense 16 (14 and
+    // 2 for defending): +20%, 120, and 3 of the 35-health Swordsmen perish. 20% of 120 is 24.
+    // The 7 Swordsmen left strike back for 42 with Attack 12 against Defense 5: +35%, 56.
+    test('given a hero with no Fire skill cast Fire Shield on the Swordsmen when an enemy stack attacks them then the Fire Shield does 20% of the damage back, after the attack and before the strike back', async () => {
+      const { user } = await startBattle(aFightWithBrutes())
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN).slice(0, 3)).toEqual([
+        'The Brutes do 120 damage. 3 Swordsmen perish.',
+        'The Fire Shield does 24 damage.',
+        'The Swordsmen do 56 damage.'
+      ])
+    })
+
+    // 25% of 120 is 30, 30% is 36; the hero has 30 spell points.
+    test.each([
+      { skill: 'Advanced', level: 'ADVANCED', share: '25%', damage: 30, spellPoints: '18' },
+      { skill: 'Expert', level: 'EXPERT', share: '30%', damage: 36, spellPoints: '18' }
+    ])('given a hero with $skill Fire Magic cast Fire Shield on the Swordsmen when an enemy stack attacks them then it does $share of the damage back', async ({
+      level,
+      damage,
+      spellPoints
+    }) => {
+      const { user } = await startBattle(aFightWithBrutes({ hero: aFireShieldCaster({ level }) }))
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect([fireShieldLines(), await readBattleSpellPoints(user)]).toEqual([
+        [`The Fire Shield does ${damage} damage.`],
+        spellPoints
+      ])
+    })
+
+    // Attack 4 against Defense 16: -30%, so the Brutes do 70. Without that Defense they would
+    // do 100: 20% is 20.
+    test("given the Swordsmen's Defense is above the attacker's Attack when it attacks them then the Fire Shield works from the damage without that Defense", async () => {
+      const { user } = await startBattle(aFightWithBrutes({ attack: 4 }))
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN).slice(0, 2)).toEqual([
+        'The Brutes do 70 damage. 2 Swordsmen perish.',
+        'The Fire Shield does 20 damage.'
+      ])
+    })
+
+    // Shield takes 15% off the 120: 102. The Fire Shield works from the 120: 24.
+    test('given the Swordsmen have Shield when an enemy stack attacks them then the Fire Shield works from the damage without Shield', async () => {
+      const { user } = await startBattle(aFightWithBrutes())
+      await castSpellAt(user, 'Shield', OWN_HEX)
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+
+      await castSpellAt(user, 'Fire Shield', { row: 6, column: 6 })
+      await playOnToNextRound(user)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN).slice(0, 2)).toEqual([
+        'The Brutes do 102 damage. 2 Swordsmen perish.',
+        'The Fire Shield does 24 damage.'
+      ])
+    })
+
+    // The 2 Swordsmen have 70 health: the Fire Shield works from 70 of the 120, 14.
+    test('given the attack kills the shielded Swordsmen then the Fire Shield still burns the attacker, worked from the health the Swordsmen had', async () => {
+      const hero = aFireShieldCaster({ army: [stack('SWORDSMAN', 2)] })
+      const { user } = await startBattle(aFightWithBrutes({ hero }))
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN)).toEqual([
+        'The Brutes do 120 damage. 2 Swordsmen perish.',
+        'The Fire Shield does 14 damage.'
+      ])
+    })
+
+    // One Brute doing 3 with +20%: 3. 20% of 3 is 0.6, rounded down to 0.
+    test('given the Fire Shield share rounds down to 0 then the combat log has no Fire Shield line', async () => {
+      const brute = aCreatureDefinition()
+        .withName('Brute')
+        .withNamePlural('Brutes')
+        .withAttack(20)
+        .withDamage({ min: 3, max: 3 })
+        .withHealth(100)
+        .withSpeed(5)
+        .build()
+      const { user } = await startBattle(
+        aFight({
+          hero: aFireShieldCaster(),
+          monster: 'BRUTE',
+          count: 1,
+          creatures: { BRUTE: brute }
+        })
+      )
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect([messagesAfter(CAST_ON_SWORDSMEN)[0], fireShieldLines()]).toEqual([
+        'The Brute does 3 damage.',
+        []
+      ])
+    })
+
+    // Advanced Sorcery adds 10% to the 24: 26.
+    test('given a hero with Sorcery cast Fire Shield when an enemy stack attacks the shielded stack then Sorcery raises the damage back', async () => {
+      const { user } = await startBattle(
+        aFightWithBrutes({ hero: aFireShieldCaster({ sorcery: 'ADVANCED' }) })
+      )
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(fireShieldLines()).toEqual(['The Fire Shield does 26 damage.'])
+    })
+
+    // 10 Brutes of 2 health have 20: the 24 burns them all up.
+    test('given the Fire Shield burns up the last enemy stack then the shielded stack does not strike back and the battle is won', async () => {
+      const { user } = await startBattle(aFightWithBrutes({ health: 2 }))
+
+      await castThenTakeTheBrutesAttack(user)
+      await waitForBattleResults()
+
+      expect([messagesAfter(CAST_ON_SWORDSMEN), readBattleResultsSide('Attacker')]).toEqual([
+        [
+          'The Brutes do 120 damage. 3 Swordsmen perish.',
+          'The Fire Shield does 24 damage. 10 Brutes perish.'
+        ],
+        [HERO, 'Victorious']
+      ])
+    })
+
+    // The second strike meets 6 Swordsmen with 20 health on the top one: 230, more than 120. The
+    // Brutes have lost 24 + 56 + 24 = 104 of their 1000 health: one perishes.
+    test('given an attacker that strikes twice attacks the shielded stack then the Fire Shield burns it after each strike', async () => {
+      const { user } = await startBattle(aFightWithBrutes({ abilities: ['strikesTwice'] }))
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN).slice(0, 5)).toEqual([
+        'The Brutes do 120 damage. 3 Swordsmen perish.',
+        'The Fire Shield does 24 damage.',
+        'The Swordsmen do 56 damage.',
+        'The Brutes do 120 damage. 3 Swordsmen perish.',
+        'The Fire Shield does 24 damage. One Brute perishes.'
+      ])
+    })
+
+    test('given an enemy shooter shoots the shielded stack then the combat log has no Fire Shield line', async () => {
+      const { user } = await startBattle(
+        aFight({ hero: aFireShieldCaster(), monster: 'ARCHER', count: 20 })
+      )
+
+      await castSpellAt(user, 'Fire Shield', OWN_HEX)
+      await playOnToNextRound(user)
+
+      expect([messagesAfter(CAST_ON_SWORDSMEN)[0], fireShieldLines()]).toEqual([
+        expect.stringMatching(/^The Archers do/),
+        []
+      ])
+    })
+
+    // The Swordsmen attack for 81 (60 with +35%). The Brutes strike back with Attack 20 against
+    // Defense 14: +30%, 130; 20% of it is 26. The Brutes have lost 81 + 26 = 107: one perishes.
+    test('given the shielded Swordsmen attack an enemy stack when it strikes back then the Fire Shield burns it', async () => {
+      const { user } = await startBattle(aFightWithBrutes())
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+
+      await castSpellAt(user, 'Fire Shield', { row: 6, column: 6 })
+      await attackBattleHexFrom(user, 6, 10, 'left')
+      await waitMs(1000)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN).slice(0, 3)).toEqual([
+        'The Swordsmen do 81 damage.',
+        'The Brutes do 130 damage. 3 Swordsmen perish.',
+        'The Fire Shield does 26 damage. One Brute perishes.'
+      ])
+    })
+
+    test('given the shielded Swordsmen attack an enemy stack when the Fire Shield burns it then a burst of light shows over the Swordsmen', async () => {
+      const { user } = await startBattle(aFightWithBrutes())
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+      await castSpellAt(user, 'Fire Shield', { row: 6, column: 6 })
+      // The cast's own burst fades first.
+      await waitMs(1000)
+
+      await attackBattleHexFrom(user, 6, 10, 'left')
+
+      expect(readBattleEffects()).toContainEqual({ effect: 'Fire Shield', row: 6, column: 9 })
+    })
+
+    test('given Fire Shield is on the Swordsmen when the page reloads and an enemy stack attacks them then the Fire Shield still burns it', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aFightWithBrutes()
+      const { user } = await startBattle(scenario, { eventLog })
+      await castSpellAt(user, 'Fire Shield', OWN_HEX)
+      await moveActiveStackTo(user, 6, 6)
+      await waitMs(1000)
+
+      await reloadBattle(scenario, { eventLog })
+      await playOnToNextRound(user)
+
+      expect(fireShieldLines()).toEqual(['The Fire Shield does 24 damage.'])
     })
   })
 })
