@@ -191,6 +191,16 @@ export function artifactTownsCountingAsOne(artifacts, definitions) {
 export const artifactLandMovementPoints = (artifacts, definitions) =>
   artifactBonusTotal(artifacts, 'landMovementPoints', definitions)
 
+export function artifactBattleImmunities(artifacts, definitions) {
+  const immunities = countedDefinitions(artifacts, definitions).map(
+    (artifact) => artifact.battleImmunities ?? {}
+  )
+  return {
+    mindSpells: immunities.some(({ mindSpells }) => mindSpells),
+    spellLevel: Math.max(0, ...immunities.map(({ spellLevel }) => spellLevel ?? 0))
+  }
+}
+
 // `kind` is morale or luck.
 export function artifactsCancelInBattle(artifacts, kind, definitions) {
   return countedDefinitions(artifacts, definitions).some((artifact) =>
