@@ -1805,6 +1805,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [15, 12, 6, 3],
+    "teleports": true,
     "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {

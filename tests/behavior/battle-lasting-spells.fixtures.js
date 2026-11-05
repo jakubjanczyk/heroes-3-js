@@ -303,6 +303,17 @@ const protectiveSpellDefinitions = {
 
 export const PROTECTIVE_SPELLS = Object.keys(protectiveSpellDefinitions)
 
+const teleportDefinitions = {
+  TELEPORT: aSpellDefinition()
+    .withName('Teleport')
+    .withLevel(3)
+    .withSchools(['WATER'])
+    .withCosts([15, 12, 6, 3])
+    .withTeleports(true)
+    .describedAs('Teleport description.')
+    .build()
+}
+
 const aDamageSpell = ({ name, level, schools, costs, damage }) =>
   aSpellDefinition()
     .withName(name)
@@ -356,6 +367,7 @@ const gameDefinitions = {
     ...removingAndHealingSpellDefinitions,
     ...controlSpellDefinitions,
     ...protectiveSpellDefinitions,
+    ...teleportDefinitions,
     ...damageSpellDefinitions
   },
   artifacts: artifactDefinitions
