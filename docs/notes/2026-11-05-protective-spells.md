@@ -65,6 +65,7 @@ Checked against the wiki (Anti-Magic), the descriptions in `game/data/spells.jso
 - An enemy stack the hero hypnotized fights for the hero, and the engine lets Anti-Magic go on it and remove Hypnotize with the other harmful spells; the wiki says nothing. Decided with the user: it can't be Anti-Magic's target, so Anti-Magic never hands a stack back to the enemy.
 - The immunity doesn't stop Fire Shield burning the stack: the engine checks only school immunities there. Out of reach until enemy heroes cast, as only a berserk own stack could attack an own shielded one. Left untested until then (decided with the user).
 - Combat log: the usual cast line (`core.genrltxt.195`); the engine gives it none of its own.
+- Built: the immunity is the `spellLevelImmunity` effect, checked against each spell's `level` wherever a spell picks its stacks (a target, all stacks at Expert, an area, a chain's jumps); Dispel's `ignoresSpellLevelImmunity` gets past it. `notOnHypnotized` keeps Anti-Magic off hypnotized stacks and `removesHarmfulSpells` takes the harmful spells off.
 
 ### Magic Mirror (Air, level 5, 25 / 20 spell points) — with 8.1
 
@@ -81,3 +82,5 @@ Checked against the wiki (Magic Mirror) and the engine's spell config.
 - Protection from Fire lessening Fire Shield's damage on the attacker is built, but only a berserk own stack can have it before enemy heroes cast (8.1); no test covers it yet.
 - A flame over the shielded stack when it burns, with the spells' animations (10.3); until then the spells' burst of light shows over it.
 - War machines, which none of these spells go on, with them.
+- Expert Anti-Magic turning away level 5 spells shows only once the hero can aim a level 5 spell at an own stack or an enemy casts one (8.1, the other factions' Mage Guilds, 6.5).
+- Anti-Magic's own animation and sound (10.3, 10.4).
