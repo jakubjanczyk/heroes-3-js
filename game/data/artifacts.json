@@ -440,6 +440,9 @@
     "class": "TREASURE",
     "cost": 1000,
     "morale": 1,
+    "battleImmunities": {
+      "mindSpells": true
+    },
     "description": "The Badge of Courage increases your Morale by +1."
   },
   "CREST_OF_VALOR": {
@@ -558,6 +561,9 @@
       "defense": 6,
       "power": 6,
       "knowledge": 6
+    },
+    "battleImmunities": {
+      "spellLevel": 4
     },
     "description": "+6 to all primary skills, all troops are immune to 1-4th level spells."
   },

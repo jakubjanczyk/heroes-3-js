@@ -4,10 +4,19 @@ import { aHero, aMonster, anArtifactDefinition, aScenario, aSpellDefinition } fr
 
 export const HERO = 'Lord Haart'
 
-const aLastingSpell = ({ name, schools, costs, allAtExpert = true, notOnUndead, ...lasting }) =>
+const aLastingSpell = ({
+  name,
+  schools,
+  costs,
+  allAtExpert = true,
+  notOnUndead,
+  mind,
+  ...lasting
+}) =>
   aSpellDefinition()
     .withName(name)
     .withNotOnUndead(notOnUndead)
+    .withMind(mind)
     .withSchools(schools)
     .withCosts(costs)
     .withLasting(allAtExpert ? { ...lasting, allAtExpert } : lasting)
@@ -111,7 +120,7 @@ const moraleAndLuckSpellDefinitions = {
   }),
   MIRTH: aLastingSpell({
     name: 'Mirth',
-    notOnUndead: true,
+    mind: true,
     schools: ['WATER'],
     costs: [12, 9, 9, 9],
     target: 'own',
@@ -119,7 +128,7 @@ const moraleAndLuckSpellDefinitions = {
   }),
   SORROW: aLastingSpell({
     name: 'Sorrow',
-    notOnUndead: true,
+    mind: true,
     schools: ['EARTH'],
     costs: [16, 12, 12, 12],
     target: 'enemy',
@@ -166,13 +175,24 @@ const artifactDefinitions = {
     .withName('Hourglass of the Evil Hour')
     .withSlot('MISC')
     .withCancelsInBattle(['luck'])
-    .build()
+    .build(),
+  MIND_GUARD: anArtifactDefinition()
+    .withName('Mind Guard')
+    .withSlot('SHIELD')
+    .withBattleImmunities({ mindSpells: true })
+    .build(),
+  SPELL_GUARD: anArtifactDefinition()
+    .withName('Spell Guard')
+    .withSlot('TORSO')
+    .withBattleImmunities({ spellLevel: 4 })
+    .build(),
+  PLAIN_SHIELD: anArtifactDefinition().withName('Plain Shield').withSlot('SHIELD').build()
 }
 
 const controlSpellDefinitions = {
   BLIND: aLastingSpell({
     name: 'Blind',
-    notOnUndead: true,
+    mind: true,
     schools: ['FIRE'],
     costs: [10, 8, 8, 8],
     target: 'enemy',
@@ -182,7 +202,7 @@ const controlSpellDefinitions = {
   }),
   FORGETFULNESS: aLastingSpell({
     name: 'Forgetfulness',
-    notOnUndead: true,
+    mind: true,
     schools: ['WATER'],
     costs: [12, 9, 9, 9],
     target: 'enemy',
@@ -191,7 +211,7 @@ const controlSpellDefinitions = {
   }),
   FRENZY: aLastingSpell({
     name: 'Frenzy',
-    notOnUndead: true,
+    mind: true,
     schools: ['FIRE'],
     costs: [16, 12, 12, 12],
     target: 'own',
@@ -202,7 +222,7 @@ const controlSpellDefinitions = {
   BERSERK: aSpellDefinition()
     .withName('Berserk')
     .withLevel(4)
-    .withNotOnUndead(true)
+    .withMind(true)
     .withSchools(['FIRE'])
     .withCosts([20, 16, 16, 16])
     .withArea([
@@ -221,7 +241,7 @@ const controlSpellDefinitions = {
     .build(),
   HYPNOTIZE: aLastingSpell({
     name: 'Hypnotize',
-    notOnUndead: true,
+    mind: true,
     schools: ['AIR'],
     costs: [18, 15, 15, 15],
     target: 'enemy',

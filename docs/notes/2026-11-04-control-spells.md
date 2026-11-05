@@ -16,7 +16,7 @@ Roadmap 4.8.7.1: Blind, Berserk, Hypnotize, Forgetfulness and Frenzy, the mind s
 - The blind stack retaliates to the attack that wakes it at 50% of its attack (Basic), 25% (Advanced), and not at all at Expert. Checked against the wiki and the engine (attack reduction 50 / 75, no retaliation at Expert).
 - Once Blind is gone, a stack whose turn has not come this round acts as usual; one whose turn has passed acts this round too (wiki: "it will act immediately"). Decided with the user: it takes its place in the turn order by its speed, so it acts after the faster stacks still to act this round, not straight away.
 - Dispel removes it (4.8.4.4); Cure removes it too, but only enemy casters put it on our stacks (8.1).
-- Undead, and creatures immune to mind spells, can't be blinded (wiki: mind spell; engine: undead excluded). Of our creatures that is the undead; the `notOnUndead` flag covers it (4.8.6.1).
+- Undead, and creatures immune to mind spells, can't be blinded (wiki: mind spell; engine: undead excluded). Of our creatures that is the undead; the spell's `mind` flag covers it (4.8.6.1, 4.8.6.3).
 - Combat log: "The %s cannot see!" (`core.genrltxt.556`, checked against the wiki's copy of GENRLTXT.TXT and the engine's reference to it).
 - Not at Expert on all stacks: it stays single-target at every level (engine: no mass effect).
 
