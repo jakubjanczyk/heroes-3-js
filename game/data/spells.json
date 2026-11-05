@@ -1376,7 +1376,7 @@
     "level": 3,
     "schools": ["WATER"],
     "kind": "combat",
-    "notOnUndead": true,
+    "mind": true,
     "costs": [12, 9, 9, 9],
     "lasting": { "allAtExpert": true, "target": "own", "effects": { "morale": [1, 1, 2, 2] } },
     "mageGuildChances": { "CASTLE": 4 },
@@ -1404,7 +1404,7 @@
     "level": 4,
     "schools": ["EARTH"],
     "kind": "combat",
-    "notOnUndead": true,
+    "mind": true,
     "costs": [16, 12, 12, 12],
     "lasting": {
       "allAtExpert": true,
@@ -1579,7 +1579,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [16, 12, 12, 12],
-    "notOnUndead": true,
+    "mind": true,
     "lasting": {
       "target": "own",
       "untilOwnTurn": true,
@@ -1668,7 +1668,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [20, 16, 16, 16],
-    "notOnUndead": true,
+    "mind": true,
     "area": [
       { "from": 0, "to": 0 },
       { "from": 0, "to": 0 },
@@ -1707,7 +1707,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [18, 15, 15, 15],
-    "notOnUndead": true,
+    "mind": true,
     "lasting": {
       "target": "enemy",
       "healthLimit": { "base": [10, 10, 20, 50], "perPower": 25 },
@@ -1740,7 +1740,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
-    "notOnUndead": true,
+    "mind": true,
     "lasting": {
       "target": "enemy",
       "shootersOnly": true,
@@ -1773,7 +1773,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [10, 8, 8, 8],
-    "notOnUndead": true,
+    "mind": true,
     "lasting": {
       "target": "enemy",
       "castMessage": "The %s cannot see!",

@@ -658,10 +658,9 @@ In four parts. Your own stacks are hit too. See `docs/notes/2026-11-04-area-dama
 - [x] 4.8.5.4 Chain Lightning: an enemy stack, then the nearest stacks, half the damage at each jump
 
 #### 4.8.6 Immunities and Resistance
-In three parts.
+In three parts; the second, Resistance, waits for an enemy that casts (5.8 later).
 - [x] 4.8.6.1 Undead immune to Bless, Curse, Mirth and Sorrow: not a target, and left out at Expert. See `docs/notes/2026-11-04-spell-immunities.md`
 - [ ] Creatures resisting some spell levels or schools, and Golems' spell damage reduction, with the creatures (6.5)
-- [ ] 4.8.6.2 The Resistance skill's chance an enemy spell fails on a stack
 - [ ] 4.8.6.3 Badge of Courage's immunity to mind spells (7.8.3) and the Power of the Dragon Father's immunity (7.8.7)
 
 #### 4.8.7 Control and special spells
@@ -678,6 +677,7 @@ In three parts.
 - [ ] 4.8.7.3 Teleport, Clone and Sacrifice
 
 #### 5.8 later
+- [ ] The Resistance skill's chance an enemy spell fails on a stack, with an enemy that casts: enemy heroes (8.1) or creatures that cast (6.5)
 - [ ] Destroy Undead (planned in `docs/notes/2026-11-01-casting-in-battle.md`): not aimed, it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line
 - [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3), and Expert Dispel clearing them; Earthquake with sieges (5.10)
 - [ ] The four Summon Elemental spells, Resurrection and Animate Dead, with the elementals and the dead counted

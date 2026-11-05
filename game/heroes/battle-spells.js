@@ -42,6 +42,7 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   hurtOnly: Boolean(spell?.heals),
   withRemovableSpellOnly: Boolean(spell?.removesSpells),
   notOnUndead: Boolean(spell?.notOnUndead),
+  mind: Boolean(spell?.mind),
   notOnHypnotized: Boolean(spell?.notOnHypnotized),
   spellLevel: spell?.level ?? 0,
   ignoresSpellLevelImmunity: Boolean(spell?.ignoresSpellLevelImmunity)
@@ -53,6 +54,7 @@ const isOnTargetSide = (targetSide, target, casterSide) =>
 // Anti-Magic turns away every spell of its level or lower, the hero's own too.
 export const isImmuneTo = (targeting, target) =>
   (targeting.notOnUndead && target.undead) ||
+  (targeting.mind && target.mindSpellImmune) ||
   (!targeting.ignoresSpellLevelImmunity && targeting.spellLevel <= getSpellLevelImmunity(target))
 
 export function isSpellTarget(targeting, target, casterSide) {

@@ -97,6 +97,7 @@ function createStacks({
       morale: unaffectedByMorale ? 0 : morale,
       unaffectedByMorale,
       undead,
+      mindSpellImmune: undead,
       king: definition.king ?? null,
       luck,
       cancelledInBattle,

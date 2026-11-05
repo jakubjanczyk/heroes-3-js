@@ -1,6 +1,6 @@
 # Spell immunities
 
-Roadmap 4.8.6.1, the first of three parts of immunities and Resistance (4.8.6): stacks a spell can't go on. Resistance's chance is 4.8.6.2, the artifacts' immunities 4.8.6.3.
+Roadmap 4.8.6.1, the first of three parts of immunities and Resistance (4.8.6): stacks a spell can't go on. Resistance's chance was 4.8.6.2 and waits for an enemy that casts (5.8 later); the artifacts' immunities are 4.8.6.3.
 
 ## The rules, as checked
 
@@ -11,7 +11,7 @@ Roadmap 4.8.6.1, the first of three parts of immunities and Resistance (4.8.6): 
 
 ## What we do
 
-- Bless, Curse, Mirth and Sorrow get `notOnUndead` in `game/data/spells.json`; Death Ripple's `"targets": "living"` keeps hitting the whole battlefield but takes its undead rule from the same flag. Another spell undead ignore is data only.
+- Bless and Curse get `notOnUndead` in `game/data/spells.json`, and the undead are immune to every spell marked `mind` (Mirth and Sorrow among them, 4.8.6.3); Death Ripple's `"targets": "living"` keeps hitting the whole battlefield but takes its undead rule from the same flag. Another spell undead ignore is data only.
 
 ## Left for later
 
