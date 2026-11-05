@@ -32,13 +32,20 @@ const isFrenzied = (stack) => hasSpellEffect(stack, 'attackFromDefensePercent')
 const frenzyAttack = (stack) =>
   Math.floor((getDefenseBeforeFrenzy(stack) * spellEffect(stack, 'attackFromDefensePercent')) / 100)
 
-export const getStackAttack = (stack, { melee = false } = {}) =>
+// Slayer reaches the kings of more groups as the school's skill grows.
+const slayerAttack = (stack, target) =>
+  target?.king && target.king <= spellEffect(stack, 'kingsReached')
+    ? spellEffect(stack, 'attackAgainstKings')
+    : 0
+
+export const getStackAttack = (stack, { melee = false, against = null } = {}) =>
   Math.max(
     0,
     stack.attack +
       spellEffect(stack, 'attack') +
       spellEffect(stack, melee ? 'meleeAttack' : 'rangedAttack') +
-      frenzyAttack(stack)
+      frenzyAttack(stack) +
+      slayerAttack(stack, against)
   )
 
 export const getStackDefense = (stack) => (isFrenzied(stack) ? 0 : getDefenseBeforeFrenzy(stack))

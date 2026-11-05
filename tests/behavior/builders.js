@@ -145,6 +145,19 @@ export const anArtifactDefinition = () =>
     })
   )
 
+// A creature with a Pikeman's stats, for a test that needs one the game data doesn't have.
+export const aCreatureDefinition = () =>
+  builder({
+    name: 'Creature',
+    namePlural: 'Creatures',
+    attack: 4,
+    defense: 5,
+    damage: { min: 1, max: 3 },
+    health: 10,
+    speed: 4,
+    abilities: []
+  })
+
 // kind: combat or adventure. schools: AIR, EARTH, FIRE or WATER, all four for Magic Arrow.
 // costs and descriptions: at no skill, then Basic, Advanced and Expert in the spell's school.
 export const aSpellDefinition = () =>

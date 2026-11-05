@@ -239,6 +239,19 @@ const controlSpellDefinitions = {
 
 export const CONTROL_SPELLS = Object.keys(controlSpellDefinitions)
 
+const protectiveSpellDefinitions = {
+  SLAYER: aLastingSpell({
+    name: 'Slayer',
+    schools: ['FIRE'],
+    costs: [16, 12, 12, 12],
+    target: 'own',
+    allAtExpert: false,
+    effects: { attackAgainstKings: [8, 8, 8, 8], kingsReached: [1, 1, 2, 3] }
+  })
+}
+
+export const PROTECTIVE_SPELLS = Object.keys(protectiveSpellDefinitions)
+
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
@@ -249,7 +262,8 @@ const gameDefinitions = {
     ...spellDefinitions,
     ...moraleAndLuckSpellDefinitions,
     ...removingAndHealingSpellDefinitions,
-    ...controlSpellDefinitions
+    ...controlSpellDefinitions,
+    ...protectiveSpellDefinitions
   },
   artifacts: artifactDefinitions
 }
@@ -275,11 +289,21 @@ export const aCaster = ({
     .withArmy(army)
     .withArtifacts(artifacts)
 
-export const aFight = ({ hero = aCaster(), monster = 'PIKEMAN', count = 50, stacks = 1 } = {}) =>
+// `creatures` adds creature definitions to the game's.
+export const aFight = ({
+  hero = aCaster(),
+  monster = 'PIKEMAN',
+  count = 50,
+  stacks = 1,
+  creatures = {}
+} = {}) =>
   aScenario()
     .withSize(3)
     .withEntities(hero, aMonster().withType(monster).withCount(count).withStacks(stacks).at(1, 0))
-    .withDefinitions(gameDefinitions)
+    .withDefinitions({
+      ...gameDefinitions,
+      monsters: { ...gameDefinitions.monsters, ...creatures }
+    })
 
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster's on column 15.
 export const OWN_HEX = { row: 6, column: 1 }
