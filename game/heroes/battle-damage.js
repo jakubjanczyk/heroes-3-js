@@ -2,6 +2,7 @@ import {
   getCreatureDamage,
   getDamageTakenPercent,
   getRetaliationDamagePercent,
+  getShotDamagePercent,
   getStackAttack,
   getStackDefense,
   getStackLuck
@@ -34,7 +35,7 @@ function applyAttackAndDefense(
   )
   const penalty = halved ? HALVED : 1000
   const taken = getDamageTakenPercent(defender, { melee }) * 10
-  const dealt = dealtPercent * 10
+  const dealt = (dealtPercent * (melee ? 100 : getShotDamagePercent(attacker))) / 10
   // In BigInt: a big stack's product of six factors goes past the integers a Number keeps exact.
   const scaled = [baseDamage, 1000 + bonus, 1000 - reduction, penalty, taken, dealt].map(BigInt)
   const damage = scaled.reduce((product, factor) => product * factor) / 1_000_000_000_000_000n

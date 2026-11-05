@@ -1,7 +1,13 @@
 import { artifactsCancelInBattle } from './artifacts.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isSpellTarget } from './battle-spells.js'
-import { getStackDefense, getStackMorale, getStackSpeed, isBlind } from './battle-stats.js'
+import {
+  getShotDamagePercent,
+  getStackDefense,
+  getStackMorale,
+  getStackSpeed,
+  isBlind
+} from './battle-stats.js'
 import {
   findHexPath,
   getAreaHexes,
@@ -233,17 +239,23 @@ export function getActiveStack(battle) {
 
 export const hasWaited = (battle, stackId) => battle.waitedStackIds.includes(stackId)
 
+// A spell that ends on the stack's own turn was cast for two rounds: it ends as the stack's turn
+// starts in the round after the cast.
+const endsNow = ({ endsOnOwnTurn, roundsLeft }) => endsOnOwnTurn && roundsLeft === 1
+
 // A defending stack keeps its Defense bonus until its next turn starts.
 function startNextTurn(battle) {
   const active = getActiveStack(battle)
-  if (!active?.defenseBonus) {
+  if (!active?.defenseBonus && !(active?.spells ?? []).some(endsNow)) {
     return battle
   }
 
   return {
     ...battle,
     stacks: battle.stacks.map((stack) =>
-      stack.id === active.id ? { ...stack, defenseBonus: 0 } : stack
+      stack.id === active.id
+        ? { ...stack, defenseBonus: 0, spells: stack.spells?.filter((spell) => !endsNow(spell)) }
+        : stack
     )
   }
 }
@@ -519,7 +531,7 @@ const livingEnemiesOf = (battle, stack) =>
 
 // A shooter with an enemy next to it can only fight hand to hand.
 export function canShoot(battle, stack) {
-  if (stack.shots === 0) {
+  if (stack.shots === 0 || getShotDamagePercent(stack) === 0) {
     return false
   }
 
@@ -683,7 +695,10 @@ const longerOf = (rounds, earlier) =>
 
 // Cast again on a stack that has it, the spell takes the new effects and the longer duration; a
 // spell that adds up adds its effects to the earlier ones.
-function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp, removable }) {
+function putSpellOn(
+  stack,
+  { spellId, effects: cast, rounds, helpful, addsUp, removable, endsOnOwnTurn }
+) {
   const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
   const roundsLeft = longerOf(rounds, earlier?.roundsLeft)
   const effects = addsUp ? addEffects(earlier?.effects, cast) : cast
@@ -691,7 +706,7 @@ function putSpellOn(stack, { spellId, effects: cast, rounds, helpful, addsUp, re
     ...stack,
     spells: [
       ...(stack.spells ?? []).filter((spell) => spell.spellId !== spellId),
-      { spellId, effects, roundsLeft, helpful, removable }
+      { spellId, effects, roundsLeft, helpful, removable, endsOnOwnTurn }
     ]
   }
 }

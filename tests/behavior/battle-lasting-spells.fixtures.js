@@ -179,6 +179,25 @@ const controlSpellDefinitions = {
     castMessage: 'The %s cannot see!',
     effects: { blind: [1, 1, 1, 1], retaliationDamagePercent: [-50, -50, -75, -100] }
   }),
+  FORGETFULNESS: aLastingSpell({
+    name: 'Forgetfulness',
+    notOnUndead: true,
+    schools: ['WATER'],
+    costs: [12, 9, 9, 9],
+    target: 'enemy',
+    shootersOnly: true,
+    effects: { shotDamagePercent: [-50, -50, -100, -100] }
+  }),
+  FRENZY: aLastingSpell({
+    name: 'Frenzy',
+    notOnUndead: true,
+    schools: ['FIRE'],
+    costs: [16, 12, 12, 12],
+    target: 'own',
+    allAtExpert: false,
+    untilOwnTurn: true,
+    effects: { attackFromDefensePercent: [100, 100, 150, 200] }
+  }),
   MAGIC_ARROW: aSpellDefinition()
     .withName('Magic Arrow')
     .withSchools(['AIR', 'EARTH', 'FIRE', 'WATER'])

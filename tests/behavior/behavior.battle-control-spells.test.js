@@ -9,11 +9,13 @@ import {
   hoverBattleHex,
   pickSpell,
   playOnToNextRound,
+  pointAtBattleHexSide,
   readActiveStack,
   readBattleSpellPoints,
   readBattleStacks,
   readCombatMessages,
   readStackCountColour,
+  readStackCountColours,
   reloadBattle,
   shootAt,
   startBattle,
@@ -23,12 +25,17 @@ import {
   aCaster,
   aFight,
   attackPikemenAfter,
+  bringPikemenCloser,
   CONTROL_SPELLS,
   ENEMY_HEX,
+  OWN_HEX,
   PIKEMEN_CLOSE_BY,
   REMOVING_AND_HEALING_SPELLS,
+  SWORDSMEN_CLOSE_BY,
   stack
 } from './battle-lasting-spells.fixtures.js'
+
+const WATER = (level) => [{ skill: 'WATER_MAGIC', level }]
 
 const aBlinder = ({ level, ...options } = {}) =>
   aCaster({
@@ -189,6 +196,197 @@ describe('battle control spells behavior', () => {
       await waitMs(1000)
 
       expect(readBattleStacks()).toContainEqual(PIKEMEN_WHERE_THEY_STARTED)
+    })
+  })
+
+  describe('Forgetfulness', () => {
+    const anArcherFight = (options) =>
+      aFight({ hero: aBlinder(options), monster: 'ARCHER', count: 10 })
+    const archersDamage = () =>
+      readCombatMessages().filter((message) => message.startsWith('The Archers do'))
+    // Archers have speed 4, like the Pikemen.
+    const ARCHERS_AFTER_A_WALK = { stack: 'Archers 10', row: 6, column: 11 }
+
+    test('given the hero casts Forgetfulness on the Archers then the combat log says so, 12 spell points are spent and their count box turns red', async () => {
+      const { user } = await startBattleWithStyles(anArcherFight())
+
+      await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
+      const colour = readStackCountColour(ENEMY_HEX.row, ENEMY_HEX.column)
+      const messages = readCombatMessages().slice(-1)
+      await playOnToNextRound(user)
+
+      expect([messages, colour, await readBattleSpellPoints(user)]).toEqual([
+        ["Lord Haart casts 'Forgetfulness' on the Archers."],
+        'red',
+        '8'
+      ])
+    })
+
+    // Unforgetful, the shot does 7 (see the Shield test in the lasting spells tests); half of
+    // 7.5 is 3.75.
+    test('given the hero cast Forgetfulness on the Archers when they shoot the defending Swordsmen then the shot does half damage', async () => {
+      const { user } = await startBattle(anArcherFight())
+
+      await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
+      await playOnToNextRound(user)
+
+      expect(archersDamage()).toEqual(['The Archers do 3 damage.'])
+    })
+
+    test('given an Advanced Water hero cast Forgetfulness on the Archers when their turn comes then they walk instead of shooting', async () => {
+      const { user } = await startBattle(anArcherFight({ secondarySkills: WATER('ADVANCED') }))
+
+      await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
+      await playOnToNextRound(user)
+
+      expect([archersDamage(), readBattleStacks()]).toEqual([
+        [],
+        expect.arrayContaining([ARCHERS_AFTER_A_WALK])
+      ])
+    })
+
+    test('given an Expert Water hero casts Forgetfulness then both Archer stacks turn red, the Swordsmen do not, and neither Archer stack shoots', async () => {
+      const hero = aBlinder({ secondarySkills: WATER('EXPERT') })
+      const { user } = await startBattleWithStyles(
+        aFight({ hero, monster: 'ARCHER', count: 20, stacks: 2 })
+      )
+
+      await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
+      const message = readCombatMessages().at(-1)
+      const colours = readStackCountColours()
+      const archerColours = colours.filter(({ stack }) => stack === 'Archers 10')
+      await playOnToNextRound(user)
+
+      expect([
+        message,
+        colours,
+        archerColours.map(({ colour }) => colour),
+        archersDamage()
+      ]).toEqual([
+        "Lord Haart casts 'Forgetfulness'.",
+        expect.arrayContaining([
+          { stack: 'Swordsmen 10', colour: 'purple' },
+          { stack: 'Archers 10', colour: 'red' }
+        ]),
+        ['red', 'red'],
+        []
+      ])
+    })
+
+    test('given a hero with Power 1 and Advanced Water cast Forgetfulness on the Archers when the next round starts then they shoot again', async () => {
+      const hero = { power: 1, secondarySkills: WATER('ADVANCED') }
+      const { user } = await startBattle(anArcherFight(hero))
+      await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
+
+      await playOnToNextRound(user)
+      await playOnToNextRound(user)
+
+      expect(archersDamage()).toHaveLength(1)
+    })
+
+    test('given Forgetfulness is picked when the mouse is over the Pikemen, who do not shoot, then the status bar asks for a target', async () => {
+      const { user } = await startBattle(aFight({ hero: aBlinder() }))
+      await pickSpell(user, 'Forgetfulness')
+
+      await hoverBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+    })
+
+    test('given an Advanced Water hero cast Forgetfulness on the Archers when the page reloads then they still walk instead of shooting', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = anArcherFight({ secondarySkills: WATER('ADVANCED') })
+      const { user } = await startBattle(scenario, { eventLog })
+      await castSpellAt(user, 'Forgetfulness', ENEMY_HEX)
+
+      await reloadBattle(scenario, { eventLog })
+      await clickBattleButton(user, 'Defend')
+      await waitMs(1000)
+
+      expect(readBattleStacks()).toContainEqual(ARCHERS_AFTER_A_WALK)
+    })
+  })
+
+  describe('Frenzy', () => {
+    test('given the hero casts Frenzy on the Swordsmen then the combat log says so, 16 spell points are spent and their count box turns green', async () => {
+      const { user } = await startBattleWithStyles(aFight({ hero: aBlinder() }))
+
+      await castSpellAt(user, 'Frenzy', OWN_HEX)
+      const colour = readStackCountColour(OWN_HEX.row, OWN_HEX.column)
+      const messages = readCombatMessages().slice(-1)
+      await playOnToNextRound(user)
+
+      expect([messages, colour, await readBattleSpellPoints(user)]).toEqual([
+        ["Lord Haart casts 'Frenzy' on the Swordsmen."],
+        'green',
+        '4'
+      ])
+    })
+
+    // The Swordsmen's 60-90 with Attack 12 and Defense 14 (the hero's class gives +2 each).
+    // Basic: Attack 12 + 14 = 26 against the Pikemen's 5, +105%: 123-184. Expert: 12 + 28 = 40,
+    // +175%: 165-247.
+    test.each([
+      { skill: 'no skill', level: undefined, damage: '123-184' },
+      { skill: 'Expert Fire Magic', level: 'EXPERT', damage: '165-247' }
+    ])('given a hero with $skill cast Frenzy on the Swordsmen when the player points at the Pikemen then the attack does $damage', async ({
+      level,
+      damage
+    }) => {
+      const { user } = await startBattle(aFight({ hero: aBlinder({ level }) }))
+      await bringPikemenCloser(user)
+      await castSpellAt(user, 'Frenzy', SWORDSMEN_CLOSE_BY)
+
+      await pointAtBattleHexSide(user, PIKEMEN_CLOSE_BY.row, PIKEMEN_CLOSE_BY.column, 'left')
+
+      expect(getBattleStatusBarText()).toBe(`Attack Pikemen (damage ${damage})`)
+    })
+
+    // Unfrenzied, the defending Swordsmen take 7. Defense 0 against the Archers' Attack 6: 20
+    // × 1.3 = 26, halved from across the battlefield: 13.
+    test('given the hero cast Frenzy on the Swordsmen when they defend and the Archers shoot them then they still have no Defense', async () => {
+      const { user } = await startBattle(aFight({ hero: aBlinder(), monster: 'ARCHER', count: 10 }))
+
+      await castSpellAt(user, 'Frenzy', OWN_HEX)
+      await playOnToNextRound(user)
+
+      expect(readCombatMessages()).toContain('The Archers do 13 damage.')
+    })
+
+    // The Swordsmen's 60-90 with Attack 12 against Defense 5: +35%, 81-121.
+    test('given the hero cast Frenzy on the Swordsmen when their turn comes in the next round then the attack does its usual damage', async () => {
+      const { user } = await startBattleWithStyles(aFight({ hero: aBlinder() }))
+      await castSpellAt(user, 'Frenzy', OWN_HEX)
+
+      await bringPikemenCloser(user)
+      await pointAtBattleHexSide(user, PIKEMEN_CLOSE_BY.row, PIKEMEN_CLOSE_BY.column, 'left')
+
+      expect([
+        getBattleStatusBarText(),
+        readStackCountColour(SWORDSMEN_CLOSE_BY.row, SWORDSMEN_CLOSE_BY.column)
+      ]).toEqual(['Attack Pikemen (damage 81-121)', 'purple'])
+    })
+
+    test('given Frenzy is picked when the mouse is over the Pikemen then the status bar asks for a target', async () => {
+      const { user } = await startBattle(aFight({ hero: aBlinder() }))
+      await pickSpell(user, 'Frenzy')
+
+      await hoverBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+    })
+
+    test('given the hero cast Frenzy on the Swordsmen when the page reloads and the Archers shoot them then they still have no Defense', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aFight({ hero: aBlinder(), monster: 'ARCHER', count: 10 })
+      const { user } = await startBattle(scenario, { eventLog })
+      await castSpellAt(user, 'Frenzy', OWN_HEX)
+
+      await reloadBattle(scenario, { eventLog })
+      await clickBattleButton(user, 'Defend')
+      await waitMs(1000)
+
+      expect(readCombatMessages()).toContain('The Archers do 13 damage.')
     })
   })
 })

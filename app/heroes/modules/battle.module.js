@@ -600,7 +600,8 @@ export const registerBattleModule = defineModule(
           helpful: isHelpful(spell),
           addsUp: Boolean(spell.lasting.addsUp),
           castMessage: spell.lasting.castMessage,
-          removable: !spell.lasting.cannotBeRemoved
+          removable: !spell.lasting.cannotBeRemoved,
+          endsOnOwnTurn: Boolean(spell.lasting.untilOwnTurn)
         })
       }
       if (spell?.removesSpells) {
