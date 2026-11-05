@@ -2,6 +2,7 @@ import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../../game/
 import {
   areaTargetIds,
   attackStack,
+  canStackStandOn,
   castDamageSpell,
   castHealingSpell,
   castLastingSpell,
@@ -31,6 +32,7 @@ import {
   resolveShot,
   shootStack,
   spellTargetIds,
+  teleportStack,
   waitStack
 } from '../../../game/heroes/battle.js'
 import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
@@ -570,7 +572,14 @@ export const registerBattleModule = defineModule(
         : { targetIds, ...cast }
     }
 
-    function castSpell({ spellId, targetId, hex }) {
+    function canTeleport(spell, { targetIds }, destination) {
+      const target = battle.stacks.find(({ id }) => id === targetIds[0])
+      return (
+        !spell.teleports || Boolean(destination && canStackStandOn(battle, target, destination))
+      )
+    }
+
+    function castSpell({ spellId, targetId, hex, destination }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
       const cost = spell && spellCost(hero, spell)
@@ -581,7 +590,7 @@ export const registerBattleModule = defineModule(
         canCastInBattle(spell) &&
         cost <= getHeroSpellPoints({ entity: hero, definitions }).value
       const targets = canCast ? chooseSpellTargets(hero, spell, { targetId, hex }) : null
-      if (!targets) {
+      if (!targets || (!targets.noOne && !canTeleport(spell, targets, destination))) {
         return
       }
       if (targets.noOne) {
@@ -593,6 +602,7 @@ export const registerBattleModule = defineModule(
         heroId,
         spellId,
         ...castDetailOn(hero, spell, targets),
+        ...(spell.teleports ? { destination } : {}),
         cost
       })
       continueBattle()
@@ -603,7 +613,7 @@ export const registerBattleModule = defineModule(
     // target's damage rather than hits.
     function castSpellOn(
       current,
-      { spellId, targetId, targetIds, damage, hits, effects, rounds, healing }
+      { spellId, targetId, targetIds, damage, hits, effects, rounds, healing, destination }
     ) {
       const spell = definitions.spells?.[spellId]
       const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId }
@@ -623,6 +633,9 @@ export const registerBattleModule = defineModule(
           endsSpellIds: spell.lasting.endsSpells ?? [],
           removesHarmful: Boolean(spell.lasting.removesHarmfulSpells)
         })
+      }
+      if (spell?.teleports) {
+        return teleportStack(current, { ...onStacks, destination })
       }
       if (spell?.removesSpells) {
         return castRemovingSpell(current, onStacks)

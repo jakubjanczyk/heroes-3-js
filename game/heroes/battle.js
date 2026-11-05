@@ -413,6 +413,8 @@ function canStandFor(battle, stack) {
     )
 }
 
+export const canStackStandOn = (battle, stack, hex) => canStandFor(battle, stack)(hex)
+
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
@@ -830,6 +832,13 @@ export const castLastingSpell = (
   castOnStacks(battle, { heroName, spellName, targetIds, castMessage }, (stack) =>
     putSpellOn(stack, spell)
   )
+
+export function teleportStack(battle, { destination, ...cast }) {
+  const teleported = castOnStacks(battle, cast, (stack) => ({ ...stack, hex: destination }))
+  const effects = [...teleported.effects]
+  effects[effects.length - 1] = { ...effects.at(-1), teleported: true }
+  return { ...teleported, effects }
+}
 
 export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, removeSpellsFrom)
 
