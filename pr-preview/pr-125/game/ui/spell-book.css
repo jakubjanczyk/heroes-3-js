@@ -1,0 +1,375 @@
+/*
+ * The spell book over whatever opened it, the map or the hero screen, laid out as the game's:
+ * an open leather book on a dark table, the school bookmarks down its right edge, and red
+ * pennants hanging under it for the combat and adventure spells, the spell points and closing.
+ * The window keeps the game's 620 x 595 pixels: parts are placed in them with --x, --y, --w and
+ * --h, and fonts are sized in them too (--px), so it scales as one picture. No pictures yet: the
+ * book is drawn in CSS and each spell's picture is its initials in its school's colour.
+ */
+.spell-book {
+  grid-row: 1 / span 2;
+  grid-column: 1 / -1;
+  z-index: 30;
+  min-block-size: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-xs);
+  background: rgb(0 0 0 / 0.5);
+  container-type: size;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.spell-book__window {
+  --px: calc(100cqw / 620);
+  --air: #6b5bc4;
+  --earth: #3f8f3a;
+  --fire: #c8321e;
+  --water: #3d58b8;
+  --all: #d8b830;
+  --ink: #3a2410;
+
+  position: relative;
+  inline-size: min(100cqw, 100cqh * 620 / 595);
+  aspect-ratio: 620 / 595;
+  container-type: inline-size;
+  /* The rug's fringe and the wooden floor under the table. */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #8a7458 0 calc(3 * var(--px)),
+      #4a3a28 calc(3 * var(--px)) calc(6 * var(--px))
+    )
+    0 calc(470 * 100% / 595) / 100% calc(16 * 100% / 595) no-repeat,
+    linear-gradient(180deg, #4a2a18 0 76%, #3a2214 76% 79%, #2a180c 79%),
+    #2a180c;
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 3px #1a1007,
+    0 0.5rem 2rem rgb(0 0 0 / 0.6);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+
+  & [style*="--x"] {
+    position: absolute;
+    inset-inline-start: calc(var(--x) * 100% / 620);
+    inset-block-start: calc(var(--y) * 100% / 595);
+    inline-size: calc(var(--w) * 100% / 620);
+    block-size: calc(var(--h) * 100% / 595);
+    box-sizing: border-box;
+    margin: 0;
+  }
+}
+
+/* The cover and the stack of pages under the two open ones. */
+.spell-book__book {
+  border-radius: calc(10 * var(--px));
+  background: linear-gradient(180deg, #5a3218, #3a1e0c);
+  box-shadow:
+    inset 0 0 0 calc(2 * var(--px)) #24120a,
+    0 calc(6 * var(--px)) calc(12 * var(--px)) rgb(0 0 0 / 0.6);
+}
+
+.spell-book__sheet {
+  position: absolute;
+  inset-block: calc(14 * var(--px)) calc(16 * var(--px));
+  inline-size: calc(50% - 22 * var(--px));
+  background: radial-gradient(ellipse at 50% 45%, #e6cf9c 0 55%, #cdb07a 100%), #d8bd88;
+}
+
+.spell-book__sheet--left {
+  inset-inline-start: calc(22 * var(--px));
+  border-radius: calc(14 * var(--px)) calc(4 * var(--px)) calc(4 * var(--px)) calc(10 * var(--px));
+  box-shadow:
+    inset calc(-14 * var(--px)) 0 calc(14 * var(--px)) calc(-8 * var(--px)) rgb(70 40 15 / 0.6),
+    calc(-4 * var(--px)) calc(3 * var(--px)) 0 #b89c6a,
+    calc(-8 * var(--px)) calc(6 * var(--px)) 0 #a88c5a,
+    calc(-12 * var(--px)) calc(9 * var(--px)) 0 #977b4b;
+}
+
+.spell-book__sheet--right {
+  inset-inline-end: calc(22 * var(--px));
+  border-radius: calc(4 * var(--px)) calc(14 * var(--px)) calc(10 * var(--px)) calc(4 * var(--px));
+  box-shadow:
+    inset calc(14 * var(--px)) 0 calc(14 * var(--px)) calc(-8 * var(--px)) rgb(70 40 15 / 0.6),
+    calc(4 * var(--px)) calc(3 * var(--px)) 0 #b89c6a,
+    calc(8 * var(--px)) calc(6 * var(--px)) 0 #a88c5a,
+    calc(12 * var(--px)) calc(9 * var(--px)) 0 #977b4b;
+}
+
+/* Two columns of three spells, each 65 x 78 pixels, 85 apart across and 97 apart down. */
+.spell-book__page {
+  display: grid;
+  grid-template-columns: repeat(2, calc(65 * var(--px)));
+  grid-template-rows: repeat(3, calc(78 * var(--px)));
+  column-gap: calc(20 * var(--px));
+  row-gap: calc(19 * var(--px));
+  padding: 0;
+  list-style: none;
+}
+
+.spell-book__spell {
+  appearance: none;
+  inline-size: 100%;
+  block-size: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto auto auto;
+  justify-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: calc(10 * var(--px));
+  line-height: 1.15;
+  white-space: nowrap;
+  cursor: inherit;
+
+  &:focus-visible {
+    outline: 1px dotted var(--ink);
+  }
+}
+
+.spell-book__spell-picture {
+  --school: var(--all);
+
+  display: grid;
+  place-items: center;
+  block-size: calc(40 * var(--px));
+  aspect-ratio: 4 / 3;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    color-mix(in oklab, var(--school) 55%, white),
+    color-mix(in oklab, var(--school) 80%, #3a2410)
+  );
+  box-shadow: 0 0 0 calc(2 * var(--px)) rgb(90 60 20 / 0.35);
+  color: white;
+  font-size: calc(14 * var(--px));
+  font-weight: 700;
+  text-shadow: 0 1px 0 black;
+}
+
+[data-school="AIR"] > .spell-book__spell-picture {
+  --school: var(--air);
+}
+
+[data-school="EARTH"] > .spell-book__spell-picture {
+  --school: var(--earth);
+}
+
+[data-school="FIRE"] > .spell-book__spell-picture {
+  --school: var(--fire);
+}
+
+[data-school="WATER"] > .spell-book__spell-picture {
+  --school: var(--water);
+}
+
+/* The name over the level and the cost: yellow over white, or white over orange when the hero
+   can't afford the spell. Outlined, as the game's small font is, to read on the parchment. */
+.spell-book__spell-line {
+  color: #fff8e8;
+  text-shadow:
+    1px 1px 0 #2a1608,
+    0 0 2px #2a1608;
+}
+
+.spell-book__spell-line--1 {
+  color: #f8d860;
+}
+
+.spell-book__spell[aria-description] {
+  & .spell-book__spell-line--1 {
+    color: #fff8e8;
+  }
+
+  & .spell-book__spell-line--2,
+  & .spell-book__spell-line--3 {
+    color: #ff9a3c;
+  }
+}
+
+/* A school's first spread starts with its picture in the place of two spells. */
+.spell-book__school-heading {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  border-block-end: calc(2 * var(--px)) solid currentcolor;
+
+  & h3 {
+    margin: 0;
+    font-size: calc(20 * var(--px));
+    font-variant: small-caps;
+  }
+}
+
+.spell-book__school-heading[data-school="AIR"] {
+  color: #4b3d9c;
+}
+
+.spell-book__school-heading[data-school="EARTH"] {
+  color: #2e6a2a;
+}
+
+.spell-book__school-heading[data-school="FIRE"] {
+  color: #a8331a;
+}
+
+.spell-book__school-heading[data-school="WATER"] {
+  color: #2c4290;
+}
+
+/* The pages' top corners, turned over a little; clicking one turns the page. */
+.spell-book__corner {
+  border: 0;
+  padding: 0;
+  background: linear-gradient(135deg, transparent 50%, #b8995e 50%, #e6cf9c);
+  cursor: inherit;
+}
+
+.spell-book__corner--next {
+  background: linear-gradient(225deg, transparent 50%, #b8995e 50%, #e6cf9c);
+}
+
+/* Ribbons sticking out of the book's right edge, each in its school's colour; the open one sticks
+   out further. */
+.spell-book__bookmark {
+  --school: var(--all);
+
+  display: grid;
+  place-items: center;
+  padding: 0 0 0 calc(10 * var(--px));
+  border: 0;
+  clip-path: polygon(0 0, 100% 0, 85% 50%, 100% 100%, 0 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--school) 85%, white),
+    var(--school) 40%,
+    color-mix(in oklab, var(--school) 70%, black)
+  );
+  color: color-mix(in oklab, var(--school) 25%, white);
+  cursor: inherit;
+  translate: calc(10 * var(--px)) 0;
+
+  & svg {
+    inline-size: 55%;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+  }
+
+  &[aria-pressed="true"] {
+    translate: 0 0;
+    filter: brightness(1.15);
+  }
+}
+
+.spell-book__bookmark[data-school="AIR"] {
+  --school: var(--air);
+}
+
+.spell-book__bookmark[data-school="EARTH"] {
+  --school: var(--earth);
+}
+
+.spell-book__bookmark[data-school="FIRE"] {
+  --school: var(--fire);
+}
+
+.spell-book__bookmark[data-school="WATER"] {
+  --school: var(--water);
+}
+
+/* Red pennants hanging under the book, a gold picture or the spell points on each. */
+.spell-book__ribbon {
+  display: grid;
+  place-items: start center;
+  padding: calc(12 * var(--px)) 0 0;
+  border: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  background: linear-gradient(90deg, #7a1010, #c42a1c 40%, #8a1410);
+  color: #f2d88a;
+  cursor: inherit;
+
+  & svg {
+    inline-size: 70%;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2.2;
+  }
+
+  &[aria-pressed="true"] {
+    background: linear-gradient(90deg, #8a1c10, #e04a2c 40%, #9a2410);
+  }
+
+  &:disabled {
+    filter: grayscale(0.8) brightness(0.6);
+  }
+}
+
+.spell-book__spell-points {
+  padding-block-start: calc(16 * var(--px));
+  color: white;
+  font-size: calc(11 * var(--px));
+  font-variant-numeric: tabular-nums;
+}
+
+.spell-book__close svg {
+  stroke: #f4f0e0;
+}
+
+.spell-book__status-bar {
+  display: grid;
+  place-items: center;
+  background: #120a04;
+  border-block-start: 1px solid var(--trim-gold-dark);
+  color: var(--hud-text);
+  font-size: calc(12 * var(--px));
+}
+
+.spell-book__message {
+  position: absolute;
+  inset-inline: 20%;
+  inset-block-start: 30%;
+  z-index: 1;
+  display: grid;
+  gap: calc(8 * var(--px));
+  padding: calc(14 * var(--px));
+  font-size: calc(13 * var(--px));
+
+  & h2 {
+    margin: 0;
+    font-size: calc(15 * var(--px));
+    color: var(--hud-text-gold);
+  }
+
+  & p {
+    margin: 0;
+  }
+}
+
+.spell-book__message-ok {
+  justify-self: center;
+  padding: calc(4 * var(--px)) calc(18 * var(--px));
+  border: calc(2 * var(--px)) solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #6b3d1d, #3a1f0d);
+  color: var(--trim-gold);
+  font: inherit;
+  cursor: inherit;
+}
+
+/* The spell book in its frame on the hero screen. */
+.hero-screen__spell-book {
+  appearance: none;
+  padding: 0;
+  cursor: inherit;
+}
+
+.hero-screen__spell-book-picture {
+  background: linear-gradient(90deg, #6b1d1d 0 45%, #3a0d0d 45% 55%, #6b1d1d 55%);
+  border: 1px solid var(--trim-gold-dark);
+}
