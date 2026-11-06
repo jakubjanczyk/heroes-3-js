@@ -1,3 +1,4 @@
+import { canCastOnMap } from '../../../game/heroes/adventure-spells.js'
 import { sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
 import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
 import { fightsFor } from '../../../game/heroes/battle-stats.js'
@@ -15,12 +16,17 @@ import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
+  APP_COMMAND_HERO_ADVENTURE_SPELL_CAST_REQUESTED,
   APP_FACT_BATTLE_SPELL_CAST,
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_SELECTED,
+  APP_FACT_TOWN_LEFT,
+  APP_FACT_TOWN_OPENED,
+  APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_ADVENTURE_SPELL_PICKED,
   APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
   APP_UI_BATTLE_SPELL_PICKED,
   APP_UI_BATTLE_UPDATED,
@@ -69,6 +75,7 @@ export const registerSpellBookViewModule = defineModule(
     let kind = 'adventure'
     let inBattle = false
     let battleShown = null
+    let isInTown = false
 
     const place = () => lastPlaces[inBattle ? 'battle' : kind]
 
@@ -262,6 +269,13 @@ export const registerSpellBookViewModule = defineModule(
         emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name, targeting })
         return
       }
+      if (!inBattle && !isInTown && canCastOnMap(definition)) {
+        const caster = heroId
+        close()
+        emit(APP_UI_ADVENTURE_SPELL_PICKED, {})
+        emit(APP_COMMAND_HERO_ADVENTURE_SPELL_CAST_REQUESTED, { heroId: caster, spellId: spell.id })
+        return
+      }
       showMessage(spell.description)
     }
 
@@ -349,6 +363,9 @@ export const registerSpellBookViewModule = defineModule(
           }
         },
         { type: APP_FACT_HERO_SELECTED, handler: renderCastSpellButton },
+        { type: APP_FACT_TOWN_VISITED, handler: () => (isInTown = true) },
+        { type: APP_FACT_TOWN_OPENED, handler: () => (isInTown = true) },
+        { type: APP_FACT_TOWN_LEFT, handler: () => (isInTown = false) },
         { type: APP_FACT_HERO_HIRED, handler: renderCastSpellButton },
         {
           type: APP_UI_SPELL_BOOK_OPEN_REQUESTED,
@@ -426,6 +443,9 @@ export const registerSpellBookViewModule = defineModule(
       APP_UI_BATTLE_UPDATED,
       APP_FACT_HERO_HIRED,
       APP_FACT_HERO_SELECTED,
+      APP_FACT_TOWN_VISITED,
+      APP_FACT_TOWN_OPENED,
+      APP_FACT_TOWN_LEFT,
       APP_UI_HERO_SELECTED,
       APP_UI_SPELL_BOOK_OPEN_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,
@@ -435,7 +455,9 @@ export const registerSpellBookViewModule = defineModule(
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,
       APP_UI_BATTLE_SPELL_PICKED,
-      APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED
+      APP_UI_ADVENTURE_SPELL_PICKED,
+      APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
+      APP_COMMAND_HERO_ADVENTURE_SPELL_CAST_REQUESTED
     ]
   }
 )

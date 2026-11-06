@@ -2,6 +2,7 @@ import { heroesContent } from '../../game/heroes/content.js'
 import { APP_FACT_MONSTER_DEFEATED } from '../events.js'
 import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcomes.js'
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
+import { registerAdventureSpellsModule } from './modules/adventure-spells.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
 import { registerDwellingRecruitViewModule } from './modules/dwelling-recruit-view.module.js'
@@ -31,6 +32,7 @@ import { registerTownModule } from './modules/town.module.js'
 import { registerTownFortViewModule } from './modules/town-fort-view.module.js'
 import { registerTownHallViewModule } from './modules/town-hall-view.module.js'
 import { registerTownListModule } from './modules/town-list.module.js'
+import { registerTownPortalViewModule } from './modules/town-portal-view.module.js'
 import { registerTownRecruitViewModule } from './modules/town-recruit-view.module.js'
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTreasureChestsModule } from './modules/treasure-chests.module.js'
@@ -62,6 +64,7 @@ export const heroesAppContent = Object.freeze({
     registerTavernModule,
     registerMageGuildModule,
     registerScholarModule,
+    registerAdventureSpellsModule,
     registerOwnerFlagViewModule,
     registerMinimapViewModule,
     registerHudModule,
@@ -82,6 +85,7 @@ export const heroesAppContent = Object.freeze({
     registerMageGuildViewModule,
     registerHeroScreenViewModule,
     registerSpellBookViewModule,
+    registerTownPortalViewModule,
     registerHeroExchangeViewModule,
     registerMusicModule
   ])

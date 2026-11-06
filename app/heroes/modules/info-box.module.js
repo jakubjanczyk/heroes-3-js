@@ -20,6 +20,7 @@ import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
   APP_FACT_ARTIFACT_PICKED_UP,
+  APP_FACT_HERO_ADVENTURE_SPELL_CAST,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_BATTLE_BONUS_GAINED,
@@ -308,6 +309,7 @@ export const registerInfoBoxModule = defineModule(
         { type: APP_FACT_HERO_BATTLE_BONUS_GAINED, handler: () => render() },
         { type: APP_FACT_HERO_ARMY_CHANGED, handler: () => render() },
         { type: APP_FACT_HERO_ARTIFACTS_CHANGED, handler: () => render() },
+        { type: APP_FACT_HERO_ADVENTURE_SPELL_CAST, handler: () => render() },
         {
           type: APP_UI_HERO_SELECTED,
           handler: () => select(true)
@@ -402,6 +404,7 @@ export const registerInfoBoxModule = defineModule(
     id: 'info-box',
     phase: 'view',
     consumes: [
+      APP_FACT_HERO_ADVENTURE_SPELL_CAST,
       APP_FACT_WORLD_READY,
       APP_FACT_HERO_LEVELED_UP,
       APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
