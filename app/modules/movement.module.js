@@ -1,9 +1,10 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
-import { heroMovementPoints } from '../../game/state/queries.js'
+import { heroMovementPoints, heroTile } from '../../game/state/queries.js'
 import { createHeroRoutes } from '../../game/systems/hero-routes.js'
 import {
+  APP_COMMAND_HERO_TELEPORT_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_ROUTE_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
@@ -28,6 +29,22 @@ export const registerMovementModule = defineModule(
 
     let movement = null
     let isMoveCommandInProgress = false
+
+    function teleport({ heroId, tile }) {
+      const from = heroTile(state.get(), heroId)
+      emit(APP_FACT_HERO_MOVED, { heroId, from, to: tile, teleported: true })
+      const [interaction, ...queuedInteractions] = movement?.battlesOnArrivalAt(tile) ?? []
+      if (interaction) {
+        emit(APP_FACT_MOVE_FINISHED, {
+          moved: true,
+          heroId,
+          targetTile: tile,
+          reachedTile: tile,
+          interaction,
+          queuedInteractions
+        })
+      }
+    }
 
     return {
       subscriptions: [
@@ -115,6 +132,10 @@ export const registerMovementModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_HERO_TELEPORT_REQUESTED,
+          handler: (event) => teleport(event.detail)
+        },
+        {
           type: APP_COMMAND_MOVE_REQUESTED,
           handler: (event) => {
             if (!movement || isMoveCommandInProgress) {
@@ -150,7 +171,8 @@ export const registerMovementModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_ENTITY_REMOVED,
       APP_COMMAND_ROUTE_REQUESTED,
-      APP_COMMAND_MOVE_REQUESTED
+      APP_COMMAND_MOVE_REQUESTED,
+      APP_COMMAND_HERO_TELEPORT_REQUESTED
     ],
     produces: [
       APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,

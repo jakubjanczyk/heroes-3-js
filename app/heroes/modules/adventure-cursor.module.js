@@ -8,6 +8,8 @@ import {
   getAdventureCursor,
   getScrollCursor
 } from '../../../game/heroes/adventure-cursor.js'
+import { dimensionDoorTargetAt } from '../../../game/heroes/adventure-spells.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { heroMovementPoints, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
@@ -18,6 +20,8 @@ import {
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_HERO_SELECTED,
+  APP_UI_MAP_AIMING_ENDED,
+  APP_UI_MAP_AIMING_STARTED,
   APP_UI_MAP_EDGE_SCROLLED,
   APP_UI_TILE_HOVERED,
   APP_UI_TOWN_SELECTED
@@ -47,6 +51,21 @@ export const registerAdventureCursorModule = defineModule(
     let tileCursor = ADVENTURE_CURSOR.ARROW
     let scrollDirection = null
     let isTownSelected = false
+    let spells = {}
+    let aim = null
+
+    function aimCursor() {
+      const hero = heroById(state.get(), aim.heroId)
+      const target = dimensionDoorTargetAt({
+        state: state.get(),
+        hero,
+        spell: spells[aim.spellId],
+        map,
+        isTaken: (tile) => heroRoutes.occupancy.getAt(tile) !== null,
+        tile: hoveredTile
+      })
+      return target ? ADVENTURE_CURSOR.DIMENSION_DOOR : ADVENTURE_CURSOR.ARROW
+    }
 
     function showCursor(cursor) {
       tileCursor = cursor
@@ -66,6 +85,10 @@ export const registerAdventureCursorModule = defineModule(
     }
 
     function updateCursor() {
+      if (aim && hoveredTile) {
+        showCursor(aimCursor())
+        return
+      }
       if (!hoveredTile || !isTileExplored(state.get(), viewingPlayer(state.get()), hoveredTile)) {
         showCursor(ADVENTURE_CURSOR.ARROW)
         return
@@ -113,6 +136,8 @@ export const registerAdventureCursorModule = defineModule(
             mapObjects.onWorldReady(event.detail)
             heroRoutes.onWorldReady(event.detail)
             routePlanner = heroRoutes.createMovementSystem()
+            spells = event.detail.definitions?.spells ?? {}
+            aim = null
             isTownSelected = false
             map = event.detail.map
             hoveredTile = null
@@ -136,6 +161,20 @@ export const registerAdventureCursorModule = defineModule(
           type: APP_UI_TILE_HOVERED,
           handler: (event) => {
             hoveredTile = event.detail.tile
+            updateCursor()
+          }
+        },
+        {
+          type: APP_UI_MAP_AIMING_STARTED,
+          handler: (event) => {
+            aim = event.detail
+            updateCursor()
+          }
+        },
+        {
+          type: APP_UI_MAP_AIMING_ENDED,
+          handler: () => {
+            aim = null
             updateCursor()
           }
         },
@@ -176,6 +215,8 @@ export const registerAdventureCursorModule = defineModule(
       APP_FACT_ENTITY_REMOVED,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
       APP_UI_TILE_HOVERED,
+      APP_UI_MAP_AIMING_STARTED,
+      APP_UI_MAP_AIMING_ENDED,
       APP_UI_MAP_EDGE_SCROLLED,
       APP_FACT_TOWN_CAPTURED,
       APP_UI_TOWN_SELECTED,

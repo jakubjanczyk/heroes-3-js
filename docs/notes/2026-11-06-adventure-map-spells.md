@@ -10,11 +10,12 @@ In five parts, one PR each:
 - **4.8.8.4 Visions**: the exact count of monsters within range, for the day. Whether they would join waits for monsters joining (5.2); enemy heroes at Advanced and towns at Expert wait for 8.1.
 - **4.8.8.5 View World, with View Air and View Earth**: the View World screen, then what each spell adds to it.
 
-Each part's rules are checked when it's planned; only 4.8.8.1 is checked so far.
+Each part's rules are checked when it's planned; 4.8.8.1 and 4.8.8.2 are checked so far.
 
 ## Left for later parts
 
-- 4.8.8.2 to 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
+- 4.8.8.3 to 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
+- Dimension Door from a boat, and onto land from one (7.10).
 - Town Portal underground, from a boat ("must be on land", `core.genrltxt.135`) and to allies' towns, with their features (7.10, 8.1).
 
 ## Casting on the map — 4.8.8.1
@@ -40,3 +41,21 @@ Checked against the wiki (Town Portal, and its copy of `GENRLTXT.TXT`), the desc
 - **Arriving**: the hero stands on the town's entrance at once, without a walk, and visits the town as if they had walked in: the town screen opens and the hero learns the Mage Guild's spells. Checked against the engine (it moves the hero as a teleport, then visits the town; the player's town screen opens on a visit). The wiki says nothing on it.
 - Only towns of the player (and allies, once there are teams, 8.1); never an enemy town.
 - Built: `townPortal` in the spell's data, by skill level (`choosesTown`, `movementPoints`). The cast is one fact for the spell points, then the movement points, the move (marked as a teleport, so the hero doesn't walk and their planned route is dropped) and the town visit.
+
+## Dimension Door (Air, level 5, 25 / 20 / 20 / 20 spell points) — 4.8.8.2
+
+Checked against the wiki (Dimension Door, raw source, and its copy of `GENRLTXT.TXT`), the descriptions in `game/data/spells.json`, and an open-source engine's spell config (`spells/adventure.json`) and Dimension Door code.
+
+- **Aiming**: clicking the spell in the book closes it and the map waits for a tile, with the Dimension Door cursor. Clicking a valid tile casts it there; right-click or Escape cancels and casts nothing.
+- **Range**: up to 9 tiles left or right and 8 up or down from the hero's tile, diagonals included (a 19 × 17 box). Checked against the wiki and the engine.
+- **Casts a day**: no skill 1, Basic 2, Advanced 3, Expert 4 (the book's descriptions, the engine). One more after that: "%s is not skilled enough to cast this spell again today." with the hero's name (`core.genrltxt.338`), checked in the engine; the wiki only gives the counts. The count resets on the next day.
+- **Movement**: each cast takes 300 movement points (200 at Expert), down to 0 if the hero has fewer. With none left: "Your hero is too tired to cast this spell today.  Try again tomorrow." (`core.genrltxt.125`).
+- **Where it can land**: an empty, passable tile: not one an object, monster or hero stands on or blocks. On such a tile the cursor stays the plain arrow and clicking does nothing (the wiki, the engine).
+- **Fog**: the tile may be under the fog (the wiki's note: the manual's "visible" is wrong; the engine ignores the fog for it). Landing reveals the hero's sight around the new tile, as walking does.
+- **Water**: landing on water fails with "Dimension Door failed!" (`core.genrltxt.70`), and the spell points, movement and the day's cast are still spent (the wiki, the engine's "waterLandFailureTakesPoints"). From a boat waits for 7.10.
+- **Arriving**: the hero stands on the tile at once, without a walk, and the planned route is dropped. Landing on a tile a monster guards (next to it) starts the battle, as stepping there does (decided with the user; the wiki says landing there starts none, and the engine has that off by default).
+
+- **Too tired**: cast with any movement left (more than 0), ending at 0, as the engine does (decided with the user); the wiki says more than 300 (200) is needed.
+- **Cursor**: the same Dimension Door cursor over a guarded tile (the engine's default).
+- Right-click on the map or Escape stops aiming.
+- Built: `dimensionDoor` in the spell's data, by skill level (`castsPerDay`, `movementPoints`) and its `range`. The cast is one fact for the spell points (counting the day's casts), then the movement points, then the move, marked as a teleport.
