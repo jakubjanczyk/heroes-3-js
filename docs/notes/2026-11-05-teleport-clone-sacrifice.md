@@ -54,7 +54,7 @@ Checked against the wiki (Sacrifice, and its copy of `GENRLTXT.TXT`), the descri
 - The stack sacrificed is another living own stack the hero controls: not a clone, not an own stack hypnotized by the enemy, not undead. Checked against the engine; the wiki lists undead (and golems, elementals, gargoyles and others from other factions, 6.5).
 - Undead can't be brought back either. Checked against the wiki and the engine.
 - Health given back: (Power + the sacrificed creature's health + 3 / 6 / 10 for Basic or none / Advanced / Expert) × the sacrificed stack's count. Checked against the wiki and the engine.
-- That health first heals the top creature, then brings back whole creatures, never more than the stack had as the battle started; the rest is lost. Checked against the engine (resurrect, permanent).
+- That health first heals the top creature, then brings back creatures, never more than the stack had as the battle started; the rest is lost. A creature given only part of its health comes back too, with that much health (18 health brings back two Brutes of 10, the top one with 8). Checked against the engine (resurrect, permanent, and how it counts creatures from their health).
 - The sacrificed stack is removed with no corpse: it isn't drawn as "Dead ...". Checked against the wiki.
 - Permanent: the creatures brought back stay in the hero's army after the battle, and the results window counts only those still dead. The sacrificed creatures count as lost.
 - The spell can't be picked without a stack to bring back and another living own stack to sacrifice: "That spell will affect no one!" as elsewhere. Checked against the engine (no appropriate target).

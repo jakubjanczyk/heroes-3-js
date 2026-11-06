@@ -1,4 +1,5 @@
 import { areaTargetIds, canStackStandOn, getStackHexes } from '../../../game/heroes/battle.js'
+import { canBeSacrificed, sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
 import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
 import { areEnemies, fightsFor } from '../../../game/heroes/battle-stats.js'
 import {
@@ -252,9 +253,48 @@ export const registerBattleViewModule = defineModule(
       return Boolean(caster) && isSpellTarget(pickedSpell.targeting, target, fightsFor(caster))
     }
 
+    function findCorpseOn(hex) {
+      return shown?.stacks.find(
+        (stack) => stack.count === 0 && stack.hexes.some((own) => isSameHex(own, hex))
+      )
+    }
+
+    const sacrificeAim = () => ({
+      targeting: pickedSpell.targeting,
+      casterSide: fightsFor(findIdleActiveStack())
+    })
+
+    // Sacrifice brings back a stack that lost creatures, or a dead one no stack stands on.
+    function findStackToRaise(hex) {
+      const target = findLivingStackOn(hex) ?? findCorpseOn(hex)
+      return target && sacrificeTargetIds(shown.stacks, sacrificeAim()).includes(target.id)
+        ? target
+        : null
+    }
+
     function findSpellTarget(hex) {
+      if (!findIdleActiveStack()) {
+        return null
+      }
+      if (pickedSpell.targeting.sacrifices) {
+        return findStackToRaise(hex)
+      }
       const target = findLivingStackOn(hex)
       return target && isPickedSpellTarget(target) ? target : null
+    }
+
+    // Sacrifice is aimed twice: at the stack to bring back, then at the stack to sacrifice.
+    const isPickingSacrifice = () => Boolean(pickedSpell.raisingId)
+
+    function findStackToSacrifice(hex) {
+      const target = findLivingStackOn(hex)
+      const aim = { ...sacrificeAim(), raisedId: pickedSpell.raisingId }
+      return target && canBeSacrificed(target, aim) ? target : null
+    }
+
+    function describeSacrificeAim(hex) {
+      const target = findStackToSacrifice(hex)
+      return target ? `Sacrifice the ${target.name}` : 'Choose an army to sacrifice'
     }
 
     function stacksInAreaAt(hex) {
@@ -284,6 +324,9 @@ export const registerBattleViewModule = defineModule(
     }
 
     function describeSpellAim(hex) {
+      if (isPickingSacrifice()) {
+        return describeSacrificeAim(hex)
+      }
       if (findTeleportingStack()) {
         return describeTeleportAim(hex)
       }
@@ -294,7 +337,17 @@ export const registerBattleViewModule = defineModule(
       return target ? `Cast ${pickedSpell.name} on ${target.name}` : 'Select Spell Target'
     }
 
+    function pickSacrificeCursor(hex) {
+      if (findStackToSacrifice(hex)) {
+        return 'sacrifice'
+      }
+      return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
+    }
+
     function pickSpellCursor(hex) {
+      if (isPickingSacrifice()) {
+        return pickSacrificeCursor(hex)
+      }
       if (findTeleportingStack() && canTeleportTo(hex)) {
         return 'teleport'
       }
@@ -308,6 +361,9 @@ export const registerBattleViewModule = defineModule(
     }
 
     function findSpellHexes(hex) {
+      if (isPickingSacrifice()) {
+        return findStackToSacrifice(hex)?.hexes ?? []
+      }
       const teleporting = findTeleportingStack()
       if (teleporting) {
         return canTeleportTo(hex) ? getStackHexes(teleporting, hex) : []
@@ -396,6 +452,10 @@ export const registerBattleViewModule = defineModule(
     function findStacksSpellWouldHit(hex) {
       if (!hex || !pickedSpell || !findIdleActiveStack() || pointerType === 'touch') {
         return []
+      }
+      if (isPickingSacrifice()) {
+        const target = findStackToSacrifice(hex)
+        return target ? [target.id] : []
       }
       if (findTeleportingStack()) {
         return []
@@ -817,8 +877,23 @@ export const registerBattleViewModule = defineModule(
       emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId, destination: hex })
     }
 
+    // A click on a stack that can't be sacrificed waits for one that can.
+    function sacrificeStackOn(hex) {
+      const target = findStackToSacrifice(hex)
+      if (!target) {
+        return
+      }
+      const { id: spellId, raisingId: targetId } = pickedSpell
+      pickedSpell = null
+      emit(APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED, { spellId, targetId, sacrificedId: target.id })
+    }
+
     // Clicking anywhere the spell can't be aimed at cancels it.
     function castPickedSpellOn(hex) {
+      if (isPickingSacrifice()) {
+        sacrificeStackOn(hex)
+        return
+      }
       if (findTeleportingStack()) {
         teleportPickedStackTo(hex)
         return
@@ -837,6 +912,11 @@ export const registerBattleViewModule = defineModule(
       }
       if (pickedSpell.targeting.teleports) {
         pickedSpell.teleportingId = target.id
+        describeHoveredHex()
+        return
+      }
+      if (pickedSpell.targeting.sacrifices) {
+        pickedSpell.raisingId = target.id
         describeHoveredHex()
         return
       }

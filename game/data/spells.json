@@ -1109,6 +1109,8 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [25, 20, 20, 20],
+    "notOnUndead": true,
+    "sacrifices": { "healthPerCreature": [3, 3, 6, 10] },
     "descriptions": [
       {
         "title": "Sacrifice",

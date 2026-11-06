@@ -319,6 +319,15 @@ const teleportDefinitions = {
     .withCosts([24, 20, 20, 20])
     .withClones({ highestTier: [5, 5, 6, 7] })
     .describedAs('Clone description.')
+    .build(),
+  SACRIFICE: aSpellDefinition()
+    .withName('Sacrifice')
+    .withLevel(5)
+    .withSchools(['FIRE'])
+    .withCosts([25, 20, 20, 20])
+    .withNotOnUndead(true)
+    .withSacrifices({ healthPerCreature: [3, 3, 6, 10] })
+    .describedAs('Sacrifice description.')
     .build()
 }
 

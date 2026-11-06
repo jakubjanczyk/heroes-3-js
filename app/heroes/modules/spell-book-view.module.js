@@ -1,4 +1,6 @@
+import { sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
 import { canCastInBattle } from '../../../game/heroes/battle-spells.js'
+import { fightsFor } from '../../../game/heroes/battle-stats.js'
 import {
   ALL_SCHOOLS,
   battleSpellTargeting,
@@ -21,6 +23,7 @@ import {
   APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
   APP_UI_BATTLE_SPELL_PICKED,
+  APP_UI_BATTLE_UPDATED,
   APP_UI_HERO_SELECTED,
   APP_UI_SPELL_BOOK_OPEN_REQUESTED
 } from '../../events.js'
@@ -65,6 +68,7 @@ export const registerSpellBookViewModule = defineModule(
     }
     let kind = 'adventure'
     let inBattle = false
+    let battleShown = null
 
     const place = () => lastPlaces[inBattle ? 'battle' : kind]
 
@@ -228,6 +232,15 @@ export const registerSpellBookViewModule = defineModule(
       return id ? currentSpread().spells.find((spell) => spell.id === id) : null
     }
 
+    function hasStackToRaise(targeting) {
+      const caster = battleShown?.stacks.find(({ id }) => id === battleShown.activeStackId)
+      return (
+        Boolean(caster) &&
+        sacrificeTargetIds(battleShown.stacks, { targeting, casterSide: fightsFor(caster) })
+          .length > 0
+      )
+    }
+
     function clickSpell(spell) {
       if (!spell.canAfford) {
         const { value } = getHeroSpellPoints({ entity: bookHero(), definitions })
@@ -241,6 +254,10 @@ export const registerSpellBookViewModule = defineModule(
       }
       if (inBattle && canCastInBattle(definition)) {
         const targeting = battleSpellTargeting({ hero: bookHero(), spell: definition, definitions })
+        if (definition.sacrifices && !hasStackToRaise(targeting)) {
+          showMessage({ title: '', text: SPELL_AFFECTS_NO_ONE_TEXT })
+          return
+        }
         close()
         emit(APP_UI_BATTLE_SPELL_PICKED, { spellId: spell.id, spellName: spell.name, targeting })
         return
@@ -322,6 +339,7 @@ export const registerSpellBookViewModule = defineModule(
         { type: APP_UI_HERO_SELECTED, handler: renderCastSpellButton },
         // A spell cast from the book on every stack closes it; with no stack to go on, it stays.
         { type: APP_FACT_BATTLE_SPELL_CAST, handler: close },
+        { type: APP_UI_BATTLE_UPDATED, handler: (event) => (battleShown = event.detail) },
         {
           type: APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
           handler: () => {
@@ -405,6 +423,7 @@ export const registerSpellBookViewModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_BATTLE_SPELL_CAST,
       APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
+      APP_UI_BATTLE_UPDATED,
       APP_FACT_HERO_HIRED,
       APP_FACT_HERO_SELECTED,
       APP_UI_HERO_SELECTED,

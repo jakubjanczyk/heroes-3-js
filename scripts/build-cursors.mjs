@@ -310,6 +310,25 @@ const BATTLE_TELEPORT_ROWS = [
   '................'
 ]
 
+const BATTLE_SACRIFICE_ROWS = [
+  '.......kk.......',
+  '......kGGk......',
+  '......kbbk......',
+  '......kbbk......',
+  '....kkkGGkkk....',
+  '....kGGGGGGk....',
+  '.....kkSSkk.....',
+  '......kWSk......',
+  '......kWSk......',
+  '......kWSk......',
+  '......kWDk......',
+  '......kWDk......',
+  '.......kk...k...',
+  '...........kRk..',
+  '..........kRRRk.',
+  '...........kkk..'
+]
+
 const BATTLE_ATTACK_FROM_LEFT_ROWS = [
   '................',
   '................',
@@ -560,6 +579,7 @@ const CURSORS = {
   'battle-query': BATTLE_QUERY_ROWS,
   'battle-spell': BATTLE_SPELL_ROWS,
   'battle-teleport': BATTLE_TELEPORT_ROWS,
+  'battle-sacrifice': BATTLE_SACRIFICE_ROWS,
   'battle-shoot': drawShootArrow(),
   'battle-shoot-penalty': drawBrokenShootArrow(),
   'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,
