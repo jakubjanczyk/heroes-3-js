@@ -49,7 +49,8 @@ function startingDetailsOf(hero, definitions) {
     bonusPrimarySkills: {},
     visitedBonusObjects: [],
     battleBonuses: [],
-    weekBonus: null
+    weekBonus: null,
+    adventureCastsToday: {}
   }
 }
 
@@ -93,9 +94,23 @@ function regainSpellPoints(heroes, context) {
   )
 }
 
-function startNewDay(heroes, detail, context) {
-  return regainSpellPoints(endWeekBonuses(heroes, detail), context)
+function forgetAdventureCasts(heroes) {
+  return Object.fromEntries(
+    Object.entries(heroes).map(([heroId, hero]) => [heroId, { ...hero, adventureCastsToday: {} }])
+  )
 }
+
+function startNewDay(heroes, detail, context) {
+  return forgetAdventureCasts(regainSpellPoints(endWeekBonuses(heroes, detail), context))
+}
+
+const castAdventureSpell = updateHero((hero, { cost, spellId }) => ({
+  spellPoints: hero.spellPoints - cost,
+  adventureCastsToday: {
+    ...hero.adventureCastsToday,
+    [spellId]: (hero.adventureCastsToday?.[spellId] ?? 0) + 1
+  }
+}))
 
 function addSkills(skills, added) {
   return Object.fromEntries(
@@ -144,7 +159,7 @@ export const heroDetailsSlice = {
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
     'fact.battle.spell.cast': spendSpellPoints,
-    'fact.hero.adventureSpell.cast': spendSpellPoints,
+    'fact.hero.adventureSpell.cast': castAdventureSpell,
     'fact.hero.spellBook.bought': updateHero(() => ({ spellBook: true })),
     'fact.hero.spells.learned': updateHero((hero, { spells }) => ({
       spells: [...new Set([...hero.spells, ...spells])]

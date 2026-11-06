@@ -8,9 +8,16 @@ export const NO_AVAILABLE_TOWN_TEXT = 'No available town.  Spell Failed!'
 // Our own wording: no source shows the game's window for picking the town.
 export const TOWN_PORTAL_PROMPT = 'Select the town to teleport to.'
 
+export const DIMENSION_DOOR_FAILED_TEXT = 'Dimension Door failed!'
+
+export const notSkilledEnoughText = (heroName) =>
+  `${heroName} is not skilled enough to cast this spell again today.`
+
 export function canCastOnMap(spell) {
-  return Boolean(spell?.townPortal)
+  return Boolean(spell?.townPortal || spell?.dimensionDoor)
 }
+
+export const aimsAtTile = (spell) => Boolean(spell?.dimensionDoor)
 
 function townPortalAt(hero, spell) {
   const level = spellSkillLevel(hero, spell)
@@ -63,4 +70,41 @@ export function decideTownPortalTo({ state, hero, spell, towns, townId }) {
   return destination
     ? { destination, movementPoints: townPortalAt(hero, spell).movementPoints }
     : { failure: outcome.failure }
+}
+
+function dimensionDoorAt(hero, spell) {
+  const level = spellSkillLevel(hero, spell)
+  return {
+    castsPerDay: spell.dimensionDoor.castsPerDay[level],
+    movementPoints: spell.dimensionDoor.movementPoints[level],
+    range: spell.dimensionDoor.range
+  }
+}
+
+// Whether the hero can start aiming: a failure message, or nothing.
+export function decideDimensionDoor({ state, hero, spell, spellId }) {
+  if ((heroMovementPoints(state, hero.id)?.value ?? 0) <= 0) {
+    return { failure: TOO_TIRED_TEXT }
+  }
+  const castsToday = hero.adventureCastsToday?.[spellId] ?? 0
+  if (castsToday >= dimensionDoorAt(hero, spell).castsPerDay) {
+    return { failure: notSkilledEnoughText(hero.name) }
+  }
+  return {}
+}
+
+const isInRange = (from, to, range) =>
+  Math.abs(to.x - from.x) <= range.x && Math.abs(to.y - from.y) <= range.y
+
+// What a Dimension Door aimed at `tile` does: nothing (the tile can't be picked), fails on water,
+// or lands there. `isTaken(tile)` says whether a hero or an object stands on or blocks it.
+export function dimensionDoorTargetAt({ state, hero, spell, map, isTaken, tile }) {
+  const { range, movementPoints } = dimensionDoorAt(hero, spell)
+  if (!map.inBounds(tile) || !isInRange(heroTile(state, hero.id), tile, range) || isTaken(tile)) {
+    return null
+  }
+  if (map.getTerrainType(tile)?.isWater) {
+    return { failure: DIMENSION_DOOR_FAILED_TEXT, movementPoints }
+  }
+  return map.isPassable(tile) ? { destination: tile, movementPoints } : null
 }

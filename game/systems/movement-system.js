@@ -347,9 +347,15 @@ export function createMovementSystem({
     return true
   }
 
+  // The battles a hero fights on arriving at `tile` without walking there.
+  function battlesOnArrivalAt(tile) {
+    return battlesWith(guardsAt(tile))
+  }
+
   return {
     planRoute,
     getPathToBattle,
+    battlesOnArrivalAt,
     moveHeroTo
   }
 }

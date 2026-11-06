@@ -4,6 +4,7 @@ import { heroTile, selectedHeroIdOf, viewingPlayer } from '../../game/state/quer
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
+  APP_COMMAND_MAP_TILE_AIMED,
   APP_COMMAND_TILE_CLICKED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVE_FINISHED,
@@ -14,6 +15,8 @@ import {
   APP_UI_CAMERA_UPDATED,
   APP_UI_INTERACTION_MODAL_CLOSED,
   APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_MAP_AIMING_ENDED,
+  APP_UI_MAP_AIMING_STARTED,
   APP_UI_MAP_EDGE_SCROLLED,
   APP_UI_NOTICE_OPENED,
   APP_UI_RESTORE_COMPLETED,
@@ -40,6 +43,20 @@ export const registerCameraModule = defineModule(
     let isSystemOptionsOpen = false
     let isMapCovered = false
     let openDialogCount = 0
+    let isAiming = false
+
+    function stopAiming() {
+      if (isAiming) {
+        isAiming = false
+        emit(APP_UI_MAP_AIMING_ENDED, {})
+      }
+    }
+
+    function onKeyDown(event) {
+      if (event.key === 'Escape') {
+        stopAiming()
+      }
+    }
 
     function centerOnSelectedHero() {
       const current = state.get()
@@ -93,6 +110,7 @@ export const registerCameraModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
+            isAiming = false
             const world = event.detail
             map = world.map
 
@@ -135,7 +153,7 @@ export const registerCameraModule = defineModule(
                 edgePanDelayMs: 300,
                 map,
                 onTileClick: (tile) => {
-                  emit(APP_COMMAND_TILE_CLICKED, { tile })
+                  emit(isAiming ? APP_COMMAND_MAP_TILE_AIMED : APP_COMMAND_TILE_CLICKED, { tile })
                 },
                 // null once the pointer is off the map.
                 onTileHover: (tile) => {
@@ -146,6 +164,10 @@ export const registerCameraModule = defineModule(
                   emit(APP_UI_MAP_EDGE_SCROLLED, { direction })
                 },
                 onTileInfoPress: (tile, pointer) => {
+                  if (isAiming) {
+                    stopAiming()
+                    return
+                  }
                   emit(APP_UI_TILE_INFO_REQUESTED, { tile, pointer })
                 },
                 onTileInfoRelease: () => {
@@ -192,6 +214,18 @@ export const registerCameraModule = defineModule(
           type: APP_UI_ADVENTURE_MAP_UNCOVERED,
           handler: () => {
             isMapCovered = false
+          }
+        },
+        {
+          type: APP_UI_MAP_AIMING_STARTED,
+          handler: () => {
+            isAiming = true
+          }
+        },
+        {
+          type: APP_UI_MAP_AIMING_ENDED,
+          handler: () => {
+            isAiming = false
           }
         },
         { type: APP_UI_INTERACTION_MODAL_OPENED, handler: dialogOpened },
@@ -259,6 +293,9 @@ export const registerCameraModule = defineModule(
           }
         }
       ],
+      domSubscriptions: env.window
+        ? [{ target: env.window, type: 'keydown', handler: onKeyDown }]
+        : [],
       dispose: () => {
         detachCameraInput?.()
       }
@@ -278,6 +315,8 @@ export const registerCameraModule = defineModule(
       APP_UI_INTERACTION_MODAL_OPENED,
       APP_UI_NOTICE_OPENED,
       APP_UI_INTERACTION_MODAL_CLOSED,
+      APP_UI_MAP_AIMING_STARTED,
+      APP_UI_MAP_AIMING_ENDED,
       APP_COMMAND_CAMERA_PAN_BY,
       APP_COMMAND_CAMERA_CENTER_ON_TILE,
       APP_FACT_MOVE_STARTED,
@@ -286,8 +325,10 @@ export const registerCameraModule = defineModule(
     ],
     produces: [
       APP_COMMAND_CAMERA_PAN_BY,
+      APP_COMMAND_MAP_TILE_AIMED,
       APP_COMMAND_TILE_CLICKED,
       APP_UI_CAMERA_UPDATED,
+      APP_UI_MAP_AIMING_ENDED,
       APP_UI_MAP_EDGE_SCROLLED,
       APP_UI_TILE_HOVERED,
       APP_UI_TILE_INFO_REQUESTED,

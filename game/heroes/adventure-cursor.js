@@ -6,7 +6,8 @@ export const ADVENTURE_CURSOR = Object.freeze({
   MOVE: 'move',
   ATTACK: 'attack',
   VISIT: 'visit',
-  EXCHANGE: 'exchange'
+  EXCHANGE: 'exchange',
+  DIMENSION_DOOR: 'dimension-door'
 })
 
 const COMPASS_ROWS = [
