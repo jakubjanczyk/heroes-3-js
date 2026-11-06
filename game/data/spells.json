@@ -212,6 +212,11 @@
     "schools": ["AIR"],
     "kind": "adventure",
     "costs": [25, 20, 20, 20],
+    "dimensionDoor": {
+      "castsPerDay": [1, 2, 3, 4],
+      "movementPoints": [300, 300, 300, 200],
+      "range": { "x": 9, "y": 8 }
+    },
     "descriptions": [
       {
         "title": "Dimension Door",

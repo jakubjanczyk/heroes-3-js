@@ -460,7 +460,7 @@ The combat spells, in 5.8.
 #### 4.8.8 Adventure map spells
 In five parts. See `docs/notes/2026-11-06-adventure-map-spells.md`.
 - [x] 4.8.8.1 Casting on the map, with Town Portal: an adventure spell is cast from the spell book on the map or the hero screen (the hero screen closes); Basic goes to the nearest of the player's towns, Advanced and Expert pick any without a hero in it; 300 movement points (200 at Expert); the hero visits the town on arrival
-- [ ] 4.8.8.2 Dimension Door: aiming at a tile on the map, its range and casts a day
+- [x] 4.8.8.2 Dimension Door: aiming at a tile on the map, its range and casts a day
 - [ ] 4.8.8.3 Fly: lasts the day, over water and obstacles, with a 40% / 20% / no penalty
 - [ ] 4.8.8.4 Visions: the exact count of monsters within range, for the day; whether they would join with 5.2, enemy heroes and towns with 8.1
 - [ ] 4.8.8.5 View World, with View Air and View Earth

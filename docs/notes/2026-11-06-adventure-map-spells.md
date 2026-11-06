@@ -14,7 +14,8 @@ Each part's rules are checked when it's planned; 4.8.8.1 and 4.8.8.2 are checked
 
 ## Left for later parts
 
-- 4.8.8.2 to 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
+- 4.8.8.3 to 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
+- Dimension Door from a boat, and onto land from one (7.10).
 - Town Portal underground, from a boat ("must be on land", `core.genrltxt.135`) and to allies' towns, with their features (7.10, 8.1).
 
 ## Casting on the map — 4.8.8.1
@@ -52,8 +53,9 @@ Checked against the wiki (Dimension Door, raw source, and its copy of `GENRLTXT.
 - **Where it can land**: an empty, passable tile: not one an object, monster or hero stands on or blocks. On such a tile the cursor stays the plain arrow and clicking does nothing (the wiki, the engine).
 - **Fog**: the tile may be under the fog (the wiki's note: the manual's "visible" is wrong; the engine ignores the fog for it). Landing reveals the hero's sight around the new tile, as walking does.
 - **Water**: landing on water fails with "Dimension Door failed!" (`core.genrltxt.70`), and the spell points, movement and the day's cast are still spent (the wiki, the engine's "waterLandFailureTakesPoints"). From a boat waits for 7.10.
-- **Arriving**: the hero stands on the tile at once, without a walk, and the planned route is dropped. Landing next to a monster doesn't start a battle; walking next to it afterwards does, as usual (the wiki; the engine has the same off by default).
+- **Arriving**: the hero stands on the tile at once, without a walk, and the planned route is dropped. Landing on a tile a monster guards (next to it) starts the battle, as stepping there does (decided with the user; the wiki says landing there starts none, and the engine has that off by default).
 
-### Open questions
-
-- Too tired: the engine casts with any movement left (more than 0); the wiki says it can't be cast when it would bring movement to zero or below, so more than 300 (200) is needed.
+- **Too tired**: cast with any movement left (more than 0), ending at 0, as the engine does (decided with the user); the wiki says more than 300 (200) is needed.
+- **Cursor**: the same Dimension Door cursor over a guarded tile (the engine's default).
+- Right-click on the map or Escape stops aiming.
+- Built: `dimensionDoor` in the spell's data, by skill level (`castsPerDay`, `movementPoints`) and its `range`. The cast is one fact for the spell points (counting the day's casts), then the movement points, then the move, marked as a teleport.

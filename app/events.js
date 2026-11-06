@@ -2,6 +2,10 @@ export const APP_COMMAND_APP_START = 'command.app.start'
 export const APP_COMMAND_GAME_SETUP_REQUESTED = 'command.game.setup.requested'
 export const APP_COMMAND_TILE_CLICKED = 'command.tile.clicked'
 export const APP_COMMAND_MOVE_REQUESTED = 'command.move.requested'
+// While the map waits for a tile, as for Dimension Door, a click on the map picks it.
+export const APP_COMMAND_MAP_TILE_AIMED = 'command.mapTile.aimed'
+// The hero stands on `tile` at once, and fights the monsters guarding it.
+export const APP_COMMAND_HERO_TELEPORT_REQUESTED = 'command.hero.teleport.requested'
 export const APP_COMMAND_MOVE_CONTINUE_REQUESTED = 'command.move.continue.requested'
 export const APP_COMMAND_ROUTE_REQUESTED = 'command.route.requested'
 export const APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED =
@@ -183,6 +187,9 @@ export const APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE = 'ui.battle.spellAffectsNoOne'
 export const APP_UI_ADVENTURE_SPELL_PICKED = 'ui.spellBook.adventureSpellPicked'
 // The towns Town Portal can go to, for the player to pick one.
 export const APP_UI_TOWN_PORTAL_TOWNS_OFFERED = 'ui.townPortal.townsOffered'
+// The map waits for the player to pick a tile for `spellId`, until the aim ends.
+export const APP_UI_MAP_AIMING_STARTED = 'ui.mapAiming.started'
+export const APP_UI_MAP_AIMING_ENDED = 'ui.mapAiming.ended'
 // A hero walked onto another of the player's heroes: `heroId` came to `otherHeroId`.
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.

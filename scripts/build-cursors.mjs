@@ -25,7 +25,9 @@ const PALETTE = {
   b: [92, 52, 22, 255],
   M: [40, 26, 14, 255],
   C: [120, 200, 250, 255],
-  N: [30, 80, 170, 255]
+  N: [30, 80, 170, 255],
+  P: [120, 50, 170, 255],
+  L: [210, 150, 250, 255]
 }
 
 // The pointer used everywhere off the map and over tiles the hero can't go to.
@@ -291,6 +293,26 @@ const BATTLE_SPELL_ROWS = [
 ]
 
 // Where Teleport would put the stack: a blue whirl, aimed from its middle.
+// Over a tile Dimension Door can land on: a swirling violet doorway.
+const DIMENSION_DOOR_ROWS = [
+  '....kkkkkkk.....',
+  '...kPPPPPPPk....',
+  '..kPLLLLLLLPk...',
+  '..kPLkkkkkLPk...',
+  '..kPLkPPPkLPk...',
+  '..kPLkPLPkLPk...',
+  '..kPLkPWPkLPk...',
+  '..kPLkPWPkLPk...',
+  '..kPLkPLPkLPk...',
+  '..kPLkPPPkLPk...',
+  '..kPLkkkkkLPk...',
+  '..kPLLLLLLLPk...',
+  '..kPPPPPPPPPk...',
+  '..kkkkkkkkkkk...',
+  '................',
+  '................'
+]
+
 const BATTLE_TELEPORT_ROWS = [
   '.....kkkkk......',
   '...kkNNNNNkk....',
@@ -573,6 +595,7 @@ const CURSORS = {
   arrow: ARROW_ROWS,
   hero: HERO_ROWS,
   castle: CASTLE_ROWS,
+  'dimension-door': DIMENSION_DOOR_ROWS,
   'battle-walk': BATTLE_WALK_ROWS,
   'battle-fly': BATTLE_FLY_ROWS,
   'battle-blocked': drawBlockedSign(),
