@@ -14,6 +14,8 @@ import { maxSpellPoints, spellPointsOnNewDay } from '../spell-points.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 
+const spendSpellPoints = updateHero((hero, { cost }) => ({ spellPoints: hero.spellPoints - cost }))
+
 function detailsOf(hero, definitions) {
   const details = startingDetailsOf(hero, definitions)
   return { ...details, spellPoints: maxSpellPoints({ entity: details, definitions }) }
@@ -141,9 +143,8 @@ export const heroDetailsSlice = {
     'fact.turn.ended': startNewDay,
     'fact.battle.ended': (heroes, detail) =>
       detail.heroId ? updateHero(() => ({ battleBonuses: [] }))(heroes, detail) : heroes,
-    'fact.battle.spell.cast': updateHero((hero, { cost }) => ({
-      spellPoints: hero.spellPoints - cost
-    })),
+    'fact.battle.spell.cast': spendSpellPoints,
+    'fact.hero.adventureSpell.cast': spendSpellPoints,
     'fact.hero.spellBook.bought': updateHero(() => ({ spellBook: true })),
     'fact.hero.spells.learned': updateHero((hero, { spells }) => ({
       spells: [...new Set([...hero.spells, ...spells])]

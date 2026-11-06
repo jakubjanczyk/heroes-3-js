@@ -557,6 +557,25 @@
       </div>
     </template>
 
+    <!-- Advanced Town Portal: the player's towns without a hero in them, one to pick. -->
+    <template id="town-portal-template">
+      <div class="town-hall-backdrop">
+        <section class="town-portal message-box" role="dialog" aria-modal="true" aria-label="Town Portal" tabindex="-1">
+          <h2 class="town-portal__title">Town Portal</h2>
+          <p class="town-portal__prompt"></p>
+          <ul class="town-portal__towns" role="listbox" aria-label="Towns"></ul>
+          <div class="building-window__buttons">
+            <button class="building-window__button" type="button" data-town-portal-action="go" aria-label="OK" aria-keyshortcuts="Enter" title="OK (Enter)" disabled>
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+            <button class="building-window__button" type="button" data-town-portal-action="cancel" aria-label="Cancel" aria-keyshortcuts="Escape" title="Cancel (Escape)">
+              <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
     <!--
       The Heroes 3 hero screen. Its parts sit where the game draws them, in the game's 670 x 584
       pixels (--x, --y), and the window scales as a whole. Frames for what the game has no data

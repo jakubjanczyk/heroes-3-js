@@ -237,6 +237,10 @@
     "schools": ["EARTH"],
     "kind": "adventure",
     "costs": [16, 12, 12, 12],
+    "townPortal": {
+      "choosesTown": [false, false, true, true],
+      "movementPoints": [300, 300, 300, 200]
+    },
     "mageGuildChances": { "CASTLE": 10 },
     "descriptions": [
       {

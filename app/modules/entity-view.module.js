@@ -40,7 +40,7 @@ export const registerEntityViewModule = defineModule(
       })
     }
 
-    function updateHeroPosition({ heroId, tile }) {
+    function updateHeroPosition({ heroId, tile, teleported = false }) {
       if (!entityLayer || !map || !tile) {
         return false
       }
@@ -59,9 +59,7 @@ export const registerEntityViewModule = defineModule(
 
       heroElement.dataset.tileX = String(tile.x)
       heroElement.dataset.tileY = String(tile.y)
-      if (isRestoring) {
-        heroElement.style.transition = 'none'
-      }
+      heroElement.style.transition = isRestoring || teleported ? 'none' : ''
       const hero = heroEntity(state.get(), heroId)
       const heroStyle = hero ? getEntityStyle({ entity: hero, map }) : null
       const offsetX = Number(heroStyle?.offsetX)
@@ -147,12 +145,13 @@ export const registerEntityViewModule = defineModule(
           handler: (event) => {
             const heroId = event.detail?.heroId
             const toTile = event.detail?.to
-            if (updateHeroPosition({ heroId, tile: toTile })) {
+            const teleported = Boolean(event.detail?.teleported)
+            if (updateHeroPosition({ heroId, tile: toTile, teleported })) {
               return
             }
 
             render()
-            updateHeroPosition({ heroId, tile: toTile })
+            updateHeroPosition({ heroId, tile: toTile, teleported })
           }
         },
         { type: APP_FACT_HERO_HIRED, handler: render },
