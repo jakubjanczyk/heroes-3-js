@@ -7,7 +7,7 @@ export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? s
 export const canCastInBattle = (spell) =>
   Boolean(
     spell?.kind === 'combat' &&
-      (spell.damage || spell.teleports || spell.clones || castRuleOf(spell))
+      (spell.damage || spell.teleports || spell.clones || spell.sacrifices || castRuleOf(spell))
   )
 
 // A damage spell hits an enemy stack, unless it hits the whole battlefield.
@@ -18,7 +18,7 @@ export function spellTargetSide(spell, skillLevel = 0) {
   if (spell?.removesSpells) {
     return spell.removesSpells.targets[skillLevel]
   }
-  if (spell?.teleports || spell?.clones) {
+  if (spell?.teleports || spell?.clones || spell?.sacrifices) {
     return 'own'
   }
   return castRuleOf(spell)?.target ?? 'enemy'
@@ -51,6 +51,7 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   mind: Boolean(spell?.mind),
   notOnHypnotized: Boolean(spell?.notOnHypnotized),
   teleports: Boolean(spell?.teleports),
+  sacrifices: Boolean(spell?.sacrifices),
   highestTierCloned: spell?.clones?.highestTier[skillLevel] ?? null,
   spellLevel: spell?.level ?? 0,
   ignoresSpellLevelImmunity: Boolean(spell?.ignoresSpellLevelImmunity)

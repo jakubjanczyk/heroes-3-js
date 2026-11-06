@@ -32,6 +32,7 @@ import {
   planStackShot,
   resolveAttack,
   resolveShot,
+  sacrificeStack,
   shootStack,
   spellTargetIds,
   teleportStack,
@@ -44,6 +45,7 @@ import {
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
+import { canBeSacrificed, sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
 import { canCastInBattle, isHelpful } from '../../../game/heroes/battle-spells.js'
 import {
   fightsFor,
@@ -60,6 +62,7 @@ import {
   castsOnAllStacks,
   cloneRounds,
   hasSpellBook,
+  sacrificeHealing,
   spellCost,
   spellDamage,
   spellHealing,
@@ -112,12 +115,26 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
 
+// A sacrificed stack is gone from the battlefield, with no corpse.
 const withHexes = (stacks) =>
-  stacks.map((stack) => ({
-    ...stack,
-    hexes: getStackHexes(stack),
-    spellBalance: getSpellBalance(stack)
-  }))
+  stacks
+    .filter(({ sacrificed }) => !sacrificed)
+    .map((stack) => ({
+      ...stack,
+      hexes: getStackHexes(stack),
+      spellBalance: getSpellBalance(stack)
+    }))
+
+const lastingRule = ({ lasting, ...spell }) => ({
+  helpful: isHelpful({ lasting, ...spell }),
+  addsUp: Boolean(lasting.addsUp),
+  castMessage: lasting.castMessage,
+  removable: !lasting.cannotBeRemoved,
+  endsOnOwnTurn: Boolean(lasting.untilOwnTurn),
+  endsOnOwnAttack: Boolean(lasting.untilOwnAttack),
+  endsSpellIds: lasting.endsSpells ?? [],
+  removesHarmful: Boolean(lasting.removesHarmfulSpells)
+})
 
 function castDetail({ hero, spell, definitions }) {
   if (spell.clones) {
@@ -539,8 +556,21 @@ export const registerBattleModule = defineModule(
       return targetIds.length > 0 ? { targetIds } : null
     }
 
-    function chooseSpellTargets(hero, spell, { targetId, hex }) {
+    function chooseSacrificeTargets(targeting, { targetId, sacrificedId }) {
+      const aim = { targeting, casterSide: fightsFor(getActiveStack(battle)) }
+      const sacrificed = battle.stacks.find(({ id }) => id === sacrificedId)
+      return sacrificeTargetIds(battle.stacks, aim).includes(targetId) &&
+        sacrificed &&
+        canBeSacrificed(sacrificed, { ...aim, raisedId: targetId })
+        ? { targetIds: [targetId], sacrificedId }
+        : null
+    }
+
+    function chooseSpellTargets(hero, spell, { targetId, hex, sacrificedId }) {
       const targeting = battleSpellTargeting({ hero, spell, definitions })
+      if (spell.sacrifices) {
+        return chooseSacrificeTargets(targeting, { targetId, sacrificedId })
+      }
       if (targeting.area) {
         return chooseAreaTargets(targeting, hex)
       }
@@ -564,7 +594,12 @@ export const registerBattleModule = defineModule(
       return chainTargetIds(battle, { targeting, targetId, hex: landedOn, strikes, random })
     }
 
-    function castDetailOn(hero, spell, { hex, targetIds }) {
+    function castDetailOn(hero, spell, { hex, targetIds, sacrificedId }) {
+      if (spell.sacrifices) {
+        const sacrificed = battle.stacks.find(({ id }) => id === sacrificedId)
+        const healing = sacrificeHealing({ hero, spell, definitions, sacrificed })
+        return { targetId: targetIds[0], sacrificedId, healing }
+      }
       if (spell.damage) {
         const hits = damageHits({ battle, hero, spell, definitions, targetIds })
         if (hex || castsOnAllStacks(hero, spell)) {
@@ -601,11 +636,11 @@ export const registerBattleModule = defineModule(
       )
     }
 
-    function castSpell({ spellId, targetId, hex, destination }) {
+    function castSpell({ spellId, targetId, hex, destination, sacrificedId }) {
       const hero = heroById(state.get(), heroId)
       const spell = definitions.spells?.[spellId]
       const targets = canHeroCast(hero, spell, spellId)
-        ? chooseSpellTargets(hero, spell, { targetId, hex })
+        ? chooseSpellTargets(hero, spell, { targetId, hex, sacrificedId })
         : null
       if (targets?.noOne) {
         emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
@@ -631,7 +666,18 @@ export const registerBattleModule = defineModule(
     // target's damage rather than hits.
     function castSpellOn(
       current,
-      { spellId, targetId, targetIds, damage, hits, effects, rounds, healing, destination }
+      {
+        spellId,
+        targetId,
+        targetIds,
+        damage,
+        hits,
+        effects,
+        rounds,
+        healing,
+        destination,
+        sacrificedId
+      }
     ) {
       const spell = definitions.spells?.[spellId]
       const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId }
@@ -642,14 +688,7 @@ export const registerBattleModule = defineModule(
           spellId,
           effects,
           rounds,
-          helpful: isHelpful(spell),
-          addsUp: Boolean(spell.lasting.addsUp),
-          castMessage: spell.lasting.castMessage,
-          removable: !spell.lasting.cannotBeRemoved,
-          endsOnOwnTurn: Boolean(spell.lasting.untilOwnTurn),
-          endsOnOwnAttack: Boolean(spell.lasting.untilOwnAttack),
-          endsSpellIds: spell.lasting.endsSpells ?? [],
-          removesHarmful: Boolean(spell.lasting.removesHarmfulSpells)
+          ...lastingRule(spell)
         })
       }
       if (spell?.teleports) {
@@ -657,6 +696,9 @@ export const registerBattleModule = defineModule(
       }
       if (spell?.clones) {
         return cloneStack(current, { ...onStacks, destination, rounds })
+      }
+      if (spell?.sacrifices) {
+        return sacrificeStack(current, { ...onStacks, sacrificedId, healing })
       }
       if (spell?.removesSpells) {
         return castRemovingSpell(current, onStacks)

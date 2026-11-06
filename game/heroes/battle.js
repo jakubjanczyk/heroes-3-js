@@ -935,6 +935,45 @@ export function findCloneHex(battle, original) {
   return hexes.sort(compare)[0] ?? null
 }
 
+// The health heals the top creature, then brings back whole creatures, never more than the stack
+// started the battle with. A stack brought back from the dead comes back free of spells.
+function raiseStack(stack, healing, definitions) {
+  const left = stack.count > 0 ? (stack.count - 1) * stack.health + stack.topHealth : 0
+  const total = Math.min(stack.initialCount * stack.health, left + healing)
+  const count = Math.ceil(total / stack.health)
+  return {
+    ...stack,
+    count,
+    topHealth: total - (count - 1) * stack.health,
+    name: describeStack({ creature: stack.creature, count }, definitions).name,
+    spells: stack.count > 0 ? stack.spells : []
+  }
+}
+
+function describeRisen(risen, stack, definitions) {
+  const name = describeStack({ creature: stack.creature, count: risen }, definitions).name
+  return risen === 1 ? `1 ${name} rises from the dead!` : `${risen} ${name} rise from the dead!`
+}
+
+// The sacrificed stack leaves no corpse.
+export function sacrificeStack(battle, { sacrificedId, healing, ...cast }) {
+  const before = battle.stacks.find(({ id }) => id === cast.targetIds[0])
+  const raised = castOnStacks(battle, cast, (stack) =>
+    raiseStack(stack, healing, battle.definitions)
+  )
+  const risen = raised.stacks.find(({ id }) => id === before.id).count - before.count
+  return clearGoneClones({
+    ...raised,
+    stacks: raised.stacks.map((stack) =>
+      stack.id === sacrificedId ? { ...stack, count: 0, sacrificed: true } : stack
+    ),
+    messages:
+      risen > 0
+        ? [...raised.messages, describeRisen(risen, before, battle.definitions)]
+        : raised.messages
+  })
+}
+
 export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, removeSpellsFrom)
 
 export const castHealingSpell = (battle, { healing, ...cast }) =>
