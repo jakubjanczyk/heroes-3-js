@@ -49,6 +49,9 @@ export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDe
 // The hero casts the spell on the stack `targetId`, or on every stack it can go on when the spell
 // hits them all at the hero's skill level.
 export const APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED = 'command.battle.spellCast.requested'
+// A spell cast on the adventure map; `townId` is the town Town Portal goes to when the player picks it.
+export const APP_COMMAND_HERO_ADVENTURE_SPELL_CAST_REQUESTED =
+  'command.hero.adventureSpellCast.requested'
 export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
@@ -142,6 +145,7 @@ export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
 export const APP_FACT_MAGE_GUILD_SPELLS_ROLLED = 'fact.mageGuild.spellsRolled'
 export const APP_FACT_HERO_SPELL_BOOK_BOUGHT = 'fact.hero.spellBook.bought'
 export const APP_FACT_HERO_SPELLS_LEARNED = 'fact.hero.spells.learned'
+export const APP_FACT_HERO_ADVENTURE_SPELL_CAST = 'fact.hero.adventureSpell.cast'
 
 export const APP_UI_PREVIEW_UPDATED = 'ui.preview.updated'
 export const APP_UI_INTERACTION_MODAL_OPENED = 'ui.interaction.modal.opened'
@@ -175,6 +179,10 @@ export const APP_UI_SPELL_BOOK_OPEN_REQUESTED = 'ui.spellBook.openRequested'
 // A spell picked from the book in battle, waiting for the player to click its target.
 export const APP_UI_BATTLE_SPELL_PICKED = 'ui.battle.spellPicked'
 export const APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE = 'ui.battle.spellAffectsNoOne'
+// An adventure spell clicked in the book, about to be cast: the book and the hero screen close.
+export const APP_UI_ADVENTURE_SPELL_PICKED = 'ui.spellBook.adventureSpellPicked'
+// The towns Town Portal can go to, for the player to pick one.
+export const APP_UI_TOWN_PORTAL_TOWNS_OFFERED = 'ui.townPortal.townsOffered'
 // A hero walked onto another of the player's heroes: `heroId` came to `otherHeroId`.
 export const APP_UI_HERO_EXCHANGE_OPEN_REQUESTED = 'ui.heroExchange.openRequested'
 // A message box over the town screen, such as there being no room in the garrison for recruits.
@@ -241,7 +249,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TAVERN_HEROES_OFFERED,
   APP_FACT_MAGE_GUILD_SPELLS_ROLLED,
   APP_FACT_HERO_SPELL_BOOK_BOUGHT,
-  APP_FACT_HERO_SPELLS_LEARNED
+  APP_FACT_HERO_SPELLS_LEARNED,
+  APP_FACT_HERO_ADVENTURE_SPELL_CAST
 ])
 
 export function shouldPersistFactEvent(type) {

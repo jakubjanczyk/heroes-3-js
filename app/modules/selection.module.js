@@ -257,7 +257,14 @@ export const registerSelectionModule = defineModule(
         },
         {
           type: APP_FACT_HERO_MOVED,
-          handler: (event) => followStep(event.detail.heroId ?? selectedHeroId(), event.detail.to)
+          handler: (event) => {
+            const heroId = event.detail.heroId ?? selectedHeroId()
+            if (event.detail.teleported) {
+              clearRoute(heroId)
+              return
+            }
+            followStep(heroId, event.detail.to)
+          }
         },
         {
           type: APP_FACT_MOVE_FINISHED,

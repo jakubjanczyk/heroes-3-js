@@ -21,6 +21,7 @@ import {
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
+  APP_UI_ADVENTURE_SPELL_PICKED,
   APP_UI_HERO_SCREEN_OPEN_REQUESTED,
   APP_UI_SELECTED_HERO_CLICKED,
   APP_UI_SPELL_BOOK_OPEN_REQUESTED
@@ -386,7 +387,8 @@ export const registerHeroScreenViewModule = defineModule(
           }
         },
         { type: APP_UI_SELECTED_HERO_CLICKED, handler: openHeroScreen },
-        { type: APP_UI_HERO_SCREEN_OPEN_REQUESTED, handler: openHeroScreen }
+        { type: APP_UI_HERO_SCREEN_OPEN_REQUESTED, handler: openHeroScreen },
+        { type: APP_UI_ADVENTURE_SPELL_PICKED, handler: closeHeroScreen }
       ],
       domSubscriptions: [
         {
@@ -510,6 +512,7 @@ export const registerHeroScreenViewModule = defineModule(
       APP_FACT_HERO_ARTIFACTS_CHANGED,
       APP_UI_ADVENTURE_MAP_COVERED,
       APP_UI_ADVENTURE_MAP_UNCOVERED,
+      APP_UI_ADVENTURE_SPELL_PICKED,
       APP_UI_SELECTED_HERO_CLICKED,
       APP_UI_HERO_SCREEN_OPEN_REQUESTED
     ],
