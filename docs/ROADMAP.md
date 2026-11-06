@@ -674,10 +674,10 @@ In three parts.
   - [x] 4.8.7.2b Counterstrike: an own stack strikes back 1 / 2 more times each round, every own stack at Expert
   - [x] 4.8.7.2c Fire Shield: a stack hitting the shielded stack in melee takes 20% / 25% / 30% of the damage back
   - [x] 4.8.7.2d Anti-Magic: an own stack no spell of level 1-3 / 1-4 / any reaches but Dispel; casting it removes the harmful spells on it
-- [ ] 4.8.7.3 Teleport, Clone and Sacrifice, one part each (see `docs/notes/2026-11-05-teleport-clone-sacrifice.md`):
+- [x] 4.8.7.3 Teleport, Clone and Sacrifice, one part each (see `docs/notes/2026-11-05-teleport-clone-sacrifice.md`):
   - [x] 4.8.7.3a Teleport: an own stack, then a free hex it moves to at once
   - [x] 4.8.7.3b Clone: a copy of an own stack for Power rounds, gone when hit or when its original dies
-  - [ ] 4.8.7.3c Sacrifice, with the dead counted
+  - [x] 4.8.7.3c Sacrifice: a dead or hurt own stack is brought back by destroying another own stack, with (Power + its health + 3 / 6 / 10) × its count in health
 
 #### 5.8 later
 - [ ] The Resistance skill's chance an enemy spell fails on a stack, with an enemy that casts: enemy heroes (8.1) or creatures that cast (6.5)

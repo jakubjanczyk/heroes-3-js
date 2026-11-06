@@ -45,8 +45,25 @@ Checked against the wiki (Clone), the descriptions in `game/data/spells.json`, a
 
 - Built: `clones.highestTier` in the spell's data, by skill level. The fact keeps the clone's hex and rounds.
 
+## Sacrifice (Fire, level 5, 25 / 20 / 20 / 20 spell points) — 4.8.7.3c
+
+Checked against the wiki (Sacrifice, and its copy of `GENRLTXT.TXT`), the descriptions in `game/data/spells.json` and an open-source engine's spell config (`spells/other.json`) and sacrifice script.
+
+- Two clicks: first the stack to bring back, then the own stack to sacrifice. Checked against the engine (target one is healed, target two is destroyed); the wiki names the same two targets.
+- The stack to bring back is an own stack that is dead, or alive with creatures lost or its top creature hurt. A dead stack whose hex a living stack stands on can't be chosen. Checked against the engine.
+- The stack sacrificed is another living own stack the hero controls: not a clone, not an own stack hypnotized by the enemy, not undead. Checked against the engine; the wiki lists undead (and golems, elementals, gargoyles and others from other factions, 6.5).
+- Undead can't be brought back either. Checked against the wiki and the engine.
+- Health given back: (Power + the sacrificed creature's health + 3 / 6 / 10 for Basic or none / Advanced / Expert) × the sacrificed stack's count. Checked against the wiki and the engine.
+- That health first heals the top creature, then brings back creatures, never more than the stack had as the battle started; the rest is lost. A creature given only part of its health comes back too, with that much health (18 health brings back two Brutes of 10, the top one with 8). Checked against the engine (resurrect, permanent, and how it counts creatures from their health).
+- The sacrificed stack is removed with no corpse: it isn't drawn as "Dead ...". Checked against the wiki.
+- Permanent: the creatures brought back stay in the hero's army after the battle, and the results window counts only those still dead. The sacrificed creatures count as lost.
+- The spell can't be picked without a stack to bring back and another living own stack to sacrifice: "That spell will affect no one!" as elsewhere. Checked against the engine (no appropriate target).
+- Status bar: the first click uses "Cast Sacrifice on Pikemen" (`core.genrltxt.27`); after it, an own stack that can be sacrificed says "Sacrifice the Swordsmen" (`core.genrltxt.549`) with the sacrifice cursor, any other hex "Choose an army to sacrifice" (`core.genrltxt.543`). Checked against the wiki's copy of `GENRLTXT.TXT` and the engine.
+- Cancelling at either click: "Spell cancelled". An invalid second click does nothing, as for Teleport.
+- Combat log: "%s casts '%s' on the %s." (`core.genrltxt.195`) naming the stack brought back, then "%d %s rise from the dead!" (`core.genrltxt.116`), or "rises" for one (`core.genrltxt.117`), when creatures come back. Checked against the wiki's copy of `GENRLTXT.TXT` and the engine.
+
 ## Left for later
 
 - The wall and moat limits, with sieges (5.10). Dendroid binding ending on a teleport, with Rampart (6.5).
 - Clone with no free hex left; clones for an enemy that casts (8.1).
-- Sacrifice, part c.
+- Creatures of other factions that can't be sacrificed or brought back (6.5); Resurrection and Animate Dead reuse bringing back the dead (5.8 later).

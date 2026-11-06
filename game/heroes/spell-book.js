@@ -86,6 +86,11 @@ function lastingRounds({ untilBattleEnds, untilOwnTurn, untilOwnAttack }, power)
   return untilOwnTurn ? 2 : power
 }
 
+export function sacrificeHealing({ hero, spell, definitions, sacrificed }) {
+  const extra = spell.sacrifices.healthPerCreature[spellSkillLevel(hero, spell)]
+  return (powerOf(hero, definitions) + sacrificed.health + extra) * sacrificed.count
+}
+
 export const cloneRounds = (hero, definitions) => powerOf(hero, definitions)
 
 export function spellLasting({ hero, spell, definitions }) {
