@@ -1,14 +1,15 @@
 import { sameTile } from '../../engine/tile-utils.js'
+import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
 import {
   heroIdAt,
-  heroMovementPoints,
   heroOwner,
   heroTile,
   isTileExplored,
   selectedHeroIdOf,
   viewingPlayer
 } from '../../game/state/queries.js'
+import { createHeroRoutes } from '../../game/systems/hero-routes.js'
 import {
   APP_COMMAND_HERO_SELECT_REQUESTED,
   APP_COMMAND_MOVE_CONTINUE_REQUESTED,
@@ -39,8 +40,11 @@ import { defineModule } from './shared/module-runtime.js'
 
 export const registerSelectionModule = defineModule(
   ({ emit, config, state }) => {
-    const movementRules = resolveMovementRules(config?.content?.movementRules)
-    let map = null
+    const heroRoutes = createHeroRoutes({
+      entityBehaviors: createEntityBehaviors(config?.content?.entityBehaviors),
+      movementRules: resolveMovementRules(config?.content?.movementRules),
+      getState: state.get
+    })
     let isWorldReady = false
     let requestedTile = null
     // Each hero keeps the route planned for them while another hero is selected.
@@ -61,13 +65,11 @@ export const registerSelectionModule = defineModule(
 
     function affordableStepCount() {
       const path = selectedRoute()?.path
-      if (!map || !path || path.length < 2) {
+      if (!isWorldReady || !path || path.length < 2) {
         return 0
       }
 
-      const remainingMovementPoints =
-        heroMovementPoints(state.get(), selectedHeroId())?.value ?? Number.POSITIVE_INFINITY
-      return movementRules.chargeSteps({ map, path, remainingMovementPoints }).length
+      return heroRoutes.chargeStepsToday(path).length
     }
 
     function isMapIdle() {
@@ -185,7 +187,7 @@ export const registerSelectionModule = defineModule(
         {
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
-            map = event.detail.map
+            heroRoutes.onWorldReady(event.detail)
             isWorldReady = true
             isTownSelected = false
             routesByHeroId.clear()

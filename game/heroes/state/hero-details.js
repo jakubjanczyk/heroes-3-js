@@ -50,7 +50,8 @@ function startingDetailsOf(hero, definitions) {
     visitedBonusObjects: [],
     battleBonuses: [],
     weekBonus: null,
-    adventureCastsToday: {}
+    adventureCastsToday: {},
+    flight: null
   }
 }
 
@@ -96,7 +97,10 @@ function regainSpellPoints(heroes, context) {
 
 function forgetAdventureCasts(heroes) {
   return Object.fromEntries(
-    Object.entries(heroes).map(([heroId, hero]) => [heroId, { ...hero, adventureCastsToday: {} }])
+    Object.entries(heroes).map(([heroId, hero]) => [
+      heroId,
+      { ...hero, adventureCastsToday: {}, flight: null }
+    ])
   )
 }
 
@@ -104,8 +108,9 @@ function startNewDay(heroes, detail, context) {
   return forgetAdventureCasts(regainSpellPoints(endWeekBonuses(heroes, detail), context))
 }
 
-const castAdventureSpell = updateHero((hero, { cost, spellId }) => ({
+const castAdventureSpell = updateHero((hero, { cost, spellId, flight }) => ({
   spellPoints: hero.spellPoints - cost,
+  ...(flight ? { flight } : {}),
   adventureCastsToday: {
     ...hero.adventureCastsToday,
     [spellId]: (hero.adventureCastsToday?.[spellId] ?? 0) + 1
