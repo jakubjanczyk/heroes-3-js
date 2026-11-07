@@ -1,7 +1,7 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
-import { heroMovementPoints, heroTile } from '../../game/state/queries.js'
+import { heroTile } from '../../game/state/queries.js'
 import { createHeroRoutes } from '../../game/systems/hero-routes.js'
 import {
   APP_COMMAND_HERO_TELEPORT_REQUESTED,
@@ -62,14 +62,6 @@ export const registerMovementModule = defineModule(
             movement = heroRoutes.createMovementSystem({
               ...(movementSleep ? { sleep: movementSleep } : {}),
               stepDelayMs,
-              getStepCharges: (path) =>
-                movementRules.chargeSteps({
-                  map: world.map,
-                  path,
-                  remainingMovementPoints:
-                    heroMovementPoints(state.get(), heroRoutes.getHero()?.id)?.value ??
-                    Number.POSITIVE_INFINITY
-                }),
               spendMovementPoints: (amount) => {
                 emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
                   heroId: heroRoutes.getHero()?.id,

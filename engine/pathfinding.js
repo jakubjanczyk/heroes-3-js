@@ -122,10 +122,8 @@ function heapPop(heap, toTile) {
 }
 
 // The destination may be impassable or blocked: the route ends on it to interact.
-function canEnter(tile, { map, toTile, isBlocked }) {
-  return (
-    map.inBounds(tile) && (sameTile(tile, toTile) || (map.isPassable(tile) && !isBlocked(tile)))
-  )
+function canEnter(tile, routeCost, { map, toTile, canPass }) {
+  return map.inBounds(tile) && (sameTile(tile, toTile) || canPass(tile, routeCost))
 }
 
 function stepTo(current, next, { order, getStepCost }) {
@@ -138,19 +136,23 @@ function stepTo(current, next, { order, getStepCost }) {
     tile: next,
     dirX,
     dirY,
-    cost: current.cost + getStepCost(current.tile, next),
+    cost: current.cost + getStepCost(current.tile, next, current.cost),
     turns: current.turns + (isStart || keepsDirection ? 0 : 1),
     order
   }
 }
 
-// Cheapest route by `getStepCost(from, to)`; among equally cheap routes, the one with fewest turns.
-// `canLeave(from, to)` says whether a route that got to `from` may go on to `to`.
+// Cheapest route by `getStepCost(from, to, routeCost)`; among equally cheap routes, the one with
+// fewest turns. `routeCost` is what the route cost before the step, or with it for `canPass` and
+// `canLeave`. `canPass(tile, routeCost)` says whether a route may go through `tile` (by default a
+// passable tile `isBlocked` doesn't block); `canLeave(from, to, routeCost)` whether a route that
+// got to `from` may go on to `to`.
 export function findPath({
   fromTile,
   toTile,
   map,
-  isBlocked,
+  isBlocked = () => false,
+  canPass = (tile) => map.isPassable(tile) && !isBlocked(tile),
   getStepCost = () => 1,
   canLeave = () => true
 }) {
@@ -166,10 +168,10 @@ export function findPath({
     return null
   }
 
-  return searchRoute({ fromTile, toTile, map, isBlocked, getStepCost, canLeave })
+  return searchRoute({ fromTile, toTile, map, canPass, getStepCost, canLeave })
 }
 
-function searchRoute({ fromTile, toTile, map, isBlocked, getStepCost, canLeave }) {
+function searchRoute({ fromTile, toTile, map, canPass, getStepCost, canLeave }) {
   const startState = {
     key: stateKey(fromTile, 0, 0),
     tile: fromTile,
@@ -195,12 +197,15 @@ function searchRoute({ fromTile, toTile, map, isBlocked, getStepCost, canLeave }
     }
 
     for (const next of getNeighbors(current.tile)) {
-      if (!canEnter(next, { map, toTile, isBlocked }) || !canLeave(current.tile, next)) {
+      const nextState = stepTo(current, next, { order: nextStateOrder, getStepCost })
+      nextStateOrder += 1
+      if (
+        !canEnter(next, nextState.cost, { map, toTile, canPass }) ||
+        !canLeave(current.tile, next, nextState.cost)
+      ) {
         continue
       }
 
-      const nextState = stepTo(current, next, { order: nextStateOrder, getStepCost })
-      nextStateOrder += 1
       const bestKnown = bestByState.get(nextState.key) ?? null
       if (!isBetterCost({ cost: nextState.cost, turns: nextState.turns }, bestKnown)) {
         continue
