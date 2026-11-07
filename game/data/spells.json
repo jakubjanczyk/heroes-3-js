@@ -161,6 +161,7 @@
     "schools": ["AIR"],
     "kind": "adventure",
     "costs": [20, 15, 15, 15],
+    "fly": { "penalty": [40, 40, 20, 0] },
     "descriptions": [
       {
         "title": "Fly",

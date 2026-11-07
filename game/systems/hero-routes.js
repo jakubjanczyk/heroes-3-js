@@ -77,6 +77,22 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     return heroMovementPoints(getState(), selectedHeroId())
   }
 
+  function getFlightPoints() {
+    return flight() ? (movementPoints()?.value ?? 0) : null
+  }
+
+  // A flight lasts the day: steps the hero can't pay today are walked.
+  function getStepCost(from, to, routeCost) {
+    const flightToday = flight()
+    if (flightToday) {
+      const flyingCost = movementRules.stepCost({ map, from, to, flight: flightToday, canLand })
+      if (routeCost + flyingCost <= getFlightPoints()) {
+        return flyingCost
+      }
+    }
+    return movementRules.stepCost({ map, from, to, flight: null, canLand })
+  }
+
   // What each step of `path` the selected hero can still take today costs.
   function chargeSteps(path, remainingMovementPoints, { flies = true } = {}) {
     return movementRules.chargeSteps({
@@ -127,9 +143,9 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
           currentRemovedIds()
           return guardedTiles.getGuardsAt(tile)
         },
-        getStepCost: (from, to) =>
-          movementRules.stepCost({ map, from, to, flight: flight(), canLand }),
+        getStepCost,
         getStepCharges: chargeStepsToday,
+        getFlightPoints,
         // A hero never walks through tiles its owner has not explored.
         isExplored: (tile) =>
           isTileExplored(getState(), heroOwner(getState(), selectedHeroId()), tile),
