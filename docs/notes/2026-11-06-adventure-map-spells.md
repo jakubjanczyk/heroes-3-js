@@ -10,11 +10,11 @@ In five parts, one PR each:
 - **4.8.8.4 Visions**: the exact count of monsters within range, for the day. Whether they would join waits for monsters joining (5.2); enemy heroes at Advanced and towns at Expert wait for 8.1.
 - **4.8.8.5 View World, with View Air and View Earth**: the View World screen, then what each spell adds to it.
 
-Each part's rules are checked when it's planned; 4.8.8.1 and 4.8.8.2 are checked so far.
+Each part's rules are checked when it's planned; 4.8.8.1 to 4.8.8.3 are checked so far.
 
 ## Left for later parts
 
-- 4.8.8.3 to 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
+- 4.8.8.4 and 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
 - Dimension Door from a boat, and onto land from one (7.10).
 - Town Portal underground, from a boat ("must be on land", `core.genrltxt.135`) and to allies' towns, with their features (7.10, 8.1).
 
@@ -59,3 +59,23 @@ Checked against the wiki (Dimension Door, raw source, and its copy of `GENRLTXT.
 - **Cursor**: the same Dimension Door cursor over a guarded tile (the engine's default).
 - Right-click on the map or Escape stops aiming.
 - Built: `dimensionDoor` in the spell's data, by skill level (`castsPerDay`, `movementPoints`) and its `range`. The cast is one fact for the spell points (counting the day's casts), then the movement points, then the move, marked as a teleport.
+
+## Fly (Air, level 5, 20 / 15 / 15 / 15 spell points) — 4.8.8.3
+
+Checked against the wiki (Fly, raw source, and its flying movement points table, `Template:Flying_movepoints_consumption_table`), the descriptions in `game/data/spells.json`, and an open-source engine's spell config (`spells/adventure.json`) and pathfinder code.
+
+- **Casting**: clicking Fly in the book on the map (or the hero screen, which closes) casts it at once: no aiming, no movement points taken, no limit of casts a day (the engine). The castle's Mage Guild never has it (level 5), so only a scenario hero who starts with it can cast it for now; the demo map's first hero does.
+- A route planned before the cast is dropped, so the next click plans it in the air (our own choice).
+- **Lasts the day**: until the hero's next day starts (the wiki, the engine's one-day bonus).
+- **Penalty**: no skill and Basic 40%, Advanced 20%, Expert none (the wiki: "without Air Magic equivalent to the basic level"; the engine's config).
+- **Where the hero flies**: over water and over any tile a map object blocks (obstacles, the blocked tiles of mines, towns, dwellings), never over rock (the wiki: "except rock"). Never over tiles not explored yet, as walking. Flying over an object's tile visits nothing.
+- **Guards**: passing over a tile a monster guards starts no battle (the engine: a guard's zone is ignored while flying; the wiki's note that HotA, a fan expansion, changed exactly this). Landing on a guarded tile, or on an object a monster guards, starts the battle as walking there does (decided with the user; the original game lets a flying hero take a guarded object without the fight, HotA doesn't).
+- **Over what**: water, objects' blocked tiles, and the tiles monsters, heroes and towns stand on (the engine; decided with the user, the wiki only says "any obstacles").
+- **Landing**: a route ends only where a walking route could (a free tile, or an object or monster it visits or fights). "You must land at the end of the turn" (the spell's text): the flying part of a route is paid out of today's movement points, so a crossing longer than what is left today has no route (the engine's one-turn limit for flying). Steps on later days are walked, without the spell.
+- **Step costs while flying**: a step costs the lesser of its usual cost and 100 + penalty (140 / 120 / 100); a step off water or a tile an object stands on costs 100 + penalty; diagonals × √2 as usual (197 / 169 / 141). Roads and grass keep their own, cheaper costs. Checked against the wiki's table and the engine's pathfinder. The engine counts water's own cost (100) as the usual cost, so flying off water would cost 100 there; we follow the wiki's 140 / 120 / 100 (decided with the user). The drop to 0 when what is left can't pay a step is checked against the cheapest step flying.
+- No message on casting, and nothing on the hero screen shows the spell.
+- Built: `fly.penalty` in the spell's data, by skill level, and `flyable` on water's terrain. The cast fact holds the hero's flight for the day (its penalty, kept at the level it was cast at); the new day drops it. The route search flies only while the route's cost fits the movement points left today, and later days are walked at their usual costs.
+
+## Left after 4.8.8.3
+
+- Angel Wings (Expert Fly while worn) with the artifacts (7.8). Pathfinding's lower costs with the skill's effects (4.7).

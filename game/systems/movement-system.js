@@ -2,7 +2,14 @@ import { findPath } from '../../engine/pathfinding.js'
 import { sameTile } from '../../engine/tile-utils.js'
 import { toEntityIdOrNull } from '../domain/value-objects/entity-id.js'
 
-function isValidPlannedPath(path, fromTile, toTile, map) {
+function isStep(from, to) {
+  const dx = Math.abs(to.x - from.x)
+  const dy = Math.abs(to.y - from.y)
+  return (dx !== 0 || dy !== 0) && dx <= 1 && dy <= 1
+}
+
+// `canCross(tile)` says whether the hero may still go through a tile between the ends.
+function isValidPlannedPath({ path, fromTile, toTile, map, canCross }) {
   if (!Array.isArray(path) || path.length < 2) {
     return false
   }
@@ -11,25 +18,15 @@ function isValidPlannedPath(path, fromTile, toTile, map) {
     return false
   }
 
-  for (let index = 0; index < path.length; index += 1) {
-    const tile = path[index]
-    if (!map.inBounds(tile) || !map.isPassable(tile)) {
-      return false
-    }
-
-    if (index === 0) {
-      continue
-    }
-
-    const prev = path[index - 1]
-    const dx = Math.abs(tile.x - prev.x)
-    const dy = Math.abs(tile.y - prev.y)
-    if ((dx === 0 && dy === 0) || dx > 1 || dy > 1) {
-      return false
-    }
-  }
-
-  return true
+  const lastIndex = path.length - 1
+  return path.every((tile, index) => {
+    const isEnd = index === 0 || index === lastIndex
+    return (
+      map.inBounds(tile) &&
+      (isEnd ? map.isPassable(tile) : canCross(tile)) &&
+      (index === 0 || isStep(path[index - 1], tile))
+    )
+  })
 }
 
 async function defaultSleep(ms) {
@@ -45,9 +42,12 @@ function getFinalSettleDelayMs(stepDelayMs) {
 
 // `getHero` returns the moving hero ({ id, tile }); `occupancy.getAt(tile)` says what blocks a tile,
 // and `occupancy.getObjectAt(tile)` what map object stands there under any hero.
-// `getStepCost(from, to)` is what the route search minimises; `getStepCharges(path)` lists what
-// each step of `path` the hero can still take costs. `getGuardsAt(tile)` lists the entities that
-// fight a hero stepping onto `tile`, in the order it fights them; a route can't go on from there.
+// `getStepCost(from, to, routeCost)` is what the route search minimises; `getStepCharges(path)`
+// lists what each step of `path` the hero can still take costs. `getGuardsAt(tile)` lists the
+// entities that fight a hero stepping onto `tile`, in the order it fights them; a route can't go
+// on from there. `getFlightPoints()` is how many movement points the hero can still fly with
+// today, or null when they walk: in the air they cross water, objects and guarded tiles, and the
+// route must land before those points run out.
 export function createMovementSystem({
   getHero,
   map,
@@ -59,6 +59,7 @@ export function createMovementSystem({
   stepDelayMs = 80,
   getStepCost = () => 1,
   getStepCharges = (path) => new Array(path.length - 1).fill(1),
+  getFlightPoints = () => null,
   spendMovementPoints = () => {},
   onMoveStart = () => {},
   onMoveFinish = () => {},
@@ -92,39 +93,63 @@ export function createMovementSystem({
     return (to.y < from.y && isEntrance(from)) || (to.y > from.y && isEntrance(to))
   }
 
+  function isTakenByOther(tile, hero) {
+    const occupant = occupancy.getAt(tile)
+    return occupant !== null && occupant.id !== hero.id
+  }
+
+  function canFlyOver(tile) {
+    return map.isPassable(tile) || map.getTerrainType(tile)?.flyable === true
+  }
+
+  // Whether the hero may go through `tile` on some route, with or without flying.
+  function canCross(tile, hero) {
+    const walkable = map.isPassable(tile) && !isTakenByOther(tile, hero)
+    return walkable || (getFlightPoints() !== null && canFlyOver(tile))
+  }
+
   function findRoute(hero, toTile) {
     const visitsTargetFromNextTo = isVisitedFromNextTo(toTile, hero)
+    const flightPoints = getFlightPoints()
+    const isAirborne = (routeCost) => flightPoints !== null && routeCost <= flightPoints
+    const canWalkOn = (tile) => map.isPassable(tile) && !isTakenByOther(tile, hero)
     return findPath({
       fromTile: hero.tile,
       toTile,
       map,
       getStepCost,
-      isBlocked: (tile) => {
-        if (!isExplored(tile)) {
-          return true
-        }
-        const occupant = occupancy.getAt(tile)
-        return occupant !== null && occupant.id !== hero.id
-      },
-      // The hero fights on the first guarded tile it steps onto, so a route ends there, unless
-      // it only goes on to visit the target from it.
-      canLeave: (from, to) =>
+      // A hero never walks or flies through tiles its owner has not explored.
+      canPass: (tile, routeCost) =>
+        isExplored(tile) && (canWalkOn(tile) || (canFlyOver(tile) && isAirborne(routeCost))),
+      // The hero fights on the first guarded tile it lands on, so a route ends there, unless it
+      // only goes on to visit the target from it.
+      canLeave: (from, to, routeCost) =>
         !crossesEntranceTop(from, to) &&
         (sameTile(from, hero.tile) ||
-          guardsAt(from).length === 0 ||
-          (visitsTargetFromNextTo && sameTile(to, toTile)))
+          isAirborne(routeCost) ||
+          (canWalkOn(from) &&
+            (guardsAt(from).length === 0 || (visitsTargetFromNextTo && sameTile(to, toTile)))))
     })
   }
 
-  // The first step of `path`, up to `lastStepIndex`, that lands on a guarded tile.
-  function firstGuardedStep(path, lastStepIndex) {
-    for (let stepIndex = 1; stepIndex <= lastStepIndex; stepIndex += 1) {
+  // The first step of `path`, from `firstStepIndex` up to `lastStepIndex`, that lands on a
+  // guarded tile.
+  function firstGuardedStep(path, lastStepIndex, firstStepIndex = 1) {
+    for (let stepIndex = firstStepIndex; stepIndex <= lastStepIndex; stepIndex += 1) {
       if (guardsAt(path[stepIndex]).length > 0) {
         return stepIndex
       }
     }
 
     return null
+  }
+
+  // A flying hero passes over the guarded tiles of today's steps until they land.
+  function firstLandingStep(path, lastStepIndex) {
+    if (getFlightPoints() === null) {
+      return 1
+    }
+    return Math.max(1, Math.min(getStepCharges(path).length, lastStepIndex))
   }
 
   function battlesWith(guards) {
@@ -141,7 +166,8 @@ export function createMovementSystem({
     const hero = getHero()
     const toTile = path[path.length - 1]
     const visitsTargetFromNextTo = hero ? isVisitedFromNextTo(toTile, hero) : false
-    const guardedStep = firstGuardedStep(path, path.length - (visitsTargetFromNextTo ? 2 : 1))
+    const lastStepIndex = path.length - (visitsTargetFromNextTo ? 2 : 1)
+    const guardedStep = firstGuardedStep(path, lastStepIndex, firstLandingStep(path, lastStepIndex))
     if (guardedStep !== null) {
       return path.slice(0, guardedStep + 1)
     }
@@ -201,7 +227,11 @@ export function createMovementSystem({
   // the first guarded tile it steps onto, else of the target it visits, then the target itself.
   function planStop({ path, cappedStepCount, interaction }) {
     const walkedStepCount = interaction?.stopBeforeTarget ? cappedStepCount - 1 : cappedStepCount
-    const guardedStep = firstGuardedStep(path, walkedStepCount)
+    const guardedStep = firstGuardedStep(
+      path,
+      walkedStepCount,
+      firstLandingStep(path, walkedStepCount)
+    )
     if (guardedStep !== null) {
       const entersTarget = interaction && guardedStep === path.length - 1
       return {
@@ -229,7 +259,14 @@ export function createMovementSystem({
 
   // The selected route when it still leads from the hero to `toTile`, else a fresh one.
   function routeFor(hero, toTile, plannedPath) {
-    if (isValidPlannedPath(plannedPath, hero.tile, toTile, map)) {
+    const isStillValid = isValidPlannedPath({
+      path: plannedPath,
+      fromTile: hero.tile,
+      toTile,
+      map,
+      canCross: (tile) => canCross(tile, hero)
+    })
+    if (isStillValid) {
       return plannedPath
     }
 

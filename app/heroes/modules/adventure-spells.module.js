@@ -7,7 +7,8 @@ import {
   decideDimensionDoor,
   decideTownPortal,
   decideTownPortalTo,
-  dimensionDoorTargetAt
+  dimensionDoorTargetAt,
+  flightOf
 } from '../../../game/heroes/adventure-spells.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { spellCost } from '../../../game/heroes/spell-book.js'
@@ -22,6 +23,7 @@ import {
   APP_FACT_HERO_ADVENTURE_SPELL_CAST,
   APP_FACT_HERO_MOVED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_PREVIEW_CLEARED,
   APP_FACT_TOWN_VISITED,
   APP_FACT_WORLD_READY,
   APP_UI_MAP_AIMING_ENDED,
@@ -82,7 +84,7 @@ export const registerAdventureSpellsModule = defineModule(
       return spellCost(hero, spell) > hero.spellPoints ? null : { hero, spell }
     }
 
-    function spendCast(hero, spellId, movementPoints) {
+    function spendCast(hero, spellId, movementPoints, effect = {}) {
       const { value, max } = heroMovementPoints(state.get(), hero.id)
       emitAll([
         {
@@ -90,13 +92,18 @@ export const registerAdventureSpellsModule = defineModule(
           detail: {
             heroId: hero.id,
             spellId,
-            cost: spellCost(hero, definitions.spells[spellId])
+            cost: spellCost(hero, definitions.spells[spellId]),
+            ...effect
           }
         },
-        {
-          type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-          detail: { heroId: hero.id, value: Math.max(0, value - movementPoints), max }
-        }
+        ...(movementPoints > 0
+          ? [
+              {
+                type: APP_FACT_MOVEMENT_POINTS_CHANGED,
+                detail: { heroId: hero.id, value: Math.max(0, value - movementPoints), max }
+              }
+            ]
+          : [])
       ])
     }
 
@@ -148,6 +155,12 @@ export const registerAdventureSpellsModule = defineModule(
       }
       const { hero, spell } = castableSpell(heroId, spellId) ?? {}
       if (!hero) {
+        return
+      }
+      if (spell.fly) {
+        spendCast(hero, spellId, 0, { flight: flightOf(hero, spell) })
+        // A route planned on foot is planned again in the air.
+        emit(APP_FACT_PREVIEW_CLEARED, { heroId })
         return
       }
 
@@ -220,6 +233,7 @@ export const registerAdventureSpellsModule = defineModule(
       APP_UI_MAP_AIMING_ENDED,
       APP_FACT_HERO_ADVENTURE_SPELL_CAST,
       APP_FACT_MOVEMENT_POINTS_CHANGED,
+      APP_FACT_PREVIEW_CLEARED,
       APP_FACT_HERO_MOVED,
       APP_FACT_TOWN_VISITED,
       APP_UI_NOTICE_OPENED,

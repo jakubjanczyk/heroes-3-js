@@ -2,7 +2,6 @@ import { sameTile } from '../../../engine/tile-utils.js'
 import { createEntityBehaviors } from '../../../game/domain/entity-behaviors.js'
 import { isTown } from '../../../game/domain/entity-queries.js'
 import { resolveMovementRules } from '../../../game/domain/movement/movement-rules.js'
-import { countTravelDays } from '../../../game/domain/movement/travel-days.js'
 import {
   ADVENTURE_CURSOR,
   getAdventureCursor,
@@ -11,7 +10,7 @@ import {
 import { dimensionDoorTargetAt } from '../../../game/heroes/adventure-spells.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
-import { heroMovementPoints, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
+import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -37,11 +36,10 @@ import { createMapObjects } from '../map-objects.js'
 export const registerAdventureCursorModule = defineModule(
   ({ env, config, state }) => {
     const viewport = env.document.querySelector('.viewport')
-    const movementRules = resolveMovementRules(config?.content?.movementRules)
     const mapObjects = createMapObjects(state)
     const heroRoutes = createHeroRoutes({
       entityBehaviors: createEntityBehaviors(config?.content?.entityBehaviors),
-      movementRules,
+      movementRules: resolveMovementRules(config?.content?.movementRules),
       getState: state.get
     })
 
@@ -114,15 +112,8 @@ export const registerAdventureCursorModule = defineModule(
     function showCursorForRoute() {
       const path = routePlanner.planRoute(hoveredTile)
       const pathToBattle = path ? routePlanner.getPathToBattle(path) : null
-      const movementPoints = heroMovementPoints(state.get(), heroRoutes.getHero()?.id)
       const travelDays = path
-        ? countTravelDays({
-            map,
-            path: pathToBattle ?? path,
-            chargeSteps: movementRules.chargeSteps,
-            remainingMovementPoints: movementPoints?.value ?? config.maxMovementPoints,
-            maxMovementPoints: movementPoints?.max ?? config.maxMovementPoints
-          })
+        ? heroRoutes.travelDays(pathToBattle ?? path, config.maxMovementPoints)
         : null
       const entity = mapObjects.getEntityAt(hoveredTile)
       showCursor(getAdventureCursor({ entity, travelDays, attacks: Boolean(pathToBattle) }))

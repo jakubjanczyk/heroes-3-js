@@ -1,7 +1,8 @@
 import { deepFreeze } from '../../engine/deep-freeze.js'
 
 // Tile codes used in scenario terrain. 0 and 1 keep their V1 meaning (open / blocked ground).
-// `movementCost` is what a straight step leaving the tile costs, as in Heroes 3.
+// `movementCost` is what a straight step leaving the tile costs, as in Heroes 3. A flying hero
+// crosses a `flyable` tile they can't walk on.
 export const heroesTerrainTypes = deepFreeze({
   0: { name: 'grass', passable: true, movementCost: 100 },
   1: { name: 'rock', passable: false },
@@ -12,5 +13,5 @@ export const heroesTerrainTypes = deepFreeze({
   6: { name: 'rough', passable: true, movementCost: 125 },
   7: { name: 'subterranean', passable: true, movementCost: 100 },
   8: { name: 'lava', passable: true, movementCost: 100 },
-  9: { name: 'water', passable: false, isWater: true }
+  9: { name: 'water', passable: false, flyable: true, isWater: true }
 })
