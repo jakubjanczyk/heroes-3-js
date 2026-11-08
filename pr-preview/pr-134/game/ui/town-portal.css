@@ -1,0 +1,42 @@
+.town-portal {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-sm);
+  inline-size: min(22rem, calc(100% - 2rem));
+  padding: var(--space-md);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.town-portal__title,
+.town-portal__prompt {
+  margin: 0;
+}
+
+.town-portal__title {
+  color: var(--trim-gold-light);
+  font-size: 1.1rem;
+}
+
+.town-portal__towns {
+  inline-size: 100%;
+  max-block-size: 12rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--trim-gold-dark);
+  background: rgb(0 0 0 / 0.35);
+}
+
+.town-portal__town {
+  padding: var(--space-xs) var(--space-sm);
+  cursor: inherit;
+
+  &[aria-selected="true"] {
+    background: rgb(255 214 120 / 0.25);
+    color: var(--trim-gold-light);
+  }
+}
