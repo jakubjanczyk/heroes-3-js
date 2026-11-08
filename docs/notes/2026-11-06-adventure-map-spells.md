@@ -10,7 +10,7 @@ In five parts, one PR each:
 - **4.8.8.4 Visions**: the exact count of monsters within range, for the day. Whether they would join waits for monsters joining (5.2); enemy heroes at Advanced and towns at Expert wait for 8.1.
 - **4.8.8.5 View World, with View Air and View Earth**: the View World screen, then what each spell adds to it.
 
-Each part's rules are checked when it's planned; 4.8.8.1 to 4.8.8.3 are checked so far.
+Each part's rules are checked when it's planned; 4.8.8.1 to 4.8.8.4 are checked so far.
 
 ## Left for later parts
 
@@ -79,3 +79,22 @@ Checked against the wiki (Fly, raw source, and its flying movement points table,
 ## Left after 4.8.8.3
 
 - Angel Wings (Expert Fly while worn) with the artifacts (7.8). Pathfinding's lower costs with the skill's effects (4.7).
+
+## Visions (all four schools, level 2, 4 / 2 / 2 / 2 spell points) — 4.8.8.4
+
+Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), the descriptions in `game/data/spells.json`, an open-source engine's spell config (`spells/adventure.json`) and its monster and hero code, and a web search (the game's manual pages and guides give the same ranges).
+
+- **Casting**: clicking Visions in the book on the map (or the hero screen, which closes) casts it at once, like Fly: no aiming, no movement points, no limit of casts a day, no message (the engine). The castle's Mage Guild can roll it (level 2), and the demo map's first hero knows it.
+- **Skill level**: it belongs to every school, so the hero's best magic school skill sets the level; with none it's cast as Basic, as the other spells (4.8.8.1). The book's no-skill text promises less ("a basic idea of the strength"), but the engine gives no skill the Basic effect.
+- **Lasts the day**: until the hero's next day starts (the wiki, the engine's one-day bonus). Cast again the same day, the better level of the two is kept (the engine).
+- **Range**: Power × 1 / 2 / 3 at Basic / Advanced / Expert, and never under 3 tiles (the wiki, the manual, the engine). Power is the hero's at the moment the monster is looked at (artifacts included), and the distance is from the hero's tile at that moment, not where they cast it: the hero carries the effect around all day (the engine).
+- **Distance**: a straight line from the hero's tile to the monster's (the engine; the wiki only says "range"). The engine counts a monster in range when the distance is less than the range, so at range 3 a monster 3 tiles straight across is out and one 2 across and 2 down (2.8) is in. **Open question**: strictly less, as the engine, or up to and including the range?
+- **What it shows**: for a monster in range of the selected hero, the status bar and the right-click popup show the exact count and the creature's name instead of the size word: "12 Skeletons", "1 Skeleton" (the engine). The popup then has a second paragraph saying whether they join, pay to join, flee or fight (`core.genrltxt.243` to `246`), which waits for monsters joining and fleeing (5.2).
+- Only the selected hero's Visions count; selecting another hero of the player who hasn't cast it shows the size words again (the engine reads the current hero). Monsters out of range, or under the fog, show what they show now.
+- Nothing else changes: the guard texts of dwellings and artifacts ("guarded by a pack of …") keep the words, and the battle shows its stacks as now (the engine reads Visions only for wandering monsters' hover and popup).
+
+## Left after 4.8.8.4
+
+- Whether the monsters would join, pay, flee or fight, in the popup (5.2).
+- Enemy heroes at Advanced, enemy towns at Expert (8.1).
+- A Rogue in the army acting as Expert Visions all the time, with Rogues (5.1, the other factions).
