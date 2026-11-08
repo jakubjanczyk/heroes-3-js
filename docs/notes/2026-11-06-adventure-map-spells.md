@@ -92,7 +92,6 @@ Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), 
 - **What it shows**: for a monster in range of the selected hero, the status bar and the right-click popup show the exact count and the creature's name instead of the size word: "12 Skeletons", "1 Skeleton" (the engine). The popup then has a second paragraph saying whether they join, pay to join, flee or fight (`core.genrltxt.243` to `246`), which waits for monsters joining and fleeing (5.2).
 - Only the selected hero's Visions count; selecting another hero of the player who hasn't cast it shows the size words again (the engine reads the current hero). Monsters out of range, or under the fog, show what they show now.
 - Nothing else changes: the guard texts of dwellings and artifacts ("guarded by a pack of …") keep the words, and the battle shows its stacks as now (the engine reads Visions only for wandering monsters' hover and popup).
-
 - Built: `visions` in the spell's data (`rangePerPower` by skill level, `minimumRange`). The cast fact holds the hero's Visions for the day; the new day drops it. The status bar and the popup ask whether the selected hero's Visions reach the monster.
 
 ## Left after 4.8.8.4
