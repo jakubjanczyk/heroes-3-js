@@ -14,7 +14,7 @@ Each part's rules are checked when it's planned; 4.8.8.1 to 4.8.8.4 are checked 
 
 ## Left for later parts
 
-- 4.8.8.4 and 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
+- 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
 - Dimension Door from a boat, and onto land from one (7.10).
 - Town Portal underground, from a boat ("must be on land", `core.genrltxt.135`) and to allies' towns, with their features (7.10, 8.1).
 
@@ -88,10 +88,12 @@ Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), 
 - **Skill level**: it belongs to every school, so the hero's best magic school skill sets the level; with none it's cast as Basic, as the other spells (4.8.8.1). The book's no-skill text promises less ("a basic idea of the strength"), but the engine gives no skill the Basic effect.
 - **Lasts the day**: until the hero's next day starts (the wiki, the engine's one-day bonus). Cast again the same day, the better level of the two is kept (the engine).
 - **Range**: Power × 1 / 2 / 3 at Basic / Advanced / Expert, and never under 3 tiles (the wiki, the manual, the engine). Power is the hero's at the moment the monster is looked at (artifacts included), and the distance is from the hero's tile at that moment, not where they cast it: the hero carries the effect around all day (the engine).
-- **Distance**: a straight line from the hero's tile to the monster's (the engine; the wiki only says "range"). The engine counts a monster in range when the distance is less than the range, so at range 3 a monster 3 tiles straight across is out and one 2 across and 2 down (2.8) is in. **Open question**: strictly less, as the engine, or up to and including the range?
+- **Distance**: a straight line from the hero's tile to the monster's (the engine; the wiki only says "range"). The engine counts a monster in range when the distance is less than the range, so at range 3 a monster 3 tiles straight across is out and one 2 across and 2 down (2.8) is in. Strictly less, as the engine (decided with the user; the wiki doesn't say).
 - **What it shows**: for a monster in range of the selected hero, the status bar and the right-click popup show the exact count and the creature's name instead of the size word: "12 Skeletons", "1 Skeleton" (the engine). The popup then has a second paragraph saying whether they join, pay to join, flee or fight (`core.genrltxt.243` to `246`), which waits for monsters joining and fleeing (5.2).
 - Only the selected hero's Visions count; selecting another hero of the player who hasn't cast it shows the size words again (the engine reads the current hero). Monsters out of range, or under the fog, show what they show now.
 - Nothing else changes: the guard texts of dwellings and artifacts ("guarded by a pack of …") keep the words, and the battle shows its stacks as now (the engine reads Visions only for wandering monsters' hover and popup).
+
+- Built: `visions` in the spell's data (`rangePerPower` by skill level, `minimumRange`). The cast fact holds the hero's Visions for the day; the new day drops it. The status bar and the popup ask whether the selected hero's Visions reach the monster.
 
 ## Left after 4.8.8.4
 
