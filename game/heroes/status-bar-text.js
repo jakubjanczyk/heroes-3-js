@@ -34,14 +34,28 @@ export function getEntityName({ entity, definitions }) {
   return definition.namePlural ?? definition.name
 }
 
+function describeExactMonsterCount(entity, definitions) {
+  const creature = definitions.monsters[entity.type]
+  return `${entity.count} ${entity.count === 1 ? creature.name : creature.namePlural}`
+}
+
 // What the Heroes 3 status bar says about a map tile: the name of what stands on it,
 // or the terrain name when nothing does. Monsters also get the size of the group ("Pack of Skeletons"),
 // and an object each hero uses once whether the selected hero has ("Star Axis (Visited)").
-export function getStatusBarText({ entity, terrainName, definitions, visitedText = null }) {
+export function getStatusBarText({
+  entity,
+  terrainName,
+  definitions,
+  visitedText = null,
+  exactCount = false
+}) {
   if (!entity) {
     return capitalize(terrainName)
   }
 
+  if (entity.kind === 'MONSTER' && exactCount) {
+    return describeExactMonsterCount(entity, definitions)
+  }
   const name = getEntityName({ entity, definitions })
   if (entity.kind === 'MONSTER') {
     return describeMonsterGroup(entity.count, name)

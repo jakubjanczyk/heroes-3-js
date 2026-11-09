@@ -11,7 +11,8 @@ export function getInfoPopupLines({
   definitions,
   ownerColorName = null,
   visitedText = null,
-  values = {}
+  values = {},
+  exactCount = false
 }) {
   if (isVisitableObject(entity)) {
     return [
@@ -21,6 +22,6 @@ export function getInfoPopupLines({
     ]
   }
 
-  const name = getStatusBarText({ entity, terrainName, definitions })
+  const name = getStatusBarText({ entity, terrainName, definitions, exactCount })
   return ownerColorName ? [name, `(${ownerColorName})`] : [name]
 }
