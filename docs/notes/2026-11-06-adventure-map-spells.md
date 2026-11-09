@@ -10,7 +10,7 @@ In five parts, one PR each:
 - **4.8.8.4 Visions**: the exact count of monsters within range, for the day. Whether they would join waits for monsters joining (5.2); enemy heroes at Advanced and towns at Expert wait for 8.1.
 - **4.8.8.5 View World, with View Air and View Earth**: the View World screen, then what each spell adds to it.
 
-Each part's rules are checked when it's planned; 4.8.8.1 to 4.8.8.4 are checked so far.
+Each part's rules are checked when it's planned; all five are checked now.
 
 ## Left for later parts
 
@@ -99,3 +99,32 @@ Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), 
 - Whether the monsters would join, pay, flee or fight, in the popup (5.2).
 - Enemy heroes at Advanced, enemy towns at Expert (8.1).
 - A Rogue in the army acting as Expert Visions all the time, with Rogues (5.1, the other factions).
+
+## View World, View Air and View Earth — 4.8.8.5 (planned)
+
+Checked against the wiki (View Air, View Earth and View World, raw source, and its copy of `GENRLTXT.TXT`), the descriptions in `game/data/spells.json`, an open-source engine's spell config (`spells/adventure.json`), its View World effect and its world view screen (widgets, map rendering, key bindings), and a web search (copies of the game's manual and keyboard guides).
+
+### The View World screen
+
+- A small-scale view of the whole map: "View World" (`core.genrltxt.611`). The manual: "displays a large scale view of the map", with Zoom buttons to change the scale.
+- **What it shows**: the explored terrain and objects; unexplored tiles stay black. Over each explored town, hero, artifact, mine and loose resource an icon in its owner's colour (neutral for the rest) marks it (the engine's world view; the wiki only says "an overview"). Teleporters and gates get icons too, once they exist (7.9).
+- **The panel** beside the map: the title, the three zoom buttons, the legend and OK. The legend: Town, Hero, Artifact, Teleporter, Gate (`core.genrltxt.612` to `616`), then Mine (`617`) and Resource (`618`) with an icon for each of Wood, Mercury, Ore, Sulfur, Crystal, Gems, Gold (`619` to `625`). The Puzzle Map button waits for obelisks and the grail; the surface / underground button for maps with two levels.
+- **Zoom**: three buttons, 7, 11 and 16 pixels a tile; it opens at the middle one (the engine). The game's adventure map tile is 32.
+- **Where it opens**: on the part of the map the camera shows; the map can be scrolled to see the rest (our own choice for scrolling: drag it, as the minimap; the engine scrolls it as the adventure map).
+- **Leaving it**: OK, Escape or Enter (the engine's key bindings). The adventure map comes back centred on the selected hero (the engine).
+- **Clicks on its map** do nothing (our own choice; the engine lets the player act on the map from it, which no other source mentions).
+- How the screen is drawn: tiles in their terrain colours, as the minimap (obstacles darker, a mine or dwelling in its owner's colour), with the icons on top. We have no object pictures to shrink, as the game does.
+
+### View Earth (Earth, level 1, 2 / 1 / 1 / 1) and View Air (Air, level 1, 2 / 1 / 1 / 1)
+
+- **Casting**: clicking either in the book on the map (or the hero screen, which closes) spends the spell points and opens View World at once: no aiming, no movement points, no limit of casts a day, no message (the engine: `castsPerDay` 0, no target). The castle's Mage Guild can roll both (level 1).
+- **Lasts**: "instant" (the wiki): what the spell adds is shown only on that one screen; leaving it, the map is as before, and opening View World again shows only what is explored. Expert View Earth lifts no fog on the adventure map (the engine; the wiki says "on the view world screen" for every level).
+- **View Earth**: Basic (and no skill) every loose resource; Advanced also every mine; Expert also the whole terrain (the wiki, the engine). Resources and mines under the fog get their icons; at Expert the unexplored terrain and obstacles are drawn, but objects under the fog are not, only the icons of resources and mines (the engine).
+- **View Air**: Basic (and no skill) every artifact lying on the map; Advanced also every hero; Expert also every town (the wiki, the engine). Not spell scrolls or Pandora's boxes (the wiki). Guarded artifacts count (the engine counts every artifact on the map). Only the player's own heroes exist until 8.1, and they are never under the fog, so Advanced shows nothing more yet.
+- Icons the spell adds are only for objects under the fog; explored ones have theirs anyway (the engine).
+- Built (planned): `viewWorld` in the spell's data, by skill level (`objects`: `artifact`, `hero`, `town`, `resource`, `mine`; `showTerrain`). The cast is the spell points' fact; the screen and what it adds are the view's, not saved.
+
+### Left after 4.8.8.5
+
+- Teleporters and gates on the screen with Monoliths and Subterranean Gates (7.9); the Puzzle Map button with obelisks (7.7); the level button with an underground (9.1).
+- Enemy heroes under the fog with Advanced View Air (8.1).
