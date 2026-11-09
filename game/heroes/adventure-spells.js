@@ -14,7 +14,7 @@ export const notSkilledEnoughText = (heroName) =>
   `${heroName} is not skilled enough to cast this spell again today.`
 
 export function canCastOnMap(spell) {
-  return Boolean(spell?.townPortal || spell?.dimensionDoor || spell?.fly)
+  return Boolean(spell?.townPortal || spell?.dimensionDoor || spell?.fly || spell?.visions)
 }
 
 // The hero's flight for the rest of the day, with the penalty of the level they cast it at.

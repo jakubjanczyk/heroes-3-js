@@ -57,6 +57,10 @@
     "schools": ["AIR", "EARTH", "FIRE", "WATER"],
     "kind": "adventure",
     "costs": [4, 2, 2, 2],
+    "visions": {
+      "rangePerPower": [1, 1, 2, 3],
+      "minimumRange": 3
+    },
     "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [
       {

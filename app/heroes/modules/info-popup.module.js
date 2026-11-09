@@ -7,6 +7,7 @@ import { flaggedObjectOwner, visitableValues } from '../../../game/heroes/state/
 import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
 import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
+import { seesExactCount } from '../../../game/heroes/visions.js'
 import { visitedText } from '../../../game/heroes/visitable-objects/visits.js'
 import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -113,7 +114,8 @@ export const registerInfoPopupModule = defineModule(
         definitions,
         ownerColorName: owner ? capitalize(owner) : null,
         visitedText: visitedText(state.get(), entity, definitions),
-        values: entity ? visitableValues(state.get(), entity.id) : {}
+        values: entity ? visitableValues(state.get(), entity.id) : {},
+        exactCount: seesExactCount(state.get(), entity, definitions)
       })
       for (const line of lines) {
         fillLine(line)

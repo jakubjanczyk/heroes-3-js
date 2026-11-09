@@ -14,6 +14,7 @@ import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { spellCost } from '../../../game/heroes/spell-book.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { townIdsOf } from '../../../game/heroes/state/towns.js'
+import { visionsOf } from '../../../game/heroes/visions.js'
 import { heroMovementPoints, heroOwner, heroTile } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
@@ -148,6 +149,32 @@ export const registerAdventureSpellsModule = defineModule(
       emit(APP_COMMAND_HERO_TELEPORT_REQUESTED, { heroId: hero.id, tile: outcome.destination })
     }
 
+    function castLastingSpell(hero, spellId, spell) {
+      if (spell.fly) {
+        spendCast(hero, spellId, 0, { flight: flightOf(hero, spell) })
+        // A route planned on foot is planned again in the air.
+        emit(APP_FACT_PREVIEW_CLEARED, { heroId: hero.id })
+      } else {
+        spendCast(hero, spellId, 0, { visions: visionsOf(hero, spell) })
+      }
+    }
+
+    function castTownPortal(hero, spellId, spell, townId) {
+      const decide = townId ? decideTownPortalTo : decideTownPortal
+      const outcome = decide({ state: state.get(), hero, spell, towns: townsOf(hero.id), townId })
+      if (outcome.failure) {
+        emit(APP_UI_NOTICE_OPENED, { title: null, message: outcome.failure })
+      } else if (outcome.choices) {
+        emit(APP_UI_TOWN_PORTAL_TOWNS_OFFERED, {
+          heroId: hero.id,
+          spellId,
+          towns: outcome.choices.map(({ id, name }) => ({ id, name }))
+        })
+      } else if (outcome.destination) {
+        teleport(hero, spellId, outcome)
+      }
+    }
+
     function cast({ heroId, spellId, townId }) {
       if (aimsAtTile(definitions.spells?.[spellId])) {
         startAiming(heroId, spellId)
@@ -157,25 +184,10 @@ export const registerAdventureSpellsModule = defineModule(
       if (!hero) {
         return
       }
-      if (spell.fly) {
-        spendCast(hero, spellId, 0, { flight: flightOf(hero, spell) })
-        // A route planned on foot is planned again in the air.
-        emit(APP_FACT_PREVIEW_CLEARED, { heroId })
-        return
-      }
-
-      const decide = townId ? decideTownPortalTo : decideTownPortal
-      const outcome = decide({ state: state.get(), hero, spell, towns: townsOf(heroId), townId })
-      if (outcome.failure) {
-        emit(APP_UI_NOTICE_OPENED, { title: null, message: outcome.failure })
-      } else if (outcome.choices) {
-        emit(APP_UI_TOWN_PORTAL_TOWNS_OFFERED, {
-          heroId,
-          spellId,
-          towns: outcome.choices.map(({ id, name }) => ({ id, name }))
-        })
-      } else if (outcome.destination) {
-        teleport(hero, spellId, outcome)
+      if (spell.fly || spell.visions) {
+        castLastingSpell(hero, spellId, spell)
+      } else {
+        castTownPortal(hero, spellId, spell, townId)
       }
     }
 
