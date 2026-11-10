@@ -9,6 +9,7 @@ import {
   expectNoPreview,
   expectPreviewTargetAt,
   holdRightButtonOn,
+  longPressOn,
   pointerOverTile,
   readInfoPopupLines
 } from './adventure-map.utils.js'
@@ -53,11 +54,6 @@ async function releaseRightButton(user) {
 
 async function pressFingerOn(user, x, y) {
   await user.pointer({ keys: '[TouchA>]', ...pointerOverTile(x, y) })
-}
-
-async function longPressOn(user, x, y) {
-  await pressFingerOn(user, x, y)
-  await waitMs(LONG_PRESS_MS + 10)
 }
 
 async function slideFingerTo(user, x, y) {
@@ -318,7 +314,7 @@ describe('info popup behavior', () => {
           .withEntities(aHero(), aMonster().withType('SKELETON').withCount(12).at(2, 0))
       )
 
-      await longPressOn(user, 2, 0)
+      await longPressOn(user, 2, 0, LONG_PRESS_MS)
 
       expectInfoPopupLines(['Pack of Skeletons'])
       expectInfoPopupPicture('Skeletons')
@@ -328,7 +324,7 @@ describe('info popup behavior', () => {
       const { user } = await setupApp(
         aScenario().withSize(3).withEntities(aHero(), aMonster().at(2, 0))
       )
-      await longPressOn(user, 2, 0)
+      await longPressOn(user, 2, 0, LONG_PRESS_MS)
 
       await liftFinger(user)
 
@@ -348,7 +344,7 @@ describe('info popup behavior', () => {
     test('given a long press on a tile when the finger lifts then no path preview appears and the hero does not move', async () => {
       const { user } = await setupApp(aScenario().withSize(3).withEntities(aHero().at(0, 0)))
 
-      await longPressOn(user, 2, 0)
+      await longPressOn(user, 2, 0, LONG_PRESS_MS)
       await liftFinger(user)
 
       expectNoPreview()

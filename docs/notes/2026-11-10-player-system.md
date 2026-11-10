@@ -56,17 +56,12 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **A garrisoned town is fought on an open field until sieges (5.10)**, even when it has walls.
 - **The hero walks up to an enemy hero before heroes can attack** (the player's choice): the swords show, the hero stops on the tile next to it and nothing happens there until 8.1.7. Meeting a hero only opens the exchange screen when both are the same player's. Flying passes over an enemy hero as over the player's own heroes, and no spell lands on its tile.
 - **The helmet cursor is only for the player's own heroes.** Over an enemy hero the hero can't reach it is the arrow, with a town selected too.
-- **An enemy hero's popup keeps the hero box's skill icons** with their values empty, so it has the same shape as the player's own (to be confirmed, see 8.1.3 below).
+- **An enemy hero's popup keeps the hero box's skill icons** with their values empty, so it has the same shape as the player's own (agreed for 8.1.3).
 - Other players' resources start empty. Starting resources and income for them come with each player's day (8.1.13).
 
 ## Built
 
 - **8.1.1**: every hero, town, mine and dwelling a player owns carries that player's flag on the map, and the minimap shows them in that colour on the tiles the player has explored. The kingdom overview lists the other players' flags, in colour order, under Enemies. The demo map has a blue player in the south-east corner: Kirkwall, Sir Mullich and the Sulfur Dune.
 - **8.1.2**: an enemy hero blocks its tile and can't be selected or met. The swords show over one the hero can reach and the hero walks up next to it, where nothing happens yet; the arrow shows over one it can't reach.
-- Left for the next parts: the attack once the hero is next to an enemy hero (8.1.7), an enemy hero's popup still shows everything (8.1.3), and a town of another player names no owner in its popup until the town box (8.1.15).
-
-## 8.1.3 plan
-
-- Right-clicking (or long-pressing) another player's hero shows the hero box with its portrait and name, its primary skill icons without values, no morale, luck or spell points, and each army stack with its size word ("Pack") in place of the count.
-- The player's own heroes keep the full box. Visions showing an enemy hero's details is 8.1.16.
-- The size word comes from the same bands as the monster groups, in `game/heroes/monster-count.js`, without "of".
+- **8.1.3**: right-clicking or long-pressing another player's hero shows its portrait, name and army, each stack with its size word under it ("Pack"), and the skill icons without values; no morale, luck or spell points.
+- Left for the next parts: the attack once the hero is next to an enemy hero (8.1.7), the enemy hero's details through Visions (8.1.16), and a town of another player names no owner in its popup until the town box (8.1.15).

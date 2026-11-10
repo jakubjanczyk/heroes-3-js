@@ -316,9 +316,8 @@ export function readPrimarySkills(container) {
   const list = within(container).getByRole('list', { name: 'Primary skills' })
   return within(list)
     .getAllByRole('listitem')
-    .map(
-      (item) =>
-        `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`
+    .map((item) =>
+      `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`.trim()
     )
 }
 

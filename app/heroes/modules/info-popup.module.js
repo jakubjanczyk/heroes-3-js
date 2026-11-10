@@ -1,4 +1,4 @@
-import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
+import { getHeroArmy, getHeroArmyBySize, getTownGarrison } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
@@ -9,7 +9,7 @@ import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.
 import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
 import { seesExactCount } from '../../../game/heroes/visions.js'
 import { visitedText } from '../../../game/heroes/visitable-objects/visits.js'
-import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
+import { heroOwner, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_FACT_WORLD_READY,
   APP_UI_TILE_INFO_DISMISSED,
@@ -60,18 +60,30 @@ export const registerInfoPopupModule = defineModule(
       popup.style.top = `${clamp(top, SCREEN_MARGIN_PX, window.innerHeight - height - SCREEN_MARGIN_PX)}px`
     }
 
-    // As in Heroes 3, a hero gets the same box as the info box.
-    function fillHeroBox(entity) {
-      popup.classList.add('info-popup--hero')
-      const box = document.createElement('div')
-      renderHeroBox(box, document, {
+    function describeOwnHero(entity) {
+      return {
         name: getEntityName({ entity, definitions }),
         skills: getHeroPrimarySkills({ entity, definitions }),
         morale: getHeroMorale({ entity, definitions }),
         luck: getHeroLuck({ entity, definitions }),
         spellPoints: getHeroSpellPoints({ entity, definitions }).value,
         army: getHeroArmy({ entity, definitions })
-      })
+      }
+    }
+
+    function describeEnemyHero(entity) {
+      return {
+        name: getEntityName({ entity, definitions }),
+        army: getHeroArmyBySize({ entity, definitions })
+      }
+    }
+
+    // A hero gets the same box as the info box; another player's hero shows less.
+    function fillHeroBox(entity) {
+      popup.classList.add('info-popup--hero')
+      const box = document.createElement('div')
+      const isOwn = heroOwner(state.get(), entity.id) === viewingPlayer(state.get())
+      renderHeroBox(box, document, isOwn ? describeOwnHero(entity) : describeEnemyHero(entity))
       popup.appendChild(box)
     }
 

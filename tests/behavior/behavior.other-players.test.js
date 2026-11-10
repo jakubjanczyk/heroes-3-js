@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { within } from '@testing-library/dom'
+import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 import {
   clickTile,
@@ -11,10 +11,17 @@ import {
   getMapCursor,
   getMineEntity,
   getTownEntity,
+  holdRightButtonOn,
   hoverTile,
+  longPressOn,
   readPreviewPathTiles
 } from './adventure-map.utils.js'
-import { getTownInTownList, readSelectedHeroInHeroList } from './adventure-panels.utils.js'
+import {
+  getTownInTownList,
+  readArmySlots,
+  readPrimarySkills,
+  readSelectedHeroInHeroList
+} from './adventure-panels.utils.js'
 import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import { aDwelling, aHero, aMine, aScenario, aTown } from './builders.js'
@@ -195,6 +202,81 @@ describe('other players behavior', () => {
       const route = readPreviewPathTiles()
       expect(route.at(-1)).toEqual({ x: 4, y: 1 })
       expect(route).not.toContainEqual({ x: 2, y: 1 })
+    })
+  })
+  describe("an enemy hero's popup", () => {
+    const gameDefinitions = {
+      hero: readGameData('hero.json'),
+      heroClasses: readGameData('hero-classes.json'),
+      monsters: readGameData('monsters.json')
+    }
+
+    async function setupApp(scenario) {
+      return setupMovementBehaviorApp({
+        loadGameOptions: scenario.withDefinitions(gameDefinitions).build()
+      })
+    }
+
+    const skeletons = (count) => ({ creature: 'SKELETON', count })
+    const aBlueHeroWith = (army) =>
+      aHero().withId('hero-2').withName('Valeska').ownedBy('blue').withArmy(army).at(2, 0)
+
+    test('given a blue hero with 12 Skeletons when the player holds the right button on it then the popup shows its name and Skeletons with "Pack" under them', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(4, 3)
+          .withEntities(aHero().at(0, 2), aBlueHeroWith([skeletons(12)]))
+      )
+
+      await holdRightButtonOn(user, 2, 0)
+
+      const popup = screen.getByRole('tooltip')
+      expect(within(popup).getByRole('heading', { name: 'Valeska' })).toBeTruthy()
+      expect(readArmySlots(popup)).toEqual(['Skeletons Pack', '', '', '', '', '', ''])
+    })
+
+    test.each([
+      [4, 'Few'],
+      [5, 'Several'],
+      [1000, 'Legion']
+    ])('given a blue hero with %i Skeletons when the player holds the right button on it then the slot shows %s', async (count, word) => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(4, 3)
+          .withEntities(aHero().at(0, 2), aBlueHeroWith([skeletons(count)]))
+      )
+
+      await holdRightButtonOn(user, 2, 0)
+
+      expect(readArmySlots(screen.getByRole('tooltip'))[0]).toBe(`Skeletons ${word}`)
+    })
+
+    test('given a blue hero when the player holds the right button on it then the popup shows no primary skill values, morale, luck or spell points', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(4, 3)
+          .withEntities(aHero().at(0, 2), aBlueHeroWith([skeletons(12)]))
+      )
+
+      await holdRightButtonOn(user, 2, 0)
+
+      const popup = screen.getByRole('tooltip')
+      expect(readPrimarySkills(popup)).toEqual(['Attack', 'Defense', 'Power', 'Knowledge'])
+      expect(within(popup).queryByRole('group', { name: 'Morale' })).toBeNull()
+      expect(within(popup).queryByRole('group', { name: 'Luck' })).toBeNull()
+      expect(within(popup).queryByRole('group', { name: 'Spell points' })).toBeNull()
+    })
+
+    test('given a blue hero when the player presses and holds a finger on it then the popup shows its army as size words', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(4, 3)
+          .withEntities(aHero().at(0, 2), aBlueHeroWith([skeletons(12)]))
+      )
+
+      await longPressOn(user, 2, 0)
+
+      expect(readArmySlots(screen.getByRole('tooltip'))[0]).toBe('Skeletons Pack')
     })
   })
 })
