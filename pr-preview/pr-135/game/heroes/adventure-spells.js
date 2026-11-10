@@ -14,22 +14,12 @@ export const notSkilledEnoughText = (heroName) =>
   `${heroName} is not skilled enough to cast this spell again today.`
 
 export function canCastOnMap(spell) {
-  return Boolean(
-    spell?.townPortal || spell?.dimensionDoor || spell?.fly || spell?.visions || spell?.viewWorld
-  )
+  return Boolean(spell?.townPortal || spell?.dimensionDoor || spell?.fly || spell?.visions)
 }
 
 // The hero's flight for the rest of the day, with the penalty of the level they cast it at.
 export function flightOf(hero, spell) {
   return spell?.fly ? { penalty: spell.fly.penalty[spellSkillLevel(hero, spell)] } : null
-}
-
-export function viewWorldOf(hero, spell) {
-  const level = spellSkillLevel(hero, spell)
-  return {
-    reveals: spell.viewWorld.reveals[level],
-    showsTerrain: spell.viewWorld.showsTerrain[level]
-  }
 }
 
 export const aimsAtTile = (spell) => Boolean(spell?.dimensionDoor)

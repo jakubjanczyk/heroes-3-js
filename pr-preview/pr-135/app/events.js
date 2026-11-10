@@ -187,9 +187,6 @@ export const APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE = 'ui.battle.spellAffectsNoOne'
 export const APP_UI_ADVENTURE_SPELL_PICKED = 'ui.spellBook.adventureSpellPicked'
 // The towns Town Portal can go to, for the player to pick one.
 export const APP_UI_TOWN_PORTAL_TOWNS_OFFERED = 'ui.townPortal.townsOffered'
-// View World opens: from the Adventure Options with only the explored map, or cast with the kinds
-// of map objects it also shows under the fog (`reveals`) and whether it draws all the terrain.
-export const APP_UI_VIEW_WORLD_OPENED = 'ui.viewWorld.opened'
 // The map waits for the player to pick a tile for `spellId`, until the aim ends.
 export const APP_UI_MAP_AIMING_STARTED = 'ui.mapAiming.started'
 export const APP_UI_MAP_AIMING_ENDED = 'ui.mapAiming.ended'
