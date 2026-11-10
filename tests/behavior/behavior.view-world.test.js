@@ -270,6 +270,26 @@ describe('View World behavior', () => {
       expect(readViewWorldTopLeftTile()).toEqual({ x: 20.5, y: 10.5 })
     })
 
+    // At 1x the 60 x 40 map is 420 x 280 pixels and sits in the middle of the 500 x 300 area.
+    // At 4x it is 16 pixels a tile and centred again on the camera's (30.5, 20.5): the area
+    // shows 31.25 x 18.75 tiles, so its top-left corner is at (14.875, 11.125).
+    test('given View World zoomed out until the whole map fits when the player zooms in then it is centred on where the camera is again', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(60, 40)
+          .withEntities(aHero().at(30, 20))
+          .withDefinitions(definitions),
+        { viewportSize: { width: 1000, height: 700 } }
+      )
+      setViewWorldViewportSize(500, 300)
+      await openViewWorldFromOptions(user)
+
+      await clickViewWorldButton(user, 'Magnify 1x')
+      await clickViewWorldButton(user, 'Magnify 4x')
+
+      expect(readViewWorldTopLeftTile()).toEqual({ x: 14.875, y: 11.125 })
+    })
+
     // Dragging 55 pixels left and 22 up moves the map by 5 and 2 tiles of 11 pixels.
     test('given View World on a large map when the player drags its map then it shows another part of it', async () => {
       const { user } = await setupApp(

@@ -42,6 +42,8 @@ export const registerViewWorldViewModule = defineModule(
     let shown = null
     let tileSize = MIDDLE_ZOOM_TILE_SIZE
     let offset = { x: 0, y: 0 }
+    // The tile the player last asked to see in the middle; the map's edges may keep it off centre.
+    let wantedCentre = { x: 0, y: 0 }
     let drag = null
 
     const ownerLook = (owner) => (owner === viewingPlayer(state.get()) ? 'player' : 'neutral')
@@ -154,6 +156,7 @@ export const registerViewWorldViewModule = defineModule(
     }
 
     function centreOn(centre) {
+      wantedCentre = centre
       offset = {
         x: placedOffset(viewport.clientWidth, map.width * tileSize, centre.x),
         y: placedOffset(viewport.clientHeight, map.height * tileSize, centre.y)
@@ -230,10 +233,9 @@ export const registerViewWorldViewModule = defineModule(
     }
 
     function zoomTo(size) {
-      const centre = shownCentre()
       tileSize = size
       renderZoomButtons()
-      centreOn(centre)
+      centreOn(wantedCentre)
     }
 
     function onClick(event) {
@@ -255,6 +257,7 @@ export const registerViewWorldViewModule = defineModule(
         y: (viewport.clientHeight / 2 - (drag.offset.y + event.clientY - drag.from.y)) / tileSize
       }
       centreOn(centre)
+      wantedCentre = shownCentre()
     }
 
     return {
