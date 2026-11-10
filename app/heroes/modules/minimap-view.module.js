@@ -1,8 +1,6 @@
 import { setStyleVar } from '../../../engine/layers/dom-layer-utils.js'
 import { clamp } from '../../../engine/math-utils.js'
-import { isDwelling, isMine, isTown } from '../../../game/domain/entity-queries.js'
-import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
-import { flaggedObjectOwner } from '../../../game/heroes/state/map-objects.js'
+import { isTown } from '../../../game/domain/entity-queries.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import {
   heroIdsOf,
@@ -24,6 +22,7 @@ import {
   APP_UI_DEV_FOG_OF_WAR_CHANGED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createMapOverview } from '../presentation/map-overview.js'
 
 function clearNode(node) {
   if (!node) {
@@ -43,8 +42,7 @@ export const registerMinimapViewModule = defineModule(
     const createElement = env.document?.createElement?.bind(env.document)
 
     let map = null
-    let staticOccupancy = null
-    let entitiesById = new Map()
+    let overview = null
     let flaggedObjectTilesById = new Map()
     let tileElements = []
     let shownState = null
@@ -54,46 +52,15 @@ export const registerMinimapViewModule = defineModule(
     let dragTile = null
     let lastCameraUpdate = null
 
-    function getObjectCovering(tile) {
-      const occupant = staticOccupancy?.getAt(tile)
-      return occupant?.kind === FOOTPRINT_BLOCKER_KIND
-        ? entitiesById.get(occupant.ownerId)
-        : occupant
-    }
-
-    function getFlaggedObjectCovering(tile) {
-      const entity = getObjectCovering(tile)
-      return isMine(entity) || isDwelling(entity) ? entity : null
-    }
-
     function isExplored(tile) {
       return isTileExplored(state.get(), viewingPlayer(state.get()), tile)
     }
 
     function getTileClassName(tile) {
-      if (!isExplored(tile)) {
-        return 'minimap-tile minimap-tile--unexplored'
-      }
-
-      const classNames = ['minimap-tile']
-      const terrainName = map.getTerrainType(tile)?.name
-      if (terrainName) {
-        classNames.push(`terrain-tile--${terrainName}`)
-      }
-      if (getObjectCovering(tile)?.kind === 'OBSTACLE') {
-        classNames.push('minimap-tile--blocked')
-      }
-      // A tile covered by a mine or dwelling takes its owner's colour instead of the terrain's.
-      const flaggedObject = getFlaggedObjectCovering(tile)
-      if (flaggedObject) {
-        classNames.push(
-          flaggedObjectOwner(state.get(), flaggedObject.id) === viewingPlayer(state.get())
-            ? 'minimap-tile--player'
-            : 'minimap-tile--neutral'
-        )
-      }
-
-      return classNames.join(' ')
+      return [
+        'minimap-tile',
+        ...overview.tileClassNames(state.get(), tile, { explored: isExplored(tile) })
+      ].join(' ')
     }
 
     function placeMarker(marker, tile) {
@@ -119,7 +86,7 @@ export const registerMinimapViewModule = defineModule(
           minimapTerrain.appendChild(tile)
           tileElements.push(tile)
 
-          const flaggedObject = getFlaggedObjectCovering({ x, y })
+          const flaggedObject = overview.flaggedObjectCovering({ x, y })
           if (flaggedObject) {
             flaggedObjectTilesById.set(flaggedObject.id, [
               ...(flaggedObjectTilesById.get(flaggedObject.id) ?? []),
@@ -314,8 +281,11 @@ export const registerMinimapViewModule = defineModule(
           handler: (event) => {
             const entities = event.detail.scenario?.entities ?? []
             map = event.detail.map
-            staticOccupancy = event.detail.staticOccupancy ?? null
-            entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
+            overview = createMapOverview({
+              map,
+              staticOccupancy: event.detail.staticOccupancy,
+              entities
+            })
             towns = entities.filter(isTown)
 
             if (minimapMap && map?.width > 0 && map?.height > 0) {
