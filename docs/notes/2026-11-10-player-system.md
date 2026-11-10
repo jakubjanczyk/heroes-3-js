@@ -4,7 +4,7 @@ Roadmap 8.1. Other players on the map, whose turn it is, and what a player can l
 
 ## Parts
 
-Proposed, waiting for approval. Each part is one PR.
+Each part is one PR.
 
 Other players on the map:
 
