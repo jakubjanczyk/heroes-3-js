@@ -1079,7 +1079,7 @@ Making the game a competitive experience.
 ### 8.1 Player System
 In seventeen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
 - [x] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
-- [ ] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile
+- [x] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile; the swords show over one the hero can reach, and the hero walks up to it
 - [ ] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
 - [ ] 8.1.4 Capturing enemy mines and dwellings
 - [ ] 8.1.5 Capturing enemy towns without defenders
