@@ -4,12 +4,35 @@ Roadmap 8.1. Other players on the map, whose turn it is, and what a player can l
 
 ## Parts
 
-Proposed, waiting for approval:
+Proposed, waiting for approval. Each part is one PR.
 
-1. **8.1.1 Other players on the map.** Heroes, towns, mines and dwellings of other colours, each with its owner's flag. The player can't select or control them, sees only a little about them, and can capture their towns, mines and dwellings.
-2. **8.1.2 Attacking an enemy hero.** A battle against the hero's army with its primary skills. The winner gets the experience, the loser leaves the map (to the tavern, 4.5.5) and the winner takes their artifacts. An enemy hero visiting its own town defends it. Surrender works against an enemy hero. Enemy heroes casting spells waits for the combat AI (8.3, 5.7b).
-3. **8.1.3 Taking turns.** After End Turn each other player takes a turn in colour order, then the new day starts. Each player's heroes get their movement points back and each player gets its income and starting resources. The info box shows an hourglass with the player's crest during their turn. The turns are empty until the AI plays them (8.3).
-4. **8.1.4 What a player learns about the others.** The town box for towns that aren't yours (no hall or income, army sizes as words). Visions showing enemy heroes at Advanced and towns at Expert. The Thieves' Guild.
+Other players on the map:
+
+1. **8.1.1 Other players' colours.** Heroes, towns, mines and dwellings of other colours carry their owner's flag (every hero gets a flag, the player's own too), show in that colour on the minimap and say their owner in the popup ("(Blue)"). The kingdom overview shows the other players' flags under Enemies.
+2. **8.1.2 Enemy heroes stand in the way.** The player can't select an enemy hero or meet it: there is no route to its tile and it blocks the way. The arrow cursor shows over it, and a click does nothing until 8.1.6.
+3. **8.1.3 What an enemy hero's popup shows.** Its name and army, each stack's size as a word. No primary skills, morale, luck or spell points.
+4. **8.1.4 Capturing enemy mines and dwellings.** Flagging one makes it the player's: the flag turns red, and the income or the recruits go to the player.
+5. **8.1.5 Capturing enemy towns.** Walking into an enemy town without defenders captures it: red flag, the town list, its income.
+
+Fighting enemy heroes:
+
+6. **8.1.6 Attacking an enemy hero.** The swords cursor, then a battle against the hero's army, with its primary skills. The winner gets the experience and the beaten enemy hero leaves the map.
+7. **8.1.7 The beaten hero's artifacts go to the winner.**
+8. **8.1.8 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5).
+9. **8.1.9 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold.
+10. **8.1.10 An enemy hero defends its town.** Entering a town with an enemy hero in it starts a battle, and the town is captured if the player wins.
+
+Turns:
+
+11. **8.1.11 Taking turns.** After End Turn each other player takes a turn in colour order, then the new day starts. The turns are empty until the AI plays them (8.3).
+12. **8.1.12 Each player's day.** Each player's heroes get their movement points back, and each player gets their own income and starting resources.
+13. **8.1.13 The hourglass.** The info box shows an hourglass with the player's crest during another player's turn.
+
+What a player learns about the others:
+
+14. **8.1.14 The town box for towns that aren't yours.** No hall or income, and army sizes as words.
+15. **8.1.15 Visions on enemy heroes** (Advanced) **and towns** (Expert).
+16. **8.1.16 The Thieves' Guild.**
 
 Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cure, Resistance) come with the AI (8.3, 5.7b), and losing the game with victory conditions (8.5).
 
