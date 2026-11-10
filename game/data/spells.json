@@ -88,10 +88,6 @@
     "kind": "adventure",
     "costs": [2, 1, 1, 1],
     "mageGuildChances": { "CASTLE": 3 },
-    "viewWorld": {
-      "reveals": [["RESOURCE"], ["RESOURCE"], ["RESOURCE", "MINE"], ["RESOURCE", "MINE"]],
-      "showsTerrain": [false, false, false, true]
-    },
     "descriptions": [
       {
         "title": "View earth",
@@ -144,10 +140,6 @@
     "kind": "adventure",
     "costs": [2, 1, 1, 1],
     "mageGuildChances": { "CASTLE": 3 },
-    "viewWorld": {
-      "reveals": [["ARTIFACT"], ["ARTIFACT"], ["ARTIFACT", "HERO"], ["ARTIFACT", "HERO", "TOWN"]],
-      "showsTerrain": [false, false, false, false]
-    },
     "descriptions": [
       {
         "title": "View Air",
