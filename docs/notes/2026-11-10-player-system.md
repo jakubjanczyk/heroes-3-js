@@ -52,6 +52,8 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **The players are the colours that own something in the scenario**, in colour order. Red is always the human player until hot-seat (8.2). The scenario gets no separate players list until it needs one (faction or AI settings, 8.3 or 9.1).
 - **Every hero gets a flag in its owner's colour**, the player's own too, as towns, mines and dwellings have.
 - **A garrisoned town is fought on an open field until sieges (5.10)**, even when it has walls.
+- **An enemy hero is a different occupant from one of the player's own heroes** for the moving hero's routes: the player's heroes keep the meeting, an enemy hero has no arrival interaction until the attack (8.1.7) gives it one. Flying passes over it as over the player's own heroes, and no spell lands on its tile.
+- **The helmet cursor is only for the player's own heroes.** Over an enemy hero it is the arrow, with a town selected too.
 - Other players' resources start empty. Starting resources and income for them come with each player's day (8.1.13).
 
 ## Built
