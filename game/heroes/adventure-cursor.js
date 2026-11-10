@@ -25,7 +25,7 @@ export function getScrollCursor(direction) {
 // Cursors from the 4th day on all show 4, as in Heroes 3.
 const LAST_NUMBERED_DAY = 4
 
-function cursorActionFor(entity, attacks) {
+function cursorActionFor(entity, attacks, isOwnHero) {
   if (attacks) {
     return ADVENTURE_CURSOR.ATTACK
   }
@@ -34,29 +34,31 @@ function cursorActionFor(entity, attacks) {
   }
 
   if (entity.kind === 'HERO') {
-    return ADVENTURE_CURSOR.EXCHANGE
+    return isOwnHero ? ADVENTURE_CURSOR.EXCHANGE : ADVENTURE_CURSOR.ATTACK
   }
   return entity.kind === 'MONSTER' ? ADVENTURE_CURSOR.ATTACK : ADVENTURE_CURSOR.VISIT
 }
 
 // The cursor over a map tile: the helmet over the selected hero; else, when the hero has a route
-// there, the swords for a monster or when a battle on the way (`attacks`) stops it, the two
-// heroes trading for another of the player's heroes, the rearing horse for anything else it can
-// visit and the horse for an empty tile, numbered with the day it gets there, or to the battle,
-// when that is not today; else the helmet over another hero and the arrow elsewhere.
+// there, the swords for a monster or an enemy hero or when a battle on the way (`attacks`) stops
+// it, the two heroes trading for another of the player's heroes, the rearing horse for anything
+// else it can visit and the horse for an empty tile, numbered with the day it gets there, or to
+// the battle, when that is not today; else the helmet over another of the player's heroes and the
+// arrow elsewhere.
 export function getAdventureCursor({
   entity,
   travelDays,
   attacks = false,
-  isSelectedHero = false
+  isSelectedHero = false,
+  isOwnHero = isSelectedHero
 }) {
-  if (entity?.kind === 'HERO' && (isSelectedHero || !travelDays)) {
+  if (isOwnHero && (isSelectedHero || !travelDays)) {
     return ADVENTURE_CURSOR.HERO
   }
   if (!travelDays) {
     return ADVENTURE_CURSOR.ARROW
   }
 
-  const action = cursorActionFor(entity, attacks)
+  const action = cursorActionFor(entity, attacks, isOwnHero)
   return travelDays === 1 ? action : `${action}-${Math.min(travelDays, LAST_NUMBERED_DAY)}`
 }
