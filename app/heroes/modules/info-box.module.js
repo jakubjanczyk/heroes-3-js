@@ -15,7 +15,12 @@ import {
   describeTownBox,
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
-import { selectedHeroIdOf, turnNumber, viewingPlayer } from '../../../game/state/queries.js'
+import {
+  enemiesOf,
+  selectedHeroIdOf,
+  turnNumber,
+  viewingPlayer
+} from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_STACK_MOVE_REQUESTED,
   APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
@@ -237,7 +242,9 @@ export const registerInfoBoxModule = defineModule(
           builtInTowns: viewingPlayersTownIds(state.get()).map((townId) =>
             builtIn(state.get(), townId)
           )
-        })
+        }),
+        allies: [],
+        enemies: enemiesOf(state.get(), viewingPlayer(state.get()))
       })
     }
 

@@ -1,4 +1,5 @@
 import { showInfoBoxView } from './info-box-view.js'
+import { createPlayerFlag } from './player-flag.js'
 
 function renderHallCounts(document, halls) {
   const list = document.createElement('ul')
@@ -26,8 +27,7 @@ function renderHallCounts(document, halls) {
   return list
 }
 
-// No other players yet, so both rows stay empty.
-function renderFlagRow(document, name) {
+function renderFlagRow(document, name, players) {
   const row = document.createElement('div')
   row.className = 'kingdom-box__players'
 
@@ -38,17 +38,22 @@ function renderFlagRow(document, name) {
   const flags = document.createElement('ul')
   flags.className = 'kingdom-box__flags'
   flags.setAttribute('aria-label', name)
+  for (const player of players) {
+    const item = document.createElement('li')
+    item.append(createPlayerFlag(document, player))
+    flags.append(item)
+  }
 
   row.append(label, flags)
   return row
 }
 
-export function renderKingdomOverviewBox(container, document, { halls }) {
+export function renderKingdomOverviewBox(container, document, { halls, allies, enemies }) {
   const overview = document.createDocumentFragment()
   overview.append(
     renderHallCounts(document, halls),
-    renderFlagRow(document, 'Allies'),
-    renderFlagRow(document, 'Enemies')
+    renderFlagRow(document, 'Allies', allies),
+    renderFlagRow(document, 'Enemies', enemies)
   )
   showInfoBoxView(container, 'kingdom-box', overview)
 }

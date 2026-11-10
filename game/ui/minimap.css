@@ -92,10 +92,6 @@
     background: var(--neutral-grey);
   }
 
-  & .minimap-tile--player {
-    background: var(--player-red);
-  }
-
   & .minimap-town-marker {
     position: absolute;
     inset-inline-start: var(--minimap-marker-x, 0%);
@@ -109,11 +105,6 @@
     box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
   }
 
-  & .minimap-town-marker--player {
-    background: var(--player-red);
-    border-color: color-mix(in oklab, black 58%, var(--player-red));
-  }
-
   & .minimap-hero-marker {
     position: absolute;
     inset-inline-start: var(--minimap-marker-x, 0%);
@@ -122,8 +113,79 @@
     height: var(--minimap-hero-size);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    background: var(--player-red);
-    border: 1px solid color-mix(in oklab, black 58%, var(--player-red));
+    border: 1px solid;
     box-shadow: 0 1px 3px color-mix(in oklab, black 80%, transparent);
+  }
+
+  & .minimap-tile[data-player="red"] {
+    background: var(--player-red);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="red"] {
+    background: var(--player-red);
+    border-color: color-mix(in oklab, black 58%, var(--player-red));
+  }
+
+  & .minimap-tile[data-player="blue"] {
+    background: var(--player-blue);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="blue"] {
+    background: var(--player-blue);
+    border-color: color-mix(in oklab, black 58%, var(--player-blue));
+  }
+
+  & .minimap-tile[data-player="tan"] {
+    background: var(--player-tan);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="tan"] {
+    background: var(--player-tan);
+    border-color: color-mix(in oklab, black 58%, var(--player-tan));
+  }
+
+  & .minimap-tile[data-player="green"] {
+    background: var(--player-green);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="green"] {
+    background: var(--player-green);
+    border-color: color-mix(in oklab, black 58%, var(--player-green));
+  }
+
+  & .minimap-tile[data-player="orange"] {
+    background: var(--player-orange);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="orange"] {
+    background: var(--player-orange);
+    border-color: color-mix(in oklab, black 58%, var(--player-orange));
+  }
+
+  & .minimap-tile[data-player="purple"] {
+    background: var(--player-purple);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="purple"] {
+    background: var(--player-purple);
+    border-color: color-mix(in oklab, black 58%, var(--player-purple));
+  }
+
+  & .minimap-tile[data-player="teal"] {
+    background: var(--player-teal);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="teal"] {
+    background: var(--player-teal);
+    border-color: color-mix(in oklab, black 58%, var(--player-teal));
+  }
+
+  & .minimap-tile[data-player="pink"] {
+    background: var(--player-pink);
+  }
+
+  & :is(.minimap-town-marker, .minimap-hero-marker)[data-player="pink"] {
+    background: var(--player-pink);
+    border-color: color-mix(in oklab, black 58%, var(--player-pink));
   }
 }
