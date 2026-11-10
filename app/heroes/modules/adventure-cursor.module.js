@@ -10,7 +10,7 @@ import {
 import { dimensionDoorTargetAt } from '../../../game/heroes/adventure-spells.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
-import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
+import { heroOwner, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
   APP_FACT_ENTITY_REMOVED,
@@ -74,6 +74,12 @@ export const registerAdventureCursorModule = defineModule(
       viewport.dataset.cursor = scrollDirection ? getScrollCursor(scrollDirection) : tileCursor
     }
 
+    function isOwnHero(entity) {
+      return (
+        entity?.kind === 'HERO' && heroOwner(state.get(), entity.id) === viewingPlayer(state.get())
+      )
+    }
+
     function opensTown(entity) {
       return (
         isTown(entity) &&
@@ -93,7 +99,7 @@ export const registerAdventureCursorModule = defineModule(
       }
 
       const entity = mapObjects.getEntityAt(hoveredTile)
-      if (entity?.kind === 'HERO' && (isTownSelected || entity.id === heroRoutes.getHero()?.id)) {
+      if (isOwnHero(entity) && (isTownSelected || entity.id === heroRoutes.getHero()?.id)) {
         showCursor(getAdventureCursor({ entity, isSelectedHero: true }))
         return
       }
@@ -116,7 +122,14 @@ export const registerAdventureCursorModule = defineModule(
         ? heroRoutes.travelDays(pathToBattle ?? path, config.maxMovementPoints)
         : null
       const entity = mapObjects.getEntityAt(hoveredTile)
-      showCursor(getAdventureCursor({ entity, travelDays, attacks: Boolean(pathToBattle) }))
+      showCursor(
+        getAdventureCursor({
+          entity,
+          travelDays,
+          attacks: Boolean(pathToBattle),
+          isOwnHero: isOwnHero(entity)
+        })
+      )
     }
 
     return {
