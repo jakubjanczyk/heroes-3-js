@@ -1,6 +1,6 @@
 # Adventure map spells
 
-Roadmap 4.8.8. Six spells can be cast on the map now: View Air, View Earth, Visions, Dimension Door, Fly and Town Portal. Summon Boat, Scuttle Boat and Water Walk wait for boats (7.10), and Disguise for enemy heroes (8.1).
+Roadmap 4.8.8. Six spells can be cast on the map: View Air, View Earth, Visions, Dimension Door, Fly and Town Portal; the first four parts built all but View Air and View Earth. Summon Boat, Scuttle Boat and Water Walk wait for boats (7.10), and Disguise for enemy heroes (8.1).
 
 In five parts, one PR each:
 
@@ -8,13 +8,12 @@ In five parts, one PR each:
 - **4.8.8.2 Dimension Door**: aiming at a tile on the map, its range and casts a day.
 - **4.8.8.3 Fly**: lasts the day; the hero moves over water and obstacles, with a penalty by skill level.
 - **4.8.8.4 Visions**: the exact count of monsters within range, for the day. Whether they would join waits for monsters joining (5.2); enemy heroes at Advanced and towns at Expert wait for 8.1.
-- **4.8.8.5 View World, with View Air and View Earth**: the View World screen, then what each spell adds to it.
+- **4.8.8.5 View World, with View Air and View Earth**: the View World screen, then what each spell adds to it. Moved to the end of the roadmap's work order: the screen the game draws is more than this part should take on now (below). Until then, clicking either spell in the book shows its description.
 
-Each part's rules are checked when it's planned; 4.8.8.1 to 4.8.8.4 are checked so far.
+Each part's rules are checked when it's planned; all five are checked now.
 
 ## Left for later parts
 
-- 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
 - Dimension Door from a boat, and onto land from one (7.10).
 - Town Portal underground, from a boat ("must be on land", `core.genrltxt.135`) and to allies' towns, with their features (7.10, 8.1).
 
@@ -99,3 +98,38 @@ Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), 
 - Whether the monsters would join, pay, flee or fight, in the popup (5.2).
 - Enemy heroes at Advanced, enemy towns at Expert (8.1).
 - A Rogue in the army acting as Expert Visions all the time, with Rogues (5.1, the other factions).
+
+## View World, View Air and View Earth — 4.8.8.5 (moved to the end of the roadmap)
+
+Checked against the wiki (View Air, View Earth and View World, raw source, and its copies of `GENRLTXT.TXT` and `HELP.TXT`), the descriptions in `game/data/spells.json`, an open-source engine's spell config (`spells/adventure.json`), its View World effect and world view screen, a web search (copies of the game's manual and keyboard guides), and screenshots of the game's screen the user shared.
+
+A first version was built (a screen of its own over the whole game, the map drawn in the minimap's colours) and dropped: the game's screen looks and sits differently, as below, and matching it was too much for now.
+
+### What the game's screen looks like
+
+- **Where**: the small map takes the adventure map's place. The minimap stays at the top of the sidebar, and the status bar and resource bar stay where they are. The rest of the sidebar (hero list, buttons, town list, info box) is replaced by the View World panel.
+- **The map**: the real map drawn small, terrain and objects' pictures shrunk; what isn't explored is dark.
+- **Icons** over the map, in the owner's colour where an object has one: a pennant for a town, a shield for a hero, a cyan star for an artifact, a sparkle for a teleporter, an arch for a gate, and for mines and loose resources a small picture of each resource.
+- **The panel**, top to bottom: "View World" (`core.genrltxt.611`); three magnifying glass buttons, x1, x2 and x4; the legend: Town, Hero, Artifact, Teleporter, Gate (`612` to `616`), each with its icon; then a Mine and a Resource heading (`617`, `618`) over a row for each of Wood, Mercury, Ore, Sulfur, Crystal, Gems, Gold (`619` to `625`), the mine's icon on the left, the name in the middle, the resource's icon on the right; at the bottom the Puzzle Map button, the surface / underground button on a map with two levels, and OK.
+- **Zoom**: x1, x2 and x4 draw a tile at 7, 11 and 16 pixels (the engine; the adventure map's tile is 32). Which one it opens at isn't certain from the screenshots; the engine opens at x2.
+- **Leaving it**: OK; the engine also takes Escape and Enter, and centres the adventure map on the selected hero again.
+- **Clicks on its map**: decided with the user that they do nothing (the engine lets the player act on the map from it, which no other source mentions).
+
+### View Earth (Earth, level 1, 2 / 1 / 1 / 1) and View Air (Air, level 1, 2 / 1 / 1 / 1)
+
+- **Casting**: clicking either in the book on the map (or the hero screen, which closes) spends the spell points and opens View World at once: no aiming, no movement points, no limit of casts a day, no message (the engine). The castle's Mage Guild can roll both (level 1).
+- **Lasts**: "instant" (the wiki): what the spell adds is shown only on that one screen; leaving it, the map is as before. Expert View Earth lifts no fog on the adventure map (the engine; the wiki says "on the view world screen" for every level).
+- **View Earth**: Basic (and no skill) every loose resource; Advanced also every mine; Expert also the whole terrain (the wiki, the engine). At Expert the unexplored terrain and obstacles are drawn, but objects under the fog are not, only the icons of resources and mines (the engine).
+- **View Air**: Basic (and no skill) every artifact lying on the map; Advanced also every hero; Expert also every town (the wiki, the engine). Not spell scrolls or Pandora's boxes (the wiki). Guarded artifacts count (the engine).
+- Icons the spell adds are only for objects under the fog; explored ones have theirs anyway (the engine).
+- Planned data: `viewWorld` in the spell's data, by skill level: `reveals`, the kinds of map objects it also shows under the fog, and `showsTerrain`. The cast is the spell points' fact; the screen and what it adds are the view's, not saved.
+
+### Opening it without a spell
+
+- The game's help texts (`HELP.TXT`) describe an Adventure Options window behind the HUD's Adventure Options button: View World, View Puzzle, View Scenario Info, Dig, Replay Opponent Turn and Okay ("Return to the Adventure Map"). Keyboard guides give V for View World under it.
+- Open question: the user remembers Dig as a button of its own, not in that window. Check against the game before building the window.
+
+### Left for later
+
+- Teleporters and gates with Monoliths and Subterranean Gates (7.9); the Puzzle Map button with obelisks (7.7); the level button with an underground (9.1).
+- Enemy heroes under the fog with Advanced View Air (8.1).
