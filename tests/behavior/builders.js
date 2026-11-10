@@ -23,6 +23,10 @@ export const aHero = () =>
       withExperience(experience) {
         hero.experience = experience
       },
+      // red, blue, tan, green, orange, purple, teal or pink; the player plays red.
+      ownedBy(player) {
+        hero.owner = player
+      },
       // Up to seven slots in order; null leaves a slot empty.
       withArmy(army) {
         hero.army = army
@@ -60,6 +64,9 @@ export const aTown = () =>
     ownedByPlayer() {
       town.owner = 'red'
     },
+    ownedBy(player) {
+      town.owner = player
+    },
     // Building ids, as in the town's `buildings` in game/data; the Village Hall always stands.
     withBuildings(buildings) {
       town.buildings = buildings
@@ -75,6 +82,9 @@ export const aMine = () =>
     ...placeable(mine),
     ownedByPlayer() {
       mine.owner = 'red'
+    },
+    ownedBy(player) {
+      mine.owner = player
     }
   }))
 
@@ -85,6 +95,9 @@ export const aDwelling = () =>
       ...placeable(dwelling),
       ownedByPlayer() {
         dwelling.owner = 'red'
+      },
+      ownedBy(player) {
+        dwelling.owner = player
       }
     })
   )

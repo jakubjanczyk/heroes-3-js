@@ -180,6 +180,26 @@ describe('info popup behavior', () => {
     })
 
     test.each([
+      { object: 'mine', entity: () => aMine().ownedBy('blue').at(2, 1), name: 'Gold Mine' },
+      {
+        object: 'dwelling',
+        entity: () => aDwelling().withType('GRIFFIN_TOWER').ownedBy('blue').at(2, 1),
+        name: 'Griffin Tower'
+      }
+    ])("given another player's $object when the player holds the right button on it then the popup shows its name and that player's colour", async ({
+      entity,
+      name
+    }) => {
+      const { user } = await setupApp(
+        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), entity())
+      )
+
+      await holdRightButtonOn(user, 2, 1)
+
+      expectInfoPopupLines([name, '(Blue)'])
+    })
+
+    test.each([
       { object: 'mine', part: 'entry tile', x: 2, y: 2, name: 'Gold Mine' },
       { object: 'mine', part: 'building', x: 1, y: 2, name: 'Gold Mine' },
       { object: 'town', part: 'entry tile', x: 2, y: 2, name: 'Castle' },

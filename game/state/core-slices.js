@@ -37,17 +37,28 @@ function changeMovementPoints(hero, { value }) {
   return { movementPoints: { value: Math.max(0, remaining), max } }
 }
 
+// The players' colours in the order they take their turns.
+export const PLAYER_COLORS = Object.freeze([
+  'red',
+  'blue',
+  'tan',
+  'green',
+  'orange',
+  'purple',
+  'teal',
+  'pink'
+])
+
+// The players are the colours that own something in the scenario, and red, the human player.
+function playerColorsOf(scenario) {
+  const owners = new Set([DEFAULT_PLAYER, ...entitiesOf(scenario).map((entity) => entity.owner)])
+  return PLAYER_COLORS.filter((color) => owners.has(color))
+}
+
 const playersSlice = {
   key: 'players',
   initial: ({ scenario }) => ({
-    colors: [
-      ...new Set([
-        DEFAULT_PLAYER,
-        ...entitiesOf(scenario)
-          .map((entity) => entity.owner)
-          .filter(Boolean)
-      ])
-    ],
+    colors: playerColorsOf(scenario),
     activePlayer: DEFAULT_PLAYER,
     selectedHeroIds: {}
   }),

@@ -3,11 +3,13 @@ import { clamp } from '../../../engine/math-utils.js'
 import { isDwelling, isMine, isTown } from '../../../game/domain/entity-queries.js'
 import { FOOTPRINT_BLOCKER_KIND } from '../../../game/footprint-utils.js'
 import { flaggedObjectOwner } from '../../../game/heroes/state/map-objects.js'
-import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
+import { townOwner } from '../../../game/heroes/state/towns.js'
 import {
   heroIdsOf,
+  heroOwner,
   heroTile,
   isTileExplored,
+  playerColors,
   tilesExploredSince,
   viewingPlayer
 } from '../../../game/state/queries.js'
@@ -83,17 +85,30 @@ export const registerMinimapViewModule = defineModule(
       if (getObjectCovering(tile)?.kind === 'OBSTACLE') {
         classNames.push('minimap-tile--blocked')
       }
-      // A tile covered by a mine or dwelling takes its owner's colour instead of the terrain's.
       const flaggedObject = getFlaggedObjectCovering(tile)
-      if (flaggedObject) {
-        classNames.push(
-          flaggedObjectOwner(state.get(), flaggedObject.id) === viewingPlayer(state.get())
-            ? 'minimap-tile--player'
-            : 'minimap-tile--neutral'
-        )
+      if (flaggedObject && !flaggedObjectOwner(state.get(), flaggedObject.id)) {
+        classNames.push('minimap-tile--neutral')
       }
 
       return classNames.join(' ')
+    }
+
+    // A tile covered by a mine or dwelling takes its owner's colour instead of the terrain's.
+    function paintTile(element, tile) {
+      element.className = getTileClassName(tile)
+      const flaggedObject = isExplored(tile) ? getFlaggedObjectCovering(tile) : null
+      const owner = flaggedObject ? flaggedObjectOwner(state.get(), flaggedObject.id) : null
+      if (owner) {
+        element.dataset.player = owner
+      } else {
+        delete element.dataset.player
+      }
+    }
+
+    function paintMarker(marker, player) {
+      if (player) {
+        marker.dataset.player = player
+      }
     }
 
     function placeMarker(marker, tile) {
@@ -113,7 +128,7 @@ export const registerMinimapViewModule = defineModule(
       for (let y = 0; y < map.height; y += 1) {
         for (let x = 0; x < map.width; x += 1) {
           const tile = createElement('div')
-          tile.className = getTileClassName({ x, y })
+          paintTile(tile, { x, y })
           tile.dataset.x = String(x)
           tile.dataset.y = String(y)
           minimapTerrain.appendChild(tile)
@@ -133,7 +148,7 @@ export const registerMinimapViewModule = defineModule(
     // A capture changes only the tiles that object covers, so the rest of the minimap stays as is.
     function renderFlaggedObjectTiles(entityId) {
       for (const tile of flaggedObjectTilesById.get(entityId) ?? []) {
-        tile.className = getTileClassName({ x: Number(tile.dataset.x), y: Number(tile.dataset.y) })
+        paintTile(tile, { x: Number(tile.dataset.x), y: Number(tile.dataset.y) })
       }
     }
 
@@ -143,10 +158,11 @@ export const registerMinimapViewModule = defineModule(
       const explored = tilesExploredSince(shownState, current, viewingPlayer(current))
       shownState = current
       for (const tile of explored) {
-        tileElements[tile.y * map.width + tile.x].className = getTileClassName(tile)
+        paintTile(tileElements[tile.y * map.width + tile.x], tile)
       }
       if (explored.length > 0) {
         renderTowns()
+        renderHeroes()
       }
     }
 
@@ -165,25 +181,33 @@ export const registerMinimapViewModule = defineModule(
 
       for (const town of towns.filter((town) => isExplored(town.tile))) {
         const marker = createElement('div')
-        marker.className = isViewingPlayersTown(state.get(), town.id)
-          ? 'minimap-town-marker minimap-town-marker--player'
-          : 'minimap-town-marker'
+        marker.className = 'minimap-town-marker'
+        paintMarker(marker, townOwner(state.get(), town.id))
         marker.dataset.entityId = town.id
         placeMarker(marker, town.tile)
         minimapTowns.appendChild(marker)
       }
     }
 
-    function renderHeroes(heroIds) {
+    // Every player's heroes on the tiles the player has explored.
+    function heroIdsShown() {
+      const current = state.get()
+      return playerColors(current).flatMap((player) =>
+        heroIdsOf(current, player).filter((heroId) => isExplored(heroTile(current, heroId)))
+      )
+    }
+
+    function renderHeroes() {
       heroMarkersById.clear()
       if (!map || !minimapHeroes || typeof createElement !== 'function') {
         return
       }
 
       clearNode(minimapHeroes)
-      for (const heroId of heroIds) {
+      for (const heroId of heroIdsShown()) {
         const marker = createElement('div')
         marker.className = 'minimap-hero-marker'
+        paintMarker(marker, heroOwner(state.get(), heroId))
         marker.dataset.entityId = heroId
         placeMarker(marker, heroTile(state.get(), heroId))
         minimapHeroes.appendChild(marker)
@@ -326,7 +350,7 @@ export const registerMinimapViewModule = defineModule(
             }
 
             renderExploration()
-            renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
+            renderHeroes()
             updateViewportBox(lastCameraUpdate)
           }
         },
@@ -346,13 +370,13 @@ export const registerMinimapViewModule = defineModule(
         },
         {
           type: APP_FACT_HERO_HIRED,
-          handler: () => renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
+          handler: () => renderHeroes()
         },
         {
           type: APP_FACT_ENTITY_REMOVED,
           handler: (event) => {
             if (heroMarkersById.has(event.detail.entityId)) {
-              renderHeroes(heroIdsOf(state.get(), viewingPlayer(state.get())))
+              renderHeroes()
             }
           }
         },

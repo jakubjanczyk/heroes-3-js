@@ -11,6 +11,11 @@ export function playerColors(state) {
   return state.players.colors
 }
 
+// Every other player is an enemy until there are teams.
+export function enemiesOf(state, player) {
+  return playerColors(state).filter((color) => color !== player)
+}
+
 export function heroOwner(state, heroId) {
   return state.heroes[heroId]?.owner ?? null
 }
