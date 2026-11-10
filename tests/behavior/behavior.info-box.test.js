@@ -497,12 +497,31 @@ describe('info box views behavior', () => {
     expect(readKingdomOverviewHalls()).toEqual({ ...NO_TOWNS, 'Village Hall': 1, 'Town Hall': 1 })
   })
 
-  test('shows empty allies and enemies rows under the halls', async () => {
+  test('shows empty allies and enemies rows under the halls when no other player is on the map', async () => {
     const { user } = await setupTwoTownApp()
 
     await openKingdomOverview(user)
 
     expect(readKingdomOverviewFlags()).toEqual({ allies: [], enemies: [] })
+  })
+
+  test("shows the other players' flags in colour order under Enemies and none under Allies", async () => {
+    const { user } = await setupTwoTownApp(
+      aScenario()
+        .withSize(8, 4)
+        .withEntities(
+          aHero().at(0, 0),
+          aHero().withId('hero-2').ownedBy('tan').at(7, 3),
+          aTown().ownedBy('blue').at(4, 2)
+        )
+    )
+
+    await openKingdomOverview(user)
+
+    expect(readKingdomOverviewFlags()).toEqual({
+      allies: [],
+      enemies: ['Blue player flag', 'Tan player flag']
+    })
   })
 
   test('keeps showing the overview just before 3 seconds have passed', async () => {

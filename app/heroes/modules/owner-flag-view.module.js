@@ -1,44 +1,59 @@
-import { dwellingIdsOf } from '../../../game/heroes/state/map-objects.js'
-import { viewingPlayersTownIds } from '../../../game/heroes/state/towns.js'
-import { viewingPlayer } from '../../../game/state/queries.js'
+import { dwellingIdsOf, mineIdsOf } from '../../../game/heroes/state/map-objects.js'
+import { townIdsOf } from '../../../game/heroes/state/towns.js'
+import { heroIdsOf, playerColors } from '../../../game/state/queries.js'
 import {
   APP_FACT_DWELLING_FLAGGED,
+  APP_FACT_HERO_HIRED,
+  APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { createPlayerFlag, paintPlayerFlag } from '../presentation/player-flag.js'
 
 export const registerOwnerFlagViewModule = defineModule(
   ({ env, state }) => {
     const entityLayer = env.document?.querySelector('.entity-layer')
 
-    function showFlagOn(entityId) {
+    function showFlagOn(entityId, player) {
       const entityEl = entityLayer?.querySelector(`[data-entity-id="${entityId}"]`)
-      if (!entityEl || entityEl.querySelector('.owner-flag')) {
+      if (!entityEl) {
         return
       }
 
-      const flag = env.document.createElement('div')
-      flag.className = 'owner-flag'
-      flag.setAttribute('role', 'img')
-      flag.setAttribute('aria-label', 'Red player flag')
-      entityEl.appendChild(flag)
+      const flag = entityEl.querySelector('.owner-flag')
+      if (flag) {
+        paintPlayerFlag(flag, player)
+      } else {
+        entityEl.appendChild(createPlayerFlag(env.document, player))
+      }
+    }
+
+    // The map draws its objects again when a hero comes onto it, so every flag is put back each time.
+    function showAllFlags() {
+      const current = state.get()
+      for (const player of playerColors(current)) {
+        const ownedIds = [
+          ...heroIdsOf(current, player),
+          ...townIdsOf(current, player),
+          ...mineIdsOf(current, player),
+          ...dwellingIdsOf(current, player)
+        ]
+        for (const entityId of ownedIds) {
+          showFlagOn(entityId, player)
+        }
+      }
     }
 
     return {
       subscriptions: [
-        {
-          type: APP_FACT_WORLD_READY,
-          handler: () => {
-            const current = state.get()
-            viewingPlayersTownIds(current).forEach(showFlagOn)
-            dwellingIdsOf(current, viewingPlayer(current)).forEach(showFlagOn)
-          }
-        },
-        { type: APP_FACT_DWELLING_FLAGGED, handler: (event) => showFlagOn(event.detail.entityId) },
-        { type: APP_FACT_MINE_CAPTURED, handler: (event) => showFlagOn(event.detail.entityId) },
-        { type: APP_FACT_TOWN_CAPTURED, handler: (event) => showFlagOn(event.detail.entityId) }
+        { type: APP_FACT_WORLD_READY, handler: showAllFlags },
+        { type: APP_FACT_HERO_HIRED, handler: showAllFlags },
+        { type: APP_FACT_HERO_MOVED, handler: showAllFlags },
+        { type: APP_FACT_DWELLING_FLAGGED, handler: showAllFlags },
+        { type: APP_FACT_MINE_CAPTURED, handler: showAllFlags },
+        { type: APP_FACT_TOWN_CAPTURED, handler: showAllFlags }
       ]
     }
   },
@@ -47,6 +62,8 @@ export const registerOwnerFlagViewModule = defineModule(
     phase: 'view',
     consumes: [
       APP_FACT_WORLD_READY,
+      APP_FACT_HERO_HIRED,
+      APP_FACT_HERO_MOVED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_DWELLING_FLAGGED,
       APP_FACT_TOWN_CAPTURED

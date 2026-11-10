@@ -86,6 +86,22 @@ describe('fog of war behavior', () => {
     expect([15, 20, 25].map((x) => isTileExplored(x, 0))).toEqual([false, false, false])
   })
 
+  test("given another player's hero and town when the map renders then the tiles around them stay unexplored", async () => {
+    await setupApp(
+      aFoggyScenario()
+        .withSize(40)
+        .withEntities(
+          aHero().at(0, 0),
+          aHero().withId('hero-2').ownedBy('blue').at(20, 0),
+          aTown().ownedBy('blue').at(32, 0)
+        )
+    )
+
+    expect([18, 20, 22, 30, 32, 34].map((x) => isTileExplored(x, 0))).toEqual(
+      new Array(6).fill(false)
+    )
+  })
+
   test('given the player owns a mine when the map renders then the tiles within 3 of its entrance are explored', async () => {
     await setupApp(
       aFoggyScenario()

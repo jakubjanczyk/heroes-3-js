@@ -53,3 +53,8 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **Every hero gets a flag in its owner's colour**, the player's own too, as towns, mines and dwellings have.
 - **A garrisoned town is fought on an open field until sieges (5.10)**, even when it has walls.
 - Other players' resources start empty. Starting resources and income for them come with each player's day (8.1.13).
+
+## Built
+
+- **8.1.1**: every hero, town, mine and dwelling a player owns carries that player's flag on the map, and the minimap shows them in that colour on the tiles the player has explored. The kingdom overview lists the other players' flags, in colour order, under Enemies. The demo map has a blue player in the south-east corner: Kirkwall, Sir Mullich and the Sulfur Dune.
+- Left for the next parts: walking onto an enemy hero still opens the exchange screen (8.1.2), its popup still shows everything (8.1.3), and a town of another player names no owner in its popup until the town box (8.1.15).

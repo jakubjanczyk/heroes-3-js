@@ -169,7 +169,7 @@ Stages:
 - [ ] Queued messages, a click skipping to the next (needs pickups that give several things, 7.5-7.8)
 - [ ] Pickup sounds
 - [x] Clicking it shows the kingdom overview (towns per hall level, empty Allies and Enemies rows), then the date, then back; each goes back after 3 seconds; see `docs/notes/2026-10-24-info-box-kingdom-overview.md`
-- [ ] The allies' and enemies' flags in the kingdom overview (8.1)
+- [x] The enemies' flags in the kingdom overview (8.1.1); allies come with teams
 - [x] Selecting and rearranging units in the hero's army and the town's garrison in the info box, as on the hero and town screens but without splitting; see `docs/notes/2026-10-25-info-box-army.md`
 - [ ] Right-clicking a unit in the info box opens its creature info window (needs the creature info window, 4.3)
 - [ ] The date opened by a click plays the new day sound and music, as at the start of a turn (10.4, 10.5)
@@ -1078,7 +1078,7 @@ Making the game a competitive experience.
 
 ### 8.1 Player System
 In seventeen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
-- [ ] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
+- [x] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
 - [ ] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile
 - [ ] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
 - [ ] 8.1.4 Capturing enemy mines and dwellings

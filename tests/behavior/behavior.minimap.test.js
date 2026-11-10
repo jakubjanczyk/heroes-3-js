@@ -35,6 +35,7 @@ import {
 import { ALL_TERRAINS, GRASS, SAND } from './terrain-codes.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
+const PLAYER_BLUE = 'rgb(49, 82, 255)'
 const NEUTRAL_GREY = 'rgb(132, 132, 132)'
 const BLACK = 'rgb(0, 0, 0)'
 
@@ -97,6 +98,10 @@ function getTownDots() {
 
 function getHeroDot() {
   return document.querySelector('.minimap-hero-marker')
+}
+
+function getHeroDotOf(heroId) {
+  return document.querySelector(`.minimap-hero-marker[data-entity-id="${heroId}"]`)
 }
 
 function getHeroDots() {
@@ -388,6 +393,26 @@ describe('minimap behavior', () => {
       ])
     })
 
+    test("given another player's hero, town and mine when the minimap renders then they are drawn in that player's colour", async () => {
+      await loadAppStyles()
+      await setupApp(
+        aScenario()
+          .withSize(10, 7)
+          .withEntities(
+            aHero().at(0, 0),
+            aHero().withId('hero-2').ownedBy('blue').at(8, 6),
+            aTown().ownedBy('blue').at(4, 3),
+            aMine().ownedBy('blue').at(8, 1)
+          )
+          .build()
+      )
+
+      expect(getMinimapDotTile(getHeroDotOf('hero-2'))).toEqual({ x: 8, y: 6 })
+      expect(backgroundOf(getHeroDotOf('hero-2'))).toBe(PLAYER_BLUE)
+      expect(backgroundOf(getTownDots()[0])).toBe(PLAYER_BLUE)
+      expect(backgroundOf(getMinimapTile(8, 1))).toBe(PLAYER_BLUE)
+    })
+
     test('given a monster and a resource when the minimap renders then their tiles show only the terrain colour', async () => {
       await loadAppStyles()
       await setupApp(
@@ -424,6 +449,16 @@ describe('minimap behavior', () => {
       )
 
       expect(getTownDots().map(getMinimapDotTile)).toEqual([{ x: 4, y: 2 }])
+    })
+
+    test("given another player's hero on an unexplored tile when the minimap renders then it has no marker", async () => {
+      await setupApp(
+        aFoggyScenario()
+          .withEntities(aHero(), aHero().withId('hero-2').ownedBy('blue').at(25, 1))
+          .build()
+      )
+
+      expect(getHeroDotOf('hero-2')).toBeNull()
     })
 
     test('given a dwelling when the minimap renders then its tiles are drawn neutral grey', async () => {
