@@ -1,0 +1,269 @@
+.view-world {
+  grid-row: 1 / span 2;
+  grid-column: 1 / -1;
+  z-index: 30;
+  min-inline-size: 0;
+  min-block-size: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--adventure-panel-width);
+  background: black;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.view-world__viewport {
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: clip;
+  /* Drags scroll the world map instead of the page. */
+  touch-action: none;
+  user-select: none;
+}
+
+.view-world__map {
+  --view-world-tile-size: 11px;
+
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--view-world-columns, 1), var(--view-world-tile-size));
+  grid-auto-rows: var(--view-world-tile-size);
+  transform: translate(var(--view-world-offset-x, 0), var(--view-world-offset-y, 0));
+}
+
+.view-world-tile {
+  position: relative;
+}
+
+.view-world__panel {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  overflow-y: auto;
+  border-inline-start: 2px solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #3a2414, #1c110a);
+  color: var(--color-ink-strong);
+  font-size: var(--font-size-sm);
+}
+
+.view-world__title {
+  margin: 0;
+  color: var(--trim-gold-light);
+  font-size: 1.1rem;
+}
+
+.view-world__zoom {
+  display: flex;
+  gap: var(--space-2xs);
+}
+
+.view-world__zoom-button {
+  appearance: none;
+  min-inline-size: 3rem;
+  padding: var(--space-2xs) var(--space-xs);
+  border: 1px solid black;
+  background: linear-gradient(180deg, #2c1a0e, #170d06);
+  box-shadow: inset 0 0 0 1px var(--trim-gold-dark);
+  color: var(--trim-gold-light);
+  font: inherit;
+  cursor: inherit;
+
+  &[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 2px var(--trim-gold-light);
+  }
+}
+
+.view-world__legend {
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.view-world__legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.view-world__legend-heads {
+  inline-size: 100%;
+  display: flex;
+  gap: var(--space-xs);
+  color: var(--trim-gold-light);
+}
+
+.view-world__ok {
+  position: sticky;
+  inset-block-end: 0;
+  margin-block-start: var(--space-xs);
+}
+
+/* The icons stand in for the game's symbols: a shape for each kind, in its owner's colour. */
+.view-world-icon {
+  --view-world-icon-size: 0.75rem;
+
+  display: inline-block;
+  flex: none;
+  inline-size: var(--view-world-icon-size);
+  block-size: var(--view-world-icon-size);
+  box-sizing: border-box;
+  border: 1px solid black;
+  background: var(--neutral-grey);
+
+  .view-world-tile > & {
+    --view-world-icon-size: max(7px, calc(var(--view-world-tile-size) * 1.2));
+
+    position: absolute;
+    z-index: 1;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    translate: -50% -50%;
+  }
+}
+
+.view-world-icon--player {
+  background: var(--player-red);
+}
+
+.view-world-icon--hero {
+  border-radius: 50%;
+}
+
+.view-world-icon--artifact {
+  background: #f2d16b;
+  rotate: 45deg;
+  scale: 0.8;
+}
+
+.view-world-icon--teleporter {
+  background: #9c5ce0;
+  border-radius: 50% 50% 0 0;
+}
+
+.view-world-icon--gate {
+  background: #4a8fd8;
+  border-radius: 0 0 50% 50%;
+}
+
+.view-world-icon--wood {
+  --view-world-resource: #8a5a2b;
+}
+
+.view-world-icon--mercury {
+  --view-world-resource: #c8c8d4;
+}
+
+.view-world-icon--ore {
+  --view-world-resource: #6e6e6e;
+}
+
+.view-world-icon--sulfur {
+  --view-world-resource: #e8d23a;
+}
+
+.view-world-icon--crystal {
+  --view-world-resource: #e06a6a;
+}
+
+.view-world-icon--gems {
+  --view-world-resource: #3fb86b;
+}
+
+.view-world-icon--gold {
+  --view-world-resource: #f2b705;
+}
+
+.view-world-icon--mine {
+  box-shadow: inset 0 0 0 max(2px, calc(var(--view-world-icon-size) * 0.25))
+    var(--view-world-resource);
+}
+
+.view-world-icon--resource {
+  background: var(--view-world-resource);
+  border-radius: 50%;
+  scale: 0.8;
+}
+
+.adventure-options {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-sm);
+  inline-size: min(18rem, calc(100% - 2rem));
+  padding: var(--space-md);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.adventure-options__title {
+  margin: 0;
+  color: var(--trim-gold-light);
+  font-size: 1.1rem;
+}
+
+.adventure-options__buttons {
+  inline-size: 100%;
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.adventure-options__button {
+  appearance: none;
+  padding: var(--space-xs);
+  border: 1px solid black;
+  background: linear-gradient(180deg, #2c1a0e, #170d06);
+  box-shadow: inset 0 0 0 1px var(--trim-gold-dark);
+  color: var(--trim-gold-light);
+  font: inherit;
+  text-align: start;
+  cursor: inherit;
+
+  &:disabled {
+    color: color-mix(in oklab, var(--trim-gold-light) 40%, transparent);
+  }
+}
+
+@media (width < 48rem) and (orientation: portrait) {
+  .view-world {
+    grid-row: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .view-world__panel {
+    max-block-size: 45dvh;
+    border-inline-start: none;
+    border-block-start: 2px solid var(--trim-gold-dark);
+  }
+}
+
+@media (height < 32rem) {
+  .view-world__panel {
+    gap: var(--space-2xs);
+    padding: var(--space-xs);
+    font-size: var(--font-size-xs);
+  }
+
+  .view-world__title {
+    font-size: var(--font-size-md);
+  }
+
+  .view-world__legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--space-xs);
+  }
+}
