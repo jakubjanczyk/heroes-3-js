@@ -2,6 +2,7 @@ import { heroesContent } from '../../game/heroes/content.js'
 import { APP_FACT_MONSTER_DEFEATED } from '../events.js'
 import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcomes.js'
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
+import { registerAdventureOptionsViewModule } from './modules/adventure-options-view.module.js'
 import { registerAdventureSpellsModule } from './modules/adventure-spells.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
@@ -37,6 +38,7 @@ import { registerTownRecruitViewModule } from './modules/town-recruit-view.modul
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTreasureChestsModule } from './modules/treasure-chests.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
+import { registerViewWorldViewModule } from './modules/view-world-view.module.js'
 import { registerVisitableObjectsModule } from './modules/visitable-objects.module.js'
 import { getEntityFadeOutSpec, getEntityLayerStyle } from './presentation/entities/registry.js'
 
@@ -86,6 +88,8 @@ export const heroesAppContent = Object.freeze({
     registerHeroScreenViewModule,
     registerSpellBookViewModule,
     registerTownPortalViewModule,
+    registerAdventureOptionsViewModule,
+    registerViewWorldViewModule,
     registerHeroExchangeViewModule,
     registerMusicModule
   ])

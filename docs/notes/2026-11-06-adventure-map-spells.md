@@ -14,7 +14,6 @@ Each part's rules are checked when it's planned; all five are checked now.
 
 ## Left for later parts
 
-- 4.8.8.5, above. Until each is built, clicking its spell in the book shows its description.
 - Dimension Door from a boat, and onto land from one (7.10).
 - Town Portal underground, from a boat ("must be on land", `core.genrltxt.135`) and to allies' towns, with their features (7.10, 8.1).
 
@@ -100,7 +99,7 @@ Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), 
 - Enemy heroes at Advanced, enemy towns at Expert (8.1).
 - A Rogue in the army acting as Expert Visions all the time, with Rogues (5.1, the other factions).
 
-## View World, View Air and View Earth — 4.8.8.5 (planned)
+## View World, View Air and View Earth — 4.8.8.5
 
 Checked against the wiki (View Air, View Earth and View World, raw source, and its copy of `GENRLTXT.TXT`), the descriptions in `game/data/spells.json`, an open-source engine's spell config (`spells/adventure.json`), its View World effect and its world view screen (widgets, map rendering, key bindings), and a web search (copies of the game's manual and keyboard guides).
 
@@ -122,9 +121,16 @@ Checked against the wiki (View Air, View Earth and View World, raw source, and i
 - **View Earth**: Basic (and no skill) every loose resource; Advanced also every mine; Expert also the whole terrain (the wiki, the engine). Resources and mines under the fog get their icons; at Expert the unexplored terrain and obstacles are drawn, but objects under the fog are not, only the icons of resources and mines (the engine).
 - **View Air**: Basic (and no skill) every artifact lying on the map; Advanced also every hero; Expert also every town (the wiki, the engine). Not spell scrolls or Pandora's boxes (the wiki). Guarded artifacts count (the engine counts every artifact on the map). Only the player's own heroes exist until 8.1, and they are never under the fog, so Advanced shows nothing more yet.
 - Icons the spell adds are only for objects under the fog; explored ones have theirs anyway (the engine).
-- Built (planned): `viewWorld` in the spell's data, by skill level (`objects`: `artifact`, `hero`, `town`, `resource`, `mine`; `showTerrain`). The cast is the spell points' fact; the screen and what it adds are the view's, not saved.
+- Built: `viewWorld` in the spell's data, by skill level: `reveals`, the kinds of map objects it also shows under the fog, and `showsTerrain`. The cast is the spell points' fact; the screen and what it adds are the view's, not saved.
+
+### The Adventure Options window
+
+Checked against the wiki's copy of `HELP.TXT` and an open-source engine's Adventure Options window.
+
+- The Adventure Options button opens it (decided with the user, so View World can be seen without the spells). Its buttons: View World, View Puzzle, View Scenario Info, Dig, Replay Opponent Turn, and OK, with the game's help texts as their tooltips. Only View World works; the rest wait for their features. V presses View World (the game's key).
 
 ### Left after 4.8.8.5
 
 - Teleporters and gates on the screen with Monoliths and Subterranean Gates (7.9); the Puzzle Map button with obelisks (7.7); the level button with an underground (9.1).
 - Enemy heroes under the fog with Advanced View Air (8.1).
+- The other Adventure Options: the Puzzle Map and Dig with obelisks and the grail (7.7), Scenario Info with scenarios (9.2), Replay Opponent Turn with other players (8.1).

@@ -464,8 +464,9 @@ In five parts. See `docs/notes/2026-11-06-adventure-map-spells.md`.
 - [x] 4.8.8.3 Fly: lasts the day, over water and obstacles, with a 40% / 20% / no penalty
 - [x] 4.8.8.4 Visions: the exact count of monsters within range, for the day
 - [ ] Visions: whether the monsters would join, pay, flee or fight with 5.2; enemy heroes and towns with 8.1; Rogues acting as Expert Visions with the other factions (5.1)
-- [ ] 4.8.8.5 View World, with View Air and View Earth
+- [x] 4.8.8.5 View World, with View Air and View Earth: the View World screen, opened from the Adventure Options or by the spells; View Earth adds resources, mines and the terrain under the fog, View Air artifacts, heroes and towns
 - [ ] Summon Boat, Scuttle Boat and Water Walk with boats (7.10); Disguise with enemy heroes (8.1)
+- [ ] View World: teleporters and gates (7.9), the Puzzle Map button (7.7), the map level button (9.1); enemy heroes under the fog with Advanced View Air (8.1)
 
 #### 4.8 later
 - [ ] Map objects: the Shrines of Magic Incantation, Gesture and Thought, Magic Well, Magic Spring, Pyramid, spells from Pandora's Box (7.7)

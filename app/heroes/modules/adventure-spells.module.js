@@ -8,7 +8,8 @@ import {
   decideTownPortal,
   decideTownPortalTo,
   dimensionDoorTargetAt,
-  flightOf
+  flightOf,
+  viewWorldOf
 } from '../../../game/heroes/adventure-spells.js'
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { spellCost } from '../../../game/heroes/spell-book.js'
@@ -30,7 +31,8 @@ import {
   APP_UI_MAP_AIMING_ENDED,
   APP_UI_MAP_AIMING_STARTED,
   APP_UI_NOTICE_OPENED,
-  APP_UI_TOWN_PORTAL_TOWNS_OFFERED
+  APP_UI_TOWN_PORTAL_TOWNS_OFFERED,
+  APP_UI_VIEW_WORLD_OPENED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 
@@ -186,6 +188,9 @@ export const registerAdventureSpellsModule = defineModule(
       }
       if (spell.fly || spell.visions) {
         castLastingSpell(hero, spellId, spell)
+      } else if (spell.viewWorld) {
+        spendCast(hero, spellId, 0)
+        emit(APP_UI_VIEW_WORLD_OPENED, viewWorldOf(hero, spell))
       } else {
         castTownPortal(hero, spellId, spell, townId)
       }
@@ -249,7 +254,8 @@ export const registerAdventureSpellsModule = defineModule(
       APP_FACT_HERO_MOVED,
       APP_FACT_TOWN_VISITED,
       APP_UI_NOTICE_OPENED,
-      APP_UI_TOWN_PORTAL_TOWNS_OFFERED
+      APP_UI_TOWN_PORTAL_TOWNS_OFFERED,
+      APP_UI_VIEW_WORLD_OPENED
     ]
   }
 )

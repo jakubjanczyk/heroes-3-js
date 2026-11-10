@@ -62,7 +62,7 @@
                 <button class="adventure-button" id="cast-spell-button" type="button" aria-label="Cast spell" title="Cast spell (not available yet)" disabled>
                   <svg class="adventure-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H5zM19 4h-4a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h4z"/></svg>
                 </button>
-                <button class="adventure-button" id="adventure-options-button" type="button" aria-label="Adventure options" title="Adventure options (not available yet)" disabled>
+                <button class="adventure-button" id="adventure-options-button" type="button" aria-label="Adventure options" title="Adventure options">
                   <svg class="adventure-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 10l6-1z"/></svg>
                 </button>
                 <button class="adventure-button" id="system-options-button" type="button" aria-label="System options" title="System options">
@@ -84,6 +84,43 @@
           <ul class="resource-bar__list" id="resource-bar-list" aria-label="Resources"></ul>
           <div class="resource-bar__date" id="calendar-status">Month: 1, Week: 1, Day: 1</div>
         </div>
+        <!--
+          View World: the whole map small, with icons over the towns, heroes, artifacts, mines and
+          resources. The Puzzle Map and map level buttons wait for obelisks and underground maps.
+        -->
+        <section class="view-world" role="dialog" aria-label="View World" tabindex="-1" hidden>
+          <div class="view-world__viewport">
+            <div class="view-world__map" role="group" aria-label="World map"></div>
+          </div>
+          <div class="view-world__panel">
+            <h2 class="view-world__title">View World</h2>
+            <div class="view-world__zoom">
+              <button class="view-world__zoom-button" type="button" data-view-world-zoom="7" aria-label="Magnify 1x" aria-pressed="false">1x</button>
+              <button class="view-world__zoom-button" type="button" data-view-world-zoom="11" aria-label="Magnify 2x" aria-pressed="false">2x</button>
+              <button class="view-world__zoom-button" type="button" data-view-world-zoom="16" aria-label="Magnify 4x" aria-pressed="false">4x</button>
+            </div>
+            <ul class="view-world__legend" aria-label="Objects">
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--town" aria-hidden="true"></span>Town</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--hero" aria-hidden="true"></span>Hero</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--artifact" aria-hidden="true"></span>Artifact</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--teleporter" aria-hidden="true"></span>Teleporter</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--gate" aria-hidden="true"></span>Gate</li>
+            </ul>
+            <div class="view-world__legend-heads" aria-hidden="true"><span>Mine</span><span>Resource</span></div>
+            <ul class="view-world__legend" aria-label="Mines and resources">
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--wood" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--wood" aria-hidden="true"></span>Wood</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--mercury" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--mercury" aria-hidden="true"></span>Mercury</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--ore" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--ore" aria-hidden="true"></span>Ore</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--sulfur" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--sulfur" aria-hidden="true"></span>Sulfur</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--crystal" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--crystal" aria-hidden="true"></span>Crystal</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--gems" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--gems" aria-hidden="true"></span>Gems</li>
+              <li class="view-world__legend-row"><span class="view-world-icon view-world-icon--mine view-world-icon--gold" aria-hidden="true"></span><span class="view-world-icon view-world-icon--resource view-world-icon--gold" aria-hidden="true"></span>Gold</li>
+            </ul>
+            <button class="building-window__button view-world__ok" type="button" data-view-world-action="ok" aria-label="OK" aria-keyshortcuts="Enter Escape" title="OK (Enter)">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -550,6 +587,27 @@
           <p class="town-message__text"></p>
           <div class="building-window__buttons">
             <button class="building-window__button" type="button" data-town-message-action="close" aria-label="OK" aria-keyshortcuts="Enter Escape" title="OK (Enter)">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <!-- Adventure Options: only View World works so far. -->
+    <template id="adventure-options-template">
+      <div class="town-hall-backdrop">
+        <section class="adventure-options message-box" role="dialog" aria-modal="true" aria-label="Adventure Options" tabindex="-1">
+          <h2 class="adventure-options__title">Adventure Options</h2>
+          <div class="adventure-options__buttons">
+            <button class="adventure-options__button" type="button" data-adventure-option="View World" aria-label="View World" aria-keyshortcuts="V" title="See a bird&#39;s eye view of the world">View World</button>
+            <button class="adventure-options__button" type="button" data-adventure-option="View Puzzle" aria-label="View Puzzle" title="See the map of the buried object" disabled>View Puzzle</button>
+            <button class="adventure-options__button" type="button" data-adventure-option="View Scenario Info" aria-label="View Scenario Info" title="View information about the current scenario" disabled>View Scenario Info</button>
+            <button class="adventure-options__button" type="button" data-adventure-option="Dig" aria-label="Dig" title="Search the area for the buried Grail" disabled>Dig</button>
+            <button class="adventure-options__button" type="button" data-adventure-option="Replay Opponent Turn" aria-label="Replay Opponent Turn" title="Replays events since your last turn" disabled>Replay Opponent Turn</button>
+          </div>
+          <div class="building-window__buttons">
+            <button class="building-window__button" type="button" data-adventure-option="OK" aria-label="OK" aria-keyshortcuts="Enter Escape" title="OK (Enter)">
               <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
           </div>
