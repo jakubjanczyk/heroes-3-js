@@ -40,9 +40,7 @@ export function renderHeroBox(
 
 function showSpellPoints(frame, spellPoints) {
   if (spellPoints === undefined) {
-    frame.removeAttribute('role')
-    frame.removeAttribute('aria-label')
-    frame.removeAttribute('title')
+    frame.remove()
     return
   }
   frame.textContent = String(spellPoints)
@@ -59,7 +57,8 @@ export function renderArmyStack(document, { name, count }) {
   picture.title = name
 
   const countLabel = document.createElement('span')
-  countLabel.className = 'army-slot__count'
+  countLabel.className =
+    typeof count === 'string' ? 'army-slot__count army-slot__count--word' : 'army-slot__count'
   countLabel.textContent = String(count)
 
   stack.append(picture, countLabel)
