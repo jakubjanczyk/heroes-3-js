@@ -156,6 +156,13 @@ async function cast(spellName, skill = {}) {
   return app
 }
 
+// The 1000 x 700 adventure map view is centred on the hero, at (30.5, 20.5) in tiles.
+const setupLargeWorld = () =>
+  setupApp(
+    aScenario().withSize(60, 40).withEntities(aHero().at(30, 20)).withDefinitions(definitions),
+    { viewportSize: { width: 1000, height: 700 } }
+  )
+
 async function openViewWorldFromOptions(user) {
   await openAdventureOptions(user)
   await clickAdventureOption(user, 'View World')
@@ -255,14 +262,10 @@ describe('View World behavior', () => {
       expect(readPressedViewWorldZoom()).toEqual(['Magnify 4x'])
     })
 
-    // The camera is centred on the hero's tile, (30.5, 20.5) in tiles. The screen's 220 x 220
-    // map area at 11 pixels a tile shows 20 x 20 tiles, so their top-left corner is 10 tiles
-    // up and left of that.
+    // The screen's 220 x 220 map area at 11 pixels a tile shows 20 x 20 tiles, so their top-left
+    // corner is 10 tiles up and left of the camera's centre.
     test('given a large map when View World opens then it shows the part of the map the camera shows', async () => {
-      const { user } = await setupApp(
-        aScenario().withSize(60, 40).withEntities(aHero().at(30, 20)).withDefinitions(definitions),
-        { viewportSize: { width: 1000, height: 700 } }
-      )
+      const { user } = await setupLargeWorld()
       setViewWorldViewportSize(220, 220)
 
       await openViewWorldFromOptions(user)
@@ -274,13 +277,7 @@ describe('View World behavior', () => {
     // At 4x it is 16 pixels a tile and centred again on the camera's (30.5, 20.5): the area
     // shows 31.25 x 18.75 tiles, so its top-left corner is at (14.875, 11.125).
     test('given View World zoomed out until the whole map fits when the player zooms in then it is centred on where the camera is again', async () => {
-      const { user } = await setupApp(
-        aScenario()
-          .withSize(60, 40)
-          .withEntities(aHero().at(30, 20))
-          .withDefinitions(definitions),
-        { viewportSize: { width: 1000, height: 700 } }
-      )
+      const { user } = await setupLargeWorld()
       setViewWorldViewportSize(500, 300)
       await openViewWorldFromOptions(user)
 
@@ -292,10 +289,7 @@ describe('View World behavior', () => {
 
     // Dragging 55 pixels left and 22 up moves the map by 5 and 2 tiles of 11 pixels.
     test('given View World on a large map when the player drags its map then it shows another part of it', async () => {
-      const { user } = await setupApp(
-        aScenario().withSize(60, 40).withEntities(aHero().at(30, 20)).withDefinitions(definitions),
-        { viewportSize: { width: 1000, height: 700 } }
-      )
+      const { user } = await setupLargeWorld()
       setViewWorldViewportSize(220, 220)
       await openViewWorldFromOptions(user)
 
@@ -305,10 +299,7 @@ describe('View World behavior', () => {
     })
 
     test('given the adventure map scrolled away from the hero when the player closes View World with OK then the map is centred on the hero', async () => {
-      const { user } = await setupApp(
-        aScenario().withSize(60, 40).withEntities(aHero().at(30, 20)).withDefinitions(definitions),
-        { viewportSize: { width: 1000, height: 700 } }
-      )
+      const { user } = await setupLargeWorld()
       panCamera('ArrowRight', 10)
       await openViewWorldFromOptions(user)
 
