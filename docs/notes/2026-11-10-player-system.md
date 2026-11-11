@@ -66,6 +66,14 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - The results window names the enemy hero as the defender, with the texts the battles already use ("A glorious victory!", "For valor in combat, …").
   - Losing or retreating: the player's hero leaves the map as against monsters, and the enemy hero keeps what is left of its army.
   - Left for later: the enemy hero casting spells and retreating (AI, 8.3 and 5.7b); its experience when it wins and the player's hero's artifacts going to it (8.1.9); the beaten hero's artifacts (8.1.8); Surrender (8.1.10).
+- **An enemy hero's Resistance** (checked for 8.1.7b against the wiki's Resistance and Magic resistance pages, the engine's skills config, spell flags and spell casting, and the wiki's `GENRLTXT.TXT`):
+  - The skill gives the hero's troops a 5 / 10 / 20% chance (Basic / Advanced / Expert) to resist a hostile spell. It is a chance, not an immunity: the stack can still be targeted.
+  - Only hostile spells are resisted: every damage spell, and Curse, Weakness, Disrupting Ray, Slow, Misfortune, Sorrow, Blind, Forgetfulness, Berserk and Hypnotize. Helpful spells and Dispel are never resisted.
+  - Each stack the spell reaches rolls on its own: a single target, every stack in an area (Fireball, Frost Ring, Inferno, Meteor Shower), every stack an Expert spell goes on (Slow, Curse), every stack Armageddon or Death Ripple hits, and every stack Chain Lightning jumps to. A stack that resists takes nothing from the spell; the others take it as usual. Chain Lightning still jumps on from a stack that resisted, its damage halved at each jump as before (the engine takes the resisting stacks out after the targets are chosen).
+  - The spell is cast all the same: its spell points are spent and the hero can't cast again that round, even when every stack resisted.
+  - The roll is the troops', whoever casts: the engine rolls every stack with magic resistance, so the player's own hero's Resistance lets its own stacks resist the player's own hostile area spells (Fireball, Armageddon). The wiki says only "hostile spell effects".
+  - The resisting stack shows the resistance effect in place of the spell's; the engine shows it with a sound and no combat log line. The game has the words "resist" and "resists" (`GENRLTXT.TXT` 143, 144), but no source gives the line they make.
+  - The Orb of Vulnerability negates it, and the Garniture of Interference, Surcoat of Counterpoise and Boots of Polarity add to it without the skill (the wiki): none of those artifacts is in the game yet (7.8). Creatures with their own magic resistance (Dwarves, Unicorns' aura) come with the creatures (6.5).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
