@@ -13,6 +13,7 @@ import {
   builtIn,
   dailyIncomeOf,
   hasBuiltToday,
+  isDefendedAgainst,
   townGarrison,
   townIdsOf,
   townOwner
@@ -350,7 +351,12 @@ export const registerTownModule = defineModule(
             const town = townsById.get(event.detail.entityId)
             const current = state.get()
             const owner = heroOwner(current, event.detail.heroId)
-            if (town && owner && townOwner(current, town.id) !== owner) {
+            if (
+              town &&
+              owner &&
+              townOwner(current, town.id) !== owner &&
+              !isDefendedAgainst(current, town.id, owner)
+            ) {
               emit(APP_FACT_TOWN_CAPTURED, { entityId: town.id, owner })
             }
           }

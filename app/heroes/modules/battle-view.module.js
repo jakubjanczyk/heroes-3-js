@@ -730,8 +730,18 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
-    function showActions({ canWait, canDefend, canRetreat, canCastSpell, autoCombat }) {
+    function showActions({
+      canWait,
+      canDefend,
+      canRetreat,
+      canCastSpell,
+      autoCombat,
+      surrenderRefusal
+    }) {
       const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
+      if (surrenderRefusal) {
+        button('surrender').title = surrenderRefusal
+      }
       button('cast-spell').disabled = !canCastSpell
       button('wait').disabled = !canWait
       button('defend').disabled = !canDefend

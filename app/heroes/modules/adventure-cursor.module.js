@@ -9,7 +9,7 @@ import {
 } from '../../../game/heroes/adventure-cursor.js'
 import { dimensionDoorTargetAt } from '../../../game/heroes/adventure-spells.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
+import { isDefendedAgainst, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { heroOwner, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
@@ -115,6 +115,11 @@ export const registerAdventureCursorModule = defineModule(
       showCursorForRoute()
     }
 
+    function isDefendedTown(entity) {
+      const current = state.get()
+      return isTown(entity) && isDefendedAgainst(current, entity.id, viewingPlayer(current))
+    }
+
     function showCursorForRoute() {
       const path = routePlanner.planRoute(hoveredTile)
       const pathToBattle = path ? routePlanner.getPathToBattle(path) : null
@@ -126,7 +131,7 @@ export const registerAdventureCursorModule = defineModule(
         getAdventureCursor({
           entity,
           travelDays,
-          attacks: Boolean(pathToBattle),
+          attacks: Boolean(pathToBattle) || isDefendedTown(entity),
           isOwnHero: isOwnHero(entity)
         })
       )

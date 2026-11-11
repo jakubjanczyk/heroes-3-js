@@ -5,6 +5,7 @@ import { calendarDateOfTurn } from '../calendar.js'
 import { weeklyGrowthByTier } from '../creature-recruitment.js'
 import { flaggedDwellingCountsByCreature } from '../map-dwellings.js'
 import { startingBuildingsOf, townBuildingsCatalogue } from '../town-buildings.js'
+import { hasCreatures } from '../town-garrison.js'
 import { dailyIncomeOfTown } from '../town-income.js'
 
 function withoutTown(townIds, townId) {
@@ -171,6 +172,11 @@ export function hasBuiltToday(state, townId) {
 
 export function townGarrison(state, townId) {
   return state.towns.byId[townId]?.garrison ?? []
+}
+
+// A town of another player, or a neutral one, with creatures in its garrison is fought for.
+export function isDefendedAgainst(state, townId, player) {
+  return townOwner(state, townId) !== player && hasCreatures(townGarrison(state, townId))
 }
 
 export function availableCreatures(state, townId) {

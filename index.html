@@ -83,6 +83,15 @@
     <link rel="modulepreload" href="./game/heroes/entity-behaviors/resource.js" />
     <link rel="modulepreload" href="./game/heroes/entity-behaviors/resource-generator.js" />
     <link rel="modulepreload" href="./game/heroes/entity-behaviors/town.js" />
+    <link rel="modulepreload" href="./game/heroes/state/towns.js" />
+    <link rel="modulepreload" href="./game/heroes/creature-recruitment.js" />
+    <link rel="modulepreload" href="./game/heroes/creature-growth.js" />
+    <link rel="modulepreload" href="./game/heroes/hero-army.js" />
+    <link rel="modulepreload" href="./game/heroes/monster-count.js" />
+    <link rel="modulepreload" href="./game/heroes/town-income.js" />
+    <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
+    <link rel="modulepreload" href="./game/heroes/treasury.js" />
+    <link rel="modulepreload" href="./game/heroes/town-garrison.js" />
     <link rel="modulepreload" href="./game/heroes/entity-behaviors/treasure-chest.js" />
     <link rel="modulepreload" href="./game/heroes/movement-rules.js" />
     <link rel="modulepreload" href="./game/heroes/road-types.js" />
@@ -91,14 +100,6 @@
     <link rel="modulepreload" href="./game/heroes/state/kingdoms.js" />
     <link rel="modulepreload" href="./game/heroes/mine-income.js" />
     <link rel="modulepreload" href="./game/heroes/starting-resources.js" />
-    <link rel="modulepreload" href="./game/heroes/town-income.js" />
-    <link rel="modulepreload" href="./game/heroes/state/towns.js" />
-    <link rel="modulepreload" href="./game/heroes/creature-recruitment.js" />
-    <link rel="modulepreload" href="./game/heroes/creature-growth.js" />
-    <link rel="modulepreload" href="./game/heroes/hero-army.js" />
-    <link rel="modulepreload" href="./game/heroes/monster-count.js" />
-    <link rel="modulepreload" href="./game/heroes/town-buildings.js" />
-    <link rel="modulepreload" href="./game/heroes/treasury.js" />
     <link rel="modulepreload" href="./game/heroes/state/mage-guilds.js" />
     <link rel="modulepreload" href="./game/heroes/state/tavern.js" />
     <link rel="modulepreload" href="./game/heroes/terrain-types.js" />
@@ -136,6 +137,7 @@
     <link rel="modulepreload" href="./game/heroes/battle-ai.js" />
     <link rel="modulepreload" href="./game/heroes/battle-results.js" />
     <link rel="modulepreload" href="./game/heroes/battle-sacrifice.js" />
+    <link rel="modulepreload" href="./app/heroes/battle-defenders.js" />
     <link rel="modulepreload" href="./game/heroes/monster-stacks.js" />
     <link rel="modulepreload" href="./app/heroes/modules/battle-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/morale-and-luck.js" />
@@ -407,7 +409,7 @@
           <button class="battle-button" type="button" aria-label="System options" title="System options (not available yet)" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
           </button>
-          <button class="battle-button" type="button" aria-label="Surrender" title="Neutral creatures do not accept surrender" disabled>
+          <button class="battle-button" type="button" data-battle-action="surrender" aria-label="Surrender" title="Neutral creatures do not accept surrender" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3M6 4h11l-3 4 3 4H6"/></svg>
           </button>
           <button class="battle-button" type="button" data-battle-action="retreat" aria-label="Retreat" aria-keyshortcuts="R" title="Retreat (R)" disabled>
