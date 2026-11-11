@@ -186,6 +186,10 @@ export const registerBattleModule = defineModule(
       return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
     }
 
+    function defenderHeroOf() {
+      return battleDefenderOf(started).hero?.({ started, state }) ?? null
+    }
+
     function experienceForWin() {
       const bonus = battleDefenderOf(started).bonusExperience?.({ state, started }) ?? 0
       return getExperienceForWin(battle) + bonus
@@ -216,6 +220,7 @@ export const registerBattleModule = defineModule(
           tile: started.tile,
           heroId,
           heroName: heroNameOf(),
+          defenderHero: defenderHeroOf(),
           stacks: withHexes(
             moving.battle.stacks.map((stack) =>
               stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
@@ -245,6 +250,7 @@ export const registerBattleModule = defineModule(
         tile: started.tile,
         heroId,
         heroName: heroNameOf(),
+        defenderHero: defenderHeroOf(),
         stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],

@@ -69,13 +69,26 @@
     inset-inline-end: -14%;
     inline-size: 40%;
     block-size: 30%;
-    background: var(--interface-color);
+    background: var(--battle-hero-banner, var(--interface-color));
     clip-path: polygon(0 0, 100% 20%, 0 45%);
   }
 }
 
 .battle-hero--attacker {
   inset-inline-start: 1%;
+}
+
+.battle-hero--defender {
+  inset-inline-end: 1%;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &::after {
+    inset-inline: -14% auto;
+    clip-path: polygon(100% 0, 0 20%, 100% 45%);
+  }
 }
 
 .battlefield {

@@ -384,3 +384,7 @@ export async function attackMonsterAt(x, y) {
   confirmTileClickByDispatch(x, y)
   await waitMs()
 }
+
+export function queryMinimapHeroMarker(heroId) {
+  return document.querySelector(`.minimap-hero-marker[data-entity-id="${heroId}"]`)
+}

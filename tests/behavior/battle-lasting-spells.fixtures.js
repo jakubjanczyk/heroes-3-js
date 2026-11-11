@@ -427,6 +427,10 @@ export const aFight = ({
       monsters: { ...gameDefinitions.monsters, ...creatures }
     })
 
+// The other side is `enemy`, a hero of another player, standing next to the hero.
+export const aFightWithAHero = ({ hero = aCaster(), enemy }) =>
+  aScenario().withSize(3).withEntities(hero, enemy.at(1, 0)).withDefinitions(gameDefinitions)
+
 // With one stack each, the hero's stack starts on row 6, column 1 and the monster's on column 15.
 export const OWN_HEX = { row: 6, column: 1 }
 export const ENEMY_HEX = { row: 6, column: 15 }

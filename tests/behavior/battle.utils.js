@@ -21,7 +21,10 @@ function battleAppConfig({ random, battleStepDelayMs, appConfig }) {
   }
 }
 
-// Starts the app on `scenario` and attacks its monster, so the battle screen is open. Damage
+const isEnemy = ({ kind, owner }) =>
+  kind === 'MONSTER' || (kind === 'HERO' && owner !== undefined && owner !== 'red')
+
+// Starts the app on `scenario` and attacks its monster or enemy hero, so the battle screen is open. Damage
 // rolls are the lowest unless `random` says otherwise, and a beaten monster leaves the map at once.
 // `beforeAttack` plays the map first, with the app.
 export async function startBattle(
@@ -48,7 +51,7 @@ export async function startBattle(
   }
 
   await beforeAttack?.(app)
-  const { tile } = loadGameOptions.entities.find(({ kind }) => kind === 'MONSTER')
+  const { tile } = loadGameOptions.entities.find(isEnemy)
   await attackMonsterAt(tile.x, tile.y)
   return app
 }

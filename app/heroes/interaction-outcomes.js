@@ -1,9 +1,11 @@
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS } from '../../game/heroes/artifacts.js'
+import { BATTLE_DEFENDER_ENEMY_HERO } from '../../game/heroes/enemy-hero-battle.js'
 import {
   INTERACTION_OUTCOME_KIND_ARTIFACT_PICKED_UP,
   INTERACTION_OUTCOME_KIND_BATTLE_STARTED,
   INTERACTION_OUTCOME_KIND_BONUS_OBJECT_VISITED,
   INTERACTION_OUTCOME_KIND_DWELLING_VISITED,
+  INTERACTION_OUTCOME_KIND_HERO_ATTACKED,
   INTERACTION_OUTCOME_KIND_HEROES_MET,
   INTERACTION_OUTCOME_KIND_RESOURCE_COLLECTED,
   INTERACTION_OUTCOME_KIND_RESOURCE_GENERATOR_VISITED,
@@ -195,6 +197,17 @@ export const heroesOutcomeEffects = Object.freeze({
       }
     }
   },
+  [INTERACTION_OUTCOME_KIND_HERO_ATTACKED]: (outcome) => ({
+    facts: [
+      {
+        type: APP_FACT_BATTLE_STARTED,
+        detail: {
+          ...toEntityFactDetail(outcome),
+          defender: { kind: BATTLE_DEFENDER_ENEMY_HERO, heroId: outcome.entityId }
+        }
+      }
+    ]
+  }),
   [INTERACTION_OUTCOME_KIND_HEROES_MET]: (outcome) => ({
     facts: [
       {

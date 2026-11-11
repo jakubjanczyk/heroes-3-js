@@ -26,8 +26,8 @@ import {
 } from './adventure-panels.utils.js'
 import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
+import { queryBattleScreen } from './battle.utils.js'
 import { aDwelling, aHero, aMine, aScenario, aTown } from './builders.js'
-import { queryHeroExchange } from './hero-exchange.utils.js'
 import { GRASS, WATER } from './terrain-codes.js'
 
 const PLAYER_RED = 'rgb(255, 0, 0)'
@@ -158,7 +158,7 @@ describe('other players behavior', () => {
       expect(getMapCursor()).toBe('arrow')
     })
 
-    test('given a blue hero when the player walks the hero to it then the hero stops next to it and no exchange screen opens', async () => {
+    test('given a blue hero when the player walks the hero to it then the hero stops next to it and a battle starts', async () => {
       const { user } = await setupApp(
         aScenario().withSize(6).withEntities(aHero().at(0, 0), aBlueHero().at(4, 0))
       )
@@ -166,8 +166,7 @@ describe('other players behavior', () => {
       await confirmMove(user, 4, 0)
 
       expectHeroAt(3, 0)
-      expectHeroAt(4, 0, 'hero-2')
-      expect(queryHeroExchange()).toBeNull()
+      expect(queryBattleScreen()).toBeTruthy()
     })
 
     test("given a blue hero the selected hero can't reach when the player clicks it then it is not selected and no route shows", async () => {

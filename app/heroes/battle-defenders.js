@@ -1,5 +1,9 @@
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
-import { getArmyAfterBattle } from '../../game/heroes/battle.js'
+import { getArmyAfterBattle, heroBattleSide } from '../../game/heroes/battle.js'
+import {
+  BATTLE_DEFENDER_ENEMY_HERO,
+  DEFEATED_HERO_EXPERIENCE
+} from '../../game/heroes/enemy-hero-battle.js'
 import { describeStack } from '../../game/heroes/hero-army.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../game/heroes/monster-stacks.js'
@@ -16,6 +20,7 @@ import {
   APP_FACT_DWELLING_FLAGGED,
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_TOWN_CAPTURED,
@@ -121,12 +126,34 @@ const townGarrison = {
   }
 }
 
+// Surrender to a hero comes later, so it stays disabled. The beaten hero leaves the map.
+const enemyHero = {
+  side: ({ started, state, definitions }) =>
+    heroBattleSide(heroById(state.get(), started.defender.heroId), definitions),
+  hero: ({ started: { defender }, state }) => ({
+    name: heroById(state.get(), defender.heroId)?.name,
+    owner: heroOwner(state.get(), defender.heroId)
+  }),
+  bonusExperience: () => DEFEATED_HERO_EXPERIENCE,
+  win({ emit, started: { defender } }) {
+    emit(APP_FACT_ENTITY_REMOVED, { entityId: defender.heroId })
+  },
+  lose({ emit, state, battle, started: { defender } }) {
+    const army = heroById(state.get(), defender.heroId)?.army ?? []
+    emit(APP_FACT_HERO_ARMY_CHANGED, {
+      heroId: defender.heroId,
+      army: getArmyAfterBattle(battle, 'defender', army)
+    })
+  }
+}
+
 const aiValueOf = ({ creature }, definitions) => definitions?.monsters?.[creature]?.aiValue ?? 0
 
 const defenders = {
   [BATTLE_DEFENDER_DWELLING_GUARDS]: dwellingGuards,
   [BATTLE_DEFENDER_ARTIFACT_GUARDS]: artifactGuards,
-  [BATTLE_DEFENDER_TOWN_GARRISON]: townGarrison
+  [BATTLE_DEFENDER_TOWN_GARRISON]: townGarrison,
+  [BATTLE_DEFENDER_ENEMY_HERO]: enemyHero
 }
 
 export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?? monster
@@ -134,7 +161,7 @@ export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?
 export function battleDefenderName({ started, state, definitions }) {
   const defender = battleDefenderOf(started)
   return (
-    defender.name?.({ started, state }) ??
+    defender.hero?.({ started, state }).name ??
     describeStack(defender.named(started, definitions), definitions).name
   )
 }
@@ -146,6 +173,7 @@ export const battleDefenderEvents = Object.freeze([
   APP_FACT_DWELLING_FLAGGED,
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_TOWN_CAPTURED,

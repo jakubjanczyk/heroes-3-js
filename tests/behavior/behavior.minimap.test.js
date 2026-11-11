@@ -6,7 +6,8 @@ import {
   expectHeroAt,
   expectNoPreview,
   getMapViewCentreTile,
-  getTerrainTile
+  getTerrainTile,
+  queryMinimapHeroMarker
 } from './adventure-map.utils.js'
 import {
   createMemoryEventLog,
@@ -98,10 +99,6 @@ function getTownDots() {
 
 function getHeroDot() {
   return document.querySelector('.minimap-hero-marker')
-}
-
-function getHeroDotOf(heroId) {
-  return document.querySelector(`.minimap-hero-marker[data-entity-id="${heroId}"]`)
 }
 
 function getHeroDots() {
@@ -429,8 +426,8 @@ describe('minimap behavior', () => {
           .build()
       )
 
-      expect(getMinimapDotTile(getHeroDotOf('hero-2'))).toEqual({ x: 8, y: 6 })
-      expect(backgroundOf(getHeroDotOf('hero-2'))).toBe(PLAYER_BLUE)
+      expect(getMinimapDotTile(queryMinimapHeroMarker('hero-2'))).toEqual({ x: 8, y: 6 })
+      expect(backgroundOf(queryMinimapHeroMarker('hero-2'))).toBe(PLAYER_BLUE)
       expect(backgroundOf(getTownDots()[0])).toBe(PLAYER_BLUE)
       expect(backgroundOf(getMinimapTile(8, 1))).toBe(PLAYER_BLUE)
     })
@@ -480,7 +477,7 @@ describe('minimap behavior', () => {
           .build()
       )
 
-      expect(getHeroDotOf('hero-2')).toBeNull()
+      expect(queryMinimapHeroMarker('hero-2')).toBeNull()
     })
 
     test('given a dwelling when the minimap renders then its tiles are drawn neutral grey', async () => {
