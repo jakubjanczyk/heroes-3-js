@@ -6,6 +6,7 @@ import {
   offerSecondarySkills
 } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
+import { heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_HERO_EXPERIENCE_GAINED,
@@ -74,7 +75,20 @@ export const registerHeroLevelsModule = defineModule(
         })
       }
       emit(APP_FACT_HERO_LEVELED_UP, { heroId, ...levelUp })
-      openLevelUpPopup(hero, levelUp)
+      if (heroOwner(state.get(), heroId) === viewingPlayer(state.get())) {
+        openLevelUpPopup(hero, levelUp)
+      } else {
+        levelUpWithoutAsking(heroId, levelUp.skillOffers)
+      }
+    }
+
+    // Another player's hero takes one of the offers at random until the AI chooses.
+    function levelUpWithoutAsking(heroId, skillOffers) {
+      const offer = skillOffers[Math.floor(random() * skillOffers.length)]
+      if (offer) {
+        emit(APP_FACT_HERO_SECONDARY_SKILL_LEARNED, { heroId, ...offer })
+      }
+      levelUpOnce(heroId)
     }
 
     function learnPickedSkill(heroId, choice) {

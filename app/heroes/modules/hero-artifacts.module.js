@@ -19,7 +19,7 @@ import {
   disassembleCombination
 } from '../../../game/heroes/combination-artifacts.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
+import { heroOwner, selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_ARTIFACT_COMBINATION_REQUESTED,
   APP_COMMAND_HERO_ARTIFACT_PUT_BACK_REQUESTED,
@@ -100,11 +100,26 @@ export const registerHeroArtifactsModule = defineModule(
       }
     }
 
-    // The combinations the captured artifacts complete are asked about once each, after the message.
+    // The player is told what their hero captured and asked about each combination it completes,
+    // after the message; another player's hero assembles them straight away.
     function tellCaptured({ heroId, artifacts: captured }) {
       if (isRestoring) {
         return
       }
+      const isViewingPlayers = heroOwner(state.get(), heroId) === viewingPlayer(state.get())
+      if (isViewingPlayers) {
+        showCaptured(captured)
+      }
+      for (const combination of combinationsCompletedBy(heroId, captured)) {
+        if (isViewingPlayers) {
+          ask(heroId, { action: 'assemble', artifact: combination })
+        } else {
+          rearrange((artifacts) => assembleCombination(artifacts, combination, definitions), heroId)
+        }
+      }
+    }
+
+    function showCaptured(captured) {
       const pictures = captured.map((artifactId) => {
         const name = definitions?.artifacts?.[artifactId]?.name ?? artifactId
         return { label: name, caption: [name], isArtifact: true }
@@ -112,13 +127,14 @@ export const registerHeroArtifactsModule = defineModule(
       for (const notice of noticesWithPictures(CAPTURED_MESSAGE, pictures)) {
         emit(APP_UI_NOTICE_OPENED, notice)
       }
+    }
+
+    function combinationsCompletedBy(heroId, captured) {
       const artifacts = heroById(state.get(), heroId)?.artifacts
       const combinations = new Set(
         captured.map((artifactId) => combinationToAssemble(artifacts, artifactId, definitions))
       )
-      for (const combination of [...combinations].filter(Boolean)) {
-        ask(heroId, { action: 'assemble', artifact: combination })
-      }
+      return [...combinations].filter(Boolean)
     }
 
     function putOnSelectedHero(place) {
