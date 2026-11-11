@@ -4,7 +4,6 @@ export const SCHOLAR = 'SCHOLAR'
 export const SCHOLAR_LEVELS = Object.freeze(['', 'BASIC', 'ADVANCED', 'EXPERT'])
 // Basic Scholar teaches up to level 2, each level of the skill one more.
 const SCHOLAR_SPELL_LEVEL_OFFSET = 1
-export const PICTURES_PER_SCHOLAR_WINDOW = 8
 
 function spellsToTeach({ from, to, upToLevel, spells }) {
   const known = new Set(to.spells ?? [])

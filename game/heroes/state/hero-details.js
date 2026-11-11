@@ -1,7 +1,7 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { isHero, isTown } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
-import { putOnArtifact, startingArtifacts } from '../artifacts.js'
+import { NO_ARTIFACTS, putOnArtifact, startingArtifacts } from '../artifacts.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
 import {
@@ -13,6 +13,21 @@ import {
 import { maxSpellPoints, spellPointsOnNewDay } from '../spell-points.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
+
+const wearCaptured = (heroes, detail, definitions) =>
+  updateHero((hero, { artifacts }) => ({
+    artifacts: artifacts.reduce(
+      (wearing, artifact) => putOnArtifact(wearing, artifact, definitions),
+      hero.artifacts
+    )
+  }))(heroes, detail)
+
+const loseArtifacts = updateHero(() => ({ artifacts: NO_ARTIFACTS }))
+
+function captureArtifacts(heroes, detail, { definitions }) {
+  const captured = wearCaptured(heroes, detail, definitions)
+  return loseArtifacts(captured, { heroId: detail.fromHeroId })
+}
 
 const spendSpellPoints = updateHero((hero, { cost }) => ({ spellPoints: hero.spellPoints - cost }))
 
@@ -173,6 +188,7 @@ export const heroDetailsSlice = {
     })),
     'fact.hero.army.changed': updateHero((_hero, { army }) => ({ army })),
     'fact.hero.artifacts.changed': updateHero((_hero, { artifacts }) => ({ artifacts })),
+    'fact.hero.artifacts.captured': captureArtifacts,
     'fact.artifact.pickedUp': (heroes, detail, { definitions }) =>
       updateHero((hero, { artifact }) => ({
         artifacts: putOnArtifact(hero.artifacts, artifact, definitions)

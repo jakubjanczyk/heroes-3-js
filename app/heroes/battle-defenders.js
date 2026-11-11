@@ -1,3 +1,4 @@
+import { giveAllArtifacts } from '../../game/heroes/artifact-exchange.js'
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
 import { getArmyAfterBattle, heroBattleSide } from '../../game/heroes/battle.js'
 import {
@@ -21,6 +22,7 @@ import {
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_TOWN_CAPTURED,
@@ -126,6 +128,19 @@ const townGarrison = {
   }
 }
 
+// The winner takes every artifact of the beaten hero that finds room; the rest are lost.
+function captureArtifacts({ emit, state, heroId, definitions, beatenHeroId }) {
+  const beaten = heroById(state.get(), beatenHeroId)?.artifacts
+  const winner = heroById(state.get(), heroId)?.artifacts
+  if (!beaten || !winner) {
+    return
+  }
+  const { given } = giveAllArtifacts(beaten, winner, definitions)
+  if (given.length > 0) {
+    emit(APP_FACT_HERO_ARTIFACTS_CAPTURED, { heroId, fromHeroId: beatenHeroId, artifacts: given })
+  }
+}
+
 // Surrender to a hero comes later, so it stays disabled. The beaten hero leaves the map.
 const enemyHero = {
   side: ({ started, state, definitions }) =>
@@ -135,7 +150,8 @@ const enemyHero = {
     owner: heroOwner(state.get(), defender.heroId)
   }),
   bonusExperience: () => DEFEATED_HERO_EXPERIENCE,
-  win({ emit, started: { defender } }) {
+  win({ emit, state, heroId, definitions, started: { defender } }) {
+    captureArtifacts({ emit, state, heroId, definitions, beatenHeroId: defender.heroId })
     emit(APP_FACT_ENTITY_REMOVED, { entityId: defender.heroId })
   },
   lose({ emit, state, battle, started: { defender } }) {
@@ -174,6 +190,7 @@ export const battleDefenderEvents = Object.freeze([
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_TOWN_CAPTURED,

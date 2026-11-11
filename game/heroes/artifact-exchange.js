@@ -78,32 +78,40 @@ function keepWorn(kept, slotId, artifactId, layout) {
     : { ...kept, worn }
 }
 
-// Worn artifacts go first, in slot order, then the backpack; those with no room stay.
-export function sendAllArtifacts(artifacts, fromSide, definitions) {
-  const toSide = OTHER_SIDE[fromSide]
-  let giver = { ...artifacts[fromSide], worn: {}, combined: {}, backpack: [] }
-  let receiver = artifacts[toSide]
-  const send = (artifactId, keep) => {
-    if (hasRoomFor(receiver, artifactId, definitions)) {
-      receiver = putOnArtifact(receiver, artifactId, definitions)
+// Worn artifacts go first, in slot order, then the backpack; those with no room stay with the giver.
+export function giveAllArtifacts(giver, receiver, definitions) {
+  let kept = { ...giver, worn: {}, combined: {}, backpack: [] }
+  let received = receiver
+  const given = []
+  const give = (artifactId, keep) => {
+    if (hasRoomFor(received, artifactId, definitions)) {
+      received = putOnArtifact(received, artifactId, definitions)
+      given.push(artifactId)
     } else {
-      giver = keep(giver, artifactId)
+      kept = keep(kept, artifactId)
     }
   }
 
   for (const { id } of ARTIFACT_SLOTS) {
-    const artifactId = artifacts[fromSide].worn[id]
+    const artifactId = giver.worn[id]
     if (artifactId) {
-      send(artifactId, (kept) => keepWorn(kept, id, artifactId, layoutOf(artifacts[fromSide], id)))
+      give(artifactId, (each) => keepWorn(each, id, artifactId, layoutOf(giver, id)))
     }
   }
-  for (const artifactId of artifacts[fromSide].backpack) {
-    send(artifactId, (kept) => ({ ...kept, backpack: [...kept.backpack, artifactId] }))
+  for (const artifactId of giver.backpack) {
+    give(artifactId, (each) => ({ ...each, backpack: [...each.backpack, artifactId] }))
   }
-  if (receiver === artifacts[toSide]) {
-    return null
-  }
-  return { ...artifacts, [fromSide]: giver, [toSide]: receiver }
+  return { kept, receiver: received, given }
+}
+
+export function sendAllArtifacts(artifacts, fromSide, definitions) {
+  const toSide = OTHER_SIDE[fromSide]
+  const { kept, receiver, given } = giveAllArtifacts(
+    artifacts[fromSide],
+    artifacts[toSide],
+    definitions
+  )
+  return given.length > 0 ? { ...artifacts, [fromSide]: kept, [toSide]: receiver } : null
 }
 
 export function swapAllArtifacts(artifacts) {

@@ -8,7 +8,14 @@ import {
   holdRightButtonOn,
   queryMinimapHeroMarker
 } from './adventure-map.utils.js'
-import { readArmySlots } from './adventure-panels.utils.js'
+import {
+  answerMessage,
+  expectInteractionModalClosed,
+  readArmySlots,
+  readMessage,
+  readMessageDetails,
+  readMessagePictures
+} from './adventure-panels.utils.js'
 import { createMemoryEventLog, readGameData, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
@@ -28,7 +35,12 @@ import {
   waitForBattleResults
 } from './battle.utils.js'
 import { aCaster, aFightWithAHero, HERO, stack } from './battle-lasting-spells.fixtures.js'
-import { ARMY_THAT_WINS, aHero, aScenario, aTown } from './builders.js'
+import { ARMY_THAT_WINS, aHero, anArtifactDefinition, aScenario, aTown } from './builders.js'
+import {
+  clickHeroInHeroList,
+  readHeroScreenArtifacts,
+  readHeroScreenBackpack
+} from './hero-screen.utils.js'
 import { readSpellBookMessage } from './spell-book.utils.js'
 import { openTavern, readHeroesForHire } from './town-screen.utils.js'
 
@@ -74,6 +86,54 @@ const aRetreatScenario = () =>
       aBlueHeroWithSwordsmen().at(1, 0),
       aHero().withId('hero-3').withName('Sir Mullich').withArmy(ARMY_THAT_WINS).at(0, 2)
     )
+
+const CAPTURED_MESSAGE = 'You have captured an enemy artifact!'
+const ASSEMBLE_QUESTION =
+  'You possess all of the components needed to assemble the Angelic Alliance.  Do you wish to assemble this artifact?'
+
+const capturableArtifacts = {
+  HELM: anArtifactDefinition()
+    .withName('Helm of Heavenly Enlightenment')
+    .withSlot('HELMET')
+    .build(),
+  SKULL: anArtifactDefinition().withName('Skull Helmet').withSlot('HELMET').build(),
+  CAPE: anArtifactDefinition().withName('Cape of Conjuring').withSlot('CAPE').build(),
+  SWORD: anArtifactDefinition().withName('Sword of Judgement').withSlot('WEAPON').build(),
+  RING: anArtifactDefinition().withName('Ring of Vitality').withSlot('RING').build(),
+  ALLIANCE: anArtifactDefinition()
+    .withName('Angelic Alliance')
+    .withSlot('WEAPON')
+    .withClass('RELIC')
+    .withParts(['HELM', 'SWORD'])
+    .build()
+}
+
+// Artifacts are put on in order, as when picked up: the first of a kind is worn, the rest wait in
+// the backpack.
+const aFightForArtifacts = ({ hero = aCaster().withArmy(ARMY_THAT_WINS), enemyArtifacts }) => {
+  const enemy = aBlueHero().withArtifacts(enemyArtifacts)
+  return aScenario()
+    .withSize(3)
+    .withEntities(hero, enemy.at(1, 0))
+    .withDefinitions({
+      ...aFightWithAHero({ enemy }).build().definitions,
+      artifacts: capturableArtifacts
+    })
+}
+
+async function beatBlueHero(scenario, options) {
+  const started = await startBattle(scenario, options)
+  await winWithAutoCombat(started.user)
+  await closeBattleResults(started.user)
+  return started
+}
+
+async function openHeroScreenAfterMessages(user) {
+  while (readMessage() === CAPTURED_MESSAGE || readMessage() === '') {
+    await answerMessage(user, 'OK')
+  }
+  await clickHeroInHeroList(user, HERO)
+}
 
 async function attackBlueHero() {
   confirmTileClickByDispatch(1, 0)
@@ -276,6 +336,121 @@ describe('attacking an enemy hero behavior', () => {
 
       expect(readHeroesForHire()).toContain(ENEMY_HERO)
     })
+
+    describe("the blue hero's artifacts", () => {
+      test('the hero wears an artifact the blue hero wore, in the slot of its kind', async () => {
+        const { user } = await beatBlueHero(aFightForArtifacts({ enemyArtifacts: ['CAPE'] }))
+
+        await openHeroScreenAfterMessages(user)
+
+        expect(readHeroScreenArtifacts().Cape).toBe('Cape of Conjuring')
+      })
+
+      test('an artifact whose slot the hero already fills goes to the end of its backpack', async () => {
+        const { user } = await beatBlueHero(
+          aFightForArtifacts({
+            hero: aCaster({ army: ARMY_THAT_WINS, artifacts: ['SKULL', 'RING', 'RING'] }),
+            enemyArtifacts: ['HELM']
+          })
+        )
+
+        await openHeroScreenAfterMessages(user)
+
+        expect(readHeroScreenBackpack()).toEqual(['Helm of Heavenly Enlightenment'])
+      })
+
+      test("the blue hero's backpack goes to the end of the hero's backpack, in its order", async () => {
+        const { user } = await beatBlueHero(
+          aFightForArtifacts({
+            hero: aCaster({ army: ARMY_THAT_WINS, artifacts: ['CAPE', 'HELM'] }),
+            enemyArtifacts: ['CAPE', 'HELM', 'SKULL', 'CAPE']
+          })
+        )
+
+        await openHeroScreenAfterMessages(user)
+
+        // The blue hero wears a Cape and the Helm, and carries the Skull Helmet and another Cape.
+        // The hero already wears both kinds, so its worn ones come first, helmet before cape, then
+        // its backpack.
+        expect(readHeroScreenBackpack()).toEqual([
+          'Helm of Heavenly Enlightenment',
+          'Cape of Conjuring',
+          'Skull Helmet',
+          'Cape of Conjuring'
+        ])
+      })
+
+      test('a combination artifact the blue hero wore is worn by the hero as a whole', async () => {
+        const { user } = await beatBlueHero(aFightForArtifacts({ enemyArtifacts: ['ALLIANCE'] }))
+
+        await openHeroScreenAfterMessages(user)
+
+        expect(readHeroScreenArtifacts()).toMatchObject({
+          Weapon: 'Angelic Alliance',
+          Helmet: 'Locked'
+        })
+      })
+
+      test('when the results window closes then a message shows each captured artifact', async () => {
+        await beatBlueHero(aFightForArtifacts({ enemyArtifacts: ['SKULL', 'CAPE', 'HELM'] }))
+
+        expect({ message: readMessage(), pictures: readMessagePictures() }).toEqual({
+          message: CAPTURED_MESSAGE,
+          pictures: ['Skull Helmet', 'Cape of Conjuring', 'Helm of Heavenly Enlightenment']
+        })
+      })
+
+      test('given more artifacts than one message holds when the player clicks OK then the next ones show without the text', async () => {
+        const { user } = await beatBlueHero(
+          aFightForArtifacts({ enemyArtifacts: Array(10).fill('RING') })
+        )
+
+        const first = readMessagePictures().length
+        await answerMessage(user, 'OK')
+        const second = { message: readMessage(), pictures: readMessagePictures() }
+
+        expect({ first, second }).toEqual({
+          first: 8,
+          second: { message: '', pictures: ['Ring of Vitality', 'Ring of Vitality'] }
+        })
+      })
+
+      test('given the blue hero had no artifacts then no message shows', async () => {
+        await beatBlueHero(aFightForArtifacts({ enemyArtifacts: [] }))
+
+        expectInteractionModalClosed()
+      })
+
+      test('given the captured artifacts complete a combination when the message closes then the hero is asked to assemble it', async () => {
+        const { user } = await beatBlueHero(
+          aFightForArtifacts({ enemyArtifacts: ['HELM', 'SWORD'] })
+        )
+
+        await answerMessage(user, 'OK')
+
+        expect(readMessageDetails()).toContain(ASSEMBLE_QUESTION)
+      })
+
+      test('given a full backpack then the artifacts that fit a free slot are worn and the rest are lost', async () => {
+        const { user } = await beatBlueHero(
+          aFightForArtifacts({
+            hero: aCaster({
+              army: ARMY_THAT_WINS,
+              artifacts: ['SKULL', ...Array(64).fill('RING')]
+            }),
+            enemyArtifacts: ['HELM', 'CAPE']
+          })
+        )
+
+        await openHeroScreenAfterMessages(user)
+
+        expect({
+          helmet: readHeroScreenArtifacts().Helmet,
+          cape: readHeroScreenArtifacts().Cape,
+          backpack: readHeroScreenBackpack().includes('Helm of Heavenly Enlightenment')
+        }).toEqual({ helmet: 'Skull Helmet', cape: 'Cape of Conjuring', backpack: false })
+      })
+    })
   })
 
   describe('losing', () => {
@@ -336,6 +511,29 @@ describe('attacking an enemy hero behavior', () => {
       await reloadBattle(scenario(), { eventLog })
 
       expect(getHeroEntity('hero-2')).toBeNull()
+    })
+
+    test('given the blue hero was beaten when the page reloads then the hero still has its artifacts', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = () => aFightForArtifacts({ enemyArtifacts: ['CAPE'] })
+      const { user } = await beatBlueHero(scenario(), { eventLog })
+      await answerMessage(user, 'OK')
+
+      const { user: reloadedUser } = await reloadBattle(scenario(), { eventLog })
+      await clickHeroInHeroList(reloadedUser, HERO)
+
+      expect(readHeroScreenArtifacts().Cape).toBe('Cape of Conjuring')
+    })
+
+    test('given the blue hero was beaten when the page reloads then the captured message does not show again', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = () => aFightForArtifacts({ enemyArtifacts: ['CAPE'] })
+      const { user } = await beatBlueHero(scenario(), { eventLog })
+      await answerMessage(user, 'OK')
+
+      await reloadBattle(scenario(), { eventLog })
+
+      expectInteractionModalClosed()
     })
   })
 })
