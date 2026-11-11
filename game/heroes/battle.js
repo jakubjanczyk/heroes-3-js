@@ -30,6 +30,7 @@ import {
 import { describeStack } from './hero-army.js'
 import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
+import { heroMagicResistance } from './spell-resistance.js'
 
 const MORALE_CHANCE_IN = 24
 // Bad morale freezes twice as often as good morale gives an extra turn.
@@ -66,6 +67,7 @@ function createStacks({
   luck = 0,
   cancelledInBattle = [],
   immunities = { mindSpells: false, spellLevel: 0 },
+  magicResistance = 0,
   definitions
 }) {
   const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
@@ -104,6 +106,7 @@ function createStacks({
       undead,
       mindSpellImmune: undead || immunities.mindSpells,
       spellLevelImmunity: immunities.spellLevel,
+      magicResistance,
       king: definition.king ?? null,
       luck,
       cancelledInBattle,
@@ -146,6 +149,7 @@ export function createBattle({ attacker, defender, definitions }) {
       luck: inBattle('luck', getHeroLuck({ entity, definitions }).value),
       cancelledInBattle,
       immunities: artifactBattleImmunities(entity.artifacts, definitions),
+      magicResistance: heroMagicResistance(entity),
       definitions
     })
   }
@@ -727,9 +731,14 @@ function describeSpellLosses(damaged) {
 // Each stack hit takes its own damage: a Protection lessens it on the stack it is on.
 export const castDamageSpell = (battle, cast) => clearGoneClones(damageBySpell(battle, cast))
 
-function damageBySpell(battle, { heroName, spellName, hits, chained }) {
-  const targetIds = hits.map(({ stackId }) => stackId)
-  const cast = castOnStacks(battle, { heroName, spellName, targetIds, chained }, (stack) => stack)
+function damageBySpell(battle, { heroName, spellName, hits: aimed, chained, resistedIds = [] }) {
+  const targetIds = aimed.map(({ stackId }) => stackId)
+  const cast = castOnStacks(
+    battle,
+    { heroName, spellName, targetIds, chained, resistedIds },
+    (stack) => stack
+  )
+  const hits = aimed.filter(({ stackId }) => !resistedIds.includes(stackId))
   if (hits.length === 0) {
     return cast
   }
@@ -827,28 +836,41 @@ function describeCast(battle, { heroName, spellName, targetIds }) {
 }
 
 // A chain spell's hits come one after another, each from the stack hit before it.
-function spellHitEffects({ spellName, targetIds, chained }) {
-  return targetIds.map((stackId, place) =>
-    chained && place > 0
-      ? { stackId, kind: 'spellHit', spellName, place, from: targetIds[place - 1] }
-      : { stackId, kind: 'spellHit', spellName }
-  )
+function spellHitEffects({ spellName, targetIds, chained, resistedIds }) {
+  return targetIds.map((stackId, place) => {
+    const hit = { stackId, kind: 'spellHit', spellName }
+    const shown = resistedIds.includes(stackId) ? { ...hit, resisted: true } : hit
+    return chained && place > 0 ? { ...shown, place, from: targetIds[place - 1] } : shown
+  })
 }
 
-// The spell changes its targets; the stack whose turn it is keeps it.
-function castOnStacks(battle, { heroName, spellName, targetIds, chained, castMessage }, change) {
+const describeResisted = ({ name, count }, spellName) =>
+  `The ${name} ${count === 1 ? 'resists' : 'resist'} the ${spellName}.`
+
+// The spell changes its targets but those that resisted it; the stack whose turn it is keeps it.
+function castOnStacks(
+  battle,
+  { heroName, spellName, targetIds, chained, castMessage, resistedIds = [] },
+  change
+) {
+  const stackById = (id) => battle.stacks.find((stack) => stack.id === id)
+  const affectedIds = targetIds.filter((id) => !resistedIds.includes(id))
   const named = castMessage
-    ? targetIds.map((id) => castMessage.replace('%s', battle.stacks.find((s) => s.id === id).name))
+    ? affectedIds.map((id) => castMessage.replace('%s', stackById(id).name))
     : []
   return {
     ...battle,
     heroCastThisRound: true,
     turnStackId: getActiveStack(battle)?.id ?? null,
-    stacks: battle.stacks.map((stack) => (targetIds.includes(stack.id) ? change(stack) : stack)),
-    effects: [...battle.effects, ...spellHitEffects({ spellName, targetIds, chained })],
+    stacks: battle.stacks.map((stack) => (affectedIds.includes(stack.id) ? change(stack) : stack)),
+    effects: [
+      ...battle.effects,
+      ...spellHitEffects({ spellName, targetIds, chained, resistedIds })
+    ],
     messages: [
       ...battle.messages,
       describeCast(battle, { heroName, spellName, targetIds }),
+      ...resistedIds.map((id) => describeResisted(stackById(id), spellName)),
       ...named
     ]
   }
@@ -856,9 +878,9 @@ function castOnStacks(battle, { heroName, spellName, targetIds, chained, castMes
 
 export const castLastingSpell = (
   battle,
-  { heroName, spellName, targetIds, castMessage, ...spell }
+  { heroName, spellName, targetIds, castMessage, resistedIds, ...spell }
 ) =>
-  castOnStacks(battle, { heroName, spellName, targetIds, castMessage }, (stack) =>
+  castOnStacks(battle, { heroName, spellName, targetIds, castMessage, resistedIds }, (stack) =>
     putSpellOn(stack, spell)
   )
 
