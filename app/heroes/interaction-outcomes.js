@@ -12,6 +12,7 @@ import {
 } from '../../game/heroes/interaction-kinds.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
 import { describeMonsterGroupInText } from '../../game/heroes/monster-count.js'
+import { BATTLE_DEFENDER_TOWN_GARRISON } from '../../game/heroes/town-garrison.js'
 import { TREASURE_CHEST_GOLD_RESOURCE } from '../../game/heroes/treasure-chest.js'
 import {
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
@@ -231,7 +232,17 @@ export const heroesOutcomeEffects = Object.freeze({
     ]
   }),
   [INTERACTION_OUTCOME_KIND_TOWN_VISITED]: (outcome) => ({
-    facts: [{ type: APP_FACT_TOWN_VISITED, detail: toEntityFactDetail(outcome) }]
+    facts: [
+      outcome.garrison
+        ? {
+            type: APP_FACT_BATTLE_STARTED,
+            detail: {
+              ...toEntityFactDetail(outcome),
+              defender: { kind: BATTLE_DEFENDER_TOWN_GARRISON, stacks: outcome.garrison }
+            }
+          }
+        : { type: APP_FACT_TOWN_VISITED, detail: toEntityFactDetail(outcome) }
+    ]
   }),
   // The player picks the gold or the experience; nothing happens until they confirm with OK.
   [INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND]: (outcome) => {

@@ -1025,9 +1025,9 @@ export function resolveShot(battle, { stackId, strikes }) {
 
 export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
 
-export function getHeroArmyAfterBattle(battle, heroArmy) {
-  return heroArmy.map((slot, index) => {
-    const stack = battle.stacks.find(({ id }) => id === `attacker-${index}`)
+export function getArmyAfterBattle(battle, side, army) {
+  return army.map((slot, index) => {
+    const stack = battle.stacks.find(({ id }) => id === `${side}-${index}`)
     return slot && stack?.count > 0 ? { creature: stack.creature, count: stack.count } : null
   })
 }

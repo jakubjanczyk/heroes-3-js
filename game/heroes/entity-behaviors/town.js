@@ -1,7 +1,9 @@
+import { heroOwner } from '../../state/queries.js'
 import {
   INTERACTION_OUTCOME_KIND_TOWN_VISITED,
   MOVEMENT_INTERACTION_KIND_TOWN_VISIT
 } from '../interaction-kinds.js'
+import { isDefendedAgainst, townGarrison } from '../state/towns.js'
 import { getEntityName } from './shared.js'
 
 // A Heroes 3 map names each town; one the scenario leaves unnamed goes by its type's name.
@@ -35,12 +37,14 @@ export const townBehavior = Object.freeze({
     requiresSteppingIntoTarget: true,
     definitionsKey: 'towns',
     defaultName: 'Town',
-    resolveArrivalOutcome({ entity, tile }) {
+    resolveArrivalOutcome({ entity, tile, state, heroId }) {
+      const defended = state && isDefendedAgainst(state, entity.id, heroOwner(state, heroId))
       return {
         kind: INTERACTION_OUTCOME_KIND_TOWN_VISITED,
         entityId: entity.id,
         entityType: entity.type,
-        tile
+        tile,
+        garrison: defended ? townGarrison(state, entity.id) : null
       }
     }
   })

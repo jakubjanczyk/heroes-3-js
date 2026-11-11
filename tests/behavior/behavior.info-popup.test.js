@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen, within } from '@testing-library/dom'
+import { within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import {
@@ -11,6 +11,7 @@ import {
   holdRightButtonOn,
   longPressOn,
   pointerOverTile,
+  queryInfoPopup,
   readInfoPopupLines
 } from './adventure-map.utils.js'
 import { readArmySlots } from './adventure-panels.utils.js'
@@ -66,10 +67,6 @@ async function liftFinger(user) {
 
 async function tapOn(user, x, y) {
   await user.pointer({ keys: '[TouchA]', ...pointerOverTile(x, y) })
-}
-
-function queryInfoPopup() {
-  return screen.queryByRole('tooltip')
 }
 
 function expectInfoPopupLines(lines) {
