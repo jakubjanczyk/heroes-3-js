@@ -1083,7 +1083,7 @@ In seventeen parts. See `docs/notes/2026-11-10-player-system.md`. The players ar
 - [x] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
 - [x] 8.1.4 Capturing enemy mines and dwellings
 - [x] 8.1.5 Capturing enemy towns without defenders
-- [ ] 8.1.6 Attacking a town's garrison (enemy, or neutral with a scenario garrison, 6.4), on an open field until sieges (5.10)
+- [x] 8.1.6 Attacking a town's garrison (enemy, or neutral with a scenario garrison, 6.4), on an open field until sieges (5.10)
 - [ ] 8.1.7 Attacking an enemy hero: the battle, the experience, the beaten hero leaves the map
 - [ ] 8.1.8 The beaten hero's artifacts go to the winner
 - [ ] 8.1.9 Losing to an enemy hero: the player's hero leaves for the tavern (4.5.5)

@@ -143,7 +143,7 @@
     {"id": "town-1", "kind": "TOWN", "type": "CASTLE", "name": "Whitemoon", "owner": "red", "buildings": ["FORT", "GUARDHOUSE", "TAVERN"], "garrison": [{"creature": "PIKEMAN", "count": 12}, {"creature": "ARCHER", "count": 6}], "tile": {"x": 10, "y": 10}},
     {"id": "town-2", "kind": "TOWN", "type": "CASTLE", "tile": {"x": 24, "y": 22}},
     {"id": "town-3", "kind": "TOWN", "type": "CASTLE", "tile": {"x": 42, "y": 35}},
-    {"id": "town-4", "kind": "TOWN", "type": "CASTLE", "name": "Kirkwall", "owner": "blue", "tile": {"x": 55, "y": 50}},
+    {"id": "town-4", "kind": "TOWN", "type": "CASTLE", "name": "Kirkwall", "owner": "blue", "garrison": [{"creature": "PIKEMAN", "count": 15}, null, {"creature": "ARCHER", "count": 8}], "tile": {"x": 55, "y": 50}},
     {"id": "monster-19", "kind": "MONSTER", "type": "SKELETON", "count": 12, "tile": {"x": 6, "y": 2}},
     {"id": "monster-20", "kind": "MONSTER", "type": "GRIFFIN", "count": 4, "tile": {"x": 1, "y": 1}},
     {"id": "monster-1", "kind": "MONSTER", "type": "ANGEL", "count": 3, "tile": {"x": 13, "y": 7}},

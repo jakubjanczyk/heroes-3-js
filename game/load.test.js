@@ -275,14 +275,6 @@ describe('bootstrap', () => {
     )
   })
 
-  test('loadGame rejects scenarios with a garrison in a town the player does not own', async () => {
-    const fetch = fakeFetchWithTown({ garrison: [{ creature: 'SKELETON', count: 5 }] })
-
-    await expect(loadGame({ fetch, terrainTypes: TERRAIN_TYPES })).rejects.toThrow(
-      'Town town has a garrison but the player does not own it'
-    )
-  })
-
   test('loadGame rejects scenarios with a town garrison of more than 7 stacks', async () => {
     const fetch = fakeFetchWithTown({
       owner: 'red',

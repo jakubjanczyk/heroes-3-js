@@ -96,6 +96,10 @@ export function readObstacleTiles(entityId = 'obstacle-1') {
   }))
 }
 
+export function queryInfoPopup() {
+  return screen.queryByRole('tooltip')
+}
+
 export function readInfoPopupLines() {
   const popup = screen.queryByRole('tooltip')
   expect(popup).not.toBeNull()
