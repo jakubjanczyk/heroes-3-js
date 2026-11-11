@@ -274,7 +274,7 @@ export const registerBattleModule = defineModule(
     }
 
     function winBattle() {
-      const fought = { emit, state, heroId, battle, started }
+      const fought = { emit, state, heroId, battle, started, definitions }
       const defender = battleDefenderOf(started)
       const experience = experienceForWin()
       const army = getArmyAfterBattle(battle, 'attacker', heroById(state.get(), heroId)?.army ?? [])

@@ -1,9 +1,4 @@
-import {
-  PICTURES_PER_SCHOLAR_WINDOW,
-  SCHOLAR,
-  scholarMessage,
-  scholarTeaching
-} from '../../../game/heroes/scholar.js'
+import { SCHOLAR, scholarMessage, scholarTeaching } from '../../../game/heroes/scholar.js'
 import { describeSecondarySkill } from '../../../game/heroes/secondary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import {
@@ -13,15 +8,8 @@ import {
   APP_UI_NOTICE_OPENED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { noticesWithPictures } from '../presentation/notice-windows.js'
 import { initialsOf } from '../presentation/secondary-skill-icon.js'
-
-function inWindows(pictures) {
-  const windows = []
-  for (let start = 0; start < pictures.length; start += PICTURES_PER_SCHOLAR_WINDOW) {
-    windows.push(pictures.slice(start, start + PICTURES_PER_SCHOLAR_WINDOW))
-  }
-  return windows
-}
 
 // Two heroes meeting teach each other spells when one of them has Scholar.
 export const registerScholarModule = defineModule(
@@ -48,9 +36,9 @@ export const registerScholarModule = defineModule(
         taughtNames: taught.map(spellName)
       })
       const pictures = [scholarPicture(level), ...[...learned, ...taught].map(spellPicture)]
-      inWindows(pictures).forEach((rewards, index) => {
-        emit(APP_UI_NOTICE_OPENED, { title: null, message: index === 0 ? message : '', rewards })
-      })
+      for (const notice of noticesWithPictures(message, pictures)) {
+        emit(APP_UI_NOTICE_OPENED, notice)
+      }
     }
 
     function teach({ left, right }) {

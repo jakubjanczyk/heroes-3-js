@@ -141,6 +141,8 @@ export const APP_FACT_HERO_LEVELED_UP = 'fact.hero.leveledUp'
 export const APP_FACT_HERO_SECONDARY_SKILL_LEARNED = 'fact.hero.secondarySkill.learned'
 export const APP_FACT_HERO_ARMY_CHANGED = 'fact.hero.army.changed'
 export const APP_FACT_HERO_ARTIFACTS_CHANGED = 'fact.hero.artifacts.changed'
+// A beaten hero's artifacts that found room on the winner; the rest are lost.
+export const APP_FACT_HERO_ARTIFACTS_CAPTURED = 'fact.hero.artifacts.captured'
 // A hero hired in a town's tavern, who comes onto the map at the town's entrance.
 export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
 // The heroes a player's taverns offer this week, and the barkeep's rumour.
@@ -252,6 +254,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_ARTIFACTS_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
   APP_FACT_HERO_HIRED,
   APP_FACT_TAVERN_HEROES_OFFERED,
   APP_FACT_MAGE_GUILD_SPELLS_ROLLED,
