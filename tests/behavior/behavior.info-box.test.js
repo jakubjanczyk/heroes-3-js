@@ -150,15 +150,15 @@ describe('info box behavior', () => {
 })
 
 // The hero stands right below the mine's entry tile, so entering it takes one step.
-const aMineScenario = (mineType = 'GOLD_MINE') =>
+const aMineScenario = (mineType = 'GOLD_MINE', owner = null) =>
   aScenario()
     .withSize(8, 3)
-    .withEntities(aHero().at(2, 2), aMine().withType(mineType).at(2, 1))
+    .withEntities(aHero().at(2, 2), aMine().withType(mineType).ownedBy(owner).at(2, 1))
     .withDefinitions(gameDefinitions)
     .build()
 
-async function setupMineApp({ mineType, eventLog } = {}) {
-  return setupMovementBehaviorApp({ loadGameOptions: aMineScenario(mineType), eventLog })
+async function setupMineApp({ mineType, owner, eventLog } = {}) {
+  return setupMovementBehaviorApp({ loadGameOptions: aMineScenario(mineType, owner), eventLog })
 }
 
 async function captureMine(user) {
@@ -175,6 +175,14 @@ describe('info box mine capture behavior', () => {
     await captureMine(user)
 
     expect(readCapturedMine()).toEqual({ name, income })
+  })
+
+  test('shows a mine taken from the blue player and its daily income in place of the hero', async () => {
+    const { user } = await setupMineApp({ owner: 'blue' })
+
+    await captureMine(user)
+
+    expect(readCapturedMine()).toEqual({ name: 'Gold Mine', income: 'Gold 1000 per day' })
   })
 
   test('keeps showing the mine just before 3 seconds have passed', async () => {
