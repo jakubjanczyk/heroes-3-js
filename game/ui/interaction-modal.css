@@ -2,14 +2,23 @@
   z-index: var(--z-ui-interaction-modal);
   inline-size: min(20rem, calc(100% - (2 * var(--space-lg))));
   max-inline-size: none;
+  /*
+   * A message taller than the screen scrolls here rather than in the message box, whose gold
+   * corners stick out past its edge and would always make it scrollable. The padding keeps the
+   * frame around the box in view.
+   */
+  max-block-size: calc(100dvh - (2 * var(--space-md)));
   margin: auto;
-  padding: 0;
+  padding: 0.25rem;
   border: 0;
   background: transparent;
   color: inherit;
-  overflow: visible;
+  overflow-y: auto;
+  translate: 0 0.75rem;
   opacity: 0;
   transition:
+    translate var(--interaction-modal-transition-duration, var(--duration-slow))
+    var(--ease-emphasized),
     opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard),
     display var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete,
     overlay var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete;
@@ -23,9 +32,11 @@
   }
 
   &[open] {
+    translate: 0 0;
     opacity: 1;
 
     @starting-style {
+      translate: 0 0.75rem;
       opacity: 0;
     }
 
@@ -39,6 +50,7 @@
   }
 
   &[data-state="closing"] {
+    translate: 0 0.75rem;
     opacity: 0;
 
     &::backdrop {
@@ -56,12 +68,6 @@
   }
 }
 
-/* A message taller than the screen scrolls, so its OK button can always be reached. */
-.interaction-modal__surface {
-  max-block-size: calc(100dvh - (2 * var(--space-md)));
-  overflow-y: auto;
-}
-
 /*
  * A Heroes 3 message box (message-box.css): a gold title, white text, the pictures to choose from
  * and the checkmark OK button at the bottom.
@@ -76,24 +82,6 @@
   text-shadow:
     1px 1px 0 black,
     -1px 0 0 rgb(0 0 0 / 0.6);
-  translate: 0 0;
-  opacity: 1;
-  transition:
-    translate var(--interaction-modal-transition-duration, var(--duration-slow))
-    var(--ease-emphasized),
-    opacity var(--interaction-modal-transition-duration, var(--duration-slow)) var(--ease-standard);
-
-  .interaction-modal[open] & {
-    @starting-style {
-      translate: 0 0.75rem;
-      opacity: 0;
-    }
-  }
-
-  .interaction-modal[data-state="closing"] & {
-    translate: 0 0.75rem;
-    opacity: 0;
-  }
 }
 
 .interaction-modal__title {
