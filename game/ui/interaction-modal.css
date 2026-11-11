@@ -189,10 +189,14 @@
     linear-gradient(180deg, #f2e4bc, #d9c08a);
 }
 
-/* An artifact's picture is no bigger than its frame on the hero screen. */
+/* An artifact's picture is no bigger than its frame on the hero screen, with a smaller name. */
 .interaction-modal__choice-picture--artifact {
   inline-size: 2.75rem;
   aspect-ratio: 1;
+}
+
+.interaction-modal__choice:has(> .interaction-modal__choice-picture--artifact) {
+  font-size: var(--font-size-2xs);
 }
 
 /* Skills have two caption lines (level over name), so "or" sits higher to stay level with them. */
