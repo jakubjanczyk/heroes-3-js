@@ -57,6 +57,14 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - Experience is one point per hit point of the creatures killed, as against monsters. The wiki gives 500 more for "an enemy town captured during a siege"; the engine gives those 500 for every won battle at a town, with walls or without. We follow the wiki (agreed for 8.1.6): the 500 come only for a town with a Fort, Citadel or Castle, where the battle would be a siege.
   - Losing or retreating takes the hero off the map and leaves the town to its owner with what is left of the garrison. Surrender needs an enemy hero, so it's disabled; its tooltip, "There is no hero to surrender to", is our own wording.
   - The results window names the defender by its strongest creature (the highest AI value), as for monsters; the texts are the ones the battles already use.
+- **Attacking an enemy hero** (checked for 8.1.7 against the wiki's Experience page and an open-source engine's battle setup and battle results):
+  - The swords over an enemy hero the hero can reach (8.1.2); the hero walks up next to it and the battle starts straight away, with no question first, on the enemy hero's tile's terrain.
+  - The enemy hero fights with its whole army, each stack in its own slot, and its stacks get what a hero gives: its Attack and Defense (artifacts included), its army's morale and its luck (Leadership, Luck, artifacts). An artifact that cancels morale or luck in battle does so for both sides whichever hero wears it, and an artifact's spell immunities protect its wearer's army only.
+  - The hero stands on the right of the battlefield, the player's on the left.
+  - Winning: one experience point per hit point of the enemy creatures killed, as against monsters, and 500 more for the defeated hero. Both the wiki and the engine give the 500; neither gives them when the enemy hero retreats or surrenders, which needs the AI (8.3). The beaten hero leaves the map and is in the taverns' pool again (4.5.5).
+  - The results window names the enemy hero as the defender, with the texts the battles already use ("A glorious victory!", "For valor in combat, …").
+  - Losing or retreating: the player's hero leaves the map as against monsters, and the enemy hero keeps what is left of its army.
+  - Left for later: the enemy hero casting spells and retreating (AI, 8.3 and 5.7b); its experience when it wins and the player's hero's artifacts going to it (8.1.9); the beaten hero's artifacts (8.1.8); Surrender (8.1.10).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
