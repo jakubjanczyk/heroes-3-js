@@ -9,6 +9,7 @@ import {
   expectNoPreview,
   getDwellingEntity,
   getHeroEntity,
+  readOwnerFlags,
   readPreviewPathTiles
 } from './adventure-map.utils.js'
 import {
@@ -214,6 +215,29 @@ describe('creature dwellings on the map', () => {
       expect(window.getComputedStyle(flag).backgroundColor).toBe(PLAYER_RED)
     })
 
+    test("shows only the player's flag on a blue dwelling after the hero enters it", async () => {
+      await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(aDwelling().ownedBy('blue').at(2, 1))
+      })
+
+      await enterDwellingAt(2, 1)
+
+      expect(readOwnerFlags(getDwellingEntity())).toEqual(['Red player flag'])
+    })
+
+    test('keeps a dwelling taken from the blue player flagged after a reload', async () => {
+      const session = {
+        eventLog: createMemoryEventLog(),
+        loadGameOptions: aDwellingScenario(aDwelling().ownedBy('blue').at(2, 1))
+      }
+      await setupMovementBehaviorApp(session)
+      await enterDwellingAt(2, 1)
+
+      await setupMovementBehaviorApp(session)
+
+      expect(readOwnerFlags(getDwellingEntity())).toEqual(['Red player flag'])
+    })
+
     test('keeps one flag when the hero enters a dwelling the player already owns', async () => {
       const { user } = await setupMovementBehaviorApp({ loadGameOptions: aDwellingScenario() })
       await enterDwellingAt(2, 1)
@@ -270,6 +294,16 @@ describe('creature dwellings on the map', () => {
 
       expect(queryRecruitWindow('Recruit Archers')).toBeTruthy()
       expect(queryQuestion("Archers' Tower")).toBeNull()
+    })
+
+    test("entering the blue player's Archers' Tower opens the window to recruit Archers", async () => {
+      await setupMovementBehaviorApp({
+        loadGameOptions: aDwellingScenario(anArchersTower().ownedBy('blue'))
+      })
+
+      await enterDwellingAt(2, 1)
+
+      expect(queryRecruitWindow('Recruit Archers')).toBeTruthy()
     })
 
     test('offers the week of 9 Archers at 100 gold each', async () => {
@@ -752,6 +786,28 @@ describe('creature dwellings on the map', () => {
       expect(readGuardStack()).toBe(SURVIVING_MONKS)
     })
 
+    test("the blue player's Monastery asks the player's hero whether to fight its 9 Monks", async () => {
+      const { user } = await setupMonastery({
+        hero: aHeroWithMarksmen(),
+        dwelling: aDwelling().withType('MONASTERY').ownedBy('blue').at(2, 1)
+      })
+
+      await fightGuards(user)
+
+      expect(readGuardStack()).toBe('Monks 9')
+    })
+
+    test("beating the guards of the blue player's Monastery flags it for the player", async () => {
+      const { user } = await setupMonastery({
+        hero: aHero().at(2, 2).withArmy(ARMY_THAT_WINS),
+        dwelling: aDwelling().withType('MONASTERY').ownedBy('blue').at(2, 1)
+      })
+
+      await beatGuards(user)
+
+      expect(readOwnerFlags(getDwellingEntity())).toEqual(['Red player flag'])
+    })
+
     test('a Monastery the scenario gives to the player has no guards for them', async () => {
       await setupMonastery({ dwelling: aDwelling().withType('MONASTERY').ownedByPlayer().at(2, 1) })
 
@@ -804,6 +860,17 @@ describe('creature dwellings on the map', () => {
 
     test("flagging a Guardhouse adds one to the Pikemen's growth in the player's town", async () => {
       const { user } = await setupTownGrowthApp()
+
+      await flagGuardhouse(user)
+
+      await openWhitemoon(user)
+      expect(readCreatureGrowth()[0]).toBe('Pikemen +15')
+    })
+
+    test("flagging the blue player's Guardhouse adds one to the Pikemen's growth in the player's town", async () => {
+      const { user } = await setupTownGrowthApp(
+        aTownGrowthScenario({ dwellings: [aDwelling().ownedBy('blue').at(8, 5)] })
+      )
 
       await flagGuardhouse(user)
 

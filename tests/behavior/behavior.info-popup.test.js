@@ -137,6 +137,20 @@ describe('info popup behavior', () => {
       expectInfoPopupLines(['Gold Mine', '(Red)'])
     })
 
+    test('given a blue mine the hero captured when the player holds the right button on it then the popup shows the player colour', async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(2, 2), aMine().withType('GOLD_MINE').ownedBy('blue').at(2, 1))
+      )
+      confirmTileClickByDispatch(2, 1)
+      await flushMicrotasks()
+
+      await holdRightButtonOn(user, 1, 1)
+
+      expectInfoPopupLines(['Gold Mine', '(Red)'])
+    })
+
     test('given a dwelling nobody owns when the player holds the right button on it then the popup shows only its name', async () => {
       const { user } = await setupApp(
         aScenario()

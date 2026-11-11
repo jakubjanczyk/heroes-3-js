@@ -6,7 +6,9 @@ import {
   confirmTileClickByDispatch,
   expectHeroAt,
   getMapViewCentreTile,
-  getTownFlag
+  getTownEntity,
+  getTownFlag,
+  readOwnerFlags
 } from './adventure-map.utils.js'
 import {
   clickEndTurn,
@@ -105,6 +107,22 @@ describe('town ownership behavior', () => {
       await captureTownAt(WHITEMOON_ENTRANCE, user)
 
       expect(getTownFlag('town-1')).not.toBeNull()
+    })
+
+    test("shows only the player's flag on a blue town after the hero enters it", async () => {
+      const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedBy('blue') }))
+
+      await captureTownAt(WHITEMOON_ENTRANCE, user)
+
+      expect(readOwnerFlags(getTownEntity('town-1'))).toEqual(['Red player flag'])
+    })
+
+    test('adds a town taken from the blue player to the town list', async () => {
+      const { user } = await setupApp(aTwoTownScenario({ whitemoon: aWhitemoon().ownedBy('blue') }))
+
+      await captureTownAt(WHITEMOON_ENTRANCE, user)
+
+      expect(readTownList()).toEqual(['Whitemoon'])
     })
 
     test('adds a captured town to the end of the town list', async () => {

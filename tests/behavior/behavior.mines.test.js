@@ -7,7 +7,9 @@ import {
   expectHeroAt,
   expectMineAt,
   expectMinePresent,
-  expectNoPreview
+  expectNoPreview,
+  getMineEntity,
+  readOwnerFlags
 } from './adventure-map.utils.js'
 import {
   endTurns,
@@ -158,6 +160,16 @@ describe('mine interaction behavior', () => {
       expect(flag).not.toBeNull()
       expect(window.getComputedStyle(flag).backgroundColor).toBe(PLAYER_RED)
     })
+
+    test("shows only the player's flag on a blue mine after the hero enters it", async () => {
+      await setupMovementBehaviorApp({
+        loadGameOptions: aMineScenario(aMine().ownedBy('blue').at(2, 1))
+      })
+
+      await enterMineAt(2, 1)
+
+      expect(readOwnerFlags(getMineEntity())).toEqual(['Red player flag'])
+    })
   })
 
   describe('income', () => {
@@ -178,6 +190,17 @@ describe('mine interaction behavior', () => {
       await endTurns(user, 1)
 
       expectResourceTotal(resourceName, amount)
+    })
+
+    test('pays the income of a mine taken from the blue player from the next day', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aMineScenario(aMine().ownedBy('blue').at(2, 1))
+      })
+      await enterMineAt(2, 1)
+
+      await endTurns(user, 1)
+
+      expectResourceTotal('Gold', 1000)
     })
 
     test('pays no income on the day the mine is captured', async () => {
@@ -269,6 +292,19 @@ describe('mine interaction behavior', () => {
       await reload(session)
 
       expect(getMineFlag()).not.toBeNull()
+    })
+
+    test('keeps a mine taken from the blue player owned by the player', async () => {
+      const session = {
+        eventLog: createMemoryEventLog(),
+        loadGameOptions: aMineScenario(aMine().ownedBy('blue').at(2, 1))
+      }
+      await setupMovementBehaviorApp(session)
+      await enterMineAt(2, 1)
+
+      await reload(session)
+
+      expect(readOwnerFlags(getMineEntity())).toEqual(['Red player flag'])
     })
 
     test('keeps the resource totals including income already paid', async () => {

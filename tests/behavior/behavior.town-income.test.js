@@ -94,6 +94,16 @@ describe('town income behavior', () => {
     expectResourceTotal('Gold', 500)
   })
 
+  test('pays for a town taken from the blue player from the next day', async () => {
+    const { user } = await setupApp(aTownScenario({ whitemoon: aWhitemoon().ownedBy('blue') }))
+    await enterTownAt(WHITEMOON_ENTRANCE.x, WHITEMOON_ENTRANCE.y)
+    await leaveTown(user)
+
+    await endTurns(user, 1)
+
+    expectResourceTotal('Gold', 500)
+  })
+
   test('pays the new hall from the day after it is built', async () => {
     const { user } = await setupApp(
       aTownScenario({ whitemoon: aWhitemoon().ownedByPlayer().withBuildings(['TAVERN']) })

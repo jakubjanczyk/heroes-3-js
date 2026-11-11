@@ -45,6 +45,12 @@ export function getTownFlag(entityId = 'town-1') {
   )
 }
 
+export function readOwnerFlags(entityElement) {
+  return [...entityElement.querySelectorAll('[role="img"][aria-label$="player flag"]')].map(
+    (flag) => flag.getAttribute('aria-label')
+  )
+}
+
 export function getMineEntity(entityId = 'mine-1') {
   return document.querySelector(`.entity--mine[data-entity-id="${entityId}"]`)
 }
