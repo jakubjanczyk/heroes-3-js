@@ -686,7 +686,7 @@ In three parts.
   - [x] 4.8.7.3c Sacrifice: a dead or hurt own stack is brought back by destroying another own stack, with (Power + its health + 3 / 6 / 10) × its count in health
 
 #### 5.8 later
-- [ ] The Resistance skill's chance an enemy spell fails on a stack, with an enemy that casts: enemy heroes (8.1) or creatures that cast (6.5)
+- [x] The Resistance skill's chance a hostile spell fails on a stack: the player's spells on an enemy hero's army, and on the player's own stacks in the player's own area spells (8.1.7b). Against enemies that cast, it comes with them (8.3, 6.5)
 - [ ] Destroy Undead (planned in `docs/notes/2026-11-01-casting-in-battle.md`): not aimed, it hits every undead stack on both sides; "That spell will affect no one!" with no undead; its own combat log line
 - [ ] Fire Wall, Force Field, Quicksand, Land Mine and Remove Obstacle, with obstacles on the battlefield (5.3), and Expert Dispel clearing them; Earthquake with sieges (5.10)
 - [ ] The four Summon Elemental spells, Resurrection and Animate Dead, with the elementals and the dead counted
@@ -1085,7 +1085,7 @@ In eighteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.5 Capturing enemy towns without defenders
 - [x] 8.1.6 Attacking a town's garrison (enemy, or neutral with a scenario garrison, 6.4), on an open field until sieges (5.10)
 - [x] 8.1.7 Attacking an enemy hero: the battle, the experience, the beaten hero leaves the map
-- [ ] 8.1.7b An enemy hero's Resistance protects its army from the player's spells (4.8.6)
+- [x] 8.1.7b An enemy hero's Resistance protects its army from the player's spells (4.8.6)
 - [ ] 8.1.8 The beaten hero's artifacts go to the winner
 - [ ] 8.1.9 Losing to an enemy hero: the player's hero leaves for the tavern (4.5.5) and the enemy hero gets the experience
 - [ ] 8.1.10 Surrender to an enemy hero

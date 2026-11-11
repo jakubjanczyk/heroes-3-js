@@ -679,10 +679,15 @@ export const registerBattleViewModule = defineModule(
       describeHoveredHex()
     }
 
-    function renderEffect({ kind, spellName }) {
+    function renderEffect({ kind, spellName, resisted }) {
       const effect = document.createElement('div')
       effect.setAttribute('role', 'img')
       effect.style.setProperty('--battle-effect-ms', `${EFFECT_MS}ms`)
+      if (kind === 'spellHit' && resisted) {
+        effect.className = 'battle-effect spell-resisted'
+        effect.setAttribute('aria-label', 'Resisted')
+        return effect
+      }
       if (kind === 'spellHit') {
         effect.className = 'battle-effect spell-hit'
         effect.setAttribute('aria-label', spellName)
