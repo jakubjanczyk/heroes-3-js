@@ -10,8 +10,8 @@ const LOWEST_ROLLS = () => 0
 
 const archersAgainstPikemen = () =>
   createBattle({
-    heroArmy: [{ creature: 'ARCHER', count: 10 }],
-    monsterArmy: [{ creature: 'PIKEMAN', count: 50 }],
+    attacker: { army: [{ creature: 'ARCHER', count: 10 }] },
+    defender: { army: [{ creature: 'PIKEMAN', count: 50 }] },
     definitions: { monsters }
   })
 

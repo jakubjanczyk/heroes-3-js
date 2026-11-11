@@ -29,6 +29,7 @@ import {
 } from './battlefield.js'
 import { describeStack } from './hero-army.js'
 import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
+import { getHeroPrimarySkills } from './primary-skills.js'
 
 const MORALE_CHANCE_IN = 24
 // Bad morale freezes twice as often as good morale gives an extra turn.
@@ -113,51 +114,43 @@ function createStacks({
 }
 
 // An artifact that cancels morale or luck in battle leaves only the armies' penalties, on both
-// sides, and the spells' effects on them count for nothing.
-const cancelledKinds = (heroArtifacts, definitions) =>
-  ['morale', 'luck'].filter((kind) => artifactsCancelInBattle(heroArtifacts, kind, definitions))
+// sides whichever hero wears it, and the spells' effects on them count for nothing.
+const cancelledKinds = (sides, definitions) =>
+  ['morale', 'luck'].filter((kind) =>
+    sides.some((side) => artifactsCancelInBattle(side.artifacts, kind, definitions))
+  )
 
-// Morale and luck are the armies' as the battle starts. A monster has no hero, so no luck.
-export function createBattle({
-  heroArmy,
-  heroSkills,
-  heroSecondarySkills,
-  heroBattleBonuses,
-  heroArtifacts,
-  monsterArmy,
-  definitions
-}) {
-  const hero = {
-    army: heroArmy ?? [],
-    secondarySkills: heroSecondarySkills,
-    battleBonuses: heroBattleBonuses,
-    artifacts: heroArtifacts
-  }
-  const cancelledInBattle = cancelledKinds(heroArtifacts, definitions)
-  const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
+export function heroBattleSide(hero, definitions) {
+  const skills = getHeroPrimarySkills({ entity: hero, definitions })
   return {
-    stacks: [
-      ...createStacks({
-        side: 'attacker',
-        army: hero.army,
-        skills: heroSkills,
-        morale: inBattle('morale', getHeroMorale({ entity: hero, definitions }).value),
-        luck: inBattle('luck', getHeroLuck({ entity: hero, definitions }).value),
-        cancelledInBattle,
-        immunities: artifactBattleImmunities(heroArtifacts, definitions),
-        definitions
-      }),
-      ...createStacks({
-        side: 'defender',
-        army: monsterArmy,
-        morale: inBattle(
-          'morale',
-          getHeroMorale({ entity: { army: monsterArmy }, definitions }).value
-        ),
-        cancelledInBattle,
-        definitions
-      })
-    ],
+    army: hero?.army ?? [],
+    skills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
+    secondarySkills: hero?.secondarySkills,
+    battleBonuses: hero?.battleBonuses,
+    artifacts: hero?.artifacts
+  }
+}
+
+// A side without a hero has its creatures' morale alone, and no luck.
+export function createBattle({ attacker, defender, definitions }) {
+  const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
+  const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
+  const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
+  const stacksOf = (side) => {
+    const entity = sides[side]
+    return createStacks({
+      side,
+      army: entity.army,
+      skills: entity.skills,
+      morale: inBattle('morale', getHeroMorale({ entity, definitions }).value),
+      luck: inBattle('luck', getHeroLuck({ entity, definitions }).value),
+      cancelledInBattle,
+      immunities: artifactBattleImmunities(entity.artifacts, definitions),
+      definitions
+    })
+  }
+  return {
+    stacks: [...stacksOf('attacker'), ...stacksOf('defender')],
     actedStackIds: [],
     heroCastThisRound: false,
     waitedStackIds: [],

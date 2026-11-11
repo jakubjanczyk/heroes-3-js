@@ -1,5 +1,6 @@
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
 import { getArmyAfterBattle } from '../../game/heroes/battle.js'
+import { describeStack } from '../../game/heroes/hero-army.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../game/heroes/monster-stacks.js'
 import { heroById } from '../../game/heroes/state/hero-details.js'
@@ -30,13 +31,14 @@ const NEUTRAL_SURRENDER_REFUSAL = 'Neutral creatures do not accept surrender'
 // A battle started before battles named their defender was against a monster on the map.
 const monster = {
   named: (started) => started.defender ?? { creature: started.entityType, count: started.count },
-  army: ({ started, heroArmy, definitions }) =>
-    splitMonster({
+  side: ({ started, heroArmy, definitions }) => ({
+    army: splitMonster({
       monster: { ...monster.named(started), stacks: started.stacks },
       heroArmy,
       tile: started.tile,
       definitions
-    }),
+    })
+  }),
   surrenderRefusal: NEUTRAL_SURRENDER_REFUSAL,
   win({ emit, started: { entityId, entityType, tile } }) {
     emit(APP_FACT_MONSTER_DEFEATED, { entityId, entityType, tile })
@@ -54,7 +56,9 @@ const monster = {
 // Beaten guards leave the dwelling to the hero's player, who may recruit there straight away.
 const dwellingGuards = {
   named: (started) => started.defender,
-  army: ({ started: { defender } }) => [{ creature: defender.creature, count: defender.count }],
+  side: ({ started: { defender } }) => ({
+    army: [{ creature: defender.creature, count: defender.count }]
+  }),
   surrenderRefusal: NEUTRAL_SURRENDER_REFUSAL,
   win({ emit, state, heroId, started: { entityId, entityType } }) {
     emit(APP_FACT_DWELLING_GUARDS_CHANGED, { entityId, count: 0 })
@@ -72,8 +76,9 @@ const dwellingGuards = {
 // artifact to the hero, or on the map when the hero's backpack is full.
 const artifactGuards = {
   named: (started) => started.defender.stacks[0],
-  army: ({ started }) =>
-    started.defender.stacks.map(({ creature, count }) => ({ creature, count })),
+  side: ({ started }) => ({
+    army: started.defender.stacks.map(({ creature, count }) => ({ creature, count }))
+  }),
   surrenderRefusal: NEUTRAL_SURRENDER_REFUSAL,
   win({ emit, state, heroId, started: { entityId, entityType, tile } }) {
     if (hasFullBackpack(heroById(state.get(), heroId)?.artifacts)) {
@@ -98,7 +103,7 @@ const townGarrison = {
       .reduce((strongest, stack) =>
         aiValueOf(stack, definitions) > aiValueOf(strongest, definitions) ? stack : strongest
       ),
-  army: ({ started }) => started.defender.stacks,
+  side: ({ started }) => ({ army: started.defender.stacks }),
   surrenderRefusal: 'There is no hero to surrender to',
   bonusExperience: ({ state, started }) =>
     townCaptureExperience(builtIn(state.get(), started.entityId)),
@@ -125,6 +130,14 @@ const defenders = {
 }
 
 export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?? monster
+
+export function battleDefenderName({ started, state, definitions }) {
+  const defender = battleDefenderOf(started)
+  return (
+    defender.name?.({ started, state }) ??
+    describeStack(defender.named(started, definitions), definitions).name
+  )
+}
 
 // Every event a defender's win or loss can emit, declared so the battle module may emit them.
 export const battleDefenderEvents = Object.freeze([
