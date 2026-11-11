@@ -20,7 +20,7 @@ Fighting for towns and heroes:
 7. **8.1.7 Attacking an enemy hero.** The swords cursor, then a battle against the hero's army, with its primary skills. The winner gets the experience and the beaten enemy hero leaves the map.
 7b. **8.1.7b An enemy hero's Resistance.** The skill's chance to block the player's spells on the enemy hero's army (4.8.6). Its rules are checked when it is planned.
 8. **8.1.8 The beaten hero's artifacts go to the winner.** Every worn and carried artifact moves to the player's hero, as picking them up would, and a message names them; what finds no room is lost.
-9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5), the enemy hero gets the experience and the beaten hero's artifacts.
+9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5), the enemy hero gets the experience, levels up on its own, and takes the beaten hero's artifacts; after a retreat it gets only the experience for the creatures killed.
 10. **8.1.10 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold.
 11. **8.1.11 An enemy hero defends its town.** Entering a town with an enemy hero in it starts a battle against that hero, and the town is captured if the player wins.
 
@@ -81,6 +81,15 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - A full backpack: an artifact with no free slot of its kind and no room in the backpack "will just disappear" (the wiki). The talk page says the slot order above decides which ones still find a slot, as the engine's order does.
   - The message, once the results window closes: "You have captured an enemy artifact!" (`GENRLTXT.TXT` 30, checked against the wiki's copy and the engine), with each captured artifact's picture. The game has only this one text; the engine's plural text is its own, so we use the game's whatever the count. No artifacts captured, no message.
   - Only a hero beaten in battle loses them: one who retreats or surrenders keeps them, which needs the AI (8.3). The player's hero losing to an enemy hero is 8.1.9.
+- **Losing to an enemy hero** (checked for 8.1.9 against the wiki's Experience and Artifact pages and an open-source engine's battle results):
+  - The enemy hero gets one experience point per hit point of the player's creatures killed, the same count the player's hero gets for a win. Clones don't count (the wiki).
+  - Beaten: the enemy hero gets 500 more for the defeated hero, and every artifact the player's hero wore and carried, by the rule of 8.1.8 (worn ones in slot order, then the backpack; what finds no room is lost). Both sources agree.
+  - Retreated: the enemy hero gets only the experience for the creatures killed, no 500 and no artifacts ("A hero from whom the enemy hero escaped receives experience for the killed enemy creatures, but does not gain experience for the defeated hero", the wiki; the engine gives the 500 and the artifacts only for a normal win). The player's hero leaves the map with its artifacts; hiring it again still makes a new hero without them (4.5.5), so they're lost to the player either way until a retreated hero waits in the tavern with them.
+  - Nobody wins when a spell kills the last stacks of both sides: no experience and no artifacts for the enemy hero (the engine gives neither in a draw, nor artifacts to a winner with no units left).
+  - The enemy hero levels up as any hero does: the class's primary skill roll and two secondary skill offers. The player isn't asked; the AI chooses (the engine asks the hero's owner). Until the AI (8.3), the hero takes one of the two offers at random, rolled and saved with the level-up.
+  - The player sees none of it: the results window says only "Your forces suffer a bitter defeat, and … abandons your cause." or "The cowardly … flees from battle.", as now, and no message or level-up shows. It shows later, in the enemy hero's next battle (its skills and artifacts) or when it is beaten (its artifacts are captured back).
+  - The Learning skill and Scholar-like bonuses to experience aren't in the game yet.
+
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
