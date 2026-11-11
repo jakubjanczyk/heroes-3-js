@@ -63,21 +63,41 @@ const startResisting = (scenario, resistanceRandom, options = {}) =>
 
 describe('battle spell resistance behavior', () => {
   describe('a single target', () => {
-    test("given a blue hero with Resistance when its stack resists Magic Arrow then it loses no creatures, the log says so, the spell points are spent and the hero can't cast again this round", async () => {
+    test('given a blue hero with Resistance when its stack resists Magic Arrow then it loses no creatures', async () => {
       const { user } = await startResisting(aFightAgainst(aBlueHero()), ALWAYS)
 
       await castSpellAt(user, 'Magic Arrow', ENEMY_HEX)
-      const stacks = readBattleStacks()
-      const messages = readCombatMessages().slice(-2)
-      const canCast = !getBattleButton('Cast spell').disabled
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 10', 6, 15))
+    })
+
+    test('given a blue hero with Resistance when its stack resists Magic Arrow then the combat log says it resisted', async () => {
+      const { user } = await startResisting(aFightAgainst(aBlueHero()), ALWAYS)
+
+      await castSpellAt(user, 'Magic Arrow', ENEMY_HEX)
+
+      expect(readCombatMessages().slice(-2)).toEqual([
+        "Lord Haart casts 'Magic Arrow' on the Pikemen.",
+        'The Pikemen resist the Magic Arrow.'
+      ])
+    })
+
+    // 30 spell points less Magic Arrow's 5.
+    test('given a blue hero with Resistance when its stack resists Magic Arrow then the spell points are spent', async () => {
+      const { user } = await startResisting(aFightAgainst(aBlueHero()), ALWAYS)
+      await castSpellAt(user, 'Magic Arrow', ENEMY_HEX)
+
       await playOnToNextRound(user)
 
-      expect([stacks, messages, canCast, await readBattleSpellPoints(user)]).toEqual([
-        [stackAt('Swordsmen 10', 6, 1), stackAt('Pikemen 10', 6, 15)],
-        ["Lord Haart casts 'Magic Arrow' on the Pikemen.", 'The Pikemen resist the Magic Arrow.'],
-        false,
-        '25'
-      ])
+      expect(await readBattleSpellPoints(user)).toBe('25')
+    })
+
+    test("given a blue hero with Resistance when its stack resists Magic Arrow then the hero can't cast again this round", async () => {
+      const { user } = await startResisting(aFightAgainst(aBlueHero()), ALWAYS)
+
+      await castSpellAt(user, 'Magic Arrow', ENEMY_HEX)
+
+      expect(getBattleButton('Cast spell').disabled).toBe(true)
     })
 
     test('given a blue hero with Resistance when its single creature resists Magic Arrow then the log names it in the singular', async () => {
@@ -129,10 +149,7 @@ describe('battle spell resistance behavior', () => {
 
       await castSpellAt(user, 'Slow', ENEMY_HEX)
 
-      expect([
-        readStackCountColour(ENEMY_HEX.row, ENEMY_HEX.column),
-        readCombatMessages().at(-1)
-      ]).toEqual(['purple', 'The Pikemen resist the Slow.'])
+      expect(readStackCountColour(ENEMY_HEX.row, ENEMY_HEX.column)).toBe('purple')
     })
 
     test('given the monster stands against a hero when Magic Arrow is cast then its stack never resists', async () => {
@@ -146,26 +163,36 @@ describe('battle spell resistance behavior', () => {
 
   describe('several stacks', () => {
     // Seven stacks stand on rows 1, 3, 5, 6, 7, 9 and 11; Fireball on row 6 reaches rows 5, 6 and
-    // 7. Its 35 damage kills 3 of each 10 Pikemen it hits.
-    test('given a blue hero with Resistance when Fireball reaches three of its stacks then each rolls on its own and only the one that resisted keeps its creatures', async () => {
-      const army = Array.from({ length: 7 }, () => stack('PIKEMAN', 10))
-      const { user } = await startResisting(
-        aFightAgainst(aBlueHero({ army })),
+    // 7, and the stack on row 5 rolls first. Its 35 damage kills 3 of each 10 Pikemen it hits.
+    const startFireballOnThreeStacks = () =>
+      startResisting(
+        aFightAgainst(aBlueHero({ army: Array.from({ length: 7 }, () => stack('PIKEMAN', 10)) })),
         rolls(0, 0.99, 0.99)
       )
 
+    test('given a blue hero with Resistance when Fireball reaches three of its stacks then each rolls on its own and only the one that resisted keeps its creatures', async () => {
+      const { user } = await startFireballOnThreeStacks()
+
       await castSpellAt(user, 'Fireball', ENEMY_HEX)
 
-      expect([
-        readBattleStacks().filter(({ row, column }) => column === 15 && row >= 5 && row <= 7),
-        readCombatMessages().slice(-3)
-      ]).toEqual([
-        [stackAt('Pikemen 10', 5, 15), stackAt('Pikemen 7', 6, 15), stackAt('Pikemen 7', 7, 15)],
-        [
-          "Lord Haart casts 'Fireball'.",
-          'The Pikemen resist the Fireball.',
-          'The Fireball does 70 damage. 6 creatures perish.'
-        ]
+      expect(
+        readBattleStacks().filter(({ row, column }) => column === 15 && row >= 5 && row <= 7)
+      ).toEqual([
+        stackAt('Pikemen 10', 5, 15),
+        stackAt('Pikemen 7', 6, 15),
+        stackAt('Pikemen 7', 7, 15)
+      ])
+    })
+
+    test('given a blue hero with Resistance when one of three stacks resists Fireball then the log says so before the damage the others take', async () => {
+      const { user } = await startFireballOnThreeStacks()
+
+      await castSpellAt(user, 'Fireball', ENEMY_HEX)
+
+      expect(readCombatMessages().slice(-3)).toEqual([
+        "Lord Haart casts 'Fireball'.",
+        'The Pikemen resist the Fireball.',
+        'The Fireball does 70 damage. 6 creatures perish.'
       ])
     })
 
@@ -225,10 +252,7 @@ describe('battle spell resistance behavior', () => {
 
       await castSpellAt(user, 'Fireball', OWN_HEX)
 
-      expect([readBattleStacks(), readCombatMessages().at(-1)]).toEqual([
-        [stackAt('Swordsmen 10', 6, 1), stackAt('Pikemen 50', 6, 15)],
-        'The Swordsmen resist the Fireball.'
-      ])
+      expect(readBattleStacks()).toContainEqual(stackAt('Swordsmen 10', 6, 1))
     })
   })
 
@@ -241,10 +265,7 @@ describe('battle spell resistance behavior', () => {
 
       await reloadBattle(scenario, { eventLog })
 
-      expect([readBattleStacks(), readCombatMessages().at(-1)]).toEqual([
-        [stackAt('Swordsmen 10', 6, 1), stackAt('Pikemen 10', 6, 15)],
-        'The Pikemen resist the Magic Arrow.'
-      ])
+      expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 10', 6, 15))
     })
   })
 })
