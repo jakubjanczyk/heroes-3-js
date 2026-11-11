@@ -189,6 +189,12 @@
     linear-gradient(180deg, #f2e4bc, #d9c08a);
 }
 
+/* An artifact's picture is no bigger than its frame on the hero screen. */
+.interaction-modal__choice-picture--artifact {
+  inline-size: 2.75rem;
+  aspect-ratio: 1;
+}
+
 /* Skills have two caption lines (level over name), so "or" sits higher to stay level with them. */
 .interaction-modal__choices:has([data-initials]) .interaction-modal__choice-or {
   margin-block-end: 2.8rem;

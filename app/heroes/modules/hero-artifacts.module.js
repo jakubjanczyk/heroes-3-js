@@ -78,7 +78,7 @@ export const registerHeroArtifactsModule = defineModule(
         title: null,
         message: artifact.description ?? '',
         details: [QUESTIONS[question.action](artifact.name)],
-        rewards: [{ label: artifact.name, caption: [artifact.name] }],
+        rewards: [{ label: artifact.name, caption: [artifact.name], isArtifact: true }],
         isQuestion: true,
         subject: { kind: COMBINATION_SUBJECT, heroId, question }
       })
@@ -107,7 +107,7 @@ export const registerHeroArtifactsModule = defineModule(
       }
       const pictures = captured.map((artifactId) => {
         const name = definitions?.artifacts?.[artifactId]?.name ?? artifactId
-        return { label: name, caption: [name] }
+        return { label: name, caption: [name], isArtifact: true }
       })
       for (const notice of noticesWithPictures(CAPTURED_MESSAGE, pictures)) {
         emit(APP_UI_NOTICE_OPENED, notice)
