@@ -652,6 +652,13 @@
       -1px 1px 0 black;
   }
 
+  /* A size word ("Several") in place of the count, centred so it fits under the creature. */
+  & .army-slot__count--word {
+    inset-inline: 0;
+    font-size: 0.5625rem;
+    text-align: center;
+  }
+
   & .army-slot:nth-child(1) {
     grid-column: 2 / span 2;
   }

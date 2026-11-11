@@ -1,10 +1,10 @@
 import { showInfoBoxView } from './info-box-view.js'
 import { showMoraleOrLuck } from './morale-and-luck.js'
 
-// Fills a container with the Heroes 3 hero box from `#hero-box-template` in index.html: the
-// portrait (the hero's initial until there are portraits), the name, the four primary skills
-// (an icon each with the value under it, as in the game), morale and luck, the spell points and the
-// seven army slots.
+// Fills a container with the hero box from `#hero-box-template` in index.html: the portrait (the
+// hero's initial until there are portraits), the name, the four primary skills (an icon each with
+// the value under it), morale and luck, the spell points and the seven army slots. Another player's
+// hero comes without skills, morale, luck or spell points: the icons stay, the values are blank.
 export function renderHeroBox(
   container,
   document,
@@ -18,13 +18,15 @@ export function renderHeroBox(
 
   box.querySelector('.hero-box__name').textContent = name
 
-  for (const { key, value } of skills) {
+  for (const { key, value } of skills ?? []) {
     box.querySelector(`[data-skill="${key}"] .primary-skills__value`).textContent = String(value)
   }
 
-  showMoraleOrLuck(box.querySelector('.hero-box__morale'), document, 'morale', morale)
-  showMoraleOrLuck(box.querySelector('.hero-box__luck'), document, 'luck', luck)
-  box.querySelector('.hero-box__spell-points').textContent = String(spellPoints)
+  if (morale && luck) {
+    showMoraleOrLuck(box.querySelector('.hero-box__morale'), document, 'morale', morale)
+    showMoraleOrLuck(box.querySelector('.hero-box__luck'), document, 'luck', luck)
+  }
+  showSpellPoints(box.querySelector('.hero-box__spell-points'), spellPoints)
 
   const slots = box.querySelectorAll('.army-slot')
   army.forEach((stack, index) => {
@@ -34,6 +36,14 @@ export function renderHeroBox(
   })
 
   showInfoBoxView(container, 'hero-box', box)
+}
+
+function showSpellPoints(frame, spellPoints) {
+  if (spellPoints === undefined) {
+    frame.remove()
+    return
+  }
+  frame.textContent = String(spellPoints)
 }
 
 // No creature portraits yet: the creature is pictured as monsters are drawn on the map.
@@ -47,7 +57,8 @@ export function renderArmyStack(document, { name, count }) {
   picture.title = name
 
   const countLabel = document.createElement('span')
-  countLabel.className = 'army-slot__count'
+  countLabel.className =
+    typeof count === 'string' ? 'army-slot__count army-slot__count--word' : 'army-slot__count'
   countLabel.textContent = String(count)
 
   stack.append(picture, countLabel)

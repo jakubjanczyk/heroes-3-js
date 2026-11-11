@@ -340,6 +340,12 @@ export async function holdRightButtonOn(user, x, y) {
   await user.pointer({ keys: '[MouseRight>]', ...pointerOverTile(x, y) })
 }
 
+// Presses a finger on a map tile and holds it still long enough to open the info popup.
+export async function longPressOn(user, x, y, longPressMs = 500) {
+  await user.pointer({ keys: '[TouchA>]', ...pointerOverTile(x, y) })
+  await waitMs(longPressMs + 10)
+}
+
 // The cursor over the map, where the pointer lands on the layer drawn on top of the tiles.
 export function getMapCursor() {
   return getCursorOver(document.querySelector('.effects-layer'))

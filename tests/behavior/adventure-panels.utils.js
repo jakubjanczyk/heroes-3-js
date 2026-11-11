@@ -316,9 +316,8 @@ export function readPrimarySkills(container) {
   const list = within(container).getByRole('list', { name: 'Primary skills' })
   return within(list)
     .getAllByRole('listitem')
-    .map(
-      (item) =>
-        `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`
+    .map((item) =>
+      `${within(item).getByRole('img').getAttribute('aria-label')} ${item.textContent.trim()}`.trim()
     )
 }
 
@@ -459,6 +458,14 @@ export function readMoraleAndLuck(container) {
     const box = within(container).getByRole('group', { name })
     return `${name} ${box.textContent.trim()}`
   })
+}
+
+export function showsMoraleOrLuck(container) {
+  return ['Morale', 'Luck'].some((name) => within(container).queryByRole('group', { name }))
+}
+
+export function showsSpellPoints(container) {
+  return within(container).queryByRole('group', { name: 'Spell points' }) !== null
 }
 
 // The hero's spell points as the box shows them, e.g. '20'.

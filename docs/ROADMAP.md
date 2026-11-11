@@ -1080,7 +1080,7 @@ Making the game a competitive experience.
 In seventeen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
 - [x] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
 - [x] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile; the swords show over one the hero can reach, and the hero walks up to it
-- [ ] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
+- [x] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
 - [ ] 8.1.4 Capturing enemy mines and dwellings
 - [ ] 8.1.5 Capturing enemy towns without defenders
 - [ ] 8.1.6 Attacking a town's garrison (enemy, or neutral with a scenario garrison, 6.4), on an open field until sieges (5.10)
