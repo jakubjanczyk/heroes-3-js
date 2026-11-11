@@ -1,0 +1,318 @@
+{
+  "MOUNTAIN_1": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [
+      { "x": -3, "y": -2 },
+      { "x": -2, "y": -2 },
+      { "x": -1, "y": -2 },
+      { "x": 0, "y": -2 },
+      { "x": -4, "y": -1 },
+      { "x": -3, "y": -1 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -4, "y": 0 },
+      { "x": -3, "y": 0 },
+      { "x": -2, "y": 0 }
+    ]
+  },
+  "MOUNTAIN_2": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -1, "y": 0 },
+      { "x": 0, "y": 0 }
+    ]
+  },
+  "MOUNTAIN_3": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 }
+    ]
+  },
+  "MOUNTAIN_4": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [
+      { "x": -4, "y": -2 },
+      { "x": -3, "y": -2 },
+      { "x": -2, "y": -2 },
+      { "x": -1, "y": -2 },
+      { "x": -4, "y": -1 },
+      { "x": -3, "y": -1 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 },
+      { "x": 0, "y": 0 }
+    ]
+  },
+  "MOUNTAIN_5": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [{ "x": -2, "y": -1 }, { "x": -1, "y": -1 }, { "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "MOUNTAIN_6": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [{ "x": -1, "y": -1 }, { "x": 0, "y": -1 }, { "x": -2, "y": 0 }, { "x": -1, "y": 0 }]
+  },
+  "MOUNTAIN_7": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [
+      { "x": -4, "y": -1 },
+      { "x": -3, "y": -1 },
+      { "x": -2, "y": -1 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 },
+      { "x": 0, "y": 0 }
+    ]
+  },
+  "MOUNTAIN_8": {
+    "name": "Mountain",
+    "look": "mountain",
+    "blocks": [
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -4, "y": 0 },
+      { "x": -3, "y": 0 },
+      { "x": -2, "y": 0 }
+    ]
+  },
+  "OAK_TREES_1": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "OAK_TREES_2": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "OAK_TREES_3": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [{ "x": -1, "y": -1 }, { "x": 0, "y": -1 }, { "x": -2, "y": 0 }, { "x": -1, "y": 0 }]
+  },
+  "OAK_TREES_4": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [{ "x": -1, "y": -1 }, { "x": 0, "y": -1 }, { "x": -2, "y": 0 }, { "x": -1, "y": 0 }]
+  },
+  "OAK_TREES_5": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [{ "x": -2, "y": -1 }, { "x": -1, "y": -1 }, { "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "OAK_TREES_6": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [{ "x": -2, "y": -1 }, { "x": -1, "y": -1 }, { "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "OAK_TREES_7": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [
+      { "x": -2, "y": -2 },
+      { "x": -1, "y": -2 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -1, "y": 0 },
+      { "x": 0, "y": 0 }
+    ]
+  },
+  "OAK_TREES_8": {
+    "name": "Oak Trees",
+    "look": "trees",
+    "blocks": [
+      { "x": -1, "y": -2 },
+      { "x": 0, "y": -2 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 }
+    ]
+  },
+  "PINE_TREES_1": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "PINE_TREES_2": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "PINE_TREES_3": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [{ "x": -1, "y": -1 }, { "x": 0, "y": -1 }, { "x": -2, "y": 0 }, { "x": -1, "y": 0 }]
+  },
+  "PINE_TREES_4": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [{ "x": -1, "y": -1 }, { "x": 0, "y": -1 }, { "x": -2, "y": 0 }, { "x": -1, "y": 0 }]
+  },
+  "PINE_TREES_5": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [{ "x": -2, "y": -1 }, { "x": -1, "y": -1 }, { "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "PINE_TREES_6": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [{ "x": -2, "y": -1 }, { "x": -1, "y": -1 }, { "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "PINE_TREES_7": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [
+      { "x": -2, "y": -2 },
+      { "x": -1, "y": -2 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -1, "y": 0 },
+      { "x": 0, "y": 0 }
+    ]
+  },
+  "PINE_TREES_8": {
+    "name": "Pine Trees",
+    "look": "trees",
+    "blocks": [
+      { "x": -1, "y": -2 },
+      { "x": 0, "y": -2 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 }
+    ]
+  },
+  "TREES_1": {
+    "name": "Trees",
+    "look": "trees",
+    "blocks": [{ "x": -1, "y": 0 }]
+  },
+  "TREES_2": {
+    "name": "Trees",
+    "look": "trees",
+    "blocks": [{ "x": -1, "y": 0 }]
+  },
+  "TREES_3": {
+    "name": "Trees",
+    "look": "trees",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "LAKE_1": {
+    "name": "Lake",
+    "look": "lake",
+    "blocks": [
+      { "x": -6, "y": -2 },
+      { "x": -5, "y": -2 },
+      { "x": -4, "y": -2 },
+      { "x": -3, "y": -2 },
+      { "x": -2, "y": -2 },
+      { "x": -1, "y": -2 },
+      { "x": 0, "y": -2 },
+      { "x": -6, "y": -1 },
+      { "x": -5, "y": -1 },
+      { "x": -4, "y": -1 },
+      { "x": -3, "y": -1 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -6, "y": 0 },
+      { "x": -5, "y": 0 },
+      { "x": -4, "y": 0 }
+    ]
+  },
+  "LAKE_2": {
+    "name": "Lake",
+    "look": "lake",
+    "blocks": [
+      { "x": -3, "y": -1 },
+      { "x": -2, "y": -1 },
+      { "x": -1, "y": -1 },
+      { "x": 0, "y": -1 },
+      { "x": -3, "y": 0 },
+      { "x": -2, "y": 0 },
+      { "x": -1, "y": 0 },
+      { "x": 0, "y": 0 }
+    ]
+  },
+  "LAKE_3": {
+    "name": "Lake",
+    "look": "lake",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "ROCK_1": {
+    "name": "Rock",
+    "look": "rock",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "ROCK_2": {
+    "name": "Rock",
+    "look": "rock",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "ROCK_3": {
+    "name": "Rock",
+    "look": "rock",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "ROCK_4": {
+    "name": "Rock",
+    "look": "rock",
+    "blocks": [{ "x": 0, "y": 0 }]
+  },
+  "ROCK_5": {
+    "name": "Rock",
+    "look": "rock",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "CRATER_1": {
+    "name": "Crater",
+    "look": "crater",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "CRATER_2": {
+    "name": "Crater",
+    "look": "crater",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "CRATER_3": {
+    "name": "Crater",
+    "look": "crater",
+    "blocks": [{ "x": -1, "y": -1 }, { "x": 0, "y": -1 }, { "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "CRATER_4": {
+    "name": "Crater",
+    "look": "crater",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "CRATER_5": {
+    "name": "Crater",
+    "look": "crater",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  },
+  "CRATER_6": {
+    "name": "Crater",
+    "look": "crater",
+    "blocks": [{ "x": -1, "y": 0 }, { "x": 0, "y": 0 }]
+  }
+}
