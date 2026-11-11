@@ -33,6 +33,7 @@ import {
   APP_COMMAND_HEROES_ARTIFACTS_SWAP_REQUESTED,
   APP_COMMAND_HEROES_BACKPACK_SCROLL_REQUESTED,
   APP_FACT_ARTIFACT_PICKED_UP,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
   APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_WORLD_READY,
@@ -42,8 +43,10 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
+import { noticesWithPictures } from '../presentation/notice-windows.js'
 
 const SIDES = ['left', 'right']
+const CAPTURED_MESSAGE = 'You have captured an enemy artifact!'
 const COMBINATION_SUBJECT = 'hero.artifactCombination'
 
 const QUESTIONS = Object.freeze({
@@ -94,6 +97,27 @@ export const registerHeroArtifactsModule = defineModule(
       const backpack = heroById(state.get(), heroId)?.artifacts?.backpack ?? []
       if (artifact && backpack.at(-1) !== artifact) {
         offerToAssemble(heroId, artifact)
+      }
+    }
+
+    // The combinations the captured artifacts complete are asked about once each, after the message.
+    function tellCaptured({ heroId, artifacts: captured }) {
+      if (isRestoring) {
+        return
+      }
+      const pictures = captured.map((artifactId) => {
+        const name = definitions?.artifacts?.[artifactId]?.name ?? artifactId
+        return { label: name, caption: [name] }
+      })
+      for (const notice of noticesWithPictures(CAPTURED_MESSAGE, pictures)) {
+        emit(APP_UI_NOTICE_OPENED, notice)
+      }
+      const artifacts = heroById(state.get(), heroId)?.artifacts
+      const combinations = new Set(
+        captured.map((artifactId) => combinationToAssemble(artifacts, artifactId, definitions))
+      )
+      for (const combination of [...combinations].filter(Boolean)) {
+        ask(heroId, { action: 'assemble', artifact: combination })
       }
     }
 
@@ -176,6 +200,10 @@ export const registerHeroArtifactsModule = defineModule(
           handler: ({ detail }) => offerAfterPickUp(detail)
         },
         {
+          type: APP_FACT_HERO_ARTIFACTS_CAPTURED,
+          handler: ({ detail }) => tellCaptured(detail)
+        },
+        {
           type: APP_UI_INTERACTION_MODAL_CONFIRMED,
           handler: ({ detail: { choice, subject } }) => {
             if (subject?.kind === COMBINATION_SUBJECT && choice === 'yes') {
@@ -242,6 +270,7 @@ export const registerHeroArtifactsModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_FACT_ARTIFACT_PICKED_UP,
       APP_FACT_TREASURE_CHEST_OPENED,
+      APP_FACT_HERO_ARTIFACTS_CAPTURED,
       APP_UI_INTERACTION_MODAL_CONFIRMED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
