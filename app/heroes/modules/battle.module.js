@@ -25,6 +25,7 @@ import {
   getStackReach,
   hasLivingStacks,
   hasWaited,
+  heroBattleSide,
   moveStack,
   planStackAttack,
   planStackMove,
@@ -53,7 +54,6 @@ import {
   isBerserk
 } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
-import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import {
   battleSpellTargeting,
   castsOnAllStacks,
@@ -101,7 +101,7 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
-import { battleDefenderEvents, battleDefenderOf } from '../battle-defenders.js'
+import { battleDefenderEvents, battleDefenderName, battleDefenderOf } from '../battle-defenders.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
@@ -186,6 +186,10 @@ export const registerBattleModule = defineModule(
       return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
     }
 
+    function defenderHeroOf() {
+      return battleDefenderOf(started).hero?.({ started, state }) ?? null
+    }
+
     function experienceForWin() {
       const bonus = battleDefenderOf(started).bonusExperience?.({ state, started }) ?? 0
       return getExperienceForWin(battle) + bonus
@@ -198,7 +202,7 @@ export const registerBattleModule = defineModule(
         battle,
         outcome,
         heroName,
-        monster: battleDefenderOf(started).named(started, definitions),
+        defenderName: battleDefenderName({ started, state, definitions }),
         experience
       })
     }
@@ -216,6 +220,7 @@ export const registerBattleModule = defineModule(
           tile: started.tile,
           heroId,
           heroName: heroNameOf(),
+          defenderHero: defenderHeroOf(),
           stacks: withHexes(
             moving.battle.stacks.map((stack) =>
               stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
@@ -245,6 +250,7 @@ export const registerBattleModule = defineModule(
         tile: started.tile,
         heroId,
         heroName: heroNameOf(),
+        defenderHero: defenderHeroOf(),
         stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
@@ -667,15 +673,11 @@ export const registerBattleModule = defineModule(
             // A battle saved before battles named their hero was the only hero's.
             heroId = started.heroId ?? firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             const hero = heroById(state.get(), heroId)
-            const skills = getHeroPrimarySkills({ entity: hero, definitions })
             battle = createBattle({
-              heroArmy: hero?.army,
-              heroSkills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
-              heroSecondarySkills: hero?.secondarySkills,
-              heroBattleBonuses: hero?.battleBonuses,
-              heroArtifacts: hero?.artifacts,
-              monsterArmy: battleDefenderOf(started).army({
+              attacker: heroBattleSide(hero, definitions),
+              defender: battleDefenderOf(started).side({
                 started,
+                state,
                 heroArmy: hero?.army,
                 definitions
               }),

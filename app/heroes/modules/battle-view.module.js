@@ -553,6 +553,7 @@ export const registerBattleViewModule = defineModule(
       const heroFigure = battleScreen.querySelector('.battle-hero--attacker')
       heroFigure.setAttribute('aria-label', battle.heroName)
       heroFigure.title = battle.heroName
+      showDefenderHero(battle.defenderHero)
 
       statusBar = battleScreen.querySelector('.battle-screen__status-bar')
       messageLog = battleScreen.querySelector('.battle-bar__log')
@@ -561,6 +562,17 @@ export const registerBattleViewModule = defineModule(
 
       gameShell.append(battleScreen)
       emit(APP_UI_ADVENTURE_MAP_COVERED, {})
+    }
+
+    function showDefenderHero(hero) {
+      if (!hero) {
+        return
+      }
+      const figure = battleScreen.querySelector('.battle-hero--defender')
+      figure.hidden = false
+      figure.setAttribute('aria-label', hero.name)
+      figure.title = hero.name
+      figure.style.setProperty('--battle-hero-banner', `var(--player-${hero.owner})`)
     }
 
     function placeStack(element, from, to) {

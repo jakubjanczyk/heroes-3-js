@@ -104,6 +104,7 @@
     <link rel="modulepreload" href="./game/heroes/state/tavern.js" />
     <link rel="modulepreload" href="./game/heroes/terrain-types.js" />
     <link rel="modulepreload" href="./app/heroes/interaction-outcomes.js" />
+    <link rel="modulepreload" href="./game/heroes/enemy-hero-battle.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/adventure-sprites.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/adventure-sprite-atlas.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/atlas-sprites.js" />
@@ -395,7 +396,7 @@
     <!--
       The Heroes 3 battle screen, laid over the adventure screen when a battle starts. The hexes
       and stacks are added for each battle. Icons are stand-ins for the game's; Retreat, Auto combat,
-      Wait and Defend work so far, and Surrender only against an enemy hero, which there is none of yet. `aria-keyshortcuts` gives a button its keys (keyboard-shortcuts.module.js).
+      Wait and Defend work so far; Surrender waits for surrendering to an enemy hero. `aria-keyshortcuts` gives a button its keys (keyboard-shortcuts.module.js).
     -->
     <template id="battle-screen-template">
       <section class="battle-screen" role="dialog" aria-modal="true" aria-label="Battle">
@@ -403,6 +404,7 @@
           <div class="battle-screen__ground" aria-label="Battlefield ground"></div>
           <div class="battle-screen__sky" aria-hidden="true"></div>
           <div class="battle-hero battle-hero--attacker" role="img"></div>
+          <div class="battle-hero battle-hero--defender" role="img" hidden></div>
           <div class="battlefield" role="grid" aria-label="Battlefield" aria-rowcount="11" aria-colcount="15"></div>
         </div>
         <div class="battle-bar">
