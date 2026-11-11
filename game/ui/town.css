@@ -985,6 +985,13 @@
   }
 }
 
+/* A Tavern taller than the screen scrolls behind it, not inside it: its gold corners stick out
+ * past its edge and would always make it scrollable. */
+.town-hall-backdrop:has(> .tavern-window) {
+  align-items: safe center;
+  overflow-y: auto;
+}
+
 /*
  * The Tavern: the picture and the rumour across the top, then the heroes for hire with the one
  * picked described under them, the cost and Recruit beside them, and the buttons along the bottom.
@@ -995,8 +1002,6 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-sm);
   inline-size: min(28rem, calc(100% - 2rem));
-  max-block-size: 100%;
-  overflow: auto;
   padding: var(--space-md);
 
   &:focus {
