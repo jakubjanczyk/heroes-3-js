@@ -20,7 +20,9 @@ import {
   getTownInTownList,
   readArmySlots,
   readPrimarySkills,
-  readSelectedHeroInHeroList
+  readSelectedHeroInHeroList,
+  showsMoraleOrLuck,
+  showsSpellPoints
 } from './adventure-panels.utils.js'
 import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
@@ -262,9 +264,8 @@ describe('other players behavior', () => {
 
       const popup = screen.getByRole('tooltip')
       expect(readPrimarySkills(popup)).toEqual(['Attack', 'Defense', 'Power', 'Knowledge'])
-      expect(within(popup).queryByRole('group', { name: 'Morale' })).toBeNull()
-      expect(within(popup).queryByRole('group', { name: 'Luck' })).toBeNull()
-      expect(within(popup).queryByRole('group', { name: 'Spell points' })).toBeNull()
+      expect(showsMoraleOrLuck(popup)).toBe(false)
+      expect(showsSpellPoints(popup)).toBe(false)
     })
 
     test('given a blue hero when the player presses and holds a finger on it then the popup shows its army as size words', async () => {

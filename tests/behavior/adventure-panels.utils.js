@@ -460,6 +460,14 @@ export function readMoraleAndLuck(container) {
   })
 }
 
+export function showsMoraleOrLuck(container) {
+  return ['Morale', 'Luck'].some((name) => within(container).queryByRole('group', { name }))
+}
+
+export function showsSpellPoints(container) {
+  return within(container).queryByRole('group', { name: 'Spell points' }) !== null
+}
+
 // The hero's spell points as the box shows them, e.g. '20'.
 export function readSpellPoints(container) {
   return within(container).getByRole('group', { name: 'Spell points' }).textContent.trim()
