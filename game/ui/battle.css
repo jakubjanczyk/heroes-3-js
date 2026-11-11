@@ -581,6 +581,19 @@
   animation-name: spell-hit;
 }
 
+/* A shield ring where the spell would have burst. */
+.battle-effect.spell-resisted {
+  inset-block-end: 20%;
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 0;
+  border: 3px solid rgb(255 215 120 / 90%);
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 45%, rgb(255 200 90 / 45%) 70%, transparent 74%);
+  box-shadow: 0 0 12px rgb(255 200 90 / 80%);
+  animation-name: spell-hit;
+}
+
 @keyframes spell-hit {
   from {
     opacity: 0;

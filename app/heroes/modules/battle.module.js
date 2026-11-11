@@ -67,6 +67,7 @@ import {
   spellSkillLevel
 } from '../../../game/heroes/spell-book.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
+import { isResistible, rollResisted } from '../../../game/heroes/spell-resistance.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -165,6 +166,8 @@ export const registerBattleModule = defineModule(
     const moraleRandom =
       typeof config?.moraleRandom === 'function' ? config.moraleRandom : Math.random
     const luckRandom = typeof config?.luckRandom === 'function' ? config.luckRandom : Math.random
+    const resistanceRandom =
+      typeof config?.resistanceRandom === 'function' ? config.resistanceRandom : Math.random
 
     let heroId = null
     let definitions = {}
@@ -580,11 +583,15 @@ export const registerBattleModule = defineModule(
         return
       }
 
+      const resistedIds = isResistible(spell)
+        ? rollResisted(battle.stacks, targets.targetIds, resistanceRandom)
+        : []
       emit(APP_FACT_BATTLE_SPELL_CAST, {
         heroId,
         spellId,
         ...castDetailOn(hero, spell, targets),
         ...(goesTo ? { destination: goesTo } : {}),
+        ...(resistedIds.length > 0 ? { resistedIds } : {}),
         cost: spellCost(hero, spell)
       })
       continueBattle()
@@ -605,11 +612,12 @@ export const registerBattleModule = defineModule(
         rounds,
         healing,
         destination,
-        sacrificedId
+        sacrificedId,
+        resistedIds = []
       }
     ) {
       const spell = definitions.spells?.[spellId]
-      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId }
+      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId, resistedIds }
       const onStacks = { ...named, targetIds: targetIds ?? [targetId] }
       if (spell?.lasting) {
         return castLastingSpell(current, {

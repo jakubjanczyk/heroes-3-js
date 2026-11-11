@@ -202,6 +202,7 @@ export function stopRunningApp() {
 // Morale and luck never take effect in battle unless a test says otherwise: no roll is under
 // the highest chance, 6 in 24.
 const NO_MORALE_OR_LUCK = () => 0.99
+const NO_RESISTANCE = () => 0.99
 
 export async function setupMovementBehaviorApp({
   loadGameOptions,
@@ -252,6 +253,7 @@ export async function setupMovementBehaviorApp({
       interactionModalTransitionMs: 0,
       moraleRandom: NO_MORALE_OR_LUCK,
       luckRandom: NO_MORALE_OR_LUCK,
+      resistanceRandom: NO_RESISTANCE,
       ...appConfig
     }
   })
