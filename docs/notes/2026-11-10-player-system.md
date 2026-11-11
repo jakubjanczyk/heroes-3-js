@@ -19,7 +19,7 @@ Fighting for towns and heroes:
 6. **8.1.6 Attacking a town's garrison.** Entering an enemy town with a garrison and no hero starts a battle against the garrison; winning captures the town, losing leaves the town and what is left of its garrison as they were. A neutral town given a garrison by the scenario is fought the same way (6.4). Until sieges (5.10) every such battle is fought on an open field, walls or not.
 7. **8.1.7 Attacking an enemy hero.** The swords cursor, then a battle against the hero's army, with its primary skills. The winner gets the experience and the beaten enemy hero leaves the map.
 7b. **8.1.7b An enemy hero's Resistance.** The skill's chance to block the player's spells on the enemy hero's army (4.8.6). Its rules are checked when it is planned.
-8. **8.1.8 The beaten hero's artifacts go to the winner.**
+8. **8.1.8 The beaten hero's artifacts go to the winner.** Every worn and carried artifact moves to the player's hero, as picking them up would, and a message names them; what finds no room is lost.
 9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5), the enemy hero gets the experience and the beaten hero's artifacts.
 10. **8.1.10 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold.
 11. **8.1.11 An enemy hero defends its town.** Entering a town with an enemy hero in it starts a battle against that hero, and the town is captured if the player wins.
@@ -74,6 +74,13 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - The roll is the troops', whoever casts: the engine rolls every stack with magic resistance, so the player's own hero's Resistance lets its own stacks resist the player's own hostile area spells (Fireball, Armageddon). The wiki says only "hostile spell effects".
   - The resisting stack shows the resistance effect in place of the spell's; the engine shows it with a sound and no combat log line. The game has the words "resist" and "resists" (`GENRLTXT.TXT` 143, 144), but no source gives the line they make.
   - The Orb of Vulnerability negates it, and the Garniture of Interference, Surcoat of Counterpoise and Boots of Polarity add to it without the skill (the wiki): none of those artifacts is in the game yet (7.8). Creatures with their own magic resistance (Dwarves, Unicorns' aura) come with the creatures (6.5).
+- **The beaten hero's artifacts** (checked for 8.1.8 against the wiki's Artifact page and its talk page, its Spell book and Grail pages, its `GENRLTXT.TXT`, and an open-source engine's battle results and results window):
+  - Winning a battle against a hero gives the winner every artifact the beaten hero wore and carried: the worn ones first, in slot order (helmet, cape, necklace, weapon, shield, torso, right ring, left ring, feet, misc 1 to 5), then the backpack in its order. Each goes to the winner's first free slot of its kind, else to the end of the backpack, as picking one up does.
+  - A worn combination artifact goes as a whole, like any other artifact.
+  - The spell book is never taken (the wiki: "nor can it be lost after a defeat"); here it is not an artifact, so nothing is needed. The catapult and the war machines stay too (the engine), and the Grail is lost (the wiki): none of them is in the game yet.
+  - A full backpack: an artifact with no free slot of its kind and no room in the backpack "will just disappear" (the wiki). The talk page says the slot order above decides which ones still find a slot, as the engine's order does.
+  - The message, once the results window closes: "You have captured an enemy artifact!" (`GENRLTXT.TXT` 30, checked against the wiki's copy and the engine), with each captured artifact's picture. The game has only this one text; the engine's plural text is its own, so we use the game's whatever the count. No artifacts captured, no message.
+  - Only a hero beaten in battle loses them: one who retreats or surrenders keeps them, which needs the AI (8.3). The player's hero losing to an enemy hero is 8.1.9.
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
