@@ -37,12 +37,12 @@ export function getCasualties(battle, side) {
 }
 
 // What the results window shows: each side with its outcome, the message and the casualties.
-export function describeBattleResults({ battle, outcome, heroName, monster, experience }) {
+export function describeBattleResults({ battle, outcome, heroName, defenderName, experience }) {
   const won = outcome === BATTLE_OUTCOME_WON
   return {
     attacker: { name: heroName, outcome: won ? 'Victorious' : 'Defeated' },
     defender: {
-      name: describeStack(monster, battle.definitions).name,
+      name: defenderName,
       outcome: won ? 'Defeated' : 'Victorious'
     },
     messages: describeOutcome({ outcome, heroName, experience }),

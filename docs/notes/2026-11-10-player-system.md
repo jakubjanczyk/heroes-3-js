@@ -18,8 +18,9 @@ Fighting for towns and heroes:
 
 6. **8.1.6 Attacking a town's garrison.** Entering an enemy town with a garrison and no hero starts a battle against the garrison; winning captures the town, losing leaves the town and what is left of its garrison as they were. A neutral town given a garrison by the scenario is fought the same way (6.4). Until sieges (5.10) every such battle is fought on an open field, walls or not.
 7. **8.1.7 Attacking an enemy hero.** The swords cursor, then a battle against the hero's army, with its primary skills. The winner gets the experience and the beaten enemy hero leaves the map.
+7b. **8.1.7b An enemy hero's Resistance.** The skill's chance to block the player's spells on the enemy hero's army (4.8.6). Its rules are checked when it is planned.
 8. **8.1.8 The beaten hero's artifacts go to the winner.**
-9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5).
+9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5), the enemy hero gets the experience and the beaten hero's artifacts.
 10. **8.1.10 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold.
 11. **8.1.11 An enemy hero defends its town.** Entering a town with an enemy hero in it starts a battle against that hero, and the town is captured if the player wins.
 
@@ -57,6 +58,14 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - Experience is one point per hit point of the creatures killed, as against monsters. The wiki gives 500 more for "an enemy town captured during a siege"; the engine gives those 500 for every won battle at a town, with walls or without. We follow the wiki (agreed for 8.1.6): the 500 come only for a town with a Fort, Citadel or Castle, where the battle would be a siege.
   - Losing or retreating takes the hero off the map and leaves the town to its owner with what is left of the garrison. Surrender needs an enemy hero, so it's disabled; its tooltip, "There is no hero to surrender to", is our own wording.
   - The results window names the defender by its strongest creature (the highest AI value), as for monsters; the texts are the ones the battles already use.
+- **Attacking an enemy hero** (checked for 8.1.7 against the wiki's Experience page and an open-source engine's battle setup and battle results):
+  - The swords over an enemy hero the hero can reach (8.1.2); the hero walks up next to it and the battle starts straight away, with no question first, on the enemy hero's tile's terrain.
+  - The enemy hero fights with its whole army, each stack in its own slot, and its stacks get what a hero gives: its Attack and Defense (artifacts included), its army's morale and its luck (Leadership, Luck, artifacts). An artifact that cancels morale or luck in battle does so for both sides whichever hero wears it, and an artifact's spell immunities protect its wearer's army only.
+  - The hero stands on the right of the battlefield, the player's on the left.
+  - Winning: one experience point per hit point of the enemy creatures killed, as against monsters, and 500 more for the defeated hero. Both the wiki and the engine give the 500; neither gives them when the enemy hero retreats or surrenders, which needs the AI (8.3). The beaten hero leaves the map and is in the taverns' pool again (4.5.5).
+  - The results window names the enemy hero as the defender, with the texts the battles already use ("A glorious victory!", "For valor in combat, …").
+  - Losing or retreating: the player's hero leaves the map as against monsters, and the enemy hero keeps what is left of its army.
+  - Left for later: the enemy hero casting spells and retreating (AI, 8.3 and 5.7b); its experience when it wins and the player's hero's artifacts going to it (8.1.9); the beaten hero's artifacts (8.1.8); Surrender (8.1.10).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
@@ -76,4 +85,5 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **8.1.3**: right-clicking or long-pressing another player's hero shows its portrait, name and army, each stack with its size word under it ("Pack"), and the skill icons without values; no morale, luck or spell points.
 - **8.1.4 and 8.1.5**, in one PR: entering another player's mine, dwelling or undefended town takes it for the player, through the same rule as a neutral one (the visitor's owner differs from the object's), so no new code was needed; the tests pin it. The flag turns red on the map and the minimap, the popup says "(Red)", the mine message shows, the income and the dwelling's growth bonus go to the player, a dwelling offers its creatures, and another player's guarded dwelling is fought for first. The demo map has a blue Archers' Tower beside Kirkwall.
 - **8.1.6**: entering another player's town, or a neutral one, whose garrison has creatures and no hero in it starts a battle against the garrison, fought on an open field; the swords show over it. Winning empties the garrison, takes the town and opens its town screen, with 500 more experience when the town has a Fort or better. Losing or retreating leaves the town to its owner with what is left of its garrison, and Surrender says there is no hero to surrender to. A scenario may now give any town a garrison; the demo map gives Kirkwall 15 Pikemen and 8 Archers.
-- Left for the next parts: the attack once the hero is next to an enemy hero (8.1.7), the enemy hero's details through Visions (8.1.16), and a town of another player names no owner in its popup until the town box (8.1.15).
+- **8.1.7**: walking onto another player's hero starts a battle against its army, with its Attack, Defense, morale, luck and artifacts' immunities; an artifact that cancels morale or luck does so for both sides whichever hero wears it. The enemy hero stands on the right of the battlefield with its flag. Winning gives the hero 500 more experience and takes the beaten hero off the map and the minimap, and the taverns can offer it again. Losing or retreating leaves the enemy hero with what is left of its army. Surrender stays disabled until 8.1.10.
+- Left for the next parts: the enemy hero's Resistance (8.1.7b), its experience when it wins (8.1.9), the enemy hero's details through Visions (8.1.16), and a town of another player names no owner in its popup until the town box (8.1.15).
