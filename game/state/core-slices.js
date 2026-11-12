@@ -97,11 +97,16 @@ const heroesSlice = {
   on: {
     'fact.hero.moved': updateHero((_hero, { to }) => ({ tile: to })),
     'fact.hero.movementPoints.changed': updateHero(changeMovementPoints),
-    'fact.hero.hired': (heroes, { heroId, player, tile }, { config }) => {
+    'fact.hero.hired': (heroes, { heroId, player, tile, movementPoints }, { config }) => {
       const max = maxMovementPointsOf(config)
       return {
         ...heroes,
-        [heroId]: { owner: player, tile, removed: false, movementPoints: { value: max, max } }
+        [heroId]: {
+          owner: player,
+          tile,
+          removed: false,
+          movementPoints: movementPoints ?? { value: max, max }
+        }
       }
     },
     'fact.entity.removed': (heroes, { entityId }) =>
@@ -116,7 +121,10 @@ const mapObjectsSlice = {
     'fact.entity.removed': (mapObjects, { entityId }) =>
       mapObjects.removedEntityIds.includes(entityId)
         ? mapObjects
-        : { removedEntityIds: [...mapObjects.removedEntityIds, entityId] }
+        : { removedEntityIds: [...mapObjects.removedEntityIds, entityId] },
+    'fact.hero.hired': (mapObjects, { heroId }) => ({
+      removedEntityIds: mapObjects.removedEntityIds.filter((entityId) => entityId !== heroId)
+    })
   }
 }
 

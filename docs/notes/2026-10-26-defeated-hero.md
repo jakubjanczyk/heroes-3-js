@@ -23,6 +23,6 @@ Checked against the Heroes 3 wiki (heroes.thelazy.net: Combat, Tavern, and the g
 
 ## Not yet
 
-- The artifacts going to the winner (no artifacts or enemy heroes yet).
-- The retreated hero waiting in the tavern with their level and artifacts; surrender.
-- Keeping the movement points left when hired again on the same day.
+- The artifacts going to the winner: built in 8.1.8 and 8.1.9 (`docs/notes/2026-11-10-player-system.md`).
+- The retreated or surrendered hero waiting in the tavern, keeping their movement points when hired again the same day: built in 8.1.10b.
+- A hero offered again in a later week coming back as they left, beaten ones included: 8.1.10c.

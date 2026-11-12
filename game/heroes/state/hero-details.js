@@ -199,9 +199,12 @@ export const heroDetailsSlice = {
             artifacts: putOnArtifact(hero.artifacts, artifact, definitions)
           }))(heroes, detail)
         : heroes,
+    // A hero hired back from the tavern is who they were, with the army they came back with.
     'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({
       ...heroes,
-      [heroId]: detailsOf({ name, heroClass, army }, definitions)
+      [heroId]: heroes[heroId]
+        ? { ...heroes[heroId], army }
+        : detailsOf({ name, heroClass, army }, definitions)
     })
   }
 }

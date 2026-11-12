@@ -1077,7 +1077,7 @@ See `docs/notes/2026-10-30-combination-artifacts.md`.
 Making the game a competitive experience.
 
 ### 8.1 Player System
-In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
+In twenty parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
 - [x] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
 - [x] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile; the swords show over one the hero can reach, and the hero walks up to it
 - [x] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
@@ -1089,7 +1089,8 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.8 The beaten hero's artifacts go to the winner
 - [x] 8.1.9 Losing to an enemy hero: the player's hero leaves for the tavern (4.5.5) and the enemy hero gets the experience
 - [x] 8.1.10 Surrender to an enemy hero
-- [ ] 8.1.10b A retreated or surrendered hero waits in the tavern, with their artifacts, level and skills, and the army they had left after a surrender (one creature after a retreat)
+- [x] 8.1.10b A retreated or surrendered hero waits in the tavern, with their artifacts, level and skills, and the army they had left after a surrender (one creature after a retreat)
+- [ ] 8.1.10c A hero who left the map and is offered again in a later week comes back as they left: level, skills and spells, and the artifacts they kept (none after a defeat)
 - [ ] 8.1.11 An enemy hero defends its town
 - [ ] 8.1.12 Taking turns: each player in colour order, then the new day (empty turns until the AI, 8.3)
 - [ ] 8.1.13 Each player's day: movement points, income and starting resources
@@ -1333,7 +1334,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 
 ### Phase 6 - "Real Competition"
 42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild (in four parts: the guild's spells and screen, learning spells, Wisdom and magic schools on level-up, Scholar), casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
-43. Player system (8.1), in nineteen parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes defending towns, taking turns, each player's day, the hourglass, the town box, Visions, the Thieves' Guild
+43. Player system (8.1), in twenty parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns, each player's day, the hourglass, the town box, Visions, the Thieves' Guild
 44. AI basics (8.3)
 45. AI decision making (8.4)
 46. Victory conditions (8.5)

@@ -72,7 +72,12 @@ import { isResistible, rollResisted } from '../../../game/heroes/spell-resistanc
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { surrenderPrice } from '../../../game/heroes/surrender.js'
-import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
+import {
+  armyAfterRetreat,
+  TAVERN_ROLE_RETREATED,
+  TAVERN_ROLE_SURRENDERED
+} from '../../../game/heroes/tavern.js'
+import { firstHeroIdOf, heroOwner, turnNumber, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
@@ -99,6 +104,7 @@ import {
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_WENT_TO_TAVERN,
   APP_FACT_RESOURCES_GAINED,
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_WORLD_READY,
@@ -320,6 +326,28 @@ export const registerBattleModule = defineModule(
       emit(APP_FACT_BATTLE_ENDED, { entityId: started.entityId, heroId, winner: 'defender' })
       defender.lose({ ...fought, survivors })
       emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
+      if (fought.outcome !== BATTLE_OUTCOME_LOST) {
+        goToTavern(fought)
+      }
+    }
+
+    // The roll settles which tavern slot the hero takes when both are worth the same.
+    function goToTavern({ heroId, battle, outcome }) {
+      const current = state.get()
+      const hero = heroById(current, heroId)
+      const surrendered = outcome === BATTLE_OUTCOME_SURRENDERED
+      emit(APP_FACT_HERO_WENT_TO_TAVERN, {
+        heroId,
+        player: heroOwner(current, heroId),
+        name: hero.name,
+        heroClass: hero.heroClass,
+        army: surrendered
+          ? getArmyAfterBattle(battle, 'attacker', hero.army)
+          : armyAfterRetreat(hero.heroClass, definitions.heroClasses),
+        role: surrendered ? TAVERN_ROLE_SURRENDERED : TAVERN_ROLE_RETREATED,
+        turnNumber: turnNumber(current),
+        roll: random()
+      })
     }
 
     // The roll is saved with the action, so a reload gives the stack the same extra turn.
@@ -1009,6 +1037,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_RESOURCES_GAINED,
       ...battleDefenderEvents,
       APP_FACT_HERO_ARMY_CHANGED,
+      APP_FACT_HERO_WENT_TO_TAVERN,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
       APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE
     ]

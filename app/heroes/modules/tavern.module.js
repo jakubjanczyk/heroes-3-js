@@ -17,7 +17,13 @@ import {
   rollRumour,
   rumourText
 } from '../../../game/heroes/tavern.js'
-import { activePlayer, heroIdAt, heroIdsOf } from '../../../game/state/queries.js'
+import {
+  activePlayer,
+  heroIdAt,
+  heroIdsOf,
+  heroMovementPoints,
+  turnNumber
+} from '../../../game/state/queries.js'
 import {
   APP_COMMAND_TAVERN_HIRE_REQUESTED,
   APP_COMMAND_TAVERN_OPEN_REQUESTED,
@@ -86,16 +92,24 @@ export const registerTavernModule = defineModule(
       })
     }
 
-    function describeHero(hero, slot) {
-      const withSkills = { ...hero, secondarySkills: startingSecondarySkills(hero, definitions) }
+    // A hero back from a battle is shown as they are; a new one with what they start with.
+    function heroAsHired(hero) {
+      const returning = hero.heroId ? heroById(state.get(), hero.heroId) : null
+      return returning
+        ? { ...returning, army: hero.army }
+        : { ...hero, secondarySkills: startingSecondarySkills(hero, definitions) }
+    }
+
+    function describeHero(offered, slot) {
+      const hero = heroAsHired(offered)
       return {
         slot,
         name: hero.name,
         description: describeHeroForHire(hero, definitions.heroClasses),
         skills: getHeroPrimarySkills({ entity: hero, definitions }),
-        morale: getHeroMorale({ entity: withSkills, definitions }),
-        luck: getHeroLuck({ entity: withSkills, definitions }),
-        spellPoints: maxSpellPoints({ entity: withSkills, definitions }),
+        morale: getHeroMorale({ entity: hero, definitions }),
+        luck: getHeroLuck({ entity: hero, definitions }),
+        spellPoints: hero.spellPoints ?? maxSpellPoints({ entity: hero, definitions }),
         army: getHeroArmy({ entity: hero, definitions })
       }
     }
@@ -121,13 +135,25 @@ export const registerTavernModule = defineModule(
 
       openTownId = townId
       const player = townOwner(state.get(), townId)
-      if (tavernOf(state.get(), player)) {
+      const offer = tavernOf(state.get(), player)
+      if (offer && !offer.unrolled) {
         showTavern()
         return
       }
 
-      const kept = Array.from({ length: HEROES_FOR_HIRE }, () => null)
+      const kept = Array.from(
+        { length: HEROES_FOR_HIRE },
+        (_slot, index) => offer?.heroes[index] ?? null
+      )
       emitAll([offerHeroes({ player, kept, rumour: rollRumour(definitions.tavern, random) })])
+    }
+
+    // Hired back on the day they left, a hero has the movement points they had left.
+    function movementPointsLeft(hero) {
+      const current = state.get()
+      return hero.heroId && hero.turnNumber === turnNumber(current)
+        ? { movementPoints: heroMovementPoints(current, hero.heroId) }
+        : {}
     }
 
     function hire(townId, slot) {
@@ -139,7 +165,8 @@ export const registerTavernModule = defineModule(
         return
       }
 
-      const heroId = `${HIRED_HERO_ID_PREFIX}${Object.keys(current.heroes).length + 1}`
+      const heroId =
+        hero.heroId ?? `${HIRED_HERO_ID_PREFIX}${Object.keys(current.heroes).length + 1}`
       const kept = offer.heroes.map((offered, index) => (index === slot ? null : offered))
       emitAll([
         {
@@ -153,7 +180,16 @@ export const registerTavernModule = defineModule(
         },
         {
           type: APP_FACT_HERO_HIRED,
-          detail: { heroId, player, tile: townsById.get(townId).tile, entityId: townId, ...hero }
+          detail: {
+            heroId,
+            player,
+            tile: townsById.get(townId).tile,
+            entityId: townId,
+            name: hero.name,
+            heroClass: hero.heroClass,
+            army: hero.army,
+            ...movementPointsLeft(hero)
+          }
         },
         offerHeroes({ player, kept, rumour: offer.rumour, hiredName: hero.name }),
         { type: APP_FACT_HERO_SELECTED, detail: { heroId, player } }
