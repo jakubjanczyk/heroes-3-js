@@ -102,6 +102,15 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - The hero leaves the map, as after a retreat. In the game it waits in the player's tavern with the army it had left and all its artifacts (the wiki's Combat page, the engine's tavern slots); our tavern makes a new hero on every hire (4.5.5), so that waits for 8.1.10b (agreed for 8.1.10).
   - The enemy may refuse a surrender (the wiki, not in Horn of the Abyss): that is the AI's choice (8.3); until then every offer is accepted.
   - Who gets the gold: the wiki says the player pays the enemy player; the engine only takes it from the player. The enemy player gets it (agreed for 8.1.10).
+- **A retreated or surrendered hero in the tavern** (checked for 8.1.10b against the wiki's Combat and Tavern pages, its `GENRLTXT.TXT`, the note on a defeated hero (`docs/notes/2026-10-26-defeated-hero.md`), and an open-source engine's tavern pool, tavern window and battle results):
+  - Any retreat counts, from monsters, a garrison or a hero alike; a surrender is only against a hero. A beaten hero is not kept (4.5.5 stays as it is).
+  - The hero is in the player's taverns straight away, as they were: level, experience, primary and secondary skills, spell book and spells, and every artifact, worn and in the backpack.
+  - Their army: after a retreat one creature of their default stack, which is the first stack of their class's starting army (the engine's default creature skips war machines; we have none); after a surrender the creatures they had left on the battlefield, each stack as it stood (the wiki: "retains their surviving army"). Summoned creatures and clones are not kept.
+  - Which slot they take (the engine; the wiki says nothing): the slot of the hero least worth keeping is taken. From least to most: a hero who took a hired one's place (one creature), a hero offered at the week's start (full army), a retreated hero, a surrendered hero. A tie picks one of the two at random. The hero pushed out goes back to the pool.
+  - Hired again the same day, the hero keeps the movement points they had left when the battle ended (the wiki's changelog, as noted for 4.5.5, and the engine, which doesn't refill them). From the next day a hero waiting in the tavern has full movement points.
+  - The tavern's line for them is `GENRLTXT.TXT` 215, "%s is a level %d %s with %d artifacts.", with their level and the number of artifacts they carry, worn and in the backpack (the engine counts these, leaving out the spell book and war machines). The right-click box shows their own skills, morale, luck, spell points and army.
+  - At the start of a new week the tavern's two heroes are replaced as usual, the retreated or surrendered one too (the engine clears both slots). They go back to the pool.
+  - The wiki's "a hero who retreats on day 7 after their turn has passed takes a tavern slot" is about battles in another player's turn: none until the AI (8.3).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
