@@ -134,6 +134,9 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - Later, with garrison heroes: a town can hold two heroes, one in the garrison and one visiting. The attacker then fights two battles, the visiting hero first, outside the walls, then the garrison hero with the garrison (the game manual, the engine).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
+- **Turns** (checked for 8.1.12 against an open-source engine's new-turn processing): the players take their turns one after another in colour order, each day starting with red. The new day comes once the last player ends their turn, and everything that comes with it happens once for every player at the same time: income, every hero's movement points and spell points, and a new week's growth. Only scripted events (none yet) run at the start of each player's own turn. The weekly tavern refresh comes when the day that ends the week is over, as now.
+- **A computer player's starting resources** on Normal: 7500 gold, 10 wood, 10 ore and 4 each of mercury, sulfur, crystal and gems (the engine's difficulty table, the second of five levels, as the human's 20000 gold, 20 wood and ore and 10 of each rare resource match ours). Checked for 8.1.13.
+
 ## Decisions
 
 - **The players are the colours that own something in the scenario**, in colour order. Red is always the human player until hot-seat (8.2). The scenario gets no separate players list until it needs one (faction or AI settings, 8.3 or 9.1).
