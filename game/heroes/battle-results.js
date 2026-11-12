@@ -3,6 +3,7 @@ import { describeStack } from './hero-army.js'
 export const BATTLE_OUTCOME_WON = 'won'
 export const BATTLE_OUTCOME_LOST = 'lost'
 export const BATTLE_OUTCOME_RETREATED = 'retreated'
+export const BATTLE_OUTCOME_SURRENDERED = 'surrendered'
 
 function describeOutcome({ outcome, heroName, experience }) {
   if (outcome === BATTLE_OUTCOME_WON) {
@@ -14,6 +15,10 @@ function describeOutcome({ outcome, heroName, experience }) {
 
   if (outcome === BATTLE_OUTCOME_RETREATED) {
     return [`The cowardly ${heroName} flees from battle.`]
+  }
+
+  if (outcome === BATTLE_OUTCOME_SURRENDERED) {
+    return [`${heroName} surrenders to the enemy, and departs in shame.`]
   }
 
   return [`Your forces suffer a bitter defeat, and ${heroName} abandons your cause.`]

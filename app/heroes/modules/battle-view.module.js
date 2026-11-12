@@ -24,6 +24,7 @@ import {
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
+  APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
@@ -753,12 +754,12 @@ export const registerBattleViewModule = defineModule(
       canRetreat,
       canCastSpell,
       autoCombat,
-      surrenderRefusal
+      surrenderRefusal,
+      surrender
     }) {
       const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
-      if (surrenderRefusal) {
-        button('surrender').title = surrenderRefusal
-      }
+      button('surrender').title = surrenderRefusal ?? 'Surrender (S)'
+      button('surrender').disabled = !surrender
       button('cast-spell').disabled = !canCastSpell
       button('wait').disabled = !canWait
       button('defend').disabled = !canDefend
@@ -791,6 +792,25 @@ export const registerBattleViewModule = defineModule(
       if (action === 'confirm-question') {
         onConfirm?.()
       }
+    }
+
+    function askToSurrender() {
+      const offer = shown?.surrender
+      if (question || !offer) {
+        return
+      }
+
+      askQuestion({
+        name: 'Surrender',
+        text: `${offer.heroName} states:  "I will accept your surrender and grant you and your troops safe passage for the price of ${offer.price} gold."`,
+        onConfirm: () => {
+          if (offer.canAfford) {
+            emit(APP_COMMAND_BATTLE_SURRENDER_REQUESTED, {})
+            return
+          }
+          askQuestion({ name: 'Surrender', text: "You don't have enough gold!", canCancel: false })
+        }
+      })
     }
 
     function askToRetreat() {
@@ -901,6 +921,8 @@ export const registerBattleViewModule = defineModule(
         emit(APP_UI_SPELL_BOOK_OPEN_REQUESTED, { heroId: shown.heroId, kind: 'combat' })
       } else if (action === 'retreat') {
         askToRetreat()
+      } else if (action === 'surrender') {
+        askToSurrender()
       } else if (action === 'confirm-question' || action === 'cancel-question') {
         answerQuestion(action)
       }
@@ -1118,6 +1140,7 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+      APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
       APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,

@@ -1,5 +1,5 @@
 // The battle screen in behavior tests: the hexes and the stacks on them, moving and attacking,
-// the combat bar, the results window and the retreat dialog.
+// the combat bar, the results window and the retreat and surrender dialogs.
 
 import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
@@ -344,6 +344,22 @@ export async function closeBattleResults(user) {
 export async function waitForBattleToEnd() {
   await waitForBattleResults()
   within(getBattleResults()).getByRole('button', { name: 'OK' }).click()
+}
+
+export function querySurrenderDialog() {
+  return screen.queryByRole('dialog', { name: 'Surrender' })
+}
+
+export function readBattleQuestion(dialog) {
+  return within(dialog).getByRole('paragraph').textContent
+}
+
+// Clicks Surrender and answers the enemy hero's offer.
+export async function surrender(user, { confirm = true } = {}) {
+  await clickBattleButton(user, 'Surrender')
+  await user.click(
+    within(querySurrenderDialog()).getByRole('button', { name: confirm ? 'OK' : 'Cancel' })
+  )
 }
 
 export function queryRetreatDialog() {

@@ -23,7 +23,6 @@ import {
   attackBattleHexFrom,
   clickBattleButton,
   closeBattleResults,
-  getBattleButton,
   getBattleScreen,
   moveActiveStackTo,
   pickSpell,
@@ -34,6 +33,7 @@ import {
   reloadBattle,
   retreat,
   startBattle,
+  surrender,
   waitForBattleResults
 } from './battle.utils.js'
 import { aCaster, aFightWithAHero, HERO, stack } from './battle-lasting-spells.fixtures.js'
@@ -222,12 +222,6 @@ describe('attacking an enemy hero behavior', () => {
       await startBattle(aFightWithAHero({ enemy: aBlueHero() }))
 
       expect(within(getBattleScreen()).getByRole('img', { name: ENEMY_HERO })).toBeTruthy()
-    })
-
-    test('given the battle is against a blue hero then Surrender is disabled', async () => {
-      await startBattle(aFightWithAHero({ enemy: aBlueHero() }))
-
-      expect(getBattleButton('Surrender').disabled).toBe(true)
     })
 
     describe("the blue hero's primary skills", () => {
@@ -611,6 +605,21 @@ describe('attacking an enemy hero behavior', () => {
           })
         )
         await retreatAfterSwordsmenLoseTwo(user)
+
+        await beatBlueHeroWithMullich(user)
+
+        expectInteractionModalClosed()
+      })
+
+      test('given the hero surrendered when Sir Mullich beats the blue hero then none of the hero’s artifacts are captured', async () => {
+        const { user } = await startBattle(
+          aRematch({
+            hero: aLoneAngel().withArtifacts(['CAPE']),
+            enemy: aBlueHeroWithSwordsmen()
+          }).withStartingResources({ GOLD_PILE: 1500 })
+        )
+        await surrender(user)
+        await closeBattleResults(user)
 
         await beatBlueHeroWithMullich(user)
 

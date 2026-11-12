@@ -1088,7 +1088,7 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.7b An enemy hero's Resistance protects its army from the player's spells (4.8.6)
 - [x] 8.1.8 The beaten hero's artifacts go to the winner
 - [x] 8.1.9 Losing to an enemy hero: the player's hero leaves for the tavern (4.5.5) and the enemy hero gets the experience
-- [ ] 8.1.10 Surrender to an enemy hero
+- [x] 8.1.10 Surrender to an enemy hero
 - [ ] 8.1.10b A retreated or surrendered hero waits in the tavern, with their artifacts, level and skills, and the army they had left after a surrender (one creature after a retreat)
 - [ ] 8.1.11 An enemy hero defends its town
 - [ ] 8.1.12 Taking turns: each player in colour order, then the new day (empty turns until the AI, 8.3)
