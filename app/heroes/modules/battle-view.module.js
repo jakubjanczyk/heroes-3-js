@@ -24,6 +24,7 @@ import {
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
+  APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
@@ -124,7 +125,7 @@ export const registerBattleViewModule = defineModule(
     let pointerType = 'mouse'
     let messageLog = null
     let isRestoring = false
-    let retreatDialog = null
+    let question = null
     let resultsWindow = null
     // A spell the player picked from the book, cast on the next stack clicked that it can target:
     // an enemy stack, or for a helpful spell one of the hero's own.
@@ -753,35 +754,75 @@ export const registerBattleViewModule = defineModule(
       canRetreat,
       canCastSpell,
       autoCombat,
-      surrenderRefusal
+      surrenderRefusal,
+      surrender
     }) {
       const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
-      if (surrenderRefusal) {
-        button('surrender').title = surrenderRefusal
-      }
+      button('surrender').title = surrenderRefusal ?? 'Surrender (S)'
+      button('surrender').disabled = !surrender
       button('cast-spell').disabled = !canCastSpell
       button('wait').disabled = !canWait
       button('defend').disabled = !canDefend
       button('retreat').disabled = !canRetreat
       button('auto-combat').setAttribute('aria-pressed', String(Boolean(autoCombat)))
       if (!canRetreat) {
-        closeRetreatDialog()
+        closeQuestion()
       }
     }
 
-    function openRetreatDialog() {
-      if (retreatDialog || !shown?.canRetreat) {
+    function askQuestion({ name, text, onConfirm = () => {}, canCancel = true }) {
+      closeQuestion()
+      const element = cloneTemplate('battle-question-template')
+      element.setAttribute('aria-label', name)
+      element.querySelector('.battle-question__text').textContent = text
+      element.querySelector('[data-battle-action="cancel-question"]').hidden = !canCancel
+      battleScreen.append(element)
+      element.querySelector('[data-battle-action="confirm-question"]').focus()
+      question = { element, onConfirm }
+    }
+
+    function closeQuestion() {
+      question?.element.remove()
+      question = null
+    }
+
+    function answerQuestion(action) {
+      const { onConfirm } = question ?? {}
+      closeQuestion()
+      if (action === 'confirm-question') {
+        onConfirm?.()
+      }
+    }
+
+    function askToSurrender() {
+      const offer = shown?.surrender
+      if (question || !offer) {
         return
       }
 
-      retreatDialog = cloneTemplate('battle-retreat-template')
-      battleScreen.append(retreatDialog)
-      retreatDialog.querySelector('[data-battle-action="confirm-retreat"]').focus()
+      askQuestion({
+        name: 'Surrender',
+        text: `${offer.heroName} states:  "I will accept your surrender and grant you and your troops safe passage for the price of ${offer.price} gold."`,
+        onConfirm: () => {
+          if (offer.canAfford) {
+            emit(APP_COMMAND_BATTLE_SURRENDER_REQUESTED, {})
+            return
+          }
+          askQuestion({ name: 'Surrender', text: "You don't have enough gold!", canCancel: false })
+        }
+      })
     }
 
-    function closeRetreatDialog() {
-      retreatDialog?.remove()
-      retreatDialog = null
+    function askToRetreat() {
+      if (question || !shown?.canRetreat) {
+        return
+      }
+
+      askQuestion({
+        name: 'Retreat',
+        text: 'Are you sure you want to retreat?',
+        onConfirm: () => emit(APP_COMMAND_BATTLE_RETREAT_REQUESTED, {})
+      })
     }
 
     function fillCasualties(group, casualties) {
@@ -857,7 +898,7 @@ export const registerBattleViewModule = defineModule(
 
       battleScreen.remove()
       battleScreen = null
-      retreatDialog = null
+      question = null
       resultsWindow = null
       pickedSpell = null
       statusNote = null
@@ -879,12 +920,11 @@ export const registerBattleViewModule = defineModule(
       } else if (action === 'cast-spell') {
         emit(APP_UI_SPELL_BOOK_OPEN_REQUESTED, { heroId: shown.heroId, kind: 'combat' })
       } else if (action === 'retreat') {
-        openRetreatDialog()
-      } else if (action === 'confirm-retreat' || action === 'cancel-retreat') {
-        closeRetreatDialog()
-        if (action === 'confirm-retreat') {
-          emit(APP_COMMAND_BATTLE_RETREAT_REQUESTED, {})
-        }
+        askToRetreat()
+      } else if (action === 'surrender') {
+        askToSurrender()
+      } else if (action === 'confirm-question' || action === 'cancel-question') {
+        answerQuestion(action)
       }
     }
 
@@ -1026,7 +1066,7 @@ export const registerBattleViewModule = defineModule(
             }
 
             // The battlefield cannot be played behind a dialog.
-            const hex = !retreatDialog && !resultsWindow && readHex(event.target)
+            const hex = !question && !resultsWindow && readHex(event.target)
             if (hex) {
               event.stopPropagation()
               pointer = { x: event.clientX, y: event.clientY }
@@ -1100,6 +1140,7 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+      APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
       APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,

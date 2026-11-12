@@ -176,7 +176,7 @@ function rewardEnemyHero({
   }
 }
 
-// Surrender to a hero comes later, so it stays disabled. The beaten hero leaves the map.
+// The beaten hero leaves the map. A hero takes a surrender, so it has no surrender refusal.
 const enemyHero = {
   side: ({ started, state, definitions }) =>
     heroBattleSide(heroById(state.get(), started.defender.heroId), definitions),

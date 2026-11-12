@@ -154,7 +154,7 @@
     <!--
       The Heroes 3 battle screen, laid over the adventure screen when a battle starts. The hexes
       and stacks are added for each battle. Icons are stand-ins for the game's; Retreat, Auto combat,
-      Wait and Defend work so far; Surrender waits for surrendering to an enemy hero. `aria-keyshortcuts` gives a button its keys (keyboard-shortcuts.module.js).
+      Wait, Defend and Surrender work so far. `aria-keyshortcuts` gives a button its keys (keyboard-shortcuts.module.js).
     -->
     <template id="battle-screen-template">
       <section class="battle-screen" role="dialog" aria-modal="true" aria-label="Battle">
@@ -169,7 +169,7 @@
           <button class="battle-button" type="button" aria-label="System options" title="System options (not available yet)" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
           </button>
-          <button class="battle-button" type="button" data-battle-action="surrender" aria-label="Surrender" title="Neutral creatures do not accept surrender" disabled>
+          <button class="battle-button" type="button" data-battle-action="surrender" aria-label="Surrender" aria-keyshortcuts="S" title="Neutral creatures do not accept surrender" disabled>
             <svg class="battle-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3M6 4h11l-3 4 3 4H6"/></svg>
           </button>
           <button class="battle-button" type="button" data-battle-action="retreat" aria-label="Retreat" aria-keyshortcuts="R" title="Retreat (R)" disabled>
@@ -197,16 +197,19 @@
       </section>
     </template>
 
-    <!-- Asked before the hero runs from the battle, as in Heroes 3. -->
-    <template id="battle-retreat-template">
-      <div class="battle-overlay" role="dialog" aria-modal="true" aria-label="Retreat">
-        <div class="battle-overlay__window battle-retreat message-box">
-          <p class="battle-retreat__question">Are you sure you want to retreat?</p>
+    <!--
+      A question over the battle, such as whether to retreat. The view sets its name and text, and
+      hides Cancel when the window only tells the player something.
+    -->
+    <template id="battle-question-template">
+      <div class="battle-overlay" role="dialog" aria-modal="true">
+        <div class="battle-overlay__window battle-question message-box">
+          <p class="battle-question__text"></p>
           <div class="battle-overlay__actions">
-            <button class="interaction-modal__ok-button" type="button" data-battle-action="confirm-retreat" aria-label="OK" aria-keyshortcuts="Enter">
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="confirm-question" aria-label="OK" aria-keyshortcuts="Enter">
               <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
-            <button class="interaction-modal__ok-button" type="button" data-battle-action="cancel-retreat" aria-label="Cancel" aria-keyshortcuts="Escape">
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="cancel-question" aria-label="Cancel" aria-keyshortcuts="Escape">
               <svg class="battle-overlay__cancel" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M6.5 17.5 17.5 6.5" /></svg>
             </button>
           </div>
