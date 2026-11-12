@@ -49,9 +49,10 @@ function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random 
     return null
   }
 
-  const { name, heroClass } = pick(candidates, random)
+  const { name, heroClass, heroId } = pick(candidates, random)
   const startingArmy = heroClasses?.[heroClass]?.startingArmy
   return {
+    ...(heroId ? { heroId } : {}),
     name,
     heroClass,
     role: isReplacement ? TAVERN_ROLE_REPLACEMENT : TAVERN_ROLE_WEEK_START,
@@ -65,6 +66,18 @@ export function heroPool(heroes, startingHeroes) {
   const pool = Object.values(heroes ?? {})
   const names = new Set(pool.map(({ name }) => name))
   return [...pool, ...startingHeroes.filter(({ name }) => !names.has(name))]
+}
+
+// A hero who left the map is offered as the same hero: the pool's entry carries their id.
+export function withHeroesWhoLeft(pool, heroesWhoLeft) {
+  const idsByName = new Map(heroesWhoLeft.map(({ id, name }) => [name, id]))
+  return pool.map((hero) =>
+    idsByName.has(hero.name) ? { ...hero, heroId: idsByName.get(hero.name) } : hero
+  )
+}
+
+export function isBackFromBattle({ role }) {
+  return role === TAVERN_ROLE_RETREATED || role === TAVERN_ROLE_SURRENDERED
 }
 
 // Heroes on the map are never offered. `kept` holds the heroes still offered, null where a new one

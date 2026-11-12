@@ -1,23 +1,30 @@
 // @vitest-environment jsdom
+import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import { attackMonsterAt, confirmTileClickByDispatch } from './adventure-map.utils.js'
 import {
   closeInteractionModal,
   getHeroInfoBox,
+  getHeroInHeroList,
   getTownInTownList,
+  readArmySlots,
   readHeroList,
+  readMessage,
   readMessageRewards,
   readPrimarySkills,
-  readSelectedHeroInHeroList
+  readSelectedHeroInHeroList,
+  readSpellPoints
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
   flushMicrotasks,
   readGameData,
-  setupMovementBehaviorApp
+  setupMovementBehaviorApp,
+  waitMs
 } from './app.utils.js'
 import {
+  castSpellAt,
   clickBattleButton,
   closeBattleResults,
   startBattle,
@@ -33,14 +40,27 @@ import {
 } from './builders.js'
 import {
   clickHeroInHeroList,
+  clickHeroScreenSpellBook,
   closeHeroScreen,
   readHeroScreenArmy,
   readHeroScreenArtifacts,
+  readHeroScreenBackpack,
+  readHeroScreenBox,
   readHeroScreenPrimarySkills,
   readHeroScreenSecondarySkills,
+  readHeroScreenSpellBook,
   readHeroScreenTitle
 } from './hero-screen.utils.js'
-import { hireHero, leaveTown, openTavern, readHeroesForHire } from './town-screen.utils.js'
+import { clickSpellBookControl, readSpellBookSpellNames } from './spell-book.utils.js'
+import {
+  hireHero,
+  holdRightButtonOnHeroForHire,
+  leaveTown,
+  openTavern,
+  readHeroesForHire,
+  readHeroForHireDescription,
+  selectHeroForHire
+} from './town-screen.utils.js'
 
 const gameDefinitions = {
   hero: readGameData('hero.json'),
@@ -53,7 +73,11 @@ const gameDefinitions = {
   buildings: readGameData('buildings.json'),
   tavern: readGameData('tavern.json'),
   bonusObjects: readGameData('bonus-objects.json'),
-  artifacts: { AXE: anArtifactDefinition().withName("Centaur's Axe").withSlot('WEAPON').build() }
+  spells: readGameData('spells.json'),
+  artifacts: {
+    AXE: anArtifactDefinition().withName("Centaur's Axe").withSlot('WEAPON').build(),
+    SWORD: anArtifactDefinition().withName('Sword of Judgement').withSlot('WEAPON').build()
+  }
 }
 
 const BEATEN_HERO = 'Christian'
@@ -63,9 +87,9 @@ const OTHER_HERO = 'Sir Mullich'
 // A hired hero's starting army rolls 100, so only the first stack comes, at its largest.
 const HIGHEST_ROLLS = () => 0.99
 
-// Christian, a level 4 Knight with primary and secondary skills of his own, attacks the Swordsmen
+// Christian, a level 3 Knight with primary and secondary skills of his own, attacks the Swordsmen
 // with a lone Skeleton and loses. Whitemoon's entrance is at (4, 3), away from both heroes.
-const aDefeatScenario = ({ artifacts = [] } = {}) =>
+const aDefeatScenario = ({ artifacts = [], spells = [] } = {}) =>
   aScenario()
     .withSize(16, 7)
     .withEntities(
@@ -80,6 +104,8 @@ const aDefeatScenario = ({ artifacts = [] } = {}) =>
         ])
         .withArmy([{ creature: 'SKELETON', count: 1 }])
         .withArtifacts(artifacts)
+        .withSpellBook(spells.length > 0)
+        .withSpells(spells)
         .at(0, 0),
       aHero().withId('hero-2').withName(OTHER_HERO).at(0, 6),
       aMonster().withType('SWORDSMAN').withCount(2).withStacks(1).at(1, 0),
@@ -90,8 +116,23 @@ const aDefeatScenario = ({ artifacts = [] } = {}) =>
 
 const appConfig = { interactionModalTransitionMs: 0 }
 
-async function loseBattle(scenario = aDefeatScenario(), { eventLog } = {}) {
-  const app = await startBattle(scenario, { random: HIGHEST_ROLLS, appConfig, eventLog })
+// A lone stack stands in the middle of the hero's side of the battlefield.
+const OWN_HEX = { row: 6, column: 1 }
+
+const MERCENARY_CAMP_ALREADY_VISITED =
+  'You\'ve come upon a camp of mercenaries practicing their combat tactics. "You\'re too advanced for us," the mercenary captain says. "We can teach you nothing more."'
+
+async function loseBattle(
+  scenario = aDefeatScenario(),
+  { eventLog, beforeAttack, beforeAutoCombat } = {}
+) {
+  const app = await startBattle(scenario, {
+    random: HIGHEST_ROLLS,
+    appConfig,
+    eventLog,
+    beforeAttack
+  })
+  await beforeAutoCombat?.(app)
   await clickBattleButton(app.user, 'Auto combat')
   await waitForBattleResults()
   await closeBattleResults(app.user)
@@ -131,33 +172,59 @@ describe('hero defeat behavior', () => {
     expect(readHeroesForHire()).toContain(BEATEN_HERO)
   })
 
-  test("given a beaten hero is hired again then they are level 1 with their class's starting primary skills", async () => {
-    const { user } = await loseBattle()
+  test('given a beaten hero is offered again then the tavern describes them with their level and number of artifacts', async () => {
+    const { user } = await loseBattle(aDefeatScenario({ artifacts: ['AXE'] }))
+    await openTavernInWhitemoon(user)
 
-    await hireBeatenHeroAgain(user)
+    await selectHeroForHire(user, BEATEN_HERO)
 
-    expect(readHeroScreenTitle()).toEqual([BEATEN_HERO, 'Level 1 Knight'])
-    expect(readHeroScreenPrimarySkills()).toEqual([
-      'Attack 2',
-      'Defense 2',
-      'Power 1',
-      'Knowledge 1'
-    ])
+    expect(readHeroForHireDescription()).toBe(
+      `${BEATEN_HERO} is a level 3 Knight with 1 artifacts.`
+    )
   })
 
-  test('given a beaten hero is hired again then they have their starting secondary skills', async () => {
+  test('given a beaten hero is hired again then they have their level, experience, primary and secondary skills', async () => {
     const { user } = await loseBattle()
 
     await hireBeatenHeroAgain(user)
 
-    expect(readHeroScreenSecondarySkills().slice(0, 3)).toEqual([
-      'Basic Leadership',
-      'Basic Artillery',
+    expect(readHeroScreenTitle()).toEqual([BEATEN_HERO, 'Level 3 Knight'])
+    expect(readHeroScreenBox('Experience')).toBe('Experience 3000')
+    expect(readHeroScreenPrimarySkills()).toEqual([
+      'Attack 6',
+      'Defense 5',
+      'Power 3',
+      'Knowledge 2'
+    ])
+    expect(readHeroScreenSecondarySkills().slice(0, 4)).toEqual([
+      'Expert Leadership',
+      'Advanced Artillery',
+      'Basic Logistics',
       ''
     ])
   })
 
-  test("given a beaten hero is hired again then they come with their class's starting army", async () => {
+  test('given a beaten hero is hired again then they have their spell book and spells', async () => {
+    const { user } = await loseBattle(aDefeatScenario({ spells: ['MAGIC_ARROW'] }))
+
+    await hireBeatenHeroAgain(user)
+
+    expect(readHeroScreenSpellBook()).toBe('Spell Book')
+    await clickHeroScreenSpellBook(user)
+    await clickSpellBookControl(user, 'Combat spells')
+    expect(readSpellBookSpellNames()).toEqual(['Magic Arrow'])
+  })
+
+  test('given a hero beaten by monsters is hired again then they wear and carry the same artifacts', async () => {
+    const { user } = await loseBattle(aDefeatScenario({ artifacts: ['AXE', 'SWORD'] }))
+
+    await hireBeatenHeroAgain(user)
+
+    expect(readHeroScreenArtifacts()).toEqual({ Weapon: "Centaur's Axe" })
+    expect(readHeroScreenBackpack()).toEqual(['Sword of Judgement'])
+  })
+
+  test("given a beaten hero offered at the start of a week is hired then they come with their class's starting army", async () => {
     const { user } = await loseBattle()
 
     await hireBeatenHeroAgain(user)
@@ -165,15 +232,52 @@ describe('hero defeat behavior', () => {
     expect(readHeroScreenArmy()).toEqual(['Pikemen 20', '', '', '', '', '', ''])
   })
 
-  test('given a beaten hero wearing an artifact is hired again then they wear nothing', async () => {
-    const { user } = await loseBattle(aDefeatScenario({ artifacts: ['AXE'] }))
+  // The tavern was opened before the battle, offering Sorsha and Lord Haart. Hiring Sorsha after
+  // the battle brings Christian in her place.
+  test("given a beaten hero is offered in a hired hero's place then they bring one creature of their first starting stack", async () => {
+    const { user } = await loseBattle(aDefeatScenario(), {
+      beforeAttack: async (app) => {
+        await openTavernInWhitemoon(app.user)
+        await leaveTown(app.user)
+        await app.user.click(getHeroInHeroList(BEATEN_HERO))
+      }
+    })
+    await openTavernInWhitemoon(user)
+    await hireHero(user, 'Sorsha')
+    await openTavern(user)
 
-    await hireBeatenHeroAgain(user)
+    await holdRightButtonOnHeroForHire(user, BEATEN_HERO)
 
-    expect(readHeroScreenArtifacts()).toEqual({})
+    expect(readArmySlots(screen.getByRole('tooltip'))).toEqual([
+      'Pikeman 1',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ])
   })
 
-  test('given a hero lost a battle when the page reloads then the tavern can still offer them', async () => {
+  // Christian casts Shield (5 spell points of his 20) on his Skeleton before he loses.
+  test('given a beaten hero is hired again then they have full movement points and spell points', async () => {
+    const { user } = await loseBattle(aDefeatScenario({ spells: ['SHIELD'] }), {
+      beforeAutoCombat: async (app) => {
+        await waitMs(5000)
+        await castSpellAt(app.user, 'Shield', OWN_HEX)
+        await waitMs(1000)
+      }
+    })
+
+    await openTavernInWhitemoon(user)
+    await hireHero(user, BEATEN_HERO)
+    await leaveTown(user)
+
+    expect(readHeroList()).toContain(`${BEATEN_HERO} 1500`)
+    expect(readSpellPoints(getHeroInfoBox())).toBe('20')
+  })
+
+  test('given a hero lost a battle when the page reloads then the tavern still offers them as they left', async () => {
     const scenario = aDefeatScenario()
     const eventLog = createMemoryEventLog()
     await loseBattle(scenario, { eventLog })
@@ -184,13 +288,16 @@ describe('hero defeat behavior', () => {
       appConfig: { ...appConfig, random: HIGHEST_ROLLS }
     })
     await openTavernInWhitemoon(user)
+    await hireHero(user, BEATEN_HERO)
+    await leaveTown(user)
+    await clickHeroInHeroList(user, BEATEN_HERO)
 
-    expect(readHeroesForHire()).toContain(BEATEN_HERO)
+    expect(readHeroScreenTitle()).toEqual([BEATEN_HERO, 'Level 3 Knight'])
   })
 
   // Christian visits the Mercenary Camp at (8, 5) from below, then loses to the Swordsmen at
   // (12, 6). Hired again in Whitemoon, he walks back to the camp.
-  test('given a beaten hero is hired again then a Mercenary Camp they had visited trains them again', async () => {
+  test("given a beaten hero is hired again then a Mercenary Camp they had visited doesn't train them again", async () => {
     const { user } = await setupMovementBehaviorApp({
       loadGameOptions: aDefeatScenario()
         .withEntities(
@@ -220,7 +327,7 @@ describe('hero defeat behavior', () => {
     confirmTileClickByDispatch(8, 5)
     await flushMicrotasks()
 
-    expect(readMessageRewards()).toEqual(['+1 Attack'])
+    expect(readMessage()).toBe(MERCENARY_CAMP_ALREADY_VISITED)
     expect(readPrimarySkills(getHeroInfoBox())[0]).toBe('Attack 3')
   })
 })

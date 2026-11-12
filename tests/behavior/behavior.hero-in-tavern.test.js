@@ -365,6 +365,33 @@ describe('a retreated or surrendered hero in the tavern', () => {
       expect(readHeroesForHire()).toEqual(['Orrin', 'Valeska'])
     })
 
+    // With no other heroes in the pool, the new week's tavern can offer only Christian. At the
+    // lowest roll he brings all three starting stacks at their smallest.
+    test('given the hero retreated and a new week began when the tavern offers them again then they keep their level and artifacts and bring a new starting army', async () => {
+      const scenario = aRetreatScenario()
+      const { user } = await retreatFromBattle(
+        scenario.withDefinitions({ ...scenario.build().definitions, heroes: {} })
+      )
+      await endTurns(user, 7)
+
+      await hireAgainAndOpenHeroScreen(user)
+
+      expect(readHeroScreenTitle()).toEqual([HERO, 'Level 3 Knight'])
+      expect(readHeroScreenArtifacts()).toEqual({
+        Helmet: 'Helm of the Alabaster Unicorn',
+        Weapon: "Centaur's Axe"
+      })
+      expect(readHeroScreenArmy()).toEqual([
+        'Pikemen 10',
+        'Archers 4',
+        'Griffins 2',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
+
     test("the hero who takes a retreated hero's place after they are hired brings a single first-level creature", async () => {
       const { user } = await retreatFromBattle()
       await hireAgain(user)

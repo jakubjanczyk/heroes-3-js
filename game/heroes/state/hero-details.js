@@ -200,10 +200,14 @@ export const heroDetailsSlice = {
           }))(heroes, detail)
         : heroes,
     // A hero hired back from the tavern is who they were, with the army they came back with.
-    'fact.hero.hired': (heroes, { heroId, name, heroClass, army }, { definitions }) => ({
+    'fact.hero.hired': (
+      heroes,
+      { heroId, name, heroClass, army, spellPoints },
+      { definitions }
+    ) => ({
       ...heroes,
       [heroId]: heroes[heroId]
-        ? { ...heroes[heroId], army }
+        ? { ...heroes[heroId], army, ...(spellPoints === undefined ? {} : { spellPoints }) }
         : detailsOf({ name, heroClass, army }, definitions)
     })
   }

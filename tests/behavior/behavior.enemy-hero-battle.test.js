@@ -12,8 +12,10 @@ import {
   answerMessage,
   closeLevelUpPopup,
   expectInteractionModalClosed,
+  getTownInTownList,
   queryLevelUpPopup,
   readArmySlots,
+  readHeroList,
   readMessage,
   readMessageDetails,
   readMessagePictures
@@ -41,10 +43,12 @@ import { ARMY_THAT_WINS, aHero, anArtifactDefinition, aScenario, aTown } from '.
 import {
   clickHeroInHeroList,
   readHeroScreenArtifacts,
-  readHeroScreenBackpack
+  readHeroScreenBackpack,
+  readHeroScreenSecondarySkills,
+  readHeroScreenTitle
 } from './hero-screen.utils.js'
 import { readSpellBookMessage } from './spell-book.utils.js'
-import { openTavern, readHeroesForHire } from './town-screen.utils.js'
+import { hireHero, leaveTown, openTavern, readHeroesForHire } from './town-screen.utils.js'
 
 const ENEMY_HERO = 'Valeska'
 
@@ -209,6 +213,35 @@ async function swordsmenStrikeBackAtMullich(user) {
 // Defense, or +10% when the blue hero's level has given it 1 Attack.
 const SWORDSMEN_STRIKE_BACK_WITH_ATTACK_0 = 'The Swordsmen do 126 damage. 5 Royal Griffins perish.'
 const SWORDSMEN_STRIKE_BACK_WITH_ATTACK_1 = 'The Swordsmen do 132 damage. 5 Royal Griffins perish.'
+
+// Whitemoon, with a tavern, stands away from the battle. With no other heroes in the pool, its
+// tavern offers only the scenario's heroes who left the map.
+const aFightNearWhitemoon = ({ hero, enemy }) =>
+  aScenario()
+    .withSize(9, 7)
+    .withEntities(
+      hero.at(0, 0),
+      enemy.at(1, 0),
+      aTown().named('Whitemoon').ownedByPlayer().withBuildings(['TAVERN']).at(4, 3)
+    )
+    .withDefinitions({
+      ...aFightWithAHero({ enemy }).build().definitions,
+      artifacts: capturableArtifacts,
+      heroes: {},
+      tavern: readGameData('tavern.json'),
+      resources: readGameData('resources.json'),
+      towns: readGameData('towns.json'),
+      buildings: readGameData('buildings.json')
+    })
+    .withStartingResources({ GOLD_PILE: 10000 })
+
+async function hireInWhitemoon(user, heroName) {
+  await user.dblClick(getTownInTownList('Whitemoon'))
+  await openTavern(user)
+  await hireHero(user, heroName)
+  await leaveTown(user)
+  await clickHeroInHeroList(user, heroName)
+}
 
 describe('attacking an enemy hero behavior', () => {
   describe('the battle', () => {
@@ -401,6 +434,27 @@ describe('attacking an enemy hero behavior', () => {
       expect(readHeroesForHire()).toContain(ENEMY_HERO)
     })
 
+    test('given the blue hero was beaten when the player hires them then they join the player with their level and skills and without the artifacts the player took', async () => {
+      const enemy = aBlueHero()
+        .withExperience(3000)
+        .withSecondarySkills([{ skill: 'LEADERSHIP', level: 'EXPERT' }])
+        .withArtifacts(['SKULL', 'CAPE'])
+      const { user } = await beatBlueHero(
+        aFightNearWhitemoon({ hero: aCaster().withArmy(ARMY_THAT_WINS), enemy })
+      )
+      while (readMessage() === CAPTURED_MESSAGE) {
+        await answerMessage(user, 'OK')
+      }
+
+      await hireInWhitemoon(user, ENEMY_HERO)
+
+      expect(readHeroList()).toContain(`${ENEMY_HERO} 1500`)
+      expect(readHeroScreenTitle()).toEqual([ENEMY_HERO, 'Level 3 Knight'])
+      expect(readHeroScreenSecondarySkills()[0]).toBe('Expert Leadership')
+      expect(readHeroScreenArtifacts()).toEqual({})
+      expect(readHeroScreenBackpack()).toEqual([])
+    })
+
     describe("the blue hero's artifacts", () => {
       test('the hero wears an artifact the blue hero wore, in the slot of its kind', async () => {
         const { user } = await beatBlueHero(aFightForArtifacts({ enemyArtifacts: ['CAPE'] }))
@@ -569,6 +623,20 @@ describe('attacking an enemy hero behavior', () => {
           'Cape of Conjuring',
           'Helm of Heavenly Enlightenment'
         ])
+      })
+
+      test('given the hero is beaten when the tavern offers them again then they wear and carry nothing', async () => {
+        const { user } = await loseToBlueHero(
+          aFightNearWhitemoon({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)], artifacts: ['SKULL', 'CAPE', 'HELM'] }),
+            enemy: aBlueHero([stack('ANGEL', 5)])
+          })
+        )
+
+        await hireInWhitemoon(user, HERO)
+
+        expect(readHeroScreenArtifacts()).toEqual({})
+        expect(readHeroScreenBackpack()).toEqual([])
       })
 
       test("given the blue hero wears an artifact of that kind then the hero's goes to its backpack", async () => {
