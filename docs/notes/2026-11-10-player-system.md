@@ -21,7 +21,8 @@ Fighting for towns and heroes:
 7b. **8.1.7b An enemy hero's Resistance.** The skill's chance to block the player's spells on the enemy hero's army (4.8.6). Its rules are checked when it is planned.
 8. **8.1.8 The beaten hero's artifacts go to the winner.** Every worn and carried artifact moves to the player's hero, as picking them up would, and a message names them; what finds no room is lost.
 9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5), the enemy hero gets the experience, levels up on its own, and takes the beaten hero's artifacts; after a retreat it gets only the experience for the creatures killed.
-10. **8.1.10 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold.
+10. **8.1.10 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold, to the enemy player.
+10b. **8.1.10b A retreated or surrendered hero waits in the tavern** with their artifacts, level and skills, and the army they had left after a surrender (one creature of their default stack after a retreat).
 11. **8.1.11 An enemy hero defends its town.** Entering a town with an enemy hero in it starts a battle against that hero, and the town is captured if the player wins.
 
 Turns:
@@ -98,9 +99,9 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - OK without enough gold shows "You don't have enough gold!" (`GENRLTXT.TXT` 29) and the battle goes on; the engine does this, the wiki says only that surrendering is then impossible.
   - OK with enough gold: the gold is paid, the battle ends, and the results window shows the player Defeated with "%s surrenders to the enemy, and departs in shame." (`GENRLTXT.TXT` 306; the engine shows 309, "Your forces surrender to the enemy, and depart in shame.", but our results window already names the hero in 307 and 308).
   - The enemy hero gets the experience for the creatures it killed and nothing more: no 500 and no artifacts, as after a retreat (the wiki's Experience page; the engine gives the 500 only for a normal win). The hero keeps its artifacts.
-  - The hero leaves the map, as after a retreat. In the game it waits in the player's tavern with the army it had left and all its artifacts (the wiki's Combat page, the engine's tavern slots); our tavern makes a new hero on every hire (4.5.5), so that waits for its own part.
+  - The hero leaves the map, as after a retreat. In the game it waits in the player's tavern with the army it had left and all its artifacts (the wiki's Combat page, the engine's tavern slots); our tavern makes a new hero on every hire (4.5.5), so that waits for 8.1.10b (agreed for 8.1.10).
   - The enemy may refuse a surrender (the wiki, not in Horn of the Abyss): that is the AI's choice (8.3); until then every offer is accepted.
-  - Who gets the gold: the wiki says the player pays the enemy player; the engine only takes it from the player. Open question for 8.1.10.
+  - Who gets the gold: the wiki says the player pays the enemy player; the engine only takes it from the player. The enemy player gets it (agreed for 8.1.10).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions

@@ -4,7 +4,6 @@ export const BATTLE_OUTCOME_WON = 'won'
 export const BATTLE_OUTCOME_LOST = 'lost'
 export const BATTLE_OUTCOME_RETREATED = 'retreated'
 
-// Wording as remembered from the game, not checked against its text files.
 function describeOutcome({ outcome, heroName, experience }) {
   if (outcome === BATTLE_OUTCOME_WON) {
     return [

@@ -197,16 +197,19 @@
       </section>
     </template>
 
-    <!-- Asked before the hero runs from the battle, as in Heroes 3. -->
-    <template id="battle-retreat-template">
-      <div class="battle-overlay" role="dialog" aria-modal="true" aria-label="Retreat">
-        <div class="battle-overlay__window battle-retreat message-box">
-          <p class="battle-retreat__question">Are you sure you want to retreat?</p>
+    <!--
+      A question over the battle, such as whether to retreat. The view sets its name and text, and
+      hides Cancel when the window only tells the player something.
+    -->
+    <template id="battle-question-template">
+      <div class="battle-overlay" role="dialog" aria-modal="true">
+        <div class="battle-overlay__window battle-question message-box">
+          <p class="battle-question__text"></p>
           <div class="battle-overlay__actions">
-            <button class="interaction-modal__ok-button" type="button" data-battle-action="confirm-retreat" aria-label="OK" aria-keyshortcuts="Enter">
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="confirm-question" aria-label="OK" aria-keyshortcuts="Enter">
               <svg class="interaction-modal__ok-check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
-            <button class="interaction-modal__ok-button" type="button" data-battle-action="cancel-retreat" aria-label="Cancel" aria-keyshortcuts="Escape">
+            <button class="interaction-modal__ok-button" type="button" data-battle-action="cancel-question" aria-label="Cancel" aria-keyshortcuts="Escape">
               <svg class="battle-overlay__cancel" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M6.5 17.5 17.5 6.5" /></svg>
             </button>
           </div>
