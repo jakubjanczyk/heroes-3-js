@@ -1,6 +1,12 @@
 import { toEntityIdOrNull } from '../value-objects/entity-id.js'
 
-export function buildArrivalPlan({ occupancy, targetTile, movingEntityId, entityBehaviors }) {
+export function buildArrivalPlan({
+  occupancy,
+  targetTile,
+  movingEntityId,
+  entityBehaviors,
+  arrivalContext = {}
+}) {
   const destinationOccupant = occupancy?.getAt?.(targetTile) ?? null
   if (!destinationOccupant) {
     return null
@@ -23,6 +29,6 @@ export function buildArrivalPlan({ occupancy, targetTile, movingEntityId, entity
   return {
     entityId: destinationEntityId,
     movementInteractionKind: interaction.movementInteractionKind,
-    stopBeforeTarget: !interaction.requiresSteppingIntoTarget
+    stopBeforeTarget: !entityBehaviors.entersTarget(destinationOccupant, arrivalContext)
   }
 }

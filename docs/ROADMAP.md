@@ -1091,7 +1091,7 @@ In twenty parts. See `docs/notes/2026-11-10-player-system.md`. The players are t
 - [x] 8.1.10 Surrender to an enemy hero
 - [x] 8.1.10b A retreated or surrendered hero waits in the tavern, with their artifacts, level and skills, and the army they had left after a surrender (one creature after a retreat)
 - [x] 8.1.10c A hero who left the map and is offered again later comes back as they left: level, skills and spells, and the artifacts they kept (none when an enemy hero beat them)
-- [ ] 8.1.11 An enemy hero defends its town
+- [x] 8.1.11 An enemy hero defends its town, with its garrison beside it; the winner stays outside the town, as after beating a garrison
 - [ ] 8.1.12 Taking turns: each player in colour order, then the new day (empty turns until the AI, 8.3)
 - [ ] 8.1.13 Each player's day: movement points, income and starting resources
 - [ ] 8.1.14 The hourglass with the player's crest in the info box during another player's turn

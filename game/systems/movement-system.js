@@ -59,6 +59,7 @@ export function createMovementSystem({
   stepDelayMs = 80,
   getStepCost = () => 1,
   getStepCharges = (path) => new Array(path.length - 1).fill(1),
+  getArrivalContext = () => ({}),
   getFlightPoints = () => null,
   spendMovementPoints = () => {},
   onMoveStart = () => {},
@@ -79,8 +80,10 @@ export function createMovementSystem({
       return false
     }
 
-    const interaction = entityBehaviors.getArrivalInteraction(occupant)
-    return interaction !== null && !interaction.requiresSteppingIntoTarget
+    return (
+      entityBehaviors.isArrivalInteractionEntity(occupant) &&
+      !entityBehaviors.entersTarget(occupant, getArrivalContext())
+    )
   }
 
   function isEntrance(tile) {

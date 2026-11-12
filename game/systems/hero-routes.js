@@ -121,9 +121,14 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     })
   }
 
+  function arrivalContext() {
+    return { state: getState(), heroId: selectedHeroId() }
+  }
+
   return {
     occupancy,
     getHero,
+    arrivalContext,
     chargeStepsToday,
     travelDays,
     onWorldReady(world) {
@@ -146,6 +151,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
         getStepCost,
         getStepCharges: chargeStepsToday,
         getFlightPoints,
+        getArrivalContext: arrivalContext,
         // A hero never walks through tiles its owner has not explored.
         isExplored: (tile) =>
           isTileExplored(getState(), heroOwner(getState(), selectedHeroId()), tile),

@@ -18,6 +18,16 @@ export function createEntityBehaviors(behaviors = []) {
     return behaviorByKind.get(entity?.kind)?.guardsSurroundings === true
   }
 
+  // Whether the hero steps onto the entity's tile to visit it, rather than from the tile next to
+  // it. `context` holds the game state and the visiting hero.
+  function entersTarget(entity, context = {}) {
+    const interaction = getArrivalInteraction(entity)
+    return (
+      Boolean(interaction?.requiresSteppingIntoTarget) &&
+      !interaction.stopsBeforeTarget?.({ entity, ...context })
+    )
+  }
+
   function isArrivalInteractionEntity(entity) {
     return getArrivalInteraction(entity) !== null
   }
@@ -32,6 +42,7 @@ export function createEntityBehaviors(behaviors = []) {
   }
 
   return Object.freeze({
+    entersTarget,
     getArrivalInteraction,
     getFootprintOffsets,
     guardsSurroundings,
