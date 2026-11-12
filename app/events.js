@@ -148,6 +148,8 @@ export const APP_FACT_HERO_ARTIFACTS_CAPTURED = 'fact.hero.artifacts.captured'
 export const APP_FACT_HERO_HIRED = 'fact.hero.hired'
 // The heroes a player's taverns offer this week, and the barkeep's rumour.
 export const APP_FACT_TAVERN_HEROES_OFFERED = 'fact.tavern.heroesOffered'
+// A hero who retreated or surrendered waits in their player's taverns with the army they kept.
+export const APP_FACT_HERO_WENT_TO_TAVERN = 'fact.hero.wentToTavern'
 // The spells a town's Mage Guild has at one level, drawn the first time they are needed.
 export const APP_FACT_MAGE_GUILD_SPELLS_ROLLED = 'fact.mageGuild.spellsRolled'
 export const APP_FACT_HERO_SPELL_BOOK_BOUGHT = 'fact.hero.spellBook.bought'
@@ -257,6 +259,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_ARTIFACTS_CAPTURED,
   APP_FACT_HERO_HIRED,
+  APP_FACT_HERO_WENT_TO_TAVERN,
   APP_FACT_TAVERN_HEROES_OFFERED,
   APP_FACT_MAGE_GUILD_SPELLS_ROLLED,
   APP_FACT_HERO_SPELL_BOOK_BOUGHT,

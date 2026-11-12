@@ -2,6 +2,19 @@ export const HEROES_FOR_HIRE = 2
 export const MAX_HEROES_PER_PLAYER = 8
 const RUMOUR_OPENING = 'After a generous tip, the barkeep whispers:'
 
+export const TAVERN_ROLE_RETREATED = 'retreated'
+export const TAVERN_ROLE_SURRENDERED = 'surrendered'
+const TAVERN_ROLE_REPLACEMENT = 'replacement'
+const TAVERN_ROLE_WEEK_START = 'weekStart'
+
+// A hero coming back to the tavern takes the slot of the hero least worth keeping, in this order.
+const ROLE_RANKS = [
+  TAVERN_ROLE_REPLACEMENT,
+  TAVERN_ROLE_WEEK_START,
+  TAVERN_ROLE_RETREATED,
+  TAVERN_ROLE_SURRENDERED
+]
+
 // One roll from 1 to 100 decides how many stacks a hired hero brings: the first always, the second
 // on 88 or less, the third on 25 or less.
 const STARTING_STACK_CHANCES = [100, 88, 25]
@@ -25,6 +38,11 @@ function rollReplacementArmy(startingArmy = []) {
   return startingArmy.slice(0, 1).map(({ creature }) => ({ creature, count: 1 }))
 }
 
+// A hero who retreated comes back with one creature of their class's first starting stack.
+export function armyAfterRetreat(heroClass, heroClasses) {
+  return rollReplacementArmy(heroClasses?.[heroClass]?.startingArmy)
+}
+
 function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random }) {
   const candidates = pool.filter((hero) => !takenNames.has(hero.name))
   if (candidates.length === 0) {
@@ -36,6 +54,7 @@ function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random 
   return {
     name,
     heroClass,
+    role: isReplacement ? TAVERN_ROLE_REPLACEMENT : TAVERN_ROLE_WEEK_START,
     army: isReplacement ? rollReplacementArmy(startingArmy) : rollStartingArmy(startingArmy, random)
   }
 }
@@ -82,9 +101,38 @@ export function rumourText(tavern, rumour) {
   return text ? `${RUMOUR_OPENING} ${text}` : RUMOUR_OPENING
 }
 
-export function describeHeroForHire({ name, heroClass }, heroClasses) {
+// An empty slot is taken first; offers saved before heroes had roles were rolled at the week's start.
+function rankOf(hero) {
+  if (!hero) {
+    return -1
+  }
+  const rank = ROLE_RANKS.indexOf(hero.role)
+  return rank === -1 ? ROLE_RANKS.indexOf(TAVERN_ROLE_WEEK_START) : rank
+}
+
+// Between two heroes worth the same, the roll picks the slot.
+export function slotForReturningHero(heroes, roll) {
+  const left = rankOf(heroes[0])
+  const right = rankOf(heroes[1])
+  if (left !== right) {
+    return left < right ? 0 : 1
+  }
+  return roll < 0.5 ? 0 : 1
+}
+
+export function offerWithReturningHero(heroes, hero, roll) {
+  const offered = Array.from({ length: HEROES_FOR_HIRE }, (_slot, index) => heroes?.[index] ?? null)
+  const slot = slotForReturningHero(offered, roll)
+  return offered.map((offeredHero, index) => (index === slot ? hero : offeredHero))
+}
+
+export function countArtifacts(artifacts) {
+  return Object.keys(artifacts?.worn ?? {}).length + (artifacts?.backpack?.length ?? 0)
+}
+
+export function describeHeroForHire({ name, heroClass, level = 1, artifacts }, heroClasses) {
   const className = heroClasses?.[heroClass]?.name ?? heroClass
-  return `${name} is a level 1 ${className} with 0 artifacts.`
+  return `${name} is a level ${level} ${className} with ${countArtifacts(artifacts)} artifacts.`
 }
 
 function canAfford(resources, cost) {
