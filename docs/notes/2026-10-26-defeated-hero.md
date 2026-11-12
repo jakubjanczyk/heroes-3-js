@@ -15,7 +15,7 @@ Checked against the Heroes 3 wiki (heroes.thelazy.net: Combat, Tavern, and the g
 
 ## What we do
 
-- A beaten hero hired again is a level 1 hero of their class, with the class's primary skills and a new starting army: hiring always makes a new hero (`fact.hero.hired`), whatever the hero was before.
+- Until 8.1.10c: a beaten hero hired again is a level 1 hero of their class, with the class's primary skills and a new starting army: hiring always makes a new hero (`fact.hero.hired`), whatever the hero was before.
 - The pool is the tavern's heroes (`game/data/tavern.json`) followed by the heroes the scenario started with, by name (`heroPool` in `game/heroes/tavern.js`). Heroes on the map are never offered, so a hero is in the pool again as soon as they leave the map.
 - A hero who retreats is treated as a beaten one.
 - The hero list drops a hero removed from the map and, if they were selected, selects and centres on the player's next hero.

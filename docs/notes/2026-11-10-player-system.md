@@ -23,7 +23,7 @@ Fighting for towns and heroes:
 9. **8.1.9 Losing to an enemy hero.** The player's beaten hero leaves for the tavern (4.5.5), the enemy hero gets the experience, levels up on its own, and takes the beaten hero's artifacts; after a retreat it gets only the experience for the creatures killed.
 10. **8.1.10 Surrender** to an enemy hero: pay half the recruitment cost of the creatures left, in gold, to the enemy player.
 10b. **8.1.10b A retreated or surrendered hero waits in the tavern** with their artifacts, level and skills, and the army they had left after a surrender (one creature of their default stack after a retreat).
-10c. **8.1.10c Heroes keep who they were.** A hero who left the map (beaten, retreated or surrendered) and is offered again in a later week comes back as they left: level, experience, skills, spell book and spells, and the artifacts they kept (none after a defeat, where the winner took them or they were lost). Until then, 4.5.5's rule stands: a hero hired from the pool is a new level 1 hero. The engine keeps every hero this way; the wiki says nothing.
+10c. **8.1.10c Heroes keep who they were.** A hero who left the map (beaten, retreated or surrendered) and is offered again later, at a week's start or in a hired hero's place, comes back as they left: level, experience, skills, spell book and spells, the one-per-hero objects they visited, and their artifacts (none when an enemy hero beat them and took them; all of them after losing to monsters or a garrison). Their army is rolled as for any hero offered then.
 11. **8.1.11 An enemy hero defends its town.** Entering a town with an enemy hero in it starts a battle against that hero, and the town is captured if the player wins.
 
 Turns:
@@ -113,6 +113,16 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - At the start of a new week the tavern's two heroes are replaced as usual, the retreated or surrendered one too (the engine clears both slots). They go back to the pool.
   - A combination artifact counts as one in that line, where the engine counts every slot it takes (agreed for 8.1.10b).
   - The wiki's "a hero who retreats on day 7 after their turn has passed takes a tavern slot" is about battles in another player's turn: none until the AI (8.3).
+- **A hero who left the map, offered again** (checked for 8.1.10c against the wiki's Artifact, Combat and Tavern pages, a web search, and an open-source engine's hero pool, tavern slots and battle results):
+  - The hero is the same hero: offered again, they bring their level, experience, primary and secondary skills, spell book and spells. The engine keeps every hero who leaves the map, beaten ones included, and offers them as they are; the wiki and a web search say nothing on level and skills either way.
+  - Artifacts: a hero beaten by another player's hero has none left, the winner took them (8.1.8, 8.1.9). A hero beaten by monsters or a garrison keeps theirs: the wiki's Artifact page lists artifacts "from previously dismissed, retreated, defeated in battles with neutrals … heroes in a tavern", and the engine moves a loser's artifacts only to a winning hero. The same holds when nobody wins (a spell killed the last of both sides).
+  - When they are offered: whenever the pool's roll picks them, at a week's start or in the place of a hero just hired, as any hero of the pool (4.5.4). A retreated or surrendered hero waiting in the tavern (8.1.10b) is sent back to the pool by a new week like the others and can be offered again the same way.
+  - Their army is rolled as for any hero offered then: the class's starting army at a week's start, one creature of the first starting stack in a hired hero's place. The army they left with is not kept (the engine gives a new army to every hero it puts in a slot, except a retreated or surrendered hero coming straight back).
+  - They come with full movement points and full spell points (the engine refills both when it puts a hero from the pool into a slot).
+  - The one-per-hero objects they visited stay visited (the engine keeps the hero's visited objects in the pool): a Mercenary Camp doesn't train them again.
+  - The tavern's line and right-click box show them as they are, as for a retreated hero (8.1.10b).
+  - An enemy hero the player beat goes to the pool too, and the player can hire them: they come with their level and skills, without the artifacts the player took, and as the player's hero.
+  - Dismissing a hero and a hero leaving when the player loses their last town also send heroes to the pool with their artifacts (the wiki): neither is in the game yet (4.5, 8.5).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
