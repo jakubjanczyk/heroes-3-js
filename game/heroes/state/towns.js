@@ -107,6 +107,7 @@ function endTurn(towns, { turnNumber }, { definitions, previousState }) {
 function initialTown(town, definitions, mapDwellings) {
   const initial = {
     type: town.type,
+    tile: town.tile,
     owner: town.owner ?? null,
     built: startingBuildingsOf(town),
     builtToday: false,
@@ -168,6 +169,15 @@ export function builtIn(state, townId) {
 
 export function hasBuiltToday(state, townId) {
   return Boolean(state.towns.byId[townId]?.builtToday)
+}
+
+export function townIdAt(state, tile) {
+  return (
+    Object.keys(state.towns.byId).find((townId) => {
+      const townTile = state.towns.byId[townId].tile
+      return townTile?.x === tile?.x && townTile?.y === tile?.y
+    }) ?? null
+  )
 }
 
 export function townGarrison(state, townId) {

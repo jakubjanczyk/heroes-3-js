@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 
 import {
   confirmTileClickByDispatch,
+  expectHeroAt,
   getHeroEntity,
   getMapCursor,
   getTownEntity,
@@ -38,7 +39,12 @@ import {
   winBattle
 } from './battle.utils.js'
 import { ARMY_THAT_WINS, aHero, aScenario, aTown } from './builders.js'
-import { leaveTown, queryTownScreen, readGarrison, readTownName } from './town-screen.utils.js'
+import {
+  queryTownScreen,
+  readGarrison,
+  readTownName,
+  readVisitingHeroArmy
+} from './town-screen.utils.js'
 
 const HERO_NAME = 'Sir Christian'
 
@@ -54,8 +60,9 @@ const gameDefinitions = {
 const stack = (creature, count) => ({ creature, count })
 
 // The town's entrance is at (4, 3); its building covers the two tiles either side and the two
-// rows above. The hero starts two tiles below the entrance.
+// rows above. The hero starts two tiles below the entrance and stops on the tile between.
 const ENTRANCE = { x: 4, y: 3 }
+const NEXT_TO_ENTRANCE = { x: 4, y: 4 }
 
 const PIKEMEN_AND_ARCHERS = [stack('PIKEMAN', 10), null, stack('ARCHER', 4)]
 
@@ -130,13 +137,14 @@ describe('attacking a town garrison behavior', () => {
   })
 
   describe('the battle', () => {
-    test("when the hero enters a blue town with a garrison then a battle starts against the garrison's stacks", async () => {
+    test("when the hero walks into a blue town with a garrison then the hero stops next to the entrance and a battle starts against the garrison's stacks", async () => {
       await setupApp(aGarrisonScenario())
 
       await attackTown()
 
       expect(queryBattleScreen()).toBeTruthy()
       expect(readBattleStackNames()).toEqual(['Angels 10', 'Archers 4', 'Pikemen 10'])
+      expectHeroAt(NEXT_TO_ENTRANCE.x, NEXT_TO_ENTRANCE.y)
     })
 
     test('when the hero enters a neutral town with a garrison then a battle starts against it', async () => {
@@ -181,26 +189,34 @@ describe('attacking a town garrison behavior', () => {
       const { user } = await setupApp(aGarrisonScenario())
 
       await captureTown(user)
-      await leaveTown(user)
 
       expect(readOwnerFlags(getTownEntity())).toEqual(['Red player flag'])
       expect(readTownList()).toEqual(['Kirkwall'])
     })
 
-    test('opens the town screen with the hero visiting and the garrison empty', async () => {
+    test('leaves the hero next to the town, with no town screen open', async () => {
       const { user } = await setupApp(aGarrisonScenario())
 
       await captureTown(user)
 
-      expect(queryTownScreen()).toBeTruthy()
+      expectHeroAt(NEXT_TO_ENTRANCE.x, NEXT_TO_ENTRANCE.y)
+      expect(queryTownScreen()).toBeNull()
+    })
+
+    test('when the hero then walks into the town then the town screen opens with the hero visiting and the garrison empty', async () => {
+      const { user } = await setupApp(aGarrisonScenario())
+      await captureTown(user)
+
+      await attackTown()
+
       expect(readTownName()).toBe('Kirkwall')
+      expect(readVisitingHeroArmy()).toEqual(['Angels 10', '', '', '', '', '', ''])
       expect(readGarrison()).toEqual(['', '', '', '', '', '', ''])
     })
 
     test("shows the town's popup with an empty garrison once it is the player's", async () => {
       const { user } = await setupApp(aGarrisonScenario())
       await captureTown(user)
-      await leaveTown(user)
 
       await holdRightButtonOn(user, 3, 2)
 
@@ -239,7 +255,6 @@ describe('attacking a town garrison behavior', () => {
     test("pays the town's income to the player from the next day", async () => {
       const { user } = await setupApp(aGarrisonScenario())
       await captureTown(user)
-      await leaveTown(user)
 
       await endTurns(user, 1)
 
@@ -291,7 +306,6 @@ describe('attacking a town garrison behavior', () => {
       const eventLog = createMemoryEventLog()
       const { user } = await setupApp(aGarrisonScenario(), { eventLog })
       await captureTown(user)
-      await leaveTown(user)
 
       const reloaded = await setupApp(aGarrisonScenario(), { eventLog })
 

@@ -14,9 +14,11 @@ import { describeStack } from '../../game/heroes/hero-army.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../game/heroes/monster-stacks.js'
 import { heroById } from '../../game/heroes/state/hero-details.js'
-import { builtIn } from '../../game/heroes/state/towns.js'
+import { builtIn, townGarrison as garrisonOf } from '../../game/heroes/state/towns.js'
 import {
   BATTLE_DEFENDER_TOWN_GARRISON,
+  joinGarrison,
+  splitGarrison,
   townCaptureExperience
 } from '../../game/heroes/town-garrison.js'
 import { heroOwner } from '../../game/state/queries.js'
@@ -33,7 +35,6 @@ import {
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_GARRISON_CHANGED,
-  APP_FACT_TOWN_VISITED,
   APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED
 } from '../events.js'
 
@@ -107,8 +108,8 @@ const artifactGuards = {
   }
 }
 
-// The results window names a garrison by its strongest creature. Beating it takes the town, and
-// the hero stays in it.
+// The results window names a garrison by its strongest creature. Beating it takes the town; the
+// hero stays on the tile next to its gate.
 const townGarrison = {
   named: ({ defender: { stacks } }, definitions) =>
     stacks
@@ -123,10 +124,6 @@ const townGarrison = {
   win({ emit, state, heroId, started: { entityId } }) {
     emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId, garrison: [] })
     emit(APP_FACT_TOWN_CAPTURED, { entityId, owner: heroOwner(state.get(), heroId) })
-  },
-  afterWin({ emit, heroId, started }) {
-    const { entityId, entityType, tile } = started
-    emit(APP_FACT_TOWN_VISITED, { heroId, entityId, entityType, tile })
   },
   lose({ emit, battle, started: { entityId, defender } }) {
     const garrison = getArmyAfterBattle(battle, 'defender', defender.stacks)
@@ -176,27 +173,54 @@ function rewardEnemyHero({
   }
 }
 
-// The beaten hero leaves the map. A hero takes a surrender, so it has no surrender refusal.
+// The town an enemy hero defends, if any, lends its garrison to the hero's army for the battle.
+function enemyHeroArmy(state, { heroId, townId }) {
+  const heroArmy = heroById(state.get(), heroId)?.army ?? []
+  const garrison = townId ? garrisonOf(state.get(), townId) : []
+  return { heroArmy, garrison, ...joinGarrison(heroArmy, garrison) }
+}
+
+function captureDefendedTown({ emit, state, heroId, started: { defender } }) {
+  if (!defender.townId) {
+    return
+  }
+  emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId: defender.townId, garrison: [] })
+  emit(APP_FACT_TOWN_CAPTURED, { entityId: defender.townId, owner: heroOwner(state.get(), heroId) })
+}
+
+// The beaten hero leaves the map, and the town it defended is taken. A hero takes a surrender, so
+// it has no surrender refusal.
 const enemyHero = {
-  side: ({ started, state, definitions }) =>
-    heroBattleSide(heroById(state.get(), started.defender.heroId), definitions),
+  side: ({ started, state, definitions }) => ({
+    ...heroBattleSide(heroById(state.get(), started.defender.heroId), definitions),
+    army: enemyHeroArmy(state, started.defender).army
+  }),
   hero: ({ started: { defender }, state }) => ({
     name: heroById(state.get(), defender.heroId)?.name,
     owner: heroOwner(state.get(), defender.heroId)
   }),
-  bonusExperience: () => DEFEATED_HERO_EXPERIENCE,
-  win({ emit, state, heroId, definitions, started: { defender } }) {
+  bonusExperience: ({ state, started: { defender } }) =>
+    DEFEATED_HERO_EXPERIENCE +
+    (defender.townId ? townCaptureExperience(builtIn(state.get(), defender.townId)) : 0),
+  win(fought) {
+    const { emit, state, heroId, definitions, started } = fought
+    const { defender } = started
     captureArtifacts({ emit, state, heroId, definitions, beatenHeroId: defender.heroId })
     emit(APP_FACT_ENTITY_REMOVED, { entityId: defender.heroId })
+    captureDefendedTown(fought)
   },
   lose(fought) {
     const { emit, state, battle, started } = fought
     const { defender } = started
-    const army = heroById(state.get(), defender.heroId)?.army ?? []
-    emit(APP_FACT_HERO_ARMY_CHANGED, {
-      heroId: defender.heroId,
-      army: getArmyAfterBattle(battle, 'defender', army)
+    const { army, ...armies } = enemyHeroArmy(state, defender)
+    const after = splitGarrison({
+      armyAfter: getArmyAfterBattle(battle, 'defender', army),
+      ...armies
     })
+    emit(APP_FACT_HERO_ARMY_CHANGED, { heroId: defender.heroId, army: after.heroArmy })
+    if (defender.townId) {
+      emit(APP_FACT_TOWN_GARRISON_CHANGED, { entityId: defender.townId, garrison: after.garrison })
+    }
     rewardEnemyHero({ ...fought, defender })
   }
 }
@@ -233,6 +257,5 @@ export const battleDefenderEvents = Object.freeze([
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_TOWN_GARRISON_CHANGED,
-  APP_FACT_TOWN_VISITED,
   APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED
 ])
