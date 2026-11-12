@@ -91,6 +91,16 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - The player sees none of it: the results window says only "Your forces suffer a bitter defeat, and … abandons your cause." or "The cowardly … flees from battle.", as now, and no message or level-up shows. It shows later, in the enemy hero's next battle (its skills and artifacts) or when it is beaten (its artifacts are captured back).
   - The Learning skill and Scholar-like bonuses to experience aren't in the game yet.
 
+- **Surrender** (checked for 8.1.10 against the wiki's Combat, Diplomacy and Experience pages, its `GENRLTXT.TXT`, and an open-source engine's battle window, surrender cost, surrender action and battle results):
+  - Only in a battle against a hero: monsters, guards and a garrison with no hero keep Surrender disabled with their tooltips. A hero defending a town can't surrender (the wiki), which only matters once the player defends (8.3).
+  - The price is half the recruitment cost in gold of the creatures the hero has left on the battlefield, rounded down; other resources in a creature's cost don't count. Clones are not paid for (they aren't in the army). Diplomacy takes 20 / 40 / 60% off (Basic / Advanced / Expert), after the halving, rounded down again. The Ambassador's Sash, Diplomat's Ring and Statesman's Medal take more off, but none of them is in the game yet (7.8).
+  - Clicking Surrender (key S, as in the engine) when the hero may act shows the offer: `GENRLTXT.TXT` 32, "%s states:  "I will accept your surrender and grant you and your troops safe passage for the price of %d gold."", with the enemy hero's name and the price, and OK / Cancel. Cancel goes back to the battle.
+  - OK without enough gold shows "You don't have enough gold!" (`GENRLTXT.TXT` 29) and the battle goes on; the engine does this, the wiki says only that surrendering is then impossible.
+  - OK with enough gold: the gold is paid, the battle ends, and the results window shows the player Defeated with "%s surrenders to the enemy, and departs in shame." (`GENRLTXT.TXT` 306; the engine shows 309, "Your forces surrender to the enemy, and depart in shame.", but our results window already names the hero in 307 and 308).
+  - The enemy hero gets the experience for the creatures it killed and nothing more: no 500 and no artifacts, as after a retreat (the wiki's Experience page; the engine gives the 500 only for a normal win). The hero keeps its artifacts.
+  - The hero leaves the map, as after a retreat. In the game it waits in the player's tavern with the army it had left and all its artifacts (the wiki's Combat page, the engine's tavern slots); our tavern makes a new hero on every hire (4.5.5), so that waits for its own part.
+  - The enemy may refuse a surrender (the wiki, not in Horn of the Abyss): that is the AI's choice (8.3); until then every offer is accepted.
+  - Who gets the gold: the wiki says the player pays the enemy player; the engine only takes it from the player. Open question for 8.1.10.
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 ## Decisions
