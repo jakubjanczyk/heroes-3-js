@@ -13,9 +13,11 @@ import {
   describeHeroForHire,
   HEROES_FOR_HIRE,
   heroPool,
+  isBackFromBattle,
   rollHeroesForHire,
   rollRumour,
-  rumourText
+  rumourText,
+  withHeroesWhoLeft
 } from '../../../game/heroes/tavern.js'
 import {
   activePlayer,
@@ -55,6 +57,12 @@ export const registerTavernModule = defineModule(
         .map((heroId) => heroById(current, heroId)?.name)
     }
 
+    function heroesWhoLeft(current) {
+      return Object.keys(current.heroes)
+        .filter((heroId) => current.heroes[heroId].removed)
+        .map((heroId) => ({ id: heroId, name: heroById(current, heroId)?.name }))
+    }
+
     function hasTavern(townId) {
       const current = state.get()
       return (
@@ -69,7 +77,7 @@ export const registerTavernModule = defineModule(
         detail: {
           player,
           heroes: rollHeroesForHire({
-            pool,
+            pool: withHeroesWhoLeft(pool, heroesWhoLeft(state.get())),
             heroClasses: definitions.heroClasses,
             heroNamesOnMap: [...heroNamesOnMap(state.get()), ...(hiredName ? [hiredName] : [])],
             kept,
@@ -92,12 +100,20 @@ export const registerTavernModule = defineModule(
       })
     }
 
-    // A hero back from a battle is shown as they are; a new one with what they start with.
+    // A hero who was on the map before comes back as they left; a new one with what they start
+    // with. Only a hero straight back from a battle keeps the spell points they had left.
     function heroAsHired(hero) {
       const returning = hero.heroId ? heroById(state.get(), hero.heroId) : null
-      return returning
-        ? { ...returning, army: hero.army }
-        : { ...hero, secondarySkills: startingSecondarySkills(hero, definitions) }
+      if (!returning) {
+        return { ...hero, secondarySkills: startingSecondarySkills(hero, definitions) }
+      }
+      return { ...returning, army: hero.army, ...refilledSpellPoints(hero, returning) }
+    }
+
+    function refilledSpellPoints(offered, returning) {
+      return isBackFromBattle(offered)
+        ? {}
+        : { spellPoints: maxSpellPoints({ entity: returning, definitions }) }
     }
 
     function describeHero(offered, slot) {
@@ -188,7 +204,8 @@ export const registerTavernModule = defineModule(
             name: hero.name,
             heroClass: hero.heroClass,
             army: hero.army,
-            ...movementPointsLeft(hero)
+            ...movementPointsLeft(hero),
+            ...(hero.heroId ? refilledSpellPoints(hero, heroById(current, hero.heroId)) : {})
           }
         },
         offerHeroes({ player, kept, rumour: offer.rumour, hiredName: hero.name }),
