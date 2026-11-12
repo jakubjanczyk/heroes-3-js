@@ -1047,9 +1047,9 @@ export function getArmyAfterBattle(battle, side, army) {
   })
 }
 
-// The hero earns the health of every enemy creature killed.
-export function getExperienceForWin(battle) {
+// The winner earns the health of every creature of the other side killed; clones earn nothing.
+export function getExperienceForKills(battle, winnerSide) {
   return battle.stacks
-    .filter((stack) => stack.side === 'defender')
-    .reduce((sum, stack) => sum + stack.initialCount * stack.health, 0)
+    .filter((stack) => stack.side !== winnerSide && !stack.cloneOf)
+    .reduce((sum, stack) => sum + (stack.initialCount - stack.count) * stack.health, 0)
 }

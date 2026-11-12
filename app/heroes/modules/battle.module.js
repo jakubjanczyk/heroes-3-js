@@ -18,7 +18,7 @@ import {
   getArmyAfterBattle,
   getAttackTargets,
   getBadMoraleChance,
-  getExperienceForWin,
+  getExperienceForKills,
   getGoodMoraleChance,
   getShotTargets,
   getStackHexes,
@@ -195,7 +195,7 @@ export const registerBattleModule = defineModule(
 
     function experienceForWin() {
       const bonus = battleDefenderOf(started).bonusExperience?.({ state, started }) ?? 0
-      return getExperienceForWin(battle) + bonus
+      return getExperienceForKills(battle, 'attacker') + bonus
     }
 
     function describeResults() {
@@ -287,7 +287,7 @@ export const registerBattleModule = defineModule(
 
     // Beaten or retreated: the hero leaves the map and the defender keeps what it has left.
     function loseBattle() {
-      const fought = { emit, state, heroId, battle, started }
+      const fought = { emit, state, heroId, battle, started, definitions, outcome }
       const defender = battleDefenderOf(started)
       const survivors = battle.stacks.filter(
         (stack) => stack.side === 'defender' && stack.count > 0

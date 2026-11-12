@@ -10,7 +10,9 @@ import {
 } from './adventure-map.utils.js'
 import {
   answerMessage,
+  closeLevelUpPopup,
   expectInteractionModalClosed,
+  queryLevelUpPopup,
   readArmySlots,
   readMessage,
   readMessageDetails,
@@ -139,6 +141,74 @@ async function attackBlueHero() {
   confirmTileClickByDispatch(1, 0)
   await waitMs()
 }
+
+const MULLICH = 'Sir Mullich'
+
+// The hero fights the blue hero first; Sir Mullich waits below to fight it next.
+const aRematch = ({
+  hero,
+  enemy,
+  mullich = aHero().withId('hero-3').withName(MULLICH).withArmy(ARMY_THAT_WINS)
+}) =>
+  aScenario()
+    .withSize(3, 3)
+    .withEntities(hero.at(0, 0), enemy.at(1, 0), mullich.at(0, 2))
+    .withDefinitions({
+      ...aFightWithAHero({ enemy }).build().definitions,
+      artifacts: capturableArtifacts
+    })
+
+async function loseToBlueHero(scenario, options) {
+  const started = await startBattle(scenario, options)
+  await winWithAutoCombat(started.user)
+  await closeBattleResults(started.user)
+  return started
+}
+
+async function beatBlueHeroWithMullich(user) {
+  await attackBlueHero()
+  await winWithAutoCombat(user)
+  await closeBattleResults(user)
+  if (queryLevelUpPopup(MULLICH)) {
+    await closeLevelUpPopup(user, MULLICH)
+  }
+}
+
+// No Attack or Defense of its own, so a level's Attack shows in its Swordsmen's strikes.
+const aBlueHeroOfSwordsmen = (experience) =>
+  aBlueHero([stack('SWORDSMAN', 20)])
+    .withPrimarySkills({ attack: 0, defense: 0 })
+    .withExperience(experience)
+
+// The Swordsmen walk up to column 10, the Pikemen to column 5, and the Swordsmen kill 13 of them.
+async function retreatAfterSwordsmenKill13(user) {
+  await moveActiveStackTo(user, 6, 5)
+  await waitMs(1000)
+  await retreat(user)
+  await closeBattleResults(user)
+}
+
+const aMullichWithRoyalGriffins = () =>
+  aHero()
+    .withId('hero-3')
+    .withName(MULLICH)
+    .withPrimarySkills({ attack: 0, defense: 0 })
+    .withArmy([stack('ROYAL_GRIFFIN', 10)])
+
+// Sir Mullich's Royal Griffins wait out of reach while the Swordsmen walk up to column 10, then
+// attack them, and the Swordsmen strike back.
+async function swordsmenStrikeBackAtMullich(user) {
+  await attackBlueHero()
+  await moveActiveStackTo(user, 6, 2)
+  await waitMs(1000)
+  await attackBattleHexFrom(user, 6, 10, 'left')
+  await waitMs(1000)
+}
+
+// 20 Swordsmen strike back for 120 (6 each), +5% for 10 Attack against the Royal Griffins' 9
+// Defense, or +10% when the blue hero's level has given it 1 Attack.
+const SWORDSMEN_STRIKE_BACK_WITH_ATTACK_0 = 'The Swordsmen do 126 damage. 5 Royal Griffins perish.'
+const SWORDSMEN_STRIKE_BACK_WITH_ATTACK_1 = 'The Swordsmen do 132 damage. 5 Royal Griffins perish.'
 
 describe('attacking an enemy hero behavior', () => {
   describe('the battle', () => {
@@ -487,6 +557,139 @@ describe('attacking an enemy hero behavior', () => {
 
       expect(readBattleStackNames()).toEqual(['Angels 10', 'Swordsmen 18'])
     })
+
+    describe("the hero's artifacts", () => {
+      test('given the hero is beaten when Sir Mullich beats the blue hero then he captures the artifacts the hero wore and carried', async () => {
+        const { user } = await loseToBlueHero(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)], artifacts: ['SKULL', 'CAPE', 'HELM'] }),
+            enemy: aBlueHero([stack('ANGEL', 5)])
+          })
+        )
+
+        await beatBlueHeroWithMullich(user)
+
+        // The hero wore the Skull Helmet and the Cape and carried the Helm; so does the blue hero.
+        expect(readMessagePictures()).toEqual([
+          'Skull Helmet',
+          'Cape of Conjuring',
+          'Helm of Heavenly Enlightenment'
+        ])
+      })
+
+      test("given the blue hero wears an artifact of that kind then the hero's goes to its backpack", async () => {
+        const { user } = await loseToBlueHero(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)], artifacts: ['SKULL'] }),
+            enemy: aBlueHero([stack('ANGEL', 5)]).withArtifacts(['HELM'])
+          })
+        )
+
+        await beatBlueHeroWithMullich(user)
+
+        expect(readMessagePictures()).toEqual(['Helm of Heavenly Enlightenment', 'Skull Helmet'])
+      })
+
+      test('given the captured artifacts complete a combination then the blue hero wears it assembled', async () => {
+        const { user } = await loseToBlueHero(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)], artifacts: ['HELM'] }),
+            enemy: aBlueHero([stack('ANGEL', 5)]).withArtifacts(['SWORD'])
+          })
+        )
+
+        await beatBlueHeroWithMullich(user)
+
+        expect(readMessagePictures()).toEqual(['Angelic Alliance'])
+      })
+
+      test('given the hero retreated when Sir Mullich beats the blue hero then none of the hero’s artifacts are captured', async () => {
+        const { user } = await startBattle(
+          aRematch({
+            hero: aLoneAngel().withArtifacts(['CAPE']),
+            enemy: aBlueHeroWithSwordsmen()
+          })
+        )
+        await retreatAfterSwordsmenLoseTwo(user)
+
+        await beatBlueHeroWithMullich(user)
+
+        expectInteractionModalClosed()
+      })
+
+      test('given the hero is beaten then no captured message shows', async () => {
+        await loseToBlueHero(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)], artifacts: ['CAPE'] }),
+            enemy: aBlueHero([stack('ANGEL', 5)])
+          })
+        )
+
+        expectInteractionModalClosed()
+      })
+    })
+
+    describe("the blue hero's experience", () => {
+      test('given the hero is beaten then the blue hero gains a level from its creatures and 500 more, and its Attack rises', async () => {
+        // One Pikeman of 10 hit points and 500 for the beaten hero take 490 to 1000, level 2. The
+        // lowest roll gives a Knight Attack.
+        const { user } = await loseToBlueHero(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)] }),
+            mullich: aMullichWithRoyalGriffins(),
+            enemy: aBlueHeroOfSwordsmen(490)
+          })
+        )
+
+        await swordsmenStrikeBackAtMullich(user)
+
+        expect(readCombatMessages()[1]).toBe(SWORDSMEN_STRIKE_BACK_WITH_ATTACK_1)
+      })
+
+      test('given the blue hero gains a level then the player sees no level-up popup', async () => {
+        await loseToBlueHero(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 1)] }),
+            mullich: aMullichWithRoyalGriffins(),
+            enemy: aBlueHeroOfSwordsmen(490)
+          })
+        )
+
+        expect(queryLevelUpPopup(ENEMY_HERO)).toBeNull()
+      })
+
+      test('given the hero retreated after losing creatures then the blue hero gains their experience', async () => {
+        // 13 Pikemen of 10 hit points take 900 past 1000.
+        const { user } = await startBattle(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 20)] }),
+            mullich: aMullichWithRoyalGriffins(),
+            enemy: aBlueHeroOfSwordsmen(900)
+          })
+        )
+        await retreatAfterSwordsmenKill13(user)
+
+        await swordsmenStrikeBackAtMullich(user)
+
+        expect(readCombatMessages()[1]).toBe(SWORDSMEN_STRIKE_BACK_WITH_ATTACK_1)
+      })
+
+      test('given the hero retreated then the blue hero gets no 500 for it', async () => {
+        const { user } = await startBattle(
+          aRematch({
+            hero: aCaster({ army: [stack('PIKEMAN', 20)] }),
+            mullich: aMullichWithRoyalGriffins(),
+            enemy: aBlueHeroOfSwordsmen(600)
+          })
+        )
+        await retreat(user)
+        await closeBattleResults(user)
+
+        await swordsmenStrikeBackAtMullich(user)
+
+        expect(readCombatMessages()[1]).toBe(SWORDSMEN_STRIKE_BACK_WITH_ATTACK_0)
+      })
+    })
   })
 
   describe('after a reload', () => {
@@ -523,6 +726,35 @@ describe('attacking an enemy hero behavior', () => {
       await clickHeroInHeroList(reloadedUser, HERO)
 
       expect(readHeroScreenArtifacts().Cape).toBe('Cape of Conjuring')
+    })
+
+    test("given the hero was beaten when the page reloads then the blue hero still has the hero's artifacts", async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = () =>
+        aRematch({
+          hero: aCaster({ army: [stack('PIKEMAN', 1)], artifacts: ['CAPE'] }),
+          enemy: aBlueHero([stack('ANGEL', 5)])
+        })
+      await loseToBlueHero(scenario(), { eventLog })
+
+      const { user } = await reloadBattle(scenario(), { eventLog })
+      await beatBlueHeroWithMullich(user)
+
+      expect(readMessagePictures()).toEqual(['Cape of Conjuring'])
+    })
+
+    test('given the blue hero gained a level when the page reloads then no level-up popup shows', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = () =>
+        aRematch({
+          hero: aCaster({ army: [stack('PIKEMAN', 1)] }),
+          enemy: aBlueHeroOfSwordsmen(490)
+        })
+      await loseToBlueHero(scenario(), { eventLog })
+
+      await reloadBattle(scenario(), { eventLog })
+
+      expectInteractionModalClosed()
     })
 
     test('given the blue hero was beaten when the page reloads then the captured message does not show again', async () => {

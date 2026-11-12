@@ -1,6 +1,11 @@
 import { giveAllArtifacts } from '../../game/heroes/artifact-exchange.js'
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
-import { getArmyAfterBattle, heroBattleSide } from '../../game/heroes/battle.js'
+import {
+  getArmyAfterBattle,
+  getExperienceForKills,
+  heroBattleSide
+} from '../../game/heroes/battle.js'
+import { BATTLE_OUTCOME_LOST } from '../../game/heroes/battle-results.js'
 import {
   BATTLE_DEFENDER_ENEMY_HERO,
   DEFEATED_HERO_EXPERIENCE
@@ -16,6 +21,7 @@ import {
 } from '../../game/heroes/town-garrison.js'
 import { heroOwner } from '../../game/state/queries.js'
 import {
+  APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_ARTIFACT_GUARDS_CHANGED,
   APP_FACT_ARTIFACT_PICKED_UP,
   APP_FACT_DWELLING_FLAGGED,
@@ -141,6 +147,35 @@ function captureArtifacts({ emit, state, heroId, definitions, beatenHeroId }) {
   }
 }
 
+// The enemy hero earns the health of the hero's creatures it killed, and only a beaten hero, not
+// one who retreated, gives it 500 more and its artifacts. With no stacks left it earns nothing.
+function rewardEnemyHero({
+  emit,
+  state,
+  heroId,
+  battle,
+  definitions,
+  outcome,
+  defender,
+  survivors
+}) {
+  if (survivors.length === 0) {
+    return
+  }
+  const isBeaten = outcome === BATTLE_OUTCOME_LOST
+  const experience =
+    getExperienceForKills(battle, 'defender') + (isBeaten ? DEFEATED_HERO_EXPERIENCE : 0)
+  if (isBeaten) {
+    captureArtifacts({ emit, state, heroId: defender.heroId, definitions, beatenHeroId: heroId })
+  }
+  if (experience > 0) {
+    emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, {
+      heroId: defender.heroId,
+      amount: experience
+    })
+  }
+}
+
 // Surrender to a hero comes later, so it stays disabled. The beaten hero leaves the map.
 const enemyHero = {
   side: ({ started, state, definitions }) =>
@@ -154,12 +189,15 @@ const enemyHero = {
     captureArtifacts({ emit, state, heroId, definitions, beatenHeroId: defender.heroId })
     emit(APP_FACT_ENTITY_REMOVED, { entityId: defender.heroId })
   },
-  lose({ emit, state, battle, started: { defender } }) {
+  lose(fought) {
+    const { emit, state, battle, started } = fought
+    const { defender } = started
     const army = heroById(state.get(), defender.heroId)?.army ?? []
     emit(APP_FACT_HERO_ARMY_CHANGED, {
       heroId: defender.heroId,
       army: getArmyAfterBattle(battle, 'defender', army)
     })
+    rewardEnemyHero({ ...fought, defender })
   }
 }
 
