@@ -37,6 +37,9 @@ export const townBehavior = Object.freeze({
     requiresSteppingIntoTarget: true,
     definitionsKey: 'towns',
     defaultName: 'Town',
+    // A hero attacking a town's garrison fights it from the tile next to the gate.
+    stopsBeforeTarget: ({ entity, state, heroId }) =>
+      Boolean(state && isDefendedAgainst(state, entity.id, heroOwner(state, heroId))),
     resolveArrivalOutcome({ entity, tile, state, heroId }) {
       const defended = state && isDefendedAgainst(state, entity.id, heroOwner(state, heroId))
       return {

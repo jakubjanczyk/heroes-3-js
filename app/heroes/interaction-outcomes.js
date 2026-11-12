@@ -203,7 +203,11 @@ export const heroesOutcomeEffects = Object.freeze({
         type: APP_FACT_BATTLE_STARTED,
         detail: {
           ...toEntityFactDetail(outcome),
-          defender: { kind: BATTLE_DEFENDER_ENEMY_HERO, heroId: outcome.entityId }
+          defender: {
+            kind: BATTLE_DEFENDER_ENEMY_HERO,
+            heroId: outcome.entityId,
+            ...(outcome.townId ? { townId: outcome.townId } : {})
+          }
         }
       }
     ]

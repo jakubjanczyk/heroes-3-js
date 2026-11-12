@@ -139,7 +139,8 @@ export const registerMovementModule = defineModule(
               occupancy: heroRoutes.occupancy,
               entityBehaviors,
               targetTile,
-              movingEntityId: heroRoutes.getHero()?.id
+              movingEntityId: heroRoutes.getHero()?.id,
+              arrivalContext: heroRoutes.arrivalContext()
             })
 
             isMoveCommandInProgress = true
