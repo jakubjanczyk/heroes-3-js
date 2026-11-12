@@ -57,6 +57,7 @@ export const APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED = 'command.battle.spellCast
 export const APP_COMMAND_HERO_ADVENTURE_SPELL_CAST_REQUESTED =
   'command.hero.adventureSpellCast.requested'
 export const APP_COMMAND_BATTLE_RETREAT_REQUESTED = 'command.battle.retreat.requested'
+export const APP_COMMAND_BATTLE_SURRENDER_REQUESTED = 'command.battle.surrender.requested'
 export const APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED = 'command.battle.resultsClose.requested'
 export const APP_COMMAND_TOWN_LEAVE_REQUESTED = 'command.town.leave.requested'
 export const APP_COMMAND_TOWN_OPEN_REQUESTED = 'command.town.open.requested'

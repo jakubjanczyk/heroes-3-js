@@ -42,6 +42,7 @@ import { planComputerTurn } from '../../../game/heroes/battle-ai.js'
 import {
   BATTLE_OUTCOME_LOST,
   BATTLE_OUTCOME_RETREATED,
+  BATTLE_OUTCOME_SURRENDERED,
   BATTLE_OUTCOME_WON,
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
@@ -69,7 +70,9 @@ import {
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { isResistible, rollResisted } from '../../../game/heroes/spell-resistance.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { firstHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
+import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
+import { surrenderPrice } from '../../../game/heroes/surrender.js'
+import { firstHeroIdOf, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
@@ -80,6 +83,7 @@ import {
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
+  APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_ENDED,
@@ -95,6 +99,8 @@ import {
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_RESOURCES_GAINED,
+  APP_FACT_RESOURCES_SPENT,
   APP_FACT_WORLD_READY,
   APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
   APP_UI_BATTLE_UPDATED,
@@ -193,6 +199,18 @@ export const registerBattleModule = defineModule(
       return battleDefenderOf(started).hero?.({ started, state }) ?? null
     }
 
+    // Only an enemy hero takes a surrender, for gold the player may not have.
+    function surrenderOffer() {
+      const enemy = defenderHeroOf()
+      if (!enemy || battleDefenderOf(started).surrenderRefusal) {
+        return null
+      }
+      const current = state.get()
+      const price = surrenderPrice({ battle, hero: heroById(current, heroId), definitions })
+      const gold = resourcesOf(current, heroOwner(current, heroId)).GOLD_PILE ?? 0
+      return { heroName: enemy.name, owner: enemy.owner, price, canAfford: gold >= price }
+    }
+
     function experienceForWin() {
       const bonus = battleDefenderOf(started).bonusExperience?.({ state, started }) ?? 0
       return getExperienceForKills(battle, 'attacker') + bonus
@@ -248,7 +266,6 @@ export const registerBattleModule = defineModule(
       }
 
       const activeStack = outcome ? null : getActiveStack(battle)
-      const canAct = isPlayersTurn()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
         heroId,
@@ -261,16 +278,24 @@ export const registerBattleModule = defineModule(
         shotTargets: activeStack ? getShotTargets(battle, activeStack) : [],
         messages: battle.messages,
         effects: takeNewEffects(),
-        canWait: canAct && !hasWaited(battle, activeStack.id),
-        canDefend: canAct,
-        canRetreat: canAct,
-        surrenderRefusal: battleDefenderOf(started).surrenderRefusal,
-        canCastSpell:
-          canAct && !battle.heroCastThisRound && hasSpellBook(heroById(state.get(), heroId)),
+        ...playerActions(activeStack),
         results: outcome ? describeResults() : null,
         autoCombat,
         stepDelayMs
       })
+    }
+
+    function playerActions(activeStack) {
+      const canAct = isPlayersTurn()
+      return {
+        canWait: canAct && !hasWaited(battle, activeStack.id),
+        canDefend: canAct,
+        canRetreat: canAct,
+        surrenderRefusal: battleDefenderOf(started).surrenderRefusal,
+        surrender: canAct ? surrenderOffer() : null,
+        canCastSpell:
+          canAct && !battle.heroCastThisRound && hasSpellBook(heroById(state.get(), heroId))
+      }
     }
 
     function winBattle() {
@@ -897,6 +922,23 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
+          handler: () => {
+            const offer = isPlayersTurn() ? surrenderOffer() : null
+            if (!offer?.canAfford) {
+              return
+            }
+
+            const paid = { GOLD_PILE: offer.price }
+            emit(APP_FACT_RESOURCES_SPENT, {
+              player: heroOwner(state.get(), heroId),
+              resources: paid
+            })
+            emit(APP_FACT_RESOURCES_GAINED, { player: offer.owner, resources: paid })
+            emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_SURRENDERED })
+          }
+        },
+        {
           type: APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
           handler: () => {
             if (outcome) {
@@ -947,6 +989,7 @@ export const registerBattleModule = defineModule(
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
+      APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED
     ],
     produces: [
@@ -962,6 +1005,8 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_SPELL_CAST,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
+      APP_FACT_RESOURCES_SPENT,
+      APP_FACT_RESOURCES_GAINED,
       ...battleDefenderEvents,
       APP_FACT_HERO_ARMY_CHANGED,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
