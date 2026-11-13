@@ -371,6 +371,7 @@ export const registerHeroScreenViewModule = defineModule(
               showArtifacts(hero)
               showPrimarySkills(hero)
               showSpellPoints(hero)
+              showSpellBook(hero)
             }
           }
         },

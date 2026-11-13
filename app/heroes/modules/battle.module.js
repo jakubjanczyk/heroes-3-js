@@ -60,6 +60,7 @@ import {
   castsOnAllStacks,
   cloneRounds,
   hasSpellBook,
+  knownSpells,
   sacrificeHealing,
   spellCost,
   spellDamage,
@@ -615,7 +616,7 @@ export const registerBattleModule = defineModule(
       return (
         !battle.heroCastThisRound &&
         hasSpellBook(hero) &&
-        hero.spells.includes(spellId) &&
+        knownSpells(hero, definitions).includes(spellId) &&
         canCastInBattle(spell) &&
         spellCost(hero, spell) <= getHeroSpellPoints({ entity: hero, definitions }).value
       )

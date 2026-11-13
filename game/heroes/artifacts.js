@@ -188,6 +188,15 @@ export function artifactTownsCountingAsOne(artifacts, definitions) {
   )
 }
 
+export const artifactSpells = (artifacts, definitions) => [
+  ...new Set(
+    countedDefinitions(artifacts, definitions).flatMap((artifact) => artifact.spells ?? [])
+  )
+]
+
+export const artifactGrantsSpellBook = (artifacts, definitions) =>
+  countedDefinitions(artifacts, definitions).some((artifact) => artifact.grantsSpellBook)
+
 export const artifactLandMovementPoints = (artifacts, definitions) =>
   artifactBonusTotal(artifacts, 'landMovementPoints', definitions)
 
