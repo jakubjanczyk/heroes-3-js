@@ -1,4 +1,9 @@
-import { getHeroArmy, getHeroArmyBySize, getTownGarrison } from '../../../game/heroes/hero-army.js'
+import {
+  getHeroArmy,
+  getHeroArmyBySize,
+  getTownGarrison,
+  getTownGarrisonBySize
+} from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
@@ -87,18 +92,23 @@ export const registerInfoPopupModule = defineModule(
       popup.appendChild(box)
     }
 
-    // As in Heroes 3, the player's own town gets the same box as the info box.
+    function describeTown(entity) {
+      const { hall, fort, goldIncome } = describeTownBox({
+        catalogue: townBuildingsCatalogue(definitions, entity.type),
+        built: builtIn(state.get(), entity.id)
+      })
+      const name = getEntityName({ entity, definitions })
+      if (isViewingPlayersTown(state.get(), entity.id)) {
+        return { name, hall, fort, goldIncome, garrison: getTownGarrison({ entity, definitions }) }
+      }
+      return { name, fort, garrison: getTownGarrisonBySize({ entity, definitions }) }
+    }
+
+    // The player's own town gets the same box as the info box; any other town shows less.
     function fillTownBox(entity) {
       popup.classList.add('info-popup--town')
       const box = document.createElement('div')
-      renderTownBox(box, document, {
-        name: getEntityName({ entity, definitions }),
-        ...describeTownBox({
-          catalogue: townBuildingsCatalogue(definitions, entity.type),
-          built: builtIn(state.get(), entity.id)
-        }),
-        garrison: getTownGarrison({ entity, definitions })
-      })
+      renderTownBox(box, document, describeTown(entity))
       popup.appendChild(box)
     }
 
@@ -146,7 +156,7 @@ export const registerInfoPopupModule = defineModule(
         fillLine(UNCHARTED_TERRITORY)
       } else if (entity?.kind === 'HERO') {
         fillHeroBox(entity)
-      } else if (entity?.kind === 'TOWN' && isViewingPlayersTown(state.get(), entity.id)) {
+      } else if (entity?.kind === 'TOWN') {
         fillTownBox(entity)
       } else {
         fillLines(entity, tile)
