@@ -34,7 +34,7 @@ The hourglass in the info box during another player's turn moved to the AI (8.3)
 
 What a player learns about the others:
 
-15. **8.1.15 The town box for towns that aren't yours.** No hall or income, and army sizes as words.
+15. **8.1.15 The town box for towns that aren't yours.** Right-clicking another player's town, or a neutral one, shows the town box: its name, its fort and its garrison with each stack's size as a word; no hall and no daily income.
 16. **8.1.16 Visions on enemy heroes** (Advanced) **and towns** (Expert).
 17. **8.1.17 The Thieves' Guild.**
 
@@ -132,6 +132,13 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - Losing, retreating or surrendering: as against any enemy hero (8.1.9, 8.1.10). The enemy hero keeps what is left of its own army, the garrison what is left of its stacks, and the town stays its owner's.
   - The defending hero can't surrender or retreat (the wiki's Combat page), which only matters once the AI or the player defends (8.3).
   - Later, with garrison heroes: a town can hold two heroes, one in the garrison and one visiting. The attacker then fights two battles, the visiting hero first, outside the walls, then the garrison hero with the garrison (the game manual, the engine).
+- **The town box for towns that aren't yours** (checked for 8.1.15 against the wiki's Town, Halls and Fortifications pages, its Visions page, and an open-source engine's town info and town tooltip):
+  - Right-clicking a town of another player, or a neutral town, shows the town box the player's own towns get, with less in it: the town's name, its picture and its fort icon (Fort, Citadel, Castle or no fort), and the seven garrison slots. The wiki: the fortification level "always can be checked by an icon in the rightclick menu", while "the hall level is visible just for allies".
+  - No hall icon and no daily income: the engine draws both only for a town whose details the player may see (their own, an ally's, or through Visions), and leaves their places empty otherwise.
+  - The garrison shows each creature with its size as a word (Few, Several, Pack, …) in place of the count, as in an enemy hero's popup (8.1.3). The engine describes the army without its counts; the wiki's Visions page gives the garrison's "composition and quantity" only with Expert Visions (8.1.16).
+  - No owner line: the box names no owner, and the town's flag on the map says whose it is. Our popups for mines and dwellings keep their "(Blue)" line.
+  - Left out, as for the player's own towns: the "built this turn" picture, the resource silo's resource and the garrisoned hero's icon (no garrison heroes yet).
+  - A hero standing on another player's town's gate is what the popup shows on that tile, as before (8.1.11).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 - **Turns** (checked for 8.1.12 against an open-source engine's new-turn processing): the players take their turns one after another in colour order, each day starting with red. The new day comes once the last player ends their turn, and everything that comes with it happens once for every player at the same time: income, every hero's movement points and spell points, and a new week's growth. Only scripted events (none yet) run at the start of each player's own turn. The weekly tavern refresh comes when the day that ends the week is over, as now.
