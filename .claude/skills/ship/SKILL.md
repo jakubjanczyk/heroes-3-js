@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Use when a feature or fix is implemented and its tests pass, to finish it - full checks, roadmap and note, push, screenshots, PR and preview link - and later when the user says to merge it.
+description: Use when a feature or fix is implemented and its tests pass, to finish it - full checks, roadmap and note, push, screenshots and recording, PR and preview link - and later when the user says to merge it.
 ---
 
 # Ship
@@ -14,9 +14,11 @@ description: Use when a feature or fix is implemented and its tests pass, to fin
 
 - Commit as `AGENTS.md` says (author, `<area>: <imperative summary>`), then push the working branch.
 
-## 3. Screenshots
+## 3. Screenshots and recording
 
 Skip this step only when nothing the player sees changed.
+
+Also record the run (`--video`) when the change _moves_: something happens in answer to the player — a walk, an animation, a battle action, a dialog that opens, a pickup or a fight, a flow over several clicks. A static change (a new colour, a new icon or label, a layout fix) gets screenshots only. When unsure, record: it costs one flag.
 
 1. Write a steps file in the scratchpad (not in the repo) for `scripts/screenshot.mjs`. It starts the app, runs the steps once per viewport (`desktop` and `phone`, a landscape phone with touch) and saves the shots to `--out`:
 
@@ -37,7 +39,9 @@ Skip this step only when nothing the player sees changed.
    }
    ```
 
-   `node scripts/screenshot.mjs /path/to/steps.mjs --out /tmp/shots [--viewports desktop,phone]`
+   `node scripts/screenshot.mjs /path/to/steps.mjs --out /tmp/shots [--viewports desktop,phone] [--video]`
+
+   - `--video` saves `<viewport>.mp4` per viewport next to the shots, starting once the map shows. Each `shot()` holds the page still for a second in the recording, so call `shot` after every outcome the viewer should catch; between outcomes, play at a player's pace (`page.waitForTimeout(500)` after a click whose answer is an animation) rather than rushing through.
 
    - The demo map's first hero starts walled in by objects. Move the hero next to what you show, as above, rather than walking across the map. `node scripts/demo-map.mjs [x,y]` prints which tiles around it are free, and the scenario function's second argument has `freeTileNextTo(tile)`.
    - Locate things by role and name, scoped to the dialog (`dialog().getByRole(...)`), since the town and other screens have several buttons with the same name (the map and the battle both have a Cast spell button).
@@ -61,8 +65,8 @@ Skip this step only when nothing the player sees changed.
 
      `castSpell` turns the book's pages until the spell shows. `clickHex(row, column)` counts like the behavior tests (row 1 at the top, column 1 on the attacker's side) and clicks hexes that are out of reach too; `hex`, `stackHex(name)` and `battle()` give the locators.
    - When the steps fail, the script saves `<viewport>-failed.png` showing the page at that moment.
-2. Read every shot before sending it, and check it shows what the caption says.
-3. Send them with a caption each. Always include the phone shots of a new dialog or screen: the user tries previews on a phone.
+2. Read every shot before sending it, and check it shows what the caption says. For a recording, check a few frames the same way: `ffmpeg -v error -i desktop.mp4 -vf "fps=1,scale=640:-1,tile=4x2" -frames:v 1 frames.png`, then read `frames.png`.
+3. Send them with a caption each. Always include the phone shots of a new dialog or screen: the user tries previews on a phone. Send the recordings in the same message as the shots, captioned with what happens in them (the hero walks onto the chest, the dialog offers gold or experience, the gold goes up).
 
 ## 4. Open the PR
 
