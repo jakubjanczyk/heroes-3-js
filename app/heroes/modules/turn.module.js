@@ -1,11 +1,17 @@
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
-import { decideEndTurn, decideSpendMovementPoints } from '../../../game/heroes/turn-system.js'
+import {
+  decideEndTurn,
+  decideNewDay,
+  decideSpendMovementPoints
+} from '../../../game/heroes/turn-system.js'
+import { activePlayer, isDayOver, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_MOVE_STARTED,
   APP_FACT_MOVEMENT_POINTS_CHANGED,
+  APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_NOTICE_OPENED
@@ -23,6 +29,29 @@ export const registerTurnModule = defineModule(
     let definitions = {}
     let moveStartedAt = 0
     let suppressEndTurnUntil = 0
+
+    function isPlayersTurn() {
+      return activePlayer(state.get()) === viewingPlayer(state.get())
+    }
+
+    function startNewDay() {
+      const newDay = decideNewDay(state.get(), definitions)
+      emitAll([
+        { type: APP_FACT_TURN_ENDED, detail: { turnNumber: newDay.turnNumber } },
+        ...newDay.movementPoints.map((detail) => ({
+          type: APP_FACT_MOVEMENT_POINTS_CHANGED,
+          detail
+        }))
+      ])
+
+      const date = calendarDateOfTurn(newDay.turnNumber)
+      if (date.day === 1) {
+        emit(APP_UI_NOTICE_OPENED, {
+          title: 'New week',
+          message: `A new week begins. Week ${date.week}`
+        })
+      }
+    }
 
     return {
       subscriptions: [
@@ -67,25 +96,19 @@ export const registerTurnModule = defineModule(
         {
           type: APP_COMMAND_END_TURN_REQUESTED,
           handler: () => {
-            if (!state.get() || isMoving || now() < suppressEndTurnUntil) {
+            if (!state.get() || isMoving || now() < suppressEndTurnUntil || !isPlayersTurn()) {
               return
             }
 
-            const outcome = decideEndTurn(state.get(), definitions)
-            emitAll([
-              { type: APP_FACT_TURN_ENDED, detail: { turnNumber: outcome.turnNumber } },
-              ...outcome.movementPoints.map((detail) => ({
-                type: APP_FACT_MOVEMENT_POINTS_CHANGED,
-                detail
+            const { playerTurnsEnded } = decideEndTurn(state.get())
+            emitAll(
+              playerTurnsEnded.map((player) => ({
+                type: APP_FACT_PLAYER_TURN_ENDED,
+                detail: { player }
               }))
-            ])
-
-            const date = calendarDateOfTurn(outcome.turnNumber)
-            if (date.day === 1) {
-              emit(APP_UI_NOTICE_OPENED, {
-                title: 'New week',
-                message: `A new week begins. Week ${date.week}`
-              })
+            )
+            if (isDayOver(state.get())) {
+              startNewDay()
             }
           }
         }
@@ -102,6 +125,11 @@ export const registerTurnModule = defineModule(
       APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
       APP_COMMAND_END_TURN_REQUESTED
     ],
-    produces: [APP_FACT_MOVEMENT_POINTS_CHANGED, APP_FACT_TURN_ENDED, APP_UI_NOTICE_OPENED]
+    produces: [
+      APP_FACT_MOVEMENT_POINTS_CHANGED,
+      APP_FACT_PLAYER_TURN_ENDED,
+      APP_FACT_TURN_ENDED,
+      APP_UI_NOTICE_OPENED
+    ]
   }
 )

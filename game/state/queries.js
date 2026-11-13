@@ -2,9 +2,14 @@ export function activePlayer(state) {
   return state.players.activePlayer
 }
 
-// Whose screen this is. While only one player plays, that is the player whose turn it is.
+// Whose screen this is, whoever's turn it is: the human player until hot-seat.
 export function viewingPlayer(state) {
-  return activePlayer(state)
+  return state.players.humanPlayer
+}
+
+// Every player has ended their turn and the new day hasn't started yet.
+export function isDayOver(state) {
+  return activePlayer(state) === null
 }
 
 export function playerColors(state) {

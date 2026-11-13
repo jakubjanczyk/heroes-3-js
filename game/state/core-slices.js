@@ -50,7 +50,7 @@ export const PLAYER_COLORS = Object.freeze([
 ])
 
 // The players are the colours that own something in the scenario, and red, the human player.
-function playerColorsOf(scenario) {
+export function playerColorsOf(scenario) {
   const owners = new Set([DEFAULT_PLAYER, ...entitiesOf(scenario).map((entity) => entity.owner)])
   return PLAYER_COLORS.filter((color) => owners.has(color))
 }
@@ -59,6 +59,7 @@ const playersSlice = {
   key: 'players',
   initial: ({ scenario }) => ({
     colors: playerColorsOf(scenario),
+    humanPlayer: DEFAULT_PLAYER,
     activePlayer: DEFAULT_PLAYER,
     selectedHeroIds: {}
   }),
@@ -67,7 +68,15 @@ const playersSlice = {
       ...players,
       selectedHeroIds: { ...players.selectedHeroIds, [player]: heroId }
     }),
-    'fact.turn.ended': (players) => ({ ...players, selectedHeroIds: {} })
+    'fact.player.turn.ended': (players, { player }) => ({
+      ...players,
+      activePlayer: players.colors[players.colors.indexOf(player) + 1] ?? null
+    }),
+    'fact.turn.ended': (players) => ({
+      ...players,
+      activePlayer: players.colors[0],
+      selectedHeroIds: {}
+    })
   }
 }
 

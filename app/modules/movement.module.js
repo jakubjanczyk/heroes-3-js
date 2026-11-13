@@ -1,7 +1,7 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
-import { heroTile } from '../../game/state/queries.js'
+import { activePlayer, heroOwner, heroTile } from '../../game/state/queries.js'
 import { createHeroRoutes } from '../../game/systems/hero-routes.js'
 import {
   APP_COMMAND_HERO_TELEPORT_REQUESTED,
@@ -44,6 +44,11 @@ export const registerMovementModule = defineModule(
           queuedInteractions
         })
       }
+    }
+
+    function isHeroOwnersTurn() {
+      const current = state.get()
+      return heroOwner(current, heroRoutes.getHero()?.id) === activePlayer(current)
     }
 
     return {
@@ -130,7 +135,7 @@ export const registerMovementModule = defineModule(
         {
           type: APP_COMMAND_MOVE_REQUESTED,
           handler: (event) => {
-            if (!movement || isMoveCommandInProgress) {
+            if (!movement || isMoveCommandInProgress || !isHeroOwnersTurn()) {
               return
             }
 

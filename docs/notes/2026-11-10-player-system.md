@@ -28,9 +28,9 @@ Fighting for towns and heroes:
 
 Turns:
 
-12. **8.1.12 Taking turns.** After End Turn each other player takes a turn in colour order, then the new day starts. The turns are empty until the AI plays them (8.3).
-13. **8.1.13 Each player's day.** Each player's heroes get their movement points back, and each player gets their own income and starting resources.
-14. **8.1.14 The hourglass.** The info box shows an hourglass with the player's crest during another player's turn.
+12. **8.1.12 Taking turns and the new day.** After End Turn each other player takes a turn in colour order, then the new day starts for every player at once: every hero gets their movement points back, not only the player's. Computer players start with their own starting resources. The turns are empty until the AI plays them (8.3). (Planned as two parts, taking turns and each player's day, joined because neither shows anything without the AI.)
+
+The hourglass in the info box during another player's turn moved to the AI (8.3): an empty turn takes no time, so it would only flash.
 
 What a player learns about the others:
 
@@ -134,6 +134,9 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - Later, with garrison heroes: a town can hold two heroes, one in the garrison and one visiting. The attacker then fights two battles, the visiting hero first, outside the walls, then the garrison hero with the garrison (the game manual, the engine).
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
+- **Turns** (checked for 8.1.12 against an open-source engine's new-turn processing): the players take their turns one after another in colour order, each day starting with red. The new day comes once the last player ends their turn, and everything that comes with it happens once for every player at the same time: income, every hero's movement points and spell points, and a new week's growth. Only scripted events (none yet) run at the start of each player's own turn. The weekly tavern refresh comes when the day that ends the week is over, as now.
+- **A computer player's starting resources** on Normal: 7500 gold, 10 wood, 10 ore and 4 each of mercury, sulfur, crystal and gems (the engine's difficulty table, the second of five levels, as the human's 20000 gold, 20 wood and ore and 10 of each rare resource match ours). Checked for 8.1.12.
+
 ## Decisions
 
 - **The players are the colours that own something in the scenario**, in colour order. Red is always the human player until hot-seat (8.2). The scenario gets no separate players list until it needs one (faction or AI settings, 8.3 or 9.1).
@@ -142,7 +145,10 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **The hero walks up to an enemy hero before heroes can attack** (the player's choice): the swords show, the hero stops on the tile next to it and nothing happens there until 8.1.7. Meeting a hero only opens the exchange screen when both are the same player's. Flying passes over an enemy hero as over the player's own heroes, and no spell lands on its tile.
 - **The helmet cursor is only for the player's own heroes.** Over an enemy hero the hero can't reach it is the arrow, with a town selected too.
 - **An enemy hero's popup keeps the hero box's skill icons** with their values empty, so it has the same shape as the player's own (agreed for 8.1.3).
-- Other players' resources start empty. Starting resources and income for them come with each player's day (8.1.13).
+- Other players' resources start empty. Their starting resources come with 8.1.12; income already goes to every player.
+- **Starting resources as in the game** (agreed for 8.1.12): the human player gets the scenario's `startingResources` or the Normal amounts, computer players always the computer's Normal amounts. Difficulty levels change both later.
+- **The screen is always the human player's** (red until hot-seat, 8.2), whoever's turn it is. With the AI (8.3) the player watches the other players' heroes move wherever their fog of war doesn't hide them.
+- **The player's clicks on the map do nothing during another player's turn.** Built with 8.1.12 but untested, since the turns take no time yet; the tests come with the AI (8.3).
 
 ## Built
 
@@ -159,4 +165,5 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **8.1.10b**: a hero who retreats (from any battle) or surrenders waits in the player's taverns straight away, as they were: level, experience, skills, spell book and spells, and every artifact. After a retreat they bring one creature of their class's first starting stack, after a surrender the creatures they had left. They take the slot of the hero least worth keeping (a one-creature stand-in, then a week-start hero, then a retreated hero, then a surrendered one), a tie settled by a roll saved with the fact `fact.hero.wentToTavern`; before any tavern was opened that week they take the left slot and the first tavern opened fills the other with a hero of the week. The tavern describes them with their level and artifact count, and their box shows their own skills and army. Hired again the same day they keep the movement points they had left; later, full. Hiring brings back the same hero (`fact.hero.hired` with their id). A new week sends them back to the pool.
 - **8.1.10c**: a hero who left the map, beaten, retreated or surrendered, is offered again by the tavern's ordinary roll (at a week's start or in a hired hero's place) as the same hero: level, experience, skills, spell book and spells, the one-per-hero objects they visited (a Mercenary Camp won't train them again), and their artifacts, none when an enemy hero took them, all of them after losing to monsters or a garrison. They bring the army rolled for the slot and come with full movement and spell points (saved in `fact.hero.hired`). The tavern's roll marks the pool's entry with the hero's id, and hiring brings that hero back. An enemy hero the player beat can be hired the same way, without the artifacts the player took.
 - **8.1.11**: a blue hero standing in its town defends it. Walking onto the town stops the hero next to the gate and starts the battle against the blue hero, the garrison's stacks beside it in the hero's free slots. Winning beats the hero (8.1.7, 8.1.8), empties the garrison and takes the town; the experience is the hit points killed, 500 for the hero and 500 more for a town with a Fort. Losing or retreating leaves the hero and the garrison each what is left of their own stacks. Beating a garrison (8.1.6) now also stops the hero next to the gate, and neither opens the town screen. The demo map has Edric, a blue hero, in Kirkwall.
+- **8.1.12**: End Turn ends the player's turn (`fact.player.turn.ended`), then each computer player's turn in colour order, empty until the AI, and then the new day (`fact.turn.ended`, as before, so older saves load as they were). The new day gives every player's heroes their movement points back, not only the player's; income, spell points and growth already went to every player. Computer players start with the computer's Normal resources, the player with the scenario's. The screen is always the human player's, and a move or End Turn does nothing while it isn't their turn (untested until the AI, 8.3, makes a turn take time). Nothing new shows on screen.
 - Left for the next parts: the enemy hero's details through Visions (8.1.16), and a town of another player names no owner in its popup until the town box (8.1.15).

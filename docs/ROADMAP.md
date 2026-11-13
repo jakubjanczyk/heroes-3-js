@@ -160,7 +160,7 @@ The box at the bottom of the adventure panel shows more than the selected hero o
 - Clicking it goes through three views: the selected hero or town, then the kingdom overview, then the date, then back. The overview and the date go back to the selection by themselves after 3 seconds. A click on a unit in the hero's army or the town's garrison does not change the view: units there can be selected and rearranged as on the hero and town screens (no split), and right-clicking one opens its creature info window.
 - Kingdom overview: the number of the player's towns at each hall level (Village Hall, Town Hall, City Hall, Capitol icons with a count under each), then a row of the allies' flags and a row of the enemies'.
 - Date: "Day N" (the day of the week) with the new-day animation; on the first day of a new week "Week N" with that week's animation instead. It also shows by itself for 3 seconds at the start of every turn except the first day, with the new day, week or month sound.
-- During another player's turn: an hourglass with that player's crest (8.1).
+- During another player's turn: an hourglass with that player's crest (8.3).
 - Hovering it shows its help text in the status bar, and right-click shows a popup explaining the box (`zelp[292]`, `allTexts[109]`).
 
 Stages:
@@ -178,7 +178,7 @@ Stages:
 - [x] Status bar text on hover, and right-click popup: a "status window" popup in the middle of the map explaining the box (2.5, 2.1); see `docs/notes/2026-10-25-info-box-help.md`
 - [ ] Other pickups as they come: experience, primary skills, spells, artifacts, creatures (7.5-7.8)
 - [ ] A picked-up artifact shows in the info box, its picture and name, as a picked-up resource does (7.8.1 picks it up with no message)
-- [ ] The hourglass during another player's turn (8.1)
+- [ ] The hourglass during another player's turn (8.3)
 
 ### 2.5 Status Bar
 As in H3: a one-line status bar between the map and the resource bar. Text only, no icons, no amounts or income.
@@ -1079,7 +1079,7 @@ See `docs/notes/2026-10-30-combination-artifacts.md`.
 Making the game a competitive experience.
 
 ### 8.1 Player System
-In twenty parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
+In eighteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
 - [x] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
 - [x] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile; the swords show over one the hero can reach, and the hero walks up to it
 - [x] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
@@ -1094,9 +1094,7 @@ In twenty parts. See `docs/notes/2026-11-10-player-system.md`. The players are t
 - [x] 8.1.10b A retreated or surrendered hero waits in the tavern, with their artifacts, level and skills, and the army they had left after a surrender (one creature after a retreat)
 - [x] 8.1.10c A hero who left the map and is offered again later comes back as they left: level, skills and spells, and the artifacts they kept (none when an enemy hero beat them)
 - [x] 8.1.11 An enemy hero defends its town, with its garrison beside it; the winner stays outside the town, as after beating a garrison
-- [ ] 8.1.12 Taking turns: each player in colour order, then the new day (empty turns until the AI, 8.3)
-- [ ] 8.1.13 Each player's day: movement points, income and starting resources
-- [ ] 8.1.14 The hourglass with the player's crest in the info box during another player's turn
+- [x] 8.1.12 Taking turns: each player in colour order, then the new day for every player at once: every hero's movement points back, and computer players' starting resources (empty turns until the AI, 8.3)
 - [ ] 8.1.15 The town box for towns that aren't yours
 - [ ] 8.1.16 Visions on enemy heroes (Advanced) and towns (Expert)
 - [ ] 8.1.17 The Thieves' Guild
@@ -1112,7 +1110,9 @@ In twenty parts. See `docs/notes/2026-11-10-player-system.md`. The players are t
 - [ ] AI controls non-human players
 - [ ] AI runs during its turn (after human player ends turn)
 - [ ] "AI is thinking..." indicator while AI processes
-- [ ] AI hero movement visible on map (fast-forwarded animation)
+- [ ] AI hero movement visible on map (fast-forwarded animation), where the player's fog of war doesn't hide it
+- [ ] The hourglass with the player's crest in the info box during another player's turn (moved from 8.1)
+- [ ] The player's clicks on the map do nothing during another player's turn: built with 8.1.12, tested here once the turn takes time
 - [ ] Basic AI loop: for each hero, decide action, execute, repeat
 
 ### 8.4 AI Decision Making
@@ -1336,7 +1336,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 
 ### Phase 6 - "Real Competition"
 42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild (in four parts: the guild's spells and screen, learning spells, Wisdom and magic schools on level-up, Scholar), casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
-43. Player system (8.1), in twenty parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns, each player's day, the hourglass, the town box, Visions, the Thieves' Guild
+43. Player system (8.1), in eighteen parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns and the new day, the town box, Visions, the Thieves' Guild
 44. AI basics (8.3)
 45. AI decision making (8.4)
 46. Victory conditions (8.5)

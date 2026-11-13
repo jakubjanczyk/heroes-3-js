@@ -1,7 +1,7 @@
-import { DEFAULT_PLAYER } from '../../state/core-slices.js'
+import { DEFAULT_PLAYER, playerColorsOf } from '../../state/core-slices.js'
 import { heroOwner, playerColors } from '../../state/queries.js'
 import { dailyIncomeOfMines } from '../mine-income.js'
-import { startingResourcesOf } from '../starting-resources.js'
+import { COMPUTER_STARTING_RESOURCES, startingResourcesOf } from '../starting-resources.js'
 import { sumIncomes } from '../town-income.js'
 import { mineIdsOf } from './map-objects.js'
 import { dailyIncomeOf, townIdsOf } from './towns.js'
@@ -48,9 +48,19 @@ function payIncome(kingdoms, _detail, { previousState, definitions }) {
 
 export const kingdomsSlice = {
   key: 'kingdoms',
-  initial: ({ scenario }) => ({
-    [DEFAULT_PLAYER]: { resources: { ...startingResourcesOf(scenario) } }
-  }),
+  initial: ({ scenario }) =>
+    Object.fromEntries(
+      playerColorsOf(scenario).map((player) => [
+        player,
+        {
+          resources: {
+            ...(player === DEFAULT_PLAYER
+              ? startingResourcesOf(scenario)
+              : COMPUTER_STARTING_RESOURCES)
+          }
+        }
+      ])
+    ),
   on: {
     'fact.resource.collected': (kingdoms, { heroId, entityType, amount }, { previousState }) =>
       changeResources(kingdoms, finderOf(previousState, heroId), { [entityType]: amount }),

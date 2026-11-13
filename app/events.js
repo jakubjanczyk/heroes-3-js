@@ -89,6 +89,8 @@ export const APP_FACT_MOVEMENT_POINTS_CHANGED = 'fact.hero.movementPoints.change
 export const APP_FACT_ENTITY_REMOVED = 'fact.entity.removed'
 export const APP_FACT_PREVIEW_TARGET_SELECTED = 'fact.preview.target.selected'
 export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared'
+// A player's turn is over; the new day is APP_FACT_TURN_ENDED, once every player's turn is.
+export const APP_FACT_PLAYER_TURN_ENDED = 'fact.player.turn.ended'
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended'
 export const APP_FACT_BATTLE_STARTED = 'fact.battle.started'
 // The battle is over and its results window is open; it ends when the player closes the window.
@@ -213,6 +215,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_PREVIEW_TARGET_SELECTED,
   APP_FACT_PREVIEW_CLEARED,
   APP_FACT_INTERACTIONS_QUEUED,
+  APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_TURN_ENDED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_FINISHED,
