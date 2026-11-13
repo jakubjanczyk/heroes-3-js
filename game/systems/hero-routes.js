@@ -13,10 +13,10 @@ import {
 } from '../state/queries.js'
 import { createMovementSystem } from './movement-system.js'
 
-// What the selected hero's routes depend on: where it stands, what is still on the map, where the
-// other heroes stand, which tiles monsters guard, and how far and how the hero moves today, read
-// from the game state.
-export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
+// What a hero's routes depend on: where it stands, what is still on the map, where the other
+// heroes stand, which tiles monsters guard, and how far and how the hero moves today, read from
+// the game state. The hero is the player's selected one unless `getHeroId` names another.
+export function createHeroRoutes({ entityBehaviors, movementRules, getState, getHeroId }) {
   let map = null
   let staticOccupancy = null
   let guards = []
@@ -38,8 +38,8 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     return removedIds
   }
 
-  function selectedHeroId() {
-    return selectedHeroIdOf(getState(), viewingPlayer(getState()))
+  function routedHeroId() {
+    return getHeroId ? getHeroId() : selectedHeroIdOf(getState(), viewingPlayer(getState()))
   }
 
   function objectAt(tile) {
@@ -57,7 +57,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
 
   // null once the hero is lost in battle.
   function getHero() {
-    const heroId = selectedHeroId()
+    const heroId = routedHeroId()
     return heroId && !currentRemovedIds().has(heroId)
       ? { id: heroId, tile: heroTile(getState(), heroId) }
       : null
@@ -65,16 +65,16 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
 
   function canLand(tile) {
     const occupant = occupancy.getAt(tile)
-    return map.isPassable(tile) && (occupant === null || occupant.id === selectedHeroId())
+    return map.isPassable(tile) && (occupant === null || occupant.id === routedHeroId())
   }
 
   function flight() {
-    const heroId = selectedHeroId()
+    const heroId = routedHeroId()
     return heroId ? movementRules.flightOf(getState(), heroId) : null
   }
 
   function movementPoints() {
-    return heroMovementPoints(getState(), selectedHeroId())
+    return heroMovementPoints(getState(), routedHeroId())
   }
 
   function getFlightPoints() {
@@ -93,7 +93,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     return movementRules.stepCost({ map, from, to, flight: null, canLand })
   }
 
-  // What each step of `path` the selected hero can still take today costs.
+  // What each step of `path` the hero can still take today costs.
   function chargeSteps(path, remainingMovementPoints, { flies = true } = {}) {
     return movementRules.chargeSteps({
       map,
@@ -108,7 +108,12 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     return chargeSteps(path, movementPoints()?.value ?? Number.POSITIVE_INFINITY)
   }
 
-  // On which day the selected hero gets to the end of `path` (see `countTravelDays`); a hero
+  // What the whole of `path` costs the hero, over as many days as it takes.
+  function routeCost(path) {
+    return chargeSteps(path, Number.POSITIVE_INFINITY).reduce((sum, charge) => sum + charge, 0)
+  }
+
+  // On which day the hero gets to the end of `path` (see `countTravelDays`); a hero
   // whose movement points the state doesn't hold has `fallbackMovementPoints` a day.
   function travelDays(path, fallbackMovementPoints) {
     const points = movementPoints()
@@ -122,7 +127,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
   }
 
   function arrivalContext() {
-    return { state: getState(), heroId: selectedHeroId() }
+    return { state: getState(), heroId: routedHeroId() }
   }
 
   return {
@@ -130,6 +135,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
     getHero,
     arrivalContext,
     chargeStepsToday,
+    routeCost,
     travelDays,
     onWorldReady(world) {
       map = world.map
@@ -154,7 +160,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState }) {
         getArrivalContext: arrivalContext,
         // A hero never walks through tiles its owner has not explored.
         isExplored: (tile) =>
-          isTileExplored(getState(), heroOwner(getState(), selectedHeroId()), tile),
+          isTileExplored(getState(), heroOwner(getState(), routedHeroId()), tile),
         ...options
       })
     }
