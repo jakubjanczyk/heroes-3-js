@@ -27,12 +27,18 @@ export function getHeroArmy({ entity, definitions }) {
   return describeSlots(entity?.army, definitions)
 }
 
+function withSizeWords(slots) {
+  return slots.map((stack) => stack && { ...stack, count: describeArmySize(stack.count) })
+}
+
 export function getHeroArmyBySize({ entity, definitions }) {
-  return getHeroArmy({ entity, definitions }).map(
-    (stack) => stack && { ...stack, count: describeArmySize(stack.count) }
-  )
+  return withSizeWords(getHeroArmy({ entity, definitions }))
 }
 
 export function getTownGarrison({ entity, definitions }) {
   return describeSlots(entity?.garrison, definitions)
+}
+
+export function getTownGarrisonBySize({ entity, definitions }) {
+  return withSizeWords(getTownGarrison({ entity, definitions }))
 }
