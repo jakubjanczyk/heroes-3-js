@@ -1135,3 +1135,198 @@
   font-size: var(--font-size-sm);
   text-align: center;
 }
+
+.tavern-window__mask {
+  inline-size: 70%;
+  fill: var(--trim-gold);
+  fill-rule: evenodd;
+  filter: drop-shadow(1px 1px 0 black);
+}
+
+.town-hall-backdrop:has(> .thieves-guild) {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/*
+ * The Thieves' Guild: the statistics down the left, the places across the top. On a narrow
+ * screen the places scroll sideways while the statistics stay put.
+ */
+.thieves-guild {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-self: center;
+  inline-size: min(48rem, calc(100% - 2rem));
+  max-block-size: 100%;
+  padding: var(--space-md);
+
+  &:focus {
+    outline: none;
+  }
+
+  & > .window-title {
+    align-self: center;
+  }
+}
+
+.thieves-guild__scroll {
+  flex: 0 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  border: 1px solid var(--trim-gold-dark);
+}
+
+.thieves-guild__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+
+  & th,
+  & td {
+    padding: var(--space-2xs);
+    border: 1px solid color-mix(in oklab, var(--trim-gold-dark) 60%, transparent);
+  }
+}
+
+.thieves-guild__place {
+  min-inline-size: 4.5rem;
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-md);
+}
+
+.thieves-guild__places > :first-child,
+.thieves-guild__statistic {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background: #2a1d12;
+}
+
+.thieves-guild__statistic {
+  color: var(--hud-text-gold);
+  font-weight: normal;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.thieves-guild__cell {
+  block-size: 1.75rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.thieves-guild__flags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+
+  & .owner-flag {
+    position: static;
+    width: 14px;
+    height: 10px;
+  }
+}
+
+.thieves-guild__player-box {
+  --box-colour: var(--neutral-grey);
+
+  position: relative;
+  background: color-mix(in oklab, var(--box-colour) 30%, #1c140d);
+
+  & > .owner-flag {
+    inset-block-start: 3px;
+    inset-inline-start: 3px;
+  }
+
+  &[data-player="red"] {
+    --box-colour: var(--player-red);
+  }
+  &[data-player="blue"] {
+    --box-colour: var(--player-blue);
+  }
+  &[data-player="tan"] {
+    --box-colour: var(--player-tan);
+  }
+  &[data-player="green"] {
+    --box-colour: var(--player-green);
+  }
+  &[data-player="orange"] {
+    --box-colour: var(--player-orange);
+  }
+  &[data-player="purple"] {
+    --box-colour: var(--player-purple);
+  }
+  &[data-player="teal"] {
+    --box-colour: var(--player-teal);
+  }
+  &[data-player="pink"] {
+    --box-colour: var(--player-pink);
+  }
+}
+
+/* The hero's initial until there are portraits, as in the tavern. */
+.thieves-guild__portrait {
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  aspect-ratio: 58 / 64;
+  margin-inline: auto;
+  border: 1px solid var(--trim-gold-dark);
+  background: radial-gradient(circle at 50% 35%, #6b5640, #1c140d 75%);
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-md);
+}
+
+.thieves-guild__hero-name {
+  display: block;
+  font-size: var(--font-size-xs);
+}
+
+.thieves-guild__skills {
+  display: grid;
+  margin: var(--space-2xs) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+}
+
+.thieves-guild__skill {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2xs);
+}
+
+.thieves-guild__monster {
+  inline-size: 2.25rem;
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+
+.thieves-guild__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.thieves-guild__status {
+  flex: 1;
+  min-block-size: calc(1lh + 2 * var(--space-2xs) + 2px);
+  margin: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+@media (max-height: 30rem) {
+  .thieves-guild {
+    gap: var(--space-2xs);
+    padding: var(--space-xs) var(--space-sm);
+
+    & > .window-title {
+      font-size: var(--font-size-md);
+    }
+  }
+}

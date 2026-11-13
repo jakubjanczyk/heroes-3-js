@@ -509,3 +509,119 @@ export function queryMageGuildMessage() {
 export async function closeMageGuildMessage(user) {
   await user.click(within(getMageGuildMessage()).getByRole('button', { name: 'OK' }))
 }
+
+export function queryThievesGuild() {
+  return screen.queryByRole('dialog', { name: "Thieves' Guild" })
+}
+
+function getThievesGuild() {
+  const guild = queryThievesGuild()
+  expect(guild).toBeTruthy()
+  return guild
+}
+
+export async function openThievesGuild(user) {
+  await user.click(within(getTavern()).getByRole('button', { name: "Thieves' Guild" }))
+  getThievesGuild()
+}
+
+export function getThievesGuildExit() {
+  return within(getThievesGuild()).getByRole('button', { name: 'Exit' })
+}
+
+export function readThievesGuildStatusBar() {
+  return within(getThievesGuild()).getByRole('status', { name: "Thieves' Guild status bar" })
+    .textContent
+}
+
+export function readThievesGuildPlaces() {
+  return within(getThievesGuild())
+    .getAllByRole('columnheader')
+    .slice(1)
+    .map((header) => header.textContent)
+}
+
+function getThievesGuildRow(rowName) {
+  return within(getThievesGuild()).getByRole('row', { name: rowName })
+}
+
+function cellsOf(rowName) {
+  return within(getThievesGuildRow(rowName)).queryAllByRole('cell')
+}
+
+// "Blue player flag" is blue.
+function playerOfFlag(flag) {
+  return flag.getAttribute('aria-label').replace(' player flag', '').toLowerCase()
+}
+
+function flagsIn(cell) {
+  return within(cell)
+    .queryAllByRole('img')
+    .filter((image) => image.getAttribute('aria-label').endsWith(' player flag'))
+}
+
+// The players standing in each place of a row, by place: { '1st': ['red'], '2nd': ['blue'] }.
+// Places nobody stands in are left out.
+export function readThievesGuildRanking(rowName) {
+  const places = readThievesGuildPlaces()
+  return Object.fromEntries(
+    cellsOf(rowName)
+      .map((cell, index) => [places[index], flagsIn(cell).map(playerOfFlag)])
+      .filter(([, players]) => players.length > 0)
+  )
+}
+
+// The rows with anything in them, in the window's order.
+export function readFilledThievesGuildRows() {
+  return within(getThievesGuild())
+    .getAllByRole('row')
+    .slice(1)
+    .filter((row) =>
+      within(row)
+        .queryAllByRole('cell')
+        .some((cell) => cell.textContent.trim() !== '' || within(cell).queryAllByRole('img').length)
+    )
+    .map((row) => within(row).getByRole('rowheader').textContent)
+}
+
+// A row of boxes, one per player in its colour, read by the player whose flag is in the box.
+function readPlayerBoxes(rowName, readBox) {
+  return Object.fromEntries(
+    cellsOf(rowName)
+      .filter((cell) => flagsIn(cell).length > 0)
+      .map((cell) => [playerOfFlag(flagsIn(cell)[0]), readBox(cell)])
+  )
+}
+
+export function readBestHeroes() {
+  return readPlayerBoxes('Best Hero', (cell) => {
+    const portrait = within(cell).queryByRole('img', { name: /^(?!.* player flag$)/ })
+    return portrait ? portrait.getAttribute('aria-label') : null
+  })
+}
+
+// Each best hero's primary skills: { red: { Attack: 2, Defense: 1, Power: 1, Knowledge: 1 } };
+// an empty object when they aren't shown.
+export function readBestHeroSkills() {
+  return readPlayerBoxes('Best Hero', (cell) =>
+    Object.fromEntries(
+      within(cell)
+        .queryAllByRole('listitem')
+        .map((item) => [
+          item.firstElementChild.textContent,
+          Number(item.lastElementChild.textContent)
+        ])
+    )
+  )
+}
+
+export function readPersonalities() {
+  return readPlayerBoxes('Personality', (cell) => cell.textContent.trim())
+}
+
+export function readBestMonsters() {
+  return readPlayerBoxes('Best Monster', (cell) => {
+    const monster = within(cell).queryByRole('img', { name: /^(?!.* player flag$)/ })
+    return monster ? monster.getAttribute('aria-label') : null
+  })
+}

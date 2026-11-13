@@ -28,6 +28,8 @@ import { registerStatusBarModule } from './modules/status-bar.module.js'
 import { registerSystemOptionsModule } from './modules/system-options.module.js'
 import { registerTavernModule } from './modules/tavern.module.js'
 import { registerTavernViewModule } from './modules/tavern-view.module.js'
+import { registerThievesGuildModule } from './modules/thieves-guild.module.js'
+import { registerThievesGuildViewModule } from './modules/thieves-guild-view.module.js'
 import { registerTownModule } from './modules/town.module.js'
 import { registerTownFortViewModule } from './modules/town-fort-view.module.js'
 import { registerTownHallViewModule } from './modules/town-hall-view.module.js'
@@ -62,6 +64,7 @@ export const heroesAppContent = Object.freeze({
     registerBattleModule,
     registerTownModule,
     registerTavernModule,
+    registerThievesGuildModule,
     registerMageGuildModule,
     registerScholarModule,
     registerAdventureSpellsModule,
@@ -82,6 +85,7 @@ export const heroesAppContent = Object.freeze({
     registerTownRecruitViewModule,
     registerDwellingRecruitViewModule,
     registerTavernViewModule,
+    registerThievesGuildViewModule,
     registerMageGuildViewModule,
     registerHeroScreenViewModule,
     registerSpellBookViewModule,

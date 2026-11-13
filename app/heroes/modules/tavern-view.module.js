@@ -1,6 +1,7 @@
 import {
   APP_COMMAND_TAVERN_HIRE_REQUESTED,
   APP_COMMAND_TAVERN_OPEN_REQUESTED,
+  APP_COMMAND_THIEVES_GUILD_OPEN_REQUESTED,
   APP_FACT_HERO_HIRED,
   APP_FACT_TOWN_LEFT,
   APP_UI_TAVERN_UPDATED,
@@ -124,6 +125,8 @@ export const registerTavernViewModule = defineModule(
           entityId: townId,
           slot: tavern.heroes[selectedIndex]?.slot
         })
+      } else if (target.closest('[data-tavern-action="thieves-guild"]')) {
+        emit(APP_COMMAND_THIEVES_GUILD_OPEN_REQUESTED, { entityId: townId })
       } else if (target.closest('[data-tavern-action="close"]')) {
         close()
       }
@@ -194,6 +197,10 @@ export const registerTavernViewModule = defineModule(
     id: 'tavern-view',
     phase: 'view',
     consumes: [APP_UI_TOWN_UPDATED, APP_UI_TAVERN_UPDATED, APP_FACT_HERO_HIRED, APP_FACT_TOWN_LEFT],
-    produces: [APP_COMMAND_TAVERN_OPEN_REQUESTED, APP_COMMAND_TAVERN_HIRE_REQUESTED]
+    produces: [
+      APP_COMMAND_TAVERN_OPEN_REQUESTED,
+      APP_COMMAND_TAVERN_HIRE_REQUESTED,
+      APP_COMMAND_THIEVES_GUILD_OPEN_REQUESTED
+    ]
   }
 )
