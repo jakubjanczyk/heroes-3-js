@@ -345,7 +345,7 @@ See `docs/notes/2026-10-25-tavern.md`.
 - [x] Holding the right button on a hero for hire shows their hero box
 - [x] Only the two heroes offered at the start of a week bring a starting army; a hero who takes a hired one's place brings a single first-level creature
 - [ ] Heroes of the other classes and factions; at the start of each week the left-most hero is of the faction the player started as, whichever tavern it is
-- [ ] The Thieves' Guild button (8.1); it is there but does nothing yet
+- [x] The Thieves' Guild button opens the Thieves' Guild (8.1.17)
 - [ ] Rumours about the other players and the Grail (8.1, 7.x)
 
 #### 4.5.5 A defeated hero
@@ -1097,7 +1097,7 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.12 Taking turns: each player in colour order, then the new day for every player at once: every hero's movement points back, and computer players' starting resources (empty turns until the AI, 8.3)
 - [x] 8.1.15 The town box for towns that aren't yours: another player's or a neutral town's popup shows its name, fort and garrison with sizes as words, without the hall or income
 - [x] 8.1.16 Visions on enemy heroes (Advanced) and towns (Expert)
-- [ ] 8.1.17 The Thieves' Guild
+- [x] 8.1.17 The Thieves' Guild: the Tavern's button ranks every player row by row, with as much shown as the player's Taverns allow
 - [ ] 8.1.18 Taverns and other players' town boxes: with no Tavern another player's town shows no garrison, with one its creatures without their sizes, with two or more the size words
 
 ### 8.2 Hot-Seat Multiplayer
