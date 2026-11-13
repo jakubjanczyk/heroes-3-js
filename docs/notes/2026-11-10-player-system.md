@@ -139,6 +139,15 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - No owner line: the box names no owner, and the town's flag on the map says whose it is. Our popups for mines and dwellings keep their "(Blue)" line.
   - Left out, as for the player's own towns: the "built this turn" picture, the resource silo's resource and the garrisoned hero's icon (no garrison heroes yet).
   - A hero standing on another player's town's gate is what the popup shows on that tile, as before (8.1.11).
+- **Visions on enemy heroes and towns** (checked for 8.1.16 against the wiki's Visions page, raw source, an open-source engine's spell config (`spells/adventure.json`), its hero and town info and its Visions range check, and the game manual as quoted in 8.1.3):
+  - Cast at Advanced or Expert, Visions also shows another player's hero in range in full: the right-click popup is the box the player's own heroes get, with the primary skills, morale, luck, spell points (the ones it has now) and each stack's exact count. At Basic it shows nothing more for heroes.
+  - Cast at Expert, it also shows a town that isn't the player's (another player's or a neutral one) in full: the hall, the daily income and the garrison's exact counts, as the player's own town box.
+  - The range is the monsters' range: Power × 2 at Advanced, × 3 at Expert, never under 3 tiles, strictly less than the range, from the selected hero's tile at the moment of looking (4.8.8.4). The engine gives heroes and towns their own multiplier, but it is the same number as the monsters' at each level.
+  - Only the selected hero's Visions count, and it lasts until the next day, as for monsters.
+  - A hero is measured to the tile it stands on. A town is measured by the engine to the town's anchor, its bottom-right tile, which is two tiles right of the gate (open question for 8.1.16).
+  - The status bar doesn't change: it names an enemy hero or town the same way with Visions or without.
+  - Left for later: Disguise, which the wiki says Visions sees through (with the AI casting, 8.3); a Rogue acting as Expert Visions (5.1).
+
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 - **Turns** (checked for 8.1.12 against an open-source engine's new-turn processing): the players take their turns one after another in colour order, each day starting with red. The new day comes once the last player ends their turn, and everything that comes with it happens once for every player at the same time: income, every hero's movement points and spell points, and a new week's growth. Only scripted events (none yet) run at the start of each player's own turn. The weekly tavern refresh comes when the day that ends the week is over, as now.
