@@ -1,9 +1,9 @@
-import { spawn } from 'node:child_process'
-import { mkdir } from 'node:fs/promises'
+import { execFile, spawn } from 'node:child_process'
+import { mkdir, rm } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { parseArgs } from 'node:util'
+import { parseArgs, promisify } from 'node:util'
 
 import { freeTilesNextTo, loadWorld, readDemoScenario } from './demo-map.mjs'
 
@@ -25,7 +25,8 @@ const VIEWPORTS = {
 
 const usage = `Usage: node scripts/screenshot.mjs <steps.mjs> [--out dir] [--viewports desktop,phone] [--port 8181] [--video]
 
---video also records each viewport's run to <out>/<viewport>.webm.
+--video also records each viewport's run to <out>/<viewport>.mp4, from the moment the map shows,
+and holds the page still for a second after each shot so the outcome stays on screen.
 
 The steps module:
   // Optional: an object, or a function of the demo scenario (it may be async).
@@ -198,6 +199,7 @@ function createHelpers(page, viewportName, scenario) {
     )
     await page.screenshot({ path: file })
     console.log(file)
+    if (options.video) await page.waitForTimeout(1000)
     return file
   }
 
@@ -211,6 +213,35 @@ function createHelpers(page, viewportName, scenario) {
   }
 }
 
+// Playwright records VP8 WebM, which Safari on a phone doesn't play, so the run is re-encoded to
+// H.264 MP4, without the blank page and loading screen before the map shows.
+async function saveVideo(page, viewportName, mapShownAfterMs) {
+  const webm = path.join(options.out, `${viewportName}.webm`)
+  const mp4 = path.join(options.out, `${viewportName}.mp4`)
+  await page.video().saveAs(webm)
+  await page.video().delete()
+  await promisify(execFile)('ffmpeg', [
+    '-y',
+    '-loglevel',
+    'error',
+    '-ss',
+    String((mapShownAfterMs + 300) / 1000),
+    '-i',
+    webm,
+    '-c:v',
+    'libx264',
+    '-pix_fmt',
+    'yuv420p',
+    '-vf',
+    'pad=ceil(iw/2)*2:ceil(ih/2)*2',
+    '-movflags',
+    '+faststart',
+    mp4
+  ])
+  await rm(webm)
+  console.log(mp4)
+}
+
 async function run(browser, baseUrl, scenario, viewportName) {
   const { viewport } = VIEWPORTS[viewportName]
   const context = await browser.newContext({
@@ -218,6 +249,7 @@ async function run(browser, baseUrl, scenario, viewportName) {
     ...(options.video ? { recordVideo: { dir: options.out, size: viewport } } : {})
   })
   const page = await context.newPage()
+  const recordingStartedAt = Date.now()
   page.on('pageerror', (error) => console.error(`[${viewportName}] page error: ${error.message}`))
   if (scenario) {
     await page.route('**/scenarios/scenario.json', (route) => route.fulfill({ json: scenario }))
@@ -225,6 +257,7 @@ async function run(browser, baseUrl, scenario, viewportName) {
   await page.goto(baseUrl)
   await page.locator('.terrain-tile').first().waitFor()
   await page.addStyleTag({ content: '.bus-dev-panel { display: none !important; }' })
+  const mapShownAfterMs = Date.now() - recordingStartedAt
   try {
     await stepsModule.default({
       page,
@@ -238,12 +271,7 @@ async function run(browser, baseUrl, scenario, viewportName) {
     throw error
   } finally {
     await context.close()
-    if (options.video) {
-      const file = path.join(options.out, `${viewportName}.webm`)
-      await page.video().saveAs(file)
-      await page.video().delete()
-      console.log(file)
-    }
+    if (options.video) await saveVideo(page, viewportName, mapShownAfterMs)
   }
 }
 
