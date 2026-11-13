@@ -1108,17 +1108,12 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [ ] Victory condition check after each turn
 
 ### 8.3 AI System - Basics
-- [ ] AI controls non-human players
-- [ ] AI runs during its turn (after human player ends turn)
-- [ ] "AI is thinking..." indicator while AI processes
-- [ ] AI hero movement visible on map (fast-forwarded animation), where the player's fog of war doesn't hide it
-- [ ] The hourglass with the player's crest in the info box during another player's turn (moved from 8.1)
-- [ ] The player's clicks on the map do nothing during another player's turn: built with 8.1.12, tested here once the turn takes time
-- [ ] Basic AI loop: for each hero, decide action, execute, repeat
+One part. See `docs/notes/2026-11-13-ai-basics.md`.
+- [ ] 8.3.1 Computer players play their turns: the hourglass with the player's crest in the info box (moved from 8.1), the shield over the minimap, the player's clicks and keys ignored (built with 8.1.12, tested here); each computer hero walks to the nearest resource pile it can reach without a fight and picks it up until its movement points run out (moved from 8.4); moves seen where the player's fog doesn't hide them, the map following the hero; hidden moves at once; a reload carries on the turn
 
 ### 8.4 AI Decision Making
 - [ ] **Exploration**: AI heroes move toward nearest unexplored area
-- [ ] **Resource collection**: AI prioritizes nearby free resources
+- [ ] **Resource collection**: picking up resource piles comes with 8.3.1; here, weighing them against the other goals
 - [ ] **Mine capture**: AI captures unowned mines
 - [ ] **Town building**: AI builds structures in priority order (income -> army -> upgrades)
 - [ ] **Army recruitment**: AI recruits available creatures each week
