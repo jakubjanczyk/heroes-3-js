@@ -1,7 +1,7 @@
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { dailyIncomeOfPlayer, resourcesOf } from '../../../game/heroes/state/kingdoms.js'
-import { builtIn, townIdsOf, townOwner } from '../../../game/heroes/state/towns.js'
+import { builtIn, tavernCountOf, townIdsOf, townOwner } from '../../../game/heroes/state/towns.js'
 import { thievesGuildReport } from '../../../game/heroes/thieves-guild.js'
 import { heroIdsOf, playerColors, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -41,11 +41,6 @@ export const registerThievesGuildModule = defineModule(
       }
     }
 
-    function tavernsOf(current, player) {
-      return townIdsOf(current, player).filter((townId) => builtIn(current, townId).has('TAVERN'))
-        .length
-    }
-
     function open(townId) {
       const current = state.get()
       const player = townOwner(current, townId)
@@ -56,7 +51,7 @@ export const registerThievesGuildModule = defineModule(
         APP_UI_THIEVES_GUILD_UPDATED,
         thievesGuildReport({
           kingdoms: playerColors(current).map((color) => kingdomOf(current, color)),
-          taverns: tavernsOf(current, player),
+          taverns: tavernCountOf(current, player),
           monsters: definitions.monsters
         })
       )

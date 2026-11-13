@@ -167,6 +167,11 @@ export function builtIn(state, townId) {
   return new Set(state.towns.byId[townId]?.built ?? [])
 }
 
+// The Brotherhood of the Sword stands with the Tavern it upgrades, so it doesn't count again.
+export function tavernCountOf(state, player) {
+  return townIdsOf(state, player).filter((townId) => builtIn(state, townId).has('TAVERN')).length
+}
+
 export function hasBuiltToday(state, townId) {
   return Boolean(state.towns.byId[townId]?.builtToday)
 }
