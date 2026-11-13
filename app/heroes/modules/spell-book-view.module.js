@@ -17,12 +17,16 @@ import { selectedHeroIdOf, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_HERO_ADVENTURE_SPELL_CAST_REQUESTED,
+  APP_FACT_ARTIFACT_PICKED_UP,
   APP_FACT_BATTLE_SPELL_CAST,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_SELECTED,
   APP_FACT_TOWN_LEFT,
   APP_FACT_TOWN_OPENED,
   APP_FACT_TOWN_VISITED,
+  APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
   APP_UI_ADVENTURE_MAP_UNCOVERED,
@@ -35,6 +39,14 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderDescriptionPopup } from '../presentation/artifacts.js'
+
+// A worn artifact can give a spell book, which enables Cast spell.
+const ARTIFACT_FACTS = Object.freeze([
+  APP_FACT_ARTIFACT_PICKED_UP,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
+  APP_FACT_TREASURE_CHEST_OPENED
+])
 
 const SPELLS_PER_PAGE = 6
 const SCHOOL_NAMES = Object.freeze({
@@ -367,6 +379,7 @@ export const registerSpellBookViewModule = defineModule(
         { type: APP_FACT_TOWN_OPENED, handler: () => (isInTown = true) },
         { type: APP_FACT_TOWN_LEFT, handler: () => (isInTown = false) },
         { type: APP_FACT_HERO_HIRED, handler: renderCastSpellButton },
+        ...ARTIFACT_FACTS.map((type) => ({ type, handler: renderCastSpellButton })),
         {
           type: APP_UI_SPELL_BOOK_OPEN_REQUESTED,
           handler: (event) => open(event.detail.heroId, event.detail)
@@ -443,6 +456,7 @@ export const registerSpellBookViewModule = defineModule(
       APP_UI_BATTLE_UPDATED,
       APP_FACT_HERO_HIRED,
       APP_FACT_HERO_SELECTED,
+      ...ARTIFACT_FACTS,
       APP_FACT_TOWN_VISITED,
       APP_FACT_TOWN_OPENED,
       APP_FACT_TOWN_LEFT,

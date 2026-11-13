@@ -469,7 +469,8 @@ In five parts. See `docs/notes/2026-11-06-adventure-map-spells.md`.
 
 #### 4.8 later
 - [ ] Map objects: the Shrines of Magic Incantation, Gesture and Thought, Magic Well, Magic Spring, Pyramid, spells from Pandora's Box (7.7)
-- [ ] Artifacts: the spell scrolls, the Charm, Talisman and Mystic Orb of Mana, the Tomes and Orbs, Wizard's Well, Titan's Thunder's spell book and bolt (7.8)
+- [x] Titan's Thunder's spell book and Titan's Lightning Bolt (see `docs/notes/2026-11-12-titans-thunder.md`)
+- [ ] Artifacts: the spell scrolls, the Charm, Talisman and Mystic Orb of Mana, the Tomes and Orbs, Wizard's Well (7.8)
 - [ ] Eagle Eye: learning a spell an enemy hero casts in battle (8.1), shown in a window like Scholar's
 
 ### 4.9 Morale and Luck
@@ -1045,7 +1046,8 @@ See `docs/notes/2026-10-30-combination-artifacts.md`.
 - [x] A combination holds all its parts' slots, the others shown locked; it takes one backpack slot and gives its parts' bonuses plus its own
 - [x] The Dragon Father's +6 to all primary skills; the Angelic Alliance's good and neutral towns counting as one for the wearer's morale
 - [x] The Dragon Father's immunity to spells of level 1-4 (4.8.6.3)
-- [ ] Their other spell effects (5.8): the Alliance's Prayer, the Armor of the Damned's curses, Titan's Thunder's bolt and spell book
+- [x] Titan's Thunder's spell book and bolt
+- [ ] Their other spell effects (5.8): the Alliance's Prayer, the Armor of the Damned's curses
 - [ ] The other eight combinations, with the artifacts they are made of: Admiral's Hat, Bow of the Sharpshooter, Cloak of the Undead King, Cornucopia, Elixir of Life, Ring of the Magi, Statue of Legion, Wizard's Well
 
 #### 7.8 later

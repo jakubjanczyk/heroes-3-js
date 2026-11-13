@@ -25,7 +25,7 @@ Checked against the Heroes 3 wiki's raw page source (Combination artifact, each 
 ## What we do
 
 - A combination is data in `game/data/artifacts.json`: its slot, class, cost, description, its `parts`, and its own effects with the keys other artifacts use (`primarySkills`) or a new one (`townsCountAsOne`, the towns whose creatures count as one for morale). Adding a combination whose effects the game already has needs no code.
-- All four are in: Power of the Dragon Father with its +6, the Angelic Alliance with its morale rule. Armor of the Damned and Titan's Thunder assemble and give their parts' bonuses; their own effects come with spells (5.8), as do the Dragon Father's immunity and the Alliance's Prayer.
+- All four are in: Power of the Dragon Father with its +6, the Angelic Alliance with its morale rule. Armor of the Damned assembles and gives its parts' bonuses; its own effect comes with spells (5.8), as does the Alliance's Prayer. Titan's Thunder's spell book and bolt are in (`2026-11-12-titans-thunder.md`).
 - A worn combination keeps where each part was worn (`combined` in the hero's artifacts), so taking it apart puts them back, rings in the ring each was on. Put on again from the backpack, the parts take the first free slots of their kinds.
 - The status bar over a locked slot says "Locked by Power of the Dragon Father": our own wording, the game's text isn't online.
 - The morale and luck popups list a part's morale or luck under the part's name (Still Eye of the Dragon), not checked in the game.
@@ -35,5 +35,5 @@ Checked against the Heroes 3 wiki's raw page source (Combination artifact, each 
 ## Not yet
 
 - The other eight combinations, with the artifacts they're made of.
-- Spells: the Dragon Father's immunity, the Alliance's Prayer, the Armor of the Damned's curses, Titan's Thunder's bolt and spell book (5.8).
+- Spells: the Alliance's Prayer, the Armor of the Damned's curses (5.8).
 - Pictures (10.1).

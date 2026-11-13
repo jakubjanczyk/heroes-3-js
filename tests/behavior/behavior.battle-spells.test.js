@@ -27,7 +27,7 @@ import {
   startBattleWithStyles,
   waitForBattleResults
 } from './battle.utils.js'
-import { aHero, aMonster, aScenario, aSpellDefinition } from './builders.js'
+import { aHero, aMonster, anArtifactDefinition, aScenario, aSpellDefinition } from './builders.js'
 
 const HERO = 'Lord Haart'
 
@@ -38,7 +38,18 @@ const spellDefinitions = {
     .withCosts([5, 4, 4, 4])
     .withDamage({ base: [10, 10, 20, 30], perPower: 10 })
     .describedAs('Causes a bolt of magical energy to strike the selected unit.')
+    .build(),
+  TITAN_BOLT: aSpellDefinition()
+    .withName('Titan Bolt')
+    .withLevel(5)
+    .withCosts([0, 0, 0, 0])
+    .withDamage({ base: [30, 30, 30, 30], perPower: 0 })
+    .withSpecial(true)
     .build()
+}
+
+const artifactDefinitions = {
+  THUNDER: anArtifactDefinition().withName("Titan's Thunder").withSpells(['TITAN_BOLT']).build()
 }
 
 const gameDefinitions = {
@@ -47,7 +58,8 @@ const gameDefinitions = {
   heroes: readGameData('heroes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
-  spells: spellDefinitions
+  spells: spellDefinitions,
+  artifacts: artifactDefinitions
 }
 
 const stack = (creature, count) => ({ creature, count })
@@ -142,6 +154,19 @@ describe('battle spells behavior', () => {
     await playOnToNextRound(user)
 
     expect(await readBattleSpellPoints(user)).toBe('5')
+  })
+
+  // 30 damage kills 3 of the 10 Pikemen (10 health each).
+  test('given a hero wearing an artifact that gives a damage spell when the player casts it in battle then the target takes its damage and the hero keeps their spell points', async () => {
+    const hero = aCaster().withSpells([]).withArtifacts(['THUNDER'])
+    const { user } = await startBattle(aFight({ hero }))
+
+    await castSpellAt(user, 'Titan Bolt', PIKEMEN_HEX)
+    const stacks = readBattleStacks()
+    await playOnToNextRound(user)
+
+    expect(stacks).toContainEqual(stackAt('Pikemen 7', PIKEMEN_HEX.row, PIKEMEN_HEX.column))
+    expect(await readBattleSpellPoints(user)).toBe('10')
   })
 
   test('given the hero casts Magic Arrow then the combat log names the spell, its target and the damage', async () => {

@@ -573,6 +573,8 @@
     "class": "RELIC",
     "cost": 40000,
     "parts": ["THUNDER_HELMET", "TITANS_CUIRASS", "TITANS_GLADIUS", "SENTINELS_SHIELD"],
+    "grantsSpellBook": true,
+    "spells": ["TITANS_LIGHTNING_BOLT"],
     "description": "Hero gains the ability to cast Lightning Bolt for 600 points of damage, does not cost any spell points, adds a spell book into their inventory (permanently)."
   }
 }

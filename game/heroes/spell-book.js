@@ -1,3 +1,4 @@
+import { artifactSpells } from './artifacts.js'
 import { castRuleOf, spellTargeting } from './battle-spells.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
 import { secondarySkillLevel } from './secondary-skills.js'
@@ -25,6 +26,12 @@ const SCHOOL_HEADING_PLACES = 2
 
 export function hasSpellBook(hero) {
   return Boolean(hero?.spellBook)
+}
+
+// A special spell is never learnt; only a worn artifact gives it.
+export function knownSpells(hero, definitions) {
+  const learnt = (hero?.spells ?? []).filter((id) => !definitions?.spells?.[id]?.special)
+  return [...new Set([...learnt, ...artifactSpells(hero?.artifacts, definitions)])]
 }
 
 export function skillLevelOf(hero, skillId) {
@@ -116,8 +123,10 @@ export const battleSpellTargeting = ({ hero, spell, definitions }) =>
     healthBelow: healthLimit({ hero, spell, definitions })
   })
 
-function popupText(description, damage) {
-  return damage > 0 ? `${description} Does ${damage} points of damage.` : description
+function popupText(spell, description, damage) {
+  return damage > 0 && !spell.damageInDescription
+    ? `${description} Does ${damage} points of damage.`
+    : description
 }
 
 function schoolSortIndex(spell) {
@@ -144,20 +153,17 @@ function describeSpell(id, spell, { hero, spellPoints, definitions }) {
     schools: spell.schools ?? [],
     statusText: `${spell.name} (${levelName})`,
     description,
-    popupText: popupText(description.text, spellDamage({ hero, spell, definitions }))
+    popupText: popupText(spell, description.text, spellDamage({ hero, spell, definitions }))
   }
 }
 
 function spellsInBook({ hero, definitions, kind, school }) {
   const { value: spellPoints } = getHeroSpellPoints({ entity: hero, definitions })
-  return (hero?.spells ?? [])
+  return knownSpells(hero, definitions)
     .map((id) => [id, definitions?.spells?.[id]])
     .filter(
       ([, spell]) =>
-        spell &&
-        !spell.special &&
-        spell.kind === kind &&
-        (school === ALL_SCHOOLS || spell.schools?.includes(school))
+        spell && spell.kind === kind && (school === ALL_SCHOOLS || spell.schools?.includes(school))
     )
     .sort(([, a], [, b]) => compareSpells(a, b))
     .map(([id, spell]) => describeSpell(id, spell, { hero, spellPoints, definitions }))
