@@ -1,3 +1,5 @@
+import { countArtifacts } from './artifacts.js'
+
 export const HEROES_FOR_HIRE = 2
 export const MAX_HEROES_PER_PLAYER = 8
 const RUMOUR_OPENING = 'After a generous tip, the barkeep whispers:'
@@ -137,10 +139,6 @@ export function offerWithReturningHero(heroes, hero, roll) {
   const offered = Array.from({ length: HEROES_FOR_HIRE }, (_slot, index) => heroes?.[index] ?? null)
   const slot = slotForReturningHero(offered, roll)
   return offered.map((offeredHero, index) => (index === slot ? hero : offeredHero))
-}
-
-export function countArtifacts(artifacts) {
-  return Object.keys(artifacts?.worn ?? {}).length + (artifacts?.backpack?.length ?? 0)
 }
 
 export function describeHeroForHire({ name, heroClass, level = 1, artifacts }, heroClasses) {

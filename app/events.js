@@ -71,6 +71,7 @@ export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.r
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
 export const APP_COMMAND_TAVERN_HIRE_REQUESTED = 'command.tavern.hire.requested'
 export const APP_COMMAND_MAGE_GUILD_OPEN_REQUESTED = 'command.mageGuild.open.requested'
+export const APP_COMMAND_THIEVES_GUILD_OPEN_REQUESTED = 'command.thievesGuild.open.requested'
 export const APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED =
   'command.town.garrisonStackMove.requested'
 
@@ -204,6 +205,7 @@ export const APP_UI_TOWN_MESSAGE_OPENED = 'ui.town.message.opened'
 export const APP_UI_DWELLING_RECRUIT_OPEN_REQUESTED = 'ui.dwelling.recruit.openRequested'
 export const APP_UI_DWELLING_RECRUIT_UPDATED = 'ui.dwelling.recruit.updated'
 export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
+export const APP_UI_THIEVES_GUILD_UPDATED = 'ui.thievesGuild.updated'
 export const APP_UI_MAGE_GUILD_UPDATED = 'ui.mageGuild.updated'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 

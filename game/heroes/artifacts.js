@@ -279,3 +279,7 @@ export function scrollBackpack(artifacts, direction) {
         : [...backpack.slice(1), backpack[0]]
   }
 }
+
+export function countArtifacts(artifacts) {
+  return Object.keys(artifacts?.worn ?? {}).length + (artifacts?.backpack?.length ?? 0)
+}
