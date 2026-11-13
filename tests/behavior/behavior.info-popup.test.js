@@ -207,39 +207,39 @@ describe('info popup behavior', () => {
     })
 
     test.each([
-      { object: 'mine', part: 'entry tile', x: 2, y: 2, name: 'Gold Mine' },
-      { object: 'mine', part: 'building', x: 1, y: 2, name: 'Gold Mine' },
-      { object: 'town', part: 'entry tile', x: 2, y: 2, name: 'Castle' },
-      { object: 'town', part: 'building', x: 0, y: 1, name: 'Castle' }
-    ])('given a $object when the player holds the right button on its $part then the popup names it', async ({
-      object,
+      { part: 'entry tile', x: 2, y: 2 },
+      { part: 'building', x: 1, y: 2 }
+    ])('given a mine when the player holds the right button on its $part then the popup names it', async ({
       x,
-      y,
-      name
+      y
     }) => {
-      const entity =
-        object === 'mine'
-          ? aMine().withType('GOLD_MINE').at(2, 2)
-          : aTown().withType('CASTLE').at(2, 2)
       const { user } = await setupApp(
-        aScenario().withSize(5, 4).withEntities(aHero().at(0, 3), entity)
+        aScenario()
+          .withSize(5, 4)
+          .withEntities(aHero().at(0, 3), aMine().withType('GOLD_MINE').at(2, 2))
       )
 
       await holdRightButtonOn(user, x, y)
 
-      expectInfoPopupLines([name])
+      expectInfoPopupLines(['Gold Mine'])
     })
 
-    test('given a town when the player holds the right button on it then the popup shows its name', async () => {
+    test.each([
+      { part: 'entry tile', x: 2, y: 2 },
+      { part: 'building', x: 0, y: 1 }
+    ])('given a town when the player holds the right button on its $part then the popup shows the town box with its name', async ({
+      x,
+      y
+    }) => {
       const { user } = await setupApp(
         aScenario()
           .withSize(5, 4)
           .withEntities(aHero().at(0, 3), aTown().withType('CASTLE').at(2, 2))
       )
 
-      await holdRightButtonOn(user, 2, 2)
+      await holdRightButtonOn(user, x, y)
 
-      expectInfoPopupLines(['Castle'])
+      expect(within(queryInfoPopup()).getByRole('heading').textContent).toBe('Castle')
     })
 
     test("given the player's own town when the player holds the right button on it then the popup shows its name and garrison", async () => {

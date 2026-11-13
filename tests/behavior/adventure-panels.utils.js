@@ -74,7 +74,7 @@ export function readTownBox(container) {
     buildings: within(buildings)
       .getAllByRole('img')
       .map((icon) => icon.getAttribute('aria-label')),
-    income: within(container).getByLabelText('Daily income').textContent
+    income: within(container).queryByLabelText('Daily income')?.textContent ?? null
   }
 }
 
