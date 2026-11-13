@@ -1079,7 +1079,7 @@ See `docs/notes/2026-10-30-combination-artifacts.md`.
 Making the game a competitive experience.
 
 ### 8.1 Player System
-In eighteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
+In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are the colours that own something in the scenario; red is the human player until hot-seat (8.2).
 - [x] 8.1.1 Other players' colours: heroes, towns, mines and dwellings carry their owner's flag (every hero has one), show in that colour on the minimap and name their owner in the popup; the kingdom overview shows the other players' flags under Enemies
 - [x] 8.1.2 Enemy heroes stand in the way: they can't be selected or met, and block their tile; the swords show over one the hero can reach, and the hero walks up to it
 - [x] 8.1.3 An enemy hero's popup: its name and army with each stack's size as a word, no primary skills, morale, luck or spell points
@@ -1098,6 +1098,7 @@ In eighteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.15 The town box for towns that aren't yours: another player's or a neutral town's popup shows its name, fort and garrison with sizes as words, without the hall or income
 - [x] 8.1.16 Visions on enemy heroes (Advanced) and towns (Expert)
 - [ ] 8.1.17 The Thieves' Guild
+- [ ] 8.1.18 Taverns and other players' town boxes: with no Tavern another player's town shows no garrison, with one its creatures without their sizes, with two or more the size words
 
 ### 8.2 Hot-Seat Multiplayer
 - [ ] Turn transition screen: "Player X's Turn - Press to continue"
@@ -1336,7 +1337,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 
 ### Phase 6 - "Real Competition"
 42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild (in four parts: the guild's spells and screen, learning spells, Wisdom and magic schools on level-up, Scholar), casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
-43. Player system (8.1), in eighteen parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns and the new day, the town box, Visions, the Thieves' Guild
+43. Player system (8.1), in nineteen parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns and the new day, the town box, Visions, the Thieves' Guild, taverns and town boxes
 44. AI basics (8.3)
 45. AI decision making (8.4)
 46. Victory conditions (8.5)

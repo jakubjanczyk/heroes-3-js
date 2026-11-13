@@ -37,6 +37,7 @@ What a player learns about the others:
 15. **8.1.15 The town box for towns that aren't yours.** Right-clicking another player's town, or a neutral one, shows the town box: its name, its fort and its garrison with each stack's size as a word; no hall and no daily income.
 16. **8.1.16 Visions on enemy heroes** (Advanced) **and towns** (Expert).
 17. **8.1.17 The Thieves' Guild.** The Tavern window's Thieves' Guild button opens the ranking of every player, row by row, with as much shown as the player's number of Taverns allows. Obelisks Found ties every player at 1st until obelisks are on the map; computer players show no personality until the AI (8.3) gives them one; the Den of Thieves and the adventure map Tavern come with those map objects.
+18. **8.1.18 Taverns and other players' town boxes.** With no Tavern another player's town box shows no garrison, with one its creatures without their sizes, with two or more the size words, as 8.1.15 shows now. The wiki says so; the engine doesn't (agreed for 8.1.17: its own part).
 
 Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cure, Resistance) come with the AI (8.3, 5.7b), and losing the game with victory conditions (8.5). The random starting garrison of a neutral town the scenario gives none, and its weekly reinforcements, come with neutral towns' garrisons (6.4).
 
@@ -166,7 +167,7 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - The values (the engine): the resources the player holds now (wood and ore added together, the four rare ones added together); obelisks visited; artifacts worn and in the backpack of all their heroes; army strength is each stack's count times the creature's AI value, summed over all their heroes' armies, town garrisons left out; income is the gold the kingdom earns a day.
   - Best Hero, Personality and Best Monster aren't ranked: each player gets a box in their colour, in colour order. The best hero is the one with the highest level, then the most experience; the wiki leaves out a hero standing in a town's garrison, which heroes can't do yet. Personality is "Human" (`ARRAYTXT.TXT` 172) for a human player, and Warrior, Builder or Explorer (169 to 171) for a computer player with that tactic, nothing for a random one. The best monster is the creature with the highest AI value in the player's heroes' armies.
   - The window has an Exit button (`GENRLTXT.TXT` 600, "Exit") and its own status bar; Escape and Enter close it.
-  - The wiki adds that the number of Taverns also changes another player's town box: none hides its garrison, one shows the creatures without their sizes, two show the size words. The engine doesn't do this, and 8.1.15 shows the size words for every town.
+  - The wiki adds that the number of Taverns also changes another player's town box: none hides its garrison, one shows the creatures without their sizes, two show the size words. The engine doesn't do this, and 8.1.15 shows the size words for every town. It is its own part, 8.1.18.
 - **A computer player's starting resources** on Normal: 7500 gold, 10 wood, 10 ore and 4 each of mercury, sulfur, crystal and gems (the engine's difficulty table, the second of five levels, as the human's 20000 gold, 20 wood and ore and 10 of each rare resource match ours). Checked for 8.1.12.
 
 ## Decisions
@@ -180,6 +181,9 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - Other players' resources start empty. Their starting resources come with 8.1.12; income already goes to every player.
 - **Starting resources as in the game** (agreed for 8.1.12): the human player gets the scenario's `startingResources` or the Normal amounts, computer players always the computer's Normal amounts. Difficulty levels change both later.
 - **The screen is always the human player's** (red until hot-seat, 8.2), whoever's turn it is. With the AI (8.3) the player watches the other players' heroes move wherever their fog of war doesn't hide them.
+- **In the Thieves' Guild, tied players share a place and the next player takes the next place** (1st, 1st, 2nd), as the engine does; nothing else says (agreed for 8.1.17).
+- **Computer players' personality stays empty** until the AI (8.3) gives them a tactic (agreed for 8.1.17).
+- **On a phone the Thieves' Guild's place columns scroll sideways** inside the window, the row names staying put (agreed for 8.1.17).
 - **The player's clicks on the map do nothing during another player's turn.** Built with 8.1.12 but untested, since the turns take no time yet; the tests come with the AI (8.3).
 
 ## Built
