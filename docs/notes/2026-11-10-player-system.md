@@ -36,7 +36,7 @@ What a player learns about the others:
 
 15. **8.1.15 The town box for towns that aren't yours.** Right-clicking another player's town, or a neutral one, shows the town box: its name, its fort and its garrison with each stack's size as a word; no hall and no daily income.
 16. **8.1.16 Visions on enemy heroes** (Advanced) **and towns** (Expert).
-17. **8.1.17 The Thieves' Guild.**
+17. **8.1.17 The Thieves' Guild.** The Tavern window's Thieves' Guild button opens the ranking of every player, row by row, with as much shown as the player's number of Taverns allows. Obelisks Found ties every player at 1st until obelisks are on the map; computer players show no personality until the AI (8.3) gives them one; the Den of Thieves and the adventure map Tavern come with those map objects.
 
 Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cure, Resistance) come with the AI (8.3, 5.7b), and losing the game with victory conditions (8.5). The random starting garrison of a neutral town the scenario gives none, and its weekly reinforcements, come with neutral towns' garrisons (6.4).
 
@@ -151,6 +151,22 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 - **Turns** (checked for 8.1.12 against an open-source engine's new-turn processing): the players take their turns one after another in colour order, each day starting with red. The new day comes once the last player ends their turn, and everything that comes with it happens once for every player at the same time: income, every hero's movement points and spell points, and a new week's growth. Only scripted events (none yet) run at the start of each player's own turn. The weekly tavern refresh comes when the day that ends the week is over, as now.
+- **The Thieves' Guild** (checked for 8.1.17 against the wiki's Thieves' Guild, Tavern and Den of Thieves pages and its table of information levels, its `JKTEXT.TXT`, `ARRAYTXT.TXT` and `GENRLTXT.TXT`, and an open-source engine's Thieves' Guild window and player statistics):
+  - It is opened with the Thieves' Guild button in a town's Tavern window. The Den of Thieves and the adventure map Tavern also open it; neither is on the map yet.
+  - It compares every player in the game, the player too. Each statistic is a row; the columns are the places, "1st", "2nd", ... "8th" (`JKTEXT.TXT` 16 to 23), as many as there are players. Each player's flag stands in the column of their place in that row; players with the same value share a place, and the next value takes the next place (1st, 1st, 2nd: checked against the engine only). Only the order is shown, never the values.
+  - The rows, in order (`JKTEXT.TXT` 24 to 35): Number of Towns, Number of Heroes, Gold, Wood & Ore, Merc, Sulf, Cryst & Gems, Obelisks Found, Artifacts, Kingdom Army Strength, Income, Best Hero, Personality, Best Monster.
+  - What the player sees depends on how many of their towns have a Tavern (Brotherhood of the Sword is the Tavern's upgrade and doesn't count again). Both sources agree:
+    - always: Number of Towns, Number of Heroes;
+    - 1 Tavern: the Best Hero's portrait and name;
+    - 2: Gold, Wood & Ore, and the Best Hero's Attack, Defense, Power and Knowledge;
+    - 3: Merc, Sulf, Cryst & Gems, Obelisks Found, Personality;
+    - 4: Artifacts, Kingdom Army Strength, Best Monster;
+    - 5 or more: Income.
+    A row the player can't see yet stays empty.
+  - The values (the engine): the resources the player holds now (wood and ore added together, the four rare ones added together); obelisks visited; artifacts worn and in the backpack of all their heroes; army strength is each stack's count times the creature's AI value, summed over all their heroes' armies, town garrisons left out; income is the gold the kingdom earns a day.
+  - Best Hero, Personality and Best Monster aren't ranked: each player gets a box in their colour, in colour order. The best hero is the one with the highest level, then the most experience; the wiki leaves out a hero standing in a town's garrison, which heroes can't do yet. Personality is "Human" (`ARRAYTXT.TXT` 172) for a human player, and Warrior, Builder or Explorer (169 to 171) for a computer player with that tactic, nothing for a random one. The best monster is the creature with the highest AI value in the player's heroes' armies.
+  - The window has an Exit button (`GENRLTXT.TXT` 600, "Exit") and its own status bar; Escape and Enter close it.
+  - The wiki adds that the number of Taverns also changes another player's town box: none hides its garrison, one shows the creatures without their sizes, two show the size words. The engine doesn't do this, and 8.1.15 shows the size words for every town.
 - **A computer player's starting resources** on Normal: 7500 gold, 10 wood, 10 ore and 4 each of mercury, sulfur, crystal and gems (the engine's difficulty table, the second of five levels, as the human's 20000 gold, 20 wood and ore and 10 of each rare resource match ours). Checked for 8.1.12.
 
 ## Decisions
