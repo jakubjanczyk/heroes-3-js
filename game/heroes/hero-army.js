@@ -39,6 +39,18 @@ export function getTownGarrison({ entity, definitions }) {
   return describeSlots(entity?.garrison, definitions)
 }
 
-export function getTownGarrisonBySize({ entity, definitions }) {
-  return withSizeWords(getTownGarrison({ entity, definitions }))
+const TAVERNS_FOR_CREATURES = 1
+const TAVERNS_FOR_SIZE_WORDS = 2
+
+// What the player's Taverns show of a garrison that isn't theirs: with none it looks empty, with
+// one its creatures without their sizes, with two or more each size as a word.
+export function getTownGarrisonSeenWithTaverns({ entity, definitions, taverns }) {
+  const garrison = getTownGarrison({ entity, definitions })
+  if (taverns >= TAVERNS_FOR_SIZE_WORDS) {
+    return withSizeWords(garrison)
+  }
+  if (taverns >= TAVERNS_FOR_CREATURES) {
+    return garrison.map((stack) => stack && { ...stack, name: stack.pluralName, count: undefined })
+  }
+  return garrison.map(() => null)
 }

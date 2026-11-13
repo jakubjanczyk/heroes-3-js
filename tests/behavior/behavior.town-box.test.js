@@ -124,6 +124,28 @@ describe('town box behavior', () => {
 
   describe("a town that isn't the player's", () => {
     const aBlueKirkwall = () => aTown().named('Kirkwall').ownedBy('blue').at(4, 3)
+    const kirkwallsGarrison = [
+      { creature: 'PIKEMAN', count: 10 },
+      null,
+      { creature: 'ARCHER', count: 3 }
+    ]
+
+    // The player's towns stand right of Kirkwall, their buildings clear of each other's.
+    const thePlayersTowns = (...buildingsOfEachTown) =>
+      buildingsOfEachTown.map((buildings, index) =>
+        aTown()
+          .withId(`town-${index + 2}`)
+          .named(['Whitemoon', 'Greenvale'][index])
+          .ownedByPlayer()
+          .withBuildings(buildings)
+          .at(10 + index * 5, 3)
+      )
+
+    const aScenarioWithTheTowns = (town, ...buildingsOfEachTown) =>
+      aScenario()
+        .withSize(18, 7)
+        .withEntities(aHero().at(4, 5), town, ...thePlayersTowns(...buildingsOfEachTown))
+        .withDefinitions(gameDefinitions)
 
     async function readTownPopupAt(user, x, y) {
       await holdRightButtonOn(user, x, y)
@@ -151,14 +173,37 @@ describe('town box behavior', () => {
       expect(readTownBox(popup)).toEqual({ buildings: ['Citadel'], income: null })
     })
 
-    test("shows another player's town's garrison with each stack's size as a word", async () => {
+    test("given the player has no Tavern then another player's town shows its name and fort but an empty garrison", async () => {
       const { user } = await setupApp(
-        aTownScenario(
-          aBlueKirkwall().withGarrison([
-            { creature: 'PIKEMAN', count: 10 },
-            null,
-            { creature: 'ARCHER', count: 3 }
-          ])
+        aScenarioWithTheTowns(
+          aBlueKirkwall().withBuildings(['FORT']).withGarrison(kirkwallsGarrison),
+          []
+        )
+      )
+
+      const popup = await readTownPopupAt(user, 4, 3)
+
+      expect(within(popup).getByRole('heading').textContent).toBe('Kirkwall')
+      expect(readTownBox(popup)).toEqual({ buildings: ['Fort'], income: null })
+      expect(readArmySlots(popup, 'Garrison')).toEqual(['', '', '', '', '', '', ''])
+    })
+
+    test("given the player has one Tavern then another player's town shows its creatures without their sizes", async () => {
+      const { user } = await setupApp(
+        aScenarioWithTheTowns(aBlueKirkwall().withGarrison(kirkwallsGarrison), ['TAVERN'], [])
+      )
+
+      const popup = await readTownPopupAt(user, 4, 3)
+
+      expect(readArmySlots(popup, 'Garrison')).toEqual(['Pikemen', '', 'Archers', '', '', '', ''])
+    })
+
+    test("given the player has two towns with a Tavern then another player's town shows each stack's size as a word", async () => {
+      const { user } = await setupApp(
+        aScenarioWithTheTowns(
+          aBlueKirkwall().withGarrison(kirkwallsGarrison),
+          ['TAVERN'],
+          ['TAVERN']
         )
       )
 
@@ -175,14 +220,46 @@ describe('town box behavior', () => {
       ])
     })
 
-    test("shows a neutral town's fort and garrison as words, without its hall or income", async () => {
+    test('given the Tavern and the Brotherhood of the Sword in one town then they count as one Tavern', async () => {
       const { user } = await setupApp(
-        aTownScenario(
+        aScenarioWithTheTowns(aBlueKirkwall().withGarrison(kirkwallsGarrison), [
+          'TAVERN',
+          'BROTHERHOOD_OF_THE_SWORD'
+        ])
+      )
+
+      const popup = await readTownPopupAt(user, 4, 3)
+
+      expect(readArmySlots(popup, 'Garrison')[0]).toBe('Pikemen')
+    })
+
+    test("given one Tavern when the player builds a Tavern in their second town then another player's town shows the size words", async () => {
+      const { user } = await setupApp(
+        aScenarioWithTheTowns(
+          aBlueKirkwall().withGarrison(kirkwallsGarrison),
+          ['TAVERN'],
+          []
+        ).withStartingResources({ GOLD_PILE: 500, WOOD_PILE: 5 })
+      )
+      await selectTown(user, 'Greenvale')
+      await selectTown(user, 'Greenvale')
+
+      await buildInTown(user, 'Tavern')
+      await leaveTown(user)
+
+      expect(readArmySlots(await readTownPopupAt(user, 4, 3), 'Garrison')[0]).toBe('Pikemen Pack')
+    })
+
+    test('given two Taverns then a neutral town shows its fort and garrison as words, without its hall or income', async () => {
+      const { user } = await setupApp(
+        aScenarioWithTheTowns(
           aTown()
             .named('Kirkwall')
             .withBuildings(['FORT'])
             .withGarrison([{ creature: 'PIKEMAN', count: 5 }])
-            .at(4, 3)
+            .at(4, 3),
+          ['TAVERN'],
+          ['TAVERN']
         )
       )
 
@@ -190,6 +267,22 @@ describe('town box behavior', () => {
 
       expect(readTownBox(popup)).toEqual({ buildings: ['Fort'], income: null })
       expect(readArmySlots(popup, 'Garrison')[0]).toBe('Pikemen Several')
+    })
+
+    test('given no Tavern then a neutral town shows an empty garrison', async () => {
+      const { user } = await setupApp(
+        aScenarioWithTheTowns(
+          aTown()
+            .named('Kirkwall')
+            .withGarrison([{ creature: 'PIKEMAN', count: 5 }])
+            .at(4, 3),
+          []
+        )
+      )
+
+      const popup = await readTownPopupAt(user, 4, 3)
+
+      expect(readArmySlots(popup, 'Garrison')).toEqual(['', '', '', '', '', '', ''])
     })
 
     test("shows the same box over one of another player's town's buildings", async () => {

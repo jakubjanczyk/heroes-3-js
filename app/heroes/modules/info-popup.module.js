@@ -2,14 +2,14 @@ import {
   getHeroArmy,
   getHeroArmyBySize,
   getTownGarrison,
-  getTownGarrisonBySize
+  getTownGarrisonSeenWithTaverns
 } from '../../../game/heroes/hero-army.js'
 import { getInfoPopupLines } from '../../../game/heroes/info-popup-text.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
 import { getHeroSpellPoints } from '../../../game/heroes/spell-points.js'
 import { flaggedObjectOwner, visitableValues } from '../../../game/heroes/state/map-objects.js'
-import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
+import { builtIn, isViewingPlayersTown, tavernCountOf } from '../../../game/heroes/state/towns.js'
 import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
 import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
 import { seenThroughVisions } from '../../../game/heroes/visions.js'
@@ -106,7 +106,12 @@ export const registerInfoPopupModule = defineModule(
       ) {
         return { name, hall, fort, goldIncome, garrison: getTownGarrison({ entity, definitions }) }
       }
-      return { name, fort, garrison: getTownGarrisonBySize({ entity, definitions }) }
+      const taverns = tavernCountOf(state.get(), viewingPlayer(state.get()))
+      return {
+        name,
+        fort,
+        garrison: getTownGarrisonSeenWithTaverns({ entity, definitions, taverns })
+      }
     }
 
     // The player's own town gets the same box as the info box; any other town shows less.
