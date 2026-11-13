@@ -59,7 +59,8 @@
     "costs": [4, 2, 2, 2],
     "visions": {
       "rangePerPower": [1, 1, 2, 3],
-      "minimumRange": 3
+      "minimumRange": 3,
+      "detailsFrom": { "MONSTER": 0, "HERO": 2, "TOWN": 3 }
     },
     "mageGuildChances": { "CASTLE": 2 },
     "descriptions": [

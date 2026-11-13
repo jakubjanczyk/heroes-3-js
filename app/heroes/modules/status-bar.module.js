@@ -1,5 +1,5 @@
 import { getStatusBarText } from '../../../game/heroes/status-bar-text.js'
-import { seesExactCount } from '../../../game/heroes/visions.js'
+import { seenThroughVisions } from '../../../game/heroes/visions.js'
 import { visitedText } from '../../../game/heroes/visitable-objects/visits.js'
 import { isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import { APP_FACT_WORLD_READY, APP_UI_TILE_HOVERED } from '../../events.js'
@@ -43,7 +43,7 @@ export const registerStatusBarModule = defineModule(
                 terrainName: mapObjects.getTerrainName(tile),
                 definitions,
                 visitedText: visitedText(state.get(), entity, definitions),
-                exactCount: seesExactCount(state.get(), entity, definitions)
+                exactCount: seenThroughVisions(state.get(), entity, definitions)
               })
             )
           }
