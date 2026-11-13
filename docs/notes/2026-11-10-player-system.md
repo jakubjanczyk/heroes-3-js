@@ -28,9 +28,9 @@ Fighting for towns and heroes:
 
 Turns:
 
-12. **8.1.12 Taking turns.** After End Turn each other player takes a turn in colour order, then the new day starts. The turns are empty until the AI plays them (8.3).
-13. **8.1.13 Each player's day.** Each player's heroes get their movement points back, and each player gets their own income and starting resources.
-14. **8.1.14 The hourglass.** The info box shows an hourglass with the player's crest during another player's turn.
+12. **8.1.12 Taking turns and the new day.** After End Turn each other player takes a turn in colour order, then the new day starts for every player at once: every hero gets their movement points back, not only the player's. Computer players start with their own starting resources. The turns are empty until the AI plays them (8.3). (Planned as two parts, taking turns and each player's day, joined because neither shows anything without the AI.)
+
+The hourglass in the info box during another player's turn moved to the AI (8.3): an empty turn takes no time, so it would only flash.
 
 What a player learns about the others:
 
@@ -135,7 +135,7 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **Fog**: each player's heroes and towns reveal the map for that player only. Already built (`game/state/fog.js`).
 
 - **Turns** (checked for 8.1.12 against an open-source engine's new-turn processing): the players take their turns one after another in colour order, each day starting with red. The new day comes once the last player ends their turn, and everything that comes with it happens once for every player at the same time: income, every hero's movement points and spell points, and a new week's growth. Only scripted events (none yet) run at the start of each player's own turn. The weekly tavern refresh comes when the day that ends the week is over, as now.
-- **A computer player's starting resources** on Normal: 7500 gold, 10 wood, 10 ore and 4 each of mercury, sulfur, crystal and gems (the engine's difficulty table, the second of five levels, as the human's 20000 gold, 20 wood and ore and 10 of each rare resource match ours). Checked for 8.1.13.
+- **A computer player's starting resources** on Normal: 7500 gold, 10 wood, 10 ore and 4 each of mercury, sulfur, crystal and gems (the engine's difficulty table, the second of five levels, as the human's 20000 gold, 20 wood and ore and 10 of each rare resource match ours). Checked for 8.1.12.
 
 ## Decisions
 
@@ -145,7 +145,10 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
 - **The hero walks up to an enemy hero before heroes can attack** (the player's choice): the swords show, the hero stops on the tile next to it and nothing happens there until 8.1.7. Meeting a hero only opens the exchange screen when both are the same player's. Flying passes over an enemy hero as over the player's own heroes, and no spell lands on its tile.
 - **The helmet cursor is only for the player's own heroes.** Over an enemy hero the hero can't reach it is the arrow, with a town selected too.
 - **An enemy hero's popup keeps the hero box's skill icons** with their values empty, so it has the same shape as the player's own (agreed for 8.1.3).
-- Other players' resources start empty. Starting resources and income for them come with each player's day (8.1.13).
+- Other players' resources start empty. Their starting resources come with 8.1.12; income already goes to every player.
+- **Starting resources as in the game** (agreed for 8.1.12): the human player gets the scenario's `startingResources` or the Normal amounts, computer players always the computer's Normal amounts. Difficulty levels change both later.
+- **The screen is always the human player's** (red until hot-seat, 8.2), whoever's turn it is. With the AI (8.3) the player watches the other players' heroes move wherever their fog of war doesn't hide them.
+- **The player's clicks on the map do nothing during another player's turn.** Built with 8.1.12 but untested, since the turns take no time yet; the tests come with the AI (8.3).
 
 ## Built
 
