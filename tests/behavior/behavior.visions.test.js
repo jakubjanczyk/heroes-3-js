@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import {
@@ -7,10 +8,28 @@ import {
   hoverTile,
   readInfoPopupLines
 } from './adventure-map.utils.js'
-import { clickEndTurn, expectStatusBarText, getHeroInHeroList } from './adventure-panels.utils.js'
+import {
+  clickEndTurn,
+  expectStatusBarText,
+  getHeroInHeroList,
+  readArmySlots,
+  readMoraleAndLuck,
+  readPrimarySkills,
+  readSpellPoints,
+  readTownBox,
+  showsMoraleOrLuck,
+  showsSpellPoints
+} from './adventure-panels.utils.js'
 import { castSpellFromMap } from './adventure-spells.utils.js'
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
-import { aHero, aMonster, anArtifactDefinition, aScenario, aSpellDefinition } from './builders.js'
+import {
+  aHero,
+  aMonster,
+  anArtifactDefinition,
+  aScenario,
+  aSpellDefinition,
+  aTown
+} from './builders.js'
 
 const spells = {
   VISIONS: aSpellDefinition()
@@ -20,7 +39,11 @@ const spells = {
     .withKind('adventure')
     .withCosts([4, 2, 2, 2])
     .describedAs('Visions description.')
-    .withVisions({ rangePerPower: [1, 1, 2, 3], minimumRange: 3 })
+    .withVisions({
+      rangePerPower: [1, 1, 2, 3],
+      minimumRange: 3,
+      detailsFrom: { MONSTER: 0, HERO: 2, TOWN: 3 }
+    })
     .build()
 }
 
@@ -30,6 +53,9 @@ const gameDefinitions = {
   heroes: readGameData('heroes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
+  resources: readGameData('resources.json'),
+  towns: readGameData('towns.json'),
+  buildings: readGameData('buildings.json'),
   artifacts: {
     ORB: anArtifactDefinition()
       .withName('Orb')
@@ -208,6 +234,173 @@ describe('Visions behavior', () => {
       const { user } = await setupApp(scenario, { eventLog })
 
       await expectStatusBarOver(user, 2, 0, '12 Skeletons')
+    })
+  })
+
+  describe('enemy heroes', () => {
+    const aBlueHero = (x, y = 0) =>
+      aHero()
+        .withId('hero-blue')
+        .withName('Valeska')
+        .ownedBy('blue')
+        .withPrimarySkills({ attack: 3, defense: 2, power: 1, knowledge: 2 })
+        .withSecondarySkills([{ skill: 'LEADERSHIP', level: 'ADVANCED' }])
+        .withArmy([{ creature: 'PIKEMAN', count: 12 }])
+        .at(x, y)
+
+    async function readHeroPopupAt(user, x, y) {
+      await holdRightButtonOn(user, x, y)
+      return screen.getByRole('tooltip')
+    }
+
+    const anAdvancedSeer = (options) => aSeer({ power: 2, air: 'ADVANCED', ...options })
+
+    test('given Advanced Visions when the player holds the right button on an enemy hero in range then the popup shows its skills, morale, luck, spell points and exact army', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({ hero: anAdvancedSeer(), others: [aBlueHero(3)] })
+      )
+
+      const popup = await readHeroPopupAt(user, 3, 0)
+
+      expect(readPrimarySkills(popup)).toEqual(['Attack 3', 'Defense 2', 'Power 1', 'Knowledge 2'])
+      expect(readMoraleAndLuck(popup)).toEqual(['Morale +3', 'Luck 0'])
+      expect(readSpellPoints(popup)).toBe('20')
+      expect(readArmySlots(popup)).toEqual(['Pikemen 12', '', '', '', '', '', ''])
+    })
+
+    test('given Basic Visions when the player holds the right button on an enemy hero in range then the popup shows its army as size words and no skills', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({ hero: aSeer({ power: 5, air: 'BASIC' }), others: [aBlueHero(2)] })
+      )
+
+      const popup = await readHeroPopupAt(user, 2, 0)
+
+      expect(readPrimarySkills(popup)).toEqual(['Attack', 'Defense', 'Power', 'Knowledge'])
+      expect(showsMoraleOrLuck(popup)).toBe(false)
+      expect(showsSpellPoints(popup)).toBe(false)
+      expect(readArmySlots(popup)[0]).toBe('Pikemen Pack')
+    })
+
+    // Power 2 at Advanced reaches 4 tiles: 3 across is in range, 4 across is not.
+    test('given Advanced Visions and Power 2 then an enemy hero 3 tiles away shows its army and one 4 tiles away its size', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({
+          hero: anAdvancedSeer(),
+          others: [aBlueHero(3, 0), aBlueHero(4, 4).withId('hero-blue-2').withName('Far')]
+        })
+      )
+
+      expect(readArmySlots(await readHeroPopupAt(user, 3, 0))[0]).toBe('Pikemen 12')
+      expect(readArmySlots(await readHeroPopupAt(user, 4, 4))[0]).toBe('Pikemen Pack')
+    })
+
+    test('given a hero who cast Advanced Visions when the player selects another hero who did not then an enemy hero shows its size words', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({
+          hero: anAdvancedSeer(),
+          others: [aSeer({ id: 'hero-2', name: 'Other', x: 2, y: 2 }), aBlueHero(3)]
+        })
+      )
+
+      await user.click(getHeroInHeroList('Other'))
+
+      expect(readArmySlots(await readHeroPopupAt(user, 3, 0))[0]).toBe('Pikemen Pack')
+    })
+
+    test('given a hero who cast Advanced Visions when the next day starts then an enemy hero shows its size words', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({ hero: anAdvancedSeer(), others: [aBlueHero(3)] })
+      )
+
+      await clickEndTurn(user)
+
+      expect(readArmySlots(await readHeroPopupAt(user, 3, 0))[0]).toBe('Pikemen Pack')
+    })
+
+    test('given a hero who cast Advanced Visions when the page reloads then an enemy hero still shows its army', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aVisionsScenario({ hero: anAdvancedSeer(), others: [aBlueHero(3)] })
+      await setupSeeingApp(scenario, { eventLog })
+
+      const { user } = await setupApp(scenario, { eventLog })
+
+      expect(readArmySlots(await readHeroPopupAt(user, 3, 0))[0]).toBe('Pikemen 12')
+    })
+  })
+
+  describe('towns', () => {
+    // The town's buildings cover two tiles either side of its gate and two rows above it. Its
+    // distance is measured to its bottom-right tile, two tiles right of the gate.
+    const aBlueTown = (gateX) =>
+      aTown()
+        .named('Kirkwall')
+        .ownedBy('blue')
+        .withGarrison([{ creature: 'PIKEMAN', count: 12 }])
+        .at(gateX, 8)
+
+    const anExpertSeer = () => aSeer({ power: 2, air: 'EXPERT', y: 8 })
+
+    async function readTownPopupAt(user, x, y) {
+      await holdRightButtonOn(user, x, y)
+      return screen.getByRole('tooltip')
+    }
+
+    // Power 2 at Expert reaches 6 tiles; the town's bottom-right tile is 5 across.
+    test("given Expert Visions when the player holds the right button on another player's town in range then the popup shows its hall, income and exact garrison", async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({ hero: anExpertSeer(), others: [aBlueTown(3)] })
+      )
+
+      const popup = await readTownPopupAt(user, 3, 8)
+
+      expect(within(popup).getByRole('heading').textContent).toBe('Kirkwall')
+      expect(readTownBox(popup)).toEqual({ buildings: ['Village Hall', 'No fort'], income: '500' })
+      expect(readArmySlots(popup, 'Garrison')[0]).toBe('Pikemen 12')
+    })
+
+    test("given Advanced Visions when the player holds the right button on another player's town in range then the popup shows only its fort and the garrison's size", async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({
+          hero: aSeer({ power: 2, air: 'ADVANCED', y: 8 }),
+          others: [aBlueTown(3)]
+        })
+      )
+
+      const popup = await readTownPopupAt(user, 3, 8)
+
+      expect(readTownBox(popup)).toEqual({ buildings: ['No fort'], income: null })
+      expect(readArmySlots(popup, 'Garrison')[0]).toBe('Pikemen Pack')
+    })
+
+    test('given Expert Visions when the player holds the right button on a neutral town in range then the popup shows its hall, income and exact garrison', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({
+          hero: anExpertSeer(),
+          others: [
+            aTown()
+              .named('Kirkwall')
+              .withGarrison([{ creature: 'PIKEMAN', count: 5 }])
+              .at(3, 8)
+          ]
+        })
+      )
+
+      const popup = await readTownPopupAt(user, 3, 8)
+
+      expect(readTownBox(popup)).toEqual({ buildings: ['Village Hall', 'No fort'], income: '500' })
+      expect(readArmySlots(popup, 'Garrison')[0]).toBe('Pikemen 5')
+    })
+
+    // The gate is 4 tiles across, within the range of 6, but the bottom-right tile is 6 across.
+    test('given Expert Visions then a town whose bottom-right tile is out of range shows its garrison as size words', async () => {
+      const { user } = await setupSeeingApp(
+        aVisionsScenario({ hero: anExpertSeer(), others: [aBlueTown(4)] })
+      )
+
+      const popup = await readTownPopupAt(user, 4, 8)
+
+      expect(readTownBox(popup)).toEqual({ buildings: ['No fort'], income: null })
+      expect(readArmySlots(popup, 'Garrison')[0]).toBe('Pikemen Pack')
     })
   })
 })

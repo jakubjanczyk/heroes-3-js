@@ -12,7 +12,7 @@ import { flaggedObjectOwner, visitableValues } from '../../../game/heroes/state/
 import { builtIn, isViewingPlayersTown } from '../../../game/heroes/state/towns.js'
 import { capitalize, getEntityName } from '../../../game/heroes/status-bar-text.js'
 import { describeTownBox, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
-import { seesExactCount } from '../../../game/heroes/visions.js'
+import { seenThroughVisions } from '../../../game/heroes/visions.js'
 import { visitedText } from '../../../game/heroes/visitable-objects/visits.js'
 import { heroOwner, isTileExplored, viewingPlayer } from '../../../game/state/queries.js'
 import {
@@ -83,12 +83,14 @@ export const registerInfoPopupModule = defineModule(
       }
     }
 
-    // A hero gets the same box as the info box; another player's hero shows less.
+    // A hero gets the same box as the info box; another player's hero shows less, unless Visions reach it.
     function fillHeroBox(entity) {
       popup.classList.add('info-popup--hero')
       const box = document.createElement('div')
-      const isOwn = heroOwner(state.get(), entity.id) === viewingPlayer(state.get())
-      renderHeroBox(box, document, isOwn ? describeOwnHero(entity) : describeEnemyHero(entity))
+      const seesAll =
+        heroOwner(state.get(), entity.id) === viewingPlayer(state.get()) ||
+        seenThroughVisions(state.get(), entity, definitions)
+      renderHeroBox(box, document, seesAll ? describeOwnHero(entity) : describeEnemyHero(entity))
       popup.appendChild(box)
     }
 
@@ -98,7 +100,10 @@ export const registerInfoPopupModule = defineModule(
         built: builtIn(state.get(), entity.id)
       })
       const name = getEntityName({ entity, definitions })
-      if (isViewingPlayersTown(state.get(), entity.id)) {
+      if (
+        isViewingPlayersTown(state.get(), entity.id) ||
+        seenThroughVisions(state.get(), entity, definitions)
+      ) {
         return { name, hall, fort, goldIncome, garrison: getTownGarrison({ entity, definitions }) }
       }
       return { name, fort, garrison: getTownGarrisonBySize({ entity, definitions }) }
@@ -137,7 +142,7 @@ export const registerInfoPopupModule = defineModule(
         ownerColorName: owner ? capitalize(owner) : null,
         visitedText: visitedText(state.get(), entity, definitions),
         values: entity ? visitableValues(state.get(), entity.id) : {},
-        exactCount: seesExactCount(state.get(), entity, definitions)
+        exactCount: seenThroughVisions(state.get(), entity, definitions)
       })
       for (const line of lines) {
         fillLine(line)

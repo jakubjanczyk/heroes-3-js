@@ -463,7 +463,7 @@ In five parts. See `docs/notes/2026-11-06-adventure-map-spells.md`.
 - [x] 4.8.8.2 Dimension Door: aiming at a tile on the map, its range and casts a day
 - [x] 4.8.8.3 Fly: lasts the day, over water and obstacles, with a 40% / 20% / no penalty
 - [x] 4.8.8.4 Visions: the exact count of monsters within range, for the day
-- [ ] Visions: whether the monsters would join, pay, flee or fight with 5.2; enemy heroes and towns with 8.1; Rogues acting as Expert Visions with the other factions (5.1)
+- [ ] Visions: whether the monsters would join, pay, flee or fight with 5.2; Rogues acting as Expert Visions with the other factions (5.1)
 - [ ] 4.8.8.5 View World, with View Air and View Earth: moved to the end of the work order (66); the note says what the game's screen looks like
 - [ ] Summon Boat, Scuttle Boat and Water Walk with boats (7.10); Disguise with enemy heroes (8.1)
 
@@ -1096,7 +1096,7 @@ In eighteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.11 An enemy hero defends its town, with its garrison beside it; the winner stays outside the town, as after beating a garrison
 - [x] 8.1.12 Taking turns: each player in colour order, then the new day for every player at once: every hero's movement points back, and computer players' starting resources (empty turns until the AI, 8.3)
 - [x] 8.1.15 The town box for towns that aren't yours: another player's or a neutral town's popup shows its name, fort and garrison with sizes as words, without the hall or income
-- [ ] 8.1.16 Visions on enemy heroes (Advanced) and towns (Expert)
+- [x] 8.1.16 Visions on enemy heroes (Advanced) and towns (Expert)
 - [ ] 8.1.17 The Thieves' Guild
 
 ### 8.2 Hot-Seat Multiplayer

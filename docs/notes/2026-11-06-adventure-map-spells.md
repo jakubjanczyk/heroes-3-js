@@ -96,7 +96,7 @@ Checked against the wiki (Visions, raw source, and its copy of `GENRLTXT.TXT`), 
 ## Left after 4.8.8.4
 
 - Whether the monsters would join, pay, flee or fight, in the popup (5.2).
-- Enemy heroes at Advanced, enemy towns at Expert (8.1).
+- Enemy heroes at Advanced, enemy towns at Expert: built with 8.1.16.
 - A Rogue in the army acting as Expert Visions all the time, with Rogues (5.1, the other factions).
 
 ## View World, View Air and View Earth — 4.8.8.5 (moved to the end of the roadmap)
