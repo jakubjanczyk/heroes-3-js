@@ -637,6 +637,12 @@
     box-shadow: none;
   }
 
+  & .army-slot:nth-child(1) {
+    grid-column: 2 / span 2;
+  }
+}
+
+:is(.hero-box, .town-box) {
   & .army-slot__count {
     position: absolute;
     inset-inline-end: 2px;
@@ -654,14 +660,17 @@
 
   /* A size word ("Several") in place of the count, centred so it fits under the creature. */
   & .army-slot__count--word {
-    inset-inline: 0;
+    inset-inline: -2px;
     font-size: 0.5625rem;
     text-align: center;
+    white-space: nowrap;
   }
+}
 
-  & .army-slot:nth-child(1) {
-    grid-column: 2 / span 2;
-  }
+/* The town box's slots are narrower than the hero box's. */
+.town-box .army-slot__count--word {
+  font-size: 0.5rem;
+  letter-spacing: -0.02em;
 }
 
 /* The stack picked for moving in the info box, framed in yellow as on the hero and town screens. */
