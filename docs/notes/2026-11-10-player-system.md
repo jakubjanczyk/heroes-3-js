@@ -140,6 +140,14 @@ Later: Disguise and enemy heroes casting in battle (Eagle Eye, Magic Mirror, Cur
   - No owner line: the box names no owner, and the town's flag on the map says whose it is. Our popups for mines and dwellings keep their "(Blue)" line.
   - Left out, as for the player's own towns: the "built this turn" picture, the resource silo's resource and the garrisoned hero's icon (no garrison heroes yet).
   - A hero standing on another player's town's gate is what the popup shows on that tile, as before (8.1.11).
+- **Taverns and other players' town boxes** (checked for 8.1.18 against the wiki's Tavern and Thieves' Guild pages, raw source, and a web search; an open-source engine doesn't do this and shows every town as 8.1.15 does):
+  - The number of the player's towns with a Tavern (the Brotherhood of the Sword doesn't count again, as in the Thieves' Guild) decides what another player's town box shows of its garrison. Both wiki pages agree:
+    - no Tavern: the garrison looks empty, "even though it is not" (the Tavern page); the name and fort still show;
+    - 1 Tavern: each stack's creature, without its size;
+    - 2 or more: each creature with its size as a word, as 8.1.15 shows now.
+  - Expert Visions in range (8.1.16) still shows the town in full, whatever the Taverns.
+  - The wiki says the same for map garrisons, which aren't on the map yet; it says nothing about an enemy hero's popup, which keeps its size words (8.1.3).
+  - Neither page says whether a neutral town counts: both say "enemy" or "opponent's" town.
 - **Visions on enemy heroes and towns** (checked for 8.1.16 against the wiki's Visions page, raw source, an open-source engine's spell config (`spells/adventure.json`), its hero and town info and its Visions range check, and the game manual as quoted in 8.1.3):
   - Cast at Advanced or Expert, Visions also shows another player's hero in range in full: the right-click popup is the box the player's own heroes get, with the primary skills, morale, luck, spell points (the ones it has now) and each stack's exact count. At Basic it shows nothing more for heroes.
   - Cast at Expert, it also shows a town that isn't the player's (another player's or a neutral one) in full: the hall, the daily income and the garrison's exact counts, as the player's own town box.
