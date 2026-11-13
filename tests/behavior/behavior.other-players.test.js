@@ -17,6 +17,12 @@ import {
   readPreviewPathTiles
 } from './adventure-map.utils.js'
 import {
+  clickEndTurn,
+  endTurns,
+  expectCalendarDate,
+  expectInteractionModalOpen,
+  expectMovementPoints,
+  expectResourceTotal,
   getTownInTownList,
   readArmySlots,
   readPrimarySkills,
@@ -24,7 +30,7 @@ import {
   showsMoraleOrLuck,
   showsSpellPoints
 } from './adventure-panels.utils.js'
-import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { loadAppStyles } from './app-styles.js'
 import { queryBattleScreen } from './battle.utils.js'
 import { aDwelling, aHero, aMine, aScenario, aTown } from './builders.js'
@@ -85,6 +91,61 @@ describe('other players behavior', () => {
     expect(readFlag(getDwellingEntity())).toEqual({
       name: 'Blue player flag',
       colour: PLAYER_BLUE
+    })
+  })
+
+  describe('taking turns', () => {
+    // Each player owns a gold mine, 1000 gold a day.
+    function aTurnsScenario() {
+      return aScenario()
+        .withSize(12, 4)
+        .withEntities(
+          aHero().at(0, 3),
+          aMine().withId('red-mine').ownedBy('red').at(2, 1),
+          aHero().withId('hero-2').withName('Valeska').ownedBy('blue').at(11, 3),
+          aMine().withId('tan-mine').ownedBy('tan').at(5, 1),
+          aMine().withId('blue-mine').ownedBy('blue').at(8, 1)
+        )
+        .withDefinitions({
+          mines: readGameData('mines.json'),
+          resources: readGameData('resources.json')
+        })
+        .build()
+    }
+
+    test("given blue and tan players when the player ends the turn then it is the player's next day, with their own income", async () => {
+      const { user } = await setupMovementBehaviorApp({ loadGameOptions: aTurnsScenario() })
+      await confirmMove(user, 3, 3)
+      expectMovementPoints(1200)
+
+      await clickEndTurn(user)
+
+      expectCalendarDate({ month: 1, week: 1, day: 2 })
+      expectMovementPoints(1500)
+      expectResourceTotal('Gold', 1000)
+    })
+
+    test('given blue and tan players when the player ends the turn and reloads then it is still day 2 and the hero moves', async () => {
+      const session = { eventLog: createMemoryEventLog(), loadGameOptions: aTurnsScenario() }
+      const { user } = await setupMovementBehaviorApp(session)
+      await clickEndTurn(user)
+
+      const reloaded = await setupMovementBehaviorApp(session)
+      expectCalendarDate({ month: 1, week: 1, day: 2 })
+      await confirmMove(reloaded.user, 1, 3)
+
+      expectHeroAt(1, 3)
+      expectResourceTotal('Gold', 1000)
+    })
+
+    test('given blue and tan players when the player ends the turn on day 7 then the new week begins once', async () => {
+      const { user } = await setupMovementBehaviorApp({ loadGameOptions: aTurnsScenario() })
+      await endTurns(user, 6)
+
+      await clickEndTurn(user)
+
+      expectCalendarDate({ month: 1, week: 2, day: 1 })
+      expectInteractionModalOpen('A new week begins. Week 2')
     })
   })
 

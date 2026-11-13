@@ -1,5 +1,11 @@
 import { toMovementPointsOrNull } from '../domain/value-objects/movement-points.js'
-import { activePlayer, heroIdsOf, heroMovementPoints, turnNumber } from '../state/queries.js'
+import {
+  activePlayer,
+  heroIdsOf,
+  heroMovementPoints,
+  playerColors,
+  turnNumber
+} from '../state/queries.js'
 import { artifactLandMovementPoints } from './artifacts.js'
 import { calendarDateOfTurn } from './calendar.js'
 
@@ -25,19 +31,28 @@ function bonusMovementPointsOn(state, heroId, nextTurnNumber, definitions) {
   )
 }
 
-// The new day, and every hero of the player whose turn ends back to full movement points, more
-// for the rest of the week after the Stables and for the artifacts worn as the day starts.
-export function decideEndTurn(state, definitions) {
+// The player's turn ends, then the turn of each computer player after them, empty until the AI
+// plays them (every other player is a computer player until hot-seat).
+export function decideEndTurn(state) {
+  const players = playerColors(state)
+  return { playerTurnsEnded: players.slice(players.indexOf(activePlayer(state))) }
+}
+
+// The new day for every player at once: every hero back to full movement points, more for the
+// rest of the week after the Stables and for the artifacts worn as the day starts.
+export function decideNewDay(state, definitions) {
   const nextTurnNumber = turnNumber(state) + 1
   return {
     turnNumber: nextTurnNumber,
-    movementPoints: heroIdsOf(state, activePlayer(state)).map((heroId) => {
-      const { max } = heroMovementPoints(state, heroId)
-      return {
-        heroId,
-        value: max + bonusMovementPointsOn(state, heroId, nextTurnNumber, definitions),
-        max
-      }
-    })
+    movementPoints: playerColors(state)
+      .flatMap((player) => heroIdsOf(state, player))
+      .map((heroId) => {
+        const { max } = heroMovementPoints(state, heroId)
+        return {
+          heroId,
+          value: max + bonusMovementPointsOn(state, heroId, nextTurnNumber, definitions),
+          max
+        }
+      })
   }
 }
