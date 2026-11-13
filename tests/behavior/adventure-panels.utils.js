@@ -41,7 +41,9 @@ export function readArmySlots(container, listName = 'Army') {
     .getAllByRole('listitem')
     .map((slot) => {
       const creature = within(slot).queryByRole('img')
-      return creature ? `${creature.getAttribute('aria-label')} ${slot.textContent.trim()}` : ''
+      return creature
+        ? `${creature.getAttribute('aria-label')} ${slot.textContent.trim()}`.trim()
+        : ''
     })
 }
 

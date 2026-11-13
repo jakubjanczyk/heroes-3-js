@@ -56,11 +56,15 @@ export function renderArmyStack(document, { name, count }) {
   picture.setAttribute('aria-label', name)
   picture.title = name
 
+  stack.append(picture)
+  if (count === undefined) {
+    return stack
+  }
+
   const countLabel = document.createElement('span')
   countLabel.className =
     typeof count === 'string' ? 'army-slot__count army-slot__count--word' : 'army-slot__count'
   countLabel.textContent = String(count)
-
-  stack.append(picture, countLabel)
+  stack.append(countLabel)
   return stack
 }

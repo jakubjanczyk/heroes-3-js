@@ -1098,7 +1098,7 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 - [x] 8.1.15 The town box for towns that aren't yours: another player's or a neutral town's popup shows its name, fort and garrison with sizes as words, without the hall or income
 - [x] 8.1.16 Visions on enemy heroes (Advanced) and towns (Expert)
 - [x] 8.1.17 The Thieves' Guild: the Tavern's button ranks every player row by row, with as much shown as the player's Taverns allow
-- [ ] 8.1.18 Taverns and other players' town boxes: with no Tavern another player's town shows no garrison, with one its creatures without their sizes, with two or more the size words
+- [x] 8.1.18 Taverns and other players' town boxes: with no Tavern another player's town shows no garrison, with one its creatures without their sizes, with two or more the size words
 
 ### 8.2 Hot-Seat Multiplayer
 - [ ] Turn transition screen: "Player X's Turn - Press to continue"

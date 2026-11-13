@@ -340,13 +340,28 @@ describe('Visions behavior', () => {
 
     const anExpertSeer = () => aSeer({ power: 2, air: 'EXPERT', y: 8 })
 
+    // Two Taverns show another player's garrison as size words; the towns stand right of the map
+    // the tests use, out of every range.
+    const twoTownsWithATavern = () =>
+      ['Whitemoon', 'Greenvale'].map((name, index) =>
+        aTown()
+          .withId(`town-${index + 2}`)
+          .named(name)
+          .ownedByPlayer()
+          .withBuildings(['TAVERN'])
+          .at(12 + index * 5, 2)
+      )
+
+    const aScenarioWithTwoTaverns = ({ hero, others }) =>
+      aVisionsScenario({ hero, others: [...others, ...twoTownsWithATavern()] }).withSize(20, 9)
+
     async function readTownPopupAt(user, x, y) {
       await holdRightButtonOn(user, x, y)
       return screen.getByRole('tooltip')
     }
 
     // Power 2 at Expert reaches 6 tiles; the town's bottom-right tile is 5 across.
-    test("given Expert Visions when the player holds the right button on another player's town in range then the popup shows its hall, income and exact garrison", async () => {
+    test("given Expert Visions and no Tavern when the player holds the right button on another player's town in range then the popup shows its hall, income and exact garrison", async () => {
       const { user } = await setupSeeingApp(
         aVisionsScenario({ hero: anExpertSeer(), others: [aBlueTown(3)] })
       )
@@ -360,7 +375,7 @@ describe('Visions behavior', () => {
 
     test("given Advanced Visions when the player holds the right button on another player's town in range then the popup shows only its fort and the garrison's size", async () => {
       const { user } = await setupSeeingApp(
-        aVisionsScenario({
+        aScenarioWithTwoTaverns({
           hero: aSeer({ power: 2, air: 'ADVANCED', y: 8 }),
           others: [aBlueTown(3)]
         })
@@ -394,7 +409,7 @@ describe('Visions behavior', () => {
     // The gate is 4 tiles across, within the range of 6, but the bottom-right tile is 6 across.
     test('given Expert Visions then a town whose bottom-right tile is out of range shows its garrison as size words', async () => {
       const { user } = await setupSeeingApp(
-        aVisionsScenario({ hero: anExpertSeer(), others: [aBlueTown(4)] })
+        aScenarioWithTwoTaverns({ hero: anExpertSeer(), others: [aBlueTown(4)] })
       )
 
       const popup = await readTownPopupAt(user, 4, 8)
