@@ -26,8 +26,17 @@ export const registerMovementModule = defineModule(
     const movementRules = resolveMovementRules(config?.content?.movementRules)
 
     const heroRoutes = createHeroRoutes({ entityBehaviors, movementRules, getState: state.get })
+    // Another player's hero, moved when a move request names it.
+    let otherHeroId = null
+    const otherHeroRoutes = createHeroRoutes({
+      entityBehaviors,
+      movementRules,
+      getState: state.get,
+      getHeroId: () => otherHeroId
+    })
 
     let movement = null
+    let otherHeroMovement = null
     let isMoveCommandInProgress = false
 
     function teleport({ heroId, tile }) {
@@ -46,9 +55,96 @@ export const registerMovementModule = defineModule(
       }
     }
 
-    function isHeroOwnersTurn() {
+    function isHeroOwnersTurn(heroId) {
       const current = state.get()
-      return heroOwner(current, heroRoutes.getHero()?.id) === activePlayer(current)
+      return heroOwner(current, heroId) === activePlayer(current)
+    }
+
+    function createMovement(routes, movementOptions) {
+      return routes.createMovementSystem({
+        ...movementOptions,
+        spendMovementPoints: (amount) => {
+          emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
+            heroId: routes.getHero()?.id,
+            amount
+          })
+        },
+        onMoveStart: ({ hero, from, targetTile }) => {
+          emit(APP_FACT_MOVE_STARTED, {
+            heroId: hero?.id,
+            from,
+            targetTile
+          })
+        },
+        onMoveFinish: ({ hero, targetTile, reachedTile, interactions }) => {
+          const detail = {
+            moved: true,
+            heroId: hero?.id,
+            targetTile,
+            reachedTile
+          }
+          // What the hero does where it stopped, and what follows once the first is over.
+          const [interaction, ...queuedInteractions] = interactions
+          if (interaction) {
+            detail.interaction = interaction
+            detail.queuedInteractions = queuedInteractions
+          }
+
+          // A module may ask for the next move as soon as it hears this one is over.
+          isMoveCommandInProgress = false
+          emit(APP_FACT_MOVE_FINISHED, detail)
+        },
+        onStep: ({ hero: steppedHero, from, to }) => {
+          const heroId = steppedHero?.id
+          if (typeof heroId !== 'string' || heroId.length === 0) {
+            return
+          }
+
+          emit(APP_FACT_HERO_MOVED, {
+            heroId,
+            from,
+            to
+          })
+        }
+      })
+    }
+
+    function movementOf(heroId) {
+      if (!heroId || heroId === heroRoutes.getHero()?.id) {
+        return { movement, routes: heroRoutes }
+      }
+
+      otherHeroId = heroId
+      return { movement: otherHeroMovement, routes: otherHeroRoutes }
+    }
+
+    function move({ heroId, targetTile, path }) {
+      const { movement: heroMovement, routes } = movementOf(heroId)
+      const movingHeroId = routes.getHero()?.id
+      if (!heroMovement || !movingHeroId || isMoveCommandInProgress) {
+        return
+      }
+      if (!isHeroOwnersTurn(movingHeroId)) {
+        return
+      }
+
+      const arrivalPlan = buildArrivalPlan({
+        occupancy: routes.occupancy,
+        entityBehaviors,
+        targetTile,
+        movingEntityId: movingHeroId,
+        arrivalContext: routes.arrivalContext()
+      })
+
+      isMoveCommandInProgress = true
+
+      void (async () => {
+        try {
+          await heroMovement.moveHeroTo(targetTile, { path, arrivalPlan })
+        } finally {
+          isMoveCommandInProgress = false
+        }
+      })()
     }
 
     return {
@@ -58,56 +154,22 @@ export const registerMovementModule = defineModule(
           handler: (event) => {
             const world = event.detail
             heroRoutes.onWorldReady(world)
+            otherHeroRoutes.onWorldReady(world)
+            otherHeroId = null
+            // Other players' heroes move at once until the player can watch them.
+            otherHeroMovement = createMovement(otherHeroRoutes, {
+              sleep: () => Promise.resolve(),
+              stepDelayMs: 0
+            })
 
             if (!heroRoutes.getHero()) {
               movement = null
               return
             }
 
-            movement = heroRoutes.createMovementSystem({
+            movement = createMovement(heroRoutes, {
               ...(movementSleep ? { sleep: movementSleep } : {}),
-              stepDelayMs,
-              spendMovementPoints: (amount) => {
-                emit(APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED, {
-                  heroId: heroRoutes.getHero()?.id,
-                  amount
-                })
-              },
-              onMoveStart: ({ hero, from, targetTile }) => {
-                emit(APP_FACT_MOVE_STARTED, {
-                  heroId: hero?.id,
-                  from,
-                  targetTile
-                })
-              },
-              onMoveFinish: ({ hero, targetTile, reachedTile, interactions }) => {
-                const detail = {
-                  moved: true,
-                  heroId: hero?.id,
-                  targetTile,
-                  reachedTile
-                }
-                // What the hero does where it stopped, and what follows once the first is over.
-                const [interaction, ...queuedInteractions] = interactions
-                if (interaction) {
-                  detail.interaction = interaction
-                  detail.queuedInteractions = queuedInteractions
-                }
-
-                emit(APP_FACT_MOVE_FINISHED, detail)
-              },
-              onStep: ({ hero: steppedHero, from, to }) => {
-                const heroId = steppedHero?.id
-                if (typeof heroId !== 'string' || heroId.length === 0) {
-                  return
-                }
-
-                emit(APP_FACT_HERO_MOVED, {
-                  heroId,
-                  from,
-                  to
-                })
-              }
+              stepDelayMs
             })
           }
         },
@@ -134,30 +196,7 @@ export const registerMovementModule = defineModule(
         },
         {
           type: APP_COMMAND_MOVE_REQUESTED,
-          handler: (event) => {
-            if (!movement || isMoveCommandInProgress || !isHeroOwnersTurn()) {
-              return
-            }
-
-            const { targetTile, path } = event.detail
-            const arrivalPlan = buildArrivalPlan({
-              occupancy: heroRoutes.occupancy,
-              entityBehaviors,
-              targetTile,
-              movingEntityId: heroRoutes.getHero()?.id,
-              arrivalContext: heroRoutes.arrivalContext()
-            })
-
-            isMoveCommandInProgress = true
-
-            void (async () => {
-              try {
-                await movement.moveHeroTo(targetTile, { path, arrivalPlan })
-              } finally {
-                isMoveCommandInProgress = false
-              }
-            })()
-          }
+          handler: (event) => move(event.detail)
         }
       ]
     }

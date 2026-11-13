@@ -231,6 +231,8 @@
     {"id": "resource-50", "kind": "RESOURCE", "type": "GOLD_PILE", "tile": {"x": 26, "y": 19}},
     {"id": "resource-51", "kind": "RESOURCE", "type": "WOOD_PILE", "tile": {"x": 33, "y": 19}},
     {"id": "resource-52", "kind": "RESOURCE", "type": "ORE_PILE", "tile": {"x": 40, "y": 19}},
+    {"id": "resource-53", "kind": "RESOURCE", "type": "GOLD_PILE", "tile": {"x": 61, "y": 51}},
+    {"id": "resource-54", "kind": "RESOURCE", "type": "WOOD_PILE", "tile": {"x": 60, "y": 54}},
     {"id": "mine-1", "kind": "MINE", "type": "GOLD_MINE", "tile": {"x": 14, "y": 16}},
     {"id": "mine-2", "kind": "MINE", "type": "SAWMILL", "tile": {"x": 22, "y": 9}},
     {"id": "mine-3", "kind": "MINE", "type": "ORE_PIT", "tile": {"x": 31, "y": 16}},

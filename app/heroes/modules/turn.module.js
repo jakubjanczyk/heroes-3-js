@@ -1,9 +1,5 @@
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
-import {
-  decideEndTurn,
-  decideNewDay,
-  decideSpendMovementPoints
-} from '../../../game/heroes/turn-system.js'
+import { decideNewDay, decideSpendMovementPoints } from '../../../game/heroes/turn-system.js'
 import { activePlayer, isDayOver, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
@@ -29,10 +25,6 @@ export const registerTurnModule = defineModule(
     let definitions = {}
     let moveStartedAt = 0
     let suppressEndTurnUntil = 0
-
-    function isPlayersTurn() {
-      return activePlayer(state.get()) === viewingPlayer(state.get())
-    }
 
     function startNewDay() {
       const newDay = decideNewDay(state.get(), definitions)
@@ -95,18 +87,17 @@ export const registerTurnModule = defineModule(
         },
         {
           type: APP_COMMAND_END_TURN_REQUESTED,
-          handler: () => {
-            if (!state.get() || isMoving || now() < suppressEndTurnUntil || !isPlayersTurn()) {
+          handler: (event) => {
+            const current = state.get()
+            const player = event.detail?.player ?? viewingPlayer(current)
+            if (!current || player !== activePlayer(current)) {
+              return
+            }
+            if (player === viewingPlayer(current) && (isMoving || now() < suppressEndTurnUntil)) {
               return
             }
 
-            const { playerTurnsEnded } = decideEndTurn(state.get())
-            emitAll(
-              playerTurnsEnded.map((player) => ({
-                type: APP_FACT_PLAYER_TURN_ENDED,
-                detail: { player }
-              }))
-            )
+            emit(APP_FACT_PLAYER_TURN_ENDED, { player })
             if (isDayOver(state.get())) {
               startNewDay()
             }
