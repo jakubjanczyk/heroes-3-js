@@ -1,0 +1,44 @@
+import { describeArmySize } from './monster-count.js'
+
+export const ARMY_SLOT_COUNT = 7
+
+// A creature stack with the name the game shows for its count: "Skeleton" for one, else "Skeletons".
+export function describeStack({ creature, count }, definitions) {
+  const definition = definitions?.monsters?.[creature]
+  const singularName = definition?.name ?? creature
+  const pluralName = definition?.namePlural ?? singularName
+  return {
+    creature,
+    count,
+    name: count === 1 ? singularName : pluralName,
+    singularName,
+    pluralName
+  }
+}
+
+function describeSlots(stacks, definitions) {
+  return Array.from({ length: ARMY_SLOT_COUNT }, (_, index) => {
+    const stack = stacks?.[index]
+    return stack ? describeStack(stack, definitions) : null
+  })
+}
+
+export function getHeroArmy({ entity, definitions }) {
+  return describeSlots(entity?.army, definitions)
+}
+
+function withSizeWords(slots) {
+  return slots.map((stack) => stack && { ...stack, count: describeArmySize(stack.count) })
+}
+
+export function getHeroArmyBySize({ entity, definitions }) {
+  return withSizeWords(getHeroArmy({ entity, definitions }))
+}
+
+export function getTownGarrison({ entity, definitions }) {
+  return describeSlots(entity?.garrison, definitions)
+}
+
+export function getTownGarrisonBySize({ entity, definitions }) {
+  return withSizeWords(getTownGarrison({ entity, definitions }))
+}
