@@ -1627,6 +1627,8 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [0, 0, 0, 0],
+    "damage": { "base": [600, 600, 600, 600], "perPower": 0 },
+    "damageInDescription": true,
     "descriptions": [
       {
         "title": "Titan's Lightning Bolt",

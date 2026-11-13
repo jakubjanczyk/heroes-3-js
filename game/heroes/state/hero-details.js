@@ -1,7 +1,12 @@
 import { sameTile } from '../../../engine/tile-utils.js'
 import { isHero, isTown } from '../../domain/entity-queries.js'
 import { updateHero } from '../../state/core-slices.js'
-import { NO_ARTIFACTS, putOnArtifact, startingArtifacts } from '../artifacts.js'
+import {
+  artifactGrantsSpellBook,
+  NO_ARTIFACTS,
+  putOnArtifact,
+  startingArtifacts
+} from '../artifacts.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import { levelForExperience } from '../hero-experience.js'
 import {
@@ -31,8 +36,33 @@ function captureArtifacts(heroes, detail, { definitions }) {
 
 const spendSpellPoints = updateHero((hero, { cost }) => ({ spellPoints: hero.spellPoints - cost }))
 
+// The spell book stays when the artifact that gave it comes off.
+function withGrantedSpellBook(hero, definitions) {
+  return !hero.spellBook && artifactGrantsSpellBook(hero.artifacts, definitions)
+    ? { ...hero, spellBook: true }
+    : hero
+}
+
+function grantSpellBooks(heroes, definitions) {
+  return Object.fromEntries(
+    Object.entries(heroes).map(([heroId, hero]) => [
+      heroId,
+      withGrantedSpellBook(hero, definitions)
+    ])
+  )
+}
+
+const grantingSpellBooks = (handlers) =>
+  Object.fromEntries(
+    Object.entries(handlers).map(([fact, handler]) => [
+      fact,
+      (heroes, detail, context) =>
+        grantSpellBooks(handler(heroes, detail, context), context.definitions)
+    ])
+  )
+
 function detailsOf(hero, definitions) {
-  const details = startingDetailsOf(hero, definitions)
+  const details = withGrantedSpellBook(startingDetailsOf(hero, definitions), definitions)
   return { ...details, spellPoints: maxSpellPoints({ entity: details, definitions }) }
 }
 
@@ -151,7 +181,7 @@ export const heroDetailsSlice = {
         .filter(isHero)
         .map((hero) => [hero.id, detailsOf(hero, definitions)])
     ),
-  on: {
+  on: grantingSpellBooks({
     'fact.hero.experience.gained': updateHero((hero, { amount }) => ({
       experience: hero.experience + amount
     })),
@@ -210,7 +240,7 @@ export const heroDetailsSlice = {
         ? { ...heroes[heroId], army, ...(spellPoints === undefined ? {} : { spellPoints }) }
         : detailsOf({ name, heroClass, army }, definitions)
     })
-  }
+  })
 }
 
 export function heroById(state, heroId) {
