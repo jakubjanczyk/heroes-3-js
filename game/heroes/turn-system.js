@@ -1,11 +1,5 @@
 import { toMovementPointsOrNull } from '../domain/value-objects/movement-points.js'
-import {
-  activePlayer,
-  heroIdsOf,
-  heroMovementPoints,
-  playerColors,
-  turnNumber
-} from '../state/queries.js'
+import { heroIdsOf, heroMovementPoints, playerColors, turnNumber } from '../state/queries.js'
 import { artifactLandMovementPoints } from './artifacts.js'
 import { calendarDateOfTurn } from './calendar.js'
 
@@ -29,13 +23,6 @@ function bonusMovementPointsOn(state, heroId, nextTurnNumber, definitions) {
     weekMovementPointsOn(state, heroId, nextTurnNumber) +
     artifactLandMovementPoints(state.heroDetails?.[heroId]?.artifacts, definitions)
   )
-}
-
-// The player's turn ends, then the turn of each computer player after them, empty until the AI
-// plays them (every other player is a computer player until hot-seat).
-export function decideEndTurn(state) {
-  const players = playerColors(state)
-  return { playerTurnsEnded: players.slice(players.indexOf(activePlayer(state))) }
 }
 
 // The new day for every player at once: every hero back to full movement points, more for the
