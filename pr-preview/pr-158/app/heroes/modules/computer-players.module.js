@@ -35,7 +35,7 @@ export const registerComputerPlayersModule = defineModule(
     function routesOf(heroId) {
       planningHeroId = heroId
       return {
-        planRoute: routePlanner.planRoute,
+        planRoutes: routePlanner.planRoutes,
         getPathToBattle: routePlanner.getPathToBattle,
         routeCost: heroRoutes.routeCost,
         chargeStepsToday: heroRoutes.chargeStepsToday

@@ -15,9 +15,10 @@ export function decideComputerHeroMove({ state, heroId, resourcePiles, routes })
     return null
   }
 
-  const [nearest] = resourcePiles
-    .filter((pile) => !isRemoved(state, pile.id))
-    .map((pile) => ({ tile: pile.tile, path: routes.planRoute(pile.tile) }))
+  const piles = resourcePiles.filter((pile) => !isRemoved(state, pile.id))
+  const paths = routes.planRoutes(piles.map((pile) => pile.tile))
+  const [nearest] = piles
+    .map((pile, index) => ({ tile: pile.tile, path: paths[index] }))
     .filter(({ path }) => path !== null && routes.getPathToBattle(path) === null)
     .map((target) => ({ ...target, cost: routes.routeCost(target.path) }))
     .sort(byCostThenTile)

@@ -1,5 +1,5 @@
-import { findPath } from '../../engine/pathfinding.js'
-import { sameTile } from '../../engine/tile-utils.js'
+import { findPath, findPaths } from '../../engine/pathfinding.js'
+import { sameTile, tileKey } from '../../engine/tile-utils.js'
 import { toEntityIdOrNull } from '../domain/value-objects/entity-id.js'
 
 function isStep(from, to) {
@@ -112,14 +112,13 @@ export function createMovementSystem({
     return walkable || (getFlightPoints() !== null && canFlyOver(tile))
   }
 
-  function findRoute(hero, toTile) {
-    const visitsTargetFromNextTo = isVisitedFromNextTo(toTile, hero)
+  // `visitsFromNextTo(tile)` says whether a route to `tile` ends next to it, to visit it.
+  function routeRules(hero, visitsFromNextTo) {
     const flightPoints = getFlightPoints()
     const isAirborne = (routeCost) => flightPoints !== null && routeCost <= flightPoints
     const canWalkOn = (tile) => map.isPassable(tile) && !isTakenByOther(tile, hero)
-    return findPath({
+    return {
       fromTile: hero.tile,
-      toTile,
       map,
       getStepCost,
       // A hero never walks or flies through tiles its owner has not explored.
@@ -131,8 +130,15 @@ export function createMovementSystem({
         !crossesEntranceTop(from, to) &&
         (sameTile(from, hero.tile) ||
           isAirborne(routeCost) ||
-          (canWalkOn(from) &&
-            (guardsAt(from).length === 0 || (visitsTargetFromNextTo && sameTile(to, toTile)))))
+          (canWalkOn(from) && (guardsAt(from).length === 0 || visitsFromNextTo(to))))
+    }
+  }
+
+  function findRoute(hero, toTile) {
+    const visitsTargetFromNextTo = isVisitedFromNextTo(toTile, hero)
+    return findPath({
+      ...routeRules(hero, (tile) => visitsTargetFromNextTo && sameTile(tile, toTile)),
+      toTile
     })
   }
 
@@ -183,25 +189,51 @@ export function createMovementSystem({
     return fightsAtTarget ? path : null
   }
 
-  // The route the hero would take to `toTile`, or null when it can't go there.
-  // A destination holding an entity is only a valid target if the hero can interact with it.
-  function planRoute(toTile) {
-    const hero = getHero()
-    if (!hero?.tile || !isExplored(toTile)) {
-      return null
+  // Whether the hero may plan a route ending on `toTile`: one holding an entity only when the hero
+  // can interact with it.
+  function canTarget(hero, toTile) {
+    if (!isExplored(toTile)) {
+      return false
     }
 
     const destinationOccupant = occupancy.getAt(toTile)
-    if (
-      destinationOccupant &&
-      destinationOccupant.id !== hero.id &&
-      !entityBehaviors.isArrivalInteractionEntity(destinationOccupant)
-    ) {
+    return (
+      !destinationOccupant ||
+      destinationOccupant.id === hero.id ||
+      entityBehaviors.isArrivalInteractionEntity(destinationOccupant)
+    )
+  }
+
+  // The route the hero would take to `toTile`, or null when it can't go there.
+  function planRoute(toTile) {
+    const hero = getHero()
+    if (!hero?.tile || !canTarget(hero, toTile)) {
       return null
     }
 
     const path = findRoute(hero, toTile)
     return path && path.length >= 2 ? path : null
+  }
+
+  // `planRoute` for each of `toTiles`, from one search.
+  function planRoutes(toTiles) {
+    const hero = getHero()
+    if (!hero?.tile) {
+      return toTiles.map(() => null)
+    }
+
+    const targets = toTiles.filter((toTile) => canTarget(hero, toTile))
+    const visitedFromNextTo = new Set(
+      targets.filter((toTile) => isVisitedFromNextTo(toTile, hero)).map(tileKey)
+    )
+    const paths = findPaths({
+      ...routeRules(hero, (tile) => visitedFromNextTo.has(tileKey(tile))),
+      toTiles: targets
+    })
+    return toTiles.map((toTile) => {
+      const path = paths[targets.indexOf(toTile)] ?? null
+      return path && path.length >= 2 ? path : null
+    })
   }
 
   // What stands on `toTile` for the moving hero: nothing, an entity the arrival plan interacts
@@ -397,6 +429,7 @@ export function createMovementSystem({
 
   return {
     planRoute,
+    planRoutes,
     getPathToBattle,
     battlesOnArrivalAt,
     moveHeroTo
