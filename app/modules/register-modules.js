@@ -8,6 +8,7 @@ import { registerMovementModule } from './movement.module.js'
 import { registerPreviewViewModule } from './preview-view.module.js'
 import { registerSelectionModule } from './selection.module.js'
 import { registerTerrainViewModule } from './terrain-view.module.js'
+import { registerTurnInputLockModule } from './turn-input-lock.module.js'
 import { registerWorldModule } from './world.module.js'
 import { registerWorldViewModule } from './world-view.module.js'
 
@@ -17,6 +18,7 @@ const PHASE_ORDER = Object.freeze({
 })
 
 export const CORE_MODULES = [
+  registerTurnInputLockModule,
   registerWorldModule,
   registerMovementModule,
   registerInteractionModule,

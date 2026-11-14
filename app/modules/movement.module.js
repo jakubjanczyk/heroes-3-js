@@ -1,7 +1,13 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
 import { buildArrivalPlan } from '../../game/domain/movement/arrival-plan.js'
 import { resolveMovementRules } from '../../game/domain/movement/movement-rules.js'
-import { activePlayer, heroOwner, heroTile } from '../../game/state/queries.js'
+import {
+  activePlayer,
+  heroOwner,
+  heroTile,
+  isTileExplored,
+  viewingPlayer
+} from '../../game/state/queries.js'
 import { createHeroRoutes } from '../../game/systems/hero-routes.js'
 import {
   APP_COMMAND_HERO_TELEPORT_REQUESTED,
@@ -58,6 +64,21 @@ export const registerMovementModule = defineModule(
     function isHeroOwnersTurn(heroId) {
       const current = state.get()
       return heroOwner(current, heroId) === activePlayer(current)
+    }
+
+    function sleepUnlessHidden(ms) {
+      if (ms <= 0) {
+        return Promise.resolve()
+      }
+      return movementSleep ? movementSleep(ms) : new Promise((resolve) => setTimeout(resolve, ms))
+    }
+
+    // Another player's step is walked when the player can see either end of it.
+    function otherHeroStepDelayMs(from, to) {
+      const current = state.get()
+      const player = viewingPlayer(current)
+      const isSeen = isTileExplored(current, player, from) || isTileExplored(current, player, to)
+      return isSeen ? stepDelayMs : 0
     }
 
     function createMovement(routes, movementOptions) {
@@ -156,10 +177,9 @@ export const registerMovementModule = defineModule(
             heroRoutes.onWorldReady(world)
             otherHeroRoutes.onWorldReady(world)
             otherHeroId = null
-            // Other players' heroes move at once until the player can watch them.
             otherHeroMovement = createMovement(otherHeroRoutes, {
-              sleep: () => Promise.resolve(),
-              stepDelayMs: 0
+              sleep: sleepUnlessHidden,
+              getStepDelayMs: otherHeroStepDelayMs
             })
 
             if (!heroRoutes.getHero()) {

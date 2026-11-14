@@ -1,6 +1,13 @@
 import { createCamera } from '../../engine/camera.js'
 import { attachCameraInput } from '../../engine/input.js'
-import { heroTile, selectedHeroIdOf, viewingPlayer } from '../../game/state/queries.js'
+import {
+  activePlayer,
+  heroOwner,
+  heroTile,
+  isTileExplored,
+  selectedHeroIdOf,
+  viewingPlayer
+} from '../../game/state/queries.js'
 import {
   APP_COMMAND_CAMERA_CENTER_ON_TILE,
   APP_COMMAND_CAMERA_PAN_BY,
@@ -61,6 +68,25 @@ export const registerCameraModule = defineModule(
     function centerOnSelectedHero() {
       const current = state.get()
       centerOn(heroTile(current, selectedHeroIdOf(current, viewingPlayer(current))))
+    }
+
+    function isOtherPlayersTurn() {
+      const current = state.get()
+      const player = activePlayer(current)
+      return Boolean(player) && player !== viewingPlayer(current)
+    }
+
+    // Another player's hero is followed only on a step the player can see one end of.
+    function followHero(heroId, tile, otherEnd = tile) {
+      const current = state.get()
+      const player = viewingPlayer(current)
+      const isSeen =
+        heroOwner(current, heroId) === player ||
+        isTileExplored(current, player, tile) ||
+        isTileExplored(current, player, otherEnd)
+      if (isSeen) {
+        centerOn(tile)
+      }
     }
 
     function centerOn(tile) {
@@ -135,7 +161,12 @@ export const registerCameraModule = defineModule(
               moveBy(dx, dy) {
                 // Arrow keys and edge scrolling must not move the map behind a dialog, the System
                 // options popup or a screen covering it, such as the battle.
-                if (isSystemOptionsOpen || isMapCovered || openDialogCount > 0) {
+                if (
+                  isSystemOptionsOpen ||
+                  isMapCovered ||
+                  openDialogCount > 0 ||
+                  isOtherPlayersTurn()
+                ) {
                   return
                 }
 
@@ -272,13 +303,19 @@ export const registerCameraModule = defineModule(
             emitWorldMotionUpdated({ followHero: true })
             camera.clearPan?.()
             camera.lockFollow?.()
-            centerOn(event.detail?.from)
+            const { heroId, from } = event.detail ?? {}
+            if (from) {
+              followHero(heroId, from)
+            }
           }
         },
         {
           type: APP_FACT_HERO_MOVED,
           handler: (event) => {
-            centerOn(event.detail?.to)
+            const { heroId, from, to } = event.detail ?? {}
+            if (to) {
+              followHero(heroId, to, from ?? to)
+            }
           }
         },
         {
