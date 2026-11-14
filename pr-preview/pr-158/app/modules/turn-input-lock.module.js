@@ -23,8 +23,12 @@ export const registerTurnInputLockModule = defineModule(
       return Boolean(player) && player !== viewingPlayer(current)
     }
 
+    // A key pressed with nothing focused goes to the window, the document or its body.
     function isOnGameScreen(target) {
-      return target === env.document?.body || Boolean(gameShell?.contains(target))
+      if (!target?.nodeType || target === env.document || target === env.document?.body) {
+        return true
+      }
+      return Boolean(gameShell?.contains(target))
     }
 
     function stopInput(event) {
