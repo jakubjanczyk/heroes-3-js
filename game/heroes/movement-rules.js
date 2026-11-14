@@ -1,4 +1,4 @@
-import { heroById } from './state/hero-details.js'
+import { heroFlight } from './state/hero-details.js'
 
 // Adventure map movement:
 // - a step costs the movementCost of the tile the hero leaves: its road when both tiles have a
@@ -81,6 +81,6 @@ function chargeSteps({ map, path, remainingMovementPoints, flight = null, canLan
   return charges
 }
 
-const flightOf = (state, heroId) => heroById(state, heroId)?.flight ?? null
+const flightOf = (state, heroId) => heroFlight(state, heroId)
 
 export const heroesMovementRules = Object.freeze({ stepCost, chargeSteps, flightOf })
