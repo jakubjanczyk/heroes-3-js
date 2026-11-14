@@ -1,7 +1,7 @@
 // The adventure map in behavior tests: tiles, the objects on them, the hero moving and the path
 // preview, the camera and the cursor over the map.
 
-import { screen } from '@testing-library/dom'
+import { screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { flushMicrotasks, getCursorOver, waitMs } from './app.utils.js'
@@ -387,4 +387,17 @@ export async function attackMonsterAt(x, y) {
 
 export function queryMinimapHeroMarker(heroId) {
   return document.querySelector(`.minimap-hero-marker[data-entity-id="${heroId}"]`)
+}
+
+export function queryMinimapShield() {
+  return within(document.querySelector('.minimap')).queryByRole('img', { name: 'Shield' })
+}
+
+export function readMinimapHeroTile(heroId, mapSize) {
+  const marker = queryMinimapHeroMarker(heroId)
+  const percent = (property) => Number.parseFloat(marker.style.getPropertyValue(property))
+  return {
+    x: Math.floor((percent('--minimap-marker-x') / 100) * mapSize.width),
+    y: Math.floor((percent('--minimap-marker-y') / 100) * mapSize.height)
+  }
 }
