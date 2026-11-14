@@ -30,6 +30,9 @@ function isValidPlannedPath({ path, fromTile, toTile, map, canCross }) {
 }
 
 async function defaultSleep(ms) {
+  if (ms <= 0) {
+    return
+  }
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })

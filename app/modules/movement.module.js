@@ -66,13 +66,6 @@ export const registerMovementModule = defineModule(
       return heroOwner(current, heroId) === activePlayer(current)
     }
 
-    function sleepUnlessHidden(ms) {
-      if (ms <= 0) {
-        return Promise.resolve()
-      }
-      return movementSleep ? movementSleep(ms) : new Promise((resolve) => setTimeout(resolve, ms))
-    }
-
     // Another player's step is walked when the player can see either end of it.
     function otherHeroStepDelayMs(from, to) {
       const current = state.get()
@@ -178,7 +171,7 @@ export const registerMovementModule = defineModule(
             otherHeroRoutes.onWorldReady(world)
             otherHeroId = null
             otherHeroMovement = createMovement(otherHeroRoutes, {
-              sleep: sleepUnlessHidden,
+              ...(movementSleep ? { sleep: movementSleep } : {}),
               getStepDelayMs: otherHeroStepDelayMs
             })
 
