@@ -1,14 +1,32 @@
 // @vitest-environment jsdom
+import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import {
+  clickTile,
   expectHeroAt,
   expectResourceNotPresent,
-  expectResourcePresent
+  expectResourcePresent,
+  getHeroEntity,
+  getMapViewCentreTile,
+  holdRightButtonOn,
+  panCamera,
+  queryInfoPopup
 } from './adventure-map.utils.js'
-import { clickEndTurn, expectResourceTotal, getTownInTownList } from './adventure-panels.utils.js'
-import { readGameData, setupMovementBehaviorApp, waitMs } from './app.utils.js'
+import {
+  clickEndTurn,
+  expectCalendarDate,
+  expectResourceTotal,
+  getTownInTownList
+} from './adventure-panels.utils.js'
+import {
+  createMemoryEventLog,
+  readGameData,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
 import { aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { clickHeroInHeroList } from './hero-screen.utils.js'
 import { openTavern, openThievesGuild, readThievesGuildRanking } from './town-screen.utils.js'
 
 const goldDefinitions = { resources: { GOLD_PILE: { name: 'Gold', amount: 100 } } }
@@ -174,6 +192,188 @@ describe('computer turns behavior', () => {
       '1st': ['blue'],
       '2nd': ['tan'],
       '3rd': ['red']
+    })
+  })
+})
+
+const STEP_MS = 100
+
+// Five tiles wide, so the map can centre on any tile from 2 to 37.
+const VIEWPORT = { width: 160, height: 160 }
+
+// The player's hero stands at (5, 4) by their town, on the bottom row of a 40 by 5 map; blue's
+// hero walks along that row from 25 to the tile next to its pile at 35, one step every 100 ms.
+const aWatchedScenario = ({ playerHeroX = 5, blueHeroX = 25, pileX = 35 } = {}) =>
+  aScenario()
+    .withSize(40, 5)
+    .withEntities(
+      aHero().at(playerHeroX, 4),
+      aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+      aBlueHero(blueHeroX, 4),
+      aPile('pile', pileX, 4)
+    )
+    .withDefinitions({ ...goldDefinitions, towns: readGameData('towns.json') })
+
+async function setupWatchedApp(scenario, { eventLog } = {}) {
+  return setupMovementBehaviorApp({
+    loadGameOptions: scenario.build(),
+    movementStepDelayMs: STEP_MS,
+    viewportSize: VIEWPORT,
+    eventLog
+  })
+}
+
+function readHeroTile(heroId) {
+  const hero = getHeroEntity(heroId)
+  return { x: Number(hero.dataset.tileX), y: Number(hero.dataset.tileY) }
+}
+
+function queryOpenDialogs() {
+  return screen.queryAllByRole('dialog')
+}
+
+describe('watching computer turns behavior', () => {
+  test('a blue hero the player can see walks to its pile one step at a time', async () => {
+    const { user } = await setupWatchedApp(aWatchedScenario())
+
+    await clickEndTurn(user)
+    await waitMs(2 * STEP_MS + STEP_MS / 2)
+
+    expectHeroAt(27, 4, 'hero-2')
+  })
+
+  test('the map follows a blue hero the player can see', async () => {
+    const { user } = await setupWatchedApp(aWatchedScenario())
+
+    await clickEndTurn(user)
+    await waitMs(2 * STEP_MS + STEP_MS / 2)
+
+    expect(getMapViewCentreTile().x).toBe(27)
+  })
+
+  // The player sees up to 5 tiles from their hero at 5, so up to 10; blue's hero, up to 30.
+  test('a blue hero under the fog of war is next to its pile at once', async () => {
+    const { user } = await setupWatchedApp(aWatchedScenario({ pileX: 29 }).withFogOfWar(true))
+
+    await clickEndTurn(user)
+    await waitMs(STEP_MS / 2)
+
+    expectHeroAt(28, 4, 'hero-2')
+  })
+
+  // The player sees up to 12 from their hero at 7. From 16 to the pile at 11 the steps up to 13
+  // are under the fog; 13 to 12 ends on a tile the player has explored, so it is the first shown.
+  test('a blue hero walking out of the fog of war is shown from its first step onto an explored tile', async () => {
+    const { user } = await setupWatchedApp(
+      aWatchedScenario({ playerHeroX: 7, blueHeroX: 16, pileX: 11 }).withFogOfWar(true)
+    )
+
+    await clickEndTurn(user)
+    await waitMs(STEP_MS / 2)
+    expectHeroAt(13, 4, 'hero-2')
+
+    await waitMs(STEP_MS)
+    expectHeroAt(12, 4, 'hero-2')
+  })
+
+  // The same walk out of the fog as above: the map stays on the player's hero at 7 while the
+  // steps are hidden, then follows the first one shown.
+  test('the map follows a blue hero walking out of the fog of war only once the player can see it', async () => {
+    const { user } = await setupWatchedApp(
+      aWatchedScenario({ playerHeroX: 7, blueHeroX: 16, pileX: 11 }).withFogOfWar(true)
+    )
+
+    await clickEndTurn(user)
+    await waitMs(STEP_MS / 2)
+    expect(getMapViewCentreTile().x).toBe(7)
+
+    await waitMs(STEP_MS)
+    expect(getMapViewCentreTile().x).toBe(12)
+  })
+
+  test("the map is back on the player's hero when their turn starts", async () => {
+    const { user } = await setupWatchedApp(aWatchedScenario())
+
+    await clickEndTurn(user)
+    await waitMs(COMPUTER_TURN_MS)
+
+    expect(getMapViewCentreTile().x).toBe(5)
+  })
+
+  describe("the player's clicks and keys during blue's turn", () => {
+    test.each([
+      {
+        input: 'a move to a tile',
+        act: (user) => clickTile(user, 7, 4).then(() => clickTile(user, 7, 4))
+      },
+      { input: 'End Turn', act: (user) => clickEndTurn(user) },
+      { input: 'the hero in the hero list', act: (user) => clickHeroInHeroList(user, 'Hero') },
+      {
+        input: 'a town in the town list',
+        act: (user) => user.dblClick(getTownInTownList('Whitemoon'))
+      },
+      {
+        input: 'System options',
+        act: (user) => user.click(screen.getByRole('button', { name: 'System options' }))
+      },
+      { input: 'a right-click on a tile', act: (user) => holdRightButtonOn(user, 6, 4) },
+      { input: 'an arrow key', act: async () => panCamera('ArrowLeft', 3) }
+    ])('$input changes nothing', async ({ act }) => {
+      const { user } = await setupWatchedApp(aWatchedScenario())
+      await clickEndTurn(user)
+      await waitMs(STEP_MS + STEP_MS / 2)
+
+      await act(user)
+
+      expect(queryOpenDialogs()).toEqual([])
+      expect(queryInfoPopup()).toBeNull()
+      expect(getMapViewCentreTile().x).toBe(readHeroTile('hero-2').x)
+      await waitMs(COMPUTER_TURN_MS)
+      expectHeroAt(5, 4)
+      expectCalendarDate({ month: 1, week: 1, day: 2 })
+    })
+  })
+
+  test("the player's hero walks again once blue's turn is over", async () => {
+    const { user } = await setupWatchedApp(aWatchedScenario())
+    await clickEndTurn(user)
+    await waitMs(COMPUTER_TURN_MS)
+
+    await clickTile(user, 7, 4)
+    await clickTile(user, 7, 4)
+    await waitMs(COMPUTER_TURN_MS)
+
+    expectHeroAt(7, 4)
+  })
+
+  describe("after a reload during blue's turn", () => {
+    async function reloadDuringBluesTurn() {
+      const eventLog = createMemoryEventLog()
+      const { user } = await setupWatchedApp(aWatchedScenario(), { eventLog })
+      await clickEndTurn(user)
+      await waitMs(2 * STEP_MS + STEP_MS / 2)
+      return setupWatchedApp(aWatchedScenario(), { eventLog })
+    }
+
+    test('the blue hero walks on and picks up its pile, and the next day starts', async () => {
+      await reloadDuringBluesTurn()
+
+      await waitMs(COMPUTER_TURN_MS)
+
+      expectHeroAt(34, 4, 'hero-2')
+      expectResourceNotPresent('pile')
+      expectCalendarDate({ month: 1, week: 1, day: 2 })
+    })
+
+    test("a move to a tile changes nothing until blue's turn is over", async () => {
+      const { user } = await reloadDuringBluesTurn()
+      await waitMs(STEP_MS / 2)
+
+      await clickTile(user, 7, 4)
+      await clickTile(user, 7, 4)
+      await waitMs(COMPUTER_TURN_MS)
+
+      expectHeroAt(5, 4)
     })
   })
 })

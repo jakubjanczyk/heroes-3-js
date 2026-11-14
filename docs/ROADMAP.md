@@ -1110,7 +1110,7 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 ### 8.3 AI System - Basics
 In three parts. See `docs/notes/2026-11-13-ai-basics.md`. The roadmap's "AI is thinking..." indicator is dropped: the hourglass is the game's own sign.
 - [x] 8.3.1 Computer heroes pick up resource piles: each computer player in colour order, each of its heroes walking to the nearest pile it can reach without a fight until its movement points run out (moved from 8.4); every move at once; a hero in its own town stays there
-- [ ] 8.3.2 Watching computer heroes walk: moves the player can see walked at the player's speed with the map following, hidden ones at once; the player's clicks and keys ignored during a computer player's turn (built with 8.1.12, tested here); a reload carries on the turn; the map back on the player's hero when their turn starts
+- [x] 8.3.2 Watching computer heroes walk: moves the player can see walked at the player's speed with the map following, hidden ones at once; the player's clicks and keys ignored during a computer player's turn (built with 8.1.12, tested here); a reload carries on the turn; the map back on the player's hero when their turn starts
 - [ ] 8.3.3 The hourglass with the player's crest in the info box (moved from 8.1) and the shield over the minimap during a computer player's turn
 
 ### 8.4 AI Decision Making

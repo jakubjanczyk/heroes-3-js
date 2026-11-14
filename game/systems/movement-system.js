@@ -35,9 +35,8 @@ async function defaultSleep(ms) {
   })
 }
 
-function getFinalSettleDelayMs(stepDelayMs) {
-  const clampedStepDelayMs = Number.isFinite(stepDelayMs) ? Math.max(0, stepDelayMs) : 0
-  return clampedStepDelayMs
+function clampDelayMs(delayMs) {
+  return Number.isFinite(delayMs) ? Math.max(0, delayMs) : 0
 }
 
 // `getHero` returns the moving hero ({ id, tile }); `occupancy.getAt(tile)` says what blocks a tile,
@@ -47,7 +46,8 @@ function getFinalSettleDelayMs(stepDelayMs) {
 // entities that fight a hero stepping onto `tile`, in the order it fights them; a route can't go
 // on from there. `getFlightPoints()` is how many movement points the hero can still fly with
 // today, or null when they walk: in the air they cross water, objects and guarded tiles, and the
-// route must land before those points run out.
+// route must land before those points run out. `getStepDelayMs(from, to)` is how long one step
+// takes, `stepDelayMs` for every step unless given.
 export function createMovementSystem({
   getHero,
   map,
@@ -57,6 +57,7 @@ export function createMovementSystem({
   isExplored = () => true,
   sleep = defaultSleep,
   stepDelayMs = 80,
+  getStepDelayMs = () => stepDelayMs,
   getStepCost = () => 1,
   getStepCharges = (path) => new Array(path.length - 1).fill(1),
   getArrivalContext = () => ({}),
@@ -316,10 +317,12 @@ export function createMovementSystem({
   // Walks the planned steps and returns the tile the hero ends on.
   async function walk({ hero, path, stepCharges, executedStepCount }, onTileReached) {
     let currentTile = { x: hero.tile.x, y: hero.tile.y }
+    let lastStepDelayMs = 0
     for (let stepIndex = 0; stepIndex < executedStepCount; stepIndex += 1) {
       const stepTile = path[stepIndex + 1]
       const stepFromTile = currentTile
-      await sleep(stepDelayMs)
+      lastStepDelayMs = clampDelayMs(getStepDelayMs(stepFromTile, stepTile))
+      await sleep(lastStepDelayMs)
       currentTile = { x: stepTile.x, y: stepTile.y }
       onTileReached(currentTile)
       onStep({ hero, from: stepFromTile, to: stepTile })
@@ -327,7 +330,7 @@ export function createMovementSystem({
     }
 
     if (executedStepCount > 0) {
-      await sleep(getFinalSettleDelayMs(stepDelayMs))
+      await sleep(lastStepDelayMs)
     }
   }
 
