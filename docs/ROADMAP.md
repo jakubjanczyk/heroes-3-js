@@ -1191,6 +1191,11 @@ A decision is saved today as several facts emitted together: recruiting is `fact
 - [ ] Export to scenario JSON
 - [ ] Import existing scenario for editing
 
+### 9.7 Faster Map Drawing
+The map is about 10,000 elements: a terrain tile per tile (4096 on the demo map), a fog tile per unexplored tile and the roads, each placed with its own CSS `transform`. Whenever something on the map changes (a hero's step, a pile taken), Chrome rebuilds its compositing layers over every one of them; a trace of 8.3.2 put that at about 34 ms a step at 4x CPU slowdown, for the player's walks and the computer's alike.
+- [ ] Terrain, fog and road tiles placed with `left` / `top` instead of `transform`: cut that work to about 11 ms a step in the same trace, with nothing looking different
+- [ ] Measure again on a phone afterwards; if steps still stutter, draw terrain and fog on a canvas instead of one element per tile
+
 ---
 
 ## Milestone 10: Sprites, Animations & Audio Polish
@@ -1360,6 +1365,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 64. Quieter event bus (9.4): no route events on hover
 65. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
 66. View World, with View Air and View Earth (4.8.8.5): the game's screen takes the adventure map's place and part of the sidebar, so it waits until the rest is done
+67. Faster map drawing (9.7): tiles placed without a transform each, so a step doesn't make the browser go over every tile
 
 ---
 
