@@ -1,4 +1,4 @@
-import { sameTile } from './tile-utils.js'
+import { sameTile, tileKey } from './tile-utils.js'
 
 function stateKey(tile, dirX, dirY) {
   return `${tile.x},${tile.y}|${dirX},${dirY}`
@@ -56,7 +56,7 @@ function compareStates(a, b, toTile) {
     return a.turns - b.turns
   }
 
-  const distanceDifference = distanceSq(a.tile, toTile) - distanceSq(b.tile, toTile)
+  const distanceDifference = toTile ? distanceSq(a.tile, toTile) - distanceSq(b.tile, toTile) : 0
   if (distanceDifference !== 0) {
     return distanceDifference
   }
@@ -121,9 +121,9 @@ function heapPop(heap, toTile) {
   }
 }
 
-// The destination may be impassable or blocked: the route ends on it to interact.
-function canEnter(tile, routeCost, { map, toTile, canPass }) {
-  return map.inBounds(tile) && (sameTile(tile, toTile) || canPass(tile, routeCost))
+// A destination may be impassable or blocked: the route ends on it to interact.
+function canEnter(tile, routeCost, { map, isTarget, canPass }) {
+  return map.inBounds(tile) && (isTarget(tile) || canPass(tile, routeCost))
 }
 
 function stepTo(current, next, { order, getStepCost }) {
@@ -168,10 +168,103 @@ export function findPath({
     return null
   }
 
-  return searchRoute({ fromTile, toTile, map, canPass, getStepCost, canLeave })
+  let path = null
+  searchRoute({
+    fromTile,
+    toTile,
+    map,
+    canPass,
+    getStepCost,
+    canLeave,
+    isTarget: (tile) => sameTile(tile, toTile),
+    onTargetReached: (reached) => {
+      path = reached
+      return true
+    }
+  })
+  return path
 }
 
-function searchRoute({ fromTile, toTile, map, canPass, getStepCost, canLeave }) {
+// The cheapest route to each of `toTiles`, as `findPath` would find it, or null for one it can't
+// reach, from one search instead of one per tile.
+export function findPaths({
+  fromTile,
+  toTiles,
+  map,
+  isBlocked = () => false,
+  canPass = (tile) => map.isPassable(tile) && !isBlocked(tile),
+  getStepCost = () => 1,
+  canLeave = () => true
+}) {
+  const paths = toTiles.map((toTile) => (sameTile(fromTile, toTile) ? [fromTile] : null))
+  if (!map.inBounds(fromTile)) {
+    return toTiles.map(() => null)
+  }
+
+  const indexesByTile = new Map()
+  toTiles.forEach((toTile, index) => {
+    if (paths[index] || !map.inBounds(toTile) || !map.isPassable(toTile)) {
+      return
+    }
+    const key = tileKey(toTile)
+    indexesByTile.set(key, [...(indexesByTile.get(key) ?? []), index])
+  })
+
+  let remaining = indexesByTile.size
+  if (remaining === 0) {
+    return paths
+  }
+
+  searchRoute({
+    fromTile,
+    map,
+    canPass,
+    getStepCost,
+    canLeave,
+    isTarget: (tile) => indexesByTile.has(tileKey(tile)),
+    onTargetReached: (path) => {
+      const key = tileKey(path.at(-1))
+      const indexes = indexesByTile.get(key)
+      if (paths[indexes[0]]) {
+        return false
+      }
+      for (const index of indexes) {
+        paths[index] = path
+      }
+      remaining -= 1
+      return remaining === 0
+    }
+  })
+  return paths
+}
+
+// Queues each neighbour of `current` a route may step onto, when that is the best way there yet.
+function expandFrom(current, search) {
+  const { map, canPass, getStepCost, canLeave, isTarget, toTile } = search
+  for (const next of getNeighbors(current.tile)) {
+    const nextState = stepTo(current, next, { order: search.nextStateOrder, getStepCost })
+    search.nextStateOrder += 1
+    if (
+      !canEnter(next, nextState.cost, { map, isTarget, canPass }) ||
+      !canLeave(current.tile, next, nextState.cost)
+    ) {
+      continue
+    }
+
+    const bestKnown = search.bestByState.get(nextState.key) ?? null
+    if (!isBetterCost({ cost: nextState.cost, turns: nextState.turns }, bestKnown)) {
+      continue
+    }
+    search.bestByState.set(nextState.key, { cost: nextState.cost, turns: nextState.turns })
+    search.cameFrom.set(nextState.key, current)
+    heapPush(search.frontier, nextState, toTile)
+  }
+}
+
+// Searches outwards from `fromTile`, calling `onTargetReached(path)` with the cheapest route to each
+// tile `isTarget` names, until it returns true or nothing is left to search. A target is only
+// gone through when `canPass` lets a route through it.
+function searchRoute({ fromTile, toTile = null, onTargetReached, ...rules }) {
   const startState = {
     key: stateKey(fromTile, 0, 0),
     tile: fromTile,
@@ -181,40 +274,23 @@ function searchRoute({ fromTile, toTile, map, canPass, getStepCost, canLeave }) 
     turns: 0,
     order: 0
   }
-  const frontier = [startState]
-  let nextStateOrder = 1
-  const bestByState = new Map([[startState.key, { cost: 0, turns: 0 }]])
-  const cameFrom = new Map()
-
-  while (frontier.length > 0) {
-    const current = heapPop(frontier, toTile)
-    if (!current) {
-      break
-    }
-
-    if (sameTile(current.tile, toTile)) {
-      return reconstructPath(cameFrom, current)
-    }
-
-    for (const next of getNeighbors(current.tile)) {
-      const nextState = stepTo(current, next, { order: nextStateOrder, getStepCost })
-      nextStateOrder += 1
-      if (
-        !canEnter(next, nextState.cost, { map, toTile, canPass }) ||
-        !canLeave(current.tile, next, nextState.cost)
-      ) {
-        continue
-      }
-
-      const bestKnown = bestByState.get(nextState.key) ?? null
-      if (!isBetterCost({ cost: nextState.cost, turns: nextState.turns }, bestKnown)) {
-        continue
-      }
-      bestByState.set(nextState.key, { cost: nextState.cost, turns: nextState.turns })
-      cameFrom.set(nextState.key, current)
-      heapPush(frontier, nextState, toTile)
-    }
+  const search = {
+    ...rules,
+    toTile,
+    frontier: [startState],
+    nextStateOrder: 1,
+    bestByState: new Map([[startState.key, { cost: 0, turns: 0 }]]),
+    cameFrom: new Map()
   }
 
-  return null
+  while (search.frontier.length > 0) {
+    const current = heapPop(search.frontier, toTile)
+    const isReachedTarget = current !== startState && rules.isTarget(current.tile)
+    if (isReachedTarget && onTargetReached(reconstructPath(search.cameFrom, current))) {
+      return
+    }
+    if (!isReachedTarget || rules.canPass(current.tile, current.cost)) {
+      expandFrom(current, search)
+    }
+  }
 }

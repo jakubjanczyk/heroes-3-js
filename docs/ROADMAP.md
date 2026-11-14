@@ -1110,7 +1110,7 @@ In nineteen parts. See `docs/notes/2026-11-10-player-system.md`. The players are
 ### 8.3 AI System - Basics
 In three parts. See `docs/notes/2026-11-13-ai-basics.md`. The roadmap's "AI is thinking..." indicator is dropped: the hourglass is the game's own sign.
 - [x] 8.3.1 Computer heroes pick up resource piles: each computer player in colour order, each of its heroes walking to the nearest pile it can reach without a fight until its movement points run out (moved from 8.4); every move at once; a hero in its own town stays there
-- [ ] 8.3.2 Watching computer heroes walk: moves the player can see walked at the player's speed with the map following, hidden ones at once; the player's clicks and keys ignored during a computer player's turn (built with 8.1.12, tested here); a reload carries on the turn; the map back on the player's hero when their turn starts
+- [x] 8.3.2 Watching computer heroes walk: moves the player can see walked at the player's speed with the map following, hidden ones at once; the player's clicks and keys ignored during a computer player's turn (built with 8.1.12, tested here); a reload carries on the turn; the map back on the player's hero when their turn starts
 - [ ] 8.3.3 The hourglass with the player's crest in the info box (moved from 8.1) and the shield over the minimap during a computer player's turn
 
 ### 8.4 AI Decision Making
@@ -1190,6 +1190,11 @@ A decision is saved today as several facts emitted together: recruiting is `fact
 - [ ] Set starting conditions
 - [ ] Export to scenario JSON
 - [ ] Import existing scenario for editing
+
+### 9.7 Faster Map Drawing
+The map is about 10,000 elements: a terrain tile per tile (4096 on the demo map), a fog tile per unexplored tile and the roads, each placed with its own CSS `transform`. Whenever something on the map changes (a hero's step, a pile taken), Chrome rebuilds its compositing layers over every one of them; a trace of 8.3.2 put that at about 34 ms a step at 4x CPU slowdown, for the player's walks and the computer's alike.
+- [ ] Terrain, fog and road tiles placed with `left` / `top` instead of `transform`: cut that work to about 11 ms a step in the same trace, with nothing looking different
+- [ ] Measure again on a phone afterwards; if steps still stutter, draw terrain and fog on a canvas instead of one element per tile
 
 ---
 
@@ -1360,6 +1365,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 64. Quieter event bus (9.4): no route events on hover
 65. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
 66. View World, with View Air and View Earth (4.8.8.5): the game's screen takes the adventure map's place and part of the sidebar, so it waits until the rest is done
+67. Faster map drawing (9.7): tiles placed without a transform each, so a step doesn't make the browser go over every tile
 
 ---
 

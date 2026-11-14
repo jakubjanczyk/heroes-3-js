@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { createMap } from './map.js'
-import { findPath } from './pathfinding.js'
+import { findPath, findPaths } from './pathfinding.js'
 
 describe('pathfinding', () => {
   test('returns direct path for adjacent passable tile', () => {
@@ -257,5 +257,65 @@ describe('pathfinding', () => {
       { x: 0, y: 0 },
       { x: 1, y: 1 }
     ])
+  })
+})
+
+describe('pathfinding to several tiles at once', () => {
+  // 0 is open ground, 1 blocked. The hero starts at (0, 2); (4, 0) is walled in.
+  const map = createMap({
+    width: 6,
+    height: 4,
+    tiles: [0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+  })
+  const fromTile = { x: 0, y: 2 }
+  const occupied = [
+    { x: 2, y: 0 },
+    { x: 5, y: 3 }
+  ]
+  const isBlocked = (tile) => occupied.some((other) => other.x === tile.x && other.y === tile.y)
+
+  test('gives each tile the route a search for that tile alone gives', () => {
+    const toTiles = [
+      { x: 2, y: 0 },
+      { x: 5, y: 3 },
+      { x: 4, y: 2 }
+    ]
+
+    const paths = findPaths({ fromTile, toTiles, map, isBlocked })
+
+    const costs = paths.map((path) => path.length)
+    const singleCosts = toTiles.map(
+      (toTile) => findPath({ fromTile, toTile, map, isBlocked }).length
+    )
+    expect(costs).toEqual(singleCosts)
+    paths.forEach((path, index) => {
+      expect(path[0]).toEqual(fromTile)
+      expect(path.at(-1)).toEqual(toTiles[index])
+    })
+  })
+
+  test('gives null for a tile no route reaches', () => {
+    const paths = findPaths({ fromTile, toTiles: [{ x: 4, y: 0 }], map, isBlocked })
+
+    expect(paths).toEqual([null])
+  })
+
+  // (2, 0) holds something, so the route to (2, 1) beneath it can't come down through it.
+  test('never routes through another destination the route could not pass', () => {
+    const toTiles = [
+      { x: 2, y: 0 },
+      { x: 2, y: 1 }
+    ]
+
+    const [, path] = findPaths({ fromTile, toTiles, map, isBlocked })
+
+    expect(path).not.toContainEqual({ x: 2, y: 0 })
+    expect(path).toHaveLength(findPath({ fromTile, toTile: { x: 2, y: 1 }, map, isBlocked }).length)
+  })
+
+  test('gives a single-tile route for the starting tile', () => {
+    const paths = findPaths({ fromTile, toTiles: [fromTile], map, isBlocked })
+
+    expect(paths).toEqual([[fromTile]])
   })
 })

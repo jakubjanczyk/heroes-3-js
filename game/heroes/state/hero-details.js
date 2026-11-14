@@ -243,6 +243,10 @@ export const heroDetailsSlice = {
   })
 }
 
+export function heroFlight(state, heroId) {
+  return state.heroDetails[heroId]?.flight ?? null
+}
+
 export function heroById(state, heroId) {
   const details = state.heroDetails[heroId]
   return details ? { id: heroId, ...state.heroes[heroId], ...details } : null
