@@ -359,6 +359,13 @@ See `docs/notes/2026-10-26-defeated-hero.md`.
 - [ ] A hero hired again on the day they were beaten, retreated or surrendered keeps the movement points they had left
 - [ ] Losing the last hero: the defeat case of victory conditions (8.5)
 
+#### 4.5.6 Sleeping heroes
+The Sleep hero button is shown disabled until then (1.3). The rules (which buttons, the hero list's mark, what wakes a hero, whether it is saved) are checked against the game's sources when the part is planned.
+- [ ] The Sleep hero button puts the selected hero to sleep and, on a sleeping hero, becomes Wake hero and wakes them
+- [ ] Next Hero passes over sleeping heroes
+- [ ] Moving a sleeping hero wakes them, and so does anything else the sources say does
+- [ ] The hero list shows which heroes are asleep; a hero stays asleep after a reload and over new days until woken
+
 ### 4.6 Movement Points & Terrain
 - [x] 1500 MP per day for now (H3: 1300-2000 from the slowest creature's speed; needs hero army, 4.3)
 - [x] A step costs the terrain of the tile the hero leaves:
@@ -1387,6 +1394,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 65. One fact per decision (9.5): recruiting, building and ending the day each saved as one fact
 66. View World, with View Air and View Earth (4.8.8.5): the game's screen takes the adventure map's place and part of the sidebar, so it waits until the rest is done
 67. Faster map drawing (9.7): tiles placed without a transform each, so a step doesn't make the browser go over every tile
+68. Sleeping heroes (4.5.6): Sleep hero and Wake hero, Next Hero passing over sleeping heroes, moving one wakes it
 
 ---
 
