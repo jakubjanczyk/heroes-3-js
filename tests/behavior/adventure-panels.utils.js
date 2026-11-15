@@ -374,6 +374,18 @@ export function readDateBox() {
   }
 }
 
+// The info box during another player's turn, e.g.
+// { name: "Blue player's turn", pictures: ['Blue player flag', 'Hourglass'] }.
+export function readTurnBox() {
+  const box = screen.getByRole('region', { name: /player's turn$/ })
+  return {
+    name: box.getAttribute('aria-label'),
+    pictures: within(box)
+      .getAllByRole('img')
+      .map((picture) => picture.getAttribute('aria-label'))
+  }
+}
+
 export function getKingdomOverview() {
   return screen.getByRole('region', { name: 'Kingdom overview' })
 }

@@ -11,13 +11,17 @@ import {
   getMapViewCentreTile,
   holdRightButtonOn,
   panCamera,
-  queryInfoPopup
+  queryInfoPopup,
+  queryMinimapShield,
+  readMinimapHeroTile
 } from './adventure-map.utils.js'
 import {
   clickEndTurn,
   expectCalendarDate,
   expectResourceTotal,
-  getTownInTownList
+  getTownInTownList,
+  readDateBox,
+  readTurnBox
 } from './adventure-panels.utils.js'
 import {
   createMemoryEventLog,
@@ -300,6 +304,89 @@ describe('watching computer turns behavior', () => {
     expect(getMapViewCentreTile().x).toBe(5)
   })
 
+  describe("the hourglass and the shield during blue's turn", () => {
+    test("the info box shows the hourglass with blue's flag", async () => {
+      const { user } = await setupWatchedApp(aWatchedScenario())
+
+      await clickEndTurn(user)
+      await waitMs(STEP_MS / 2)
+
+      expect(readTurnBox()).toEqual({
+        name: "Blue player's turn",
+        pictures: ['Blue player flag', 'Hourglass']
+      })
+    })
+
+    // Blue's hero picks up the pile at 28 from 27 after two steps, then walks on to the one at 35
+    // until its ninth step.
+    test('the info box shows the hourglass while a blue hero the player can see walks to its pile and picks it up', async () => {
+      const { user } = await setupWatchedApp(
+        aWatchedScenario().withEntities(
+          aHero().at(5, 4),
+          aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+          aBlueHero(25, 4),
+          aPile('first-pile', 28, 4),
+          aPile('pile', 35, 4)
+        )
+      )
+
+      await clickEndTurn(user)
+      await waitMs(6 * STEP_MS + STEP_MS / 2)
+
+      expectResourceNotPresent('first-pile')
+      expect(readTurnBox().name).toBe("Blue player's turn")
+    })
+
+    // Blue has only a town, so its turn passes at once; tan's hero walks from 25 to its pile at 35.
+    test("the info box shows tan's flag once blue's turn is over and tan's starts", async () => {
+      const { user } = await setupWatchedApp(
+        aWatchedScenario().withEntities(
+          aHero().at(5, 4),
+          aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+          aTown().named('Bluewater').ownedBy('blue').at(15, 1),
+          aHero().withId('hero-3').ownedBy('tan').at(25, 4),
+          aPile('pile', 35, 4)
+        )
+      )
+
+      await clickEndTurn(user)
+      await waitMs(2 * STEP_MS + STEP_MS / 2)
+
+      expect(readTurnBox()).toEqual({
+        name: "Tan player's turn",
+        pictures: ['Tan player flag', 'Hourglass']
+      })
+    })
+
+    test("the info box shows the new day's date when the player's turn starts", async () => {
+      const { user } = await setupWatchedApp(aWatchedScenario())
+
+      await clickEndTurn(user)
+      await waitMs(COMPUTER_TURN_MS)
+
+      expect(readDateBox().text).toBe('Day 2')
+    })
+
+    test('the minimap is covered by the shield', async () => {
+      const { user } = await setupWatchedApp(aWatchedScenario())
+
+      await clickEndTurn(user)
+      await waitMs(STEP_MS / 2)
+
+      expect(queryMinimapShield()).not.toBeNull()
+    })
+
+    test("the minimap shows where the blue hero ended up once the player's turn starts", async () => {
+      const { user } = await setupWatchedApp(aWatchedScenario())
+
+      await clickEndTurn(user)
+      await waitMs(COMPUTER_TURN_MS)
+
+      expect(queryMinimapShield()).toBeNull()
+      expect(readMinimapHeroTile('hero-2', { width: 40, height: 5 })).toEqual({ x: 34, y: 4 })
+    })
+  })
+
   describe("the player's clicks and keys during blue's turn", () => {
     test.each([
       {
@@ -363,6 +450,18 @@ describe('watching computer turns behavior', () => {
       expectHeroAt(34, 4, 'hero-2')
       expectResourceNotPresent('pile')
       expectCalendarDate({ month: 1, week: 1, day: 2 })
+    })
+
+    test("the info box shows the hourglass with blue's flag", async () => {
+      await reloadDuringBluesTurn()
+
+      expect(readTurnBox().name).toBe("Blue player's turn")
+    })
+
+    test('the minimap is covered by the shield', async () => {
+      await reloadDuringBluesTurn()
+
+      expect(queryMinimapShield()).not.toBeNull()
     })
 
     test("a move to a tile changes nothing until blue's turn is over", async () => {

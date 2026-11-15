@@ -95,6 +95,7 @@
 
 /* Minimap */
 .minimap {
+  position: relative;
   background: var(--panel-inset);
   padding: 2px;
 
@@ -114,6 +115,42 @@
     margin-inline: auto;
     overflow: hidden;
     background: black;
+  }
+}
+
+/* A stand-in for the picture that covers the minimap while a computer player plays. */
+.minimap__shield {
+  position: absolute;
+  inset: 2px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, #2a3350, #0b0e18 75%), var(--panel-inset);
+
+  &[hidden] {
+    display: none;
+  }
+
+  & .minimap__shield-picture {
+    inline-size: auto;
+    block-size: 80%;
+    max-inline-size: 80%;
+  }
+
+  & .minimap__shield-face {
+    fill: color-mix(in oklab, var(--interface-color) 70%, #1b1e2c);
+  }
+
+  & .minimap__shield-band {
+    fill: none;
+    stroke: var(--trim-gold);
+    stroke-width: 4;
+  }
+
+  & .minimap__shield-rim {
+    fill: none;
+    stroke: var(--trim-gold-light);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
   }
 }
 
@@ -437,6 +474,92 @@
 }
 
 /* The kingdom overview: the player's towns counted under each hall, then the allies' and enemies' flags. */
+/* The other player's crest and the hourglass, whose sand runs for as long as their turn lasts. */
+.info-box.turn-box {
+  display: grid;
+  grid-template: minmax(0, 1fr) / repeat(2, minmax(0, 1fr));
+  grid-template-areas: none;
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-sm);
+
+  & .turn-box__crest {
+    position: static;
+    inline-size: min(70%, 4rem);
+    block-size: auto;
+    aspect-ratio: 4 / 5;
+    border-width: 2px;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  }
+
+  & .turn-box__hourglass {
+    inline-size: auto;
+    block-size: min(100%, 5rem);
+  }
+
+  & .turn-box__glass {
+    fill: color-mix(in oklab, #a8c6e0 22%, transparent);
+    stroke: #cfe1f0;
+    stroke-width: 1;
+  }
+
+  & .turn-box__frame {
+    fill: var(--trim-gold-dark);
+    stroke: var(--trim-gold);
+    stroke-width: 0.75;
+  }
+
+  & .turn-box__sand-top,
+  & .turn-box__sand-bottom,
+  & .turn-box__stream {
+    fill: #e8c068;
+  }
+
+  & .turn-box__sand-top {
+    transform-origin: 16px 23px;
+    animation: turn-box-sand-sinks 2s steps(20, end) infinite;
+  }
+
+  & .turn-box__sand-bottom {
+    transform-origin: 16px 42px;
+    animation: turn-box-sand-rises 2s steps(20, end) infinite;
+  }
+
+  & .turn-box__stream {
+    animation: turn-box-stream 0.2s steps(2, end) infinite;
+  }
+}
+
+@keyframes turn-box-sand-sinks {
+  from {
+    transform: scaleY(1);
+  }
+
+  to {
+    transform: scaleY(0.15);
+  }
+}
+
+@keyframes turn-box-sand-rises {
+  from {
+    transform: scaleY(0.15);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes turn-box-stream {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.5;
+  }
+}
+
 .info-box.kingdom-box {
   display: grid;
   grid-template: none / none;
