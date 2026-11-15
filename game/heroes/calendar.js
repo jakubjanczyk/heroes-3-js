@@ -1,4 +1,4 @@
-const DAYS_PER_WEEK = 7
+export const DAYS_PER_WEEK = 7
 const WEEKS_PER_MONTH = 4
 
 export function calendarDateOfTurn(turnNumber) {
