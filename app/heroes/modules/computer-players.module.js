@@ -1,14 +1,20 @@
 import { createEntityBehaviors } from '../../../game/domain/entity-behaviors.js'
+import { isTown } from '../../../game/domain/entity-queries.js'
 import { resolveMovementRules } from '../../../game/domain/movement/movement-rules.js'
 import {
   COMPUTER_HERO_TARGET_KINDS,
   decideComputerHeroMove
 } from '../../../game/heroes/computer-heroes.js'
+import { decideTownBuilding } from '../../../game/heroes/computer-towns.js'
+import { buildingContextOf } from '../../../game/heroes/state/building-context.js'
+import { townIdsOf, townType } from '../../../game/heroes/state/towns.js'
+import { isTownNextToWater, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
 import { activePlayer, heroIdsOf, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
+  APP_COMMAND_TOWN_BUILD_REQUESTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_WORLD_READY,
@@ -31,6 +37,8 @@ export const registerComputerPlayersModule = defineModule(
     let routePlanner = null
     let map = null
     let targets = []
+    let definitions = {}
+    let townIdsNextToWater = new Set()
     let isRestoring = false
     // The computer player whose turn is being played, and its heroes still to move.
     let turn = null
@@ -72,6 +80,20 @@ export const registerComputerPlayersModule = defineModule(
       emit(APP_COMMAND_END_TURN_REQUESTED, { player })
     }
 
+    function buildInTowns(player) {
+      for (const townId of townIdsOf(state.get(), player)) {
+        const buildingId = decideTownBuilding({
+          catalogue: townBuildingsCatalogue(definitions, townType(state.get(), townId)),
+          context: buildingContextOf(state.get(), townId, {
+            isNextToWater: townIdsNextToWater.has(townId)
+          })
+        })
+        if (buildingId) {
+          emit(APP_COMMAND_TOWN_BUILD_REQUESTED, { entityId: townId, buildingId })
+        }
+      }
+    }
+
     function playIfComputersTurn() {
       const current = state.get()
       const player = activePlayer(current)
@@ -80,6 +102,7 @@ export const registerComputerPlayersModule = defineModule(
       }
 
       turn = { player, heroIds: heroIdsOf(current, player) }
+      buildInTowns(player)
       playNextMove()
     }
 
@@ -92,6 +115,12 @@ export const registerComputerPlayersModule = defineModule(
             heroRoutes.onWorldReady(world)
             routePlanner = heroRoutes.createMovementSystem()
             map = world.map
+            definitions = world.definitions ?? {}
+            townIdsNextToWater = new Set(
+              world.scenario.entities
+                .filter((entity) => isTown(entity) && isTownNextToWater(entity, map))
+                .map(({ id }) => id)
+            )
             targets = world.scenario.entities.flatMap((entity) => {
               const kind = entityBehaviors.getArrivalInteraction(entity)?.movementInteractionKind
               return COMPUTER_HERO_TARGET_KINDS.includes(kind)
@@ -132,6 +161,10 @@ export const registerComputerPlayersModule = defineModule(
       APP_FACT_PLAYER_TURN_ENDED,
       APP_FACT_MOVE_FINISHED
     ],
-    produces: [APP_COMMAND_MOVE_REQUESTED, APP_COMMAND_END_TURN_REQUESTED]
+    produces: [
+      APP_COMMAND_MOVE_REQUESTED,
+      APP_COMMAND_TOWN_BUILD_REQUESTED,
+      APP_COMMAND_END_TURN_REQUESTED
+    ]
   }
 )
