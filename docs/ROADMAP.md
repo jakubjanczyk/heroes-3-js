@@ -1118,7 +1118,7 @@ In eight parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty le
 - [x] 8.4.1 Capturing mines and dwellings: a computer hero's targets are resource piles and the mines and dwellings its owner hasn't flagged that it can reach without a fight, the nearest first; flagging a dwelling recruits nothing
 - [x] 8.4.2 Exploration: with nothing to go to, a computer hero walks towards the nearest tile its owner hasn't explored
 - [x] 8.4.3 Town building: each day a computer player builds one building in each town that can, income first, then dwellings, then the rest
-- [ ] 8.4.4 Recruiting: a computer hero in its own town or at its own dwelling recruits what its owner can pay for, strongest first; a hero leaves its town once it has somewhere to go
+- [x] 8.4.4 Recruiting: a computer hero in its own town or at its own dwelling recruits what its owner can pay for, strongest first; a hero leaves its town once it has somewhere to go
 - [ ] 8.4.5 Fighting monsters: a computer hero attacks monsters and dwelling guards its army is stronger than; the battle is fought unseen and its result shown on the map
 - [ ] 8.4.6 Attacking the player: a computer hero attacks the player's heroes, towns and garrisons it is stronger than, and the player fights the battle during the computer's turn
 - [ ] 8.4.7 Threat response: weak computer heroes keep away from stronger enemy heroes; a hero goes back to defend a town an enemy hero stronger than its garrison can reach
