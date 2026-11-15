@@ -1119,7 +1119,7 @@ In eight parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty le
 - [x] 8.4.2 Exploration: with nothing to go to, a computer hero walks towards the nearest tile its owner hasn't explored
 - [x] 8.4.3 Town building: each day a computer player builds one building in each town that can, income first, then dwellings, then the rest
 - [x] 8.4.4 Recruiting: a computer hero in its own town or at its own dwelling recruits what its owner can pay for, strongest first; a hero leaves its town once it has somewhere to go
-- [ ] 8.4.5 Fighting monsters: a computer hero attacks monsters and dwelling guards its army is stronger than; the battle is fought unseen and its result shown on the map
+- [x] 8.4.5 Fighting monsters: a computer hero attacks monsters and dwelling guards its army is stronger than; the battle is fought unseen and its result shown on the map
 - [ ] 8.4.6 Attacking the player: a computer hero attacks the player's heroes, towns and garrisons it is stronger than, and the player fights the battle during the computer's turn
 - [ ] 8.4.7 Threat response: weak computer heroes keep away from stronger enemy heroes; a hero goes back to defend a town an enemy hero stronger than its garrison can reach
 - [ ] 8.4.8 Weighing goals: targets compared by what they are worth against the days they cost, instead of the nearest first
@@ -1285,10 +1285,10 @@ A button lists its keys in `aria-keyshortcuts`; the screen on top takes the keys
 Code changes that make later parts easier but don't change what the player sees. They wait here until a part needs them; they are not in the work order yet.
 
 ### Messages Decided at the Screen
-Some domain modules open messages themselves, so each has to ask whether the hero is the viewing player's before a computer hero sets one off. The dwellings module opens "join your army" and "not enough provisions", and checks the viewing player for the first since 8.4.4 (`app/heroes/modules/dwellings.module.js`). The town module opens "There is no room in the garrison". The same check is also made in `hero-levels.module.js` (the level-up popup), `interaction.module.js` (which arrivals open a window) and `info-box.module.js`. The check stays a comparison with the viewing player, not human against computer, so it also works for hot-seat (8.2). Worth doing before 8.4.5, where unseen battles bring results, experience and level-ups that would need more of these checks.
+Some domain modules open messages themselves, so each has to ask whether the hero is the viewing player's before a computer hero sets one off. The dwellings module opens "join your army" and "not enough provisions", and checks the viewing player for the first since 8.4.4 (`app/heroes/modules/dwellings.module.js`). The town module opens "There is no room in the garrison". The same check is also made in `hero-levels.module.js` (the level-up popup), `interaction.module.js` (which arrivals open a window and which question a computer hero answers), `info-box.module.js` and, since 8.4.5, `battle.module.js` (an unseen battle: no screen, no results window, no recruit window after beating a dwelling's guards). The check stays a comparison with the viewing player, not human against computer, so it also works for hot-seat (8.2).
 - [ ] Domain modules emit only facts, carrying the outcome a message needs (whether the creatures were free, which hero took them); no `ui.*` notices
 - [ ] One view module turns those facts into messages, shown only when the hero or town is the viewing player's
-- [ ] The checks in `hero-levels.module.js`, `interaction.module.js` and `info-box.module.js` move there, so domain modules have no checks on whose hero it is
+- [ ] The checks in `hero-levels.module.js`, `interaction.module.js`, `info-box.module.js` and `battle.module.js` move there, so domain modules have no checks on whose hero it is
 
 ---
 

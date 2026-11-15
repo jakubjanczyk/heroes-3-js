@@ -72,6 +72,7 @@ export const registerComputerPlayersModule = defineModule(
       return {
         planRoutes: routePlanner.planRoutes,
         getPathToBattle: routePlanner.getPathToBattle,
+        battlesOnArrivalAt: routePlanner.battlesOnArrivalAt,
         routeCost: heroRoutes.routeCost,
         chargeStepsToday: heroRoutes.chargeStepsToday,
         isEmpty: (tile) => heroRoutes.occupancy.getAt(tile) === null
@@ -140,6 +141,11 @@ export const registerComputerPlayersModule = defineModule(
     function playNextMove() {
       while (turn.heroIds.length > 0) {
         const [heroId] = turn.heroIds
+        // A hero beaten in battle is no longer on the map.
+        if (!heroIdsOf(state.get(), turn.player).includes(heroId)) {
+          turn.heroIds.shift()
+          continue
+        }
         recruitWhereHeroStands(heroId)
         const move = nextMove(heroId)
         if (move) {
@@ -198,7 +204,15 @@ export const registerComputerPlayersModule = defineModule(
             targets = world.scenario.entities.flatMap((entity) => {
               const kind = entityBehaviors.getArrivalInteraction(entity)?.movementInteractionKind
               return COMPUTER_HERO_TARGET_KINDS.includes(kind)
-                ? [{ id: entity.id, tile: entity.tile, kind }]
+                ? [
+                    {
+                      id: entity.id,
+                      tile: entity.tile,
+                      kind,
+                      type: entity.type,
+                      count: entity.count
+                    }
+                  ]
                 : []
             })
             turn = null
