@@ -1280,6 +1280,18 @@ A button lists its keys in `aria-keyshortcuts`; the screen on top takes the keys
 
 ---
 
+## Future Refactorings
+
+Code changes that make later parts easier but don't change what the player sees. They wait here until a part needs them; they are not in the work order yet.
+
+### Messages Decided at the Screen
+Some domain modules open messages themselves, so each has to ask whether the hero is the viewing player's before a computer hero sets one off. The dwellings module opens "join your army" and "not enough provisions", and checks the viewing player for the first since 8.4.4 (`app/heroes/modules/dwellings.module.js`). The town module opens "There is no room in the garrison". The same check is also made in `hero-levels.module.js` (the level-up popup), `interaction.module.js` (which arrivals open a window) and `info-box.module.js`. The check stays a comparison with the viewing player, not human against computer, so it also works for hot-seat (8.2). Worth doing before 8.4.5, where unseen battles bring results, experience and level-ups that would need more of these checks.
+- [ ] Domain modules emit only facts, carrying the outcome a message needs (whether the creatures were free, which hero took them); no `ui.*` notices
+- [ ] One view module turns those facts into messages, shown only when the hero or town is the viewing player's
+- [ ] The checks in `hero-levels.module.js`, `interaction.module.js` and `info-box.module.js` move there, so domain modules have no checks on whose hero it is
+
+---
+
 ## Recommended Work Order
 
 Balancing game functionality + portfolio readiness.
