@@ -15,6 +15,7 @@ import {
   isTileExplored,
   panCamera,
   queryInfoPopup,
+  queryMinimapHeroMarker,
   queryMinimapShield,
   readMinimapHeroTile,
   readMinimapTileColour,
@@ -758,6 +759,37 @@ describe('computer heroes exploring behavior', () => {
     await endTurn(user)
 
     expectHeroAt(15, 3, 'hero-2')
+  })
+
+  // The player's hero at 29 sees from 24; blue's hero explores from 25 down to 10, out of sight.
+  test('a blue hero exploring off the tiles the player has explored has no marker on the minimap', async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(30)
+        .withFogOfWar(true)
+        .withEntities(aHero().at(29, 0), aBlueHero(25))
+        .withDefinitions(goldDefinitions)
+    )
+
+    await endTurn(user)
+
+    expect(queryMinimapHeroMarker('hero-2')).toBeNull()
+  })
+
+  // The player's hero at 0 sees up to 5. Blue's hero at 9 sees the pile at 4 and picks it up
+  // from 5; from there it sees the whole row, so it stays.
+  test('a blue hero walking onto the tiles the player has explored shows on the minimap', async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(10)
+        .withFogOfWar(true)
+        .withEntities(aHero().at(0, 0), aBlueHero(9), aPile('pile', 4))
+        .withDefinitions(goldDefinitions)
+    )
+
+    await endTurn(user)
+
+    expect(readMinimapHeroTile('hero-2', { width: 10, height: 1 })).toEqual({ x: 5, y: 0 })
   })
 
   // The player's hero at 0 sees up to 5; blue's hero explores from 25 down to 10.
