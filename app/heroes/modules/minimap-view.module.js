@@ -363,7 +363,9 @@ export const registerMinimapViewModule = defineModule(
 
             const tile = event.detail?.to
             const marker = heroMarkersById.get(event.detail?.heroId)
-            if (map && marker && tile) {
+            if (map && tile && Boolean(marker) !== isExplored(tile)) {
+              renderHeroes()
+            } else if (map && marker && tile) {
               placeMarker(marker, tile)
             }
           }

@@ -1,4 +1,4 @@
-import { heroOwner, heroTile, isRemoved } from '../state/queries.js'
+import { heroOwner, heroTile, isRemoved, isTileExplored } from '../state/queries.js'
 import {
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
@@ -31,19 +31,65 @@ function byCostThenTile(a, b) {
   return a.cost - b.cost || a.tile.y - b.tile.y || a.tile.x - b.tile.x
 }
 
-export function decideComputerHeroMove({ state, heroId, targets, routes }) {
+const NEIGHBOUR_OFFSETS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1]
+]
+
+function touchesUnexplored(state, player, map, tile) {
+  return NEIGHBOUR_OFFSETS.some(([dx, dy]) => {
+    const neighbour = { x: tile.x + dx, y: tile.y + dy }
+    return map.inBounds(neighbour) && !isTileExplored(state, player, neighbour)
+  })
+}
+
+// A hero only walks on tiles its owner has explored, so it explores from the edge of them.
+function explorationTiles({ state, player, map, isEmpty }) {
+  const tiles = []
+  for (let y = 0; y < map.height; y += 1) {
+    for (let x = 0; x < map.width; x += 1) {
+      const tile = { x, y }
+      if (
+        isTileExplored(state, player, tile) &&
+        map.isPassable(tile) &&
+        isEmpty(tile) &&
+        touchesUnexplored(state, player, map, tile)
+      ) {
+        tiles.push(tile)
+      }
+    }
+  }
+  return tiles
+}
+
+function nearestReachable(tiles, routes) {
+  const paths = routes.planRoutes(tiles)
+  const [nearest] = tiles
+    .map((tile, index) => ({ tile, path: paths[index] }))
+    .filter(({ path }) => path !== null && routes.getPathToBattle(path) === null)
+    .map((target) => ({ ...target, cost: routes.routeCost(target.path) }))
+    .sort(byCostThenTile)
+  return nearest ?? null
+}
+
+export function decideComputerHeroMove({ state, map, heroId, targets, routes }) {
   if (isInOwnTown(state, heroId)) {
     return null
   }
 
   const player = heroOwner(state, heroId)
   const open = targets.filter((target) => isWorthGoingTo[target.kind](state, target, player))
-  const paths = routes.planRoutes(open.map((target) => target.tile))
-  const [nearest] = open
-    .map((target, index) => ({ tile: target.tile, path: paths[index] }))
-    .filter(({ path }) => path !== null && routes.getPathToBattle(path) === null)
-    .map((target) => ({ ...target, cost: routes.routeCost(target.path) }))
-    .sort(byCostThenTile)
+  const nearest =
+    nearestReachable(
+      open.map((target) => target.tile),
+      routes
+    ) ?? nearestReachable(explorationTiles({ state, player, map, isEmpty: routes.isEmpty }), routes)
 
   if (!nearest || routes.chargeStepsToday(nearest.path).length === 0) {
     return null

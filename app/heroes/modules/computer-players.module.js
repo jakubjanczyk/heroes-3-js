@@ -29,6 +29,7 @@ export const registerComputerPlayersModule = defineModule(
       getHeroId: () => planningHeroId
     })
     let routePlanner = null
+    let map = null
     let targets = []
     let isRestoring = false
     // The computer player whose turn is being played, and its heroes still to move.
@@ -40,13 +41,15 @@ export const registerComputerPlayersModule = defineModule(
         planRoutes: routePlanner.planRoutes,
         getPathToBattle: routePlanner.getPathToBattle,
         routeCost: heroRoutes.routeCost,
-        chargeStepsToday: heroRoutes.chargeStepsToday
+        chargeStepsToday: heroRoutes.chargeStepsToday,
+        isEmpty: (tile) => heroRoutes.occupancy.getAt(tile) === null
       }
     }
 
     function nextMove(heroId) {
       return decideComputerHeroMove({
         state: state.get(),
+        map,
         heroId,
         targets,
         routes: routesOf(heroId)
@@ -88,6 +91,7 @@ export const registerComputerPlayersModule = defineModule(
             const world = event.detail
             heroRoutes.onWorldReady(world)
             routePlanner = heroRoutes.createMovementSystem()
+            map = world.map
             targets = world.scenario.entities.flatMap((entity) => {
               const kind = entityBehaviors.getArrivalInteraction(entity)?.movementInteractionKind
               return COMPUTER_HERO_TARGET_KINDS.includes(kind)
