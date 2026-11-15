@@ -184,15 +184,15 @@ export const registerTownModule = defineModule(
       return heroById(state.get(), heroIdAt(state.get(), townsById.get(townId).tile))
     }
 
-    // Between the open town's garrison and its visiting hero, or within either. `rearrange` is the
+    // Between the town's garrison and its visiting hero, or within either. `rearrange` is the
     // army-exchange rule applied to the armies, returning them changed or null.
-    function rearrangeArmiesInTown(rearrange) {
-      if (!openTownId) {
+    function rearrangeArmiesInTown(entityId, rearrange) {
+      if (!townsById.has(entityId) || !isActivePlayersTown(entityId)) {
         return
       }
 
-      const hero = visitingHeroOf(openTownId)
-      const armies = { garrison: townGarrison(state.get(), openTownId) }
+      const hero = visitingHeroOf(entityId)
+      const armies = { garrison: townGarrison(state.get(), entityId) }
       if (hero) {
         armies.hero = hero.army
       }
@@ -212,7 +212,7 @@ export const registerTownModule = defineModule(
           : [
               {
                 type: APP_FACT_TOWN_GARRISON_CHANGED,
-                detail: { entityId: openTownId, garrison: changed.garrison }
+                detail: { entityId, garrison: changed.garrison }
               }
             ])
       ])
@@ -411,8 +411,8 @@ export const registerTownModule = defineModule(
         { type: APP_COMMAND_TOWN_RECRUIT_REQUESTED, handler: (event) => recruit(event.detail) },
         {
           type: APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
-          handler: ({ detail: { from, to } }) =>
-            rearrangeArmiesInTown((armies) => moveStack(armies, from, to))
+          handler: ({ detail: { entityId, from, to } }) =>
+            rearrangeArmiesInTown(entityId, (armies) => moveStack(armies, from, to))
         },
         {
           type: APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED,
@@ -420,8 +420,8 @@ export const registerTownModule = defineModule(
         },
         {
           type: APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED,
-          handler: ({ detail: { from, to, count } }) =>
-            rearrangeArmiesInTown((armies) => splitStack(armies, from, to, count))
+          handler: ({ detail: { entityId, from, to, count } }) =>
+            rearrangeArmiesInTown(entityId, (armies) => splitStack(armies, from, to, count))
         },
         {
           type: APP_FACT_TOWN_GARRISON_CHANGED,
