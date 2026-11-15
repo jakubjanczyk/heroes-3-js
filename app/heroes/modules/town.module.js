@@ -5,6 +5,7 @@ import { addToArmy, describeTownCreatures } from '../../../game/heroes/creature-
 import { getTownName } from '../../../game/heroes/entity-behaviors/town.js'
 import { describeFort } from '../../../game/heroes/fort-window.js'
 import { getHeroArmy, getTownGarrison } from '../../../game/heroes/hero-army.js'
+import { buildingContextOf } from '../../../game/heroes/state/building-context.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { flaggedDwellingsOf } from '../../../game/heroes/state/map-objects.js'
@@ -12,7 +13,6 @@ import {
   availableCreatures,
   builtIn,
   dailyIncomeOf,
-  hasBuiltToday,
   isDefendedAgainst,
   townGarrison,
   townIdsOf,
@@ -92,21 +92,10 @@ export const registerTownModule = defineModule(
       return resourcesOf(state.get(), townOwner(state.get(), townId))
     }
 
-    function buildingsOf(townId) {
-      return {
-        built: builtIn(state.get(), townId),
-        hasBuiltToday: hasBuiltToday(state.get(), townId),
+    function buildingContext(townId) {
+      return buildingContextOf(state.get(), townId, {
         isNextToWater: townIdsNextToWater.has(townId)
-      }
-    }
-
-    // Some buildings, the Capitol, a player may have in one town only.
-    function builtElsewhere(townId) {
-      const current = state.get()
-      return (buildingId) =>
-        townIdsOf(current, townOwner(current, townId)).some(
-          (otherTownId) => otherTownId !== townId && builtIn(current, otherTownId).has(buildingId)
-        )
+      })
     }
 
     function catalogueOf(townId) {
@@ -173,14 +162,7 @@ export const registerTownModule = defineModule(
     function build({ entityId, buildingId }) {
       const building = catalogueOf(entityId).buildings[buildingId]
       const status =
-        building &&
-        buildingStatus({
-          buildingId,
-          building,
-          town: buildingsOf(entityId),
-          builtElsewhere: builtElsewhere(entityId),
-          treasury: treasuryOf(entityId)
-        })
+        building && buildingStatus({ buildingId, building, ...buildingContext(entityId) })
       if (isActivePlayersTown(entityId) && status === BUILDING_STATUS.BUILDABLE) {
         emitAll([
           {
@@ -279,10 +261,8 @@ export const registerTownModule = defineModule(
         }),
         hall: describeHall({
           catalogue: catalogueOf(openTownId),
-          town: buildingsOf(openTownId),
-          builtElsewhere: builtElsewhere(openTownId),
           resources: definitions.resources,
-          treasury: treasuryOf(openTownId)
+          ...buildingContext(openTownId)
         })
       })
     }

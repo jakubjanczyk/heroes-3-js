@@ -35,6 +35,21 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 
 - **8.4.1**: a computer hero's targets are resource piles not yet picked up, mines its owner doesn't own and dwellings its owner hasn't flagged that have no guards against it; it goes to the nearest it can reach without a fight, by the movement points the route costs (ties to the top row, then the left), and on to the next until its movement points run out. A taken mine shows its new owner's flag on the map and the minimap and pays them from the next day. Another player's hero arriving anywhere opens nothing on the player's screen: no recruit window, no question and no message; the facts it sets off (a flag, a pile picked up) still happen. The hourglass stays in the info box throughout.
 - **8.4.2**: a computer hero with no pile, mine or dwelling it can reach without a fight goes to the nearest tile its owner has explored that is empty and touches unexplored ground, by the movement points the route costs (ties to the top row, then the left), past no monster. Walking there reveals the tiles around it for its owner, not for the player; the hero then decides again, so a pile it finds is picked up the same day if it can reach it, and a tile too far for today is reached on a later day. With nothing unexplored it can reach, or fog of war off, it stays where it is; a hero in its own town still stays there.
+- **8.4.3**: at the start of a computer player's turn, before its heroes move, each of its towns builds one building it can pay for that day. A town aims for its income halls first, then its dwellings in the Hall's order (every basic dwelling before any upgrade), then the rest in the Hall's order, and builds a building's missing requirements on the way to it (a Tavern before the Town Hall, the Stables before the Training Grounds). A building it can't pay for, or can't build (no water, a Capitol in another of its towns), is passed over for the next it can; with none it builds nothing. The cost comes out of its owner's resources. Nothing is shown while it happens; the player sees it in the town's fort icon, the Thieves' Guild and the town screen once they take the town. A reload during the turn doesn't build again.
+
+## Plan for 8.4.3
+
+Agreed: build what can be paid for today, with no saving up (weighing comes with 8.4.8); the dwellings and the rest in the order below.
+
+- **When**: at the start of a computer player's turn, before its heroes move (so 8.4.4 can recruit what was built that day). Each of its towns builds at most one building, as the player's can; the towns take their turn in the order of the player's town list.
+- **What it aims for**, in a fixed order: the income buildings (Town Hall, City Hall, Capitol), then the creature dwellings in the Hall's order (by tier), every basic dwelling before any upgrade, then the rest in the Hall's order (forts, Tavern and its upgrade, Blacksmith, Marketplace, Resource Silo, Mage Guilds, Shipyard, Stables, the horde building).
+- **Requirements first**: the steps towards a building are its missing requirements, each with its own first, then the building itself. A town builds the first step, down the whole list, that it can build today: whatever the player could build there, so the cost, a Shipyard's water and a Capitol already standing in another of the owner's towns are checked as for the player. A town aiming for the Town Hall builds its Tavern first.
+- **Nothing saved up**: a step the owner can't pay for is passed over for the next one it can; with nothing it can pay for, the town builds nothing that day.
+- The building is paid for from its owner's resources and saved with the same facts as the player's; the town module's checks stay the rules' guard.
+- **What the player sees**: nothing while it happens (no message, the hourglass stays). Afterwards: the fort icon in the town's box, the Thieves' Guild's rows, Expert Visions, and the town screen once the player takes the town.
+- A reload during the computer's turn doesn't build twice: a town that built today can't build again.
+- Checked against the reference engine's AI, which also builds a building's requirements on the way to it and sorts its wishes into income halls, dwellings and the rest, but weighs them by cost and need; weighing is 8.4.8. The original game's AI is not documented.
+- One refactor first: what a building's status in a town depends on (built, built today, water, built in another town, the owner's treasury) is read from the state by one function, `buildingContextOf` in `game/heroes/state/building-context.js`, used by the town module and by the computer player.
 
 ## Plan for 8.4.2
 
@@ -59,3 +74,4 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 - Resource generators (windmills, water wheels) as targets: 8.4.8, where a target's worth is weighed.
 - Recruiting at a flagged dwelling: 8.4.4.
 - Exploring towards the tile that reveals the most for its cost, rather than the nearest: 8.4.8.
+- Saving up for a building, and choosing a town's building by what it is worth rather than a fixed order: 8.4.8.
