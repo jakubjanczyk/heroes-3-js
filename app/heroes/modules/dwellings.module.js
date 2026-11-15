@@ -4,7 +4,7 @@ import { dwellingCreature, isFreeDwelling } from '../../../game/heroes/map-dwell
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { dwellingAvailable, dwellingGuardsAgainst } from '../../../game/heroes/state/map-objects.js'
-import { activePlayer, heroOwner } from '../../../game/state/queries.js'
+import { activePlayer, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_FACT_DWELLING_CREATURES_RECRUITED,
@@ -107,6 +107,10 @@ export const registerDwellingsModule = defineModule(
 
     function takeFreeCreatures({ hero, entityId, offer }) {
       const count = offer.available
+      if (heroOwner(state.get(), hero.id) !== viewingPlayer(state.get())) {
+        joinArmy({ hero, entityId, offer, count, isFree: true })
+        return
+      }
       const stack = describeStack({ creature: offer.recruit.creature, count }, definitions)
       if (count === 0) {
         showMessage(offer.dwelling, `There are no ${stack.pluralName} here to recruit.`)

@@ -3,7 +3,7 @@ import { ARMY_SLOT_COUNT } from './hero-army.js'
 
 // The creatures a town can recruit, by tier: each standing dwelling's creature, the plain one
 // before the upgraded one, as the recruit window lists them.
-function recruitableCreaturesByTier({ buildings, built, monsters }) {
+export function recruitableCreaturesByTier({ buildings, built, monsters }) {
   const tiers = Array.from({ length: ARMY_SLOT_COUNT }, () => [])
   const dwellings = [...built]
     .map((buildingId) => buildings[buildingId])

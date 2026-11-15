@@ -1,11 +1,11 @@
-import { heroOwner, heroTile, isRemoved, isTileExplored } from '../state/queries.js'
+import { heroOwner, isRemoved, isTileExplored } from '../state/queries.js'
+import { dwellingRecruitCount } from './computer-recruiting.js'
 import {
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
 } from './interaction-kinds.js'
 import { dwellingGuardsAgainst, dwellingOwner, mineOwner } from './state/map-objects.js'
-import { townIdAt, townOwner } from './state/towns.js'
 
 export const COMPUTER_HERO_TARGET_KINDS = Object.freeze([
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
@@ -15,16 +15,12 @@ export const COMPUTER_HERO_TARGET_KINDS = Object.freeze([
 
 const isWorthGoingTo = {
   [MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT]: (state, target) => !isRemoved(state, target.id),
-  [MOVEMENT_INTERACTION_KIND_MINE_ENTER]: (state, target, player) =>
+  [MOVEMENT_INTERACTION_KIND_MINE_ENTER]: (state, target, { player }) =>
     mineOwner(state, target.id) !== player,
-  [MOVEMENT_INTERACTION_KIND_DWELLING_VISIT]: (state, target, player) =>
-    dwellingOwner(state, target.id) !== player &&
-    dwellingGuardsAgainst(state, target.id, player) === 0
-}
-
-function isInOwnTown(state, heroId) {
-  const townId = townIdAt(state, heroTile(state, heroId))
-  return townId !== null && townOwner(state, townId) === heroOwner(state, heroId)
+  [MOVEMENT_INTERACTION_KIND_DWELLING_VISIT]: (state, target, { player, heroId, definitions }) =>
+    dwellingOwner(state, target.id) === player
+      ? dwellingRecruitCount({ state, dwellingId: target.id, heroId, definitions }) > 0
+      : dwellingGuardsAgainst(state, target.id, player) === 0
 }
 
 function byCostThenTile(a, b) {
@@ -78,13 +74,11 @@ function nearestReachable(tiles, routes) {
   return nearest ?? null
 }
 
-export function decideComputerHeroMove({ state, map, heroId, targets, routes }) {
-  if (isInOwnTown(state, heroId)) {
-    return null
-  }
-
+export function decideComputerHeroMove({ state, map, heroId, targets, routes, definitions }) {
   const player = heroOwner(state, heroId)
-  const open = targets.filter((target) => isWorthGoingTo[target.kind](state, target, player))
+  const open = targets.filter((target) =>
+    isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
+  )
   const nearest =
     nearestReachable(
       open.map((target) => target.tile),
