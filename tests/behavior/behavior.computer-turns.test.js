@@ -7,19 +7,24 @@ import {
   expectHeroAt,
   expectResourceNotPresent,
   expectResourcePresent,
+  getDwellingEntity,
   getHeroEntity,
   getMapViewCentreTile,
+  getMineEntity,
   holdRightButtonOn,
   panCamera,
   queryInfoPopup,
   queryMinimapShield,
-  readMinimapHeroTile
+  readMinimapHeroTile,
+  readMinimapTileColour,
+  readOwnerFlags
 } from './adventure-map.utils.js'
 import {
   clickEndTurn,
   expectCalendarDate,
   expectResourceTotal,
   getTownInTownList,
+  queryCapturedMineBox,
   readDateBox,
   readTurnBox
 } from './adventure-panels.utils.js'
@@ -29,7 +34,8 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
-import { aHero, aMonster, aResource, aScenario, aTown } from './builders.js'
+import { loadAppStyles } from './app-styles.js'
+import { aDwelling, aHero, aMine, aMonster, aResource, aScenario, aTown } from './builders.js'
 import { clickHeroInHeroList } from './hero-screen.utils.js'
 import { openTavern, openThievesGuild, readThievesGuildRanking } from './town-screen.utils.js'
 
@@ -474,5 +480,192 @@ describe('watching computer turns behavior', () => {
 
       expectHeroAt(5, 4)
     })
+  })
+})
+
+const PLAYER_BLUE = 'rgb(49, 82, 255)'
+
+const captureDefinitions = {
+  ...goldDefinitions,
+  mines: readGameData('mines.json'),
+  resources: readGameData('resources.json'),
+  monsters: readGameData('monsters.json'),
+  dwellings: readGameData('dwellings.json'),
+  towns: readGameData('towns.json'),
+  buildings: readGameData('buildings.json'),
+  tavern: readGameData('tavern.json')
+}
+
+const aMineAt = (id, x, y = 1) => aMine().withId(id).at(x, y)
+
+// Mines and dwellings stand on the middle row with their entrance there; blue's hero walks along
+// the bottom row and steps up into one from the tile below it.
+const aCaptureScenario = (...entities) =>
+  aScenario()
+    .withSize(30, 3)
+    .withEntities(aHero().at(0, 2), ...entities)
+    .withDefinitions(captureDefinitions)
+
+describe('computer heroes capturing mines and dwellings behavior', () => {
+  // The mine at 18 is four tiles away; the one at 6 is over 1100 further, more than is left.
+  test('a blue hero walks to the nearest unflagged mine and flags it blue', async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aMineAt('near-mine', 18), aMineAt('far-mine', 6))
+    )
+
+    await endTurn(user)
+
+    expect(readOwnerFlags(getMineEntity('near-mine'))).toEqual(['Blue player flag'])
+    expect(readOwnerFlags(getMineEntity('far-mine'))).toEqual([])
+  })
+
+  test("a blue hero takes the player's mine, and it shows blue's flag on the map and the minimap", async () => {
+    await loadAppStyles()
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aMineAt('mine-1', 18).ownedByPlayer())
+    )
+
+    await endTurn(user)
+
+    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual(['Blue player flag'])
+    expect(readMinimapTileColour(18, 1)).toBe(PLAYER_BLUE)
+  })
+
+  test('a blue hero walks past a mine blue already owns to the next one', async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(
+        aBlueHero(15, 2),
+        aMineAt('blue-mine', 18).ownedBy('blue'),
+        aMineAt('free-mine', 22)
+      )
+    )
+
+    await endTurn(user)
+
+    expect(readOwnerFlags(getMineEntity('free-mine'))).toEqual(['Blue player flag'])
+  })
+
+  test('a blue hero picks up a pile nearer than a mine, then goes on to the mine', async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aPile('pile', 17, 2), aMineAt('mine-1', 21))
+    )
+
+    await endTurn(user)
+
+    expectResourceNotPresent('pile')
+    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual(['Blue player flag'])
+  })
+
+  // Every tile next to the mine's entrance but the ones above it is next to the monster too.
+  test("a blue hero doesn't walk to a mine it can only reach past a monster", async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aMineAt('mine-1', 18), aMonster().at(19, 2))
+    )
+
+    await endTurn(user)
+
+    expectHeroAt(15, 2, 'hero-2')
+    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual([])
+  })
+
+  test('a blue hero flags an unguarded dwelling, and no window opens for the player', async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aDwelling().withType('GUARDHOUSE').at(18, 1))
+    )
+
+    await endTurn(user)
+
+    expect(readOwnerFlags(getDwellingEntity())).toEqual(['Blue player flag'])
+    expect(queryOpenDialogs()).toEqual([])
+  })
+
+  test("a blue hero doesn't walk to a guarded dwelling", async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aDwelling().withType('MONASTERY').at(18, 1))
+    )
+
+    await endTurn(user)
+
+    expectHeroAt(15, 2, 'hero-2')
+    expect(readOwnerFlags(getDwellingEntity())).toEqual([])
+  })
+
+  test('the player gets no income from their mine the day after blue takes it', async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(aBlueHero(15, 2), aMineAt('mine-1', 18).ownedByPlayer())
+    )
+
+    await endTurn(user)
+
+    expectResourceTotal('Gold', 0)
+  })
+
+  // Computer players start with 7500 gold; blue's Gold Mine pays it 1000 on day 2.
+  test("blue's Gold Mine puts blue ahead of tan in the Thieves' Guild's gold row the next day", async () => {
+    const tavernTown = (id, name, x) =>
+      aTown().withId(id).named(name).ownedByPlayer().withBuildings(['TAVERN']).at(x, 3)
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(30, 5)
+        .withEntities(
+          aHero().at(0, 4),
+          tavernTown('town-1', 'Whitemoon', 4),
+          tavernTown('town-2', 'Greenfield', 12),
+          aBlueHero(20, 4),
+          aHero().withId('hero-3').ownedBy('tan').at(29, 0),
+          aMineAt('mine-1', 23, 3)
+        )
+        .withDefinitions(captureDefinitions)
+    )
+
+    await endTurn(user)
+    await user.dblClick(getTownInTownList('Whitemoon'))
+    await openTavern(user)
+    await openThievesGuild(user)
+
+    expect(readThievesGuildRanking('Gold')).toEqual({
+      '1st': ['blue'],
+      '2nd': ['tan'],
+      '3rd': ['red']
+    })
+  })
+
+  // Blue's hero steps under the mine at 28 after three steps and into it on the fourth, then
+  // walks on towards the pile at 35.
+  const aWatchedCaptureScenario = () =>
+    aWatchedScenario()
+      .withEntities(
+        aHero().at(5, 4),
+        aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+        aBlueHero(25, 4),
+        aMineAt('mine-1', 28, 3).ownedByPlayer(),
+        aPile('pile', 35, 4)
+      )
+      .withDefinitions(captureDefinitions)
+
+  test('the info box keeps the hourglass when blue takes a mine, and shows no captured mine after', async () => {
+    const { user } = await setupWatchedApp(aWatchedCaptureScenario())
+
+    await clickEndTurn(user)
+    await waitMs(5 * STEP_MS + STEP_MS / 2)
+
+    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual(['Blue player flag'])
+    expect(readTurnBox().name).toBe("Blue player's turn")
+
+    await waitMs(COMPUTER_TURN_MS)
+
+    expect(queryCapturedMineBox()).toBeNull()
+  })
+
+  test('after a reload during blue’s turn the blue hero walks on and flags the mine', async () => {
+    const eventLog = createMemoryEventLog()
+    const first = await setupWatchedApp(aWatchedCaptureScenario(), { eventLog })
+    await clickEndTurn(first.user)
+    await waitMs(STEP_MS + STEP_MS / 2)
+    await setupWatchedApp(aWatchedCaptureScenario(), { eventLog })
+
+    await waitMs(COMPUTER_TURN_MS)
+
+    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual(['Blue player flag'])
   })
 })

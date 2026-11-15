@@ -393,6 +393,11 @@ export function queryMinimapShield() {
   return within(document.querySelector('.minimap')).queryByRole('img', { name: 'Shield' })
 }
 
+export function readMinimapTileColour(x, y) {
+  const tile = document.querySelector(`.minimap-tile[data-x="${x}"][data-y="${y}"]`)
+  return window.getComputedStyle(tile).backgroundColor
+}
+
 export function readMinimapHeroTile(heroId, mapSize) {
   const marker = queryMinimapHeroMarker(heroId)
   const percent = (property) => Number.parseFloat(marker.style.getPropertyValue(property))

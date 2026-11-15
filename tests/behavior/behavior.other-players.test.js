@@ -95,14 +95,14 @@ describe('other players behavior', () => {
   })
 
   describe('taking turns', () => {
-    // Each player owns a gold mine, 1000 gold a day.
+    // Each player owns a gold mine, 1000 gold a day. Blue and tan have no heroes, so nothing of
+    // theirs walks off to take the player's mine.
     function aTurnsScenario() {
       return aScenario()
         .withSize(12, 4)
         .withEntities(
           aHero().at(0, 3),
           aMine().withId('red-mine').ownedBy('red').at(2, 1),
-          aHero().withId('hero-2').withName('Valeska').ownedBy('blue').at(11, 3),
           aMine().withId('tan-mine').ownedBy('tan').at(5, 1),
           aMine().withId('blue-mine').ownedBy('blue').at(8, 1)
         )
