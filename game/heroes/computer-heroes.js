@@ -1,8 +1,17 @@
-import { heroIdAt, heroOwner, isRemoved, isTileExplored } from '../state/queries.js'
+import {
+  enemiesOf,
+  heroIdAt,
+  heroIdsOf,
+  heroOwner,
+  heroTile,
+  isRemoved,
+  isTileExplored
+} from '../state/queries.js'
 import { dwellingRecruitCount } from './computer-recruiting.js'
 import { canBeat } from './computer-strength.js'
 import {
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
+  MOVEMENT_INTERACTION_KIND_HERO_MEET,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
   MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
@@ -14,6 +23,7 @@ import {
   mineOwner,
   monsterCount
 } from './state/map-objects.js'
+import { townIdAt } from './state/towns.js'
 
 export const COMPUTER_HERO_TARGET_KINDS = Object.freeze([
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
@@ -120,14 +130,32 @@ function nearestReachable(targets, routes) {
   return nearest ?? null
 }
 
+// Heroes standing in a town are attacked with the town (8.4.6c).
+function enemyHeroTargets({ state, player, heroId, definitions }) {
+  const hero = heroById(state, heroId)
+  return enemiesOf(state, player)
+    .flatMap((enemy) => heroIdsOf(state, enemy))
+    .map((enemyHeroId) => ({ id: enemyHeroId, tile: heroTile(state, enemyHeroId) }))
+    .filter(
+      ({ id, tile }) =>
+        isTileExplored(state, player, tile) &&
+        townIdAt(state, tile) === null &&
+        canBeat({ hero, enemyArmy: heroById(state, id).army, definitions })
+    )
+    .map((target) => ({ ...target, kind: MOVEMENT_INTERACTION_KIND_HERO_MEET }))
+}
+
 export function decideComputerHeroMove({ state, map, heroId, targets, routes, definitions }) {
   const player = heroOwner(state, heroId)
-  // Another hero standing on a target would be attacked, which is not decided here.
-  const open = targets.filter(
-    (target) =>
-      [null, heroId].includes(heroIdAt(state, target.tile)) &&
-      isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
-  )
+  // A hero standing on another target is attacked as a hero, not as what it stands on.
+  const open = [
+    ...targets.filter(
+      (target) =>
+        [null, heroId].includes(heroIdAt(state, target.tile)) &&
+        isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
+    ),
+    ...enemyHeroTargets({ state, player, heroId, definitions })
+  ]
   const exploration = () =>
     explorationTiles({ state, player, map, isEmpty: routes.isEmpty }).map((tile) => ({ tile }))
   const nearest = nearestReachable(open, routes) ?? nearestReachable(exploration(), routes)
