@@ -1,7 +1,9 @@
 import { createEntityBehaviors } from '../../../game/domain/entity-behaviors.js'
 import { resolveMovementRules } from '../../../game/domain/movement/movement-rules.js'
-import { decideComputerHeroMove } from '../../../game/heroes/computer-heroes.js'
-import { MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT } from '../../../game/heroes/interaction-kinds.js'
+import {
+  COMPUTER_HERO_TARGET_KINDS,
+  decideComputerHeroMove
+} from '../../../game/heroes/computer-heroes.js'
 import { activePlayer, heroIdsOf, viewingPlayer } from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
@@ -27,7 +29,7 @@ export const registerComputerPlayersModule = defineModule(
       getHeroId: () => planningHeroId
     })
     let routePlanner = null
-    let resourcePiles = []
+    let targets = []
     let isRestoring = false
     // The computer player whose turn is being played, and its heroes still to move.
     let turn = null
@@ -46,7 +48,7 @@ export const registerComputerPlayersModule = defineModule(
       return decideComputerHeroMove({
         state: state.get(),
         heroId,
-        resourcePiles,
+        targets,
         routes: routesOf(heroId)
       })
     }
@@ -86,11 +88,12 @@ export const registerComputerPlayersModule = defineModule(
             const world = event.detail
             heroRoutes.onWorldReady(world)
             routePlanner = heroRoutes.createMovementSystem()
-            resourcePiles = world.scenario.entities.filter(
-              (entity) =>
-                entityBehaviors.getArrivalInteraction(entity)?.movementInteractionKind ===
-                MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
-            )
+            targets = world.scenario.entities.flatMap((entity) => {
+              const kind = entityBehaviors.getArrivalInteraction(entity)?.movementInteractionKind
+              return COMPUTER_HERO_TARGET_KINDS.includes(kind)
+                ? [{ id: entity.id, tile: entity.tile, kind }]
+                : []
+            })
             turn = null
           }
         },
