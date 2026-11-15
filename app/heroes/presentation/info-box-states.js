@@ -5,7 +5,8 @@ const ON_ANY_VIEW = {
   moveStarted: 'selection',
   dayStarted: 'date',
   resourcesFound: 'resources',
-  mineCaptured: 'mine'
+  mineCaptured: 'mine',
+  computerTurnStarted: 'turn'
 }
 
 const TRANSITIONS = {
@@ -13,7 +14,9 @@ const TRANSITIONS = {
   kingdom: { ...ON_ANY_VIEW, clicked: 'date', timedOut: 'selection' },
   date: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' },
   resources: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' },
-  mine: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' }
+  mine: { ...ON_ANY_VIEW, clicked: 'selection', timedOut: 'selection' },
+  // Nothing a computer player's heroes do takes the hourglass's place.
+  turn: { computerTurnStarted: 'turn', dayStarted: 'date', playerTurnStarted: 'selection' }
 }
 
 export function nextInfoBoxView(view, eventType) {
@@ -21,5 +24,5 @@ export function nextInfoBoxView(view, eventType) {
 }
 
 export function infoBoxTimeoutMs(view) {
-  return view === 'selection' ? null : INFO_BOX_SHOWN_MS
+  return view === 'selection' || view === 'turn' ? null : INFO_BOX_SHOWN_MS
 }

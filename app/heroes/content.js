@@ -20,6 +20,7 @@ import { registerInfoPopupModule } from './modules/info-popup.module.js'
 import { registerMageGuildModule } from './modules/mage-guild.module.js'
 import { registerMageGuildViewModule } from './modules/mage-guild-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
+import { registerMinimapShieldViewModule } from './modules/minimap-shield-view.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
 import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
@@ -72,6 +73,7 @@ export const heroesAppContent = Object.freeze({
     registerComputerPlayersModule,
     registerOwnerFlagViewModule,
     registerMinimapViewModule,
+    registerMinimapShieldViewModule,
     registerHudModule,
     registerStatusBarModule,
     registerAdventureCursorModule,

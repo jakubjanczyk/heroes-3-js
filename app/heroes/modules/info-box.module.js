@@ -16,6 +16,7 @@ import {
   townBuildingsCatalogue
 } from '../../../game/heroes/town-buildings.js'
 import {
+  activePlayer,
   enemiesOf,
   selectedHeroIdOf,
   turnNumber,
@@ -34,6 +35,7 @@ import {
   APP_FACT_HERO_SECONDARY_SKILL_LEARNED,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_MOVE_STARTED,
+  APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_GARRISON_CHANGED,
@@ -57,6 +59,7 @@ import { openInfoBoxHelpPopup } from '../presentation/info-box-help-popup.js'
 import { infoBoxTimeoutMs, nextInfoBoxView } from '../presentation/info-box-states.js'
 import { renderKingdomOverviewBox } from '../presentation/kingdom-overview-box.js'
 import { renderTownBox } from '../presentation/town-box.js'
+import { renderTurnBox, turnBoxLabel } from '../presentation/turn-box.js'
 
 const DEFAULT_HERO_NAME = 'Hero'
 const DEFAULT_LONG_PRESS_MS = 500
@@ -220,6 +223,7 @@ export const registerInfoBoxModule = defineModule(
       mine: () => show('Mine captured', renderCapturedMineBox, content.mine),
       date: () => show('Date', renderDateBox, content.date),
       kingdom: () => renderKingdomOverview(),
+      turn: () => show(turnBoxLabel(content.player), renderTurnBox, content),
       selection: () => (isHeroSelected ? renderSelectedHero() : renderSelectedTown())
     }
 
@@ -284,6 +288,16 @@ export const registerInfoBoxModule = defineModule(
       startRearranging({ garrison }, (move) =>
         emit(APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED, { entityId, ...move })
       )
+    }
+
+    function showWhoseTurn() {
+      const current = state.get()
+      const player = activePlayer(current)
+      if (player && player !== viewingPlayer(current)) {
+        send('computerTurnStarted', { player })
+      } else {
+        send('playerTurnStarted')
+      }
     }
 
     function resourceName(type) {
@@ -369,6 +383,14 @@ export const registerInfoBoxModule = defineModule(
             }
           }
         },
+        {
+          type: APP_FACT_PLAYER_TURN_ENDED,
+          handler: () => {
+            if (!isRestoring) {
+              showWhoseTurn()
+            }
+          }
+        },
         { type: APP_FACT_MOVE_STARTED, handler: () => send('moveStarted') },
         {
           type: APP_UI_NOTICE_OPENED,
@@ -398,6 +420,7 @@ export const registerInfoBoxModule = defineModule(
           type: APP_UI_RESTORE_COMPLETED,
           handler: () => {
             isRestoring = false
+            showWhoseTurn()
           }
         }
       ],
@@ -428,6 +451,7 @@ export const registerInfoBoxModule = defineModule(
       APP_FACT_RESOURCE_COLLECTED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_MOVE_STARTED,
+      APP_FACT_PLAYER_TURN_ENDED,
       APP_UI_NOTICE_OPENED,
       APP_UI_INTERACTION_MODAL_OPENED,
       APP_UI_INTERACTION_MODAL_CLOSED,
