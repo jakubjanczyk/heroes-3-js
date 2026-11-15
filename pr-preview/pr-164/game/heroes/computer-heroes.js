@@ -1,4 +1,4 @@
-import { heroOwner, isRemoved, isTileExplored } from '../state/queries.js'
+import { heroIdAt, heroOwner, isRemoved, isTileExplored } from '../state/queries.js'
 import { dwellingRecruitCount } from './computer-recruiting.js'
 import { canBeat } from './computer-strength.js'
 import {
@@ -122,8 +122,11 @@ function nearestReachable(targets, routes) {
 
 export function decideComputerHeroMove({ state, map, heroId, targets, routes, definitions }) {
   const player = heroOwner(state, heroId)
-  const open = targets.filter((target) =>
-    isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
+  // Another hero standing on a target would be attacked, which is not decided here.
+  const open = targets.filter(
+    (target) =>
+      [null, heroId].includes(heroIdAt(state, target.tile)) &&
+      isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
   )
   const exploration = () =>
     explorationTiles({ state, player, map, isEmpty: routes.isEmpty }).map((tile) => ({ tile }))
