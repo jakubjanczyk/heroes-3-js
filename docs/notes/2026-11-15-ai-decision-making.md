@@ -31,6 +31,10 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 - **The recruit window never opens for a computer hero**, and neither does the info box's "Mine captured" (the hourglass stays).
 - A hero standing in its own town still stays there (until 8.4.4).
 
+## Built
+
+- **8.4.1**: a computer hero's targets are resource piles not yet picked up, mines its owner doesn't own and dwellings its owner hasn't flagged that have no guards against it; it goes to the nearest it can reach without a fight, by the movement points the route costs (ties to the top row, then the left), and on to the next until its movement points run out. A taken mine shows its new owner's flag on the map and the minimap and pays them from the next day. Another player's hero arriving anywhere opens nothing on the player's screen: no recruit window, no question and no message; the facts it sets off (a flag, a pile picked up) still happen. The hourglass stays in the info box throughout.
+
 ## Plan for 8.4.1
 
 - The computer player's targets are found from the scenario's entities by their arrival interaction (resource collect, mine enter, dwelling visit), and a mine or dwelling drops out once its owner is the hero's.
@@ -39,3 +43,5 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 ## Left for later
 
 - Everything listed above after 8.4.1, and difficulty levels (9.2).
+- Resource generators (windmills, water wheels) as targets: 8.4.8, where a target's worth is weighed.
+- Recruiting at a flagged dwelling: 8.4.4.

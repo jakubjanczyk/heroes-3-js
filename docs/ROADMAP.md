@@ -1115,7 +1115,7 @@ In three parts. See `docs/notes/2026-11-13-ai-basics.md`. The roadmap's "AI is t
 
 ### 8.4 AI Decision Making
 In eight parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty levels wait for a scenario setup screen (9.2).
-- [ ] 8.4.1 Capturing mines and dwellings: a computer hero's targets are resource piles and the mines and dwellings its owner hasn't flagged that it can reach without a fight, the nearest first; flagging a dwelling recruits nothing
+- [x] 8.4.1 Capturing mines and dwellings: a computer hero's targets are resource piles and the mines and dwellings its owner hasn't flagged that it can reach without a fight, the nearest first; flagging a dwelling recruits nothing
 - [ ] 8.4.2 Exploration: with nothing to go to, a computer hero walks towards the nearest tile its owner hasn't explored
 - [ ] 8.4.3 Town building: each day a computer player builds one building in each town that can, income first, then dwellings, then the rest
 - [ ] 8.4.4 Recruiting: a computer hero in its own town or at its own dwelling recruits what its owner can pay for, strongest first; a hero leaves its town once it has somewhere to go

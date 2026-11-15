@@ -1,5 +1,5 @@
 import { createEntityBehaviors } from '../../game/domain/entity-behaviors.js'
-import { firstHeroIdOf, heroEntity, viewingPlayer } from '../../game/state/queries.js'
+import { firstHeroIdOf, heroEntity, heroOwner, viewingPlayer } from '../../game/state/queries.js'
 import {
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_INTERACTION_REACHED,
@@ -41,6 +41,19 @@ export const registerInteractionModule = defineModule(
       }
     }
 
+    function isViewingPlayersHero(heroId) {
+      const current = state.get()
+      return heroOwner(current, heroId) === viewingPlayer(current)
+    }
+
+    // Another player's hero opens nothing on the player's screen: no window and no question.
+    function effectsForHero(effects, heroId) {
+      if (!effects || isViewingPlayersHero(heroId)) {
+        return effects
+      }
+      return { facts: (effects.facts ?? []).filter((fact) => !fact.type.startsWith('ui.')) }
+    }
+
     function resolve(interaction, fallbackTile) {
       const entity =
         entitiesById.get(interaction?.entityId) ?? heroEntity(state.get(), interaction?.entityId)
@@ -58,7 +71,10 @@ export const registerInteractionModule = defineModule(
         }),
         heroId: interactingHeroId
       }
-      const effects = getInteractionEffects(outcome, config?.content?.outcomeEffects)
+      const effects = effectsForHero(
+        getInteractionEffects(outcome, config?.content?.outcomeEffects),
+        interactingHeroId
+      )
       emitFacts(effects?.facts)
 
       if (effects?.modal) {
