@@ -551,6 +551,21 @@ describe('computer heroes capturing mines and dwellings behavior', () => {
     expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual([])
   })
 
+  test("a blue hero doesn't walk to a mine another player's hero stands on", async () => {
+    const { user } = await setupApp(
+      aCaptureScenario(
+        aBlueHero(15, 2),
+        aHero().withId('hero-3').ownedBy('tan').at(18, 1),
+        aMineAt('mine-1', 18)
+      )
+    )
+
+    await endTurn(user)
+
+    expectHeroAt(15, 2, 'hero-2')
+    expectHeroAt(18, 1, 'hero-3')
+  })
+
   test('a blue hero flags an unguarded dwelling, and no window opens for the player', async () => {
     const { user } = await setupApp(
       aCaptureScenario(aBlueHero(15, 2), aDwelling().withType('GUARDHOUSE').at(18, 1))
