@@ -47,11 +47,17 @@ export const registerInteractionModule = defineModule(
     }
 
     // Another player's hero opens nothing on the player's screen: no window and no question.
+    // A question's `otherPlayersChoice` is the answer it takes instead.
     function effectsForHero(effects, heroId) {
       if (!effects || isViewingPlayersHero(heroId)) {
         return effects
       }
-      return { facts: (effects.facts ?? []).filter((fact) => !fact.type.startsWith('ui.')) }
+      const answered = effects.eventsByChoice?.[effects.otherPlayersChoice] ?? []
+      return {
+        facts: [...(effects.facts ?? []), ...answered].filter(
+          (fact) => !fact.type.startsWith('ui.')
+        )
+      }
     }
 
     function resolve(interaction, fallbackTile) {
