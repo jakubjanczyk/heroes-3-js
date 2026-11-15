@@ -1,14 +1,11 @@
 import { giveAllArtifacts } from '../../game/heroes/artifact-exchange.js'
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
-import {
-  getArmyAfterBattle,
-  getExperienceForKills,
-  heroBattleSide
-} from '../../game/heroes/battle.js'
+import { getArmyAfterBattle, heroBattleSide } from '../../game/heroes/battle.js'
 import { BATTLE_OUTCOME_LOST } from '../../game/heroes/battle-results.js'
 import {
   BATTLE_DEFENDER_ENEMY_HERO,
-  DEFEATED_HERO_EXPERIENCE
+  DEFEATED_HERO_EXPERIENCE,
+  defendingHeroExperience
 } from '../../game/heroes/enemy-hero-battle.js'
 import { describeStack } from '../../game/heroes/hero-army.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
@@ -144,8 +141,8 @@ function captureArtifacts({ emit, state, heroId, definitions, beatenHeroId }) {
   }
 }
 
-// The enemy hero earns the health of the hero's creatures it killed, and only a beaten hero, not
-// one who retreated, gives it 500 more and its artifacts. With no stacks left it earns nothing.
+// Only a beaten hero, not one who retreated, gives the enemy hero its artifacts. With no stacks
+// left the enemy hero earns nothing.
 function rewardEnemyHero({
   emit,
   state,
@@ -159,10 +156,8 @@ function rewardEnemyHero({
   if (survivors.length === 0) {
     return
   }
-  const isBeaten = outcome === BATTLE_OUTCOME_LOST
-  const experience =
-    getExperienceForKills(battle, 'defender') + (isBeaten ? DEFEATED_HERO_EXPERIENCE : 0)
-  if (isBeaten) {
+  const experience = defendingHeroExperience(battle, outcome)
+  if (outcome === BATTLE_OUTCOME_LOST) {
     captureArtifacts({ emit, state, heroId: defender.heroId, definitions, beatenHeroId: heroId })
   }
   if (experience > 0) {

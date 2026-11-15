@@ -551,10 +551,10 @@ export const registerBattleViewModule = defineModule(
           .classList.add(`terrain-tile--${terrainName}`)
       }
 
-      const heroFigure = battleScreen.querySelector('.battle-hero--attacker')
-      heroFigure.setAttribute('aria-label', battle.heroName)
-      heroFigure.title = battle.heroName
-      showDefenderHero(battle.defenderHero)
+      showHero('attacker', { name: battle.heroName, owner: battle.heroOwner })
+      if (battle.defenderHero) {
+        showHero('defender', battle.defenderHero)
+      }
 
       statusBar = battleScreen.querySelector('.battle-screen__status-bar')
       messageLog = battleScreen.querySelector('.battle-bar__log')
@@ -565,15 +565,14 @@ export const registerBattleViewModule = defineModule(
       emit(APP_UI_ADVENTURE_MAP_COVERED, {})
     }
 
-    function showDefenderHero(hero) {
-      if (!hero) {
-        return
-      }
-      const figure = battleScreen.querySelector('.battle-hero--defender')
+    function showHero(side, hero) {
+      const figure = battleScreen.querySelector(`.battle-hero--${side}`)
       figure.hidden = false
       figure.setAttribute('aria-label', hero.name)
       figure.title = hero.name
-      figure.style.setProperty('--battle-hero-banner', `var(--player-${hero.owner})`)
+      if (hero.owner) {
+        figure.style.setProperty('--battle-hero-banner', `var(--player-${hero.owner})`)
+      }
     }
 
     function placeStack(element, from, to) {
