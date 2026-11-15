@@ -11,7 +11,9 @@ Each part is one PR.
 3. **8.4.3 Town building.** Each day a computer player builds one building in each town that can, in a fixed order: income, then dwellings, then the rest.
 4. **8.4.4 Recruiting.** A computer hero in its own town, or at its own dwelling, recruits what its owner can pay for, strongest creatures first; with it a hero may leave its town (it stays only while it has nothing to go to).
 5. **8.4.5 Fighting monsters.** A computer hero attacks a monster (or a dwelling's guards) its army is stronger than, by the army's total creature strength; the battle is fought without being shown, with the battle AI on both sides, and its result shown on the map.
-6. **8.4.6 Attacking the player.** A computer hero attacks the player's heroes, towns and garrisons it is stronger than; the player fights the battle on the battle screen during the computer's turn.
+6. **8.4.6 Attacking the player's heroes.** A computer hero attacks a player's hero it is stronger than; the player fights the battle on the battle screen during the computer's turn.
+6b. **8.4.6b The defending hero's spells, retreat and surrender.**
+6c. **8.4.6c Attacking the player's towns.** A town without defenders is taken; its garrison, or a hero in it with the garrison, defends it.
 7. **8.4.7 Threat response.** A weak computer hero keeps away from stronger enemy heroes; a hero goes back to defend its town when an enemy hero stronger than the garrison can reach it next day.
 8. **8.4.8 Weighing goals.** Targets compared by what they are worth against the days they cost, instead of the nearest first.
 
@@ -39,6 +41,30 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 - **8.4.4**: when a computer hero's move comes and it stands in its own town (after the town has built), its owner recruits there: the creatures of every standing dwelling, strongest first by AI value (an upgraded creature before the plain one sharing its pool), each as many as are available and the owner can pay for, into the garrison. The hero then takes the garrison's stacks, strongest first, onto a stack of the same creature or an empty slot; what doesn't fit stays. A hero arriving at a dwelling of its owner's recruits as many as are available and the owner can pay for (a first-tier dwelling's for free), and a flagged dwelling is a target again while it has creatures the owner can pay for and the hero has room for. A hero no longer stays in its town for good: it leaves for a target or to explore. No window or message opens for the player; the stack move and split commands now name the town they act on.
 
 - **8.4.5**: a computer hero's targets also take in monsters on tiles its owner has explored, and dwellings whose guards, it is stronger than: its army's total AI value times √((1 + 0.05 × Attack) × (1 + 0.05 × Defense)) above the enemy's total AI value × 1.1. It goes to the nearest target as before; a monster is reached only by a route whose battle is with that monster alone. A guarded dwelling's question is answered yes without showing it. The battle is fought at once and unseen: the battle AI plays both sides, each action is saved, the results are applied at once (no results window, no dwelling recruit window). A won battle leaves the hero with its survivors and the experience, and it carries on with the movement points it has left (recruiting at a dwelling it has just taken); a lost one removes it from the map for good. A battle in which no stack can get anywhere is lost. The player sees the walk when they can see it, then the monster fading out or the hero gone; the hourglass stays.
+
+## Plan for 8.4.6
+
+Split in three (agreed), as attacking the player is the battle screen played from the other side as well as the AI's choice:
+
+- **8.4.6 Attacking the player's heroes.** A computer hero attacks a player's hero it is stronger than; the player fights the battle on the battle screen, during the computer's turn, with their hero on the right. Retreat, Surrender and the spell book stay disabled for the defending player.
+- **8.4.6b The defending hero's spells, retreat and surrender.**
+- **8.4.6c Attacking the player's towns.** A town with no defenders is taken; a garrison, or a hero in the town with the garrison, defends it and the player fights the battle.
+
+Rules, as checked:
+
+- **The attacker stands on the left**, the defender on the right, whoever is the player's: the computer's hero on the left with its flag, the player's hero and army on the right. Checked against the reference engine's battle sides and the battles 8.1.7 already shows.
+- **Which heroes it attacks**: the reference engine's AI rates an enemy hero by its army's total AI value alone, the hero's skills left out, and attacks by the same safe ratio as monsters. So a player's hero is a target when the computer hero's strength (8.4.5) is above the player's hero's army's total AI value × 1.1. Checked against the reference engine's danger of a hero and its army's combat value.
+- **Retreat and surrender** for a hero defending on the open map are allowed, as for the attacker (the wiki's Combat page; the reference engine's flee and surrender permissions). Defending in a town they are not: the wiki says "if the hero is defending in a siege", the reference engine any town (its Village Hall forbids both). Asked for 8.4.6c.
+- **Winning and losing** are the rules 8.1.7 to 8.1.10 already apply from the other side: the winner gets the experience for the creatures killed and 500 for a beaten hero, and the beaten hero's artifacts; a beaten hero leaves the map.
+- Nothing announces the attack: the computer hero's walk is shown where the player can see it, then the battle screen opens. No source says otherwise; our decision.
+
+Decisions:
+
+- **Which heroes**: a player's hero standing outside a town, on a tile the computer hero's owner has explored (as for monsters), joins the one list of targets, nearest first. The route to it ends in the battle with that hero alone. A hero in a town comes with 8.4.6c.
+- **The battle**: the computer's stacks are played by the battle AI, the player's by the player (or by auto combat). The battle music plays.
+- **After it**: the computer's turn waits while the battle and its windows are open (results, captured artifacts, the player's hero's level-up; agreed), then goes on with its heroes; then the player's turn starts.
+- A reload during the battle carries on with it, and the computer's turn goes on after it.
+- One refactor first: the battle module names once which side the player plays (the attacker, the defender, or neither for an unseen battle), instead of taking the attacker as the player's; the results window and the player's actions follow that side.
 
 ## Plan for 8.4.5
 
