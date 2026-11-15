@@ -1290,6 +1290,12 @@ Some domain modules open messages themselves, so each has to ask whether the her
 - [ ] One view module turns those facts into messages, shown only when the hero or town is the viewing player's
 - [ ] The checks in `hero-levels.module.js`, `interaction.module.js`, `info-box.module.js` and `battle.module.js` move there, so domain modules have no checks on whose hero it is
 
+### Unseen Battles Without Special Cases
+Since 8.4.5 a computer hero's battle against a monster or a dwelling's guards is fought in `app/heroes/modules/battle.module.js` with an `isUnseen()` check in six places: drawing the battle, walking a stack, whose turn it is, a stalemate, closing the results and the defender's `afterWin`. Each new rule in the battle module has to remember the unseen case. Worth doing before 8.4.6, when the player fights a battle during the computer's turn and a third kind of battle (the player's hero as defender) adds its own cases.
+- [ ] The battle module is told how to run the battle when it starts: who plays each side (the player or the battle AI), whether it is shown (drawn, with step times and a results window) and what happens once it ends, so the rules no longer ask whose hero it is
+- [ ] An unseen battle uses the same actions and facts as a shown one, with a runner that plays every turn at once and closes the results itself; the checks in `showBattle`, `walkThenShow`, `isPlayers`, `isOver` and `winBattle` go
+- [ ] A reload during a computer player's turn still carries on with an unseen battle from its saved facts
+
 ---
 
 ## Recommended Work Order
