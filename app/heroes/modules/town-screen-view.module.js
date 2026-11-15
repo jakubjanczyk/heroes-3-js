@@ -46,6 +46,7 @@ export const registerTownScreenViewModule = defineModule(
     let townScreen = null
     let rearranging = null
     let isVisitingHeroFramed = false
+    let shownTownId = null
 
     function fillSlots(list, army) {
       list.querySelectorAll('.army-slot').forEach((slot, index) => {
@@ -181,6 +182,7 @@ export const registerTownScreenViewModule = defineModule(
         return
       }
 
+      shownTownId = entityId
       if (!townScreen) {
         townScreen = document
           .getElementById('town-screen-template')
@@ -192,8 +194,10 @@ export const registerTownScreenViewModule = defineModule(
           slotLists: townScreen.querySelectorAll('.town-panel__slots'),
           splitButton: townScreen.querySelector('.town-panel__split'),
           showStatus,
-          onMove: (move) => emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, move),
-          onSplit: (split) => emit(APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED, split)
+          onMove: (move) =>
+            emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, { entityId: shownTownId, ...move }),
+          onSplit: (split) =>
+            emit(APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED, { entityId: shownTownId, ...split })
         })
         emit(APP_UI_ADVENTURE_MAP_COVERED, {})
       }

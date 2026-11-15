@@ -134,27 +134,6 @@ describe('computer turns behavior', () => {
     expectResourcePresent('pile')
   })
 
-  // The town's entrance is at (15, 3); its building covers the tiles either side and the rows
-  // above, so a hero leaves it through the row below, where the pile is.
-  test('a blue hero standing in its town stays there', async () => {
-    const { user } = await setupApp(
-      aScenario()
-        .withSize(30, 5)
-        .withEntities(
-          aHero().at(0, 3),
-          aTown().ownedBy('blue').at(15, 3),
-          aBlueHero(15, 3),
-          aPile('pile', 18, 4)
-        )
-        .withDefinitions({ ...goldDefinitions, towns: readGameData('towns.json') })
-    )
-
-    await endTurn(user)
-
-    expectHeroAt(15, 3, 'hero-2')
-    expectResourcePresent('pile')
-  })
-
   // Both heroes are five tiles from the pile; blue plays before tan.
   test("blue's hero gets to a pile before tan's", async () => {
     const { user } = await setupApp(
@@ -747,7 +726,7 @@ describe('computer heroes exploring behavior', () => {
     expectHeroAt(25, 0, 'hero-2')
   })
 
-  test("a blue hero standing in its own town doesn't go exploring", async () => {
+  test('a blue hero standing in its own town leaves it to explore', async () => {
     const { user } = await setupApp(
       aScenario()
         .withSize(30, 5)
@@ -758,7 +737,7 @@ describe('computer heroes exploring behavior', () => {
 
     await endTurn(user)
 
-    expectHeroAt(15, 3, 'hero-2')
+    expect(getHeroEntity('hero-2').dataset.tileX).not.toBe('15')
   })
 
   // The player's hero at 29 sees from 24; blue's hero explores from 25 down to 10, out of sight.

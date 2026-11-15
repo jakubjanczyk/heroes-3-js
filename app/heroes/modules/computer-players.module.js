@@ -1,3 +1,4 @@
+import { sameTile } from '../../../engine/tile-utils.js'
 import { createEntityBehaviors } from '../../../game/domain/entity-behaviors.js'
 import { isTown } from '../../../game/domain/entity-queries.js'
 import { resolveMovementRules } from '../../../game/domain/movement/movement-rules.js'
@@ -5,16 +6,39 @@ import {
   COMPUTER_HERO_TARGET_KINDS,
   decideComputerHeroMove
 } from '../../../game/heroes/computer-heroes.js'
+import {
+  decideGarrisonTaken,
+  decideTownRecruits,
+  dwellingRecruitCount
+} from '../../../game/heroes/computer-recruiting.js'
 import { decideTownBuilding } from '../../../game/heroes/computer-towns.js'
+import { MOVEMENT_INTERACTION_KIND_DWELLING_VISIT } from '../../../game/heroes/interaction-kinds.js'
 import { buildingContextOf } from '../../../game/heroes/state/building-context.js'
-import { townIdsOf, townType } from '../../../game/heroes/state/towns.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
+import { dwellingOwner } from '../../../game/heroes/state/map-objects.js'
+import {
+  townGarrison,
+  townIdAt,
+  townIdsOf,
+  townOwner,
+  townType
+} from '../../../game/heroes/state/towns.js'
 import { isTownNextToWater, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
-import { activePlayer, heroIdsOf, viewingPlayer } from '../../../game/state/queries.js'
+import {
+  activePlayer,
+  heroIdsOf,
+  heroOwner,
+  heroTile,
+  viewingPlayer
+} from '../../../game/state/queries.js'
 import { createHeroRoutes } from '../../../game/systems/hero-routes.js'
 import {
+  APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_MOVE_REQUESTED,
   APP_COMMAND_TOWN_BUILD_REQUESTED,
+  APP_COMMAND_TOWN_RECRUIT_REQUESTED,
+  APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_WORLD_READY,
@@ -60,13 +84,63 @@ export const registerComputerPlayersModule = defineModule(
         map,
         heroId,
         targets,
-        routes: routesOf(heroId)
+        routes: routesOf(heroId),
+        definitions
       })
+    }
+
+    function recruitInTown(heroId, townId) {
+      const { monsters } = definitions
+      const { buildings } = townBuildingsCatalogue(definitions, townType(state.get(), townId))
+      for (const recruit of decideTownRecruits({
+        state: state.get(),
+        townId,
+        buildings,
+        monsters
+      })) {
+        emit(APP_COMMAND_TOWN_RECRUIT_REQUESTED, { entityId: townId, ...recruit })
+      }
+
+      const moves = decideGarrisonTaken({
+        garrison: townGarrison(state.get(), townId),
+        army: heroById(state.get(), heroId).army,
+        monsters
+      })
+      for (const move of moves) {
+        emit(APP_COMMAND_TOWN_STACK_MOVE_REQUESTED, { entityId: townId, ...move })
+      }
+    }
+
+    function recruitAtDwelling(heroId, dwellingId) {
+      const count = dwellingRecruitCount({ state: state.get(), dwellingId, heroId, definitions })
+      if (count > 0) {
+        emit(APP_COMMAND_DWELLING_RECRUIT_REQUESTED, { heroId, entityId: dwellingId, count })
+      }
+    }
+
+    function recruitWhereHeroStands(heroId) {
+      const current = state.get()
+      const player = heroOwner(current, heroId)
+      const tile = heroTile(current, heroId)
+      const townId = townIdAt(current, tile)
+      if (townId !== null && townOwner(current, townId) === player) {
+        recruitInTown(heroId, townId)
+        return
+      }
+
+      const dwelling = targets.find(
+        (target) =>
+          target.kind === MOVEMENT_INTERACTION_KIND_DWELLING_VISIT && sameTile(target.tile, tile)
+      )
+      if (dwelling && dwellingOwner(current, dwelling.id) === player) {
+        recruitAtDwelling(heroId, dwelling.id)
+      }
     }
 
     function playNextMove() {
       while (turn.heroIds.length > 0) {
         const [heroId] = turn.heroIds
+        recruitWhereHeroStands(heroId)
         const move = nextMove(heroId)
         if (move) {
           emit(APP_COMMAND_MOVE_REQUESTED, { heroId, ...move })
@@ -164,6 +238,9 @@ export const registerComputerPlayersModule = defineModule(
     produces: [
       APP_COMMAND_MOVE_REQUESTED,
       APP_COMMAND_TOWN_BUILD_REQUESTED,
+      APP_COMMAND_TOWN_RECRUIT_REQUESTED,
+      APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
+      APP_COMMAND_DWELLING_RECRUIT_REQUESTED,
       APP_COMMAND_END_TURN_REQUESTED
     ]
   }

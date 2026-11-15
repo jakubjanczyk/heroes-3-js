@@ -29,13 +29,27 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 - **One list of targets** for 8.4.1: piles, mines and dwellings not owned by the hero's owner, the nearest by movement points, ties to the top row then the left, as for piles.
 - **A dwelling is a target only when unguarded** (guards are fought in 8.4.5).
 - **The recruit window never opens for a computer hero**, and neither does the info box's "Mine captured" (the hourglass stays).
-- A hero standing in its own town still stays there (until 8.4.4).
+- A hero standing in its own town stayed there until 8.4.4; it now leaves once it has somewhere to go, exploring included.
 
 ## Built
 
 - **8.4.1**: a computer hero's targets are resource piles not yet picked up, mines its owner doesn't own and dwellings its owner hasn't flagged that have no guards against it; it goes to the nearest it can reach without a fight, by the movement points the route costs (ties to the top row, then the left), and on to the next until its movement points run out. A taken mine shows its new owner's flag on the map and the minimap and pays them from the next day. Another player's hero arriving anywhere opens nothing on the player's screen: no recruit window, no question and no message; the facts it sets off (a flag, a pile picked up) still happen. The hourglass stays in the info box throughout.
 - **8.4.2**: a computer hero with no pile, mine or dwelling it can reach without a fight goes to the nearest tile its owner has explored that is empty and touches unexplored ground, by the movement points the route costs (ties to the top row, then the left), past no monster. Walking there reveals the tiles around it for its owner, not for the player; the hero then decides again, so a pile it finds is picked up the same day if it can reach it, and a tile too far for today is reached on a later day. With nothing unexplored it can reach, or fog of war off, it stays where it is; a hero in its own town still stays there.
 - **8.4.3**: at the start of a computer player's turn, before its heroes move, each of its towns builds one building it can pay for that day. A town aims for its income halls first, then its dwellings in the Hall's order (every basic dwelling before any upgrade), then the rest in the Hall's order, and builds a building's missing requirements on the way to it (a Tavern before the Town Hall, the Stables before the Training Grounds). A building it can't pay for, or can't build (no water, a Capitol in another of its towns), is passed over for the next it can; with none it builds nothing. The cost comes out of its owner's resources. Nothing is shown while it happens; the player sees it in the town's fort icon, the Thieves' Guild and the town screen once they take the town. A reload during the turn doesn't build again.
+- **8.4.4**: when a computer hero's move comes and it stands in its own town (after the town has built), its owner recruits there: the creatures of every standing dwelling, strongest first by AI value (an upgraded creature before the plain one sharing its pool), each as many as are available and the owner can pay for, into the garrison. The hero then takes the garrison's stacks, strongest first, onto a stack of the same creature or an empty slot; what doesn't fit stays. A hero arriving at a dwelling of its owner's recruits as many as are available and the owner can pay for (a first-tier dwelling's for free), and a flagged dwelling is a target again while it has creatures the owner can pay for and the hero has room for. A hero no longer stays in its town for good: it leaves for a target or to explore. No window or message opens for the player; the stack move and split commands now name the town they act on.
+
+## Plan for 8.4.4
+
+- **When, in a town**: when a computer hero's turn to move comes and it stands in its own town, its owner recruits there, then the hero decides where to go. The towns have built by then, so a dwelling built that morning recruits the same day.
+- **Where recruits go**: into the town's garrison, as the player's recruits do (the recruit window's army is the town's upper one). The hero then takes the garrison's stacks into its army (the garrison it found too, agreed), strongest first, as far as its seven slots allow; a stack of a creature it already leads joins that stack, and what doesn't fit stays in the garrison. Checked against the reference engine's AI, which recruits into the town's upper army and then has the visiting hero take the best creatures from the garrison.
+- **What, in a town**: every creature its standing dwellings offer, strongest first by the creature's AI value across all tiers (so an upgraded creature comes before the plain one of its tier, which shares its pool), each as many as are available and its owner can pay for. A creature with no room in the garrison is passed over. Checked against the reference engine's AI, which buys from the top of the dwelling down, as many as it can afford.
+- **At a dwelling**: a computer hero arriving at a dwelling of its owner's (just flagged, or flagged before) recruits as many of its creatures as are available and its owner can pay for; a first-tier dwelling's creatures join for free, as for the player. With no room in the army it recruits nothing.
+- **Dwellings as targets again**: a dwelling its owner has flagged is a target while it has creatures the owner can pay for at least one of and the hero has room for, so a hero goes back to it after the new week.
+- **Leaving its town**: a hero in its own town no longer stays there for good; after recruiting, it leaves once it has somewhere to go, exploring included (agreed).
+- **What the player sees**: nothing while it happens, as for building: no recruit window, no message (a free dwelling's "join your army" message neither), the hourglass stays. Afterwards: the hero's army in its popup (size words, exact counts with Expert Visions), the Thieves' Guild's rows, and the creatures gone from the town or dwelling once the player takes it.
+- Nothing is saved up (agreed): recruiting spends what the owner has, so the next day's building may have to wait (weighing is 8.4.8).
+- A reload during the computer's turn doesn't recruit twice: what was recruited is no longer available.
+- One refactor first: the town's stack move and split commands name the town (they act on the open town now), so the computer player can move a garrison's stacks to its visiting hero without the town screen.
 
 ## Plan for 8.4.3
 
@@ -72,6 +86,6 @@ Agreed: build what can be paid for today, with no saving up (weighing comes with
 
 - Everything listed above after 8.4.1, and difficulty levels (9.2).
 - Resource generators (windmills, water wheels) as targets: 8.4.8, where a target's worth is weighed.
-- Recruiting at a flagged dwelling: 8.4.4.
+- Keeping a garrison back to defend the town: 8.4.7. Saving gold for a building instead of recruiting, and going back to a town to recruit: 8.4.8.
 - Exploring towards the tile that reveals the most for its cost, rather than the nearest: 8.4.8.
 - Saving up for a building, and choosing a town's building by what it is worth rather than a fixed order: 8.4.8.
