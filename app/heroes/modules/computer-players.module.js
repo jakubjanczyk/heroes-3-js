@@ -39,9 +39,14 @@ import {
   APP_COMMAND_TOWN_BUILD_REQUESTED,
   APP_COMMAND_TOWN_RECRUIT_REQUESTED,
   APP_COMMAND_TOWN_STACK_MOVE_REQUESTED,
+  APP_FACT_BATTLE_ENDED,
+  APP_FACT_BATTLE_STARTED,
   APP_FACT_MOVE_FINISHED,
   APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_WORLD_READY,
+  APP_UI_INTERACTION_MODAL_CLOSED,
+  APP_UI_INTERACTION_MODAL_OPENED,
+  APP_UI_NOTICE_OPENED,
   APP_UI_RESTORE_COMPLETED,
   APP_UI_RESTORE_STARTED
 } from '../../events.js'
@@ -66,6 +71,13 @@ export const registerComputerPlayersModule = defineModule(
     let isRestoring = false
     // The computer player whose turn is being played, and its heroes still to move.
     let turn = null
+    // The player fights a battle a computer hero started, then reads what it led to, before the
+    // computer player's turn goes on. An unseen battle ends while its start is still being heard,
+    // so the ends can be counted before the starts.
+    let battlesStarted = 0
+    let battlesEnded = 0
+    let openWindowCount = 0
+    let isWaitingForPlayer = false
 
     function routesOf(heroId) {
       planningHeroId = heroId
@@ -160,6 +172,19 @@ export const registerComputerPlayersModule = defineModule(
       emit(APP_COMMAND_END_TURN_REQUESTED, { player })
     }
 
+    function playNextMoveWhenFree() {
+      isWaitingForPlayer = battlesStarted > battlesEnded || openWindowCount > 0
+      if (turn && !isWaitingForPlayer) {
+        playNextMove()
+      }
+    }
+
+    function resumeOnceFree() {
+      if (isWaitingForPlayer) {
+        queueMicrotask(playNextMoveWhenFree)
+      }
+    }
+
     function buildInTowns(player) {
       for (const townId of townIdsOf(state.get(), player)) {
         const buildingId = decideTownBuilding({
@@ -183,7 +208,7 @@ export const registerComputerPlayersModule = defineModule(
 
       turn = { player, heroIds: heroIdsOf(current, player) }
       buildInTowns(player)
-      playNextMove()
+      playNextMoveWhenFree()
     }
 
     return {
@@ -216,6 +241,27 @@ export const registerComputerPlayersModule = defineModule(
                 : []
             })
             turn = null
+            battlesStarted = 0
+            battlesEnded = 0
+            openWindowCount = 0
+            isWaitingForPlayer = false
+          }
+        },
+        { type: APP_FACT_BATTLE_STARTED, handler: () => (battlesStarted += 1) },
+        {
+          type: APP_FACT_BATTLE_ENDED,
+          handler: () => {
+            battlesEnded += 1
+            resumeOnceFree()
+          }
+        },
+        { type: APP_UI_INTERACTION_MODAL_OPENED, handler: () => (openWindowCount += 1) },
+        { type: APP_UI_NOTICE_OPENED, handler: () => (openWindowCount += 1) },
+        {
+          type: APP_UI_INTERACTION_MODAL_CLOSED,
+          handler: () => {
+            openWindowCount = Math.max(0, openWindowCount - 1)
+            resumeOnceFree()
           }
         },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
@@ -232,7 +278,7 @@ export const registerComputerPlayersModule = defineModule(
           handler: (event) => {
             if (turn && event.detail.heroId === turn.heroIds[0]) {
               // What the hero found where it stopped is settled before it moves on.
-              queueMicrotask(playNextMove)
+              queueMicrotask(playNextMoveWhenFree)
             }
           }
         }
@@ -247,7 +293,12 @@ export const registerComputerPlayersModule = defineModule(
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED,
       APP_FACT_PLAYER_TURN_ENDED,
-      APP_FACT_MOVE_FINISHED
+      APP_FACT_MOVE_FINISHED,
+      APP_FACT_BATTLE_STARTED,
+      APP_FACT_BATTLE_ENDED,
+      APP_UI_INTERACTION_MODAL_OPENED,
+      APP_UI_NOTICE_OPENED,
+      APP_UI_INTERACTION_MODAL_CLOSED
     ],
     produces: [
       APP_COMMAND_MOVE_REQUESTED,

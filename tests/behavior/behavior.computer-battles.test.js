@@ -28,6 +28,7 @@ import {
 } from './app.utils.js'
 import { LOWEST_ROLLS, queryBattleScreen } from './battle.utils.js'
 import {
+  ARMY_THAT_WINS,
   aCreatureDefinition,
   aDwelling,
   aHero,
@@ -103,8 +104,10 @@ const STEP_MS = 100
 const NO_SKILLS = { attack: 0, defense: 0, power: 1, knowledge: 1 }
 
 // The player's hero at (15, 0) sees 4 tiles with Advanced Visions; blue's hero starts at (15, 2).
+// Too strong for blue's hero to attack.
 const aSeer = () =>
   aHero()
+    .withArmy(ARMY_THAT_WINS)
     .withPrimarySkills({ power: 2, knowledge: 10 })
     .withSecondarySkills([{ skill: 'AIR_MAGIC', level: 'ADVANCED' }])
     .withSpellBook(true)

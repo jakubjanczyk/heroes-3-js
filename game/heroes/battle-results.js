@@ -40,16 +40,32 @@ export function getCasualties(battle, side) {
   )
 }
 
-// What the results window shows: each side with its outcome, the message and the casualties.
-export function describeBattleResults({ battle, outcome, heroName, defenderName, experience }) {
+// The defender wins whenever the attacker doesn't, retreating or surrendering included.
+const defenderOutcome = (outcome) =>
+  outcome === BATTLE_OUTCOME_WON ? BATTLE_OUTCOME_LOST : BATTLE_OUTCOME_WON
+
+// What the results window shows: each side with its outcome, the message to the player, who
+// plays `playerSide`, and the casualties. The outcome is the attacker's.
+export function describeBattleResults({
+  battle,
+  outcome,
+  heroName,
+  defenderName,
+  experience,
+  playerSide = 'attacker'
+}) {
   const won = outcome === BATTLE_OUTCOME_WON
+  const message =
+    playerSide === 'defender'
+      ? { outcome: defenderOutcome(outcome), heroName: defenderName, experience }
+      : { outcome, heroName, experience }
   return {
     attacker: { name: heroName, outcome: won ? 'Victorious' : 'Defeated' },
     defender: {
       name: defenderName,
       outcome: won ? 'Defeated' : 'Victorious'
     },
-    messages: describeOutcome({ outcome, heroName, experience }),
+    messages: describeOutcome(message),
     casualties: {
       attacker: getCasualties(battle, 'attacker'),
       defender: getCasualties(battle, 'defender')

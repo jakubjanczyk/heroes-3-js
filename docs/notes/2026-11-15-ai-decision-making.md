@@ -42,6 +42,8 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 
 - **8.4.5**: a computer hero's targets also take in monsters on tiles its owner has explored, and dwellings whose guards, it is stronger than: its army's total AI value times √((1 + 0.05 × Attack) × (1 + 0.05 × Defense)) above the enemy's total AI value × 1.1. It goes to the nearest target as before; a monster is reached only by a route whose battle is with that monster alone. A guarded dwelling's question is answered yes without showing it. The battle is fought at once and unseen: the battle AI plays both sides, each action is saved, the results are applied at once (no results window, no dwelling recruit window). A won battle leaves the hero with its survivors and the experience, and it carries on with the movement points it has left (recruiting at a dwelling it has just taken); a lost one removes it from the map for good. A battle in which no stack can get anywhere is lost. The player sees the walk when they can see it, then the monster fading out or the hero gone; the hourglass stays.
 
+- **8.4.6**: a computer hero's targets also take in other players' heroes standing outside a town on a tile its owner has explored, whose army it is stronger than (its strength above their army's total AI value × 1.1). It walks up and attacks; when the hero is the player's, the battle screen opens during the computer's turn with the computer's hero on the left under its flag and the player's on the right. The player plays their stacks, or auto combat does; Retreat, Surrender and the spell book stay disabled for the defender. The results window is the player's: "A glorious victory!" with the experience (the attacker's creatures killed and 500 for the beaten hero), or the bitter defeat. Winning takes the computer hero off the map and its artifacts for the player's hero; losing takes the player's hero off the map and gives the computer hero the experience and the artifacts. The computer's turn waits while the battle and the windows after it (results, captured artifacts, level-up) are open, then goes on; a reload during the battle carries on with it. Clicks and keys reach a window open over the map during another player's turn. Every hero in battle now carries its owner's flag, the attacker's too.
+
 ## Plan for 8.4.6
 
 Split in three (agreed), as attacking the player is the battle screen played from the other side as well as the AI's choice:
@@ -123,7 +125,8 @@ Agreed: build what can be paid for today, with no saving up (weighing comes with
 
 ## Left for later
 
-- Everything listed above after 8.4.1, and difficulty levels (9.2).
+- Everything listed above after 8.4.6, and difficulty levels (9.2).
+- With 8.4.6: a computer hero attacking another computer player's hero is fought unseen like its other battles, untested beyond the shared code; the defending hero's spells, retreat and surrender are 8.4.6b; heroes in towns and towns are 8.4.6c.
 - Resource generators (windmills, water wheels) as targets: 8.4.8, where a target's worth is weighed.
 - Keeping a garrison back to defend the town: 8.4.7. Saving gold for a building instead of recruiting, and going back to a town to recruit: 8.4.8.
 - Exploring towards the tile that reveals the most for its cost, rather than the nearest: 8.4.8.

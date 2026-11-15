@@ -55,6 +55,7 @@ import {
   isBerserk
 } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
+import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.js'
 import {
   battleSpellTargeting,
   castsOnAllStacks,
@@ -183,6 +184,9 @@ export const registerBattleModule = defineModule(
       typeof config?.resistanceRandom === 'function' ? config.resistanceRandom : Math.random
 
     let heroId = null
+    // The side the viewing player plays: 'attacker', 'defender', or null for a battle of other
+    // players' they don't see.
+    let playerSide = null
     let definitions = {}
     let started = null
     let battle = null
@@ -223,15 +227,21 @@ export const registerBattleModule = defineModule(
       return getExperienceForKills(battle, 'attacker') + bonus
     }
 
+    function playerExperience() {
+      if (playerSide === 'defender') {
+        return outcome === BATTLE_OUTCOME_WON ? 0 : defendingHeroExperience(battle, outcome)
+      }
+      return outcome === BATTLE_OUTCOME_WON ? experienceForWin() : 0
+    }
+
     function describeResults() {
-      const heroName = heroNameOf()
-      const experience = outcome === BATTLE_OUTCOME_WON ? experienceForWin() : 0
       return describeBattleResults({
         battle,
         outcome,
-        heroName,
+        heroName: heroNameOf(),
         defenderName: battleDefenderName({ started, state, definitions }),
-        experience
+        experience: playerExperience(),
+        playerSide
       })
     }
 
@@ -242,11 +252,17 @@ export const registerBattleModule = defineModule(
       return effects
     }
 
-    // Another player's hero fights where the player can't see: the battle AI plays both sides.
-    function isUnseen() {
+    function sideOfViewingPlayer() {
       const current = state.get()
-      return Boolean(heroId) && heroOwner(current, heroId) !== viewingPlayer(current)
+      const viewer = viewingPlayer(current)
+      if (!heroId || heroOwner(current, heroId) === viewer) {
+        return 'attacker'
+      }
+      return defenderHeroOf()?.owner === viewer ? 'defender' : null
     }
+
+    // Other players' heroes fight where the player can't see: the battle AI plays both sides.
+    const isUnseen = () => playerSide === null
 
     function showBattle() {
       if (isUnseen()) {
@@ -258,6 +274,7 @@ export const registerBattleModule = defineModule(
           tile: started.tile,
           heroId,
           heroName: heroNameOf(),
+          heroOwner: heroOwner(state.get(), heroId),
           defenderHero: defenderHeroOf(),
           stacks: withHexes(
             moving.battle.stacks.map((stack) =>
@@ -287,6 +304,7 @@ export const registerBattleModule = defineModule(
         tile: started.tile,
         heroId,
         heroName: heroNameOf(),
+        heroOwner: heroOwner(state.get(), heroId),
         defenderHero: defenderHeroOf(),
         stacks: withHexes(battle.stacks),
         activeStackId: activeStack?.id ?? null,
@@ -304,14 +322,15 @@ export const registerBattleModule = defineModule(
 
     function playerActions(activeStack) {
       const canAct = isPlayersTurn()
+      const canLeadHero = isAttackersTurn()
       return {
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
-        canRetreat: canAct,
+        canRetreat: canLeadHero,
         surrenderRefusal: battleDefenderOf(started).surrenderRefusal,
-        surrender: canAct ? surrenderOffer() : null,
+        surrender: canLeadHero ? surrenderOffer() : null,
         canCastSpell:
-          canAct && !battle.heroCastThisRound && hasSpellBook(heroById(state.get(), heroId))
+          canLeadHero && !battle.heroCastThisRound && hasSpellBook(heroById(state.get(), heroId))
       }
     }
 
@@ -499,10 +518,13 @@ export const registerBattleModule = defineModule(
 
     // A berserk stack's turn plays itself, whoever's it is.
     const isPlayers = (stack) =>
-      Boolean(stack) && !isUnseen() && !isBerserk(stack) && fightsFor(stack) === 'attacker'
+      Boolean(stack) && !isUnseen() && !isBerserk(stack) && fightsFor(stack) === playerSide
 
     const isPlayersTurn = () =>
       Boolean(battle) && !outcome && !moving && !autoCombat && isPlayers(getActiveStack(battle))
+
+    // The player's hero casts, retreats and surrenders only as the attacker.
+    const isAttackersTurn = () => isPlayersTurn() && playerSide === 'attacker'
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -782,6 +804,7 @@ export const registerBattleModule = defineModule(
             effectsShown = 0
             // A battle saved before battles named their hero was the only hero's.
             heroId = started.heroId ?? firstHeroIdOf(state.get(), viewingPlayer(state.get()))
+            playerSide = sideOfViewingPlayer()
             const hero = heroById(state.get(), heroId)
             battle = createBattle({
               attacker: heroBattleSide(hero, definitions),
@@ -960,7 +983,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
           handler: (event) => {
-            if (isPlayersTurn()) {
+            if (isAttackersTurn()) {
               castSpell(event.detail)
             }
           }
@@ -991,7 +1014,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_RETREAT_REQUESTED,
           handler: () => {
-            if (!isPlayersTurn()) {
+            if (!isAttackersTurn()) {
               return
             }
 
@@ -1001,7 +1024,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
           handler: () => {
-            const offer = isPlayersTurn() ? surrenderOffer() : null
+            const offer = isAttackersTurn() ? surrenderOffer() : null
             if (!offer?.canAfford) {
               return
             }

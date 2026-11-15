@@ -16,7 +16,15 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
-import { aDwelling, aHero, aResource, aScenario, aSpellDefinition, aTown } from './builders.js'
+import {
+  ARMY_THAT_WINS,
+  aDwelling,
+  aHero,
+  aResource,
+  aScenario,
+  aSpellDefinition,
+  aTown
+} from './builders.js'
 import { readAvailable } from './recruit-window.utils.js'
 import { openRecruitWindow } from './town-screen.utils.js'
 
@@ -77,8 +85,10 @@ const PLAYER_WALK_MS = 1000
 // above. The player's hero below it sees 4 tiles with Advanced Visions: (15, 3) is 3.2 away.
 const TOWN = { x: 15, y: 3 }
 
+// Too strong for blue's hero to attack.
 const aSeer = () =>
   aHero()
+    .withArmy(ARMY_THAT_WINS)
     .withPrimarySkills({ power: 2, knowledge: 10 })
     .withSecondarySkills([{ skill: 'AIR_MAGIC', level: 'ADVANCED' }])
     .withSpellBook(true)

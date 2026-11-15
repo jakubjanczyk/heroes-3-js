@@ -12,7 +12,8 @@ const BLOCKED_INPUTS = [
 ]
 
 // While another player takes their turn every click, press and key the player makes is stopped
-// before any part of the screen hears it.
+// before any part of the screen hears it, unless a window is open over the map: one the other
+// player's move opened for the player, such as the battle a computer hero started.
 export const registerTurnInputLockModule = defineModule(
   ({ env, state }) => {
     const gameShell = env.document?.querySelector('.game-shell')
@@ -31,8 +32,11 @@ export const registerTurnInputLockModule = defineModule(
       return Boolean(gameShell?.contains(target))
     }
 
+    const isWindowOpen = () =>
+      Boolean(gameShell?.querySelector('[role="dialog"], [role="alertdialog"], dialog[open]'))
+
     function stopInput(event) {
-      if (isOtherPlayersTurn() && isOnGameScreen(event.target)) {
+      if (isOtherPlayersTurn() && !isWindowOpen() && isOnGameScreen(event.target)) {
         event.preventDefault()
         event.stopImmediatePropagation()
       }

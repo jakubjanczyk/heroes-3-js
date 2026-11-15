@@ -23,6 +23,7 @@ import {
 import { castSpellFromMap } from './adventure-spells.utils.js'
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import {
+  ARMY_THAT_WINS,
   aHero,
   aMonster,
   anArtifactDefinition,
@@ -66,10 +67,12 @@ const gameDefinitions = {
   spells
 }
 
+// Too strong for a blue hero to attack.
 const aSeer = ({ power = 1, air, id = 'hero-1', name = 'Seer', x = 0, y = 0 } = {}) =>
   aHero()
     .withId(id)
     .withName(name)
+    .withArmy(ARMY_THAT_WINS)
     .withPrimarySkills({ power, knowledge: 10 })
     .withSecondarySkills(air ? [{ skill: 'AIR_MAGIC', level: air }] : [])
     .withSpellBook(true)

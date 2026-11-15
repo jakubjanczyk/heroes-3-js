@@ -1120,7 +1120,7 @@ In ten parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty leve
 - [x] 8.4.3 Town building: each day a computer player builds one building in each town that can, income first, then dwellings, then the rest
 - [x] 8.4.4 Recruiting: a computer hero in its own town or at its own dwelling recruits what its owner can pay for, strongest first; a hero leaves its town once it has somewhere to go
 - [x] 8.4.5 Fighting monsters: a computer hero attacks monsters and dwelling guards its army is stronger than; the battle is fought unseen and its result shown on the map
-- [ ] 8.4.6 Attacking the player's heroes: a computer hero attacks a player's hero it is stronger than, and the player fights the battle on the right during the computer's turn
+- [x] 8.4.6 Attacking the player's heroes: a computer hero attacks a player's hero it is stronger than, and the player fights the battle on the right during the computer's turn
 - [ ] 8.4.6b The defending hero's spells, retreat and surrender
 - [ ] 8.4.6c Attacking the player's towns: a town without defenders is taken; its garrison, or a hero in it with the garrison, defends it and the player fights the battle
 - [ ] 8.4.7 Threat response: weak computer heroes keep away from stronger enemy heroes; a hero goes back to defend a town an enemy hero stronger than its garrison can reach
