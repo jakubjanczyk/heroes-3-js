@@ -63,6 +63,7 @@ function askToFightGuards(outcome) {
       isQuestion: true
     },
     factsOnModalClosed: [],
+    otherPlayersChoice: 'yes',
     eventsByChoice: {
       yes: [
         {

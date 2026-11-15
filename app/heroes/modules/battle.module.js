@@ -242,7 +242,17 @@ export const registerBattleModule = defineModule(
       return effects
     }
 
+    // Another player's hero fights where the player can't see: the battle AI plays both sides.
+    function isUnseen() {
+      const current = state.get()
+      return Boolean(heroId) && heroOwner(current, heroId) !== viewingPlayer(current)
+    }
+
     function showBattle() {
+      if (isUnseen()) {
+        return
+      }
+
       if (moving) {
         emit(APP_UI_BATTLE_UPDATED, {
           tile: started.tile,
@@ -314,7 +324,9 @@ export const registerBattleModule = defineModule(
       emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
       defender.win(fought)
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
-      defender.afterWin?.(fought)
+      if (!isUnseen()) {
+        defender.afterWin?.(fought)
+      }
     }
 
     // Beaten or retreated: the hero leaves the map and the defender keeps what it has left.
@@ -411,25 +423,55 @@ export const registerBattleModule = defineModule(
       }
     }
 
-    function continueBattle() {
-      if (outcome) {
-        return
+    // An unseen battle has no results window to wait for.
+    function finishBattle(battleOutcome) {
+      emit(APP_FACT_BATTLE_FINISHED, { outcome: battleOutcome })
+      if (isUnseen()) {
+        closeResults()
       }
+    }
 
-      // A spell can kill the last stacks of both sides: nobody wins, and the hero is beaten.
-      if (!hasLivingStacks(battle, 'attacker')) {
-        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_LOST })
-        return
-      }
-
-      if (!hasLivingStacks(battle, 'defender')) {
-        emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_WON })
-        return
-      }
-
-      // No stack can get anywhere: the player takes over rather than the turns passing forever.
-      if (autoCombat && passedTurns >= battle.stacks.length) {
+    // No stack can get anywhere: the player takes over rather than the turns passing forever,
+    // and an unseen battle is lost.
+    function endStalemate() {
+      if (isUnseen()) {
+        finishBattle(BATTLE_OUTCOME_LOST)
+      } else {
         emit(APP_FACT_BATTLE_AUTO_COMBAT_CHANGED, { enabled: false })
+      }
+    }
+
+    // A spell can kill the last stacks of both sides: nobody wins, and the hero is beaten.
+    function winnerOutcome() {
+      if (!hasLivingStacks(battle, 'attacker')) {
+        return BATTLE_OUTCOME_LOST
+      }
+      return hasLivingStacks(battle, 'defender') ? null : BATTLE_OUTCOME_WON
+    }
+
+    function isOver() {
+      if (outcome) {
+        if (isUnseen()) {
+          closeResults()
+        }
+        return true
+      }
+
+      const finished = winnerOutcome()
+      if (finished) {
+        finishBattle(finished)
+        return true
+      }
+
+      if ((autoCombat || isUnseen()) && passedTurns >= battle.stacks.length) {
+        endStalemate()
+        return true
+      }
+      return false
+    }
+
+    function continueBattle() {
+      if (isOver()) {
         return
       }
 
@@ -457,7 +499,7 @@ export const registerBattleModule = defineModule(
 
     // A berserk stack's turn plays itself, whoever's it is.
     const isPlayers = (stack) =>
-      Boolean(stack) && !isBerserk(stack) && fightsFor(stack) === 'attacker'
+      Boolean(stack) && !isUnseen() && !isBerserk(stack) && fightsFor(stack) === 'attacker'
 
     const isPlayersTurn = () =>
       Boolean(battle) && !outcome && !moving && !autoCombat && isPlayers(getActiveStack(battle))
@@ -465,6 +507,12 @@ export const registerBattleModule = defineModule(
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
       passedTurns = 0
+      if (isUnseen()) {
+        emit(fact, detail)
+        continueBattle()
+        return
+      }
+
       moving = { stackId: stack.id, hex: stack.hex, battle }
       emit(fact, detail)
       for (const to of path) {
