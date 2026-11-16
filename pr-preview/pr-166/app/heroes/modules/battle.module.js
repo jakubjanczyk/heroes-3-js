@@ -181,7 +181,7 @@ const sleep = (ms) =>
 // The battle the hero is fighting. The monster's stacks play by `battle-ai.js`, and so do the
 // hero's while Auto combat is on.
 export const registerBattleModule = defineModule(
-  ({ emit, config, state }) => {
+  ({ emit, emitAll, config, state }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
     const random = typeof config?.random === 'function' ? config.random : Math.random
     const moraleRandom =
@@ -395,23 +395,31 @@ export const registerBattleModule = defineModule(
     // The defending hero retreated or surrendered: the attacker wins, with the experience for the
     // creatures it killed only, and the defender leaves with its artifacts.
     function defenderLeft() {
-      const left = { heroId: defenderHeroOf().id, battle, outcome, side: 'defender' }
+      const leftId = defenderHeroOf().id
       const experience = getExperienceForKills(battle, 'attacker')
       const army = getArmyAfterBattle(battle, 'attacker', heroById(state.get(), heroId)?.army ?? [])
-      emit(APP_FACT_BATTLE_ENDED, { entityId: started.entityId, heroId, winner: 'attacker' })
-      emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
-      emit(APP_FACT_ENTITY_REMOVED, { entityId: left.heroId })
-      goToTavern(left)
+      emitAll([
+        {
+          type: APP_FACT_BATTLE_ENDED,
+          detail: { entityId: started.entityId, heroId, winner: 'attacker' }
+        },
+        { type: APP_FACT_HERO_ARMY_CHANGED, detail: { heroId, army } },
+        { type: APP_FACT_ENTITY_REMOVED, detail: { entityId: leftId } },
+        {
+          type: APP_FACT_HERO_WENT_TO_TAVERN,
+          detail: wentToTavern({ heroId: leftId, battle, outcome, side: 'defender' })
+        }
+      ])
       emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
     }
 
     // The roll settles which tavern slot the hero takes when both are worth the same.
-    function goToTavern({ heroId, battle, outcome, side = 'attacker' }) {
+    function wentToTavern({ heroId, battle, outcome, side = 'attacker' }) {
       const current = state.get()
       const hero = heroById(current, heroId)
       const player = heroOwner(current, heroId)
       const surrendered = outcome === BATTLE_OUTCOME_SURRENDERED
-      emit(APP_FACT_HERO_WENT_TO_TAVERN, {
+      return {
         heroId,
         player,
         name: hero.name,
@@ -423,8 +431,10 @@ export const registerBattleModule = defineModule(
         turnNumber: turnNumber(current),
         ...(activePlayer(current) === player ? {} : { afterOwnTurn: true }),
         roll: random()
-      })
+      }
     }
+
+    const goToTavern = (fought) => emit(APP_FACT_HERO_WENT_TO_TAVERN, wentToTavern(fought))
 
     // The roll is saved with the action, so a reload gives the stack the same extra turn.
     function withGoodMoraleRoll(detail, resolved) {
