@@ -57,11 +57,13 @@ export const registerComputerPlayersModule = defineModule(
     const entityBehaviors = createEntityBehaviors(config?.content?.entityBehaviors)
     const movementRules = resolveMovementRules(config?.content?.movementRules)
     let planningHeroId = null
+    let absentHeroId = null
     const heroRoutes = createHeroRoutes({
       entityBehaviors,
       movementRules,
       getState: state.get,
-      getHeroId: () => planningHeroId
+      getHeroId: () => planningHeroId,
+      getAbsentHeroId: () => absentHeroId
     })
     let routePlanner = null
     let map = null
@@ -79,15 +81,23 @@ export const registerComputerPlayersModule = defineModule(
     let openWindowCount = 0
     let isWaitingForPlayer = false
 
-    function routesOf(heroId) {
-      planningHeroId = heroId
+    // The routes of `heroId`, with `absentHeroId` taken off the map.
+    function routesOf(heroId, options = {}) {
+      const forHero =
+        (plan) =>
+        (...args) => {
+          planningHeroId = heroId
+          absentHeroId = options.absentHeroId ?? null
+          return plan(...args)
+        }
       return {
-        planRoutes: routePlanner.planRoutes,
-        getPathToBattle: routePlanner.getPathToBattle,
-        battlesOnArrivalAt: routePlanner.battlesOnArrivalAt,
-        routeCost: heroRoutes.routeCost,
-        chargeStepsToday: heroRoutes.chargeStepsToday,
-        isEmpty: (tile) => heroRoutes.occupancy.getAt(tile) === null
+        planRoutes: forHero(routePlanner.planRoutes),
+        getPathToBattle: forHero(routePlanner.getPathToBattle),
+        battlesOnArrivalAt: forHero(routePlanner.battlesOnArrivalAt),
+        routeCost: forHero(heroRoutes.routeCost),
+        chargeStepsToday: forHero(heroRoutes.chargeStepsToday),
+        reachesOnNewDay: forHero(heroRoutes.reachesOnNewDay),
+        isEmpty: forHero((tile) => heroRoutes.occupancy.getAt(tile) === null)
       }
     }
 
@@ -97,7 +107,7 @@ export const registerComputerPlayersModule = defineModule(
         map,
         heroId,
         targets,
-        routes: routesOf(heroId),
+        routesOf,
         definitions
       })
     }

@@ -111,7 +111,8 @@ const BELOW_THE_GATE = { x: 20, y: 3 }
 const aWhitemoon = (garrison = []) =>
   aTown().withId('town-1').named(TOWN).ownedByPlayer().withGarrison(garrison).at(GATE.x, GATE.y)
 
-// Too strong for blue's hero to attack, and far from the town.
+// Too strong for blue's hero to attack, far from the town, and walled in by rock, so blue's heroes
+// don't keep away from him.
 const aRedHeroAway = () =>
   aHero().withName('Sir Christian').withId('hero-5').withArmy(ARMY_THAT_WINS).at(2, 5)
 
@@ -140,6 +141,7 @@ const thePileOfTheSecondBlueHero = () => aResource().withId('pile').at(5, 0)
 const aTownScenario = ({ town = aWhitemoon(), blueHero, others = [] }) =>
   aScenario()
     .withSize(30, 6)
+    .withRockAround(2, 5)
     .withEntities(aRedHeroAway(), town, blueHero, ...others)
     .withDefinitions(definitions)
 

@@ -491,10 +491,12 @@ const captureDefinitions = {
 const aMineAt = (id, x, y = 1) => aMine().withId(id).at(x, y)
 
 // Mines and dwellings stand on the middle row with their entrance there; blue's hero walks along
-// the bottom row and steps up into one from the tile below it.
+// the bottom row and steps up into one from the tile below it. The player's hero, as strong as
+// blue's, is walled in by rock, so blue's hero doesn't keep away from it.
 const aCaptureScenario = (...entities) =>
   aScenario()
     .withSize(30, 3)
+    .withRockAround(0, 2)
     .withEntities(aHero().at(0, 2), ...entities)
     .withDefinitions(captureDefinitions)
 
@@ -571,8 +573,7 @@ describe('computer heroes capturing mines and dwellings behavior', () => {
 
     await endTurn(user)
 
-    expectHeroAt(15, 2, 'hero-2')
-    expectHeroAt(18, 1, 'hero-3')
+    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual([])
   })
 
   test('a blue hero flags an unguarded dwelling, and no window opens for the player', async () => {

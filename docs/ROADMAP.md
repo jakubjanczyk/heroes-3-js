@@ -1130,7 +1130,7 @@ In eleven parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty l
 - [x] 8.4.6 Attacking the player's heroes: a computer hero attacks a player's hero it is stronger than, and the player fights the battle on the right during the computer's turn
 - [x] 8.4.6b The defending hero's spells, retreat and surrender: the player's hero attacked on the open map casts, retreats and surrenders as an attacker does; a hero who leaves on the week's last day in another player's turn stays in the new week's tavern
 - [x] 8.4.6c Attacking the player's towns: a town without defenders is taken; its garrison, or a hero in it with the garrison, defends it and the player fights the battle
-- [ ] 8.4.7 Threat response: weak computer heroes keep away from stronger enemy heroes; a hero goes back to defend a town an enemy hero stronger than its garrison can reach
+- [x] 8.4.7 Threat response: weak computer heroes keep away from stronger enemy heroes; a hero goes back to defend a town an enemy hero stronger than its garrison can reach
 - [ ] 8.4.7b Artifacts and map objects: a computer hero goes for artifacts (unguarded, or guarded by what it can beat), treasure chests, resource generators, and the bonus and stat-boosting objects it gains from, nearest first
 - [ ] 8.4.8 Weighing goals: targets compared by what they are worth against the days they cost, instead of the nearest first
 

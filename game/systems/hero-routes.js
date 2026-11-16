@@ -16,7 +16,13 @@ import { createMovementSystem } from './movement-system.js'
 // What a hero's routes depend on: where it stands, what is still on the map, where the other
 // heroes stand, which tiles monsters guard, and how far and how the hero moves today, read from
 // the game state. The hero is the player's selected one unless `getHeroId` names another.
-export function createHeroRoutes({ entityBehaviors, movementRules, getState, getHeroId }) {
+export function createHeroRoutes({
+  entityBehaviors,
+  movementRules,
+  getState,
+  getHeroId,
+  getAbsentHeroId = () => null
+}) {
   let map = null
   let staticOccupancy = null
   let guards = []
@@ -49,7 +55,9 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState, get
   const occupancy = {
     getAt: (tile) => {
       const heroId = heroIdAt(getState(), tile)
-      return heroId ? { id: heroId, kind: 'HERO', tile } : objectAt(tile)
+      return heroId && heroId !== getAbsentHeroId()
+        ? { id: heroId, kind: 'HERO', tile }
+        : objectAt(tile)
     },
     // What stands on `tile` whether or not a hero stands there too.
     getObjectAt: objectAt
@@ -108,6 +116,12 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState, get
     return chargeSteps(path, movementPoints()?.value ?? Number.POSITIVE_INFINITY)
   }
 
+  // Whether the hero can walk the whole of `path` in one day with all its movement points.
+  function reachesOnNewDay(path) {
+    const max = movementPoints()?.max ?? Number.POSITIVE_INFINITY
+    return chargeSteps(path, max).length === path.length - 1
+  }
+
   // What the whole of `path` costs the hero, over as many days as it takes.
   function routeCost(path) {
     return chargeSteps(path, Number.POSITIVE_INFINITY).reduce((sum, charge) => sum + charge, 0)
@@ -135,6 +149,7 @@ export function createHeroRoutes({ entityBehaviors, movementRules, getState, get
     getHero,
     arrivalContext,
     chargeStepsToday,
+    reachesOnNewDay,
     routeCost,
     travelDays,
     onWorldReady(world) {

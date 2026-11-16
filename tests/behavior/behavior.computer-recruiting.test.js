@@ -99,11 +99,20 @@ const aBlueHero = (army = [{ creature: 'SWORDSMAN', count: 2 }]) =>
 
 const aBlueTown = (built = []) => aTown().ownedBy('blue').withBuildings(built).at(TOWN.x, TOWN.y)
 
-const aTownScenario = ({ entities, seer = aSeer().at(12, 4), definitions = definitionsWith() }) =>
-  aScenario()
-    .withSize(30, 5)
+// The seer stands walled in by rock and the town, unless he is to walk, so he is no threat blue's
+// hero keeps away from.
+const aTownScenario = ({
+  entities,
+  seer = aSeer().at(12, 4),
+  seerWalks = false,
+  definitions = definitionsWith()
+}) => {
+  const { x, y } = seer.build().tile
+  const scenario = aScenario().withSize(30, 5)
+  return (seerWalks ? scenario : scenario.withRockAround(x, y, [{ x: 13, y: 3 }]))
     .withEntities(seer, ...entities)
     .withDefinitions(definitions)
+}
 
 const setupApp = (scenario, options = {}) =>
   setupMovementBehaviorApp({ loadGameOptions: scenario.build(), ...options })
@@ -299,6 +308,7 @@ describe('computer heroes recruiting behavior', () => {
     test('the creatures blue recruited are gone from the town once the player takes it', async () => {
       const { user } = await setupApp(
         aTownScenario({
+          seerWalks: true,
           entities: [
             aBlueTown(['GUARDHOUSE']),
             aBlueHero().at(TOWN.x, TOWN.y),
@@ -348,6 +358,7 @@ describe('computer heroes recruiting behavior', () => {
     const aDwellingScenario = ({ dwelling, hero = aBlueHero(), definitions = definitionsWith() }) =>
       aScenario()
         .withSize(30, 3)
+        .withRockAround(15, 0)
         .withEntities(aSeer().at(15, 0), hero.at(15, 2), dwelling.at(DWELLING.x, DWELLING.y))
         .withDefinitions(definitions)
 

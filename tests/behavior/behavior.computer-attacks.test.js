@@ -61,6 +61,7 @@ import {
   aSpellDefinition,
   aTown
 } from './builders.js'
+import { GRASS, ROCK } from './terrain-codes.js'
 import {
   holdRightButtonOnHeroForHire,
   openTavern,
@@ -171,6 +172,10 @@ const aSecondBlueHero = () =>
     .withArmy([stack('WEAKLING', 1)])
     .at(2, 0)
 const thePileOfTheSecondBlueHero = () => aResource().withId('pile').at(5, 0)
+
+// Rock all down x = 12 leaves blue's hero no tile out of Sir Mullich's reach, so it goes on as if
+// he weren't there, and stays where it fought.
+const ROCK_WALL = Array.from({ length: 30 * 3 }, (_, index) => (index % 30 === 12 ? ROCK : GRASS))
 
 const anAttackScenario = (...entities) =>
   aScenario()
@@ -383,7 +388,7 @@ describe('computer heroes attacking the player behavior', () => {
       const { user } = await startBlueAttack(
         aFightTheRedHeroLoses(
           aHero().withId('hero-4').withName(MULLICH).withArmy(ARMY_THAT_WINS).at(22, 2)
-        )
+        ).withTiles(ROCK_WALL)
       )
       // The red hero wore no artifact of his own, so blue's hero kept only its Cape.
       await waitForBattleResults()
@@ -581,7 +586,7 @@ describe('computer heroes attacking the player behavior', () => {
               .withPrimarySkills(NO_SKILLS)
               .withArmy([stack('WEAKLING', 100)])
               .at(22, 2)
-          )
+          ).withTiles(ROCK_WALL)
         )
         await retreatAndWait(user)
 
