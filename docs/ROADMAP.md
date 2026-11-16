@@ -1121,7 +1121,7 @@ In three parts. See `docs/notes/2026-11-13-ai-basics.md`. The roadmap's "AI is t
 - [x] 8.3.3 The hourglass with the player's crest in the info box (moved from 8.1) and the shield over the minimap during a computer player's turn
 
 ### 8.4 AI Decision Making
-In ten parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty levels wait for a scenario setup screen (9.2).
+In eleven parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty levels wait for a scenario setup screen (9.2).
 - [x] 8.4.1 Capturing mines and dwellings: a computer hero's targets are resource piles and the mines and dwellings its owner hasn't flagged that it can reach without a fight, the nearest first; flagging a dwelling recruits nothing
 - [x] 8.4.2 Exploration: with nothing to go to, a computer hero walks towards the nearest tile its owner hasn't explored
 - [x] 8.4.3 Town building: each day a computer player builds one building in each town that can, income first, then dwellings, then the rest
@@ -1131,6 +1131,7 @@ In ten parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty leve
 - [x] 8.4.6b The defending hero's spells, retreat and surrender: the player's hero attacked on the open map casts, retreats and surrenders as an attacker does; a hero who leaves on the week's last day in another player's turn stays in the new week's tavern
 - [x] 8.4.6c Attacking the player's towns: a town without defenders is taken; its garrison, or a hero in it with the garrison, defends it and the player fights the battle
 - [ ] 8.4.7 Threat response: weak computer heroes keep away from stronger enemy heroes; a hero goes back to defend a town an enemy hero stronger than its garrison can reach
+- [ ] 8.4.7b Artifacts and map objects: a computer hero goes for artifacts (unguarded, or guarded by what it can beat), treasure chests, resource generators, and the bonus and stat-boosting objects it gains from, nearest first
 - [ ] 8.4.8 Weighing goals: targets compared by what they are worth against the days they cost, instead of the nearest first
 
 ### 8.5 Victory Conditions
@@ -1369,7 +1370,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 42. Hero magic and combat spells (4.8, 5.8), in eight parts: spell book and spell points, Mage Guild (in four parts: the guild's spells and screen, learning spells, Wisdom and magic schools on level-up, Scholar), casting in battle with single-target damage, spells that last, area damage, immunities and Resistance, control and special spells, adventure map spells
 43. Player system (8.1), in nineteen parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns and the new day, the town box, Visions, the Thieves' Guild, taverns and town boxes
 44. AI basics (8.3)
-45. AI decision making (8.4), in ten parts: mines and dwellings, exploration, town building, recruiting, fighting monsters, attacking the player's heroes, the defending hero's spells, retreat and surrender, attacking the player's towns, threat response, weighing goals
+45. AI decision making (8.4), in eleven parts: mines and dwellings, exploration, town building, recruiting, fighting monsters, attacking the player's heroes, the defending hero's spells, retreat and surrender, attacking the player's towns, threat response, artifacts and map objects, weighing goals
 46. Victory conditions (8.5)
 47. Siege combat (5.10)
 48. Town factions (6.5)
