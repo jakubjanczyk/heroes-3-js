@@ -1,4 +1,4 @@
-import { calendarDateOfTurn } from '../calendar.js'
+import { calendarDateOfTurn, DAYS_PER_WEEK } from '../calendar.js'
 import { offerWithReturningHero } from '../tavern.js'
 
 // A hero who comes back before any tavern was opened this week waits beside an empty slot, which
@@ -15,6 +15,25 @@ function returnToTavern(tavern, { player, roll, ...hero }) {
   }
 }
 
+// A hero who left a battle in another player's turn on the week's last day waits on into the new
+// week; the other slot is rolled when the first tavern is opened.
+function startNewWeek(tavern) {
+  return Object.entries(tavern).reduce(
+    (week, [player, { stayingHero }]) =>
+      stayingHero ? returnToTavern(week, { player, ...stayingHero }) : week,
+    {}
+  )
+}
+
+function goToTavern(tavern, { afterOwnTurn, ...detail }) {
+  const returned = returnToTavern(tavern, detail)
+  if (!afterOwnTurn || calendarDateOfTurn(detail.turnNumber).day !== DAYS_PER_WEEK) {
+    return returned
+  }
+  const { player, ...stayingHero } = detail
+  return { ...returned, [player]: { ...returned[player], stayingHero } }
+}
+
 // What each player's taverns offer: { [player]: { heroes, rumour } }. A new week sends the heroes
 // away; the next tavern opened rolls new ones.
 export const tavernSlice = {
@@ -25,9 +44,9 @@ export const tavernSlice = {
       ...tavern,
       [player]: { heroes, rumour }
     }),
-    'fact.hero.wentToTavern': returnToTavern,
+    'fact.hero.wentToTavern': goToTavern,
     'fact.turn.ended': (tavern, { turnNumber }) =>
-      calendarDateOfTurn(turnNumber).day === 1 ? {} : tavern
+      calendarDateOfTurn(turnNumber).day === 1 ? startNewWeek(tavern) : tavern
   }
 }
 

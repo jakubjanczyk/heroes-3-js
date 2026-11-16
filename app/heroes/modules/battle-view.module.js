@@ -917,7 +917,7 @@ export const registerBattleViewModule = defineModule(
       if (COMMAND_BY_ACTION[action]) {
         emit(COMMAND_BY_ACTION[action], {})
       } else if (action === 'cast-spell') {
-        emit(APP_UI_SPELL_BOOK_OPEN_REQUESTED, { heroId: shown.heroId, kind: 'combat' })
+        emit(APP_UI_SPELL_BOOK_OPEN_REQUESTED, { heroId: shown.casterHeroId, kind: 'combat' })
       } else if (action === 'retreat') {
         askToRetreat()
       } else if (action === 'surrender') {

@@ -23,6 +23,7 @@ import {
   getShotTargets,
   getStackHexes,
   getStackReach,
+  hasCastThisRound,
   hasLivingStacks,
   hasWaited,
   heroBattleSide,
@@ -79,7 +80,13 @@ import {
   TAVERN_ROLE_RETREATED,
   TAVERN_ROLE_SURRENDERED
 } from '../../../game/heroes/tavern.js'
-import { firstHeroIdOf, heroOwner, turnNumber, viewingPlayer } from '../../../game/state/queries.js'
+import {
+  activePlayer,
+  firstHeroIdOf,
+  heroOwner,
+  turnNumber,
+  viewingPlayer
+} from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
@@ -174,7 +181,7 @@ const sleep = (ms) =>
 // The battle the hero is fighting. The monster's stacks play by `battle-ai.js`, and so do the
 // hero's while Auto combat is on.
 export const registerBattleModule = defineModule(
-  ({ emit, config, state }) => {
+  ({ emit, emitAll, config, state }) => {
     const stepDelayMs = config?.battleStepDelayMs ?? DEFAULT_STEP_DELAY_MS
     const random = typeof config?.random === 'function' ? config.random : Math.random
     const moraleRandom =
@@ -197,6 +204,8 @@ export const registerBattleModule = defineModule(
     let passedTurns = 0
     // How the battle went, once it is over and its results window waits for the player.
     let outcome = null
+    // Which side retreated or surrendered, when one did.
+    let leavingSide = 'attacker'
     // The battle as the active stack's turn started, once its bad morale was rolled for.
     let badMoraleRolledFor = null
     // How many of the battle's morale and luck effects the player has been shown.
@@ -206,19 +215,34 @@ export const registerBattleModule = defineModule(
       return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
     }
 
+    const casterNameOf = (casterId) => heroById(state.get(), casterId)?.name ?? DEFAULT_HERO_NAME
+
     function defenderHeroOf() {
       return battleDefenderOf(started).hero?.({ started, state }) ?? null
     }
 
+    const playerHeroId = () => (playerSide === 'defender' ? defenderHeroOf()?.id : heroId)
+
+    function enemyHeroOf() {
+      if (playerSide === 'defender') {
+        return { name: heroNameOf(), owner: heroOwner(state.get(), heroId) }
+      }
+      return battleDefenderOf(started).surrenderRefusal ? null : defenderHeroOf()
+    }
+
+    // Only a hero on the open map may leave the battle: one defending a town can't.
+    const canLeave = () => playerSide === 'attacker' || !defenderHeroOf()?.townId
+
     // Only an enemy hero takes a surrender, for gold the player may not have.
     function surrenderOffer() {
-      const enemy = defenderHeroOf()
-      if (!enemy || battleDefenderOf(started).surrenderRefusal) {
+      const enemy = enemyHeroOf()
+      if (!enemy || !canLeave()) {
         return null
       }
       const current = state.get()
-      const price = surrenderPrice({ battle, hero: heroById(current, heroId), definitions })
-      const gold = resourcesOf(current, heroOwner(current, heroId)).GOLD_PILE ?? 0
+      const hero = heroById(current, playerHeroId())
+      const price = surrenderPrice({ battle, hero, definitions, side: playerSide })
+      const gold = resourcesOf(current, heroOwner(current, hero.id)).GOLD_PILE ?? 0
       return { heroName: enemy.name, owner: enemy.owner, price, canAfford: gold >= price }
     }
 
@@ -238,6 +262,7 @@ export const registerBattleModule = defineModule(
       return describeBattleResults({
         battle,
         outcome,
+        leavingSide,
         heroName: heroNameOf(),
         defenderName: battleDefenderName({ started, state, definitions }),
         experience: playerExperience(),
@@ -322,15 +347,19 @@ export const registerBattleModule = defineModule(
 
     function playerActions(activeStack) {
       const canAct = isPlayersTurn()
-      const canLeadHero = isAttackersTurn()
+      const canLeadHero = isLeadingHerosTurn()
       return {
         canWait: canAct && !hasWaited(battle, activeStack.id),
         canDefend: canAct,
-        canRetreat: canLeadHero,
-        surrenderRefusal: battleDefenderOf(started).surrenderRefusal,
+        canRetreat: canLeadHero && canLeave(),
+        surrenderRefusal:
+          playerSide === 'attacker' ? battleDefenderOf(started).surrenderRefusal : null,
         surrender: canLeadHero ? surrenderOffer() : null,
+        casterHeroId: playerHeroId() ?? null,
         canCastSpell:
-          canLeadHero && !battle.heroCastThisRound && hasSpellBook(heroById(state.get(), heroId))
+          canLeadHero &&
+          !hasCastThisRound(battle, playerSide) &&
+          hasSpellBook(heroById(state.get(), playerHeroId()))
       }
     }
 
@@ -363,24 +392,49 @@ export const registerBattleModule = defineModule(
       }
     }
 
+    // The defending hero retreated or surrendered: the attacker wins, with the experience for the
+    // creatures it killed only, and the defender leaves with its artifacts.
+    function defenderLeft() {
+      const leftId = defenderHeroOf().id
+      const experience = getExperienceForKills(battle, 'attacker')
+      const army = getArmyAfterBattle(battle, 'attacker', heroById(state.get(), heroId)?.army ?? [])
+      emitAll([
+        {
+          type: APP_FACT_BATTLE_ENDED,
+          detail: { entityId: started.entityId, heroId, winner: 'attacker' }
+        },
+        { type: APP_FACT_HERO_ARMY_CHANGED, detail: { heroId, army } },
+        { type: APP_FACT_ENTITY_REMOVED, detail: { entityId: leftId } },
+        {
+          type: APP_FACT_HERO_WENT_TO_TAVERN,
+          detail: wentToTavern({ heroId: leftId, battle, outcome, side: 'defender' })
+        }
+      ])
+      emit(APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED, { heroId, amount: experience })
+    }
+
     // The roll settles which tavern slot the hero takes when both are worth the same.
-    function goToTavern({ heroId, battle, outcome }) {
+    function wentToTavern({ heroId, battle, outcome, side = 'attacker' }) {
       const current = state.get()
       const hero = heroById(current, heroId)
+      const player = heroOwner(current, heroId)
       const surrendered = outcome === BATTLE_OUTCOME_SURRENDERED
-      emit(APP_FACT_HERO_WENT_TO_TAVERN, {
+      return {
         heroId,
-        player: heroOwner(current, heroId),
+        player,
         name: hero.name,
         heroClass: hero.heroClass,
         army: surrendered
-          ? getArmyAfterBattle(battle, 'attacker', hero.army)
+          ? getArmyAfterBattle(battle, side, hero.army)
           : armyAfterRetreat(hero.heroClass, definitions.heroClasses),
         role: surrendered ? TAVERN_ROLE_SURRENDERED : TAVERN_ROLE_RETREATED,
         turnNumber: turnNumber(current),
+        ...(activePlayer(current) === player ? {} : { afterOwnTurn: true }),
         roll: random()
-      })
+      }
     }
+
+    const goToTavern = (fought) => emit(APP_FACT_HERO_WENT_TO_TAVERN, wentToTavern(fought))
 
     // The roll is saved with the action, so a reload gives the stack the same extra turn.
     function withGoodMoraleRoll(detail, resolved) {
@@ -437,9 +491,19 @@ export const registerBattleModule = defineModule(
     function closeResults() {
       if (outcome === BATTLE_OUTCOME_WON) {
         winBattle()
+      } else if (leavingSide === 'defender') {
+        defenderLeft()
       } else {
         loseBattle()
       }
+    }
+
+    // The player's hero leaves the battle; a saved retreat with no side is the attacker's.
+    function finishAs(battleOutcome) {
+      emit(APP_FACT_BATTLE_FINISHED, {
+        outcome: battleOutcome,
+        ...(playerSide === 'defender' ? { side: 'defender' } : {})
+      })
     }
 
     // An unseen battle has no results window to wait for.
@@ -523,8 +587,8 @@ export const registerBattleModule = defineModule(
     const isPlayersTurn = () =>
       Boolean(battle) && !outcome && !moving && !autoCombat && isPlayers(getActiveStack(battle))
 
-    // The player's hero casts, retreats and surrenders only as the attacker.
-    const isAttackersTurn = () => isPlayersTurn() && playerSide === 'attacker'
+    // The player leads a hero as the attacker, or as the defender when the defender is a hero.
+    const isLeadingHerosTurn = () => isPlayersTurn() && Boolean(playerHeroId())
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -684,7 +748,7 @@ export const registerBattleModule = defineModule(
 
     function canHeroCast(hero, spell, spellId) {
       return (
-        !battle.heroCastThisRound &&
+        !hasCastThisRound(battle, playerSide) &&
         hasSpellBook(hero) &&
         knownSpells(hero, definitions).includes(spellId) &&
         canCastInBattle(spell) &&
@@ -693,7 +757,7 @@ export const registerBattleModule = defineModule(
     }
 
     function castSpell({ spellId, targetId, hex, destination, sacrificedId }) {
-      const hero = heroById(state.get(), heroId)
+      const hero = heroById(state.get(), playerHeroId())
       const spell = definitions.spells?.[spellId]
       const targets = canHeroCast(hero, spell, spellId)
         ? chooseSpellTargets(hero, spell, { targetId, hex, sacrificedId })
@@ -711,7 +775,7 @@ export const registerBattleModule = defineModule(
         ? rollResisted(battle.stacks, targets.targetIds, resistanceRandom)
         : []
       emit(APP_FACT_BATTLE_SPELL_CAST, {
-        heroId,
+        heroId: hero.id,
         spellId,
         ...castDetailOn(hero, spell, targets),
         ...(goesTo ? { destination: goesTo } : {}),
@@ -727,6 +791,7 @@ export const registerBattleModule = defineModule(
     function castSpellOn(
       current,
       {
+        heroId: casterId,
         spellId,
         targetId,
         targetIds,
@@ -741,7 +806,11 @@ export const registerBattleModule = defineModule(
       }
     ) {
       const spell = definitions.spells?.[spellId]
-      const named = { heroName: heroNameOf(), spellName: spell?.name ?? spellId, resistedIds }
+      const named = {
+        heroName: casterNameOf(casterId),
+        spellName: spell?.name ?? spellId,
+        resistedIds
+      }
       const onStacks = { ...named, targetIds: targetIds ?? [targetId] }
       if (spell?.lasting) {
         return castLastingSpell(current, {
@@ -785,6 +854,7 @@ export const registerBattleModule = defineModule(
             battle = null
             autoCombat = false
             outcome = null
+            leavingSide = 'attacker'
           }
         },
         { type: APP_UI_RESTORE_STARTED, handler: () => (isRestoring = true) },
@@ -936,6 +1006,7 @@ export const registerBattleModule = defineModule(
             }
 
             outcome = event.detail.outcome
+            leavingSide = event.detail.side ?? 'attacker'
             autoCombat = false
             showBattle()
           }
@@ -983,7 +1054,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
           handler: (event) => {
-            if (isAttackersTurn()) {
+            if (isLeadingHerosTurn()) {
               castSpell(event.detail)
             }
           }
@@ -1014,28 +1085,28 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_RETREAT_REQUESTED,
           handler: () => {
-            if (!isAttackersTurn()) {
+            if (!isLeadingHerosTurn() || !canLeave()) {
               return
             }
 
-            emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_RETREATED })
+            finishAs(BATTLE_OUTCOME_RETREATED)
           }
         },
         {
           type: APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
           handler: () => {
-            const offer = isAttackersTurn() ? surrenderOffer() : null
+            const offer = isLeadingHerosTurn() ? surrenderOffer() : null
             if (!offer?.canAfford) {
               return
             }
 
             const paid = { GOLD_PILE: offer.price }
             emit(APP_FACT_RESOURCES_SPENT, {
-              player: heroOwner(state.get(), heroId),
+              player: heroOwner(state.get(), playerHeroId()),
               resources: paid
             })
             emit(APP_FACT_RESOURCES_GAINED, { player: offer.owner, resources: paid })
-            emit(APP_FACT_BATTLE_FINISHED, { outcome: BATTLE_OUTCOME_SURRENDERED })
+            finishAs(BATTLE_OUTCOME_SURRENDERED)
           }
         },
         {

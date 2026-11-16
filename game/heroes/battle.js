@@ -156,7 +156,7 @@ export function createBattle({ attacker, defender, definitions }) {
   return {
     stacks: [...stacksOf('attacker'), ...stacksOf('defender')],
     actedStackIds: [],
-    heroCastThisRound: false,
+    sidesCastThisRound: [],
     waitedStackIds: [],
     // The stacks whose morale took effect this round, for good or bad: it does so once a round.
     moraleStackIds: [],
@@ -169,6 +169,8 @@ export function createBattle({ attacker, defender, definitions }) {
     definitions
   }
 }
+
+export const hasCastThisRound = (battle, side) => battle.sidesCastThisRound.includes(side)
 
 export const isAlive = (stack) => stack.count > 0
 
@@ -295,7 +297,7 @@ export function endTurn(battle, stackId) {
   return startNextTurn({
     ...battle,
     actedStackIds: [],
-    heroCastThisRound: false,
+    sidesCastThisRound: [],
     waitedStackIds: [],
     moraleStackIds: [],
     turnStackId: null,
@@ -860,7 +862,7 @@ function castOnStacks(
     : []
   return {
     ...battle,
-    heroCastThisRound: true,
+    sidesCastThisRound: [...battle.sidesCastThisRound, getActiveStack(battle)?.side],
     turnStackId: getActiveStack(battle)?.id ?? null,
     stacks: battle.stacks.map((stack) => (affectedIds.includes(stack.id) ? change(stack) : stack)),
     effects: [

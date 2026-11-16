@@ -191,6 +191,8 @@ const enemyHero = {
     army: enemyHeroArmy(state, started.defender).army
   }),
   hero: ({ started: { defender }, state }) => ({
+    id: defender.heroId,
+    townId: defender.townId ?? null,
     name: heroById(state.get(), defender.heroId)?.name,
     owner: heroOwner(state.get(), defender.heroId)
   }),
