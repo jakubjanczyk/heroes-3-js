@@ -8,20 +8,27 @@ import {
   isRemoved,
   isTileExplored
 } from '../state/queries.js'
+import { hasFullBackpack } from './artifacts.js'
+import { computerChoiceAt } from './computer-choices.js'
 import { dwellingRecruitCount } from './computer-recruiting.js'
 import { canBeat, heroStrength, outmatches } from './computer-strength.js'
 import { createDangerMap } from './computer-threats.js'
 import {
+  MOVEMENT_INTERACTION_KIND_ARTIFACT_PICK_UP,
+  MOVEMENT_INTERACTION_KIND_BONUS_OBJECT_VISIT,
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
   MOVEMENT_INTERACTION_KIND_HERO_MEET,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
   MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
-  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
+  MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT,
+  MOVEMENT_INTERACTION_KIND_TREASURE_CHEST_OPEN
 } from './interaction-kinds.js'
 import { getArmyStrength } from './monster-stacks.js'
 import { heroById } from './state/hero-details.js'
 import {
+  artifactGuards,
   dwellingGuardsAgainst,
   dwellingOwner,
   mineOwner,
@@ -29,13 +36,18 @@ import {
 } from './state/map-objects.js'
 import { townGarrison, townIdAt, townOwner } from './state/towns.js'
 import { joinGarrison } from './town-garrison.js'
+import { visitOffer } from './visitable-objects/visits.js'
 
 export const COMPUTER_HERO_TARGET_KINDS = Object.freeze([
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
   MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
-  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT,
+  MOVEMENT_INTERACTION_KIND_ARTIFACT_PICK_UP,
+  MOVEMENT_INTERACTION_KIND_TREASURE_CHEST_OPEN,
+  MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT,
+  MOVEMENT_INTERACTION_KIND_BONUS_OBJECT_VISIT
 ])
 
 function canBeatGuards(state, target, { player, heroId, definitions }) {
@@ -69,6 +81,28 @@ function canTakeTown(state, target, { player, heroId, definitions }) {
   )
 }
 
+function canTakeArtifact(state, target, { heroId, definitions }) {
+  const hero = heroById(state, heroId)
+  const guards = artifactGuards(state, target.id)
+  return (
+    !isRemoved(state, target.id) &&
+    !hasFullBackpack(hero.artifacts) &&
+    (guards.length === 0 || canBeat({ hero, enemyArmy: guards, definitions }))
+  )
+}
+
+// An object is worth a visit when it would give the hero something it would take.
+function gainsFromVisit(state, target, { heroId, definitions }) {
+  const entity = { id: target.id, kind: target.entityKind, type: target.type }
+  const offer = visitOffer({ state, definitions, entity, heroId })
+  return (
+    offer !== null &&
+    (offer.choices === null ||
+      computerChoiceAt({ hero: heroById(state, heroId), choices: offer.choices, definitions }) !==
+        null)
+  )
+}
+
 const isWorthGoingTo = {
   [MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT]: (state, target) => !isRemoved(state, target.id),
   [MOVEMENT_INTERACTION_KIND_MINE_ENTER]: (state, target, { player }) =>
@@ -84,7 +118,11 @@ const isWorthGoingTo = {
       enemyArmy: [{ creature: target.type, count: monsterCount(state, target.id) ?? target.count }],
       definitions
     }),
-  [MOVEMENT_INTERACTION_KIND_TOWN_VISIT]: canTakeTown
+  [MOVEMENT_INTERACTION_KIND_TOWN_VISIT]: canTakeTown,
+  [MOVEMENT_INTERACTION_KIND_ARTIFACT_PICK_UP]: canTakeArtifact,
+  [MOVEMENT_INTERACTION_KIND_TREASURE_CHEST_OPEN]: (state, target) => !isRemoved(state, target.id),
+  [MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT]: gainsFromVisit,
+  [MOVEMENT_INTERACTION_KIND_BONUS_OBJECT_VISIT]: gainsFromVisit
 }
 
 // A monster is reached by fighting it, and only it; anything else without a fight.

@@ -48,14 +48,15 @@ export const registerInteractionModule = defineModule(
 
     // Another player's hero opens nothing on the player's screen: no window and no question, nor
     // a fact that would open one (a town visit). A question's `otherPlayersChoice` is the answer
-    // it takes instead.
+    // it takes instead, after what closing the window would do.
     function effectsForHero(effects, heroId) {
       if (!effects || isViewingPlayersHero(heroId)) {
         return effects
       }
       const answered = effects.eventsByChoice?.[effects.otherPlayersChoice] ?? []
+      const closed = effects.modal ? (effects.factsOnModalClosed ?? []) : []
       return {
-        facts: [...(effects.facts ?? []), ...answered].filter(
+        facts: [...(effects.facts ?? []), ...closed, ...answered].filter(
           (fact) => !fact.type.startsWith('ui.') && !fact.viewingPlayerOnly
         )
       }

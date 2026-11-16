@@ -93,6 +93,7 @@ function askToFightArtifactGuards(outcome) {
       isQuestion: true
     },
     factsOnModalClosed: [],
+    otherPlayersChoice: 'yes',
     eventsByChoice: {
       yes: [
         {
@@ -266,7 +267,8 @@ export const heroesOutcomeEffects = Object.freeze({
           }
     ]
   }),
-  // The player picks the gold or the experience; nothing happens until they confirm with OK.
+  // The player picks the gold or the experience; nothing happens until they confirm with OK. A
+  // computer hero takes the experience.
   [INTERACTION_OUTCOME_KIND_TREASURE_CHEST_FOUND]: (outcome) => {
     const opened = (detail) => ({
       type: APP_FACT_TREASURE_CHEST_OPENED,
@@ -303,6 +305,7 @@ export const heroesOutcomeEffects = Object.freeze({
         ]
       },
       factsOnModalClosed: [],
+      otherPlayersChoice: 'experience',
       eventsByChoice: {
         gold: [opened({ choice: 'gold', resources: { [TREASURE_CHEST_GOLD_RESOURCE]: gold } })],
         experience: [
