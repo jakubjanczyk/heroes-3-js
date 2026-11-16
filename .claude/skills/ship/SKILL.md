@@ -71,6 +71,7 @@ Also record the run (`--video`) when the change _moves_: something happens in an
 ## 4. Open the PR
 
 - Open it as `AGENTS.md` says: what the player can now do, links to the roadmap item and the note.
+- End the description with the architecture report: `git fetch origin main`, then `node scripts/architecture-diff.mjs --markdown <scratchpad>/architecture.md`, and paste the file as it is (GitHub draws its Mermaid diagram). It compares the pushed branch with where it left `main`: the layers touched, the modules, events, saved facts and state slices added, removed or rewired. Read it before pasting. A wire you didn't mean to add, a view module producing a fact, or a saved fact removed (old saves still replay it) is a bug to fix before the PR, not a line to explain away. When it says nothing was rewired, paste it anyway: that is what a data-only change should show.
 - Subscribe to it (`subscribe_pr_activity`) and end the turn saying the preview link will follow.
 - When the PR preview bot's comment says the preview is deployed, send the link (`https://jakubjanczyk.github.io/heroes-3-js/pr-preview/pr-<number>/`) with the clicks that reach the feature on the demo map (which hero, where to walk, what to build first).
 - A red CI: reproduce it locally, fix it, run the same check green, push.
