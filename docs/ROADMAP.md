@@ -1289,6 +1289,27 @@ A button lists its keys in `aria-keyshortcuts`; the screen on top takes the keys
 
 ---
 
+## Future
+
+Bigger features with no priority yet, kept here so they aren't forgotten. None is in the work order; each gets planned into a milestone when its time comes.
+
+- **Main menu**: New Game, Load Game, High Scores, Credits and Quit before the adventure map, instead of starting straight into the demo map
+- **Scenario selection**: picking a map from a list with its size, description, players and victory conditions (9.2)
+- **New game setup**: choosing difficulty, which colours are human or computer, each player's town, starting hero and starting bonus (gold, an artifact or a resource) before the game starts
+- **Saving and loading games**: named save slots, an autosave each day, loading from a list (10.7)
+- **Campaigns**: a series of scenarios played in order, with a story text before each and the hero, their skills, spells, artifacts or creatures carried over to the next one
+- **Map generation**: random maps from a template (size, players, water, monster strength), with zones, towns, mines, treasures and guards placed by the generator
+- **Map editor**: drawing terrain and roads and placing objects in the browser, saved as a scenario (9.6)
+- **Internationalization**: every text the player sees (messages, names, descriptions) from a translation file, a language picked in the options; the game's data files keep ids, not texts
+- **Options**: walk speed, computer players' speed, battle speed, music and sound volume, whether to show the computer players' moves, remembered between sessions
+- **High scores**: a score for each won scenario from the days taken and difficulty, kept in a list
+- **Replays**: watching a finished game again from its saved facts, since the game is already rebuilt from them
+- **Tutorial**: a small first scenario that points out the hero, the town and the end turn button the first time each matters
+- **Offline and installable**: the site as a Progressive Web App, playable without a network once loaded
+- **Online multiplayer**: other players' turns from another browser, after hot-seat (8.2), by sending the facts each turn makes
+
+---
+
 ## Future Refactorings
 
 Code changes that make later parts easier but don't change what the player sees. They wait here until a part needs them; they are not in the work order yet.
