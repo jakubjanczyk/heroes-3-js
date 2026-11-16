@@ -14,7 +14,8 @@ import {
   MOVEMENT_INTERACTION_KIND_HERO_MEET,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
   MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
-  MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT
+  MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
 } from './interaction-kinds.js'
 import { heroById } from './state/hero-details.js'
 import {
@@ -23,13 +24,15 @@ import {
   mineOwner,
   monsterCount
 } from './state/map-objects.js'
-import { townIdAt } from './state/towns.js'
+import { townGarrison, townIdAt, townOwner } from './state/towns.js'
+import { joinGarrison } from './town-garrison.js'
 
 export const COMPUTER_HERO_TARGET_KINDS = Object.freeze([
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
   MOVEMENT_INTERACTION_KIND_MINE_ENTER,
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
-  MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT
+  MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT,
+  MOVEMENT_INTERACTION_KIND_TOWN_VISIT
 ])
 
 function canBeatGuards(state, target, { player, heroId, definitions }) {
@@ -42,6 +45,24 @@ function canBeatGuards(state, target, { player, heroId, definitions }) {
       enemyArmy: [{ creature, count: guards }],
       definitions
     })
+  )
+}
+
+// A hero standing in the town defends it with the garrison's stacks beside its own.
+function townDefenders(state, target) {
+  const garrison = townGarrison(state, target.id)
+  const defenderId = heroIdAt(state, target.tile)
+  return defenderId === null
+    ? garrison
+    : joinGarrison(heroById(state, defenderId).army, garrison).army
+}
+
+function canTakeTown(state, target, { player, heroId, definitions }) {
+  const defenders = townDefenders(state, target).filter(Boolean)
+  return (
+    townOwner(state, target.id) !== player &&
+    (defenders.length === 0 ||
+      canBeat({ hero: heroById(state, heroId), enemyArmy: defenders, definitions }))
   )
 }
 
@@ -59,7 +80,8 @@ const isWorthGoingTo = {
       hero: heroById(state, heroId),
       enemyArmy: [{ creature: target.type, count: monsterCount(state, target.id) ?? target.count }],
       definitions
-    })
+    }),
+  [MOVEMENT_INTERACTION_KIND_TOWN_VISIT]: canTakeTown
 }
 
 // A monster is reached by fighting it, and only it; anything else without a fight.
@@ -130,7 +152,7 @@ function nearestReachable(targets, routes) {
   return nearest ?? null
 }
 
-// Heroes standing in a town are attacked with the town (8.4.6c).
+// A hero standing in a town is attacked with the town.
 function enemyHeroTargets({ state, player, heroId, definitions }) {
   const hero = heroById(state, heroId)
   return enemiesOf(state, player)
@@ -147,11 +169,13 @@ function enemyHeroTargets({ state, player, heroId, definitions }) {
 
 export function decideComputerHeroMove({ state, map, heroId, targets, routes, definitions }) {
   const player = heroOwner(state, heroId)
-  // A hero standing on another target is attacked as a hero, not as what it stands on.
+  // A hero standing on another target is attacked as a hero, not as what it stands on, unless
+  // it defends a town.
   const open = [
     ...targets.filter(
       (target) =>
-        [null, heroId].includes(heroIdAt(state, target.tile)) &&
+        (target.kind === MOVEMENT_INTERACTION_KIND_TOWN_VISIT ||
+          [null, heroId].includes(heroIdAt(state, target.tile))) &&
         isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
     ),
     ...enemyHeroTargets({ state, player, heroId, definitions })

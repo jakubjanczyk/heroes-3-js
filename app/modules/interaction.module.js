@@ -46,8 +46,9 @@ export const registerInteractionModule = defineModule(
       return heroOwner(current, heroId) === viewingPlayer(current)
     }
 
-    // Another player's hero opens nothing on the player's screen: no window and no question.
-    // A question's `otherPlayersChoice` is the answer it takes instead.
+    // Another player's hero opens nothing on the player's screen: no window and no question, nor
+    // a fact that would open one (a town visit). A question's `otherPlayersChoice` is the answer
+    // it takes instead.
     function effectsForHero(effects, heroId) {
       if (!effects || isViewingPlayersHero(heroId)) {
         return effects
@@ -55,7 +56,7 @@ export const registerInteractionModule = defineModule(
       const answered = effects.eventsByChoice?.[effects.otherPlayersChoice] ?? []
       return {
         facts: [...(effects.facts ?? []), ...answered].filter(
-          (fact) => !fact.type.startsWith('ui.')
+          (fact) => !fact.type.startsWith('ui.') && !fact.viewingPlayerOnly
         )
       }
     }
