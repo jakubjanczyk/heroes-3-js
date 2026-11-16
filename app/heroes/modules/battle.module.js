@@ -266,7 +266,8 @@ export const registerBattleModule = defineModule(
         heroName: heroNameOf(),
         defenderName: battleDefenderName({ started, state, definitions }),
         experience: playerExperience(),
-        playerSide
+        playerSide,
+        playerHasHero: Boolean(playerHeroId())
       })
     }
 
@@ -283,7 +284,8 @@ export const registerBattleModule = defineModule(
       if (!heroId || heroOwner(current, heroId) === viewer) {
         return 'attacker'
       }
-      return defenderHeroOf()?.owner === viewer ? 'defender' : null
+      const owner = battleDefenderOf(started).owner?.({ started, state }) ?? defenderHeroOf()?.owner
+      return owner === viewer ? 'defender' : null
     }
 
     // Other players' heroes fight where the player can't see: the battle AI plays both sides.

@@ -11,7 +11,7 @@ import { describeStack } from '../../game/heroes/hero-army.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../game/heroes/monster-stacks.js'
 import { heroById } from '../../game/heroes/state/hero-details.js'
-import { builtIn, townGarrison as garrisonOf } from '../../game/heroes/state/towns.js'
+import { builtIn, townGarrison as garrisonOf, townOwner } from '../../game/heroes/state/towns.js'
 import {
   BATTLE_DEFENDER_TOWN_GARRISON,
   joinGarrison,
@@ -116,6 +116,7 @@ const townGarrison = {
       ),
   side: ({ started }) => ({ army: started.defender.stacks }),
   surrenderRefusal: 'There is no hero to surrender to',
+  owner: ({ started, state }) => townOwner(state.get(), started.entityId),
   bonusExperience: ({ state, started }) =>
     townCaptureExperience(builtIn(state.get(), started.entityId)),
   win({ emit, state, heroId, started: { entityId } }) {

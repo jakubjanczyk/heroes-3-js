@@ -15,7 +15,7 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
-import { aHero, aResource, aScenario, aTown } from './builders.js'
+import { ARMY_THAT_WINS, aHero, aResource, aScenario, aTown } from './builders.js'
 import {
   enterTownAt,
   leaveTown,
@@ -267,8 +267,15 @@ describe('computer towns building behavior', () => {
   // Blue pays 2500 for its Town Hall and earns 1000 from it: 6000 against tan's 7500. The player
   // starts with nothing and earns 500 from each Village Hall. The Gold row needs two Taverns.
   test("blue's building puts blue behind tan in the Thieves' Guild's gold row", async () => {
+    // Their garrisons keep blue's hero away.
     const aTavernTown = (id, name, x) =>
-      aTown().withId(id).named(name).ownedByPlayer().withBuildings(['TAVERN']).at(x, 3)
+      aTown()
+        .withId(id)
+        .named(name)
+        .ownedByPlayer()
+        .withBuildings(['TAVERN'])
+        .withGarrison(ARMY_THAT_WINS)
+        .at(x, 3)
     const { user } = await setupApp(
       aTownScenario(
         aBlueKirkwall().withBuildings(['TAVERN']),

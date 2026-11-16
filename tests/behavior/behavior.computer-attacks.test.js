@@ -474,9 +474,15 @@ describe('computer heroes attacking the player behavior', () => {
           knowledge: 1
         })
 
-    // Whitemoon, the red town with a Tavern, stands away from the heroes' row.
+    // Whitemoon, the red town with a Tavern, stands away from the heroes' row, its garrison too
+    // strong for blue's hero.
     const aWhitemoon = () =>
-      aTown().named('Whitemoon').ownedByPlayer().withBuildings(['TAVERN']).at(4, 5)
+      aTown()
+        .named('Whitemoon')
+        .ownedByPlayer()
+        .withBuildings(['TAVERN'])
+        .withGarrison(ARMY_THAT_WINS)
+        .at(4, 5)
 
     const aFightNearWhitemoon = (...entities) =>
       aScenario()

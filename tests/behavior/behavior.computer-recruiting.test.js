@@ -255,6 +255,21 @@ describe('computer heroes recruiting behavior', () => {
       expect((await readBlueArmyAt(user, TOWN))[1]).toBe('Pikemen 14')
     })
 
+    test("blue's hero recruits in a red town it walked into", async () => {
+      const { user } = await setupApp(
+        aTownScenario({
+          entities: [
+            aTown().ownedByPlayer().withBuildings(['GUARDHOUSE']).at(TOWN.x, TOWN.y),
+            aBlueHero().at(18, 4)
+          ]
+        })
+      )
+
+      await endTurn(user)
+
+      expect((await readBlueArmyAt(user, TOWN))[1]).toBe('Pikemen 14')
+    })
+
     test("blue's hero leaves its town for a resource pile", async () => {
       const { user } = await setupApp(
         aTownScenario({

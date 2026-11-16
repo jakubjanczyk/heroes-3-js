@@ -51,6 +51,9 @@ const aBlueHero = (x, y = 0) => aHero().withId('hero-2').ownedBy('blue').at(x, y
 const aPile = (id, x, y = 0) => aResource().withId(id).at(x, y)
 
 // The player's hero stands at the left end of a one-row map, out of the computer heroes' way.
+// A garrison that keeps blue's heroes away from the player's towns.
+const TOO_STRONG = [{ creature: 'ANGEL', count: 10 }]
+
 const aRowScenario = (...entities) =>
   aScenario()
     .withSize(30)
@@ -154,7 +157,13 @@ describe('computer turns behavior', () => {
   // and gets only their towns' income.
   test("a blue hero picking up gold puts blue ahead of tan in the Thieves' Guild's gold row", async () => {
     const tavernTown = (id, name, x) =>
-      aTown().withId(id).named(name).ownedByPlayer().withBuildings(['TAVERN']).at(x, 3)
+      aTown()
+        .withId(id)
+        .named(name)
+        .ownedByPlayer()
+        .withBuildings(['TAVERN'])
+        .withGarrison(TOO_STRONG)
+        .at(x, 3)
     const { user } = await setupApp(
       aScenario()
         .withSize(30, 5)
@@ -199,7 +208,7 @@ const aWatchedScenario = ({ playerHeroX = 5, blueHeroX = 25, pileX = 35 } = {}) 
     .withSize(40, 5)
     .withEntities(
       aHero().at(playerHeroX, 4),
-      aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+      aTown().named('Whitemoon').ownedByPlayer().withGarrison(TOO_STRONG).at(1, 3),
       aBlueHero(blueHeroX, 4),
       aPile('pile', pileX, 4)
     )
@@ -312,7 +321,7 @@ describe('watching computer turns behavior', () => {
       const { user } = await setupWatchedApp(
         aWatchedScenario().withEntities(
           aHero().at(5, 4),
-          aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+          aTown().named('Whitemoon').ownedByPlayer().withGarrison(TOO_STRONG).at(1, 3),
           aBlueHero(25, 4),
           aPile('first-pile', 28, 4),
           aPile('pile', 35, 4)
@@ -331,7 +340,7 @@ describe('watching computer turns behavior', () => {
       const { user } = await setupWatchedApp(
         aWatchedScenario().withEntities(
           aHero().at(5, 4),
-          aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+          aTown().named('Whitemoon').ownedByPlayer().withGarrison(TOO_STRONG).at(1, 3),
           aTown().named('Bluewater').ownedBy('blue').at(15, 1),
           aHero().withId('hero-3').ownedBy('tan').at(25, 4),
           aPile('pile', 35, 4)
@@ -601,7 +610,13 @@ describe('computer heroes capturing mines and dwellings behavior', () => {
   // Computer players start with 7500 gold; blue's Gold Mine pays it 1000 on day 2.
   test("blue's Gold Mine puts blue ahead of tan in the Thieves' Guild's gold row the next day", async () => {
     const tavernTown = (id, name, x) =>
-      aTown().withId(id).named(name).ownedByPlayer().withBuildings(['TAVERN']).at(x, 3)
+      aTown()
+        .withId(id)
+        .named(name)
+        .ownedByPlayer()
+        .withBuildings(['TAVERN'])
+        .withGarrison(TOO_STRONG)
+        .at(x, 3)
     const { user } = await setupApp(
       aScenario()
         .withSize(30, 5)
@@ -634,7 +649,7 @@ describe('computer heroes capturing mines and dwellings behavior', () => {
     aWatchedScenario()
       .withEntities(
         aHero().at(5, 4),
-        aTown().named('Whitemoon').ownedByPlayer().at(1, 3),
+        aTown().named('Whitemoon').ownedByPlayer().withGarrison(TOO_STRONG).at(1, 3),
         aBlueHero(25, 4),
         aMineAt('mine-1', 28, 3).ownedByPlayer(),
         aPile('pile', 35, 4)
