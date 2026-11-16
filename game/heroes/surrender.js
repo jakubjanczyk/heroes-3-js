@@ -7,9 +7,9 @@ const goldCostOf = ({ creature, count }, definitions) =>
 
 // Half the gold the hero's creatures left would cost to recruit, less Diplomacy's discount. Clones
 // aren't paid for.
-export function surrenderPrice({ battle, hero, definitions }) {
+export function surrenderPrice({ battle, hero, definitions, side = 'attacker' }) {
   const recruitCost = battle.stacks
-    .filter((stack) => stack.side === 'attacker' && stack.count > 0 && !stack.cloneOf)
+    .filter((stack) => stack.side === side && stack.count > 0 && !stack.cloneOf)
     .reduce((sum, stack) => sum + goldCostOf(stack, definitions), 0)
   const discount = DIPLOMACY_DISCOUNT_PERCENT[secondarySkillLevel(hero, 'DIPLOMACY')] ?? 0
   return Math.floor((Math.floor(recruitCost / 2) * (100 - discount)) / 100)
