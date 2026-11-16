@@ -1,3 +1,4 @@
+import { sameTile } from '../../engine/tile-utils.js'
 import {
   enemiesOf,
   heroIdAt,
@@ -8,7 +9,8 @@ import {
   isTileExplored
 } from '../state/queries.js'
 import { dwellingRecruitCount } from './computer-recruiting.js'
-import { canBeat } from './computer-strength.js'
+import { canBeat, heroStrength, outmatches } from './computer-strength.js'
+import { createDangerMap } from './computer-threats.js'
 import {
   MOVEMENT_INTERACTION_KIND_DWELLING_VISIT,
   MOVEMENT_INTERACTION_KIND_HERO_MEET,
@@ -17,6 +19,7 @@ import {
   MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT,
   MOVEMENT_INTERACTION_KIND_TOWN_VISIT
 } from './interaction-kinds.js'
+import { getArmyStrength } from './monster-stacks.js'
 import { heroById } from './state/hero-details.js'
 import {
   dwellingGuardsAgainst,
@@ -123,18 +126,12 @@ function touchesUnexplored(state, player, map, tile) {
   })
 }
 
-// A hero only walks on tiles its owner has explored, so it explores from the edge of them.
-function explorationTiles({ state, player, map, isEmpty }) {
+function emptyExploredTiles({ state, player, map, isEmpty }) {
   const tiles = []
   for (let y = 0; y < map.height; y += 1) {
     for (let x = 0; x < map.width; x += 1) {
       const tile = { x, y }
-      if (
-        isTileExplored(state, player, tile) &&
-        map.isPassable(tile) &&
-        isEmpty(tile) &&
-        touchesUnexplored(state, player, map, tile)
-      ) {
+      if (isTileExplored(state, player, tile) && map.isPassable(tile) && isEmpty(tile)) {
         tiles.push(tile)
       }
     }
@@ -142,14 +139,34 @@ function explorationTiles({ state, player, map, isEmpty }) {
   return tiles
 }
 
-function nearestReachable(targets, routes) {
+// A hero only walks on tiles its owner has explored, so it explores from the edge of them.
+function explorationTiles(where) {
+  return emptyExploredTiles(where).filter((tile) =>
+    touchesUnexplored(where.state, where.player, where.map, tile)
+  )
+}
+
+// The targets the hero can reach, nearest first, each with its route and what the route costs.
+function reachableByCost(targets, routes) {
   const paths = routes.planRoutes(targets.map(({ tile }) => tile))
-  const [nearest] = targets
+  return targets
     .map((target, index) => ({ target, tile: target.tile, path: paths[index] }))
     .filter(({ target, path }) => path !== null && reachesTarget(routes, target, path))
     .map((target) => ({ ...target, cost: routes.routeCost(target.path) }))
     .sort(byCostThenTile)
-  return nearest ?? null
+}
+
+function reachesToday(routes, path) {
+  return routes.chargeStepsToday(path).length === path.length - 1
+}
+
+// A hero fighting at a monster or another hero stays on the tile before it.
+function standingTile({ target, path }) {
+  return [MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT, MOVEMENT_INTERACTION_KIND_HERO_MEET].includes(
+    target.kind
+  )
+    ? path.at(-2)
+    : path.at(-1)
 }
 
 // A hero standing in a town is attacked with the town.
@@ -167,11 +184,82 @@ function enemyHeroTargets({ state, player, heroId, definitions }) {
     .map((target) => ({ ...target, kind: MOVEMENT_INTERACTION_KIND_HERO_MEET }))
 }
 
-export function decideComputerHeroMove({ state, map, heroId, targets, routes, definitions }) {
-  const player = heroOwner(state, heroId)
-  // A hero standing on another target is attacked as a hero, not as what it stands on, unless
-  // it defends a town.
-  const open = [
+function ownTownsOf(state, targets, player) {
+  return targets.filter(
+    (target) =>
+      target.kind === MOVEMENT_INTERACTION_KIND_TOWN_VISIT && townOwner(state, target.id) === player
+  )
+}
+
+function strengthInTown(decision, town) {
+  const { state, hero, definitions } = decision
+  const army = joinGarrison(hero.army, townGarrison(state, town.id)).army
+  return heroStrength({ ...hero, army }, definitions)
+}
+
+function strengthAt(decision, tile) {
+  const town = decision.ownTowns.find((ownTown) => sameTile(ownTown.tile, tile))
+  return town ? strengthInTown(decision, town) : heroStrength(decision.hero, decision.definitions)
+}
+
+function isSafeAt(decision, tile, danger) {
+  return danger === 0 || outmatches(strengthAt(decision, tile), danger)
+}
+
+function movesTo(nearest) {
+  return { targetTile: nearest.tile, path: nearest.path }
+}
+
+// Its own town an enemy hero could take next turn, and that the hero would hold, it goes back to
+// today, or stays in.
+function defendTown(decision) {
+  const { state, heroId, routes, ownTowns, dangerAt, definitions } = decision
+  const free = ownTowns.filter((town) => [null, heroId].includes(heroIdAt(state, town.tile)))
+  const danger = dangerAt(free.map(({ tile }) => tile))
+  const threatened = free.filter(
+    (town, index) =>
+      danger[index] > 0 &&
+      !outmatches(getArmyStrength(townGarrison(state, town.id), definitions), danger[index]) &&
+      outmatches(strengthInTown(decision, town), danger[index])
+  )
+  if (threatened.some((town) => sameTile(town.tile, decision.tile))) {
+    return { stays: true }
+  }
+  const [nearest] = reachableByCost(threatened, routes).filter(({ path }) =>
+    reachesToday(routes, path)
+  )
+  return nearest ? movesTo(nearest) : null
+}
+
+function safeTilesToday(decision) {
+  const { state, map, player, routes, ownTowns } = decision
+  const tiles = [
+    ...emptyExploredTiles({ state, player, map, isEmpty: routes.isEmpty }),
+    ...ownTowns.filter((town) => heroIdAt(state, town.tile) === null).map(({ tile }) => tile)
+  ].map((tile) => ({ tile }))
+  const reachable = reachableByCost(tiles, routes).filter(({ path }) => reachesToday(routes, path))
+  const danger = decision.dangerAt(reachable.map(({ tile }) => tile))
+  return reachable.filter(({ tile }, index) => isSafeAt(decision, tile, danger[index]))
+}
+
+function firstSafe(decision, reachable) {
+  const danger = decision.dangerAt(reachable.map(standingTile))
+  return reachable.find((candidate, index) =>
+    isSafeAt(decision, standingTile(candidate), danger[index])
+  )
+}
+
+// Out of an enemy's reach if it can be, else as before.
+function goTo(decision, candidates) {
+  const reachable = reachableByCost(candidates, decision.routes)
+  const nearest = firstSafe(decision, reachable)
+  return nearest ?? (decision.isThreatened ? reachable[0] : undefined)
+}
+
+// A hero standing on another target is attacked as a hero, not as what it stands on, unless it
+// defends a town.
+function openTargets({ state, heroId, player, targets, definitions }) {
+  return [
     ...targets.filter(
       (target) =>
         (target.kind === MOVEMENT_INTERACTION_KIND_TOWN_VISIT ||
@@ -180,12 +268,41 @@ export function decideComputerHeroMove({ state, map, heroId, targets, routes, de
     ),
     ...enemyHeroTargets({ state, player, heroId, definitions })
   ]
+}
+
+function nearestTarget(decision, targets) {
+  const { state, player, map, routes } = decision
   const exploration = () =>
     explorationTiles({ state, player, map, isEmpty: routes.isEmpty }).map((tile) => ({ tile }))
-  const nearest = nearestReachable(open, routes) ?? nearestReachable(exploration(), routes)
+  return goTo(decision, openTargets({ ...decision, targets })) ?? goTo(decision, exploration())
+}
 
-  if (!nearest || routes.chargeStepsToday(nearest.path).length === 0) {
+export function decideComputerHeroMove({ state, map, heroId, targets, routesOf, definitions }) {
+  const player = heroOwner(state, heroId)
+  const tile = heroTile(state, heroId)
+  const decision = {
+    state,
+    map,
+    heroId,
+    player,
+    tile,
+    hero: heroById(state, heroId),
+    definitions,
+    routes: routesOf(heroId),
+    ownTowns: ownTownsOf(state, targets, player),
+    dangerAt: createDangerMap({ state, player, heroId, routesOf, definitions })
+  }
+
+  const defence = defendTown(decision)
+  if (defence) {
+    return defence.stays ? null : defence
+  }
+
+  decision.isThreatened = !isSafeAt(decision, tile, decision.dangerAt([tile])[0])
+  const [safeTile] = decision.isThreatened ? safeTilesToday(decision) : []
+  const nearest = safeTile ?? nearestTarget(decision, targets)
+  if (!nearest || decision.routes.chargeStepsToday(nearest.path).length === 0) {
     return null
   }
-  return { targetTile: nearest.tile, path: nearest.path }
+  return movesTo(nearest)
 }
