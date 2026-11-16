@@ -1,3 +1,5 @@
+import { computerChoiceAt } from '../../../game/heroes/computer-choices.js'
+import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { visitableValues } from '../../../game/heroes/state/map-objects.js'
 import {
   isVisitableObject,
@@ -7,7 +9,12 @@ import {
   resolveAcceptedOffer,
   resolveVisit
 } from '../../../game/heroes/visitable-objects/visits.js'
-import { activePlayer, heroMovementPoints, heroOwner } from '../../../game/state/queries.js'
+import {
+  activePlayer,
+  heroMovementPoints,
+  heroOwner,
+  viewingPlayer
+} from '../../../game/state/queries.js'
 import {
   APP_COMMAND_GAME_SETUP_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
@@ -157,8 +164,27 @@ export const registerVisitableObjectsModule = defineModule(
 
     function giveAndTell(visit, result) {
       const afterMessage = give(visit, result)
-      openMessage(result.message, rewardsOf(result.gains))
+      if (isViewingPlayers(visit.heroId)) {
+        openMessage(result.message, rewardsOf(result.gains))
+      }
       emitAll(afterMessage)
+    }
+
+    function isViewingPlayers(heroId) {
+      return heroOwner(state.get(), heroId) === viewingPlayer(state.get())
+    }
+
+    // Another player's hero says yes to a price, and picks a choice by the computer's rule.
+    function answerForOtherPlayer({ heroId, entity }, result) {
+      const choice =
+        result.outcome === 'choice'
+          ? computerChoiceAt({
+              hero: heroById(state.get(), heroId),
+              choices: result.choices,
+              definitions
+            })
+          : 'yes'
+      accept({ heroId, entityId: entity.id, isQuestion: result.outcome === 'question' }, choice)
     }
 
     function offer({ heroId, entity }, result) {
@@ -195,7 +221,11 @@ export const registerVisitableObjectsModule = defineModule(
         emit(APP_FACT_MAP_OBJECT_VALUES_ROLLED, { values: { [entityId]: result.rolledValues } })
       }
       if (result.outcome === 'choice' || result.outcome === 'question') {
-        offer({ heroId, entity }, result)
+        if (isViewingPlayers(heroId)) {
+          offer({ heroId, entity }, result)
+        } else {
+          answerForOtherPlayer({ heroId, entity }, result)
+        }
         return
       }
       giveAndTell({ heroId, entity }, result)

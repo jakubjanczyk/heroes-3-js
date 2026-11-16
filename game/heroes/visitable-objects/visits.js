@@ -97,7 +97,7 @@ function withWeekValues(context) {
   return { ...context, values: { ...context.values, ...rolledValues }, rolledValues }
 }
 
-function decide(definition, visitContext) {
+function refusalOf(definition, visitContext) {
   if (hasUsed(definition, visitContext)) {
     return refusal('visited', everyVisitGains(definition, visitContext))
   }
@@ -106,10 +106,16 @@ function decide(definition, visitContext) {
     return refusal(unmet.message)
   }
   const cost = costOf(definition, visitContext.values)
-  if (hasCost(cost) && !canPay(visitContext, cost)) {
-    return refusal('tooPoor')
+  return hasCost(cost) && !canPay(visitContext, cost) ? refusal('tooPoor') : null
+}
+
+function decide(definition, visitContext) {
+  const refused = refusalOf(definition, visitContext)
+  if (refused) {
+    return refused
   }
 
+  const cost = costOf(definition, visitContext.values)
   const context = withWeekValues(visitContext)
   const offer = { cost, rolledValues: context.rolledValues }
   if (definition.choices) {
@@ -149,6 +155,17 @@ export function resolveVisit({ state, definitions, entity, heroId, random }) {
     message: fillText(definition.messages?.[key], definition, values, definitions),
     visits: definition.visits
   }
+}
+
+// What a visit would offer the hero, without rolling anything: the choices of rewards, each
+// as its gains, or none for an object with no choice; null when the hero would get nothing.
+export function visitOffer({ state, definitions, entity, heroId }) {
+  const context = contextOf({ state, definitions, entity, heroId })
+  const definition = visitableDefinition(definitions, entity)
+  if (!context || refusalOf(definition, context)) {
+    return null
+  }
+  return { choices: definition.choices?.map((rewards) => gainsOf(rewards, context)) ?? null }
 }
 
 // The rewards for the choice the player picked, or for saying yes; null when the hero can't
