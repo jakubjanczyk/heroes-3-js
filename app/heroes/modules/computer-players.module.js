@@ -244,6 +244,7 @@ export const registerComputerPlayersModule = defineModule(
                       id: entity.id,
                       tile: entity.tile,
                       kind,
+                      entityKind: entity.kind,
                       type: entity.type,
                       count: entity.count
                     }
