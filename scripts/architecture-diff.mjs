@@ -5,15 +5,16 @@ import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+let repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
-const usage = `Usage: node scripts/architecture-diff.mjs [--base <ref>] [--head <ref>] [--markdown file.md] [--html file.html]
+const usage = `Usage: node scripts/architecture-diff.mjs [--base <ref>] [--head <ref>] [--repo <dir>] [--markdown file.md] [--html file.html]
 
 Compares how the app is wired at two points: the modules and the events each one consumes and
 produces, the saved facts and the state slices that handle them, and which layers the change touched.
 
 --base  defaults to where the branch left origin/main
 --head  defaults to the working tree, uncommitted changes included
+--repo  the repository to compare, this one by default
 Prints the Markdown report when neither --markdown nor --html is given.`
 
 const EVENT_KINDS = ['command', 'fact', 'ui']
@@ -280,7 +281,8 @@ function listenersNote(listeners = []) {
     return ''
   }
 
-  const names = listeners.length <= 3 ? listeners.join(', ') : `${listeners.length} other modules`
+  const names =
+    listeners.length <= 3 ? [...listeners].sort().join(', ') : `${listeners.length} other modules`
   return `<br/><small>also heard by ${names}</small>`
 }
 
@@ -548,6 +550,7 @@ async function main() {
     options: {
       base: { type: 'string' },
       head: { type: 'string' },
+      repo: { type: 'string' },
       markdown: { type: 'string' },
       html: { type: 'string' },
       help: { type: 'boolean', default: false }
@@ -558,6 +561,7 @@ async function main() {
     return
   }
 
+  repoRoot = path.resolve(options.repo ?? repoRoot)
   const baseRef = options.base ?? defaultBase()
   const base = await readArchitectureAt(baseRef)
   const head = await readArchitectureAt(options.head)
