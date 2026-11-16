@@ -5,7 +5,18 @@ export const BATTLE_OUTCOME_LOST = 'lost'
 export const BATTLE_OUTCOME_RETREATED = 'retreated'
 export const BATTLE_OUTCOME_SURRENDERED = 'surrendered'
 
-function describeOutcome({ outcome, heroName, experience }) {
+// A garrison fighting with no hero earns no experience, and has no hero to abandon the player.
+function describeHeroless(outcome) {
+  return outcome === BATTLE_OUTCOME_WON
+    ? ['A glorious victory!']
+    : ['Your forces suffer a bitter defeat.']
+}
+
+function describeOutcome({ outcome, heroName, experience, hasHero }) {
+  if (!hasHero) {
+    return describeHeroless(outcome)
+  }
+
   if (outcome === BATTLE_OUTCOME_WON) {
     return [
       'A glorious victory!',
@@ -59,7 +70,8 @@ export function describeBattleResults({
   heroName,
   defenderName,
   experience,
-  playerSide = 'attacker'
+  playerSide = 'attacker',
+  playerHasHero = true
 }) {
   const won = outcome === BATTLE_OUTCOME_WON || leavingSide === 'defender'
   const message =
@@ -72,7 +84,7 @@ export function describeBattleResults({
       name: defenderName,
       outcome: won ? 'Defeated' : 'Victorious'
     },
-    messages: describeOutcome(message),
+    messages: describeOutcome({ ...message, hasHero: playerHasHero }),
     casualties: {
       attacker: getCasualties(battle, 'attacker'),
       defender: getCasualties(battle, 'defender')

@@ -259,7 +259,11 @@ export const heroesOutcomeEffects = Object.freeze({
               defender: { kind: BATTLE_DEFENDER_TOWN_GARRISON, stacks: outcome.garrison }
             }
           }
-        : { type: APP_FACT_TOWN_VISITED, detail: toEntityFactDetail(outcome) }
+        : {
+            type: APP_FACT_TOWN_VISITED,
+            detail: toEntityFactDetail(outcome),
+            viewingPlayerOnly: true
+          }
     ]
   }),
   // The player picks the gold or the experience; nothing happens until they confirm with OK.
