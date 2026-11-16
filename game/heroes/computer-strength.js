@@ -4,7 +4,7 @@ import { getHeroPrimarySkills } from './primary-skills.js'
 // The hero must be stronger by more than a tenth, so a close fight is left alone.
 const SAFE_ATTACK_RATIO = 1.1
 
-function heroStrength(hero, definitions) {
+export function heroStrength(hero, definitions) {
   const skills = Object.fromEntries(
     getHeroPrimarySkills({ entity: hero, definitions }).map(({ key, value }) => [key, value])
   )
@@ -14,8 +14,10 @@ function heroStrength(hero, definitions) {
   )
 }
 
+export function outmatches(strength, enemyStrength) {
+  return strength > enemyStrength * SAFE_ATTACK_RATIO
+}
+
 export function canBeat({ hero, enemyArmy, definitions }) {
-  return (
-    heroStrength(hero, definitions) > getArmyStrength(enemyArmy, definitions) * SAFE_ATTACK_RATIO
-  )
+  return outmatches(heroStrength(hero, definitions), getArmyStrength(enemyArmy, definitions))
 }

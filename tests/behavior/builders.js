@@ -1,5 +1,7 @@
 import { builder } from '@jjanczyk/object-builder'
 
+import { ROCK } from './terrain-codes.js'
+
 const placeable = (entity) => ({
   at(x, y) {
     entity.tile = { x, y }
@@ -221,6 +223,20 @@ export const aScenario = () =>
       },
       withRoads(roads) {
         scenario.roads = roads
+      },
+      // Rock on every tile around (x, y) but `except` (one a town already covers, say): a hero
+      // standing there can't move, and none can get to it.
+      withRockAround(x, y, except = []) {
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            const inBounds =
+              x + dx >= 0 && x + dx < scenario.width && y + dy >= 0 && y + dy < scenario.height
+            const isKept = except.some((tile) => tile.x === x + dx && tile.y === y + dy)
+            if ((dx !== 0 || dy !== 0) && inBounds && !isKept) {
+              scenario.tiles[(y + dy) * scenario.width + x + dx] = ROCK
+            }
+          }
+        }
       },
       withoutStartingResources() {
         delete scenario.startingResources

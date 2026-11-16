@@ -104,7 +104,7 @@ const STEP_MS = 100
 const NO_SKILLS = { attack: 0, defense: 0, power: 1, knowledge: 1 }
 
 // The player's hero at (15, 0) sees 4 tiles with Advanced Visions; blue's hero starts at (15, 2).
-// Too strong for blue's hero to attack.
+// Too strong for blue's hero to attack, and walled in by rock, so no threat it keeps away from.
 const aSeer = () =>
   aHero()
     .withArmy(ARMY_THAT_WINS)
@@ -122,6 +122,7 @@ const aMonsterOf = (creature, count) => aMonster().withType(creature).withCount(
 const aBattleScenario = (...entities) =>
   aScenario()
     .withSize(30, 3)
+    .withRockAround(15, 0)
     .withEntities(aSeer(), ...entities)
     .withDefinitions(definitions)
 
