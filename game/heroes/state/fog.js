@@ -3,7 +3,7 @@ import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { createFogSlice } from '../../state/fog.js'
 import { heroOwner } from '../../state/queries.js'
 
-const HERO_SIGHT_RADIUS = 5
+export const HERO_SIGHT_RADIUS = 5
 const TOWN_SIGHT_RADIUS = 5
 // Any other object a player owns, such as a mine.
 const OBJECT_SIGHT_RADIUS = 3
