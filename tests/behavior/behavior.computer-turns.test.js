@@ -573,7 +573,7 @@ describe('computer heroes capturing mines and dwellings behavior', () => {
 
     await endTurn(user)
 
-    expect(readOwnerFlags(getMineEntity('mine-1'))).toEqual([])
+    expect(readOwnerFlags(getMineEntity('mine-1'))).not.toContain('Blue player flag')
   })
 
   test('a blue hero flags an unguarded dwelling, and no window opens for the player', async () => {

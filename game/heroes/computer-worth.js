@@ -1,6 +1,6 @@
 import { heroMovementPoints, heroOwner } from '../state/queries.js'
 import { computerChoiceAt } from './computer-choices.js'
-import { dwellingRecruitCount } from './computer-recruiting.js'
+import { dwellingRecruitCount, stacksLedOutOfTown } from './computer-recruiting.js'
 import { recruitableCreaturesByTier, weeklyGrowthByTier } from './creature-recruitment.js'
 import { experienceToNextLevel } from './hero-experience.js'
 import {
@@ -16,10 +16,11 @@ import {
   MOVEMENT_INTERACTION_KIND_TREASURE_CHEST_OPEN
 } from './interaction-kinds.js'
 import { dwellingCreature } from './map-dwellings.js'
+import { getArmyStrength } from './monster-stacks.js'
 import { PRIMARY_SKILLS } from './primary-skills.js'
 import { heroById } from './state/hero-details.js'
 import { dwellingOwner, monsterCount, treasureChestContents } from './state/map-objects.js'
-import { builtIn, townType } from './state/towns.js'
+import { builtIn, townOwner, townType } from './state/towns.js'
 import { townBuildingsCatalogue } from './town-buildings.js'
 import { dailyIncomeOfTown } from './town-income.js'
 import { openChest } from './treasure-chest.js'
@@ -32,7 +33,6 @@ const HERO_ELIMINATION_WORTH = 1250
 const ENEMY_ARMY_COST_SHARE = 0.2
 const DEFEATED_HERO_EXPERIENCE = 500
 const PRIMARY_SKILL_POINT_WORTH = 1000
-const SECONDARY_SKILL_WORTH = 1000
 const MORALE_OR_LUCK_POINT_WORTH = 250
 const DAY_OF_MOVEMENT_WORTH = 1000
 // What an unopened chest is worth: the middle tier's experience.
@@ -66,6 +66,29 @@ function rolledResourcesWorth({ resources, firstWeek, oneOf, anyOf, amount }, de
   return resourcesWorth(resources ?? firstWeek, definitions)
 }
 
+const skillWorth = (skill, definitions) => definitions?.secondarySkills?.[skill]?.worth ?? 0
+
+// A skill the hero's owner hasn't seen yet, `{ oneOf }`, is worth the average of those the hero
+// lacks.
+export function secondarySkillWorth(skill, { hero, definitions }) {
+  if (typeof skill === 'string') {
+    return skillWorth(skill, definitions)
+  }
+  const known = new Set(hero.secondarySkills.map((learned) => learned.skill))
+  return average(
+    (skill?.oneOf ?? [])
+      .filter((candidate) => !known.has(candidate))
+      .map((candidate) => skillWorth(candidate, definitions))
+  )
+}
+
+// A skill takes one of the hero's few slots, so one worth nothing isn't worth learning.
+export function teachesWorthlessSkill(rewards, context) {
+  return rewards.some(
+    (reward) => reward.type === 'secondarySkill' && secondarySkillWorth(reward.skill, context) <= 0
+  )
+}
+
 function movementWorth({ amount }, { maxMovementPoints }) {
   return (amountOf(amount) / maxMovementPoints) * DAY_OF_MOVEMENT_WORTH
 }
@@ -76,7 +99,7 @@ const REWARD_WORTH = Object.freeze({
   primarySkills: (reward) =>
     PRIMARY_SKILLS.reduce((sum, { key }) => sum + amountOf(reward[key]), 0) *
     PRIMARY_SKILL_POINT_WORTH,
-  secondarySkill: () => SECONDARY_SKILL_WORTH,
+  secondarySkill: (reward, context) => secondarySkillWorth(reward.skill, context),
   battleBonus: (reward, { state }) => {
     const { morale, luck } = bonusOnTheDay(reward, state)
     return (amountOf(morale) + amountOf(luck)) * MORALE_OR_LUCK_POINT_WORTH
@@ -94,9 +117,9 @@ function rewardsWorth(rewards, context) {
 }
 
 function visitWorth(target, context) {
-  const { state, heroId, hero, definitions, treasury } = context
+  const { state, heroId, player, hero, definitions, treasury } = context
   const entity = { id: target.id, kind: target.entityKind, type: target.type }
-  const offer = visitOffer({ state, definitions, entity, heroId, treasury })
+  const offer = visitOffer({ state, definitions, entity, heroId, treasury, seenBy: player })
   if (!offer) {
     return 0
   }
@@ -122,6 +145,11 @@ function armyCost(army, definitions) {
         sum + resourcesWorth(definitions?.monsters?.[creature]?.cost, definitions) * count,
       0
     )
+}
+
+// What a hero loses where an enemy beats it: its army, and itself as the enemy counts it.
+export function heroRisk(hero, definitions) {
+  return getArmyStrength(hero.army, definitions) + HERO_ELIMINATION_WORTH
 }
 
 const aiValueOf = (creature, definitions) => definitions?.monsters?.[creature]?.aiValue ?? 0
@@ -158,8 +186,20 @@ export function townDevelopmentWorth({ buildings, built, definitions }) {
   )
 }
 
-function townWorth(target, { state, definitions }) {
+// Its owner's town is worth what the hero would lead out of it.
+function townWorth(target, { state, heroId, player, definitions, treasury }) {
   const { buildings } = townBuildingsCatalogue(definitions, townType(state, target.id))
+  if (townOwner(state, target.id) === player) {
+    const stacks = stacksLedOutOfTown({
+      state,
+      townId: target.id,
+      heroId,
+      buildings,
+      monsters: definitions?.monsters,
+      treasury
+    })
+    return getArmyStrength(stacks, definitions)
+  }
   return townDevelopmentWorth({ buildings, built: builtIn(state, target.id), definitions })
 }
 
@@ -218,8 +258,5 @@ export function createTargetWorth({ state, heroId, definitions, treasury }) {
     treasury,
     maxMovementPoints
   }
-  return {
-    maxMovementPoints,
-    worthOf: (target) => WORTH_OF_KIND[target.kind]?.(target, context) ?? 0
-  }
+  return { worthOf: (target) => WORTH_OF_KIND[target.kind]?.(target, context) ?? 0 }
 }

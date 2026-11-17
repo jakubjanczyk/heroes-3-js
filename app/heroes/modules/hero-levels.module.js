@@ -1,3 +1,4 @@
+import { computerSkillOffer } from '../../../game/heroes/computer-choices.js'
 import { levelForExperience, rollPrimarySkill } from '../../../game/heroes/hero-experience.js'
 import { PRIMARY_SKILLS } from '../../../game/heroes/primary-skills.js'
 import {
@@ -82,9 +83,8 @@ export const registerHeroLevelsModule = defineModule(
       }
     }
 
-    // Another player's hero takes one of the offers at random until the AI chooses.
     function levelUpWithoutAsking(heroId, skillOffers) {
-      const offer = skillOffers[Math.floor(random() * skillOffers.length)]
+      const offer = computerSkillOffer(skillOffers, definitions)
       if (offer) {
         emit(APP_FACT_HERO_SECONDARY_SKILL_LEARNED, { heroId, ...offer })
       }
