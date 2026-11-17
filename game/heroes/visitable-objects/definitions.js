@@ -90,7 +90,7 @@ function rollWeighted(weighted, roll) {
   return weighted.at(-1)?.value
 }
 
-function choicesOf(roll, definitions) {
+export function choicesOf(roll, definitions) {
   if (roll.as === 'secondarySkill') {
     const except = roll.except ?? []
     return Object.keys(definitions?.secondarySkills ?? {}).filter(

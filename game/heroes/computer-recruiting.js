@@ -88,3 +88,15 @@ export function dwellingRecruitCount({ state, dwellingId, heroId, definitions, t
     : Math.min(available, affordableCount(treasury, creature.cost ?? {}))
   return count > 0 && addToArmy(hero.army, creature.creature, count) ? count : 0
 }
+
+// The stacks a hero walking into its own town would lead out: what its owner recruits there with
+// `treasury`, and the garrison, as far as they fit in its army.
+export function stacksLedOutOfTown({ state, townId, heroId, buildings, monsters, treasury }) {
+  const garrison = decideTownRecruits({ state, townId, buildings, monsters, treasury }).reduce(
+    (army, { creature, count }) => addToArmy(army, creature, count) ?? army,
+    fillSlots(townGarrison(state, townId))
+  )
+  return decideGarrisonTaken({ garrison, army: heroById(state, heroId).army, monsters }).map(
+    ({ from }) => garrison[from.slot]
+  )
+}
