@@ -15,7 +15,7 @@ import {
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
-import { ARMY_THAT_WINS, aHero, aResource, aScenario, aTown } from './builders.js'
+import { ARMY_THAT_WINS, aHero, aMine, aResource, aScenario, aTown } from './builders.js'
 import {
   enterTownAt,
   leaveTown,
@@ -30,6 +30,7 @@ const towns = readGameData('towns.json')
 
 const gameDefinitions = {
   monsters: readGameData('monsters.json'),
+  mines: readGameData('mines.json'),
   resources: readGameData('resources.json'),
   towns,
   buildings,
@@ -128,20 +129,32 @@ describe('computer towns building behavior', () => {
     expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual(['Tavern', 'Town Hall'])
   })
 
-  // Of the buildings its City Hall needs, the Mage Guild comes first; the Brotherhood of the
-  // Sword would come first without them.
-  test("blue's town builds a building its next hall needs before the rest", async () => {
+  // The Town Hall's 500 more gold a day is worth 2500, for its 2500; the Halberdiers' 14 a week
+  // at 35 more AI value than Pikemen are worth 490, for 1000 gold and 5 ore (2250).
+  test("blue's town builds its Town Hall before a dwelling upgrade worth less for its cost", async () => {
     const { user } = await setupApp(
-      aTownScenario(aBlueKirkwall().withBuildings(['TAVERN', 'TOWN_HALL']))
+      aTownScenario(aBlueKirkwall().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE']))
     )
 
     await endDays(user)
 
-    expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual([
-      'Mage Guild Level 1',
-      'Tavern',
-      'Town Hall'
-    ])
+    const picture = await readPictureOfTownTakenAt(KIRKWALL)
+    expect(picture).toContain('Town Hall')
+    expect(picture).not.toContain('Upg. Guardhouse')
+  })
+
+  test("blue's town builds a cheap dwelling upgrade before its Town Hall when it is worth more for its cost", async () => {
+    const { user } = await setupApp(
+      aTownScenario(
+        aBlueKirkwall().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE'])
+      ).withDefinitions(withCheaperBuildings({ UPG_GUARDHOUSE: { GOLD_PILE: 100 } }))
+    )
+
+    await endDays(user)
+
+    const picture = await readPictureOfTownTakenAt(KIRKWALL)
+    expect(picture).toContain('Upg. Guardhouse')
+    expect(picture).not.toContain('Town Hall')
   })
 
   test("blue's town with all its halls builds its first dwelling", async () => {
@@ -162,42 +175,6 @@ describe('computer towns building behavior', () => {
     ])
   })
 
-  test("blue's town builds its next dwelling before upgrading one", async () => {
-    const { user } = await setupApp(
-      aTownScenario(aBlueKirkwall().withBuildings([...HALLS, ...FORTS, 'CAPITOL', 'GUARDHOUSE']))
-    )
-
-    await endDays(user)
-
-    const picture = await readPictureOfTownTakenAt(KIRKWALL)
-    expect(picture).toContain("Archers' Tower")
-    expect(picture).not.toContain('Upg. Guardhouse')
-  })
-
-  // The Training Grounds need the Stables; without them blue would upgrade its Guardhouse.
-  test("blue's town builds what its next dwelling needs before upgrading one", async () => {
-    const { user } = await setupApp(
-      aTownScenario(
-        aBlueKirkwall().withBuildings([
-          ...HALLS,
-          ...FORTS,
-          'CAPITOL',
-          'GUARDHOUSE',
-          'ARCHERS_TOWER',
-          'GRIFFIN_TOWER',
-          'BARRACKS',
-          'MONASTERY'
-        ])
-      )
-    )
-
-    await endDays(user)
-
-    const picture = await readPictureOfTownTakenAt(KIRKWALL)
-    expect(picture).toContain('Stables')
-    expect(picture).not.toContain('Upg. Guardhouse')
-  })
-
   // The Tavern's chain is the first in the Hall after the halls and the forts.
   test("blue's town with all its halls and dwellings builds from the rest of the Hall", async () => {
     const { user } = await setupApp(
@@ -215,17 +192,62 @@ describe('computer towns building behavior', () => {
     expect(picture).not.toContain('Resource Silo')
   })
 
-  // The Capitol costs 10000 gold, more than blue's 7500.
-  test("blue's town passes over a building blue can't pay for and builds the next one it can", async () => {
+  // Blue's 7500 gold and 500 a day would take 25 days to reach 20000, and the City Hall needs the
+  // Town Hall too. Nothing else is worth anything without a Fort, which needs more wood than blue
+  // has, so blue builds from the rest of the Hall.
+  test("blue's town passes over a building it can't save for within a week of income", async () => {
     const { user } = await setupApp(
-      aTownScenario(aBlueKirkwall().withBuildings([...HALLS, ...FORTS]))
+      aTownScenario(aBlueKirkwall().withBuildings(['TAVERN'])).withDefinitions(
+        withCheaperBuildings({ TOWN_HALL: { GOLD_PILE: 20000 } })
+      )
     )
 
     await endDays(user)
 
-    const picture = await readPictureOfTownTakenAt(KIRKWALL)
-    expect(picture).toContain('Guardhouse')
-    expect(picture).not.toContain('Capitol')
+    expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual([
+      'Brotherhood of the Sword',
+      'Tavern',
+      'Village Hall'
+    ])
+  })
+
+  // The Town Hall is worth 2500 for 1000 gold and 12 wood (4000), more for its cost than the
+  // Guardhouse blue could pay for today (1120 for 3000); blue is 2 wood short, which its Sawmill
+  // makes up in a day.
+  test("blue's town that can't pay for the building it wants builds nothing that day", async () => {
+    const { user } = await setupApp(
+      aTownScenario(
+        aBlueKirkwall().withBuildings(['TAVERN', 'FORT']),
+        aMine().withType('SAWMILL').ownedBy('blue').at(22, 6)
+      ).withDefinitions(withCheaperBuildings({ TOWN_HALL: { GOLD_PILE: 1000, WOOD_PILE: 12 } }))
+    )
+
+    await endDays(user)
+
+    expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual(['Fort', 'Tavern', 'Village Hall'])
+  })
+
+  // Kirkwall saves for its Town Hall, 2 wood short with a Sawmill's 2 a day, and blue keeps its 2000
+  // gold and 12 wood: 5500 gold, no wood and 10 ore are left. Greenfield's Town Hall and Archers'
+  // Tower need wood, so it builds the upgrade it can pay for with what is left.
+  test("blue's second town builds what blue can pay for beyond what its first town keeps", async () => {
+    const { user } = await setupApp(
+      aScenario()
+        .withSize(30, 7)
+        .withEntities(
+          aHero().at(12, 5),
+          aBlueKirkwall().withBuildings(['TAVERN']),
+          aBlueGreenfield().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE']),
+          aMine().withType('SAWMILL').ownedBy('blue').at(22, 6)
+        )
+        .withDefinitions(withCheaperBuildings({ TOWN_HALL: { GOLD_PILE: 2000, WOOD_PILE: 12 } }))
+    )
+
+    await endDays(user)
+
+    const picture = await readPictureOfTownTakenAt(GREENFIELD)
+    expect(picture).toContain('Upg. Guardhouse')
+    expect(picture).not.toContain("Archers' Tower")
   })
 
   test("each of blue's towns builds on the same day", async () => {

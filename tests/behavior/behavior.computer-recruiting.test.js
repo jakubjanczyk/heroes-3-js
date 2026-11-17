@@ -20,6 +20,7 @@ import {
   ARMY_THAT_WINS,
   aDwelling,
   aHero,
+  aMine,
   aResource,
   aScenario,
   aSpellDefinition,
@@ -65,6 +66,7 @@ function definitionsWith({ buildingCosts = {}, creatureCosts = {} } = {}) {
     secondarySkills: readGameData('secondary-skills.json'),
     resources: readGameData('resources.json'),
     dwellings: readGameData('dwellings.json'),
+    mines: readGameData('mines.json'),
     tavern: readGameData('tavern.json'),
     monsters: Object.fromEntries(
       Object.entries(monsters).map(([creature, monster]) => [
@@ -347,6 +349,62 @@ describe('computer heroes recruiting behavior', () => {
       await waitMs(COMPUTER_TURN_MS)
 
       expect((await readBlueArmyAt(user, { x: 24, y: 4 }))[1]).toBe('Pikemen 14')
+    })
+  })
+
+  // Blue's town saves for its Town Hall, 2 ore short with an Ore Pit's 2 a day, and blue keeps its
+  // 7000 gold and 12 ore: 500 of blue's 7500 gold is left to recruit with.
+  describe('while blue saves for a building', () => {
+    const savingDefinitions = () =>
+      definitionsWith({ buildingCosts: { TOWN_HALL: { GOLD_PILE: 7000, ORE_PILE: 12 } } })
+
+    // 500 gold pays for 8 Pikemen at 60.
+    test("blue's hero in its town recruits only with what blue has beyond what it keeps", async () => {
+      const { user } = await setupApp(
+        aTownScenario({
+          entities: [
+            aBlueTown(['TAVERN', 'GUARDHOUSE']),
+            aBlueHero().at(TOWN.x, TOWN.y),
+            aMine().withType('ORE_PIT').ownedBy('blue').at(26, 4)
+          ],
+          definitions: savingDefinitions()
+        })
+      )
+
+      await endTurn(user)
+
+      expect(await readBlueArmyAt(user, TOWN)).toEqual([
+        'Swordsmen 2',
+        'Pikemen 8',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
+
+    // Blue's hero at (15, 2) walks to its Archers' Tower at (18, 1), which the player's hero at
+    // (15, 0) sees; blue's town stands out of the way at (26, 2). 500 gold pays for 5 Archers.
+    test("blue's hero at its dwelling recruits only with what blue has beyond what it keeps", async () => {
+      const dwelling = { x: 18, y: 1 }
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(30, 3)
+          .withRockAround(15, 0)
+          .withEntities(
+            aSeer().at(15, 0),
+            aBlueHero().at(15, 2),
+            aDwelling().withType('ARCHERS_TOWER').ownedBy('blue').at(dwelling.x, dwelling.y),
+            aTown().ownedBy('blue').withBuildings(['TAVERN']).at(26, 2),
+            aMine().withType('ORE_PIT').ownedBy('blue').at(3, 2)
+          )
+          .withDefinitions(savingDefinitions())
+      )
+
+      await endTurn(user)
+
+      expect((await readBlueArmyAt(user, dwelling))[1]).toBe('Archers 5')
     })
   })
 

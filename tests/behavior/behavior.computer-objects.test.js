@@ -29,6 +29,7 @@ import {
   aResourceGenerator,
   aScenario,
   aSpellDefinition,
+  aTown,
   aTreasureChest
 } from './builders.js'
 
@@ -321,6 +322,27 @@ describe('computer heroes going for artifacts and map objects behavior', () => {
       await startBlueTurn(
         anObjectScenario(aBlueHero(), anObjectOf('TREE_OF_KNOWLEDGE').withPrice({ GEMS_PILE: 10 }))
       )
+
+      expectHeroAt(10, 3, 'hero-2')
+    })
+
+    // Blue's town saves for its Town Hall at 8000, 500 more than blue has, and keeps all its gold.
+    test("blue's hero leaves alone a Tree of Knowledge it could only pay for with what blue keeps", async () => {
+      const buildings = readGameData('buildings.json')
+      const scenario = anObjectScenario(
+        aBlueHero(),
+        anObjectOf('TREE_OF_KNOWLEDGE').withPrice({ GOLD_PILE: 2000 }),
+        aTown().ownedBy('blue').withBuildings(['TAVERN']).at(25, 3)
+      ).withDefinitions({
+        ...definitions,
+        towns: readGameData('towns.json'),
+        buildings: {
+          ...buildings,
+          TOWN_HALL: { ...buildings.TOWN_HALL, cost: { GOLD_PILE: 8000 } }
+        }
+      })
+
+      await startBlueTurn(scenario)
 
       expectHeroAt(10, 3, 'hero-2')
     })

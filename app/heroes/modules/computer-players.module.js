@@ -15,7 +15,7 @@ import { decideTownBuilding } from '../../../game/heroes/computer-towns.js'
 import { MOVEMENT_INTERACTION_KIND_DWELLING_VISIT } from '../../../game/heroes/interaction-kinds.js'
 import { buildingContextOf } from '../../../game/heroes/state/building-context.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
-import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
+import { dailyIncomeOfPlayer, resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { dwellingOwner } from '../../../game/heroes/state/map-objects.js'
 import {
   townGarrison,
@@ -25,6 +25,7 @@ import {
   townType
 } from '../../../game/heroes/state/towns.js'
 import { isTownNextToWater, townBuildingsCatalogue } from '../../../game/heroes/town-buildings.js'
+import { leftOver } from '../../../game/heroes/treasury.js'
 import {
   activePlayer,
   heroIdsOf,
@@ -102,8 +103,10 @@ export const registerComputerPlayersModule = defineModule(
       }
     }
 
+    // What a computer player may spend on recruits and objects' prices: what it has beyond what
+    // it keeps for a building.
     function spendableOf(player) {
-      return resourcesOf(state.get(), player)
+      return leftOver(resourcesOf(state.get(), player), turn?.kept)
     }
 
     function nextMove(heroId) {
@@ -208,18 +211,27 @@ export const registerComputerPlayersModule = defineModule(
       }
     }
 
+    // Each town builds, or the first that can't pay for what it wants saves for it.
     function buildInTowns(player) {
+      const income = dailyIncomeOfPlayer(state.get(), player, definitions)
+      let kept = null
       for (const townId of townIdsOf(state.get(), player)) {
-        const buildingId = decideTownBuilding({
-          catalogue: townBuildingsCatalogue(definitions, townType(state.get(), townId)),
-          context: buildingContextOf(state.get(), townId, {
-            isNextToWater: townIdsNextToWater.has(townId)
-          })
+        const context = buildingContextOf(state.get(), townId, {
+          isNextToWater: townIdsNextToWater.has(townId)
         })
-        if (buildingId) {
-          emit(APP_COMMAND_TOWN_BUILD_REQUESTED, { entityId: townId, buildingId })
+        const decision = decideTownBuilding({
+          catalogue: townBuildingsCatalogue(definitions, townType(state.get(), townId)),
+          context: { ...context, treasury: leftOver(context.treasury, kept ?? {}) },
+          definitions,
+          income,
+          maySave: kept === null
+        })
+        if (decision?.build) {
+          emit(APP_COMMAND_TOWN_BUILD_REQUESTED, { entityId: townId, buildingId: decision.build })
         }
+        kept = decision?.save ?? kept
       }
+      return kept ?? {}
     }
 
     function playIfComputersTurn() {
@@ -229,8 +241,8 @@ export const registerComputerPlayersModule = defineModule(
         return
       }
 
-      turn = { player, heroIds: heroIdsOf(current, player) }
-      buildInTowns(player)
+      turn = { player, heroIds: heroIdsOf(current, player), kept: {} }
+      turn.kept = buildInTowns(player)
       playNextMoveWhenFree()
     }
 
