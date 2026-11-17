@@ -6,7 +6,8 @@ import {
   heroOwner,
   heroTile,
   isRemoved,
-  isTileExplored
+  isTileExplored,
+  unexploredTilesInSight
 } from '../state/queries.js'
 import { hasFullBackpack } from './artifacts.js'
 import { computerChoiceAt } from './computer-choices.js'
@@ -27,6 +28,7 @@ import {
   MOVEMENT_INTERACTION_KIND_TREASURE_CHEST_OPEN
 } from './interaction-kinds.js'
 import { getArmyStrength } from './monster-stacks.js'
+import { HERO_SIGHT_RADIUS } from './state/fog.js'
 import { heroById } from './state/hero-details.js'
 import {
   artifactGuards,
@@ -147,24 +149,6 @@ function byCostThenTile(a, b) {
   return a.cost - b.cost || a.tile.y - b.tile.y || a.tile.x - b.tile.x
 }
 
-const NEIGHBOUR_OFFSETS = [
-  [-1, -1],
-  [0, -1],
-  [1, -1],
-  [-1, 0],
-  [1, 0],
-  [-1, 1],
-  [0, 1],
-  [1, 1]
-]
-
-function touchesUnexplored(state, player, map, tile) {
-  return NEIGHBOUR_OFFSETS.some(([dx, dy]) => {
-    const neighbour = { x: tile.x + dx, y: tile.y + dy }
-    return map.inBounds(neighbour) && !isTileExplored(state, player, neighbour)
-  })
-}
-
 function emptyExploredTiles({ state, player, map, isEmpty }) {
   const tiles = []
   for (let y = 0; y < map.height; y += 1) {
@@ -178,11 +162,20 @@ function emptyExploredTiles({ state, player, map, isEmpty }) {
   return tiles
 }
 
-// A hero only walks on tiles its owner has explored, so it explores from the edge of them.
+// A hero only walks on tiles its owner has explored, so it explores from those that would show
+// it some it hasn't.
 function explorationTiles(where) {
-  return emptyExploredTiles(where).filter((tile) =>
-    touchesUnexplored(where.state, where.player, where.map, tile)
-  )
+  return emptyExploredTiles(where)
+    .map((tile) => ({
+      tile,
+      reveals: unexploredTilesInSight(where.state, where.player, tile, HERO_SIGHT_RADIUS)
+    }))
+    .filter(({ reveals }) => reveals > 0)
+}
+
+// Squared, so that a long walk revealing much beats creeping a tile at a time.
+function revealWorth({ reveals }) {
+  return reveals ** 2
 }
 
 // The targets the hero can reach, each with its route and what the route costs, nearest first
@@ -326,11 +319,14 @@ function openTargets({ state, heroId, player, targets, definitions }) {
 
 function nearestTarget(decision, targets) {
   const { state, player, map, routes } = decision
-  const exploration = () =>
-    explorationTiles({ state, player, map, isEmpty: routes.isEmpty }).map((tile) => ({ tile }))
-  const weighed = byWorthForDays(createTargetWorth(decision))
+  const { worthOf, maxMovementPoints } = createTargetWorth(decision)
+  const exploration = () => explorationTiles({ state, player, map, isEmpty: routes.isEmpty })
   return (
-    goTo(decision, openTargets({ ...decision, targets }), weighed) ?? goTo(decision, exploration())
+    goTo(
+      decision,
+      openTargets({ ...decision, targets }),
+      byWorthForDays({ worthOf, maxMovementPoints })
+    ) ?? goTo(decision, exploration(), byWorthForDays({ worthOf: revealWorth, maxMovementPoints }))
   )
 }
 

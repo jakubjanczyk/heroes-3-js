@@ -2,7 +2,7 @@ import { DEFAULT_PLAYER } from './core-slices.js'
 
 // A tile is in sight when its distance from the centre, rounded to a whole number, is at most
 // the radius.
-function isInSight(center, tile, radius) {
+export function isInSight(center, tile, radius) {
   return Math.round(Math.hypot(tile.x - center.x, tile.y - center.y)) <= radius
 }
 

@@ -1,3 +1,5 @@
+import { isInSight } from './fog.js'
+
 export function activePlayer(state) {
   return state.players.activePlayer
 }
@@ -80,6 +82,32 @@ export function isTileExplored(state, player, tile) {
   }
 
   return fog.explored[player]?.[tile.y * fog.width + tile.x] === 1
+}
+
+export function unexploredTilesInSight(state, player, center, radius) {
+  const fog = state.fog
+  if (!fog?.enabled) {
+    return 0
+  }
+
+  let count = 0
+  for (
+    let y = Math.max(0, center.y - radius);
+    y <= Math.min(fog.height - 1, center.y + radius);
+    y += 1
+  ) {
+    for (
+      let x = Math.max(0, center.x - radius);
+      x <= Math.min(fog.width - 1, center.x + radius);
+      x += 1
+    ) {
+      const tile = { x, y }
+      if (isInSight(center, tile, radius) && !isTileExplored(state, player, tile)) {
+        count += 1
+      }
+    }
+  }
+  return count
 }
 
 // The tiles explored since `before`, an earlier state.

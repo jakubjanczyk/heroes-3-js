@@ -252,15 +252,15 @@ describe('watching computer turns behavior', () => {
   })
 
   // The player sees up to 5 tiles from their hero at 5, so up to 10; blue's hero, up to 30. It
-  // picks up the pile from 28, explores to (35, 3) at the right edge, and has one step left for
-  // the way back towards the unexplored ground on the left.
+  // picks up the pile at 29, explores to (33, 3), which shows the most of the right end, and has
+  // five steps left for the way back towards the unexplored ground on the left.
   test('a blue hero under the fog of war walks its whole turn at once', async () => {
     const { user } = await setupWatchedApp(aWatchedScenario({ pileX: 29 }).withFogOfWar(true))
 
     await clickEndTurn(user)
     await waitMs(STEP_MS / 2)
 
-    expectHeroAt(34, 3, 'hero-2')
+    expectHeroAt(28, 3, 'hero-2')
   })
 
   // The player sees up to 12 from their hero at 7. From 16 to the pile at 11 the steps up to 13
@@ -688,9 +688,10 @@ describe('computer heroes capturing mines and dwellings behavior', () => {
 const anExploringRowScenario = (...entities) => aRowScenario(...entities).withFogOfWar(true)
 
 describe('computer heroes exploring behavior', () => {
-  // From 25 blue has explored 20 to 29: it walks to 20, next to the unexplored 19, then 15 and
-  // 10, 500 each, which spends the 1500 it has.
-  test('a blue hero with nothing to go to walks to the nearest tile next to ground blue has not explored, and on', async () => {
+  // From 25 blue has explored 20 to 29: 20 shows 15 to 19, 5 squared over a third of a day, 75,
+  // more than 24's 1 over a fifteenth, 15. It walks on to 15 and 10, 500 each, which spends the
+  // 1500 it has.
+  test('a blue hero with nothing to go to walks to the tile that shows it the most unexplored ground, and on', async () => {
     const { user } = await setupApp(anExploringRowScenario(aBlueHero(25)))
 
     await endTurn(user)
@@ -728,14 +729,16 @@ describe('computer heroes exploring behavior', () => {
     expectResourceNotPresent('pile')
   })
 
-  // The monster at 9 guards 10, the tile next to the unexplored ground on the left, so blue goes
-  // right: to 20 and 25, from where it has explored up to the end of the row.
-  test("a blue hero doesn't explore where it can only go past a monster, and explores the other way", async () => {
+  // The monster at 9 guards 10, so on the left blue's hero can look past it only from 11, which
+  // shows 6 to 9: 4 squared over 400/1500 days, 60. 20 shows 21 to 25, 25 over a third of a day,
+  // 75; from there 24 shows 26 to 29, 16 over 400/1500, 60. Then 11 is all that is left, and the
+  // 600 it has take it back to 18.
+  test("a blue hero explores the other way before looking past a monster from a tile it doesn't guard", async () => {
     const { user } = await setupApp(anExploringRowScenario(aBlueHero(15), aMonster().at(9, 0)))
 
     await endTurn(user)
 
-    expectHeroAt(25, 0, 'hero-2')
+    expectHeroAt(18, 0, 'hero-2')
   })
 
   // Day 1 ends at 10, as above; on day 2 the hero walks to 5, from where blue sees the whole row.
@@ -748,9 +751,10 @@ describe('computer heroes exploring behavior', () => {
     expectHeroAt(5, 0, 'hero-2')
   })
 
-  // The only tile next to unexplored ground, 20, is guarded by the monster at 19.
-  test('a blue hero stays where it is once nothing it can reach has unexplored ground next to it', async () => {
-    const { user } = await setupApp(anExploringRowScenario(aBlueHero(25), aMonster().at(19, 0)))
+  // Blue has explored 20 to 29. The monster at 23 guards 24, so blue's hero reaches only 25 to
+  // 29, each more than 5 tiles from the unexplored 19.
+  test('a blue hero stays where it is once nothing it can reach would show it unexplored ground', async () => {
+    const { user } = await setupApp(anExploringRowScenario(aBlueHero(25), aMonster().at(23, 0)))
 
     await endTurn(user)
 
