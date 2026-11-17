@@ -129,14 +129,15 @@ const aBlueHero = (army) =>
     .withArmy(army)
     .at(20, 5)
 
-// A second blue hero, who moves once the first has fought, to pick up the pile.
+// A second blue hero, who moves once the first has fought, to pick up the pile; three gems are
+// worth more to it, for their days, than the town.
 const aSecondBlueHero = () =>
   aHero()
     .withId('hero-3')
     .ownedBy('blue')
     .withArmy([stack('WEAKLING', 1)])
     .at(2, 0)
-const thePileOfTheSecondBlueHero = () => aResource().withId('pile').at(5, 0)
+const thePileOfTheSecondBlueHero = () => aResource().withId('pile').withType('GEMS_PILE').at(5, 0)
 
 const aTownScenario = ({ town = aWhitemoon(), blueHero, others = [] }) =>
   aScenario()

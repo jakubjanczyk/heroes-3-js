@@ -48,7 +48,8 @@ const aRedHero = (x, army, y = 0) => aHero().withPrimarySkills(NO_SKILLS).withAr
 const aBlueHero = (x, army, y = 0) =>
   aHero().withId('hero-2').ownedBy('blue').withPrimarySkills(NO_SKILLS).withArmy(army).at(x, y)
 
-const aPile = (id, x, y = 0) => aResource().withId(id).at(x, y)
+// Three gems are worth 1500 to a computer hero, more for their days than attacking a red hero.
+const aPile = (id, x, y = 0) => aResource().withId(id).withType('GEMS_PILE').at(x, y)
 
 // A hero walks 15 tiles a day, at 100 a step.
 const aRowScenario = (...entities) =>

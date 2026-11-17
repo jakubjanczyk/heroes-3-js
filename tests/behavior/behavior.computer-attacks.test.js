@@ -164,14 +164,15 @@ const aBlueHero = (army) =>
     .withArmy(army)
     .at(15, 2)
 
-// A second blue hero, who moves once the first has fought, to pick up the pile.
+// A second blue hero, who moves once the first has fought, to pick up the pile; three gems are
+// worth more to it, for their days, than the red hero.
 const aSecondBlueHero = () =>
   aHero()
     .withId('hero-3')
     .ownedBy('blue')
     .withArmy([stack('WEAKLING', 1)])
     .at(2, 0)
-const thePileOfTheSecondBlueHero = () => aResource().withId('pile').at(5, 0)
+const thePileOfTheSecondBlueHero = () => aResource().withId('pile').withType('GEMS_PILE').at(5, 0)
 
 // Rock all down x = 12 leaves blue's hero no tile out of Sir Mullich's reach, so it goes on as if
 // he weren't there, and stays where it fought.
@@ -254,12 +255,13 @@ describe('computer heroes attacking the player behavior', () => {
       expectHeroAt(19, 2)
     })
 
+    // Three gems two steps away are worth more for their days than the red hero three steps away.
     test("blue's hero picks up a nearer pile first, then attacks the red hero", async () => {
       await startBlueAttack(
         anAttackScenario(
           aRedHero([stack('SKELETON', 1)]),
           aBlueHero([stack('WEAKLING', 10)]),
-          aResource().withId('near-pile').at(13, 2)
+          aResource().withId('near-pile').withType('GEMS_PILE').at(13, 2)
         )
       )
 

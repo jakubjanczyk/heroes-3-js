@@ -158,14 +158,21 @@ export function resolveVisit({ state, definitions, entity, heroId, random }) {
 }
 
 // What a visit would offer the hero, without rolling anything: the choices of rewards, each
-// as its gains, or none for an object with no choice; null when the hero would get nothing.
+// as its gains, or none for an object with no choice; the rewards as the object's data has them,
+// with the values known so far, and the price; null when the hero would get nothing.
 export function visitOffer({ state, definitions, entity, heroId }) {
   const context = contextOf({ state, definitions, entity, heroId })
   const definition = visitableDefinition(definitions, entity)
   if (!context || refusalOf(definition, context)) {
     return null
   }
-  return { choices: definition.choices?.map((rewards) => gainsOf(rewards, context)) ?? null }
+  const filled = (rewards) => (rewards ?? []).map((reward) => fillValues(reward, context.values))
+  return {
+    choices: definition.choices?.map((rewards) => gainsOf(rewards, context)) ?? null,
+    rewards: filled(definition.rewards),
+    choiceRewards: definition.choices?.map(filled) ?? null,
+    cost: costOf(definition, context.values)
+  }
 }
 
 // The rewards for the choice the player picked, or for saying yes; null when the hero can't
