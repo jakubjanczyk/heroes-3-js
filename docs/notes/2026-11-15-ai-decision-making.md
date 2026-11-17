@@ -63,6 +63,28 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 
 - **8.4.8c**: each morning a computer player's town aims for the building worth the most for its cost: the town's worth with it (five days of income, a week of growth at the best AI value of each tier) less without it, over its cost and that of the buildings it needs, at the resource prices. It aims only for a building it and its steps are at most a week of income away from. It builds the first step when it can pay for it. When it can't, it builds nothing and its owner keeps the step's cost back: its heroes recruit in towns and at dwellings, and pay for objects, only with what is left over. Only the first town that can't pay saves; the towns after it build what they can pay for from what is left. With nothing worth anything within reach, a town builds the first building of the Hall it can pay for. What is kept back is decided again when the turn is reloaded.
 
+## Plan for 8.4.8d
+
+Three changes to how a computer hero picks where to go: a target in a stronger enemy hero's reach costs it what it could lose there instead of being left out, a Witch Hut is worth what its skill is worth to the hero, and a hero walks back to its own town when what it would recruit and take there is worth the trip.
+
+Rules, as checked (the original game's AI is not documented, so the rules are ours; checked against the reference engine's AI. Its newer AI drops a gathering target whose enemy danger is above its army's power, and its older one weighed the danger in. It scores a Witch Hut's skill from a table per skill: Diplomacy, Logistics, Earth Magic, Armorer and Offense 2; Air Magic, Wisdom, Leadership, Intelligence and Resistance 1; Mysticism, Sorcery, Estates, First Aid, Learning, Scholar, Eagle Eye and Navigation −1; the rest 0. A hut whose skill scores 2 is worth five times a skill object, below that the score itself. It sends a hero back to a town to buy the army there when that army is worth the trip):
+
+- **Danger weighed**: a target where the hero would stand in reach next turn of an enemy hero it isn't above × 1.1 (8.4.7's rule) is worth its worth less what the hero risks there: its army's total AI value and 1250 for the hero itself (what the enemy would gain, as 8.4.8 counts a hero). A target worth no more than that is left out, as now. So a weak scout still takes a Gold Mine in a stronger hero's reach, a strong army doesn't risk itself for a pile.
+- What comes first is unchanged: defending a threatened town, then a threatened hero's walk to a safe tile. A threatened hero with no safe tile today goes on to its best target with no danger taken off, since it is in reach wherever it goes. Exploration tiles are still left out when in reach (their worth is not in gold).
+- **A Witch Hut's skill**: worth from the skill's `worth` in `secondary-skills.json`: 2000 for Diplomacy, Logistics, Earth Magic, Armorer and Offense; 1000 for Air Magic, Wisdom, Leadership, Intelligence and Resistance; 500 for the rest; 0 for Mysticism, Sorcery, Estates, First Aid, Learning, Scholar, Eagle Eye and Navigation. A hut worth 0 is not a target: its skill would take one of the hero's eight slots. Other objects giving a secondary skill count the same way.
+- **Going back to recruit**: a computer hero's own town (not the one it stands in, and not one another of its heroes stands in) is a target worth the AI value of what the hero would lead out of it: the creatures its owner would recruit there with what it may spend (8.4.8c), and the garrison's stacks, as many as fit the hero's army (8.4.4's order). A town with nothing for it is not a target. Weighed against the rest over the days the route takes; on arrival the hero recruits as it does today.
+- **What the player sees**: a computer hero walking up to a mine near the player's stronger hero, or walking back to its town and leaving it with a bigger army (the army popup); a Witch Hut with a weak skill left alone. Nothing opens on the player's screen.
+
+Decisions (to agree):
+
+- The risk is the whole army and the hero, not a share of it: the enemy may not come, but a lost hero is lost for good.
+- A skill's worth is data on the skill, so a new skill or a changed weight needs no code.
+- The hero knows a Witch Hut's skill before anyone has visited it, as today's targets already do.
+
+Refactor first (commits at the start of the PR): the targets' order takes each candidate's worth worked out once beforehand (`byWorthForDays` on `candidate.worth`), so the danger can be taken off it before sorting; `firstSafe` goes.
+
+Left for later: a threatened town building its walls first comes with sieges (5.10), when walls count in its defence; the computer choosing a skill on level-up by the same worths (still at random); hero roles (a scout weighing Estates or Scouting higher).
+
 ## Plan for 8.4.8c
 
 A computer player's town builds what it gains most from for the cost, instead of in a fixed order. When it can't pay for that building yet, it builds nothing that day and its owner keeps the cost back: its heroes recruit, and pay for objects, only with what it has beyond that.
