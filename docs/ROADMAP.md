@@ -1135,7 +1135,7 @@ In fourteen parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty
 - [x] 8.4.8 Weighing targets: a computer hero's targets compared by what they are worth against the days they cost, instead of the nearest first
 - [x] 8.4.8b Exploring by what it reveals: an exploration tile chosen by the unexplored tiles it reveals against the days it costs
 - [x] 8.4.8c Saving up: a town's building chosen by what it is worth, and its owner saving for it instead of recruiting or paying for an object
-- [ ] 8.4.8d Weighing danger and skills: a target in a stronger enemy's reach weighed down rather than left out, a Witch Hut's skill weighed, a hero going back to a town to recruit
+- [x] 8.4.8d Weighing danger and skills: a target in a stronger enemy's reach weighed down rather than left out, a Witch Hut's skill weighed, a hero going back to a town to recruit
 
 ### 8.5 Victory Conditions
 - [ ] **Defeat all enemies**: last player standing wins (default)
