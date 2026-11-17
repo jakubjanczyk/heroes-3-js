@@ -3,6 +3,7 @@ import {
   enemiesOf,
   heroIdAt,
   heroIdsOf,
+  heroMovementPoints,
   heroOwner,
   heroTile,
   isRemoved,
@@ -182,28 +183,20 @@ function revealWorth({ reveals }) {
   return reveals ** 2
 }
 
-// The targets the hero can reach, each with its route and what the route costs, nearest first
-// unless `order` says otherwise.
-function reachableByCost(targets, routes, order = byCostThenTile) {
+// The targets the hero can reach, each with its route and what the route costs, nearest first.
+function reachableByCost(targets, routes) {
   const paths = routes.planRoutes(targets.map(({ tile }) => tile))
   return targets
     .map((target, index) => ({ target, tile: target.tile, path: paths[index] }))
     .filter(({ target, path }) => path !== null && reachesTarget(routes, target, path))
     .map((target) => ({ ...target, cost: routes.routeCost(target.path) }))
-    .sort(order)
+    .sort(byCostThenTile)
 }
 
 // A target's score is its worth over the days the route takes, the movement points it costs over
 // the hero's day of them; the highest first, then the nearest.
-function byWorthForDays({ worthOf, maxMovementPoints }) {
-  const scores = new Map()
-  const scoreOf = (candidate) => {
-    if (!scores.has(candidate)) {
-      const days = Math.max(candidate.cost, 1) / maxMovementPoints
-      scores.set(candidate, worthOf(candidate.target) / days)
-    }
-    return scores.get(candidate)
-  }
+function byWorthForDays(maxMovementPoints) {
+  const scoreOf = (candidate) => candidate.worth / (Math.max(candidate.cost, 1) / maxMovementPoints)
   return (a, b) => scoreOf(b) - scoreOf(a) || byCostThenTile(a, b)
 }
 
@@ -293,18 +286,17 @@ function safeTilesToday(decision) {
   return reachable.filter(({ tile }, index) => isSafeAt(decision, tile, danger[index]))
 }
 
-function firstSafe(decision, reachable) {
+// The best of the candidates out of an enemy's reach if there is one, else as before.
+function goTo(decision, candidates, worthOf) {
+  const order = byWorthForDays(decision.maxMovementPoints)
+  const reachable = reachableByCost(candidates, decision.routes)
+    .map((candidate) => ({ ...candidate, worth: worthOf(candidate.target) }))
+    .sort(order)
   const danger = decision.dangerAt(reachable.map(standingTile))
-  return reachable.find((candidate, index) =>
+  const best = reachable.find((candidate, index) =>
     isSafeAt(decision, standingTile(candidate), danger[index])
   )
-}
-
-// Out of an enemy's reach if it can be, else as before.
-function goTo(decision, candidates, order) {
-  const reachable = reachableByCost(candidates, decision.routes, order)
-  const nearest = firstSafe(decision, reachable)
-  return nearest ?? (decision.isThreatened ? reachable[0] : undefined)
+  return best ?? (decision.isThreatened ? reachable[0] : undefined)
 }
 
 // A hero standing on another target is attacked as a hero, not as what it stands on, unless it
@@ -321,16 +313,13 @@ function openTargets({ state, heroId, player, targets, definitions, treasury }) 
   ]
 }
 
-function nearestTarget(decision, targets) {
+function bestTarget(decision, targets) {
   const { state, player, map, routes } = decision
-  const { worthOf, maxMovementPoints } = createTargetWorth(decision)
+  const { worthOf } = createTargetWorth(decision)
   const exploration = () => explorationTiles({ state, player, map, isEmpty: routes.isEmpty })
   return (
-    goTo(
-      decision,
-      openTargets({ ...decision, targets }),
-      byWorthForDays({ worthOf, maxMovementPoints })
-    ) ?? goTo(decision, exploration(), byWorthForDays({ worthOf: revealWorth, maxMovementPoints }))
+    goTo(decision, openTargets({ ...decision, targets }), worthOf) ??
+    goTo(decision, exploration(), revealWorth)
   )
 }
 
@@ -356,6 +345,7 @@ export function decideComputerHeroMove({
     definitions,
     treasury,
     routes: routesOf(heroId),
+    maxMovementPoints: heroMovementPoints(state, heroId)?.max || 1,
     ownTowns: ownTownsOf(state, targets, player),
     dangerAt: createDangerMap({ state, player, heroId, routesOf, definitions })
   }
@@ -367,7 +357,7 @@ export function decideComputerHeroMove({
 
   decision.isThreatened = !isSafeAt(decision, tile, decision.dangerAt([tile])[0])
   const [safeTile] = decision.isThreatened ? safeTilesToday(decision) : []
-  const nearest = safeTile ?? nearestTarget(decision, targets)
+  const nearest = safeTile ?? bestTarget(decision, targets)
   if (!nearest || decision.routes.chargeStepsToday(nearest.path).length === 0) {
     return null
   }
