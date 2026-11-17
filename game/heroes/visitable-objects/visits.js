@@ -67,17 +67,17 @@ function costOf(definition, values) {
 
 const hasCost = (cost) => Object.keys(cost).length > 0
 
-function canPay({ state, heroId }, cost) {
-  return canAfford(resourcesOf(state, heroOwner(state, heroId)), cost)
+function canPay({ state, heroId, treasury }, cost) {
+  return canAfford(treasury ?? resourcesOf(state, heroOwner(state, heroId)), cost)
 }
 
-function contextOf({ state, definitions, entity, heroId, random }) {
+function contextOf({ state, definitions, entity, heroId, random, treasury }) {
   const hero = heroById(state, heroId)
   if (!hero) {
     return null
   }
   const values = visitableValues(state, entity.id)
-  return { state, definitions, entity, heroId, hero, values, random }
+  return { state, definitions, entity, heroId, hero, values, random, treasury }
 }
 
 function everyVisitGains(definition, context) {
@@ -159,9 +159,10 @@ export function resolveVisit({ state, definitions, entity, heroId, random }) {
 
 // What a visit would offer the hero, without rolling anything: the choices of rewards, each
 // as its gains, or none for an object with no choice; the rewards as the object's data has them,
-// with the values known so far, and the price; null when the hero would get nothing.
-export function visitOffer({ state, definitions, entity, heroId }) {
-  const context = contextOf({ state, definitions, entity, heroId })
+// with the values known so far, and the price; null when the hero would get nothing, or when
+// `treasury` (the owner's resources by default) can't pay the price.
+export function visitOffer({ state, definitions, entity, heroId, treasury }) {
+  const context = contextOf({ state, definitions, entity, heroId, treasury })
   const definition = visitableDefinition(definitions, entity)
   if (!context || refusalOf(definition, context)) {
     return null

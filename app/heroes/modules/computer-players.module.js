@@ -15,6 +15,7 @@ import { decideTownBuilding } from '../../../game/heroes/computer-towns.js'
 import { MOVEMENT_INTERACTION_KIND_DWELLING_VISIT } from '../../../game/heroes/interaction-kinds.js'
 import { buildingContextOf } from '../../../game/heroes/state/building-context.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
+import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { dwellingOwner } from '../../../game/heroes/state/map-objects.js'
 import {
   townGarrison,
@@ -101,6 +102,10 @@ export const registerComputerPlayersModule = defineModule(
       }
     }
 
+    function spendableOf(player) {
+      return resourcesOf(state.get(), player)
+    }
+
     function nextMove(heroId) {
       return decideComputerHeroMove({
         state: state.get(),
@@ -108,7 +113,8 @@ export const registerComputerPlayersModule = defineModule(
         heroId,
         targets,
         routesOf,
-        definitions
+        definitions,
+        treasury: spendableOf(heroOwner(state.get(), heroId))
       })
     }
 
@@ -119,7 +125,8 @@ export const registerComputerPlayersModule = defineModule(
         state: state.get(),
         townId,
         buildings,
-        monsters
+        monsters,
+        treasury: spendableOf(townOwner(state.get(), townId))
       })) {
         emit(APP_COMMAND_TOWN_RECRUIT_REQUESTED, { entityId: townId, ...recruit })
       }
@@ -135,7 +142,13 @@ export const registerComputerPlayersModule = defineModule(
     }
 
     function recruitAtDwelling(heroId, dwellingId) {
-      const count = dwellingRecruitCount({ state: state.get(), dwellingId, heroId, definitions })
+      const count = dwellingRecruitCount({
+        state: state.get(),
+        dwellingId,
+        heroId,
+        definitions,
+        treasury: spendableOf(heroOwner(state.get(), heroId))
+      })
       if (count > 0) {
         emit(APP_COMMAND_DWELLING_RECRUIT_REQUESTED, { heroId, entityId: dwellingId, count })
       }

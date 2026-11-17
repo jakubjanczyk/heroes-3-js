@@ -93,9 +93,9 @@ function rewardsWorth(rewards, context) {
 }
 
 function visitWorth(target, context) {
-  const { state, heroId, hero, definitions } = context
+  const { state, heroId, hero, definitions, treasury } = context
   const entity = { id: target.id, kind: target.entityKind, type: target.type }
-  const offer = visitOffer({ state, definitions, entity, heroId })
+  const offer = visitOffer({ state, definitions, entity, heroId, treasury })
   if (!offer) {
     return 0
   }
@@ -125,12 +125,18 @@ function armyCost(army, definitions) {
 
 const aiValueOf = (creature, definitions) => definitions?.monsters?.[creature]?.aiValue ?? 0
 
-function dwellingWorth(target, { state, heroId, player, definitions }) {
+function dwellingWorth(target, { state, heroId, player, definitions, treasury }) {
   const creature = dwellingCreature(target.type, definitions)
   if (!creature) {
     return 0
   }
-  const recruits = dwellingRecruitCount({ state, dwellingId: target.id, heroId, definitions })
+  const recruits = dwellingRecruitCount({
+    state,
+    dwellingId: target.id,
+    heroId,
+    definitions,
+    treasury
+  })
   const growth = dwellingOwner(state, target.id) === player ? 0 : (creature.growth ?? 0)
   return (recruits + growth) * (creature.aiValue ?? 0)
 }
@@ -202,7 +208,7 @@ const WORTH_OF_KIND = Object.freeze({
 
 // What each of the hero's targets is worth to it, in gold; a creature's AI value counts as its
 // worth in gold, and a point of experience as one gold.
-export function createTargetWorth({ state, heroId, definitions }) {
+export function createTargetWorth({ state, heroId, definitions, treasury }) {
   const maxMovementPoints = heroMovementPoints(state, heroId)?.max || 1
   const context = {
     state,
@@ -210,6 +216,7 @@ export function createTargetWorth({ state, heroId, definitions }) {
     player: heroOwner(state, heroId),
     hero: heroById(state, heroId),
     definitions,
+    treasury,
     maxMovementPoints
   }
   return {
