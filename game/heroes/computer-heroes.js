@@ -95,9 +95,9 @@ function canTakeArtifact(state, target, { heroId, definitions }) {
 }
 
 // An object is worth a visit when it would give the hero something it would take.
-function gainsFromVisit(state, target, { heroId, definitions }) {
+function gainsFromVisit(state, target, { heroId, definitions, treasury }) {
   const entity = { id: target.id, kind: target.entityKind, type: target.type }
-  const offer = visitOffer({ state, definitions, entity, heroId })
+  const offer = visitOffer({ state, definitions, entity, heroId, treasury })
   return (
     offer !== null &&
     (offer.choices === null ||
@@ -110,9 +110,13 @@ const isWorthGoingTo = {
   [MOVEMENT_INTERACTION_KIND_RESOURCE_COLLECT]: (state, target) => !isRemoved(state, target.id),
   [MOVEMENT_INTERACTION_KIND_MINE_ENTER]: (state, target, { player }) =>
     mineOwner(state, target.id) !== player,
-  [MOVEMENT_INTERACTION_KIND_DWELLING_VISIT]: (state, target, { player, heroId, definitions }) =>
+  [MOVEMENT_INTERACTION_KIND_DWELLING_VISIT]: (
+    state,
+    target,
+    { player, heroId, definitions, treasury }
+  ) =>
     dwellingOwner(state, target.id) === player
-      ? dwellingRecruitCount({ state, dwellingId: target.id, heroId, definitions }) > 0
+      ? dwellingRecruitCount({ state, dwellingId: target.id, heroId, definitions, treasury }) > 0
       : canBeatGuards(state, target, { player, heroId, definitions }),
   [MOVEMENT_INTERACTION_KIND_MONSTER_COMBAT]: (state, target, { heroId, definitions }) =>
     !isRemoved(state, target.id) &&
@@ -305,13 +309,13 @@ function goTo(decision, candidates, order) {
 
 // A hero standing on another target is attacked as a hero, not as what it stands on, unless it
 // defends a town.
-function openTargets({ state, heroId, player, targets, definitions }) {
+function openTargets({ state, heroId, player, targets, definitions, treasury }) {
   return [
     ...targets.filter(
       (target) =>
         (target.kind === MOVEMENT_INTERACTION_KIND_TOWN_VISIT ||
           [null, heroId].includes(heroIdAt(state, target.tile))) &&
-        isWorthGoingTo[target.kind](state, target, { player, heroId, definitions })
+        isWorthGoingTo[target.kind](state, target, { player, heroId, definitions, treasury })
     ),
     ...enemyHeroTargets({ state, player, heroId, definitions })
   ]
@@ -330,7 +334,16 @@ function nearestTarget(decision, targets) {
   )
 }
 
-export function decideComputerHeroMove({ state, map, heroId, targets, routesOf, definitions }) {
+// `treasury` is what the hero's owner may spend on recruits and objects' prices.
+export function decideComputerHeroMove({
+  state,
+  map,
+  heroId,
+  targets,
+  routesOf,
+  definitions,
+  treasury
+}) {
   const player = heroOwner(state, heroId)
   const tile = heroTile(state, heroId)
   const decision = {
@@ -341,6 +354,7 @@ export function decideComputerHeroMove({ state, map, heroId, targets, routesOf, 
     tile,
     hero: heroById(state, heroId),
     definitions,
+    treasury,
     routes: routesOf(heroId),
     ownTowns: ownTownsOf(state, targets, player),
     dangerAt: createDangerMap({ state, player, heroId, routesOf, definitions })
