@@ -61,6 +61,43 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 
 - **8.4.8b**: a computer hero with no target explores to the explored, empty tile it can reach past no monster that shows it the most unexplored tiles for the days its route takes: the tiles its owner hasn't explored within 5 of it (passable or not), squared, over the route's movement points over the hero's maximum a day, ties to the nearer, then the top row, then the left. Any tile that would show one counts, so a hero whose edge tiles are blocked or guarded looks past them from further back. Keeping out of a stronger enemy's reach still comes first: the best tile out of it is taken. A stronger enemy hero reaches only ground its owner has explored.
 
+- **8.4.8c**: each morning a computer player's town aims for the building worth the most for its cost: the town's worth with it (five days of income, a week of growth at the best AI value of each tier) less without it, over its cost and that of the buildings it needs, at the resource prices. It aims only for a building it and its steps are at most a week of income away from. It builds the first step when it can pay for it. When it can't, it builds nothing and its owner keeps the step's cost back: its heroes recruit in towns and at dwellings, and pay for objects, only with what is left over. Only the first town that can't pay saves; the towns after it build what they can pay for from what is left. With nothing worth anything within reach, a town builds the first building of the Hall it can pay for. What is kept back is decided again when the turn is reloaded.
+
+## Plan for 8.4.8c
+
+A computer player's town builds what it gains most from for the cost, instead of in a fixed order. When it can't pay for that building yet, it builds nothing that day and its owner keeps the cost back: its heroes recruit, and pay for objects, only with what it has beyond that.
+
+Rules, as checked (the original game's AI is not documented, so the rules are ours; checked against the reference engine's AI. It sums a building's gains into a reward: a week of income at half its value, its dwelling's growth at the creatures' strength × 1.5, and the walls' share of the town's army. It counts a building's missing requirements in its cost. When it can't pay, it locks the building's cost so that recruiting and other purchases spend only the rest. A building it can't save for with its income is never chosen. Once something is locked, no other building is weighed that turn):
+
+- **What a building is worth**, in gold, as 8.4.8 counts a town's worth (five days of its income and a week of its dwellings' growth at the best AI value each tier recruits): the town's worth with it, less without it. That comes to:
+  - an income hall: five days of the income it adds (Town Hall 2500, City Hall 5000, Capitol 10000);
+  - a dwelling: a week of its creatures' growth (with the town's Citadel or Castle) at their AI value; an upgraded dwelling, that growth at the difference between the upgraded and plain creatures' AI values;
+  - a horde building (the Griffin Bastion): the creatures it adds a week at the best AI value of its tier that the town recruits;
+  - a Citadel or Castle: the week's growth it adds to the town's standing dwellings, at their best creatures' AI value;
+  - everything else (Fort, Tavern, Blacksmith, Marketplace, Resource Silo, Mage Guilds, Shipyard, Lighthouse, Stables, Brotherhood of the Sword): nothing of its own.
+- **What it costs**: its cost and that of every missing requirement on the way to it, at the resource prices of 8.4.8.
+- **Choosing**: the building with the highest worth for its cost, ties to the Hall's order. The town builds the first step towards it, requirements first as in 8.4.3, so a Tavern carries the Town Hall's worth.
+- **Within reach**: a building is aimed for only when blue's daily income makes up what it and every step to it are short of within a week. A building needing a resource blue has no income of, and not enough of, is passed over for the next best, so a town doesn't start on a chain it can't finish.
+- **Saving up**: when blue can't pay for the first step today, the town builds nothing that day and blue keeps the step's cost back.
+- **What is kept back**: blue's recruiting in towns and at dwellings, and the price of an object (Tree of Knowledge, schools), spend only what blue has beyond what it keeps back. An object whose price would dip into it is not a target.
+- **With nothing worth anything left** to build or save for, a town builds from the rest in the Hall's order, as now: what it can pay for today, nothing saved.
+- **What the player sees**: a town that builds nothing some days, and a hero that recruits fewer creatures or passes a Tree of Knowledge by. The player sees it in the town box's fort icon, the Thieves' Guild, the hero's army popup and the town screen once they take the town. Nothing opens on the player's screen.
+
+Decisions (agreed):
+
+- Worth for its cost, rather than the reference engine's reward divided by the days it takes to save. Both a hall's income and a dwelling's growth come back each week, so worth over cost measures how soon a building pays for itself.
+- One building saved for at a time, as in the reference engine. The towns decide in town-list order. The first that can't pay saves for its building. The towns after it build what they can pay for from what is left over, passing over the rest, and save for nothing.
+- Nothing is kept back once every town has built that day.
+- A building is aimed for, and saved for, only when it and its steps are at most a week of income away.
+- What is kept back is worked out from the state whenever it is needed, not saved, so a reload keeps it.
+
+Refactor first (commits at the start of the PR):
+
+- A town's worth is worked out from its buildings (`townDevelopmentWorth` in `computer-worth.js`), so the building choice in `computer-towns.js` weighs a building as the town's worth with it less without it.
+- `decideTownRecruits`, `dwellingRecruitCount` and `visitOffer` take the resources they may spend, instead of reading the owner's resources themselves. The player's visits pass in the player's resources.
+
+Left for later: a Mage Guild's worth once computer heroes cast (5.7b, agreed); saving for anything but a building (a boat, a hero in the tavern); trading at the Marketplace for what is missing; building walls first in a threatened town (8.4.8d, with the danger); the Resource Silo's income once it gives one.
+
 ## Plan for 8.4.8b
 
 A computer hero with no target goes exploring where it shows the most for the days it takes, instead of to the nearest tile on the edge of what its owner has explored: out into open ground rather than along the map's edge, which shows a sliver.
@@ -279,5 +316,4 @@ Agreed: build what can be paid for today, with no saving up (weighing comes with
 - With 8.4.7: a hero leaving a threatened town without taking the garrison it needs; casting Town Portal to get back; weighing danger rather than leaving such targets out (8.4.8d). Saving gold for a building instead of recruiting (8.4.8c), and going back to a town to recruit (8.4.8d).
 - With 8.4.8b: weighing a tile's reveal against a target's worth, so a hero explores before going far for a small target; counting what the route shows on the way; a hidden tile none of whose neighbours can be walked on left out; the Scouting skill's longer sight.
 - With 8.4.8: the army a battle would cost the hero, taken off a monster's or hero's worth; what a Stables' creature upgrade is worth; an enemy town's walls and the targets it leaves its owner without.
-- Saving up for a building, and choosing a town's building by what it is worth rather than a fixed order: 8.4.8c.
 - With 8.4.5: a computer hero casting, retreating or surrendering in battle (smarter combat AI, 5.7b); artifacts, chests and bonus objects as targets (8.4.7b); monsters offering to join or flee a stronger hero (5.2), which would apply to computer heroes too.

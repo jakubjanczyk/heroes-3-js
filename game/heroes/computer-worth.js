@@ -19,8 +19,9 @@ import { dwellingCreature } from './map-dwellings.js'
 import { PRIMARY_SKILLS } from './primary-skills.js'
 import { heroById } from './state/hero-details.js'
 import { dwellingOwner, monsterCount, treasureChestContents } from './state/map-objects.js'
-import { builtIn, dailyIncomeOf, townType } from './state/towns.js'
+import { builtIn, townType } from './state/towns.js'
 import { townBuildingsCatalogue } from './town-buildings.js'
+import { dailyIncomeOfTown } from './town-income.js'
 import { openChest } from './treasure-chest.js'
 import { bonusOnTheDay } from './visitable-objects/rewards.js'
 import { visitOffer } from './visitable-objects/visits.js'
@@ -42,7 +43,7 @@ const average = (values) =>
 
 const amountOf = (value) => Number(value) || 0
 
-function resourcesWorth(resources, definitions) {
+export function resourcesWorth(resources, definitions) {
   return Object.entries(resources ?? {}).reduce(
     (sum, [resourceType, amount]) =>
       sum + amountOf(amount) * (definitions?.resources?.[resourceType]?.price ?? 0),
@@ -93,9 +94,9 @@ function rewardsWorth(rewards, context) {
 }
 
 function visitWorth(target, context) {
-  const { state, heroId, hero, definitions } = context
+  const { state, heroId, hero, definitions, treasury } = context
   const entity = { id: target.id, kind: target.entityKind, type: target.type }
-  const offer = visitOffer({ state, definitions, entity, heroId })
+  const offer = visitOffer({ state, definitions, entity, heroId, treasury })
   if (!offer) {
     return 0
   }
@@ -125,37 +126,41 @@ function armyCost(army, definitions) {
 
 const aiValueOf = (creature, definitions) => definitions?.monsters?.[creature]?.aiValue ?? 0
 
-function dwellingWorth(target, { state, heroId, player, definitions }) {
+function dwellingWorth(target, { state, heroId, player, definitions, treasury }) {
   const creature = dwellingCreature(target.type, definitions)
   if (!creature) {
     return 0
   }
-  const recruits = dwellingRecruitCount({ state, dwellingId: target.id, heroId, definitions })
+  const recruits = dwellingRecruitCount({
+    state,
+    dwellingId: target.id,
+    heroId,
+    definitions,
+    treasury
+  })
   const growth = dwellingOwner(state, target.id) === player ? 0 : (creature.growth ?? 0)
   return (recruits + growth) * (creature.aiValue ?? 0)
 }
 
-// A week of each dwelling's creatures, the strongest a tier recruits.
-function townGrowthWorth(state, townId, definitions) {
-  const { buildings } = townBuildingsCatalogue(definitions, townType(state, townId))
-  const built = builtIn(state, townId)
+// A week of each dwelling's creatures at the strongest a tier recruits, and five days of income.
+export function townDevelopmentWorth({ buildings, built, definitions }) {
   const monsters = definitions?.monsters
   const growth = weeklyGrowthByTier({ buildings, built, monsters, flaggedDwellings: {} })
-  return recruitableCreaturesByTier({ buildings, built, monsters }).reduce(
+  const growthWorth = recruitableCreaturesByTier({ buildings, built, monsters }).reduce(
     (sum, creatures, tier) =>
       sum +
       (growth[tier] ?? 0) *
         Math.max(0, ...creatures.map((creature) => aiValueOf(creature, definitions))),
     0
   )
+  return (
+    INCOME_DAYS * resourcesWorth(dailyIncomeOfTown({ buildings, built }), definitions) + growthWorth
+  )
 }
 
 function townWorth(target, { state, definitions }) {
-  const income = dailyIncomeOf(state.towns.byId[target.id], definitions)
-  return (
-    INCOME_DAYS * resourcesWorth(income, definitions) +
-    townGrowthWorth(state, target.id, definitions)
-  )
+  const { buildings } = townBuildingsCatalogue(definitions, townType(state, target.id))
+  return townDevelopmentWorth({ buildings, built: builtIn(state, target.id), definitions })
 }
 
 function chestWorth(target, { state, hero, definitions }) {
@@ -202,7 +207,7 @@ const WORTH_OF_KIND = Object.freeze({
 
 // What each of the hero's targets is worth to it, in gold; a creature's AI value counts as its
 // worth in gold, and a point of experience as one gold.
-export function createTargetWorth({ state, heroId, definitions }) {
+export function createTargetWorth({ state, heroId, definitions, treasury }) {
   const maxMovementPoints = heroMovementPoints(state, heroId)?.max || 1
   const context = {
     state,
@@ -210,6 +215,7 @@ export function createTargetWorth({ state, heroId, definitions }) {
     player: heroOwner(state, heroId),
     hero: heroById(state, heroId),
     definitions,
+    treasury,
     maxMovementPoints
   }
   return {
