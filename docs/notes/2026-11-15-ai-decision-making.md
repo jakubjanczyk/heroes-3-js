@@ -16,7 +16,11 @@ Each part is one PR.
 6c. **8.4.6c Attacking the player's towns.** A town without defenders is taken; its garrison, or a hero in it with the garrison, defends it.
 7. **8.4.7 Threat response.** A weak computer hero keeps away from stronger enemy heroes; a hero goes back to defend its town when an enemy hero stronger than the garrison can reach it next day.
 7b. **8.4.7b Artifacts and map objects.** A computer hero's targets also take in artifacts (unguarded, or guarded by what it can beat), treasure chests, resource generators (windmills, water wheels), and the bonus and stat-boosting objects it would gain from, nearest first. Planned below.
-8. **8.4.8 Weighing goals.** Targets compared by what they are worth against the days they cost, instead of the nearest first.
+8. **8.4.8 Weighing goals**, in four parts (agreed):
+   - **8.4.8 Weighing targets.** A computer hero's targets are compared by what they are worth against the days they cost, instead of the nearest first. Planned below.
+   - **8.4.8b Exploring by what it reveals.** An exploration tile is chosen by the unexplored tiles it reveals against the days it costs, instead of the nearest.
+   - **8.4.8c Saving up.** A town's building is chosen by what it is worth rather than a fixed order, and its owner saves for it instead of recruiting or paying for an object.
+   - **8.4.8d Weighing danger and skills.** A target in a stronger enemy's reach is weighed down rather than left out, a Witch Hut's skill is weighed, and a hero goes back to a town to recruit.
 
 Difficulty levels are left out until a scenario setup screen can choose them (9.2); the computer players' starting resources (8.1.12) already depend on a difficulty.
 
@@ -52,6 +56,33 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 - **8.4.7**: a computer hero works out where each enemy hero on a tile its owner has explored can be next turn: every tile it reaches with its maximum movement points without a battle on the way (the deciding hero taken off the map, as it may move first). An enemy hero's strength is its army's total AI value times its Attack and Defense factor. A town of the computer player's that such a hero can reach and whose garrison (with a hero in it) isn't above that strength × 1.1 is threatened: a hero that can get into it today and would hold it (its army joined with the garrison above the enemy × 1.1) goes there first of all and stays while it is needed, the heroes deciding one after another so that only the first goes; a hero that couldn't hold it doesn't go. A hero an enemy it isn't above × 1.1 can reach next turn goes to the nearest tile it can reach today that none can (its own town's gate counting with the garrison), then decides again; with none, it goes on as before. Otherwise piles, mines, dwellings, monsters, towns, heroes and exploration tiles where it would stand within such an enemy's reach are not targets. The player sees the computer hero walk away, or into its town. `decideComputerHeroMove` takes `routesOf(heroId)`, and the routes can take a hero off the map.
 
 - **8.4.7b**: a computer hero's targets also take in artifacts (unguarded, or guarded by stacks it is stronger than, with room in its backpack), treasure chests, resource generators nobody has visited this week, and bonus and stat-boosting objects that would give it their rewards (not used up by it, no lasting bonus of their kind, requirements met, price payable), nearest first like the rest. An artifact's guards are fought unseen without the question; a picked-up artifact is worn where it fits. A chest's gold is taken as experience, an artifact chest's artifact is taken. A price is paid without the question (Tree of Knowledge, schools); a choice of rewards takes the lower of Attack and Defense, Attack on a tie, so the School of Magic is never a target. Nothing opens on the player's screen: the visit's message, choice and question are only for the viewing player's hero.
+
+- **8.4.8**: a computer hero goes to the target worth the most over the days its route takes (the route's movement points over the hero's maximum a day), ties to the nearer, then the top row, then the left. Worth is in gold: resources at 1 for gold, 250 for wood and ore, 500 for the rest (each resource's `price`); a pile its amount at that price; a mine and a town five days of their income, a town also a week of its dwellings' growth at their AI value; a dwelling the AI value of what the hero would recruit there, and a week's growth while it isn't its owner's; a monster the experience it gives; an enemy hero 1250, a fifth of its army's cost and the experience; an artifact its cost; a chest its experience or its artifact's cost; an object its rewards (experience 1, a primary skill 1000, a secondary skill 1000, morale or luck 250, movement its share of a day's 1000) less its price. Defending a town, keeping out of a stronger hero's reach and leaving out targets in it still come first; safe tiles and exploration are still the nearest. `visitOffer` also gives the rewards and the price.
+
+## Plan for 8.4.8
+
+A computer hero goes to the target worth the most for the days it takes to get there, instead of the nearest: a gold mine two days away before a wood pile next to it, a pile next to it before a mine a week away.
+
+Rules, as checked (the original game's AI is not documented, so the numbers are ours; checked against the reference engine's AI, which gives each goal a reward in gold and divides it by a function of the days the route takes):
+
+- **Days**: the movement points the route costs over the hero's maximum movement points a day, so half a day's walk is 0.5 days. A target's score is its worth over its days. Ties go to the nearer, then the top row, then the left. The reference engine divides by 0.75 + days^1.3, which punishes far targets more; we keep it linear (agreed).
+- **Resources**: gold 1 each, wood and ore 250, mercury, sulfur, crystal and gems 500 (the reference engine's resource prices; not found on the wiki, agreed).
+- **A pile**: its amount at those prices. The reference engine counts every gold pile 600 and any other pile 100.
+- **A mine**: five days of its income (the reference engine's), whoever owns it now: a Gold Mine 5000, a Sawmill 2500, a rare resource's mine 2500.
+- **A dwelling**: the AI value of the creatures the hero would recruit there now, plus a week's growth when its owner hasn't flagged it yet (the reference engine's army reward and army growth). A creature's AI value counts as its worth in gold, as in the reference engine.
+- **A monster**: the experience it gives (its total hit points). The reference engine weighs the army the battle would cost; we don't estimate losses (agreed).
+- **An enemy hero**: 1250, a fifth of its army's gold cost, and the experience (the reference engine's elimination reward, with our experience).
+- **A town**: five days of its income and a week's growth of its dwellings (agreed).
+- **An artifact**: its cost. **A chest**: the gold it holds, taken as experience, or its artifact's cost.
+- **A resource generator**: what it gives this week at the resource prices.
+- **A bonus or stat-boosting object**: its rewards added up: experience 1 a point, a level the experience it skips, a primary skill 1000 a point (a school's price), a secondary skill 1000, morale or luck 250 a point, movement points their share of a day's 1000, spell points nothing until computer heroes cast (5.7b); its price taken off (agreed).
+
+Decisions:
+
+- Defending a threatened town (8.4.7) and keeping out of a stronger hero's reach still come first, and a target in such a hero's reach is still left out (8.4.8d weighs it).
+- Exploration is still the nearest tile, and only when no target is reachable (8.4.8b).
+- The safe tiles a threatened hero goes to are still the nearest.
+- One refactor first: `computer-heroes.js` takes a target's worth from one table beside `isWorthGoingTo`, in its own module, and the choice of a target takes the comparison it sorts by, so targets are weighed while safe tiles and exploration stay nearest first.
 
 ## Plan for 8.4.7b
 
@@ -224,8 +255,9 @@ Agreed: build what can be paid for today, with no saving up (weighing comes with
 - With 8.4.6c: the walls in a computer hero's weighing of a town (4000 for a Citadel, 10000 for a Castle) come with sieges (5.10); a building that lets a hero defending a town retreat comes with the factions that have one (6.5); a computer hero learning spells in a Mage Guild of a town it walks into (5.7b); losing the last town (8.5).
 - With 8.4.6: a computer hero attacking another computer player's hero is fought unseen like its other battles, untested beyond the shared code; heroes in towns and towns are 8.4.6c.
 - With 8.4.6b: the computer refusing a surrender, and its hero casting, retreating or surrendering (5.7b); the retreat and surrender music; the attacker's ban on retreating after casting in the first round, which the reference engine has and the player's attacker doesn't yet.
-- With 8.4.7b: a computer hero choosing Power or Knowledge, and the School of Magic, once computer heroes cast spells (5.7b); weighing a Witch Hut's skill, and saving gold for an object instead of recruiting (8.4.8); a computer hero putting on a better artifact than the one it wears, or giving artifacts to its other heroes.
-- With 8.4.7: a hero leaving a threatened town without taking the garrison it needs; casting Town Portal to get back; weighing danger rather than leaving such targets out (8.4.8). Saving gold for a building instead of recruiting, and going back to a town to recruit: 8.4.8.
-- Exploring towards the tile that reveals the most for its cost, rather than the nearest: 8.4.8.
-- Saving up for a building, and choosing a town's building by what it is worth rather than a fixed order: 8.4.8.
+- With 8.4.7b: a computer hero choosing Power or Knowledge, and the School of Magic, once computer heroes cast spells (5.7b); weighing a Witch Hut's skill (8.4.8d), and saving gold for an object instead of recruiting (8.4.8c); a computer hero putting on a better artifact than the one it wears, or giving artifacts to its other heroes.
+- With 8.4.7: a hero leaving a threatened town without taking the garrison it needs; casting Town Portal to get back; weighing danger rather than leaving such targets out (8.4.8d). Saving gold for a building instead of recruiting (8.4.8c), and going back to a town to recruit (8.4.8d).
+- Exploring towards the tile that reveals the most for its cost, rather than the nearest: 8.4.8b.
+- With 8.4.8: the army a battle would cost the hero, taken off a monster's or hero's worth; what a Stables' creature upgrade is worth; an enemy town's walls and the targets it leaves its owner without.
+- Saving up for a building, and choosing a town's building by what it is worth rather than a fixed order: 8.4.8c.
 - With 8.4.5: a computer hero casting, retreating or surrendering in battle (smarter combat AI, 5.7b); artifacts, chests and bonus objects as targets (8.4.7b); monsters offering to join or flee a stronger hero (5.2), which would apply to computer heroes too.

@@ -205,21 +205,6 @@ describe('computer heroes going for artifacts and map objects behavior', () => {
       expect(getArtifactEntity()).toBeTruthy()
       expectHeroAt(10, 3, 'hero-2')
     })
-
-    // The artifact's neighbour (11, 3) is one step away, and the pile 13 more: 1400 of the day's
-    // 1500. The other way round, the 14 steps to the pile leave the artifact for another day.
-    test("blue's hero goes to the nearer of an artifact and a pile first", async () => {
-      await startBlueTurn(
-        anObjectScenario(
-          aBlueHero(),
-          anArtifact().withType('AXE').at(12, 3),
-          aResource().withId('pile').at(24, 3)
-        )
-      )
-
-      expect(getArtifactEntity()).toBeNull()
-      expectResourceNotPresent('pile')
-    })
   })
 
   describe('treasure chests', () => {

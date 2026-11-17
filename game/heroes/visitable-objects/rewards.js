@@ -10,7 +10,7 @@ function primarySkillsOf(reward) {
   )
 }
 
-function bonusOnTheDay({ byDay, morale = 0, luck = 0 }, state) {
+export function bonusOnTheDay({ byDay, morale = 0, luck = 0 }, state) {
   if (!byDay) {
     return { morale, luck }
   }
