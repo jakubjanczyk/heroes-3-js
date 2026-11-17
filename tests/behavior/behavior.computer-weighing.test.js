@@ -24,6 +24,7 @@ import {
   aMonster,
   anArtifact,
   anArtifactDefinition,
+  anObstacle,
   aResource,
   aScenario,
   aTown
@@ -247,5 +248,84 @@ describe('computer heroes weighing targets behavior', () => {
       expectResourcePresent('gems')
       expectResourceNotPresent('gold')
     })
+  })
+})
+
+const blueHeroTile = () => {
+  const { tileX, tileY } = getHeroEntity('hero-2').dataset
+  return { x: Number(tileX), y: Number(tileY) }
+}
+
+// Blue's hero at (7, 1) sees the columns 2 to 12, every row of the three. The player's hero is
+// walled in by rock in the far corner, out of the way.
+const anExploringScenario = (...entities) =>
+  aScenario()
+    .withSize(30, 3)
+    .withFogOfWar(true)
+    .withRockAround(29, 2)
+    .withEntities(aHero().at(29, 2), aBlueHero(7, 1), ...entities)
+    .withDefinitions(definitions)
+
+describe('computer heroes exploring by what it reveals behavior', () => {
+  // (2, 1) and (12, 1) are both 500 away. (2, 1) shows the 6 tiles of the two columns left of
+  // it, 36 squared over a third of a day, 108; (12, 1) the 15 tiles of the columns 13 to 17,
+  // 225 over a third, 675. From there (17, 1) shows the next 15 for 500, then (22, 1) the next.
+  test("blue's hero explores towards the wide ground rather than the strip at the map's edge", async () => {
+    await startBlueTurn(anExploringScenario())
+
+    expect(blueHeroTile()).toEqual({ x: 22, y: 1 })
+  })
+
+  // Exploring towards the wide ground, blue's hero sees the pile from (12, 1) and has 1000 left
+  // to pick it up.
+  test("blue's hero finds a pile while exploring the wide ground and picks it up", async () => {
+    await startBlueTurn(anExploringScenario(aPile('gold', 'GOLD_PILE', 15, 1)))
+
+    expectResourceNotPresent('gold')
+  })
+
+  // Blue's hero at 25 sees 20 to 29, and the rock at 20 stands on the only tile next to
+  // unexplored ground. From 21 it sees 16 to 19: 16 over 400/1500 days, 60, more than 22's 9
+  // over 300/1500, 45.
+  test("blue's hero walks to a tile that sees past a blocked edge of the ground it has explored", async () => {
+    await startBlueTurn(
+      aScenario()
+        .withSize(30)
+        .withFogOfWar(true)
+        .withEntities(aHero().at(0, 0), aBlueHero(25, 0), anObstacle().withType('ROCK').at(20, 0))
+        .withDefinitions({
+          ...definitions,
+          obstacles: { ROCK: { name: 'Rock', look: 'rock', blocks: [{ x: 0, y: 0 }] } }
+        })
+    )
+
+    expect(blueHeroTile()).toEqual({ x: 21, y: 0 })
+  })
+
+  // A red hero only reaches ground red has explored: its own sight, 18 to 28, and its mine's at
+  // (14, 0), 11 to 17, so it reaches 11 next turn but not blue's hero at 7, which sees 2 to 12.
+  // Blue's mine at (24, 0) shows blue the red hero. (12, 1) shows 10 tiles, 100 over a third of
+  // a day, 300, and (11, 1) 8, 240, but both are in red's reach; (10, 1) shows 6, 36 over
+  // 300/1500, 180, before (5, 1)'s 4, 16 over 200/1500, 120. From (10, 1) only (5, 1) is left.
+  test("blue's hero explores to the best tile out of a stronger red hero's reach", async () => {
+    await startBlueTurn(
+      aScenario()
+        .withSize(40, 2)
+        .withFogOfWar(true)
+        .withEntities(
+          aHero().withPrimarySkills(NO_SKILLS).withArmy(ARMY_THAT_WINS).at(23, 1),
+          aHero()
+            .withId('hero-2')
+            .ownedBy('blue')
+            .withPrimarySkills(NO_SKILLS)
+            .withArmy([{ creature: 'SKELETON', count: 10 }])
+            .at(7, 1),
+          aMine().withId('mine-1').ownedBy('red').at(14, 0),
+          aMine().withId('mine-2').ownedBy('blue').at(24, 0)
+        )
+        .withDefinitions(definitions)
+    )
+
+    expect(blueHeroTile()).toEqual({ x: 5, y: 1 })
   })
 })

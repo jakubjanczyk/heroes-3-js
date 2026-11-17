@@ -59,6 +59,26 @@ The game's own AI is not documented; what the computer does is ours to decide. O
 
 - **8.4.8**: a computer hero goes to the target worth the most over the days its route takes (the route's movement points over the hero's maximum a day), ties to the nearer, then the top row, then the left. Worth is in gold: resources at 1 for gold, 250 for wood and ore, 500 for the rest (each resource's `price`); a pile its amount at that price; a mine and a town five days of their income, a town also a week of its dwellings' growth at their AI value; a dwelling the AI value of what the hero would recruit there, and a week's growth while it isn't its owner's; a monster the experience it gives; an enemy hero 1250, a fifth of its army's cost and the experience; an artifact its cost; a chest its experience or its artifact's cost; an object its rewards (experience 1, a primary skill 1000, a secondary skill 1000, morale or luck 250, movement its share of a day's 1000) less its price. Defending a town, keeping out of a stronger hero's reach and leaving out targets in it still come first; safe tiles and exploration are still the nearest. `visitOffer` also gives the rewards and the price.
 
+- **8.4.8b**: a computer hero with no target explores to the explored, empty tile it can reach past no monster that shows it the most unexplored tiles for the days its route takes: the tiles its owner hasn't explored within 5 of it (passable or not), squared, over the route's movement points over the hero's maximum a day, ties to the nearer, then the top row, then the left. Any tile that would show one counts, so a hero whose edge tiles are blocked or guarded looks past them from further back. Keeping out of a stronger enemy's reach still comes first: the best tile out of it is taken. A stronger enemy hero reaches only ground its owner has explored.
+
+## Plan for 8.4.8b
+
+A computer hero with no target goes exploring where it shows the most for the days it takes, instead of to the nearest tile on the edge of what its owner has explored: out into open ground rather than along the map's edge, which shows a sliver.
+
+Rules, as checked (the original game's AI is not documented, so the rule is ours; checked against the reference engine's AI, which scores a tile by the hidden tiles in the hero's sight from it, squared, over the movement points the route costs, and scans the tiles on the edge of what is explored first, then those further in when none of them will do):
+
+- **What a tile reveals**: the tiles its owner hasn't explored within the hero's sight of it (5 tiles, measured as the fog of war measures it), counting only the tile the hero ends on, not the steps on the way. Tiles that can't be walked on count as well (agreed); the reference engine leaves out a hidden tile none of whose neighbours can be walked on.
+- **Score**: the tiles revealed, squared, over the days the route takes (its movement points over the hero's maximum a day, as for targets), the highest first, ties to the nearer, then the top row, then the left. Squared, as in the reference engine: counted plainly, a step that reveals a single tile scores as well as five steps that reveal five, so the hero would creep a tile at a time and decide again after each.
+- **Which tiles**: every explored, empty, passable tile the hero can reach past no monster that would reveal at least one tile, not only those touching unexplored ground. A hero whose edge tiles are blocked (an obstacle or a hero on them) still explores from a tile further in that sees past them; today it stays.
+- The hero then decides again on arrival, as now, so a pile it finds is picked up the same day.
+
+Decisions:
+
+- Exploration still waits until no target is reachable (8.4.2): a tile's reveal isn't weighed against a target's worth in gold.
+- Keeping out of a stronger enemy hero's reach still comes first: the best tile out of its reach is taken (8.4.7).
+- With fog of war off, or nothing left to reveal within reach, the hero stays where it is.
+- No refactor first: the exploration tiles go through the same choice as targets, with the tiles they reveal as their worth and the squared score as their order.
+
 ## Plan for 8.4.8
 
 A computer hero goes to the target worth the most for the days it takes to get there, instead of the nearest: a gold mine two days away before a wood pile next to it, a pile next to it before a mine a week away.
@@ -257,7 +277,7 @@ Agreed: build what can be paid for today, with no saving up (weighing comes with
 - With 8.4.6b: the computer refusing a surrender, and its hero casting, retreating or surrendering (5.7b); the retreat and surrender music; the attacker's ban on retreating after casting in the first round, which the reference engine has and the player's attacker doesn't yet.
 - With 8.4.7b: a computer hero choosing Power or Knowledge, and the School of Magic, once computer heroes cast spells (5.7b); weighing a Witch Hut's skill (8.4.8d), and saving gold for an object instead of recruiting (8.4.8c); a computer hero putting on a better artifact than the one it wears, or giving artifacts to its other heroes.
 - With 8.4.7: a hero leaving a threatened town without taking the garrison it needs; casting Town Portal to get back; weighing danger rather than leaving such targets out (8.4.8d). Saving gold for a building instead of recruiting (8.4.8c), and going back to a town to recruit (8.4.8d).
-- Exploring towards the tile that reveals the most for its cost, rather than the nearest: 8.4.8b.
+- With 8.4.8b: weighing a tile's reveal against a target's worth, so a hero explores before going far for a small target; counting what the route shows on the way; a hidden tile none of whose neighbours can be walked on left out; the Scouting skill's longer sight.
 - With 8.4.8: the army a battle would cost the hero, taken off a monster's or hero's worth; what a Stables' creature upgrade is worth; an enemy town's walls and the targets it leaves its owner without.
 - Saving up for a building, and choosing a town's building by what it is worth rather than a fixed order: 8.4.8c.
 - With 8.4.5: a computer hero casting, retreating or surrendering in battle (smarter combat AI, 5.7b); artifacts, chests and bonus objects as targets (8.4.7b); monsters offering to join or flee a stronger hero (5.2), which would apply to computer heroes too.
