@@ -12,10 +12,10 @@ import {
 } from '../state/queries.js'
 import { hasFullBackpack } from './artifacts.js'
 import { computerChoiceAt } from './computer-choices.js'
-import { dwellingRecruitCount } from './computer-recruiting.js'
+import { dwellingRecruitCount, stacksLedOutOfTown } from './computer-recruiting.js'
 import { canBeat, heroStrength, outmatches } from './computer-strength.js'
 import { createDangerMap } from './computer-threats.js'
-import { createTargetWorth } from './computer-worth.js'
+import { createTargetWorth, heroRisk, teachesWorthlessSkill } from './computer-worth.js'
 import {
   MOVEMENT_INTERACTION_KIND_ARTIFACT_PICK_UP,
   MOVEMENT_INTERACTION_KIND_BONUS_OBJECT_VISIT,
@@ -38,7 +38,8 @@ import {
   mineOwner,
   monsterCount
 } from './state/map-objects.js'
-import { townGarrison, townIdAt, townOwner } from './state/towns.js'
+import { townGarrison, townIdAt, townOwner, townType } from './state/towns.js'
+import { townBuildingsCatalogue } from './town-buildings.js'
 import { joinGarrison } from './town-garrison.js'
 import { visitOffer } from './visitable-objects/visits.js'
 
@@ -76,13 +77,34 @@ function townDefenders(state, target) {
     : joinGarrison(heroById(state, defenderId).army, garrison).army
 }
 
-function canTakeTown(state, target, { player, heroId, definitions }) {
+function canTakeTown(state, target, { heroId, definitions }) {
   const defenders = townDefenders(state, target).filter(Boolean)
   return (
-    townOwner(state, target.id) !== player &&
-    (defenders.length === 0 ||
-      canBeat({ hero: heroById(state, heroId), enemyArmy: defenders, definitions }))
+    defenders.length === 0 ||
+    canBeat({ hero: heroById(state, heroId), enemyArmy: defenders, definitions })
   )
+}
+
+// Its owner's town, with no hero in it, the hero goes back to for what it would lead out.
+function leadsOutOf(state, target, { heroId, definitions, treasury }) {
+  const { buildings } = townBuildingsCatalogue(definitions, townType(state, target.id))
+  return (
+    heroIdAt(state, target.tile) === null &&
+    stacksLedOutOfTown({
+      state,
+      townId: target.id,
+      heroId,
+      buildings,
+      monsters: definitions?.monsters,
+      treasury
+    }).length > 0
+  )
+}
+
+function isTownWorthGoingTo(state, target, context) {
+  return townOwner(state, target.id) === context.player
+    ? leadsOutOf(state, target, context)
+    : canTakeTown(state, target, context)
 }
 
 function canTakeArtifact(state, target, { heroId, definitions }) {
@@ -95,15 +117,17 @@ function canTakeArtifact(state, target, { heroId, definitions }) {
   )
 }
 
-// An object is worth a visit when it would give the hero something it would take.
-function gainsFromVisit(state, target, { heroId, definitions, treasury }) {
+// An object is worth a visit when it would give the hero something it would take, as far as its
+// owner knows what the object gives.
+function gainsFromVisit(state, target, { player, heroId, definitions, treasury }) {
+  const hero = heroById(state, heroId)
   const entity = { id: target.id, kind: target.entityKind, type: target.type }
-  const offer = visitOffer({ state, definitions, entity, heroId, treasury })
+  const offer = visitOffer({ state, definitions, entity, heroId, treasury, seenBy: player })
   return (
     offer !== null &&
+    !teachesWorthlessSkill(offer.rewards, { hero, definitions }) &&
     (offer.choices === null ||
-      computerChoiceAt({ hero: heroById(state, heroId), choices: offer.choices, definitions }) !==
-        null)
+      computerChoiceAt({ hero, choices: offer.choices, definitions }) !== null)
   )
 }
 
@@ -126,7 +150,7 @@ const isWorthGoingTo = {
       enemyArmy: [{ creature: target.type, count: monsterCount(state, target.id) ?? target.count }],
       definitions
     }),
-  [MOVEMENT_INTERACTION_KIND_TOWN_VISIT]: canTakeTown,
+  [MOVEMENT_INTERACTION_KIND_TOWN_VISIT]: isTownWorthGoingTo,
   [MOVEMENT_INTERACTION_KIND_ARTIFACT_PICK_UP]: canTakeArtifact,
   [MOVEMENT_INTERACTION_KIND_TREASURE_CHEST_OPEN]: (state, target) => !isRemoved(state, target.id),
   [MOVEMENT_INTERACTION_KIND_RESOURCE_GENERATOR_VISIT]: gainsFromVisit,
@@ -286,17 +310,25 @@ function safeTilesToday(decision) {
   return reachable.filter(({ tile }, index) => isSafeAt(decision, tile, danger[index]))
 }
 
-// The best of the candidates out of an enemy's reach if there is one, else as before.
-function goTo(decision, candidates, worthOf) {
+// Where a stronger enemy hero can reach it next turn, a target is worth less what the hero risks
+// there; an exploration tile there isn't one. A hero already in such reach goes to the best
+// target out of it, else to the best as it is.
+function goTo(decision, candidates, { worthOf, risk = null }) {
   const order = byWorthForDays(decision.maxMovementPoints)
   const reachable = reachableByCost(candidates, decision.routes)
     .map((candidate) => ({ ...candidate, worth: worthOf(candidate.target) }))
     .sort(order)
   const danger = decision.dangerAt(reachable.map(standingTile))
-  const best = reachable.find((candidate, index) =>
-    isSafeAt(decision, standingTile(candidate), danger[index])
-  )
-  return best ?? (decision.isThreatened ? reachable[0] : undefined)
+  const weighed = reachable
+    .flatMap((candidate, index) => {
+      if (isSafeAt(decision, standingTile(candidate), danger[index])) {
+        return [candidate]
+      }
+      const worth = candidate.worth - risk
+      return risk !== null && !decision.isThreatened && worth > 0 ? [{ ...candidate, worth }] : []
+    })
+    .sort(order)
+  return weighed[0] ?? (decision.isThreatened ? reachable[0] : undefined)
 }
 
 // A hero standing on another target is attacked as a hero, not as what it stands on, unless it
@@ -314,12 +346,14 @@ function openTargets({ state, heroId, player, targets, definitions, treasury }) 
 }
 
 function bestTarget(decision, targets) {
-  const { state, player, map, routes } = decision
+  const { state, player, map, routes, hero, definitions } = decision
   const { worthOf } = createTargetWorth(decision)
   const exploration = () => explorationTiles({ state, player, map, isEmpty: routes.isEmpty })
   return (
-    goTo(decision, openTargets({ ...decision, targets }), worthOf) ??
-    goTo(decision, exploration(), revealWorth)
+    goTo(decision, openTargets({ ...decision, targets }), {
+      worthOf,
+      risk: heroRisk(hero, definitions)
+    }) ?? goTo(decision, exploration(), { worthOf: revealWorth })
   )
 }
 
@@ -361,5 +395,6 @@ export function decideComputerHeroMove({
   if (!nearest || decision.routes.chargeStepsToday(nearest.path).length === 0) {
     return null
   }
+  console.log('MOVE', heroId, JSON.stringify(nearest.path), nearest.target?.id)
   return movesTo(nearest)
 }

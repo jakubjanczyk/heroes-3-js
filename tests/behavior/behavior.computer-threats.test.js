@@ -207,13 +207,21 @@ describe('computer heroes keeping away from threats behavior', () => {
       expectResourceNotPresent('pile')
     })
 
+    // Blue's hero has no room for the Colossus, so it has nothing to go back for either.
     test('no blue hero goes back to a town whose garrison is stronger than the red hero', async () => {
+      const sevenStacks = [
+        ...weaklings(20),
+        ...['PEASANT', 'IMP', 'SKELETON', 'PIKEMAN', 'ARCHER', 'GRIFFIN'].map((creature) => ({
+          creature,
+          count: 1
+        }))
+      ]
       await startBlueTurn(
         aTownScenario({
           garrison: [{ creature: 'COLOSSUS', count: 1 }],
           entities: [
             aRedHero(7, weaklings(10), 2),
-            aBlueHero(26, weaklings(20), 2),
+            aBlueHero(26, sevenStacks, 2),
             aPile('pile', 30, 2)
           ]
         })

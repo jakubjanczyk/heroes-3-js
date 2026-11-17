@@ -5,11 +5,13 @@ import { resourcesOf } from '../state/kingdoms.js'
 import { hasBeenInside, visitableValues, wasVisitedThisWeek } from '../state/map-objects.js'
 import { canAfford } from '../treasury.js'
 import {
+  choicesOf,
   describePrice,
   fillText,
   fillValues,
   isVisitableObject,
   rollMissingValues,
+  rollsPer,
   visitableDefinition
 } from './definitions.js'
 import { describeRewards, gainsOf } from './rewards.js'
@@ -157,13 +159,26 @@ export function resolveVisit({ state, definitions, entity, heroId, random }) {
   }
 }
 
+// A value the object shows only once a hero of `player`'s has been inside (in its status text)
+// is `{ oneOf }` the values it could be until then.
+function valuesSeenBy(context, definition, player) {
+  if (!player || hasBeenInside(context.state, context.entity.id, player)) {
+    return context
+  }
+  const hidden = rollsPer(definition, 'game')
+    .filter(([name]) => definition.statusText?.includes(`{${name}}`))
+    .map(([name, roll]) => [name, { oneOf: choicesOf(roll, context.definitions) }])
+  return { ...context, values: { ...context.values, ...Object.fromEntries(hidden) } }
+}
+
 // What a visit would offer the hero, without rolling anything: the choices of rewards, each
 // as its gains, or none for an object with no choice; the rewards as the object's data has them,
-// with the values known so far, and the price; null when the hero would get nothing, or when
-// `treasury` (the owner's resources by default) can't pay the price.
-export function visitOffer({ state, definitions, entity, heroId, treasury }) {
-  const context = contextOf({ state, definitions, entity, heroId, treasury })
+// with the values known so far (to `seenBy`, when given), and the price; null when the hero would
+// get nothing, or when `treasury` (the owner's resources by default) can't pay the price.
+export function visitOffer({ state, definitions, entity, heroId, treasury, seenBy }) {
   const definition = visitableDefinition(definitions, entity)
+  const known = contextOf({ state, definitions, entity, heroId, treasury })
+  const context = known && valuesSeenBy(known, definition, seenBy)
   if (!context || refusalOf(definition, context)) {
     return null
   }

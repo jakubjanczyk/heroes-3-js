@@ -17,3 +17,12 @@ export function computerChoiceAt({ hero, choices, definitions }) {
   const [lowest] = options.sort((a, b) => a.value - b.value || a.index - b.index)
   return lowest ? String(lowest.index) : null
 }
+
+// Of a level-up's skill offers, the one worth most to a computer hero, the first on a tie.
+export function computerSkillOffer(skillOffers, definitions) {
+  const worthOf = ({ skill }) => definitions?.secondarySkills?.[skill]?.worth ?? 0
+  return skillOffers.reduce(
+    (best, offer) => (worthOf(offer) > worthOf(best) ? offer : best),
+    skillOffers[0]
+  )
+}

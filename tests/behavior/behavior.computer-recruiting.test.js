@@ -6,6 +6,7 @@ import {
   confirmTileClickByDispatch,
   expectHeroAt,
   expectResourceNotPresent,
+  getHeroEntity,
   holdRightButtonOn
 } from './adventure-map.utils.js'
 import { clickEndTurn, readArmySlots } from './adventure-panels.utils.js'
@@ -354,6 +355,129 @@ describe('computer heroes recruiting behavior', () => {
 
   // Blue's town saves for its Town Hall, 2 ore short with an Ore Pit's 2 a day, and blue keeps its
   // 7000 gold and 12 ore: 500 of blue's 7500 gold is left to recruit with.
+  describe('going back to recruit', () => {
+    // Blue's hero starts seven steps east of its town's entrance.
+    const AWAY = { x: 22, y: 4 }
+
+    test("blue's hero walks back to its town and leads out the creatures blue recruits there", async () => {
+      const { user } = await setupApp(
+        aTownScenario({ entities: [aBlueTown(['GUARDHOUSE']), aBlueHero().at(AWAY.x, AWAY.y)] })
+      )
+
+      await endTurn(user)
+
+      expect(await readBlueArmyAt(user, TOWN)).toEqual([
+        'Swordsmen 2',
+        'Pikemen 14',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
+
+    test("blue's hero walks back to take a garrison left in its town", async () => {
+      const { user } = await setupApp(
+        aTownScenario({
+          entities: [
+            aBlueTown().withGarrison([{ creature: 'GRIFFIN', count: 3 }]),
+            aBlueHero().at(AWAY.x, AWAY.y)
+          ]
+        })
+      )
+
+      await endTurn(user)
+
+      expect(await readBlueArmyAt(user, TOWN)).toEqual([
+        'Swordsmen 2',
+        'Griffins 3',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
+
+    test("blue's hero doesn't go back to a town with nothing to recruit or take", async () => {
+      const { user } = await setupApp(
+        aTownScenario({ entities: [aBlueTown(), aBlueHero().at(AWAY.x, AWAY.y)] })
+      )
+
+      await endTurn(user)
+
+      expectHeroAt(AWAY.x, AWAY.y, 'hero-2')
+    })
+
+    // The blue hero in the town has no room for the Pikemen it recruits, so they stay in the
+    // garrison.
+    test("blue's hero doesn't go back to a town another blue hero stands in", async () => {
+      const sevenStacks = [
+        'ARCHER',
+        'GRIFFIN',
+        'SWORDSMAN',
+        'MONK',
+        'CAVALIER',
+        'ANGEL',
+        'IMP'
+      ].map((creature) => ({ creature, count: 1 }))
+      const { user } = await setupApp(
+        aTownScenario({
+          entities: [
+            aBlueTown(['GUARDHOUSE']),
+            aHero().withId('blue-guard').ownedBy('blue').withArmy(sevenStacks).at(TOWN.x, TOWN.y),
+            aBlueHero().at(AWAY.x, AWAY.y)
+          ]
+        })
+      )
+
+      await endTurn(user)
+
+      expectHeroAt(AWAY.x, AWAY.y, 'hero-2')
+    })
+
+    // Blue keeps 7000 of its 7500 gold for its Town Hall; 500 doesn't pay for a Pikeman at 600.
+    test("blue's hero doesn't go back for creatures blue can only pay for with what it keeps for a building", async () => {
+      const { user } = await setupApp(
+        aTownScenario({
+          entities: [
+            aBlueTown(['TAVERN', 'GUARDHOUSE']),
+            aBlueHero().at(AWAY.x, AWAY.y),
+            aMine().withType('ORE_PIT').ownedBy('blue').at(26, 4)
+          ],
+          definitions: definitionsWith({
+            buildingCosts: { TOWN_HALL: { GOLD_PILE: 7000, ORE_PILE: 12 } },
+            creatureCosts: { PIKEMAN: { GOLD_PILE: 600 } }
+          })
+        })
+      )
+
+      await endTurn(user)
+
+      expectHeroAt(AWAY.x, AWAY.y, 'hero-2')
+    })
+
+    // The gems (1500) six steps east score 3750; the Pikeman's 80 seven steps west, 171. From the
+    // gems, the town is more than the rest of the day away.
+    test("blue's hero goes for a richer target before walking back for a few creatures", async () => {
+      const { user } = await setupApp(
+        aTownScenario({
+          entities: [
+            aBlueTown().withGarrison([{ creature: 'PIKEMAN', count: 1 }]),
+            aBlueHero().at(AWAY.x, AWAY.y),
+            aResource().withId('gems').withType('GEMS_PILE').at(28, 4)
+          ]
+        })
+      )
+
+      await endTurn(user)
+
+      expectResourceNotPresent('gems')
+      expect(Number(getHeroEntity('hero-2').dataset.tileX)).toBeGreaterThan(TOWN.x)
+    })
+  })
+
   describe('while blue saves for a building', () => {
     const savingDefinitions = () =>
       definitionsWith({ buildingCosts: { TOWN_HALL: { GOLD_PILE: 7000, ORE_PILE: 12 } } })

@@ -224,29 +224,70 @@ describe('computer heroes weighing targets behavior', () => {
     })
   })
 
-  describe('what still comes first', () => {
-    // The red hero reaches the tiles up to 15 next turn: the gems at 14 are in its reach, the gold
-    // at 27 isn't.
-    test("blue's hero leaves alone a richer pile a stronger red hero can reach next turn", async () => {
+  describe('weighing danger', () => {
+    // The red hero reaches the tiles up to 15 next turn: the gems at 14 are in its reach, the
+    // piles at 27 aren't. A target in its reach is worth less what blue's hero risks there: its
+    // army's AI value (60 a Skeleton) and 1250 for the hero.
+    const aDangerScenario = (blueArmy, blueX, ...entities) =>
+      aScenario()
+        .withSize(40, 2)
+        .withEntities(
+          aHero().withPrimarySkills(NO_SKILLS).withArmy(ARMY_THAT_WINS).at(0, 0),
+          aHero()
+            .withId('hero-2')
+            .ownedBy('blue')
+            .withPrimarySkills(NO_SKILLS)
+            .withArmy(blueArmy)
+            .at(blueX, 0),
+          ...entities
+        )
+        .withDefinitions(definitions)
+
+    const SKELETONS = (count) => [{ creature: 'SKELETON', count }]
+
+    // 10 Skeletons risk 1850: the gems are still worth 650 to blue's hero, over 0.4 days.
+    test("blue's weak hero takes a richer pile a stronger red hero can reach next turn", async () => {
       await startBlueTurn(
-        aScenario()
-          .withSize(40)
-          .withEntities(
-            aHero().withPrimarySkills(NO_SKILLS).withArmy(ARMY_THAT_WINS).at(0, 0),
-            aHero()
-              .withId('hero-2')
-              .ownedBy('blue')
-              .withPrimarySkills(NO_SKILLS)
-              .withArmy([{ creature: 'SKELETON', count: 10 }])
-              .at(20, 0),
-            aPile('gems', 'GEMS_PILE', 14, 0),
-            aPile('gold', 'GOLD_PILE', 27, 0)
-          )
-          .withDefinitions(definitions)
+        aDangerScenario(
+          SKELETONS(10),
+          20,
+          aPile('gems', 'GEMS_PILE', 14, 0),
+          aPile('gold', 'GOLD_PILE', 27, 0)
+        )
+      )
+
+      expectResourceNotPresent('gems')
+    })
+
+    // 40 Skeletons risk 3650, more than the gems' 2500.
+    test("blue's strong hero leaves alone a pile a stronger red hero can reach next turn, worth less than its army", async () => {
+      await startBlueTurn(
+        aDangerScenario(
+          SKELETONS(40),
+          20,
+          aPile('gems', 'GEMS_PILE', 14, 0),
+          aPile('gold', 'GOLD_PILE', 27, 0)
+        )
       )
 
       expectResourcePresent('gems')
       expectResourceNotPresent('gold')
+    })
+
+    // The gems' 650 over 0.4 days score 1625; the wood's 1250 over 7 tiles' 0.47 days, 2678.
+    // Without the danger, the gems would score 6250.
+    test("blue's hero prefers a pile out of red's reach to a richer one in it when the danger outweighs the difference", async () => {
+      await startBlueTurn(
+        aDangerScenario(
+          SKELETONS(10),
+          20,
+          aPile('gems', 'GEMS_PILE', 14, 0),
+          aPile('wood', 'WOOD_PILE', 27, 0)
+        )
+      )
+
+      expectResourceNotPresent('wood')
+      expectResourcePresent('gems')
     })
   })
 })
@@ -307,6 +348,7 @@ describe('computer heroes exploring by what it reveals behavior', () => {
   // Blue's mine at (24, 0) shows blue the red hero. (12, 1) shows 10 tiles, 100 over a third of
   // a day, 300, and (11, 1) 8, 240, but both are in red's reach; (10, 1) shows 6, 36 over
   // 300/1500, 180, before (5, 1)'s 4, 16 over 200/1500, 120. From (10, 1) only (5, 1) is left.
+  // 70 Skeletons risk 5450 in the red hero's reach, more than the Gold Mine's 5000.
   test("blue's hero explores to the best tile out of a stronger red hero's reach", async () => {
     await startBlueTurn(
       aScenario()
@@ -318,7 +360,7 @@ describe('computer heroes exploring by what it reveals behavior', () => {
             .withId('hero-2')
             .ownedBy('blue')
             .withPrimarySkills(NO_SKILLS)
-            .withArmy([{ creature: 'SKELETON', count: 10 }])
+            .withArmy([{ creature: 'SKELETON', count: 70 }])
             .at(7, 1),
           aMine().withId('mine-1').ownedBy('red').at(14, 0),
           aMine().withId('mine-2').ownedBy('blue').at(24, 0)
