@@ -14,6 +14,16 @@ import {
   visitableDefinition
 } from '../visitable-objects/definitions.js'
 
+// A player out of the game leaves their mines and dwellings without a flag.
+function unflagObjectsOf(objects, { player }) {
+  return Object.fromEntries(
+    Object.entries(objects).map(([objectId, object]) => [
+      objectId,
+      object.owner === player ? { ...object, owner: null } : object
+    ])
+  )
+}
+
 export const minesSlice = {
   key: 'mines',
   initial: ({ scenario }) =>
@@ -26,7 +36,8 @@ export const minesSlice = {
     'fact.mine.captured': (mines, { entityId, owner = DEFAULT_PLAYER }) =>
       mines[entityId] && mines[entityId].owner !== owner
         ? { ...mines, [entityId]: { ...mines[entityId], owner } }
-        : mines
+        : mines,
+    'fact.player.vanquished': unflagObjectsOf
   }
 }
 
@@ -77,7 +88,8 @@ export const dwellingsSlice = {
       })),
     'fact.dwelling.guards.changed': (dwellings, { entityId, count }) =>
       updateDwelling(dwellings, entityId, () => ({ guards: count })),
-    'fact.turn.ended': renewWeeklyGrowth
+    'fact.turn.ended': renewWeeklyGrowth,
+    'fact.player.vanquished': unflagObjectsOf
   }
 }
 

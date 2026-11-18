@@ -20,6 +20,7 @@ import {
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
+  APP_FACT_PLAYER_VANQUISHED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY,
   APP_UI_CAMERA_UPDATED,
@@ -391,6 +392,14 @@ export const registerMinimapViewModule = defineModule(
           handler: (event) => renderFlaggedObjectTiles(event.detail.entityId)
         },
         {
+          type: APP_FACT_PLAYER_VANQUISHED,
+          handler: () => {
+            for (const entityId of flaggedObjectTilesById.keys()) {
+              renderFlaggedObjectTiles(entityId)
+            }
+          }
+        },
+        {
           type: APP_FACT_TOWN_CAPTURED,
           handler: () => {
             renderTowns()
@@ -420,6 +429,7 @@ export const registerMinimapViewModule = defineModule(
       APP_FACT_ENTITY_REMOVED,
       APP_FACT_DWELLING_FLAGGED,
       APP_FACT_MINE_CAPTURED,
+      APP_FACT_PLAYER_VANQUISHED,
       APP_FACT_TOWN_CAPTURED,
       APP_UI_CAMERA_UPDATED,
       APP_UI_DEV_FOG_OF_WAR_CHANGED

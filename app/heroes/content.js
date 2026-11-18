@@ -8,6 +8,8 @@ import { registerBattleViewModule } from './modules/battle-view.module.js'
 import { registerComputerPlayersModule } from './modules/computer-players.module.js'
 import { registerDwellingRecruitViewModule } from './modules/dwelling-recruit-view.module.js'
 import { registerDwellingsModule } from './modules/dwellings.module.js'
+import { registerGameEndModule } from './modules/game-end.module.js'
+import { registerGameEndViewModule } from './modules/game-end-view.module.js'
 import { registerHeroArmyModule } from './modules/hero-army.module.js'
 import { registerHeroArtifactsModule } from './modules/hero-artifacts.module.js'
 import { registerHeroExchangeViewModule } from './modules/hero-exchange-view.module.js'
@@ -71,7 +73,9 @@ export const heroesAppContent = Object.freeze({
     registerScholarModule,
     registerAdventureSpellsModule,
     registerComputerPlayersModule,
+    registerGameEndModule,
     registerOwnerFlagViewModule,
+    registerGameEndViewModule,
     registerMinimapViewModule,
     registerMinimapShieldViewModule,
     registerHudModule,

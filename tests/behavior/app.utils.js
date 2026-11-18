@@ -56,6 +56,24 @@ export function createMemoryEventLog() {
   }
 }
 
+// A window whose reload is only counted, so a test can boot the app again itself after a reset.
+export function createWindowWithReloadSpy(baseWindow = window) {
+  const reloadCalls = []
+  const envWindow = Object.create(baseWindow)
+  Object.defineProperty(envWindow, 'location', {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: {
+      reload() {
+        reloadCalls.push('reload')
+      }
+    }
+  })
+
+  return { envWindow, reloadCalls }
+}
+
 export function createLoadGame({
   width = 4,
   height = 1,
@@ -63,6 +81,7 @@ export function createLoadGame({
   roads,
   startingResources,
   fogOfWar = false,
+  standardVictoryAndLoss = false,
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
@@ -80,6 +99,7 @@ export function createLoadGame({
       terrain: { width, height, tiles: terrainTiles, ...(roads ? { roads: [...roads] } : {}) },
       entities: scenarioEntities,
       fogOfWar,
+      standardVictoryAndLoss,
       ...(startingResources ? { startingResources: { ...startingResources } } : {})
     },
     definitions: {

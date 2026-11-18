@@ -213,7 +213,10 @@ export const aScenario = () =>
       definitions: {},
       startingResources: {},
       // On in the game; off here so a test sees the whole map unless it is about fog of war.
-      fogOfWar: false
+      fogOfWar: false,
+      // On in the game; off here so beating the only enemy, or losing the only hero, doesn't end
+      // the game unless the test is about that.
+      standardVictoryAndLoss: false
     },
     (scenario) => ({
       withSize(width, height = 1) {
@@ -237,6 +240,9 @@ export const aScenario = () =>
             }
           }
         }
+      },
+      withStandardVictoryAndLoss() {
+        scenario.standardVictoryAndLoss = true
       },
       withoutStartingResources() {
         delete scenario.startingResources

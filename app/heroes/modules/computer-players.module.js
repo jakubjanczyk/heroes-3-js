@@ -28,6 +28,7 @@ import { isTownNextToWater, townBuildingsCatalogue } from '../../../game/heroes/
 import { leftOver } from '../../../game/heroes/treasury.js'
 import {
   activePlayer,
+  gameResult,
   heroIdsOf,
   heroOwner,
   heroTile,
@@ -177,6 +178,10 @@ export const registerComputerPlayersModule = defineModule(
     }
 
     function playNextMove() {
+      if (gameResult(state.get())) {
+        turn = null
+        return
+      }
       while (turn.heroIds.length > 0) {
         const [heroId] = turn.heroIds
         // A hero beaten in battle is no longer on the map.
@@ -237,7 +242,14 @@ export const registerComputerPlayersModule = defineModule(
     function playIfComputersTurn() {
       const current = state.get()
       const player = activePlayer(current)
-      if (isRestoring || turn || !routePlanner || !player || player === viewingPlayer(current)) {
+      if (
+        isRestoring ||
+        turn ||
+        !routePlanner ||
+        !player ||
+        player === viewingPlayer(current) ||
+        gameResult(current)
+      ) {
         return
       }
 
