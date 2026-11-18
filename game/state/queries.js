@@ -14,8 +14,26 @@ export function isDayOver(state) {
   return activePlayer(state) === null
 }
 
+// The players still in the game, in the order they take their turns.
 export function playerColors(state) {
-  return state.players.colors
+  const { colors, vanquished = [] } = state.players
+  return vanquished.length > 0 ? colors.filter((color) => !vanquished.includes(color)) : colors
+}
+
+export function isStandardVictoryAndLossOn(state) {
+  return state.players.standardVictoryAndLoss !== false
+}
+
+// 'defeat' once the player is out of the game, 'victory' once every other player is.
+export function gameResult(state) {
+  const { colors, vanquished = [], humanPlayer } = state.players
+  if (vanquished.includes(humanPlayer)) {
+    return 'defeat'
+  }
+  const enemies = colors.filter((color) => color !== humanPlayer)
+  return enemies.length > 0 && enemies.every((color) => vanquished.includes(color))
+    ? 'victory'
+    : null
 }
 
 // Every other player is an enemy until there are teams.

@@ -42,6 +42,7 @@
     <link rel="preload" href="./game/ui/mage-guild.css" as="style" />
     <link rel="preload" href="./game/ui/secondary-skill-icon.css" as="style" />
     <link rel="preload" href="./game/ui/morale-luck.css" as="style" />
+    <link rel="preload" href="./game/ui/game-end.css" as="style" />
     <link rel="preload" href="./app/modules/dev/bus-dev-panel.css" as="style" />
     <link rel="modulepreload" href="./app/boot-app.js" />
     <link rel="modulepreload" href="./engine/bus.js" />
@@ -160,6 +161,9 @@
     <link rel="modulepreload" href="./app/heroes/modules/dwelling-recruit-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/presentation/recruit-window.js" />
     <link rel="modulepreload" href="./app/heroes/modules/dwellings.module.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/game-end.module.js" />
+    <link rel="modulepreload" href="./game/heroes/game-end.js" />
+    <link rel="modulepreload" href="./app/heroes/modules/game-end-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-army.module.js" />
     <link rel="modulepreload" href="./game/heroes/army-exchange.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-artifacts.module.js" />
@@ -852,6 +856,21 @@
               <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
             </button>
           </div>
+        </section>
+      </div>
+    </template>
+
+    <!--
+      The end of the game over the locked map: Victorious or Defeated, the message the game ended
+      with, and Restart, which starts the scenario again.
+    -->
+    <template id="game-end-template">
+      <div class="town-hall-backdrop game-end-backdrop">
+        <section class="game-end message-box" role="dialog" aria-modal="true" aria-labelledby="game-end-title" tabindex="-1">
+          <h3 class="window-title" id="game-end-title"></h3>
+          <div class="game-end__flag" role="img"></div>
+          <p class="game-end__text"></p>
+          <button class="game-end__restart" type="button">Restart</button>
         </section>
       </div>
     </template>

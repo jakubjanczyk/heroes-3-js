@@ -199,6 +199,50 @@
   font-size: var(--font-size-2xs);
 }
 
+/* A player's flag, as on the map but large enough to stand for the player. */
+.interaction-modal__choice-picture--flag {
+  --flag-colour: var(--neutral-grey);
+
+  inline-size: 2.75rem;
+  block-size: 2rem;
+  aspect-ratio: auto;
+  border: 2px solid color-mix(in oklab, black 58%, var(--flag-colour));
+  background: var(--flag-colour);
+  box-shadow: 0 1px 3px color-mix(in oklab, black 70%, transparent);
+
+  &[data-player="red"] {
+    --flag-colour: var(--player-red);
+  }
+
+  &[data-player="blue"] {
+    --flag-colour: var(--player-blue);
+  }
+
+  &[data-player="tan"] {
+    --flag-colour: var(--player-tan);
+  }
+
+  &[data-player="green"] {
+    --flag-colour: var(--player-green);
+  }
+
+  &[data-player="orange"] {
+    --flag-colour: var(--player-orange);
+  }
+
+  &[data-player="purple"] {
+    --flag-colour: var(--player-purple);
+  }
+
+  &[data-player="teal"] {
+    --flag-colour: var(--player-teal);
+  }
+
+  &[data-player="pink"] {
+    --flag-colour: var(--player-pink);
+  }
+}
+
 /* Skills have two caption lines (level over name), so "or" sits higher to stay level with them. */
 .interaction-modal__choices:has([data-initials]) .interaction-modal__choice-or {
   margin-block-end: 2.8rem;

@@ -6,6 +6,7 @@ import {
   APP_FACT_HERO_HIRED,
   APP_FACT_HERO_MOVED,
   APP_FACT_MINE_CAPTURED,
+  APP_FACT_PLAYER_VANQUISHED,
   APP_FACT_TOWN_CAPTURED,
   APP_FACT_WORLD_READY
 } from '../../events.js'
@@ -30,9 +31,20 @@ export const registerOwnerFlagViewModule = defineModule(
       }
     }
 
+    // A flag left on what no longer has an owner, a player out of the game's mine, comes down.
+    function removeFlagsOfUnowned(ownedIds) {
+      for (const flag of entityLayer?.querySelectorAll('.owner-flag') ?? []) {
+        const entityId = flag.closest('[data-entity-id]')?.dataset.entityId
+        if (entityId && !ownedIds.has(entityId)) {
+          flag.remove()
+        }
+      }
+    }
+
     // The map draws its objects again when a hero comes onto it, so every flag is put back each time.
     function showAllFlags() {
       const current = state.get()
+      const allOwnedIds = new Set()
       for (const player of playerColors(current)) {
         const ownedIds = [
           ...heroIdsOf(current, player),
@@ -42,8 +54,10 @@ export const registerOwnerFlagViewModule = defineModule(
         ]
         for (const entityId of ownedIds) {
           showFlagOn(entityId, player)
+          allOwnedIds.add(entityId)
         }
       }
+      removeFlagsOfUnowned(allOwnedIds)
     }
 
     return {
@@ -53,7 +67,8 @@ export const registerOwnerFlagViewModule = defineModule(
         { type: APP_FACT_HERO_MOVED, handler: showAllFlags },
         { type: APP_FACT_DWELLING_FLAGGED, handler: showAllFlags },
         { type: APP_FACT_MINE_CAPTURED, handler: showAllFlags },
-        { type: APP_FACT_TOWN_CAPTURED, handler: showAllFlags }
+        { type: APP_FACT_TOWN_CAPTURED, handler: showAllFlags },
+        { type: APP_FACT_PLAYER_VANQUISHED, handler: showAllFlags }
       ]
     }
   },
@@ -66,7 +81,8 @@ export const registerOwnerFlagViewModule = defineModule(
       APP_FACT_HERO_MOVED,
       APP_FACT_MINE_CAPTURED,
       APP_FACT_DWELLING_FLAGGED,
-      APP_FACT_TOWN_CAPTURED
+      APP_FACT_TOWN_CAPTURED,
+      APP_FACT_PLAYER_VANQUISHED
     ],
     produces: []
   }
