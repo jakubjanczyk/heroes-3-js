@@ -34,3 +34,12 @@ Left for later: the other special victory conditions (creatures, upgrading a tow
 - The texts (agreed for 8.5.1): the player losing their last hero and town sees "All your forces have been defeated, and you are banished from this land!" (660); another player losing theirs, "%s has been vanquished!" (5). The seven days' texts 7 and 8 stay for 8.5.2.
 - The end of the game (agreed for 8.5.1, for now): the message with the player's flag, then the map locked under a Victorious or Defeated window with a Restart button that starts the scenario again. Later, the proper ending: the victory or defeat video, the score and the Hall of Fame, and the way back to a main menu once there is one (8.5.5, 9.2).
 - A scenario switch, `standardVictoryAndLoss`, on unless the scenario turns it off; the test builder turns it off, as it does fog of war, so a test that beats the only enemy hero or loses the only hero doesn't end the game unless it is about that (agreed for 8.5.1).
+
+## Built in 8.5.1
+
+- The check runs after a hero leaves the map (beaten, retreated, surrendered) and after a town changes owner, once that has settled, so the battle results, captured artifacts and level-up windows come first. Every player with no hero on the map and no town is out (`fact.player.vanquished`, saved); a computer player going out is announced with its flag, then the victory or defeat message with the player's flag, then the end window.
+- A player who is out has their mines and dwellings unflagged, is skipped in the turn order, and is left out wherever the players in the game are listed: the Thieves' Guild, the kingdom overview's Enemies, the new day's movement points.
+- After the game ends, the computer player whose turn it was stops, End Turn does nothing, and every click and key outside the end window is stopped. A reload opens the end window again, without the message.
+- The scenario switch is `standardVictoryAndLoss` (on unless set to `false`).
+
+Left for later parts: the days without a town (8.5.2), the scenario's own victory and loss conditions (8.5.3, 8.5.4), and the end in numbers with the proper ending (8.5.5).

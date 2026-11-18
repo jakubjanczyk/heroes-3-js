@@ -492,3 +492,12 @@ export function readHeroListSpellPoints() {
   const bar = within(getHeroList()).getByRole('progressbar', { name: 'Spell points' })
   return { value: bar.getAttribute('aria-valuenow'), max: bar.getAttribute('aria-valuemax') }
 }
+
+// The window the game ends with, 'Victorious' or 'Defeated'.
+export function queryGameEndWindow(name) {
+  return screen.queryByRole('dialog', { name })
+}
+
+export async function restartGame(user, name) {
+  await user.click(within(queryGameEndWindow(name)).getByRole('button', { name: 'Restart' }))
+}

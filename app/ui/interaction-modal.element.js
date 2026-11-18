@@ -185,12 +185,17 @@ function renderQuestionButtons(host, { isQuestion, canCancel }) {
   }
 }
 
-function renderChoicePicture(document, { picture, initials, isSpellScroll, isArtifact }) {
+function renderChoicePicture(document, { picture, initials, isSpellScroll, isArtifact, player }) {
   const icon = document.createElement('span')
   icon.className = 'interaction-modal__choice-picture'
   icon.classList.toggle('interaction-modal__choice-picture--spell-scroll', Boolean(isSpellScroll))
   icon.classList.toggle('interaction-modal__choice-picture--artifact', Boolean(isArtifact))
   icon.setAttribute('aria-hidden', 'true')
+  // A player's flag, in their colour.
+  if (player) {
+    icon.classList.add('interaction-modal__choice-picture--flag')
+    icon.dataset.player = player
+  }
   if (picture) {
     icon.style.backgroundImage = `url('${picture}')`
   }

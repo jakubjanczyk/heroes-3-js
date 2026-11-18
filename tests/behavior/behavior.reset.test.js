@@ -7,25 +7,13 @@ import {
   expectCalendarDate,
   expectMovementPoints
 } from './adventure-panels.utils.js'
-import { createMemoryEventLog, flushMicrotasks, setupMovementBehaviorApp } from './app.utils.js'
+import {
+  createMemoryEventLog,
+  createWindowWithReloadSpy,
+  flushMicrotasks,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import { aScenario } from './builders.js'
-
-function createWindowWithReloadSpy(baseWindow = window) {
-  const reloadCalls = []
-  const envWindow = Object.create(baseWindow)
-  Object.defineProperty(envWindow, 'location', {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    value: {
-      reload() {
-        reloadCalls.push('reload')
-      }
-    }
-  })
-
-  return { envWindow, reloadCalls }
-}
 
 describe('reset session behavior', () => {
   test('given persisted progress when player clicks Reset then session is cleared and next boot starts from initial scenario', async () => {

@@ -596,6 +596,21 @@
       </div>
     </template>
 
+    <!--
+      The end of the game over the locked map: Victorious or Defeated, the message the game ended
+      with, and Restart, which starts the scenario again.
+    -->
+    <template id="game-end-template">
+      <div class="town-hall-backdrop game-end-backdrop">
+        <section class="game-end message-box" role="dialog" aria-modal="true" aria-labelledby="game-end-title" tabindex="-1">
+          <h3 class="window-title" id="game-end-title"></h3>
+          <div class="game-end__flag" role="img"></div>
+          <p class="game-end__text"></p>
+          <button class="game-end__restart" type="button">Restart</button>
+        </section>
+      </div>
+    </template>
+
     <!-- Advanced Town Portal: the player's towns without a hero in them, one to pick. -->
     <template id="town-portal-template">
       <div class="town-hall-backdrop">

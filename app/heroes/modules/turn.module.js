@@ -1,6 +1,6 @@
 import { calendarDateOfTurn } from '../../../game/heroes/calendar.js'
 import { decideNewDay, decideSpendMovementPoints } from '../../../game/heroes/turn-system.js'
-import { activePlayer, isDayOver, viewingPlayer } from '../../../game/state/queries.js'
+import { activePlayer, gameResult, isDayOver, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_END_TURN_REQUESTED,
   APP_COMMAND_TURN_SPEND_MOVEMENT_POINTS_REQUESTED,
@@ -90,7 +90,7 @@ export const registerTurnModule = defineModule(
           handler: (event) => {
             const current = state.get()
             const player = event.detail?.player ?? viewingPlayer(current)
-            if (!current || player !== activePlayer(current)) {
+            if (!current || player !== activePlayer(current) || gameResult(current)) {
               return
             }
             if (player === viewingPlayer(current) && (isMoving || now() < suppressEndTurnUntil)) {

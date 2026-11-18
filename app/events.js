@@ -93,6 +93,7 @@ export const APP_FACT_PREVIEW_CLEARED = 'fact.preview.cleared'
 // A player's turn is over; the new day is APP_FACT_TURN_ENDED, once every player's turn is.
 export const APP_FACT_PLAYER_TURN_ENDED = 'fact.player.turn.ended'
 export const APP_FACT_TURN_ENDED = 'fact.turn.ended'
+export const APP_FACT_PLAYER_VANQUISHED = 'fact.player.vanquished'
 export const APP_FACT_BATTLE_STARTED = 'fact.battle.started'
 // The battle is over and its results window is open; it ends when the player closes the window.
 export const APP_FACT_BATTLE_FINISHED = 'fact.battle.finished'
@@ -207,6 +208,7 @@ export const APP_UI_DWELLING_RECRUIT_UPDATED = 'ui.dwelling.recruit.updated'
 export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
 export const APP_UI_THIEVES_GUILD_UPDATED = 'ui.thievesGuild.updated'
 export const APP_UI_MAGE_GUILD_UPDATED = 'ui.mageGuild.updated'
+export const APP_UI_GAME_ENDED = 'ui.game.ended'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 
 const APP_PERSISTED_FACT_TYPES = new Set([
@@ -219,6 +221,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_INTERACTIONS_QUEUED,
   APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_TURN_ENDED,
+  APP_FACT_PLAYER_VANQUISHED,
   APP_FACT_BATTLE_STARTED,
   APP_FACT_BATTLE_FINISHED,
   APP_FACT_BATTLE_ENDED,

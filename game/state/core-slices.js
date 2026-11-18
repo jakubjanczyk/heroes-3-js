@@ -55,13 +55,20 @@ export function playerColorsOf(scenario) {
   return PLAYER_COLORS.filter((color) => owners.has(color))
 }
 
+// The first player after `index` in colour order who is still in the game.
+function nextPlayerInGame(players, index) {
+  return players.colors.slice(index).find((color) => !players.vanquished.includes(color)) ?? null
+}
+
 const playersSlice = {
   key: 'players',
   initial: ({ scenario }) => ({
     colors: playerColorsOf(scenario),
     humanPlayer: DEFAULT_PLAYER,
     activePlayer: DEFAULT_PLAYER,
-    selectedHeroIds: {}
+    selectedHeroIds: {},
+    vanquished: [],
+    standardVictoryAndLoss: scenario?.standardVictoryAndLoss !== false
   }),
   on: {
     'fact.hero.selected': (players, { heroId, player = DEFAULT_PLAYER }) => ({
@@ -70,13 +77,17 @@ const playersSlice = {
     }),
     'fact.player.turn.ended': (players, { player }) => ({
       ...players,
-      activePlayer: players.colors[players.colors.indexOf(player) + 1] ?? null
+      activePlayer: nextPlayerInGame(players, players.colors.indexOf(player) + 1)
     }),
     'fact.turn.ended': (players) => ({
       ...players,
-      activePlayer: players.colors[0],
+      activePlayer: nextPlayerInGame(players, 0),
       selectedHeroIds: {}
-    })
+    }),
+    'fact.player.vanquished': (players, { player }) =>
+      players.vanquished.includes(player)
+        ? players
+        : { ...players, vanquished: [...players.vanquished, player] }
   }
 }
 
