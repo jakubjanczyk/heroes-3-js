@@ -1,6 +1,15 @@
-import { GAME_END_MESSAGES, playerName, vanquishedMessage } from '../../../game/heroes/game-end.js'
-import { townIdsOf } from '../../../game/heroes/state/towns.js'
 import {
+  banishedMessage,
+  daysLeftMessage,
+  GAME_END_MESSAGES,
+  isBanished,
+  playerBanishedMessage,
+  playerName,
+  vanquishedMessage
+} from '../../../game/heroes/game-end.js'
+import { daysWithoutTownOf, townIdsOf } from '../../../game/heroes/state/towns.js'
+import {
+  activePlayer,
   gameResult,
   heroIdsOf,
   isStandardVictoryAndLossOn,
@@ -9,8 +18,10 @@ import {
 } from '../../../game/state/queries.js'
 import {
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_PLAYER_VANQUISHED,
   APP_FACT_TOWN_CAPTURED,
+  APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_GAME_ENDED,
   APP_UI_INTERACTION_MODAL_CONFIRMED,
@@ -31,6 +42,7 @@ export const registerGameEndModule = defineModule(
   ({ emit, state }) => {
     let isRestoring = false
     let isCheckQueued = false
+    let isWarningQueued = false
 
     function announce(message, player, subject = null) {
       emit(APP_UI_NOTICE_OPENED, { title: null, message, rewards: [flagOf(player)], subject })
@@ -43,10 +55,21 @@ export const registerGameEndModule = defineModule(
       }
     }
 
+    const isGameOn = (current) =>
+      !isRestoring && isStandardVictoryAndLossOn(current) && !gameResult(current)
+
+    function announceGameEnd(message) {
+      const result = gameResult(state.get())
+      if (result) {
+        const viewing = viewingPlayer(state.get())
+        announce(message ?? GAME_END_MESSAGES[result], viewing, GAME_END_SUBJECT)
+      }
+    }
+
     function checkPlayers() {
       isCheckQueued = false
       const current = state.get()
-      if (isRestoring || !isStandardVictoryAndLossOn(current) || gameResult(current)) {
+      if (!isGameOn(current)) {
         return
       }
 
@@ -55,10 +78,46 @@ export const registerGameEndModule = defineModule(
       )) {
         vanquish(player)
       }
+      announceGameEnd()
+    }
 
-      const result = gameResult(state.get())
-      if (result) {
-        announce(GAME_END_MESSAGES[result], viewingPlayer(current), GAME_END_SUBJECT)
+    // The player is told at once; a computer player's heroes leave the map, back to the taverns.
+    function banish(player) {
+      const current = state.get()
+      emit(APP_FACT_PLAYER_VANQUISHED, { player })
+      if (player === viewingPlayer(current)) {
+        announceGameEnd(playerBanishedMessage(player))
+        return
+      }
+      announce(banishedMessage(player), player)
+      for (const heroId of heroIdsOf(current, player)) {
+        emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
+      }
+      announceGameEnd()
+    }
+
+    function checkDaysWithoutTown(player) {
+      const current = state.get()
+      if (isGameOn(current) && isBanished(daysWithoutTownOf(current, player))) {
+        banish(player)
+      }
+    }
+
+    function warnPlayerWithoutTown() {
+      isWarningQueued = false
+      const current = state.get()
+      const player = viewingPlayer(current)
+      const days = daysWithoutTownOf(current, player)
+      if (isGameOn(current) && activePlayer(current) === player && days !== null) {
+        announce(daysLeftMessage(player, days), player)
+      }
+    }
+
+    // After the new day's own windows (a new week).
+    function queueTurnStartWarning() {
+      if (!isRestoring && !isWarningQueued) {
+        isWarningQueued = true
+        queueMicrotask(warnPlayerWithoutTown)
       }
     }
 
@@ -84,9 +143,18 @@ export const registerGameEndModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: () => {
             isCheckQueued = false
+            isWarningQueued = false
           }
         },
         { type: APP_FACT_ENTITY_REMOVED, handler: queueCheck },
+        {
+          type: APP_FACT_PLAYER_TURN_ENDED,
+          handler: (event) => {
+            checkDaysWithoutTown(event.detail?.player)
+            queueTurnStartWarning()
+          }
+        },
+        { type: APP_FACT_TURN_ENDED, handler: queueTurnStartWarning },
         { type: APP_FACT_TOWN_CAPTURED, handler: queueCheck },
         {
           type: APP_UI_INTERACTION_MODAL_CONFIRMED,
@@ -113,11 +181,18 @@ export const registerGameEndModule = defineModule(
     consumes: [
       APP_FACT_WORLD_READY,
       APP_FACT_ENTITY_REMOVED,
+      APP_FACT_PLAYER_TURN_ENDED,
+      APP_FACT_TURN_ENDED,
       APP_FACT_TOWN_CAPTURED,
       APP_UI_INTERACTION_MODAL_CONFIRMED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED
     ],
-    produces: [APP_FACT_PLAYER_VANQUISHED, APP_UI_NOTICE_OPENED, APP_UI_GAME_ENDED]
+    produces: [
+      APP_FACT_PLAYER_VANQUISHED,
+      APP_FACT_ENTITY_REMOVED,
+      APP_UI_NOTICE_OPENED,
+      APP_UI_GAME_ENDED
+    ]
   }
 )

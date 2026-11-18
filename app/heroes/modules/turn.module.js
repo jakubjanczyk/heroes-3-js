@@ -98,7 +98,7 @@ export const registerTurnModule = defineModule(
             }
 
             emit(APP_FACT_PLAYER_TURN_ENDED, { player })
-            if (isDayOver(state.get())) {
+            if (isDayOver(state.get()) && !gameResult(state.get())) {
               startNewDay()
             }
           }
