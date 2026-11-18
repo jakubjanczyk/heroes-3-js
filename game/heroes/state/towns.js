@@ -39,6 +39,15 @@ function growCreatures(town, definitions, mapDwellings) {
   return { available: growth.map((amount, index) => (town.available[index] ?? 0) + amount) }
 }
 
+// Days without a town, per player: 0 when they lose their last one, then one more at the end of
+// each of their turns without one; none while they own a town.
+function countDaysAfterCapture(daysWithoutTown, previousOwner, owner, idsByOwner) {
+  const { [owner]: _cleared, ...days } = daysWithoutTown
+  return previousOwner && idsByOwner[previousOwner].length === 0
+    ? { ...days, [previousOwner]: 0 }
+    : days
+}
+
 function captureTown(towns, { entityId, owner = DEFAULT_PLAYER }) {
   const town = towns.byId[entityId]
   if (!town || town.owner === owner) {
@@ -53,9 +62,19 @@ function captureTown(towns, { entityId, owner = DEFAULT_PLAYER }) {
   )
 
   return {
+    ...towns,
     byId: { ...towns.byId, [entityId]: { ...town, owner } },
-    idsByOwner: { ...idsByOwner, [owner]: [...(idsByOwner[owner] ?? []), entityId] }
+    idsByOwner: { ...idsByOwner, [owner]: [...(idsByOwner[owner] ?? []), entityId] },
+    daysWithoutTown: countDaysAfterCapture(towns.daysWithoutTown, town.owner, owner, idsByOwner)
   }
+}
+
+function countDayWithoutTown(towns, { player }) {
+  if ((towns.idsByOwner[player] ?? []).length > 0) {
+    return towns
+  }
+  const days = towns.daysWithoutTown[player] ?? 0
+  return { ...towns, daysWithoutTown: { ...towns.daysWithoutTown, [player]: days + 1 } }
 }
 
 // A dwelling just built has a week of its creature's own growth (no Citadel or Castle bonus until
@@ -134,11 +153,13 @@ export const townsSlice = {
       byId: Object.fromEntries(
         towns.map((town) => [town.id, initialTown(town, definitions, mapDwellings)])
       ),
-      idsByOwner
+      idsByOwner,
+      daysWithoutTown: {}
     }
   },
   on: {
     'fact.town.captured': captureTown,
+    'fact.player.turn.ended': countDayWithoutTown,
     'fact.town.building.built': buildBuilding,
     'fact.town.creatures.recruited': recruitCreatures,
     'fact.town.garrison.changed': (towns, { entityId, garrison }) =>
@@ -153,6 +174,10 @@ export function townOwner(state, townId) {
 
 export function townIdsOf(state, player) {
   return state.towns.idsByOwner[player] ?? []
+}
+
+export function daysWithoutTownOf(state, player) {
+  return state.towns.daysWithoutTown?.[player] ?? null
 }
 
 export function viewingPlayersTownIds(state) {
