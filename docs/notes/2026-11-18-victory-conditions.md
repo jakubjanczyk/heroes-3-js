@@ -43,3 +43,25 @@ Left for later: the other special victory conditions (creatures, upgrading a tow
 - The scenario switch is `standardVictoryAndLoss` (on unless set to `false`).
 
 Left for later parts: the days without a town (8.5.2), the scenario's own victory and loss conditions (8.5.3, 8.5.4), and the end in numbers with the proper ending (8.5.5).
+
+## Plan for 8.5.2
+
+The rules and texts above were checked again for this part: the four texts against the wiki's `GENRLTXT.TXT` (7, 8) and `ARRAYTXT.TXT` (128, 129), the count and when it is checked against the engine (the count goes up at the end of the player's own turn while they have no town, a town lost sets it to 0, a town captured clears it, 7 or more is the loss, checked right after that turn ends).
+
+- The count, per player: none while they own a town; 0 when they lose their last one; one more at the end of each of their turns without a town (a player who starts with none goes from none to 1); cleared when they capture a town. So the days left depend on whose turn the town was lost in: lost in another player's turn, the player's next turn says 7 days left; the player starting without a town sees nothing on day 1 and 6 days left on day 2.
+- At the start of the player's turn without a town: "Red, you only have N days left to capture a town or you will be banished from this land." (N = 7 − the count), or at a count of 6 "Red, this is your last day to capture a town or you will be banished from this land.", with their flag. Computer players see nothing.
+- At the end of a turn that takes the count to 7, the player is out (the same vanquished fact as 8.5.1, so their mines and dwellings lose their flag and they take no more turns):
+  - the player: "Red, your heroes abandon you, and you are banished from this land." with their flag, then the Defeated window, their heroes still on the map under it;
+  - a computer player: "Blue's heroes have abandoned him, and he is banished from this land." with its flag; its heroes leave the map. If it was the last enemy, the victory message and the Victorious window follow.
+- A banished computer player's heroes go back to the taverns, as a beaten hero does: the next heroes the taverns roll can be any of them (agreed for 8.5.2).
+- After a reload the days-left message is not shown again, as 8.5.1's messages aren't; the count itself is rebuilt from the saved facts (agreed for 8.5.2).
+- All of it only with `standardVictoryAndLoss` on, as the rest of the standard loss.
+
+## Built in 8.5.2
+
+- The towns state keeps each player's days without a town; it is rebuilt from the saved turn ends and town captures, so no new fact is saved.
+- The check runs as each player's turn ends; a player banished goes out with the same saved fact as in 8.5.1. A computer player's heroes are taken off the map, so the taverns can offer them again. The player's heroes stay, and the day doesn't move on under the Defeated window.
+- The days-left message opens once the player's turn has started, after the new week's message.
+
+Left for later parts: the scenario's own victory and loss conditions (8.5.3, 8.5.4), and the end in numbers with the proper ending (8.5.5).
+
