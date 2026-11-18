@@ -68,7 +68,9 @@ const playersSlice = {
     activePlayer: DEFAULT_PLAYER,
     selectedHeroIds: {},
     vanquished: [],
-    standardVictoryAndLoss: scenario?.standardVictoryAndLoss !== false
+    winner: null,
+    standardVictoryAndLoss: scenario?.standardVictoryAndLoss !== false,
+    standardVictory: scenario?.victoryCondition?.standardVictory !== false
   }),
   on: {
     'fact.hero.selected': (players, { heroId, player = DEFAULT_PLAYER }) => ({
@@ -84,6 +86,7 @@ const playersSlice = {
       activePlayer: nextPlayerInGame(players, 0),
       selectedHeroIds: {}
     }),
+    'fact.player.won': (players, { player }) => ({ ...players, winner: player }),
     'fact.player.vanquished': (players, { player }) =>
       players.vanquished.includes(player)
         ? players

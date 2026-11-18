@@ -1138,12 +1138,13 @@ In fourteen parts. See `docs/notes/2026-11-15-ai-decision-making.md`. Difficulty
 - [x] 8.4.8d Weighing danger and skills: a target in a stronger enemy's reach weighed down rather than left out, a Witch Hut's skill weighed, a hero going back to a town to recruit
 
 ### 8.5 Victory Conditions
-In five parts. See `docs/notes/2026-11-18-victory-conditions.md`.
+In six parts. See `docs/notes/2026-11-18-victory-conditions.md`.
 - [x] 8.5.1 Defeat all enemies: a player with no town and no hero is out; a computer player's mines and dwellings go neutral and it takes no more turns; the last one out is the player's victory, the player out is their defeat; the game ends with a window to start again
 - [x] 8.5.2 Seven days without a town: the days left told at the start of each turn, then the player is banished
-- [ ] 8.5.3 The scenario's victory condition in its JSON: capture a town, defeat a hero, gather resources, find an artifact
+- [x] 8.5.3 The scenario's victory condition in its JSON: capture a town, defeat a hero, gather resources, find an artifact
 - [ ] 8.5.4 The scenario's loss condition: lose a town, lose a hero, time runs out
 - [ ] 8.5.5 The end of the game in numbers: days taken and the score, and the proper ending: the victory or defeat video and the Hall of Fame
+- [ ] 8.5.6 Scenario Info: the Adventure Options button opens a window with the scenario's name and its victory and loss conditions
 
 ---
 
@@ -1393,7 +1394,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 43. Player system (8.1), in nineteen parts: colours, enemy heroes in the way, their popup, capturing mines and dwellings, towns, garrisons, attacking heroes, their Resistance, artifacts, losing, surrender, the retreated hero in the tavern, heroes keeping who they were, heroes defending towns, taking turns and the new day, the town box, Visions, the Thieves' Guild, taverns and town boxes
 44. AI basics (8.3)
 45. AI decision making (8.4), in fourteen parts: mines and dwellings, exploration, town building, recruiting, fighting monsters, attacking the player's heroes, the defending hero's spells, retreat and surrender, attacking the player's towns, threat response, artifacts and map objects, weighing targets, exploring by what it reveals, saving up, weighing danger and skills
-46. Victory conditions (8.5), in five parts: defeat all enemies, seven days without a town, the scenario's victory condition, its loss condition, the end in numbers
+46. Victory conditions (8.5), in six parts: defeat all enemies, seven days without a town, the scenario's victory condition, its loss condition, the end in numbers, Scenario Info
 47. Siege combat (5.10)
 48. Town factions (6.5)
 49. Smarter combat AI (5.7b)

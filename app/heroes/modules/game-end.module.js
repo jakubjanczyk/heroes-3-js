@@ -8,6 +8,7 @@ import {
   vanquishedMessage
 } from '../../../game/heroes/game-end.js'
 import { daysWithoutTownOf, townIdsOf } from '../../../game/heroes/state/towns.js'
+import { goalMessage, goalWinner } from '../../../game/heroes/victory-condition.js'
 import {
   activePlayer,
   gameResult,
@@ -17,10 +18,17 @@ import {
   viewingPlayer
 } from '../../../game/state/queries.js'
 import {
+  APP_FACT_ARTIFACT_PICKED_UP,
   APP_FACT_ENTITY_REMOVED,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_PLAYER_TURN_ENDED,
   APP_FACT_PLAYER_VANQUISHED,
+  APP_FACT_PLAYER_WON,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCES_GAINED,
   APP_FACT_TOWN_CAPTURED,
+  APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_GAME_ENDED,
@@ -38,9 +46,22 @@ const flagOf = (player) => ({ label: `${playerName(player)} player flag`, player
 const hasNothingLeft = (state, player) =>
   heroIdsOf(state, player).length === 0 && townIdsOf(state, player).length === 0
 
+// Every fact that can bring a player to the scenario's goal or take everything from them.
+const CHECKED_AFTER = [
+  APP_FACT_ENTITY_REMOVED,
+  APP_FACT_TOWN_CAPTURED,
+  APP_FACT_RESOURCE_COLLECTED,
+  APP_FACT_RESOURCES_GAINED,
+  APP_FACT_TREASURE_CHEST_OPENED,
+  APP_FACT_ARTIFACT_PICKED_UP,
+  APP_FACT_HERO_ARTIFACTS_CAPTURED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED
+]
+
 export const registerGameEndModule = defineModule(
   ({ emit, state }) => {
     let isRestoring = false
+    let definitions = {}
     let isCheckQueued = false
     let isWarningQueued = false
 
@@ -66,10 +87,22 @@ export const registerGameEndModule = defineModule(
       }
     }
 
+    // The player is checked first, so their own win comes before a computer player's.
+    function checkGoal(current) {
+      const viewing = viewingPlayer(current)
+      const players = [viewing, ...playerColors(current).filter((color) => color !== viewing)]
+      const winner = goalWinner(current, players, viewing)
+      if (winner) {
+        emit(APP_FACT_PLAYER_WON, { player: winner })
+        announce(goalMessage(state.get(), winner, viewing, definitions), winner, GAME_END_SUBJECT)
+      }
+      return Boolean(winner)
+    }
+
     function checkPlayers() {
       isCheckQueued = false
       const current = state.get()
-      if (!isGameOn(current)) {
+      if (isRestoring || gameResult(current) || checkGoal(current) || !isGameOn(current)) {
         return
       }
 
@@ -141,12 +174,13 @@ export const registerGameEndModule = defineModule(
       subscriptions: [
         {
           type: APP_FACT_WORLD_READY,
-          handler: () => {
+          handler: (event) => {
+            definitions = event.detail?.definitions ?? {}
             isCheckQueued = false
             isWarningQueued = false
           }
         },
-        { type: APP_FACT_ENTITY_REMOVED, handler: queueCheck },
+        ...CHECKED_AFTER.map((type) => ({ type, handler: queueCheck })),
         {
           type: APP_FACT_PLAYER_TURN_ENDED,
           handler: (event) => {
@@ -154,8 +188,13 @@ export const registerGameEndModule = defineModule(
             queueTurnStartWarning()
           }
         },
-        { type: APP_FACT_TURN_ENDED, handler: queueTurnStartWarning },
-        { type: APP_FACT_TOWN_CAPTURED, handler: queueCheck },
+        {
+          type: APP_FACT_TURN_ENDED,
+          handler: () => {
+            queueCheck()
+            queueTurnStartWarning()
+          }
+        },
         {
           type: APP_UI_INTERACTION_MODAL_CONFIRMED,
           handler: (event) => {
@@ -180,16 +219,16 @@ export const registerGameEndModule = defineModule(
     phase: 'domain',
     consumes: [
       APP_FACT_WORLD_READY,
-      APP_FACT_ENTITY_REMOVED,
+      ...CHECKED_AFTER,
       APP_FACT_PLAYER_TURN_ENDED,
       APP_FACT_TURN_ENDED,
-      APP_FACT_TOWN_CAPTURED,
       APP_UI_INTERACTION_MODAL_CONFIRMED,
       APP_UI_RESTORE_STARTED,
       APP_UI_RESTORE_COMPLETED
     ],
     produces: [
       APP_FACT_PLAYER_VANQUISHED,
+      APP_FACT_PLAYER_WON,
       APP_FACT_ENTITY_REMOVED,
       APP_UI_NOTICE_OPENED,
       APP_UI_GAME_ENDED
