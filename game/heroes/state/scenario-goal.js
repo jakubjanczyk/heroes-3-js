@@ -1,8 +1,11 @@
 import { heroOwner } from '../../state/queries.js'
+import { getTownName } from '../entity-behaviors/town.js'
 import { townOwner } from './towns.js'
 
-const townNameIn = (scenario, townId) =>
-  (scenario?.entities ?? []).find((entity) => entity.id === townId)?.name ?? null
+function townNameIn(scenario, townId, definitions) {
+  const entity = (scenario?.entities ?? []).find((candidate) => candidate.id === townId)
+  return entity ? getTownName({ entity, definitions }) : null
+}
 
 function startBattle(goal, { heroId, entityId, defender }) {
   return {
@@ -40,11 +43,11 @@ function endBattle(goal, { winner }, { previousState }) {
 
 export const scenarioGoalSlice = {
   key: 'scenarioGoal',
-  initial: ({ scenario }) => {
+  initial: ({ scenario, definitions }) => {
     const condition = scenario?.victoryCondition ?? null
     return {
       condition,
-      townName: condition?.town ? townNameIn(scenario, condition.town) : null,
+      townName: condition?.town ? townNameIn(scenario, condition.town, definitions) : null,
       battle: null,
       beatenBy: {}
     }

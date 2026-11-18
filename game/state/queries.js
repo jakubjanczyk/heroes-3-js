@@ -24,6 +24,10 @@ export function isStandardVictoryAndLossOn(state) {
   return state.players.standardVictoryAndLoss !== false
 }
 
+export function gameWinner(state) {
+  return state.players.winner ?? null
+}
+
 // 'defeat' once the player is out of the game or another player has won, 'victory' once the
 // player has won or every other player is out, unless the scenario doesn't count that.
 export function gameResult(state) {

@@ -100,6 +100,7 @@ Left for later: showing the goal to the player (8.5.6, the Adventure Options but
 - The scenario's `victoryCondition` is read into its own state slice, which also keeps who beat each hero: the player on the other side of the battle the hero lost. A hero beaten by a town's garrison is beaten by the town's owner; one beaten by monsters, by nobody.
 - The goal is checked after every fact that can meet it (a town captured, a hero leaving the map, resources found or gained, the day's income, an artifact picked up, captured or moved), once its windows have settled, before the standard loss. The player is checked first, then the computer players in turn order if the scenario lets them win by it.
 - The winner is saved (`fact.player.won`). The player winning sees the goal's message with their flag, then the Victorious window; a computer player winning shows the enemy's message with its flag, then the Defeated window. A computer player beating the hero shows "The hero, %s, has suffered defeat - your quest is over!" (`GENRLTXT.TXT` 253), as the engine does.
+- The Victorious or Defeated window repeats the goal's message when the goal ended the game, and a goal town the scenario leaves unnamed goes by its type's name ("Castle"), as everywhere else.
 - `standardVictory: false` stops the last enemy going out from winning the game; the standard loss still counts.
 - Computer heroes don't retreat or surrender yet, so the defeat-a-hero goal is tested with the hero beaten while attacking the player's hero rather than retreating from it.
 

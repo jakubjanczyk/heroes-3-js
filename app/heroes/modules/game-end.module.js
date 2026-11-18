@@ -12,6 +12,7 @@ import { goalMessage, goalWinner } from '../../../game/heroes/victory-condition.
 import {
   activePlayer,
   gameResult,
+  gameWinner,
   heroIdsOf,
   isStandardVictoryAndLossOn,
   playerColors,
@@ -163,10 +164,19 @@ export const registerGameEndModule = defineModule(
       }
     }
 
+    // The window repeats the scenario's goal when that is how the game was won.
+    function endMessage(current, result) {
+      const winner = gameWinner(current)
+      return winner
+        ? goalMessage(current, winner, viewingPlayer(current), definitions)
+        : GAME_END_MESSAGES[result]
+    }
+
     function endGame() {
-      const result = gameResult(state.get())
+      const current = state.get()
+      const result = gameResult(current)
       if (result) {
-        emit(APP_UI_GAME_ENDED, { result })
+        emit(APP_UI_GAME_ENDED, { result, message: endMessage(current, result) })
       }
     }
 

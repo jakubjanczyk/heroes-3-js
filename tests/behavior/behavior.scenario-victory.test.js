@@ -6,6 +6,7 @@ import {
   answerMessage,
   clickEndTurn,
   queryGameEndWindow,
+  readGameEndWindowText,
   readMessage,
   readMessagePictures
 } from './adventure-panels.utils.js'
@@ -176,13 +177,31 @@ describe("the scenario's victory condition behavior", () => {
       })
     })
 
-    test('after that message the Victorious window opens', async () => {
+    test("after that message the Victorious window opens with the goal's message", async () => {
       const { user } = await setupApp(aCapture(captureTown('blue-town')))
       await enterTownAt(14, 2)
 
       await answerMessage(user, 'OK')
 
-      expect(queryGameEndWindow('Victorious')).not.toBeNull()
+      expect(readGameEndWindowText('Victorious')).toBe(
+        'Congratulations! You captured Kirkwall, and are victorious!'
+      )
+    })
+
+    test('a town the scenario leaves unnamed is named by its type in the message', async () => {
+      await setupApp(
+        aGame(
+          captureTown('blue-town'),
+          aRedHero().at(14, 3),
+          aTown().withId('blue-town').ownedBy('blue').at(14, 2),
+          aBlueHero().at(29, 5),
+          aFarBlueTown()
+        )
+      )
+
+      await enterTownAt(14, 2)
+
+      expect(readMessage()).toBe('Congratulations! You captured Castle, and are victorious!')
     })
 
     test("capturing a different town doesn't end the game", async () => {
@@ -210,7 +229,7 @@ describe("the scenario's victory condition behavior", () => {
       })
     })
 
-    test("after blue's victory the Defeated window opens", async () => {
+    test("after blue's victory the Defeated window opens with blue's message", async () => {
       const { user } = await setupApp(
         aBlueCapture(captureTown('red-town', { computerCanWin: true }))
       )
@@ -218,7 +237,9 @@ describe("the scenario's victory condition behavior", () => {
 
       await answerMessage(user, 'OK')
 
-      expect(queryGameEndWindow('Defeated')).not.toBeNull()
+      expect(readGameEndWindowText('Defeated')).toBe(
+        'The enemy has captured Whitemoon, and claims victory!'
+      )
     })
 
     test("blue capturing the town, when computer players can't win by it, doesn't end the game", async () => {

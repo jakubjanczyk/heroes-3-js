@@ -27,7 +27,7 @@ export const registerGameEndViewModule = defineModule(
     const gameShell = document?.querySelector('.game-shell')
     let endWindow = null
 
-    function showEnd({ result }) {
+    function showEnd({ result, message }) {
       endWindow?.remove()
       const template = document?.getElementById('game-end-template')
       if (!gameShell || !template) {
@@ -39,7 +39,7 @@ export const registerGameEndViewModule = defineModule(
       const section = endWindow.querySelector('.game-end')
       section.dataset.result = result
       endWindow.querySelector('.window-title').textContent = TITLES[result]
-      endWindow.querySelector('.game-end__text').textContent = GAME_END_MESSAGES[result]
+      endWindow.querySelector('.game-end__text').textContent = message ?? GAME_END_MESSAGES[result]
       const flag = endWindow.querySelector('.game-end__flag')
       flag.setAttribute('aria-label', `${playerName(player)} player flag`)
       flag.style.setProperty('--flag-colour', `var(--player-${player})`)
