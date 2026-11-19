@@ -131,3 +131,12 @@ What we decide for this part:
 - The demo map gets no loss condition until the player can see it (8.5.6).
 
 Left for later: showing the condition (8.5.6), computer players guarding the town or hero, and dismissing a hero (4.5) counting as losing it once heroes can be dismissed.
+
+## Built in 8.5.4
+
+- The scenario's `lossCondition` is read into the same state slice as the victory goal, which also keeps whether the player has held the town it names: from the start, or once they capture it.
+- It is checked with the victory goal, after every fact that can meet it and at the start of each day, once their windows have settled: the goal first, then the loss condition, then the standard rules. Only the player is checked.
+- Losing this way is saved as the player being out (`fact.player.vanquished`); the Defeated window repeats the condition's message, also after a reload.
+- A hero counts as lost once they are no longer on the map as the player's, so a retreat or surrender loses the game as a beating does.
+
+Left for later parts: the end in numbers (8.5.5), Scenario Info showing the condition (8.5.6), computer players guarding the town or hero, and dismissing the hero once heroes can be dismissed (4.5).
