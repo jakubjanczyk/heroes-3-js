@@ -2,7 +2,7 @@ import { townBehavior } from './entity-behaviors/town.js'
 import { dailyIncomeOfTown } from './town-income.js'
 import { canAfford, isShortOf } from './treasury.js'
 
-// Every town starts with its Village Hall, as in Heroes 3.
+// Every town starts with its Village Hall.
 const STARTING_BUILDINGS = ['VILLAGE_HALL']
 
 export function startingBuildingsOf(town) {
@@ -37,7 +37,7 @@ export function townBuildingsCatalogue(definitions, townType) {
 
 const NEIGHBOUR_OFFSETS = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => ({ x: dx, y: dy })))
 
-// Heroes 3 lets a town build a Shipyard only by the water; here any water tile touching the town.
+// A town can build a Shipyard only by the water: any water tile touching the town.
 export function isTownNextToWater(town, map) {
   const townTiles = [{ x: 0, y: 0 }, ...townBehavior.footprintOffsets].map((offset) => ({
     x: town.tile.x + offset.x,
@@ -57,7 +57,7 @@ export function missingRequirements(building, built) {
 }
 
 // town: { built, hasBuiltToday, isNextToWater }; builtElsewhere(buildingId) says whether another
-// town of the player has it; treasury is the player's resources by type. As in Heroes 3, a
+// town of the player has it; treasury is the player's resources by type. A
 // building shows as short of resources only once nothing else stops it.
 export function buildingStatus({ buildingId, building, town, builtElsewhere, treasury }) {
   if (town.built.has(buildingId)) {
@@ -120,7 +120,7 @@ export function describeHall({ catalogue, town, builtElsewhere, resources, treas
   }
 }
 
-// The town box, as in Heroes 3: the town's highest hall and fort, each with its level in the
+// The town box: the town's highest hall and fort, each with its level in the
 // chain (a fort of level 0, with no name, when the town has none), and the gold it earns a day.
 export function describeTownBox({ catalogue, built }) {
   const { buildings } = catalogue

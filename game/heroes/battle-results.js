@@ -35,8 +35,7 @@ function describeOutcome({ outcome, heroName, experience, hasHero }) {
   return [`Your forces suffer a bitter defeat, and ${heroName} abandons your cause.`]
 }
 
-// The creatures a side lost, one entry per creature however many stacks it fought in, as Heroes 3
-// counts them.
+// The creatures a side lost, one entry per creature however many stacks it fought in.
 export function getCasualties(battle, side) {
   const lostByCreature = new Map()
   for (const stack of battle.stacks.filter((option) => option.side === side)) {

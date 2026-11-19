@@ -1,4 +1,4 @@
-// The Heroes 3 adventure map cursors.
+// The adventure map cursors.
 export const ADVENTURE_CURSOR = Object.freeze({
   ARROW: 'arrow',
   HERO: 'hero',
@@ -22,7 +22,7 @@ export function getScrollCursor(direction) {
   return `scroll-${COMPASS_ROWS[direction.y + 1][direction.x + 1]}`
 }
 
-// Cursors from the 4th day on all show 4, as in Heroes 3.
+// Cursors from the 4th day on all show 4.
 const LAST_NUMBERED_DAY = 4
 
 function cursorActionFor(entity, attacks, isOwnHero) {

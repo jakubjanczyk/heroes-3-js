@@ -1,4 +1,4 @@
-// What a human player starts with in Heroes 3 on Normal difficulty.
+// What a human player starts with on Normal difficulty.
 const NORMAL_STARTING_RESOURCES = {
   WOOD_PILE: 20,
   MERCURY_PILE: 10,

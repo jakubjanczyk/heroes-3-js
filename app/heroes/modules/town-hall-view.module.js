@@ -30,7 +30,7 @@ function buildingNote(slot) {
 }
 
 // The Hall opens from the town screen's Hall icon. Picking a building opens its window, and
-// building closes the Hall, back to the town screen, as in Heroes 3.
+// building closes the Hall, back to the town screen.
 export const registerTownHallViewModule = defineModule(
   ({ emit, env }) => {
     const document = env.document

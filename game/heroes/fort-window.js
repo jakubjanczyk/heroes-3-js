@@ -19,7 +19,7 @@ function describeCard({ tier, dwelling, creature, available, growth, canRecruit 
   }
 }
 
-// The Fort window, as in Heroes 3: titled after the town's fort, with a card for each tier, the
+// The Fort window: titled after the town's fort, with a card for each tier, the
 // standing dwelling's creature (the upgraded one once its upgrade stands) with how many are
 // available. A tier with no dwelling shows the plain dwelling and creature, none to recruit, and
 // the growth it would have once built. null when the town has no Fort.

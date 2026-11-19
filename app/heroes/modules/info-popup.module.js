@@ -34,7 +34,7 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), Math.max(min, max))
 }
 
-// The Heroes 3 right-click popup: shows what is on a tile while the right button (or a finger
+// The right-click popup: shows what is on a tile while the right button (or a finger
 // on a long press) is held, and closes on release.
 export const registerInfoPopupModule = defineModule(
   ({ env, state }) => {
@@ -50,7 +50,7 @@ export const registerInfoPopupModule = defineModule(
       popup = null
     }
 
-    // Centred on the mouse as in Heroes 3; above a finger so the finger does not cover it.
+    // Centred on the mouse; above a finger so the finger does not cover it.
     function place({ clientX, clientY, pointerType }) {
       const { width, height } = popup.getBoundingClientRect()
       const isTouch = pointerType === 'touch'

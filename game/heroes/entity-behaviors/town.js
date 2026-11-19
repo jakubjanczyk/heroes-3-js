@@ -6,7 +6,7 @@ import {
 import { isDefendedAgainst, townGarrison } from '../state/towns.js'
 import { getEntityName } from './shared.js'
 
-// A Heroes 3 map names each town; one the scenario leaves unnamed goes by its type's name.
+// A map names each town; one the scenario leaves unnamed goes by its type's name.
 export function getTownName({ entity, definitions = {} }) {
   return (
     entity?.name ??

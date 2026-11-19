@@ -6,7 +6,7 @@ import { APP_FACT_WORLD_READY, APP_UI_TILE_HOVERED } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
-// The Heroes 3 status bar under the map: names whatever the mouse is over.
+// The status bar under the map: names whatever the mouse is over.
 export const registerStatusBarModule = defineModule(
   ({ env, state }) => {
     const statusBar = env.document.getElementById('status-bar')

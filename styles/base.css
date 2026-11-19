@@ -36,7 +36,7 @@
 
 :root {
   color-scheme: dark;
-  /* Heroes 3 neutral grey and the eight player colours. */
+  /* The neutral grey and the eight player colours. */
   --neutral-grey: #848484;
   --player-red: #ff0000;
   --player-blue: #3152ff;

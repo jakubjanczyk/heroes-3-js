@@ -28,7 +28,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createMapObjects } from '../map-objects.js'
 
-// The Heroes 3 cursor over the adventure map: what clicking the tile under the mouse would do,
+// The cursor over the adventure map: what clicking the tile under the mouse would do,
 // and on which day the hero would get there. While the map scrolls from its edge, an arrow
 // pointing the way it scrolls takes its place. The map shows it through `data-cursor`.
 // It plans the route to the tile itself rather than asking the movement module, so moving the

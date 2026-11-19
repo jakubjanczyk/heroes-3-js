@@ -1,5 +1,5 @@
 /*
- * The Heroes 3 battle screen, laid over the whole adventure screen: the battlefield with its 15 by
+ * The battle screen, laid over the whole adventure screen: the battlefield with its 15 by
  * 11 hexes and an unmarked edge column past each side, the heroes in the top corners and the combat bar with the status bar along the bottom.
  * Nothing is taken from the game: the ground takes the colour of the terrain the battle is on.
  */
@@ -144,8 +144,8 @@
   background: none;
 }
 
-/* A creature stands on its hex, taller than it, with its count in a purple box at its feet. As in
- * Heroes 3, the mouse points at hexes, not at the pictures reaching over them. */
+/* A creature stands on its hex, taller than it, with its count in a purple box at its feet. The
+ * mouse points at hexes, not at the pictures reaching over them. */
 .battle-stack {
   position: absolute;
   inset: 0;
@@ -370,7 +370,7 @@
   white-space: nowrap;
 }
 
-/* A window over the battle, as Heroes 3 shows its retreat question and the battle results. */
+/* A window over the battle, for the retreat question and the battle results. */
 .battle-overlay {
   position: absolute;
   inset: 0;

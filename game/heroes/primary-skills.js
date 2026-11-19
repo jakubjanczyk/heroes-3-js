@@ -1,6 +1,6 @@
 import { artifactPrimarySkills } from './artifacts.js'
 
-// The four Heroes 3 primary skills, in the order the game shows them, with the lowest value a
+// The four primary skills, in the order the game shows them, with the lowest value a
 // hero can have.
 export const PRIMARY_SKILLS = Object.freeze([
   { key: 'attack', name: 'Attack', minimum: 0 },
@@ -10,7 +10,7 @@ export const PRIMARY_SKILLS = Object.freeze([
 ])
 
 // A hero starts with their class's primary skills; a scenario may set any of them instead, as
-// the Heroes 3 map editor's "Customize primary skills" does. Each level-up adds 1 to the skill
+// the map editor's "Customize primary skills" does. Each level-up adds 1 to the skill
 // it rolled; the hero's `levelUpSkills` lists those skills (e.g. ['defense', 'attack']),
 // `bonusPrimarySkills` counts what map objects added (e.g. { attack: 1 }), and worn artifacts
 // add theirs, though never below the skill's minimum.
