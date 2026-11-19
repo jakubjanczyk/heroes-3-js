@@ -82,6 +82,7 @@ export function createLoadGame({
   startingResources,
   fogOfWar = false,
   standardVictoryAndLoss = false,
+  victoryCondition,
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
@@ -100,7 +101,8 @@ export function createLoadGame({
       entities: scenarioEntities,
       fogOfWar,
       standardVictoryAndLoss,
-      ...(startingResources ? { startingResources: { ...startingResources } } : {})
+      ...(startingResources ? { startingResources: { ...startingResources } } : {}),
+      ...(victoryCondition ? { victoryCondition: { ...victoryCondition } } : {})
     },
     definitions: {
       hero: {},

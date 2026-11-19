@@ -498,6 +498,10 @@ export function queryGameEndWindow(name) {
   return screen.queryByRole('dialog', { name })
 }
 
+export function readGameEndWindowText(name) {
+  return queryGameEndWindow(name)?.querySelector('.game-end__text')?.textContent ?? null
+}
+
 export async function restartGame(user, name) {
   await user.click(within(queryGameEndWindow(name)).getByRole('button', { name: 'Restart' }))
 }
