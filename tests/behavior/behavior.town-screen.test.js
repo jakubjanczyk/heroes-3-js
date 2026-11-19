@@ -249,7 +249,7 @@ describe('town screen behavior', () => {
       ])
     })
 
-    // Heroes 3: a Citadel adds half of a dwelling's growth, a Castle all of it, rounded down.
+    // A Citadel adds half of a dwelling's growth, a Castle all of it, rounded down.
     test.each([
       ['Citadel', ['FORT', 'CITADEL'], 'Pikemen +21'],
       ['Castle', ['FORT', 'CITADEL', 'CASTLE'], 'Pikemen +28']

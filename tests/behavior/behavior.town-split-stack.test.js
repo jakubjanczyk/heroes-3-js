@@ -133,7 +133,7 @@ describe('town split stack behavior', () => {
       expect(readVisitingHeroArmy()[1]).toBe('Pikemen 30')
     })
 
-    // As in Heroes 3, nothing moves until the player picks the counts: the framed stack starts
+    // Nothing moves until the player picks the counts: the framed stack starts
     // whole on the left and the clicked slot keeps what it has on the right.
     test.each([
       ['an empty slot', [], [30, 0]],

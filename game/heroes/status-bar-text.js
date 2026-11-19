@@ -39,7 +39,7 @@ function describeExactMonsterCount(entity, definitions) {
   return `${entity.count} ${entity.count === 1 ? creature.name : creature.namePlural}`
 }
 
-// What the Heroes 3 status bar says about a map tile: the name of what stands on it,
+// What the status bar says about a map tile: the name of what stands on it,
 // or the terrain name when nothing does. Monsters also get the size of the group ("Pack of Skeletons"),
 // and an object each hero uses once whether the selected hero has ("Star Axis (Visited)").
 export function getStatusBarText({

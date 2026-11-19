@@ -1,4 +1,4 @@
-// The Heroes 3 battlefield: 15 columns by 11 rows of hexes, the attacker on the left and the
+// The battlefield: 15 columns by 11 rows of hexes, the attacker on the left and the
 // defender on the right. Rows and columns count from 0 here. Past each side there is an edge
 // column, -1 and 15, where only the back half of a double-wide creature can stand.
 export const BATTLEFIELD_COLUMNS = 15
@@ -75,7 +75,7 @@ export function getHexNeighbourOnSide({ row, column }, side) {
   return neighbour && isOnBattlefieldOrEdge(neighbour) ? neighbour : null
 }
 
-// In hex widths and heights, in Heroes 3's order of sides, which
+// In hex widths and heights, in the game's order of sides, which
 // settles ties.
 const SIDE_OFFSETS = [
   ['top-left', { x: -0.5, y: -0.75 }],

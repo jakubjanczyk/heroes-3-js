@@ -1,4 +1,4 @@
-/* As in Heroes 3, the resource bar stays visible under the town screen. */
+/* The resource bar stays visible under the town screen. */
 .town-screen {
   position: relative;
   grid-row: 1 / span 2;
@@ -24,7 +24,7 @@
   visibility: hidden;
 }
 
-/* The recruit window, as in Heroes 3: the dwelling's creatures side by side, four boxes (cost per
+/* The recruit window: the dwelling's creatures side by side, four boxes (cost per
    troop, available, recruit, total cost), the slider between its arrows, then Max, Recruit and
    Cancel. */
 .recruit-window,
@@ -112,7 +112,7 @@
   text-align: center;
 }
 
-/* A slider with an arrow at each end that moves it one step, as in Heroes 3's recruit and split
+/* A slider with an arrow at each end that moves it one step, in the recruit and split
    windows. */
 .count-slider {
   display: flex;
@@ -143,7 +143,7 @@
   font-weight: bold;
 }
 
-/* The split window, laid out as Heroes 3's: the creature over each count, the slider between. */
+/* The split window: the creature over each count, the slider between. */
 .split-window {
   inline-size: min(20rem, calc(100% - 2rem));
 }
@@ -220,7 +220,7 @@
   block-size: 100%;
 }
 
-/* As in Heroes 3, the building under the mouse lights up; only its drawn shapes count. */
+/* The building under the mouse lights up; only its drawn shapes count. */
 .town-building {
   outline: none;
 
@@ -377,8 +377,8 @@
   list-style: none;
 }
 
-/* Heroes 3 frames the stack picked for moving in yellow, and with Split pressed, the slots it can
-   be split onto too. */
+/* The stack picked for moving is framed in yellow, and with Split pressed, the slots it can be
+   split onto too. */
 .town-panel .army-slot[aria-current="true"],
 .town-panel__hero--visiting[aria-current="true"],
 .town-panel .army-slot.army-slot--split-target {
@@ -407,7 +407,7 @@
     -1px 1px 0 black;
 }
 
-/* As in Heroes 3, the weekly growth sits under the creature, centred. */
+/* The weekly growth sits under the creature, centred. */
 .creature-growth .army-slot__creature {
   inset: 6% 20% 32%;
 }
@@ -471,7 +471,7 @@
   }
 }
 
-/* Greyed out until a stack is framed; lit while the next click splits it, as in Heroes 3. */
+/* Greyed out until a stack is framed; lit while the next click splits it. */
 .town-panel__split {
   appearance: none;
   display: grid;
@@ -519,7 +519,7 @@
   filter: drop-shadow(1px 1px 0 black);
 }
 
-/* The Hall icon: a town hall with its pillars, in place of the Heroes 3 picture of the hall. */
+/* The Hall icon: a town hall with its pillars, in place of the game's picture of the hall. */
 .town-panel__hall {
   appearance: none;
   padding: 0;
@@ -576,7 +576,7 @@
   text-shadow: 0 1px 0 black;
 }
 
-/* As in Heroes 3, the Hall is a window over the darkened town screen, just big enough for its rows. */
+/* The Hall is a window over the darkened town screen, just big enough for its rows. */
 .town-hall-backdrop {
   position: absolute;
   inset: 0;
@@ -704,7 +704,7 @@
 }
 
 /* The tick of a building that stands, the cross of one that cannot be built now. A building that
-   can never be built here (grey) has no mark, as in Heroes 3. */
+   can never be built here (grey) has no mark. */
 .town-hall__slot--built::after,
 .town-hall__slot--missingRequirements::after,
 .town-hall__slot--builtToday::after,
@@ -729,7 +729,7 @@
   color: #ff4a3a;
 }
 
-/* Heroes 3 marks a building the player can't pay for with its own sign, not the cross; a
+/* A building the player can't pay for gets its own sign, not the cross; a
    stack of gold coins stands in for it. */
 .town-hall__slot--notEnoughResources::after {
   content: "";
@@ -840,7 +840,7 @@
   gap: var(--space-lg);
 }
 
-/* The Fort window, as in Heroes 3: tiers 1-6 in two columns and tier 7 centred below, each card
+/* The Fort window: tiers 1-6 in two columns and tier 7 centred below, each card
    the dwelling, the creature and its stats side by side. */
 .fort-window {
   inline-size: min(64rem, 100%);

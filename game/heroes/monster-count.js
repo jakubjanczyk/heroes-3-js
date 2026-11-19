@@ -1,4 +1,4 @@
-// Heroes 3 never shows how many monsters stand on the map, only a word for the size of the group.
+// The map never shows how many monsters stand on the map, only a word for the size of the group.
 // `inArmySlot` is the word under a stack whose count is hidden, as in an enemy hero's army.
 // `inText` is how a message words it, as in "the Monastery is guarded by several Monks".
 const COUNT_BANDS = Object.freeze([

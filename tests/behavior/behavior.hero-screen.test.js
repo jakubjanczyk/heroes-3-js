@@ -92,7 +92,7 @@ describe('hero screen behavior', () => {
       expect(queryHeroScreen()).toBeTruthy()
     })
 
-    // As in Heroes 3, the first click on a hero in the list selects them; only a second opens the
+    // The first click on a hero in the list selects them; only a second opens the
     // hero screen.
     test("given a town is selected when the player clicks the hero's portrait in the hero list then the hero is selected and the hero screen stays closed", async () => {
       const { user } = await setupApp()
@@ -112,7 +112,7 @@ describe('hero screen behavior', () => {
       expect(queryHeroScreen()).toBeTruthy()
     })
 
-    // In a town, as in Heroes 3, the first click on the visiting hero's portrait frames it and
+    // In a town, the first click on the visiting hero's portrait frames it and
     // the second opens the hero screen over the town.
     test("given the town screen with a visiting hero when the player clicks the hero's portrait twice then the hero screen opens", async () => {
       const { user } = await setupApp()

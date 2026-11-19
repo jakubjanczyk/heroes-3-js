@@ -18,7 +18,7 @@ import { renderTownList } from '../presentation/town-list.js'
 
 const NO_ARMY = []
 const SVG_NS = 'http://www.w3.org/2000/svg'
-// The size of a Heroes 3 town picture, which the town's `picture` data places buildings on.
+// The size of a town picture, which the town's `picture` data places buildings on.
 const PICTURE_VIEW_BOX = '0 0 800 374'
 
 // For a building the art has no drawing of yet.
@@ -77,7 +77,7 @@ export const registerTownScreenViewModule = defineModule(
       })
     }
 
-    // Named after the town's fort, as Heroes 3 draws its level; the frame stays empty without one.
+    // Named after the town's fort, which shows its level; the frame stays empty without one.
     function showFortIcon(fort) {
       const icon = townScreen.querySelector('.town-panel__fort')
       icon.hidden = !fort
@@ -132,7 +132,7 @@ export const registerTownScreenViewModule = defineModule(
       }
     }
 
-    // As in Heroes 3, the first click frames the visiting hero and the second opens the hero screen.
+    // The first click frames the visiting hero and the second opens the hero screen.
     function clickVisitingHero() {
       if (isVisitingHeroFramed) {
         frameVisitingHero(false)

@@ -76,7 +76,7 @@ describe('starting resources', () => {
     ])
   })
 
-  test('shows Heroes 3 Normal starting resources when the scenario sets none', async () => {
+  test('shows the Normal starting resources when the scenario sets none', async () => {
     await setupMovementBehaviorApp({
       loadGameOptions: aStartingResourcesScenario().withoutStartingResources().build()
     })

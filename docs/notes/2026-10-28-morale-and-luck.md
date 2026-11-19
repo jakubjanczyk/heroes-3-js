@@ -4,13 +4,13 @@ Roadmap 4.9: each hero's morale and luck, worked out from what the game has, and
 
 ## How Heroes 3 does it
 
-Checked against the Heroes 3 wiki (Morale, Luck, Alignment, Leadership pages) and against VCMI's rules (`CArmedInstance::updateMoraleBonusFromArmy`, `AFactionMember::moraleValAndBonusList`, `config/creatures/castle.json`, `config/gameConfig.json`).
+Checked against the wiki (Morale, Luck, Alignment, Leadership pages) and the game's creature and morale data.
 
 - **Range.** Morale is -3 to +3. Luck is 0 to +3: negative luck exists only in Horn of the Abyss, and in Shadow of Death a total below 0 counts as 0. The modifiers are added up and the total is held to the range.
 - **Sources the game already has:**
   - **Leadership:** morale +1 / +2 / +3 at Basic / Advanced / Expert.
   - **Luck (the skill):** luck +1 / +2 / +3.
-  - **The army's towns.** Creatures of one town: morale +1. Two towns: 0. Three: -1, four: -2, and so on (`2 - towns`; the wiki's Alignment table stops at -3 for 5-7, its Morale page says six towns give -4 and seven -5, as VCMI does. The cap on the total makes that matter only next to other bonuses, and we have creatures of two towns only, so we use `2 - towns`). Neutral creatures count as a town of their own. An empty army gets nothing.
+  - **The army's towns.** Creatures of one town: morale +1. Two towns: 0. Three: -1, four: -2, and so on (`2 - towns`; the wiki's Alignment table stops at -3 for 5-7, its Morale page says six towns give -4 and seven -5. The cap on the total makes that matter only next to other bonuses, and we have creatures of two towns only, so we use `2 - towns`). Neutral creatures count as a town of their own. An empty army gets nothing.
   - **Undead in the army:** morale -1 when any stack is undead (Skeletons). Undead themselves are never affected by morale in battle, but the hero's morale shows the -1.
   - **Angels and Archangels:** morale +1 for the army they are in, once however many stacks of them there are.
 - **Sources for later:** artifacts (7.8), map objects until the next battle (7.6), the Tavern and Brotherhood of the Sword when defending a siege (5.10), the Colossus, spells (Mirth, Sorrow, Fortune, Misfortune), the Bone Dragon's and Devil's effect on the enemy (5.6), magical terrain.

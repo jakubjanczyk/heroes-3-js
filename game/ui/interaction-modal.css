@@ -24,7 +24,7 @@
     overlay var(--interaction-modal-transition-duration, var(--duration-slow)) allow-discrete;
 
   &::backdrop {
-    /* Heroes 3 leaves the map in view behind its messages; only dim it a little. */
+    /* The map stays in view behind messages; only dim it a little. */
     background: rgb(0 0 0 / 0.25);
     opacity: 0;
     transition: opacity var(--interaction-modal-transition-duration, var(--duration-slow))
@@ -69,7 +69,7 @@
 }
 
 /*
- * A Heroes 3 message box (message-box.css): a gold title, white text, the pictures to choose from
+ * A message box (message-box.css): a gold title, white text, the pictures to choose from
  * and the checkmark OK button at the bottom.
  */
 .interaction-modal__surface {

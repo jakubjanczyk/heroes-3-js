@@ -273,7 +273,7 @@ export const registerTownModule = defineModule(
       }
     }
 
-    // As in Heroes 3, clicking an owned town opens it; its entrance does so only while the town,
+    // Clicking an owned town opens it; its entrance does so only while the town,
     // not the hero, is selected: with the hero selected, the hero walks in.
     function openTownClickedOn(tile) {
       const entity = mapObjects.getEntityAt(tile)

@@ -1,4 +1,4 @@
-// Experience needed for levels 2 to 12, as in Heroes 3. Each later level needs 20% more than the
+// Experience needed for levels 2 to 12. Each later level needs 20% more than the
 // step before it, rounded down.
 const EXPERIENCE_FOR_LEVEL = [
   0, 1000, 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500, 20600
@@ -8,7 +8,7 @@ export function experienceToNextLevel(experience) {
   return experienceForLevel(levelForExperience(experience) + 1) - experience
 }
 
-// Heroes 3 rolls level-up primary skills with one set of chances up to level 9 and another after.
+// Level-up primary skills roll with one set of chances up to level 9 and another after.
 const LAST_LOW_LEVEL = 9
 
 function experienceForLevel(level) {

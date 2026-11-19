@@ -1,4 +1,4 @@
-// Builds the Heroes 3 cursors in assets/cursors (game/ui/cursors.css) from the pixel art below:
+// Builds the cursors in assets/cursors (game/ui/cursors.css) from the pixel art below:
 // rows of palette keys, '.' a transparent pixel. Each picture is drawn on a 16x16 grid and saved
 // twice as large, so the cursors keep the chunky pixels of the game. The horse, swords and
 // rearing horse also come numbered 2 to 4, for the day the hero would get there, the edge
@@ -150,7 +150,7 @@ const VISIT_ROWS = [
   '.k..kkk..kkk....'
 ]
 
-// Over the player's own town: a castle with a red flag, as Heroes 3 shows it.
+// Over the player's own town: a castle with a red flag.
 const CASTLE_ROWS = [
   '.......kR.......',
   '.......kRRk.....',

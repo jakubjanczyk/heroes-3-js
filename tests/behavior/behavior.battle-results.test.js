@@ -114,7 +114,7 @@ describe('battle results behavior', () => {
 
     await winLosingSkeletons(user)
 
-    // 2 Skeletons of the stack of 10 and the lone one, counted together as in Heroes 3.
+    // 2 Skeletons of the stack of 10 and the lone one, counted together.
     expect(readBattleCasualties('Attacker')).toEqual(['Skeletons 3'])
     expect(readBattleCasualties('Defender')).toEqual(['Swordsmen 2'])
   })
