@@ -4,7 +4,7 @@
 
 - `docs/ROADMAP.md` — what is built and what comes next, milestone by milestone.
 - `docs/notes/` — one note per feature: the game's rules as checked against the sources, what we decided and what is left.
-- `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`, and `scripts/screenshot.mjs`, which plays the app in Chromium on desktop and phone sizes and saves screenshots and, with `--video`, recordings, and `scripts/architecture-diff.mjs`, which reports how a branch rewires modules, events, saved facts and state slices).
+- `scripts/` — Small utilities (e.g. `scripts/static-server.mjs`, and `scripts/screenshot.mjs`, which plays the app in Chromium on desktop and phone sizes and saves screenshots and, with `--video`, recordings, `scripts/pr-media.mjs`, which puts those screenshots and recordings into a PR description, and `scripts/architecture-diff.mjs`, which reports how a branch rewires modules, events, saved facts and state slices).
 - Co-located test files — Vitest tests (`**/*.test.js` next to source files).
 - `engine/` (infrastructure: bus, store), `game/` (rules, pure functions; `game/heroes/` is this game's content) and `app/` (modules wiring the rules to the page).
 - A screen's parts: its markup is in `index.html` (one `role="dialog"` section per screen), its view module is `app/heroes/modules/<screen>-view.module.js`, its domain module `app/heroes/modules/<screen>.module.js`, its rules `game/heroes/` and its data `game/data/*.json`.
@@ -97,7 +97,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 - PRs should include:
   - a short description of user-visible behavior
   - links to the roadmap item and the feature's note (e.g. `docs/notes/2026-10-30-combination-artifacts.md`)
-  - screenshots or a short screencast when UI behavior changes
+  - the screenshots and recordings of step 3 of the `ship` skill when UI behavior changes, put in by `scripts/pr-media.mjs`
   - the architecture report from `scripts/architecture-diff.mjs`, as the `ship` skill says
 - Don't open a PR for a docs-only change (roadmap, notes, these guidelines): commit it on the working branch and let it ship with the feature it plans.
 - A session that asks what's next on the roadmap follows the `next-part` skill (`.claude/skills/next-part/SKILL.md`); finishing a part, and merging it later, follows the `ship` skill (`.claude/skills/ship/SKILL.md`).
