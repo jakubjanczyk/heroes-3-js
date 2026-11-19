@@ -12,7 +12,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { markSelectedTown, renderTownList } from '../presentation/town-list.js'
 
-// The town list on the adventure panel. As in Heroes 3, clicking a town selects it and centres
+// The town list on the adventure panel. Clicking a town selects it and centres
 // the map on it; clicking the selected town again, or double-clicking one, opens its town screen.
 export const registerTownListModule = defineModule(
   ({ emit, env, state }) => {

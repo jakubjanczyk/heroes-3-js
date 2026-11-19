@@ -305,7 +305,7 @@ export async function setupLinearMovementApp(options = {}) {
   })
 }
 
-// The Heroes 3 cursor the mouse shows over an element, by its picture in assets/cursors:
+// The cursor the mouse shows over an element, by its picture in assets/cursors:
 // 'arrow', 'hero', 'move', 'attack' or 'visit', with '-2' to '-4' for the day the hero gets there.
 export function getCursorOver(element) {
   const cursor = window.getComputedStyle(element).cursor

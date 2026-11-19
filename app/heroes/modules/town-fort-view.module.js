@@ -16,7 +16,7 @@ function statRows({ attack, defense, damage, health, speed, growth }) {
   ]
 }
 
-// The Fort window opens from the town screen's Fort icon, as in Heroes 3: a card for each creature
+// The Fort window opens from the town screen's Fort icon: a card for each creature
 // tier. Clicking a built dwelling's card opens its recruit window over it (town-recruit-view);
 // recruiting goes back to the Fort window, which shows the new numbers.
 export const registerTownFortViewModule = defineModule(

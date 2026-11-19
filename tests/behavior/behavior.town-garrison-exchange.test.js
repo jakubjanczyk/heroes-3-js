@@ -320,7 +320,7 @@ describe('town garrison exchange behavior', () => {
       expect(readTownStatusBar()).toBe('Cannot move last army to garrison')
     })
 
-    // Heroes 3 says "View <creature>" there, as clicking it opens the creature's window; here it
+    // The game says "View <creature>" there, as clicking it opens the creature's window; here it
     // only unframes the stack until creatures have a window.
     test('with a stack framed, hovering that stack shows nothing', async () => {
       const { user } = await startWithHeroInWhitemoon()

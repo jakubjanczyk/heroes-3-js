@@ -28,7 +28,7 @@ Run locally:
 - `npm run dev` — starts a local static server at `http://localhost:8080/`.
 - `npm test` — runs unit tests once (CI-friendly).
 - `npm run test:watch` — runs tests in watch mode.
-- `npm run lint` — runs Biome checks (lint + formatting diagnostics).
+- `npm run lint` — runs Biome checks (lint + formatting diagnostics), then `scripts/check-wording.mjs`, which fails on the wording the comment rules below ban (VCMI anywhere, "Heroes 3" in code).
 - `npm run lint:fix` — applies Biome fixes/formatting.
 
 Continuous integration:

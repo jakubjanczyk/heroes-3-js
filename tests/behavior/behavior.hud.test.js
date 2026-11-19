@@ -32,7 +32,7 @@ const aLargeMapScenario = () => aScenario().withSize(60, 40).withEntities(aHero(
 
 describe('adventure HUD behavior', () => {
   describe('resource bar', () => {
-    test('given a new game when the HUD loads then all seven resources show 0 in Heroes 3 order', async () => {
+    test('given a new game when the HUD loads then all seven resources show 0 in the game order', async () => {
       await setupMovementBehaviorApp({
         loadGameOptions: aScenario()
           .withDefinitions({ resources: readGameData('resources.json') })
@@ -69,7 +69,7 @@ describe('adventure HUD behavior', () => {
       expectMovementPoints(1400)
     })
 
-    // A click on the hero already selected opens the hero screen instead, as in Heroes 3.
+    // A click on the hero already selected opens the hero screen instead.
     test('given a town far from the hero is selected when the player clicks the hero in the hero list then the camera centres on the hero', async () => {
       const { user } = await setupMovementBehaviorApp({
         loadGameOptions: aLargeMapScenario()

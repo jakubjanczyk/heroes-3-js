@@ -62,7 +62,7 @@ async function moveHeroTo(x, y) {
 }
 
 describe('adventure map cursor behavior', () => {
-  test('given the mouse is over the HUD then the cursor is the Heroes 3 arrow', async () => {
+  test('given the mouse is over the HUD then the cursor is the arrow', async () => {
     const { user } = await setupApp(aScenario().withSize(3))
     const endTurnButton = screen.getByRole('button', { name: 'End turn' })
 

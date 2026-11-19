@@ -195,7 +195,7 @@ describe('bootstrap', () => {
     )
   })
 
-  // A Heroes 3 map may set how many stacks a monster splits into: one to seven.
+  // A map may set how many stacks a monster splits into: one to seven.
   test.each([
     0,
     8,
@@ -236,7 +236,7 @@ describe('bootstrap', () => {
     ).rejects.toThrow('Hero hero has an unknown primary skill atack')
   })
 
-  // The Heroes 3 minimums: Attack and Defense 0, Power and Knowledge 1.
+  // The minimums: Attack and Defense 0, Power and Knowledge 1.
   test.each([
     ['attack', 2.5, 0],
     ['knowledge', '3', 1],

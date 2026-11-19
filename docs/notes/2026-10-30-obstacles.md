@@ -5,7 +5,7 @@ Roadmap 7.3. Mountains, trees, lakes, rocks and craters: map objects that only b
 ## The rules
 
 - An obstacle blocks some of the tiles its picture covers; the others can be walked on. Nothing can visit it.
-- Over a tile it blocks, the status bar names it and the right-click popup shows only its name. Over a tile of its picture it doesn't block, both show the terrain. Checked against the game's adventure map code in VCMI (the hover text and popup of an object with no popup of its own are its name).
+- Over a tile it blocks, the status bar names it and the right-click popup shows only its name. Over a tile of its picture it doesn't block, both show the terrain. Checked against the game's adventure map rules (the hover text and popup of an object with no popup of its own are its name).
 - On the minimap, the tiles it blocks are a darker shade of their terrain (rule 3 of `2026-10-17-minimap-objects-and-drag.md`).
 - Names: Mountain, Oak Trees, Pine Trees, Trees, Lake, Rock, Crater. Checked against the wiki's copy of the game's object names (`Translation_Data/ObjNames.txt`), its map editor object table (`Map_Editor_Objects`) and homm3tools' object list.
 

@@ -116,7 +116,7 @@ describe('town panel hover behavior', () => {
     expect(readTownStatusBar()).toBe('Whitemoon')
   })
 
-  // Heroes 3 says "Select Sir Christian (visiting)", as clicking the hero moves them to the
+  // The game says "Select Sir Christian (visiting)", as clicking the hero moves them to the
   // garrison row; until heroes can garrison, the portrait only names the hero.
   test("hovering the visiting hero's portrait shows the hero's name", async () => {
     const { user } = await startWithHeroInWhitemoon()

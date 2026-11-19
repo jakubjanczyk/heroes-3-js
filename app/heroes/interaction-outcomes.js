@@ -31,7 +31,7 @@ import {
 } from '../events.js'
 import { getChestExperiencePicture, getChestGoldPicture } from './presentation/adventure-sprites.js'
 
-// The Heroes 3 chest dialog's title and text.
+// The chest dialog's title and text.
 const TREASURE_CHEST_TITLE = 'Chest'
 const TREASURE_CHEST_MESSAGE =
   'After scouring the area, you fall upon a hidden treasure cache. You may take the gold or ' +

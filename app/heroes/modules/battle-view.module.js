@@ -430,7 +430,7 @@ export const registerBattleViewModule = defineModule(
       return EDGE_COLUMNS.includes(hex.column) ? null : 'blocked'
     }
 
-    // Heroes 3's cursor shadow: the hex under the mouse, or every hex of the enemy it would attack
+    // The cursor shadow: the hex under the mouse, or every hex of the enemy it would attack
     // or shoot. Not after a tap, or the hex would stay lit once the finger is gone.
     function findHighlightedHexes(hex) {
       if (!hex || !findIdleActiveStack() || pointerType === 'touch') {

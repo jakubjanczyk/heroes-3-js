@@ -1,4 +1,4 @@
-/* The Heroes 3 right-click popup, drawn as a message box (message-box.css). */
+/* The right-click popup, drawn as a message box (message-box.css). */
 .info-popup {
   position: fixed;
   z-index: var(--z-ui-info-popup);

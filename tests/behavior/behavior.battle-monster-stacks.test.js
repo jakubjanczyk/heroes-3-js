@@ -23,7 +23,7 @@ const monsters = readGameData('monsters.json')
 const stack = (creature, count) => ({ creature, count })
 
 // Every damage roll lands on the lowest damage.
-// Heroes 3 shifts the number of stacks by one on some tiles: on (1, 0) it keeps it, on (5, 0)
+// The number of stacks shifts by one on some tiles: on (1, 0) it keeps it, on (5, 0)
 // it makes one fewer and on (0, 1) one more. The hero stands next to the monster.
 const TILE_KEEPING_THE_COUNT = { monster: [1, 0], hero: [0, 0] }
 const TILE_MAKING_ONE_FEWER = { monster: [5, 0], hero: [4, 0] }
@@ -71,13 +71,13 @@ describe('battle monster stacks behavior', () => {
       expect(readMonsterStacks()).toHaveLength(stackCount)
     })
 
-    test('given the monster stands on a tile where Heroes 3 makes one stack fewer then it splits into one stack fewer', async () => {
+    test('given the monster stands on a tile that makes one stack fewer then it splits into one stack fewer', async () => {
       await startBattle(aFight({ army: [stack('SKELETON', 10)], tiles: TILE_MAKING_ONE_FEWER }))
 
       expect(readMonsterStacks()).toHaveLength(4)
     })
 
-    test('given the monster stands on a tile where Heroes 3 makes one stack more then it splits into one stack more', async () => {
+    test('given the monster stands on a tile that makes one stack more then it splits into one stack more', async () => {
       await startBattle(aFight({ army: [stack('SKELETON', 10)], tiles: TILE_MAKING_ONE_MORE }))
 
       expect(readMonsterStacks()).toHaveLength(6)

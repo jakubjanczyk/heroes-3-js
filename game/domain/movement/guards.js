@@ -16,7 +16,7 @@ function isWater(map, tile) {
 }
 
 // The guards of each tile around them, in the order `guards` lists them, which is the order
-// their battles are fought in. As in Heroes 3, a guard on land does not guard water, nor the
+// their battles are fought in. A guard on land does not guard water, nor the
 // other way round.
 export function indexGuardedTiles(guards, map) {
   const guardsByTile = new Map()

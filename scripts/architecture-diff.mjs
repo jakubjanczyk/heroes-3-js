@@ -381,6 +381,39 @@ function savedFactLines(diff) {
   return lines
 }
 
+function replayChanges(diff) {
+  const reasons = new Map()
+  const note = (types, reason) => {
+    for (const type of types) {
+      if (!reasons.has(type)) {
+        reasons.set(type, reason)
+      }
+    }
+  }
+  note(diff.savedFacts.added, 'newly saved')
+  note(diff.savedFacts.removed, 'no longer saved')
+  const replayed = diff.slices.flatMap((change) => [...change.facts.added, ...change.facts.removed])
+  note(
+    replayed.filter((type) => diff.savedFactTypes.has(type)),
+    'replayed by different state slices'
+  )
+  return [...reasons]
+}
+
+function doorLines(diff) {
+  const changes = replayChanges(diff)
+  if (changes.length === 0) {
+    return ['**Two-way change:** no saved fact, nor how one is replayed, changed.', '']
+  }
+
+  return [
+    '⚠️ **One-way change:** saved games keep these facts for good and replay them on load, so review them closely:',
+    '',
+    ...changes.map(([type, reason]) => `- \`${type}\` (${reason})`),
+    ''
+  ]
+}
+
 function layerLines(layers) {
   if (layers.length === 0) {
     return ['No files changed.']
@@ -406,6 +439,7 @@ export function markdownOf({ diff, layers, baseLabel, headLabel }) {
   return [
     `## Architecture changes: ${baseLabel} → ${headLabel}`,
     '',
+    ...doorLines(diff),
     ...section('Layers touched', layerLines(layers), ''),
     ...section(
       'Event flow',

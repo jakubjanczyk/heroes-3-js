@@ -37,7 +37,7 @@ const gameDefinitions = {
 
 // Two towns side by side, their entrances at (4, 3) and (12, 3); each building covers the two
 // tiles either side of its entrance and the rows above. The hero starts two tiles below the
-// first entrance. The player starts with Heroes 3's Normal resources, enough for any building here,
+// first entrance. The player starts with the Normal resources, enough for any building here,
 // unless a test says otherwise.
 const WHITEMOON_ENTRANCE = { x: 4, y: 3 }
 const MAP_WIDTH = 16
@@ -90,7 +90,7 @@ describe('town buildings behavior', () => {
       expect(queryHall()).toBeTruthy()
     })
 
-    test('lists the Castle buildings in rows as Heroes 3 does, each slot showing the next building of its chain', async () => {
+    test('lists the Castle buildings in rows, each slot showing the next building of its chain', async () => {
       const { user } = await setupAppInWhitemoon()
 
       await openHall(user)

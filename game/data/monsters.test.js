@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, expect, test } from 'vitest'
 
-// Validates the real creature data against Heroes 3: a wrong number would otherwise only show up
+// Validates the real creature data against the game's: a wrong number would otherwise only show up
 // once something (combat, recruiting, the hero screen) uses it.
 const creatures = JSON.parse(readFileSync(new URL('./monsters.json', import.meta.url), 'utf8'))
 
@@ -103,7 +103,7 @@ describe('creature data', () => {
     }).toEqual({ faction, tier, abilities, shots })
   })
 
-  test('each basic creature upgrades to its Heroes 3 upgrade, and upgraded creatures upgrade no further', () => {
+  test('each basic creature upgrades to its upgrade, and upgraded creatures upgrade no further', () => {
     const upgrades = Object.fromEntries(
       Object.entries(creatures).map(([key, creature]) => [key, creature.upgradesTo ?? null])
     )

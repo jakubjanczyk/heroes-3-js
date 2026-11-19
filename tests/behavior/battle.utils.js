@@ -85,7 +85,7 @@ export function getBattlefield() {
 }
 
 // Every creature stack on the battlefield as "<name> <count>" with its hex, rows and columns
-// counted from 1 as Heroes 3 players would: row 1 at the top, column 1 on the attacker's side.
+// counted from 1 as players would: row 1 at the top, column 1 on the attacker's side.
 // Columns 0 and 16 are the edge columns past each side, where only back halves stand.
 // A dead stack reads "Dead <name>" with no count; a living stack may stand on it. The back half
 // of a double-wide creature reads "<name> (back half)".

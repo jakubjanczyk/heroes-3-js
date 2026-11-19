@@ -69,7 +69,7 @@ export function openSplitWindow({ document, container, pluralName, limits, onSpl
       typeCount(event.target.dataset.splitSide)
     }
   })
-  // The keyboard shortcuts leave Enter to a focused text box, where Heroes 3 splits as OK does.
+  // The keyboard shortcuts leave Enter to a focused text box, where it splits as OK does.
   splitWindow.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && event.target.dataset.splitSide) {
       event.preventDefault()
