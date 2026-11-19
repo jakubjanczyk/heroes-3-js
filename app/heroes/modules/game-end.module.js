@@ -7,6 +7,7 @@ import {
   playerName,
   vanquishedMessage
 } from '../../../game/heroes/game-end.js'
+import { isLossConditionMet, lossMessage } from '../../../game/heroes/loss-condition.js'
 import { daysWithoutTownOf, townIdsOf } from '../../../game/heroes/state/towns.js'
 import { goalMessage, goalWinner } from '../../../game/heroes/victory-condition.js'
 import {
@@ -100,10 +101,27 @@ export const registerGameEndModule = defineModule(
       return Boolean(winner)
     }
 
+    // Only the player can lose by the scenario's condition.
+    function checkLoss(current) {
+      const viewing = viewingPlayer(current)
+      const isLost = isLossConditionMet(current, viewing)
+      if (isLost) {
+        emit(APP_FACT_PLAYER_VANQUISHED, { player: viewing })
+        announce(lossMessage(state.get()), viewing, GAME_END_SUBJECT)
+      }
+      return isLost
+    }
+
     function checkPlayers() {
       isCheckQueued = false
       const current = state.get()
-      if (isRestoring || gameResult(current) || checkGoal(current) || !isGameOn(current)) {
+      if (
+        isRestoring ||
+        gameResult(current) ||
+        checkGoal(current) ||
+        checkLoss(current) ||
+        !isGameOn(current)
+      ) {
         return
       }
 
@@ -164,11 +182,14 @@ export const registerGameEndModule = defineModule(
       }
     }
 
-    // The window repeats the scenario's goal when that is how the game was won.
+    // The window repeats the scenario's goal or loss condition when that is how the game ended.
     function endMessage(current, result) {
       const winner = gameWinner(current)
-      return winner
-        ? goalMessage(current, winner, viewingPlayer(current), definitions)
+      if (winner) {
+        return goalMessage(current, winner, viewingPlayer(current), definitions)
+      }
+      return result === 'defeat' && isLossConditionMet(current, viewingPlayer(current))
+        ? lossMessage(current)
         : GAME_END_MESSAGES[result]
     }
 

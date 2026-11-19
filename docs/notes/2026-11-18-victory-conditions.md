@@ -105,3 +105,38 @@ Left for later: showing the goal to the player (8.5.6, the Adventure Options but
 - Computer heroes don't retreat or surrender yet, so the defeat-a-hero goal is tested with the hero beaten while attacking the player's hero rather than retreating from it.
 
 Left for later parts: the scenario's loss condition (8.5.4), the end in numbers (8.5.5), Scenario Info (8.5.6), and computer players going after the goal.
+
+## Plan for 8.5.4
+
+Rules checked against the wiki (Victory and Loss Conditions; texts in `GENRLTXT.TXT`) and an open-source engine (how a scenario's loss condition is read, when it is checked and which texts it shows):
+
+- **The three ways to lose** (the wiki: "Lose a Specific Town: you lose if the specified town is occupied by an enemy", "Lose a Specific Hero: you lose if the specified hero is defeated", "Time Limit: you lose if you have not won the scenario within the specified number of days"):
+  - *Lose a town*: a town the player has owned is now another player's. The engine checks that the player doesn't hold the town and has held it at some point, so a town the player never had doesn't lose the game when someone else takes it.
+  - *Lose a hero*: the hero is no longer the player's: beaten, retreated or surrendered, to an enemy hero, a garrison or monsters. The engine checks only that the hero is gone from the player, whatever took it.
+  - *Time runs out*: the scenario gives a number of days; the player plays those days and loses when the next one starts (the engine: the day number is greater than the limit, checked at the start of each new day).
+- **Only the human player** can lose this way; computer players lose only by the standard loss (the engine adds "is human" to the special loss condition).
+- **The standard loss still counts** alongside it (the engine keeps the standard defeat with every special one), and the victory goal is checked before the loss, so a goal met at the moment time runs out still wins (the engine checks its victory events first).
+- **Messages**, with the player's flag (`GENRLTXT.TXT`; the engine shows them in a window with the flag):
+  - lose a town: "The town of %s has fallen - all is lost!" (251);
+  - lose a hero: "The hero, %s, has suffered defeat - your quest is over!" (253), the same text 8.5.3 uses when a computer player beats the goal's hero;
+  - time runs out: "Alas, time has run out on your quest. All is lost." (254).
+- **The condition's own texts**, for Scenario Info (8.5.6): "Lose the %s '%s'." (224), "Lose the hero '%s'." (225), "Fail to win by month %d, week %d, day %d." (226), and "Lose all your heroes and towns." (227) for the standard loss.
+
+What we decide for this part:
+
+- The scenario JSON gets `lossCondition`: `{ "type": "loseTown", "town": "<town id>" }`, `{ "type": "loseHero", "hero": "<hero id>" }` or `{ "type": "timeExpires", "days": 90 }`. It works whether `standardVictoryAndLoss` is on or not, as the victory goal does.
+- Losing this way is saved as the player being out (`fact.player.vanquished`), as the seven days' banishment is: the message with the red flag, then the Defeated window repeating the message, the player's heroes still on the map under it. A reload opens the Defeated window again with the message, without the message window.
+- A goal town or hero the scenario leaves unnamed goes by its type's name, as in 8.5.3.
+- The time limit's message opens at the start of the player's turn on the first day past the limit, after the new week's message, in place of the days-left warning.
+- The demo map gets no loss condition until the player can see it (8.5.6).
+
+Left for later: showing the condition (8.5.6), computer players guarding the town or hero, and dismissing a hero (4.5) counting as losing it once heroes can be dismissed.
+
+## Built in 8.5.4
+
+- The scenario's `lossCondition` is read into the same state slice as the victory goal, which also keeps whether the player has held the town it names: from the start, or once they capture it.
+- It is checked with the victory goal, after every fact that can meet it and at the start of each day, once their windows have settled: the goal first, then the loss condition, then the standard rules. Only the player is checked.
+- Losing this way is saved as the player being out (`fact.player.vanquished`); the Defeated window repeats the condition's message, also after a reload.
+- A hero counts as lost once they are no longer on the map as the player's, so a retreat or surrender loses the game as a beating does.
+
+Left for later parts: the end in numbers (8.5.5), Scenario Info showing the condition (8.5.6), computer players guarding the town or hero, and dismissing the hero once heroes can be dismissed (4.5).
