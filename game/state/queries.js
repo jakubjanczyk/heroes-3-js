@@ -24,16 +24,23 @@ export function isStandardVictoryAndLossOn(state) {
   return state.players.standardVictoryAndLoss !== false
 }
 
-// 'defeat' once the player is out of the game, 'victory' once every other player is.
+export function gameWinner(state) {
+  return state.players.winner ?? null
+}
+
+// 'defeat' once the player is out of the game or another player has won, 'victory' once the
+// player has won or every other player is out, unless the scenario doesn't count that.
 export function gameResult(state) {
-  const { colors, vanquished = [], humanPlayer } = state.players
+  const { colors, vanquished = [], humanPlayer, winner = null, standardVictory } = state.players
+  if (winner) {
+    return winner === humanPlayer ? 'victory' : 'defeat'
+  }
   if (vanquished.includes(humanPlayer)) {
     return 'defeat'
   }
   const enemies = colors.filter((color) => color !== humanPlayer)
-  return enemies.length > 0 && enemies.every((color) => vanquished.includes(color))
-    ? 'victory'
-    : null
+  const allEnemiesOut = enemies.length > 0 && enemies.every((color) => vanquished.includes(color))
+  return allEnemiesOut && standardVictory !== false ? 'victory' : null
 }
 
 // Every other player is an enemy until there are teams.
