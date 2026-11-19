@@ -25,6 +25,7 @@ import {
   treasureChestsSlice,
   visitableObjectsSlice
 } from './state/map-objects.js'
+import { scenarioGoalSlice } from './state/scenario-goal.js'
 import { tavernSlice } from './state/tavern.js'
 import { townsSlice } from './state/towns.js'
 import { heroesTerrainTypes } from './terrain-types.js'
@@ -60,7 +61,8 @@ export const heroesContent = Object.freeze({
     kingdomsSlice,
     tavernSlice,
     mageGuildsSlice,
-    fogSlice
+    fogSlice,
+    scenarioGoalSlice
   ]),
   terrainTypes: heroesTerrainTypes
 })

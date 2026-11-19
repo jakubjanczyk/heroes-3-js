@@ -4,13 +4,14 @@ Roadmap 8.5. How a game ends: a player who has lost everything is out, the last 
 
 ## Parts
 
-Each part is one PR.
+Each part is one PR. Scenario Info (8.5.6) was added while planning 8.5.3, so a player can see the scenario's goal.
 
 1. **8.5.1 Defeat all enemies.** A player with no town and no hero left is vanquished. A computer player who is drops out: a message says so, its mines and dwellings go back to neutral, it takes no more turns and leaves the Thieves' Guild and the kingdom overview's Enemies. When the last one goes, the player wins. When the player is vanquished, they lose. Either way the game ends with a window that offers to start again; a reload shows it again.
 2. **8.5.2 Seven days without a town.** A player without a town is told at the start of each turn how many days are left to capture one; after the seventh turn without one they are banished and lose, with their heroes still on the map. A computer player is banished the same way, its heroes leaving the map.
 3. **8.5.3 The scenario's victory condition.** The scenario names one goal: capture a town, defeat a hero, gather an amount of a resource, or find an artifact; it may also let the standard victory count, and let computer players win by it.
 4. **8.5.4 The scenario's loss condition.** Lose a given town, lose a given hero, or run out of time.
 5. **8.5.5 The end of the game in numbers.** The days taken and the score shown when the game ends.
+6. **8.5.6 Scenario Info.** The Adventure Options button opens a window with the scenario's name and its victory and loss conditions.
 
 Left for later: the other special victory conditions (creatures, upgrading a town, the Grail, a monster, flagging every mine or dwelling, carrying an artifact to a town) come with what they need (the Grail, town upgrades, a map editor, 9.6). The AI going after a town when it has none waits for the AI's next round. The Hall of Fame and the difficulty in the score wait for a scenario setup screen (9.2). Teams and allies wait for hot-seat (8.2).
 
@@ -65,3 +66,42 @@ The rules and texts above were checked again for this part: the four texts again
 
 Left for later parts: the scenario's own victory and loss conditions (8.5.3, 8.5.4), and the end in numbers with the proper ending (8.5.5).
 
+
+## Plan for 8.5.3
+
+Rules checked against the wiki (Victory and Loss Conditions; texts in `GENRLTXT.TXT`) and an open-source engine (how a scenario's victory condition is read, when it is checked and which texts it shows):
+
+- **The four goals and when each is met**:
+  - *Capture a town*: the player owns the given town. Checked whenever a town changes owner.
+  - *Defeat a hero*: the given hero leaves the map after losing a battle to the player (beaten, retreated or surrendered all count, as the hero is the battle's loser). Beaten by another player or by monsters, nobody wins by it. The engine lets only the human player win this way and always counts the standard victory with it, whatever the scenario says; we let the scenario decide both, as for the other goals (agreed for 8.5.3).
+  - *Gather a resource*: the player's stock of the resource is at least the amount ("over" in the text, but the check is "at least"). Checked whenever the player's resources change, so also when a new day's income comes in.
+  - *Find an artifact*: one of the player's heroes has the artifact, worn or in the backpack. Checked once picking it up (from the map, a chest, a beaten hero) has settled.
+- **The two switches**: whether the standard victory (every enemy out) also wins, and whether a computer player can win by the goal. The standard loss (no hero and no town, seven days without a town) always counts, whatever they say. With the standard victory off, the last enemy going out doesn't end the game; the goal still has to be met.
+- **Messages**, with the winner's flag (`GENRLTXT.TXT`):
+  - capture a town: "Congratulations! You captured %s, and are victorious!" (249); a computer player doing it, "The enemy has captured %s, and claims victory!" (250);
+  - defeat a hero: "Congratulations! You have completed your quest to defeat the enemy hero %s. Victory is yours!" (252);
+  - gather a resource: "Congratulations! You have collected over %d %s in your treasury. Victory is yours!" (278); a computer player, "The enemy has collected over %d %s. Victory is theirs!" (279);
+  - find an artifact: "Congratulations! You have found the %s, and can claim victory!" (280); a computer player, "The enemy has found the %s, and can claim victory!" (281).
+  - A computer player winning ends the game for the player: its message, then the Defeated window.
+- **The goal's own texts**, for a Scenario Info window later: "Capture the %s '%s'." (228), "Defeat the hero '%s'." (229), "Find the %s." (231), "Accumulate %d %s." (232), "  You may also defeat all heroes and towns." (233); the short names are in `vcdesc.txt` ("Capture Town", "Defeat Hero", "Accumulate Resources", "Acquire Artifact").
+
+What we decide for this part:
+
+- The scenario JSON gets `victoryCondition`: `{ "type": "captureTown", "town": "<town id>" }`, `{ "type": "defeatHero", "hero": "<hero id>" }`, `{ "type": "gatherResource", "resource": "GOLD", "amount": 100000 }` or `{ "type": "findArtifact", "artifact": "<artifact id>" }`, with `standardVictory` (`true` or `false`, always given: some scenarios can be won only by the goal, finding an artifact say, others also by beating every enemy; agreed for 8.5.3) and `computerCanWin` (also always given; agreed for 8.5.3). The goal works whether `standardVictoryAndLoss` is on or not; `standardVictory: false` turns off only the standard victory.
+- The winner is saved as a fact; a reload shows the Victorious or Defeated window again, without the message.
+- The resource in the message is named as in the resource bar ("Gold"), and the goal is met at the amount or more (agreed for 8.5.3).
+
+- The demo map gets no goal until the player can see it (8.5.6) (agreed for 8.5.3).
+
+Left for later: showing the goal to the player (8.5.6, the Adventure Options button opening a Scenario Info window with the victory and loss conditions in the game's texts above), computer players going after the goal (the AI's next round), and the other goals listed above.
+
+## Built in 8.5.3
+
+- The scenario's `victoryCondition` is read into its own state slice, which also keeps who beat each hero: the player on the other side of the battle the hero lost. A hero beaten by a town's garrison is beaten by the town's owner; one beaten by monsters, by nobody.
+- The goal is checked after every fact that can meet it (a town captured, a hero leaving the map, resources found or gained, the day's income, an artifact picked up, captured or moved), once its windows have settled, before the standard loss. The player is checked first, then the computer players in turn order if the scenario lets them win by it.
+- The winner is saved (`fact.player.won`). The player winning sees the goal's message with their flag, then the Victorious window; a computer player winning shows the enemy's message with its flag, then the Defeated window. A computer player beating the hero shows "The hero, %s, has suffered defeat - your quest is over!" (`GENRLTXT.TXT` 253), as the engine does.
+- The Victorious or Defeated window repeats the goal's message when the goal ended the game, and a goal town the scenario leaves unnamed goes by its type's name ("Castle"), as everywhere else.
+- `standardVictory: false` stops the last enemy going out from winning the game; the standard loss still counts.
+- Computer heroes don't retreat or surrender yet, so the defeat-a-hero goal is tested with the hero beaten while attacking the player's hero rather than retreating from it.
+
+Left for later parts: the scenario's loss condition (8.5.4), the end in numbers (8.5.5), Scenario Info (8.5.6), and computer players going after the goal.
