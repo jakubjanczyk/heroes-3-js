@@ -25,4 +25,5 @@
 @import url("./game/ui/secondary-skill-icon.css") layer(ui);
 @import url("./game/ui/morale-luck.css") layer(ui);
 @import url("./game/ui/game-end.css") layer(ui);
+@import url("./game/ui/scenario-info.css") layer(ui);
 @import url("./app/modules/dev/bus-dev-panel.css") layer(ui);
