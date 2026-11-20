@@ -8,6 +8,7 @@ import {
   vanquishedMessage
 } from '../../../game/heroes/game-end.js'
 import { isLossConditionMet, lossMessage } from '../../../game/heroes/loss-condition.js'
+import { scoreOf } from '../../../game/heroes/score.js'
 import { daysWithoutTownOf, townIdsOf } from '../../../game/heroes/state/towns.js'
 import { goalMessage, goalWinner } from '../../../game/heroes/victory-condition.js'
 import {
@@ -17,6 +18,7 @@ import {
   heroIdsOf,
   isStandardVictoryAndLossOn,
   playerColors,
+  turnNumber,
   viewingPlayer
 } from '../../../game/state/queries.js'
 import {
@@ -193,11 +195,25 @@ export const registerGameEndModule = defineModule(
         : GAME_END_MESSAGES[result]
     }
 
+    function scoreOfPlayer(current) {
+      const player = viewingPlayer(current)
+      return scoreOf({
+        day: turnNumber(current),
+        towns: townIdsOf(current, player).length,
+        allEnemiesOut: playerColors(current).every((color) => color === player),
+        ranks: definitions.scoreRanks
+      })
+    }
+
     function endGame() {
       const current = state.get()
       const result = gameResult(current)
       if (result) {
-        emit(APP_UI_GAME_ENDED, { result, message: endMessage(current, result) })
+        emit(APP_UI_GAME_ENDED, {
+          result,
+          message: endMessage(current, result),
+          score: result === 'victory' ? scoreOfPlayer(current) : null
+        })
       }
     }
 

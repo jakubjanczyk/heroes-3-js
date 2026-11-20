@@ -9,6 +9,30 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 
 const TITLES = { victory: 'Victorious', defeat: 'Defeated' }
 
+const SCORE_LABELS = [
+  ['Total Time', 'days'],
+  ['Base Score', 'baseScore'],
+  ['Difficulty Level', 'difficulty'],
+  ['Final Score', 'finalScore'],
+  ['Your Rank', 'rank']
+]
+
+function showScore(list, score) {
+  if (!score) {
+    list.remove()
+    return
+  }
+  for (const [label, key] of SCORE_LABELS) {
+    const row = list.ownerDocument.createElement('div')
+    const term = list.ownerDocument.createElement('dt')
+    const value = list.ownerDocument.createElement('dd')
+    term.textContent = label
+    value.textContent = String(score[key] ?? '')
+    row.append(term, value)
+    list.append(row)
+  }
+}
+
 const BLOCKED_INPUTS = [
   'click',
   'dblclick',
@@ -27,7 +51,7 @@ export const registerGameEndViewModule = defineModule(
     const gameShell = document?.querySelector('.game-shell')
     let endWindow = null
 
-    function showEnd({ result, message }) {
+    function showEnd({ result, message, score }) {
       endWindow?.remove()
       const template = document?.getElementById('game-end-template')
       if (!gameShell || !template) {
@@ -40,6 +64,7 @@ export const registerGameEndViewModule = defineModule(
       section.dataset.result = result
       endWindow.querySelector('.window-title').textContent = TITLES[result]
       endWindow.querySelector('.game-end__text').textContent = message ?? GAME_END_MESSAGES[result]
+      showScore(endWindow.querySelector('.game-end__score'), score)
       const flag = endWindow.querySelector('.game-end__flag')
       flag.setAttribute('aria-label', `${playerName(player)} player flag`)
       flag.style.setProperty('--flag-colour', `var(--player-${player})`)

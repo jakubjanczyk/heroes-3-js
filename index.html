@@ -165,6 +165,7 @@
     <link rel="modulepreload" href="./app/heroes/modules/game-end.module.js" />
     <link rel="modulepreload" href="./game/heroes/game-end.js" />
     <link rel="modulepreload" href="./game/heroes/loss-condition.js" />
+    <link rel="modulepreload" href="./game/heroes/score.js" />
     <link rel="modulepreload" href="./game/heroes/victory-condition.js" />
     <link rel="modulepreload" href="./app/heroes/modules/game-end-view.module.js" />
     <link rel="modulepreload" href="./app/heroes/modules/hero-army.module.js" />
@@ -865,7 +866,7 @@
 
     <!--
       The end of the game over the locked map: Victorious or Defeated, the message the game ended
-      with, and Restart, which starts the scenario again.
+      with, the score on a victory, and Restart, which starts the scenario again.
     -->
     <template id="game-end-template">
       <div class="town-hall-backdrop game-end-backdrop">
@@ -873,6 +874,7 @@
           <h3 class="window-title" id="game-end-title"></h3>
           <div class="game-end__flag" role="img"></div>
           <p class="game-end__text"></p>
+          <dl class="game-end__score" aria-label="Score"></dl>
           <button class="game-end__restart" type="button">Restart</button>
         </section>
       </div>
