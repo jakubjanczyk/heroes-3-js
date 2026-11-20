@@ -10,7 +10,7 @@ Each part is one PR. Scenario Info (8.5.6) was added while planning 8.5.3, so a 
 2. **8.5.2 Seven days without a town.** A player without a town is told at the start of each turn how many days are left to capture one; after the seventh turn without one they are banished and lose, with their heroes still on the map. A computer player is banished the same way, its heroes leaving the map.
 3. **8.5.3 The scenario's victory condition.** The scenario names one goal: capture a town, defeat a hero, gather an amount of a resource, or find an artifact; it may also let the standard victory count, and let computer players win by it.
 4. **8.5.4 The scenario's loss condition.** Lose a given town, lose a given hero, or run out of time.
-5. **8.5.5 The end of the game in numbers.** The days taken and the score shown when the game ends.
+5. **8.5.5 The end of the game in numbers.** On a victory, the days taken, the score and the rank.
 6. **8.5.6 Scenario Info.** The Adventure Options button opens a window with the scenario's name and its victory and loss conditions.
 
 Left for later: the other special victory conditions (creatures, upgrading a town, the Grail, a monster, flagging every mine or dwelling, carrying an artifact to a town) come with what they need (the Grail, town upgrades, a map editor, 9.6). The AI going after a town when it has none waits for the AI's next round. The Hall of Fame and the difficulty in the score wait for a scenario setup screen (9.2). Teams and allies wait for hot-seat (8.2).
@@ -140,3 +140,29 @@ Left for later: showing the condition (8.5.6), computer players guarding the tow
 - A hero counts as lost once they are no longer on the map as the player's, so a retreat or surrender loses the game as a beating does.
 
 Left for later parts: the end in numbers (8.5.5), Scenario Info showing the condition (8.5.6), computer players guarding the town or hero, and dismissing the hero once heroes can be dismissed (4.5).
+
+## 8.5.5 The end of the game in numbers
+
+Checked against the Heroes 3 wiki (Score, raw source; `GENRLTXT.TXT` and `ARRAYTXT.TXT`) and the open-source engine (its high score calculation, its high score screen and its creature table):
+
+- **When**: the score is worked out each time a scenario is won (wiki: "Each time a scenario or a campaign is won"). On a defeat the game plays the defeat video and shows no score (engine).
+- **The formula**: (200 − (D + 10) / (T + 5) + Grail + Genocide) × Difficulty, where D is the day the game ended on (the first day is 1), T the towns the player owns at the end, Grail 25 if the player has built the Grail in a town (the engine also counts carrying it), Genocide 25 if every other player is out of the game, and Difficulty 0.8, 1.0, 1.3, 1.6 or 2.0 from Easy to Impossible. Both sources agree on it.
+- **Rounding**: the engine divides (D + 10) by (T + 5) in whole numbers, dropping the remainder, and drops the fraction of the final score; the wiki doesn't say. We follow the engine (agreed for 8.5.5).
+- **What the screen shows**, in five columns (engine; texts checked against the wiki): "Total Time" (438) with the days, "Base Score" (439) with the score before the difficulty, "Difficulty Level" (440) with "Normal" (`ARRAYTXT.TXT` 143; Easy to Impossible are 142 to 146), "Final Score" (441), and "Your Rank" (676) with a creature's name. A player who cheated is ranked "Cheater!!!" (260); we have no cheats.
+- **The rank**: the final score picks a creature from a table of 118 ranges, from 1–4 Imp to 398–500 Archangel. The wiki's table and the engine's agree row by row. It is a name only: most of these creatures aren't in our game.
+- **The video and the Hall of Fame**: on a victory the game plays the high score animation behind the numbers, then lets the player enter a name into the Hall of Fame if the score makes the table. On a defeat, the defeat video.
+
+What we decide for this part:
+
+- The Victorious window shows the five columns under the message. The Defeated window stays as it is.
+- Difficulty is Normal (×1.0) until a scenario setup screen lets the player choose it (9.2); the Grail bonus is 0 until there is a Grail.
+- The numbers are worked out from the state when the window opens, so a reload shows the same ones.
+- The rank table is data, `game/data/score-ranks.json`.
+- No videos: we have none to play (agreed for 8.5.5).
+
+Left for later: the difficulty (9.2), the Grail bonus (with the Grail), and the Hall of Fame (9.2, with the main menu).
+
+## Built in 8.5.5
+
+- When the game ends in the player's victory, the end window gets the score worked out from the state at that moment: the day, the player's towns, and whether every other player is out. A reload works it out again from the same state, so it shows the same numbers.
+- The Victorious window lists the five columns under the message; the Defeated window has none.

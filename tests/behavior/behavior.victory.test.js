@@ -17,6 +17,7 @@ import {
   getHeroInfoBox,
   getTownInTownList,
   queryGameEndWindow,
+  readGameEndScore,
   readKingdomOverviewFlags,
   readMessage,
   readMessagePictures,
@@ -56,7 +57,8 @@ const definitions = {
   dwellings: readGameData('dwellings.json'),
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json'),
-  tavern: readGameData('tavern.json')
+  tavern: readGameData('tavern.json'),
+  scoreRanks: readGameData('score-ranks.json')
 }
 
 const VANQUISHED_BLUE = 'Blue has been vanquished!'
@@ -276,6 +278,76 @@ describe('victory behavior', () => {
       expect({ message: readMessage(), window: queryGameEndWindow('Victorious') }).toEqual({
         message: null,
         window: null
+      })
+    })
+  })
+
+  describe('the score', () => {
+    const aRedTown = (id, x) => aTown().withId(id).ownedByPlayer().at(x, 2)
+    // Red owns Whitemoon and the towns given; blue has only Kirkwall, next to the red hero.
+    const aLastBlueTown = (...redTowns) =>
+      aScenario()
+        .withSize(36, 6)
+        .withEntities(aRedHero().at(14, 3), aWhitemoon(), aBlueTown(), ...redTowns)
+        .withDefinitions(definitions)
+        .withStandardVictoryAndLoss()
+
+    async function captureTheLastTown(scenario, { daysFirst = 0, eventLog } = {}) {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: scenario.build(),
+        eventLog
+      })
+      for (let day = 1; day <= daysFirst; day++) {
+        await clickEndTurn(user)
+        await waitMs(2000)
+      }
+      await enterTownAt(14, 2)
+      await answerMessage(user, 'OK')
+      await answerMessage(user, 'OK')
+    }
+
+    // Base score: 200 − (day + 10) / (towns + 5), the remainder dropped, + 25 with every enemy out.
+    test.each([
+      { days: 1, towns: 2, extraTowns: [], score: '224', rank: 'Pegasus' },
+      { days: 4, towns: 2, extraTowns: [], score: '223', rank: 'Medusa' },
+      {
+        days: 4,
+        towns: 4,
+        extraTowns: [aRedTown('red-3', 22), aRedTown('red-4', 30)],
+        score: '224',
+        rank: 'Pegasus'
+      }
+    ])('winning on day $days owning $towns towns scores $score', async ({
+      days,
+      extraTowns,
+      score,
+      rank
+    }) => {
+      await captureTheLastTown(aLastBlueTown(...extraTowns), { daysFirst: days - 1 })
+
+      expect(readGameEndScore('Victorious')).toEqual({
+        'Total Time': String(days),
+        'Base Score': score,
+        'Difficulty Level': 'Normal',
+        'Final Score': score,
+        'Your Rank': rank
+      })
+    })
+
+    test('after a reload the Victorious window shows the same score', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = aLastBlueTown()
+      await captureTheLastTown(scenario, { eventLog })
+
+      await setupMovementBehaviorApp({ loadGameOptions: scenario.build(), eventLog })
+      await waitMs()
+
+      expect(readGameEndScore('Victorious')).toEqual({
+        'Total Time': '1',
+        'Base Score': '224',
+        'Difficulty Level': 'Normal',
+        'Final Score': '224',
+        'Your Rank': 'Pegasus'
       })
     })
   })
