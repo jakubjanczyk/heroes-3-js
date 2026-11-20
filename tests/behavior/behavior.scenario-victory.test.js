@@ -6,6 +6,7 @@ import {
   answerMessage,
   clickEndTurn,
   queryGameEndWindow,
+  readGameEndScore,
   readGameEndWindowText,
   readMessage,
   readMessagePictures
@@ -75,6 +76,7 @@ const definitions = {
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json'),
   tavern: readGameData('tavern.json'),
+  scoreRanks: readGameData('score-ranks.json'),
   artifacts: {
     [AXE]: anArtifactDefinition().withName("Centaur's Axe").withSlot('WEAPON').build(),
     [SWORD]: anArtifactDefinition().withName('Sword of Hellfire').withSlot('WEAPON').build()
@@ -240,6 +242,34 @@ describe("the scenario's victory condition behavior", () => {
       expect(readGameEndWindowText('Defeated')).toBe(
         'The enemy has captured Whitemoon, and claims victory!'
       )
+    })
+
+    test('the Defeated window shows no score', async () => {
+      const { user } = await setupApp(
+        aBlueCapture(captureTown('red-town', { computerCanWin: true }))
+      )
+      await endTurn(user)
+
+      await answerMessage(user, 'OK')
+
+      expect(readGameEndScore('Defeated')).toBeNull()
+    })
+
+    // Red owns Bracada and Kirkwall at the end of day 1: 200 − 11 / 7, the remainder dropped, is
+    // 199, with nothing added since blue is still in the game.
+    test('winning by the goal with an enemy still in the game gets no bonus for defeating every enemy', async () => {
+      const { user } = await setupApp(aCapture(captureTown('blue-town')))
+      await enterTownAt(14, 2)
+
+      await answerMessage(user, 'OK')
+
+      expect(readGameEndScore('Victorious')).toEqual({
+        'Total Time': '1',
+        'Base Score': '199',
+        'Difficulty Level': 'Normal',
+        'Final Score': '199',
+        'Your Rank': 'Iron Golem'
+      })
     })
 
     test("blue capturing the town, when computer players can't win by it, doesn't end the game", async () => {

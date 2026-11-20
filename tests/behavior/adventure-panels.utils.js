@@ -502,6 +502,21 @@ export function readGameEndWindowText(name) {
   return queryGameEndWindow(name)?.querySelector('.game-end__text')?.textContent ?? null
 }
 
+export function readGameEndScore(name) {
+  const window = queryGameEndWindow(name)
+  if (!window) {
+    return null
+  }
+  const labels = within(window).queryAllByRole('term')
+  if (labels.length === 0) {
+    return null
+  }
+  const values = within(window).queryAllByRole('definition')
+  return Object.fromEntries(
+    labels.map((label, index) => [label.textContent, values[index]?.textContent])
+  )
+}
+
 export async function restartGame(user, name) {
   await user.click(within(queryGameEndWindow(name)).getByRole('button', { name: 'Restart' }))
 }

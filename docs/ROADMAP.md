@@ -1143,7 +1143,7 @@ In six parts. See `docs/notes/2026-11-18-victory-conditions.md`.
 - [x] 8.5.2 Seven days without a town: the days left told at the start of each turn, then the player is banished
 - [x] 8.5.3 The scenario's victory condition in its JSON: capture a town, defeat a hero, gather resources, find an artifact
 - [x] 8.5.4 The scenario's loss condition: lose a town, lose a hero, time runs out
-- [ ] 8.5.5 The end of the game in numbers: days taken and the score, and the proper ending: the victory or defeat video and the Hall of Fame
+- [x] 8.5.5 The end of the game in numbers: on a victory the days taken, the score and the rank
 - [ ] 8.5.6 Scenario Info: the Adventure Options button opens a window with the scenario's name and its victory and loss conditions
 
 ---
@@ -1169,6 +1169,8 @@ Making the engine reusable. Enables portfolio and custom scenarios.
 - [ ] Load selected scenario
 - [ ] Scenario files in `/scenarios/` directory auto-discovered or listed in manifest
 - [ ] Different scenarios for different purposes (tutorial, game, portfolio)
+- [ ] Difficulty chosen before the game, counted in the score (8.5.5 scores every game as Normal)
+- [ ] Hall of Fame: the best scores, a won game's score entered with the player's name
 
 ### 9.3 Engine Public API
 - [ ] Clean import surface: `import { createGame } from 'heroes-3-js'`
