@@ -520,3 +520,89 @@ export function readGameEndScore(name) {
 export async function restartGame(user, name) {
   await user.click(within(queryGameEndWindow(name)).getByRole('button', { name: 'Restart' }))
 }
+
+export function queryAdventureOptions() {
+  return screen.queryByRole('dialog', { name: 'Adventure Options' })
+}
+
+export async function openAdventureOptions(user) {
+  await user.click(screen.getByRole('button', { name: 'Adventure options' }))
+  const adventureOptions = queryAdventureOptions()
+  expect(adventureOptions).toBeTruthy()
+  return adventureOptions
+}
+
+// [{ name: 'View World', disabled: true }, ...] in the window's order.
+export function readAdventureOptionsButtons() {
+  return within(queryAdventureOptions())
+    .getAllByRole('button')
+    .map((button) => ({ name: button.getAttribute('aria-label'), disabled: button.disabled }))
+}
+
+export async function closeAdventureOptions(user) {
+  await user.click(within(queryAdventureOptions()).getByRole('button', { name: 'Okay' }))
+}
+
+export function queryScenarioInfo() {
+  return screen.queryByRole('dialog', { name: 'Scenario Information' })
+}
+
+export async function openScenarioInfo(user) {
+  const adventureOptions = await openAdventureOptions(user)
+  await user.click(within(adventureOptions).getByRole('button', { name: 'View Scenario Info' }))
+  const scenarioInfo = queryScenarioInfo()
+  expect(scenarioInfo).toBeTruthy()
+  return scenarioInfo
+}
+
+export async function clickBackInScenarioInfo(user) {
+  await user.click(within(queryScenarioInfo()).getByRole('button', { name: 'Back' }))
+}
+
+const flagNames = (container) =>
+  [...container.querySelectorAll('[role="img"][aria-label$="player flag"]')].map((flag) =>
+    flag.getAttribute('aria-label')
+  )
+
+const SCENARIO_INFO_FIELDS = {
+  'Scenario Name:': 'name',
+  'Scenario Description:': 'description',
+  'Victory Condition:': 'victory',
+  'Loss Condition:': 'loss',
+  'Map Diff:': 'mapDifficulty',
+  'Rating:': 'rating'
+}
+
+// { name, mapSize: '36x36', mapSizeLetter: 'S', description, victory, loss, allies: ['Red player
+// flag'], enemies, mapDifficulty, playerDifficulty, rating }
+export function readScenarioInfo() {
+  const info = queryScenarioInfo()
+  const read = {}
+  for (const term of within(info).getAllByRole('term')) {
+    const definition = term.nextElementSibling
+    const label = term.textContent.trim()
+    if (label === 'Allies:' || label === 'Enemies:') {
+      read[label === 'Allies:' ? 'allies' : 'enemies'] = flagNames(definition)
+    } else if (SCENARIO_INFO_FIELDS[label]) {
+      read[SCENARIO_INFO_FIELDS[label]] = definition.textContent.replace(/\s+/g, ' ').trim()
+    }
+  }
+  read.playerDifficulty =
+    info.querySelector('[role="img"][aria-current="true"]')?.getAttribute('aria-label') ?? null
+  const mapSize = info.querySelector('[aria-label="Map size"]')
+  read.mapSize = mapSize?.querySelector('.scenario-info__map-size-tiles')?.textContent ?? ''
+  read.mapSizeLetter = mapSize?.querySelector('.scenario-info__map-size-letter')?.textContent ?? ''
+  return read
+}
+
+// [{ flag: 'Red player flag', name: 'Player', town: 'Castle', hero: 'Lord Haart' }, ...]
+export function readScenarioInfoPlayers() {
+  const players = within(queryScenarioInfo()).getByRole('table', { name: 'Players' })
+  const text = (row, selector) => row.querySelector(selector)?.textContent.trim() ?? ''
+  return [...players.querySelectorAll('tbody tr')].map((row) => ({
+    flag: flagNames(row)[0] ?? null,
+    name: text(row, '.scenario-info__player-name'),
+    town: text(row, '.scenario-info__town-name'),
+    hero: text(row, '.scenario-info__hero-name')
+  }))
+}

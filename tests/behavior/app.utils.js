@@ -84,6 +84,8 @@ export function createLoadGame({
   standardVictoryAndLoss = false,
   victoryCondition,
   lossCondition,
+  name,
+  description,
   entities = [{ id: 'hero-1', kind: 'HERO', type: 'HERO', tile: { x: 0, y: 0 } }],
   definitions = {}
 } = {}) {
@@ -97,7 +99,11 @@ export function createLoadGame({
 
   return {
     scenario: {
-      meta: { id: 'demo' },
+      meta: {
+        id: 'demo',
+        ...(name ? { name } : {}),
+        ...(description ? { description } : {})
+      },
       terrain: { width, height, tiles: terrainTiles, ...(roads ? { roads: [...roads] } : {}) },
       entities: scenarioEntities,
       fogOfWar,

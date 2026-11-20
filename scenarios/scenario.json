@@ -1,5 +1,5 @@
 {
-  "meta": {"id": "demo", "name": "Demo 64x64", "width": 64, "height": 64},
+  "meta": {"id": "demo", "name": "Demo 64x64", "description": "Red and Blue each hold a town, with two more standing neutral between them. Gather what the land offers, raise your armies and defeat every enemy hero and town.", "width": 64, "height": 64},
   "terrain": {
     "width": 64,
     "height": 64,

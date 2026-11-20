@@ -61,7 +61,7 @@ Heroes 3 cursors instead of boots and a red X; see `docs/notes/2026-10-19-cursor
 - [x] H3-style border/frame around the map viewport area
 - [x] Interface frame tinted in the current player's colour (`data-player-color` on `.game-shell`; only red used for now)
 - [x] Hero list shows the movement left as a green bar beside the portrait, with no number (as in H3)
-- [x] Buttons for features that don't exist yet are shown disabled: Kingdom overview, Underground, Quest log, Sleep hero, Cast spell, Adventure options
+- [x] Buttons for features that don't exist yet are shown disabled: Kingdom overview, Underground, Quest log, Sleep hero, Cast spell (Adventure options opens its window since 8.5.6)
 - [ ] (Not in H3, optional extra) Resource bar tooltips showing daily income per resource. H3 shows income in Kingdom overview
 
 ### 1.4 Minimap Improvements
@@ -1144,7 +1144,7 @@ In six parts. See `docs/notes/2026-11-18-victory-conditions.md`.
 - [x] 8.5.3 The scenario's victory condition in its JSON: capture a town, defeat a hero, gather resources, find an artifact
 - [x] 8.5.4 The scenario's loss condition: lose a town, lose a hero, time runs out
 - [x] 8.5.5 The end of the game in numbers: on a victory the days taken, the score and the rank
-- [ ] 8.5.6 Scenario Info: the Adventure Options button opens a window with the scenario's name and its victory and loss conditions
+- [x] 8.5.6 Scenario Info: the Adventure Options button opens the Adventure Options window, and View Scenario Info the Scenario Information screen: the players, the scenario's name, map size and description, its victory and loss conditions, allies and enemies, and the difficulty
 
 ---
 

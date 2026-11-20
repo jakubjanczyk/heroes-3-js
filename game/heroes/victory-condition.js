@@ -41,9 +41,11 @@ const goals = {
   }
 }
 
-const resourceName = (resource, definitions) => definitions?.resources?.[resource]?.name ?? resource
+export const resourceName = (resource, definitions) =>
+  definitions?.resources?.[resource]?.name ?? resource
 
-const artifactName = (artifact, definitions) => definitions?.artifacts?.[artifact]?.name ?? artifact
+export const artifactName = (artifact, definitions) =>
+  definitions?.artifacts?.[artifact]?.name ?? artifact
 
 // The first of `players` to have met the scenario's goal; a computer player only when the
 // scenario lets them win by it.
