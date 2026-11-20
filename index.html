@@ -69,7 +69,7 @@
                 <button class="adventure-button" id="cast-spell-button" type="button" aria-label="Cast spell" title="Cast spell (not available yet)" disabled>
                   <svg class="adventure-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H5zM19 4h-4a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h4z"/></svg>
                 </button>
-                <button class="adventure-button" id="adventure-options-button" type="button" aria-label="Adventure options" title="Adventure options (not available yet)" disabled>
+                <button class="adventure-button" id="adventure-options-button" type="button" aria-label="Adventure options" title="Adventure options">
                   <svg class="adventure-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 10l6-1z"/></svg>
                 </button>
                 <button class="adventure-button" id="system-options-button" type="button" aria-label="System options" title="System options">
@@ -626,6 +626,101 @@
             <button class="building-window__button" type="button" data-town-portal-action="cancel" aria-label="Cancel" aria-keyshortcuts="Escape" title="Cancel (Escape)">
               <svg class="town-hall__cross" viewBox="0 0 24 16" aria-hidden="true"><path d="M7 2 L17 14 M17 2 L7 14" /></svg>
             </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <!--
+      Adventure Options: View World, View Puzzle, Dig, View Scenario Info and Replay Opponent Turn,
+      each disabled until the game has what it needs, and Okay.
+    -->
+    <template id="adventure-options-template">
+      <div class="town-hall-backdrop">
+        <section class="adventure-options message-box" role="dialog" aria-modal="true" aria-label="Adventure Options" tabindex="-1">
+          <h2 class="window-title">Adventure Options</h2>
+          <div class="adventure-options__actions">
+            <button class="adventure-options__button" type="button" aria-label="View World" title="View World (not available yet)" disabled>View World</button>
+            <button class="adventure-options__button" type="button" aria-label="View Puzzle" title="View Puzzle (not available yet)" disabled>View Puzzle</button>
+            <button class="adventure-options__button" type="button" aria-label="Dig" title="Dig (not available yet)" disabled>Dig</button>
+            <button class="adventure-options__button" type="button" data-adventure-options-action="scenario-info" aria-label="View Scenario Info" title="View information about the current scenario">View Scenario Info</button>
+            <button class="adventure-options__button" type="button" aria-label="Replay Opponent Turn" title="Replay Opponent Turn (not available yet)" disabled>Replay Opponent Turn</button>
+          </div>
+          <div class="building-window__buttons">
+            <button class="building-window__button" type="button" data-adventure-options-action="okay" aria-label="Okay" aria-keyshortcuts="Escape Enter" title="Return to the Adventure Map (Escape)">
+              <svg class="town-hall__check" viewBox="0 0 24 16" aria-hidden="true"><path d="M5 8.5 L9.5 13 L19 3" /></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <!--
+      Scenario Information over the whole game, in the game's 800 x 600 proportions: the players
+      on the left (banner, name and handicap, starting town and hero) above the turn duration, the
+      scenario's card on the right (its name and map size, description, victory and loss
+      conditions, allies and enemies, and the difficulty) and Back.
+    -->
+    <template id="scenario-info-template">
+      <div class="scenario-info-backdrop">
+        <section class="scenario-info" role="dialog" aria-modal="true" aria-labelledby="scenario-info-title" tabindex="-1">
+          <div class="scenario-info__left">
+            <h2 class="scenario-info__title" id="scenario-info-title">Scenario Information</h2>
+            <table class="scenario-info__players" aria-label="Players">
+              <thead>
+                <tr>
+                  <td></td>
+                  <th scope="col">Player Name<br />Handicap Type</th>
+                  <th scope="col">Starting<br />Town</th>
+                  <th scope="col">Starting<br />Hero</th>
+                </tr>
+              </thead>
+              <tbody class="scenario-info__players-rows"></tbody>
+            </table>
+            <dl class="scenario-info__turn-duration">
+              <dt>Player Turn Duration</dt>
+              <dd>Unlimited</dd>
+            </dl>
+          </div>
+          <div class="scenario-info__card">
+            <dl class="scenario-info__panel scenario-info__heading">
+              <dt>Scenario Name:</dt>
+              <dd class="scenario-info__name"></dd>
+            </dl>
+            <p class="scenario-info__map-size" aria-label="Map size">
+              <span class="scenario-info__map-size-letter"></span>
+              <span class="scenario-info__map-size-tiles"></span>
+            </p>
+            <dl class="scenario-info__panel scenario-info__about">
+              <dt>Scenario Description:</dt>
+              <dd class="scenario-info__description"></dd>
+            </dl>
+            <dl class="scenario-info__panel scenario-info__condition">
+              <dt>Victory Condition:</dt>
+              <dd>
+                <svg class="scenario-info__condition-icon scenario-info__condition-icon--victory" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18v-2H3zM4 18h16l-1-8-4 3-3-7-3 7-4-3z" /></svg>
+                <span class="scenario-info__victory"></span>
+              </dd>
+            </dl>
+            <dl class="scenario-info__panel scenario-info__condition">
+              <dt>Loss Condition:</dt>
+              <dd>
+                <svg class="scenario-info__condition-icon scenario-info__condition-icon--loss" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18v-2H3zM5 18h14V9l-3 2V6l-4 3-4-3v5L5 9z" /><path class="scenario-info__condition-cross" d="M13 4l8 8M21 4l-8 8" /></svg>
+                <span class="scenario-info__loss"></span>
+              </dd>
+            </dl>
+            <dl class="scenario-info__panel scenario-info__sides">
+              <dt>Allies:</dt>
+              <dd class="scenario-info__allies"></dd>
+              <dt>Enemies:</dt>
+              <dd class="scenario-info__enemies"></dd>
+            </dl>
+            <dl class="scenario-info__panel scenario-info__difficulty">
+              <div class="scenario-info__difficulty-map"><dt>Map Diff:</dt><dd class="scenario-info__map-difficulty"></dd></div>
+              <div class="scenario-info__difficulty-player"><dt>Player Difficulty:</dt><dd class="scenario-info__player-difficulty"></dd></div>
+              <div class="scenario-info__difficulty-rating"><dt>Rating:</dt><dd class="scenario-info__rating"></dd></div>
+            </dl>
+            <button class="scenario-info__back" type="button" data-scenario-info-action="back" aria-label="Back" aria-keyshortcuts="Escape Enter" title="Return to the previous screen.">Back</button>
           </div>
         </section>
       </div>

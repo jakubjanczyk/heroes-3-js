@@ -114,8 +114,7 @@ describe('adventure HUD behavior', () => {
       'Underground',
       'Quest log',
       'Sleep hero',
-      'Cast spell',
-      'Adventure options'
+      'Cast spell'
     ])('given a feature that does not exist yet when the HUD loads then %s is shown disabled', async (name) => {
       await setupMovementBehaviorApp()
 

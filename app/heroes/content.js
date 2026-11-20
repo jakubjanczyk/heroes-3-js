@@ -2,6 +2,7 @@ import { heroesContent } from '../../game/heroes/content.js'
 import { APP_FACT_MONSTER_DEFEATED } from '../events.js'
 import { heroesOutcomeEffects, heroesOutcomeEvents } from './interaction-outcomes.js'
 import { registerAdventureCursorModule } from './modules/adventure-cursor.module.js'
+import { registerAdventureOptionsViewModule } from './modules/adventure-options-view.module.js'
 import { registerAdventureSpellsModule } from './modules/adventure-spells.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
@@ -26,6 +27,8 @@ import { registerMinimapShieldViewModule } from './modules/minimap-shield-view.m
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
 import { registerMusicModule } from './modules/music.module.js'
 import { registerOwnerFlagViewModule } from './modules/owner-flag-view.module.js'
+import { registerScenarioInfoModule } from './modules/scenario-info.module.js'
+import { registerScenarioInfoViewModule } from './modules/scenario-info-view.module.js'
 import { registerScholarModule } from './modules/scholar.module.js'
 import { registerSpellBookViewModule } from './modules/spell-book-view.module.js'
 import { registerStatusBarModule } from './modules/status-bar.module.js'
@@ -74,6 +77,7 @@ export const heroesAppContent = Object.freeze({
     registerAdventureSpellsModule,
     registerComputerPlayersModule,
     registerGameEndModule,
+    registerScenarioInfoModule,
     registerOwnerFlagViewModule,
     registerGameEndViewModule,
     registerMinimapViewModule,
@@ -86,6 +90,8 @@ export const heroesAppContent = Object.freeze({
     registerInfoBoxModule,
     registerTownListModule,
     registerSystemOptionsModule,
+    registerAdventureOptionsViewModule,
+    registerScenarioInfoViewModule,
     registerBattleViewModule,
     registerTownScreenViewModule,
     registerTownHallViewModule,
