@@ -10,10 +10,12 @@ import {
   waitMs
 } from './app.utils.js'
 import {
+  clickBattleButton,
   clickBattleHex,
   isBattleHexReachable,
   LOWEST_ROLLS,
   moveActiveStackTo,
+  pickSpell,
   readActiveStack,
   readBattleStacks,
   readBattleWalls
@@ -40,12 +42,37 @@ const SLUG = aSturdyCreature('Slug').withSpeed(1).withAiValue(1).build()
 const BRUTE = aSturdyCreature('Brute').withSpeed(1).withAiValue(1000).build()
 const RAIDER = aSturdyCreature('Raider').withSpeed(20).withAiValue(1000).build()
 
+// One hit kills one, so a Frail dies to the first blow struck at it.
+const aFrailCreature = (name) =>
+  aCreatureDefinition()
+    .withName(name)
+    .withNamePlural(`${name}s`)
+    .withAttack(0)
+    .withDefense(0)
+    .withDamage({ min: 1, max: 1 })
+    .withHealth(1)
+    .withAiValue(1)
+const FRAIL = aFrailCreature('Frail').withSpeed(19).build()
+const WISP = aFrailCreature('Wisp').withSpeed(19).withHealth(2).withAiValue(1000).build()
+const MOTH = aFrailCreature('Moth').withSpeed(30).withAbilities(['flying']).build()
+
 const definitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   resources: readGameData('resources.json'),
-  monsters: { ...readGameData('monsters.json'), RUNNER, FLYER, SLUG, BRUTE, RAIDER },
+  monsters: {
+    ...readGameData('monsters.json'),
+    RUNNER,
+    FLYER,
+    SLUG,
+    BRUTE,
+    RAIDER,
+    FRAIL,
+    WISP,
+    MOTH
+  },
+  spells: readGameData('spells.json'),
   heroes: readGameData('heroes.json'),
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json'),
@@ -74,6 +101,13 @@ const SHUT_WALLS = [
 ]
 
 const drawbridgeOf = (walls) => walls.filter(({ wall }) => wall.startsWith('Drawbridge'))
+
+const drawbridge = (state) => [
+  { wall: `Drawbridge, ${state}`, row: 6, column: 10 },
+  { wall: `Drawbridge, ${state}`, row: 6, column: 11 }
+]
+const SHUT_DRAWBRIDGE = drawbridge('shut')
+const OPEN_DRAWBRIDGE = drawbridge('open')
 
 const IN_FRONT_OF_THE_DRAWBRIDGE = { row: 6, column: 9 }
 const A_WALL = { row: 5, column: 10 }
@@ -121,7 +155,7 @@ async function attackTown(scenario, options) {
 const COMPUTER_TURN_MS = 2000
 const PLAYERS_GATE = { x: 20, y: 2 }
 
-const aComputerAttackScenario = ({ garrison, blueArmy }) =>
+const aComputerAttackScenario = ({ garrison, blueArmy, others = [] }) =>
   aScenario()
     .withSize(30, 6)
     .withRockAround(2, 5)
@@ -140,9 +174,16 @@ const aComputerAttackScenario = ({ garrison, blueArmy }) =>
         .ownedBy('blue')
         .withPrimarySkills(NO_SKILLS)
         .withArmy(blueArmy)
-        .at(20, 5)
+        .at(20, 5),
+      ...others
     )
     .withDefinitions(definitions)
+
+// The active stack moves and the other side plays its turns.
+async function moveAndWait(user, { row, column }) {
+  await moveActiveStackTo(user, row, column)
+  await waitMs(1000)
+}
 
 async function defendAgainstBlue(scenario) {
   const app = await setupApp(scenario)
@@ -295,6 +336,193 @@ describe('siege walls behavior', () => {
       )
 
       expect(readBattleStacks()).toContainEqual({ stack: 'Raider 1', row: 6, column: 2 })
+    })
+
+    test("the defender's walking stack that went out comes back in through the drawbridge, which shuts behind it", async () => {
+      const { user } = await defendAgainstBlue(aRunnerDefending())
+      await moveAndWait(user, IN_FRONT_OF_THE_DRAWBRIDGE)
+
+      await moveAndWait(user, BEHIND_THE_DRAWBRIDGE)
+
+      expect(readBattleStacks()).toContainEqual({ stack: 'Runner 1', ...BEHIND_THE_DRAWBRIDGE })
+      expect(drawbridgeOf(readBattleWalls())).toEqual(SHUT_DRAWBRIDGE)
+    })
+
+    // Blue's Raider comes out and attacks the player's Runner on column 5, and the drawbridge shuts
+    // behind it.
+    test("after the defender's stack went out and the drawbridge shut, the attacker's walking stack still can't get through it", async () => {
+      const { user } = await attackTown(
+        anAttackScenario({ town: aBlueTown({ garrison: [stack('RAIDER')] }) })
+      )
+
+      await moveAndWait(user, { row: 6, column: 5 })
+
+      expect(readActiveStack()).toEqual({ stack: 'Runner 1', row: 6, column: 5 })
+      expect(isReachable(OUTER_DRAWBRIDGE)).toBe(false)
+      expect(isReachable(BEHIND_THE_DRAWBRIDGE)).toBe(false)
+    })
+
+    describe('a dead stack on it', () => {
+      // The player's Flyer waits next to the drawbridge's outer hex. Blue's Frail comes out onto
+      // that hex to attack it and dies to the Flyer's retaliation; blue's Slug stays behind.
+      async function killFrailOnTheDrawbridge(options) {
+        const app = await attackTown(
+          anAttackScenario({
+            army: [stack('FLYER'), stack('RUNNER')],
+            town: aBlueTown({ garrison: [stack('FRAIL'), stack('SLUG')] })
+          }),
+          options
+        )
+        await moveAndWait(app.user, { row: 5, column: 9 })
+        await moveAndWait(app.user, { row: 9, column: 2 })
+        await clickBattleButton(app.user, 'Defend')
+        await waitMs(1000)
+        return app
+      }
+
+      test("the drawbridge stays open, and the attacker's walking stack walks through it behind the walls", async () => {
+        const { user } = await killFrailOnTheDrawbridge()
+
+        await moveActiveStackTo(user, BEHIND_THE_DRAWBRIDGE.row, BEHIND_THE_DRAWBRIDGE.column)
+
+        expect(readBattleStacks()).toEqual(
+          expect.arrayContaining([
+            { stack: 'Dead Frail', ...OUTER_DRAWBRIDGE },
+            { stack: 'Runner 1', ...BEHIND_THE_DRAWBRIDGE }
+          ])
+        )
+        expect(drawbridgeOf(readBattleWalls())).toEqual(OPEN_DRAWBRIDGE)
+      })
+
+      test('when the page reloads then the drawbridge is still open', async () => {
+        const eventLog = createMemoryEventLog()
+        await killFrailOnTheDrawbridge({ eventLog })
+
+        await setupApp(anAttackScenario(), { eventLog })
+
+        expect(drawbridgeOf(readBattleWalls())).toEqual(OPEN_DRAWBRIDGE)
+      })
+
+      // Blue's Raider kills the player's Frail on the drawbridge, then walks in to the Slug.
+      test("blue's walking stacks attacking the player's town come in through it", async () => {
+        const { user } = await defendAgainstBlue(
+          aComputerAttackScenario({
+            garrison: [stack('FRAIL'), stack('SLUG')],
+            blueArmy: [stack('RAIDER')]
+          })
+        )
+        await moveAndWait(user, OUTER_DRAWBRIDGE)
+        await clickBattleButton(user, 'Defend')
+        await waitMs(1000)
+
+        await clickBattleButton(user, 'Defend')
+        await waitMs(1000)
+
+        expect(readBattleStacks()).toEqual(
+          expect.arrayContaining([
+            { stack: 'Dead Frail', ...OUTER_DRAWBRIDGE },
+            { stack: 'Raider 1', row: 9, column: 14 }
+          ])
+        )
+      })
+
+      // The player's hero defends the town. Blue's Brute kills the Moth, which flew out to it; the
+      // hero then sacrifices the Runner, which stood on the drawbridge, to raise the Moth.
+      test('a stack sacrificed on the drawbridge leaves no body there, and the drawbridge shuts', async () => {
+        const hero = aHero()
+          .withPrimarySkills({ ...NO_SKILLS, knowledge: 5 })
+          .withSpellBook(true)
+          .withSpells(['SACRIFICE'])
+          .withArmy([stack('MOTH'), stack('RUNNER')])
+          .at(PLAYERS_GATE.x, PLAYERS_GATE.y)
+        const { user } = await defendAgainstBlue(
+          aComputerAttackScenario({ garrison: [], blueArmy: [stack('BRUTE')], others: [hero] })
+        )
+        await moveAndWait(user, { row: 6, column: 2 })
+        await moveAndWait(user, INNER_DRAWBRIDGE)
+
+        await pickSpell(user, 'Sacrifice')
+        await clickBattleHex(user, 6, 2)
+        await clickBattleHex(user, INNER_DRAWBRIDGE.row, INNER_DRAWBRIDGE.column)
+        await waitMs()
+
+        expect(readBattleStacks()).toContainEqual({ stack: 'Moth 1', row: 6, column: 2 })
+        expect(drawbridgeOf(readBattleWalls())).toEqual(SHUT_DRAWBRIDGE)
+      })
+    })
+
+    describe('an attacker on it or in front of it', () => {
+      test("the player's walking stack in front of the shut drawbridge keeps blue's walking garrison in, and its turn passes", async () => {
+        const { user } = await attackTown(
+          anAttackScenario({ town: aBlueTown({ garrison: [stack('RAIDER')] }) })
+        )
+
+        await moveAndWait(user, IN_FRONT_OF_THE_DRAWBRIDGE)
+
+        expect(readBattleStacks()).toContainEqual({ stack: 'Raider 1', row: 6, column: 15 })
+        expect(readActiveStack()).toEqual({ stack: 'Runner 1', ...IN_FRONT_OF_THE_DRAWBRIDGE })
+      })
+
+      // The player's Flyer draws blue's Raider out: first to the hex above and left of the one in
+      // front of the drawbridge, then, from there, to the hex in front of it.
+      test("blue's stack in front of the shut drawbridge keeps the player's walking stack off it", async () => {
+        const { user } = await defendAgainstBlue(
+          aComputerAttackScenario({
+            garrison: [stack('FLYER'), stack('RUNNER')],
+            blueArmy: [stack('RAIDER')]
+          })
+        )
+        await moveAndWait(user, { row: 5, column: 9 })
+        await moveAndWait(user, { row: 9, column: 14 })
+        await moveAndWait(user, { row: 7, column: 9 })
+        await moveAndWait(user, { row: 9, column: 13 })
+        await clickBattleButton(user, 'Defend')
+
+        expect(readBattleStacks()).toContainEqual({
+          stack: 'Raider 1',
+          ...IN_FRONT_OF_THE_DRAWBRIDGE
+        })
+        expect(readActiveStack()).toEqual({ stack: 'Runner 1', row: 9, column: 13 })
+        expect(isReachable(INNER_DRAWBRIDGE)).toBe(false)
+        expect(isReachable(OUTER_DRAWBRIDGE)).toBe(false)
+      })
+
+      // The player's Flyer draws blue's Wisp out, as above. The Wisp, of two health, dies to the
+      // Flyer's second retaliation, in front of the drawbridge.
+      test("blue's dead stack in front of the shut drawbridge doesn't keep the player's walking stack off it", async () => {
+        const { user } = await defendAgainstBlue(
+          aComputerAttackScenario({
+            garrison: [stack('FLYER'), stack('RUNNER')],
+            blueArmy: [stack('WISP'), stack('SLUG')]
+          })
+        )
+        await moveAndWait(user, { row: 5, column: 9 })
+        await moveAndWait(user, { row: 9, column: 14 })
+        await moveAndWait(user, { row: 7, column: 9 })
+        await moveAndWait(user, { row: 9, column: 13 })
+        await clickBattleButton(user, 'Defend')
+
+        expect(readBattleStacks()).toContainEqual({
+          stack: 'Dead Wisp',
+          ...IN_FRONT_OF_THE_DRAWBRIDGE
+        })
+        expect(readActiveStack()).toEqual({ stack: 'Runner 1', row: 9, column: 13 })
+        expect(isReachable(OUTER_DRAWBRIDGE)).toBe(true)
+      })
+
+      // Blue's Raider attacks the player's Runner on the inner hex from the outer one; the Runner
+      // steps back and the Raider follows it in.
+      test("blue's stack on the drawbridge's outer hex holds it open once the defender's stack leaves, and walks in", async () => {
+        const { user } = await defendAgainstBlue(
+          aComputerAttackScenario({ garrison: [stack('RUNNER')], blueArmy: [stack('RAIDER')] })
+        )
+        await moveAndWait(user, INNER_DRAWBRIDGE)
+        expect(readBattleStacks()).toContainEqual({ stack: 'Raider 1', ...OUTER_DRAWBRIDGE })
+
+        await moveAndWait(user, { row: 6, column: 14 })
+
+        expect(readBattleStacks()).toContainEqual({ stack: 'Raider 1', row: 6, column: 13 })
+      })
     })
   })
 })
