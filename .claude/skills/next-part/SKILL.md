@@ -35,4 +35,4 @@ End the turn with one message that holds:
 - the scenario list, grouped by test file, as the `writing-tests` skill shows;
 - the open questions, where the sources disagree or say nothing.
 
-Write no test or code until the user replies to it.
+Write no test or code until the user replies to it. Leave the note and roadmap changes uncommitted until then too; once they approve, commit and push them as `AGENTS.md` says.
