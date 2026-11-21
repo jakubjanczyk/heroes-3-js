@@ -37,6 +37,12 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
+import {
+  renderCatapult,
+  renderCatapultStone,
+  renderWall,
+  renderWallHit
+} from '../presentation/siege.js'
 
 const describeDamageRange = ({ min, max }) => (min === max ? `${min}` : `${min}-${max}`)
 
@@ -320,7 +326,7 @@ export const registerBattleViewModule = defineModule(
 
     const canTeleportPickedStackTo = (hex) =>
       canTeleportTo(
-        { ...shown, walls: shown.walls.length > 0 },
+        { ...shown, walls: shown.siege },
         findTeleportingStack(),
         hex,
         pickedSpell.targeting
@@ -653,24 +659,41 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
-    function wallLabel({ part, open }) {
-      if (part === 'drawbridge') {
-        return open ? 'Drawbridge, open' : 'Drawbridge, shut'
-      }
-      return 'Wall'
-    }
-
     function showWalls(walls = []) {
       for (const element of battlefield.querySelectorAll('.battlefield__wall')) {
         element.remove()
       }
       for (const wall of walls) {
-        const element = document.createElement('div')
-        element.className = `battlefield__wall battlefield__wall--${wall.part}`
-        element.classList.toggle('battlefield__wall--open', Boolean(wall.open))
-        element.setAttribute('role', 'img')
-        element.setAttribute('aria-label', wallLabel(wall))
-        hexElementAt(wall).prepend(element)
+        hexElementAt(wall).prepend(renderWall(document, wall))
+      }
+    }
+
+    function showCatapult(catapult) {
+      battlefield.querySelector('.battle-catapult')?.remove()
+      if (catapult) {
+        hexElementAt(catapult).append(renderCatapult(document))
+      }
+    }
+
+    function showCatapultStone(stone) {
+      const catapult = battlefield.querySelector('.battle-catapult')
+      if (!stone || !catapult || battlefield.querySelector('.battle-catapult-stone')) {
+        return
+      }
+      const element = renderCatapultStone(document, {
+        from: centreWithin(battlefield, catapult),
+        to: centreWithin(battlefield, hexElementAt(stone.to)),
+        flightMs: stone.flightMs
+      })
+      battlefield.append(element)
+      setTimeout(() => element.remove(), stone.flightMs)
+    }
+
+    function showWallHits(wallHits = []) {
+      for (const wallHit of wallHits) {
+        const element = renderWallHit(document, wallHit, EFFECT_MS)
+        hexElementAt(wallHit).append(element)
+        setTimeout(() => element.remove(), EFFECT_MS)
       }
     }
 
@@ -689,6 +712,9 @@ export const registerBattleViewModule = defineModule(
 
       showStacks(battle, previous)
       showWalls(battle.walls)
+      showCatapult(battle.catapult)
+      showCatapultStone(battle.catapultStone)
+      showWallHits(battle.wallHits)
 
       for (const row of hexes) {
         for (const hexElement of row) {

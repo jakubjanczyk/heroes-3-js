@@ -34,6 +34,7 @@ import {
   resolveAttack,
   resolveShot,
   sacrificeStack,
+  shootCatapult,
   shootStack,
   spellTargetIds,
   teleportStack,
@@ -57,7 +58,13 @@ import {
 } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
 import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.js'
-import { describeWalls } from '../../../game/heroes/siege-walls.js'
+import {
+  CATAPULT_HEX,
+  describeCatapultShot,
+  describeWallPartHex,
+  describeWalls,
+  planCatapultShot
+} from '../../../game/heroes/siege-walls.js'
 import {
   battleSpellTargeting,
   castsOnAllStacks,
@@ -101,6 +108,7 @@ import {
   APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
+  APP_FACT_BATTLE_CATAPULT_SHOT,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_BATTLE_FINISHED,
   APP_FACT_BATTLE_SPELL_CAST,
@@ -128,11 +136,12 @@ import {
   battleDefenderEvents,
   battleDefenderName,
   battleDefenderOf,
-  hasSiegeWalls
+  siegeWallsOf
 } from '../battle-defenders.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
+const STONE_FLIGHT_STEPS = 4
 
 // A sacrificed stack is gone from the battlefield, with no corpse.
 const withHexes = (stacks) =>
@@ -195,6 +204,8 @@ export const registerBattleModule = defineModule(
     const luckRandom = typeof config?.luckRandom === 'function' ? config.luckRandom : Math.random
     const resistanceRandom =
       typeof config?.resistanceRandom === 'function' ? config.resistanceRandom : Math.random
+    const catapultRandom =
+      typeof config?.catapultRandom === 'function' ? config.catapultRandom : random
 
     let heroId = null
     // The side the viewing player plays: 'attacker', 'defender', or null for a battle of other
@@ -206,6 +217,10 @@ export const registerBattleModule = defineModule(
     let isRestoring = false
     // A move or attack is saved as one fact; until the walk ends the battle is shown as before.
     let moving = null
+    // The catapult's stone in flight: the battle is shown as before until it lands.
+    let throwing = null
+    // Where the last stone landed and what it did, shown once.
+    let wallHits = []
     let autoCombat = false
     let passedTurns = 0
     // How the battle went, once it is over and its results window waits for the player.
@@ -297,40 +312,84 @@ export const registerBattleModule = defineModule(
     // Other players' heroes fight where the player can't see: the battle AI plays both sides.
     const isUnseen = () => playerSide === null
 
-    const wallsOf = (stacks) => (battle.walls ? describeWalls(stacks) : [])
+    const siegeOf = (shown, stacks = shown.stacks) => ({
+      walls: shown.walls ? describeWalls({ walls: shown.walls, stacks }) : [],
+      siege: shown.walls,
+      catapult: shown.walls ? CATAPULT_HEX : null
+    })
+
+    function takeWallHits() {
+      const hits = wallHits
+      wallHits = []
+      return hits
+    }
+
+    function busyView() {
+      if (throwing) {
+        return {
+          shown: throwing.battle,
+          stacks: throwing.battle.stacks,
+          activeStackId: null,
+          catapultStone: {
+            to: describeWallPartHex(throwing.shot.part),
+            flightMs: stepDelayMs * STONE_FLIGHT_STEPS
+          }
+        }
+      }
+      const stacks = moving.battle.stacks.map((stack) =>
+        stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+      )
+      return { shown: moving.battle, stacks, activeStackId: moving.stackId }
+    }
+
+    function showBusyBattle() {
+      const { shown, stacks, activeStackId, catapultStone = null } = busyView()
+      emit(APP_UI_BATTLE_UPDATED, {
+        tile: started.tile,
+        heroId,
+        heroName: heroNameOf(),
+        heroOwner: heroOwner(state.get(), heroId),
+        defenderHero: defenderHeroOf(),
+        stacks: withHexes(stacks),
+        ...siegeOf(shown, stacks),
+        catapultStone,
+        wallHits: [],
+        activeStackId,
+        moving: true,
+        reachableHexes: [],
+        attackTargets: [],
+        shotTargets: [],
+        messages: shown.messages,
+        effects: [],
+        canWait: false,
+        canDefend: false,
+        canRetreat: false,
+        canCastSpell: false,
+        results: null,
+        autoCombat,
+        stepDelayMs
+      })
+    }
+
+    function activeStackView(activeStack) {
+      if (!activeStack) {
+        return { activeStackId: null, reachableHexes: [], attackTargets: [], shotTargets: [] }
+      }
+      return {
+        activeStackId: activeStack.id,
+        reachableHexes: getStackReach(battle, activeStack),
+        attackTargets: getAttackTargets(battle, activeStack),
+        shotTargets: getShotTargets(battle, activeStack)
+      }
+    }
 
     function showBattle() {
       if (isUnseen()) {
         return
       }
 
-      if (moving) {
-        const movingStacks = moving.battle.stacks.map((stack) =>
-          stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
-        )
-        emit(APP_UI_BATTLE_UPDATED, {
-          tile: started.tile,
-          heroId,
-          heroName: heroNameOf(),
-          heroOwner: heroOwner(state.get(), heroId),
-          defenderHero: defenderHeroOf(),
-          stacks: withHexes(movingStacks),
-          walls: wallsOf(movingStacks),
-          activeStackId: moving.stackId,
-          moving: true,
-          reachableHexes: [],
-          attackTargets: [],
-          shotTargets: [],
-          messages: moving.battle.messages,
-          effects: [],
-          canWait: false,
-          canDefend: false,
-          canRetreat: false,
-          canCastSpell: false,
-          results: null,
-          autoCombat,
-          stepDelayMs
-        })
+      if (moving || throwing) {
+        showBusyBattle()
         return
       }
 
@@ -342,11 +401,10 @@ export const registerBattleModule = defineModule(
         heroOwner: heroOwner(state.get(), heroId),
         defenderHero: defenderHeroOf(),
         stacks: withHexes(battle.stacks),
-        walls: wallsOf(battle.stacks),
-        activeStackId: activeStack?.id ?? null,
-        reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
-        attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],
-        shotTargets: activeStack ? getShotTargets(battle, activeStack) : [],
+        ...siegeOf(battle),
+        catapultStone: null,
+        wallHits: takeWallHits(),
+        ...activeStackView(activeStack),
         messages: battle.messages,
         effects: takeNewEffects(),
         ...playerActions(activeStack),
@@ -569,6 +627,12 @@ export const registerBattleModule = defineModule(
         return
       }
 
+      const shot = battle.catapultReady ? planCatapultShot(battle.walls, catapultRandom) : null
+      if (shot) {
+        void throwStone(shot)
+        return
+      }
+
       const stack = getActiveStack(battle)
       if (freezesInPanic(stack)) {
         emit(APP_FACT_BATTLE_STACK_FROZE, { stackId: stack.id })
@@ -596,7 +660,38 @@ export const registerBattleModule = defineModule(
       Boolean(stack) && !isUnseen() && !isBerserk(stack) && fightsFor(stack) === playerSide
 
     const isPlayersTurn = () =>
-      Boolean(battle) && !outcome && !moving && !autoCombat && isPlayers(getActiveStack(battle))
+      Boolean(battle) &&
+      !outcome &&
+      !moving &&
+      !throwing &&
+      !autoCombat &&
+      isPlayers(getActiveStack(battle))
+
+    // The wall changes only once the stone lands on it.
+    async function throwStone(shot) {
+      const throwingBattle = started
+      if (shot.damage > 0) {
+        passedTurns = 0
+      }
+      if (isUnseen()) {
+        emit(APP_FACT_BATTLE_CATAPULT_SHOT, shot)
+        continueBattle()
+        return
+      }
+
+      const { result } = describeCatapultShot(battle.walls, shot)
+      throwing = { battle, shot }
+      emit(APP_FACT_BATTLE_CATAPULT_SHOT, shot)
+      await sleep(stepDelayMs * STONE_FLIGHT_STEPS)
+      throwing = null
+      if (started !== throwingBattle) {
+        return
+      }
+
+      wallHits = [{ ...describeWallPartHex(shot.part), result }]
+      showBattle()
+      continueBattle()
+    }
 
     // The player leads a hero as the attacker, or as the defender when the defender is a hero.
     const isLeadingHerosTurn = () => isPlayersTurn() && Boolean(playerHeroId())
@@ -898,7 +993,7 @@ export const registerBattleModule = defineModule(
                 heroArmy: hero?.army,
                 definitions
               }),
-              walls: hasSiegeWalls({ started, state }),
+              walls: siegeWallsOf({ started, state }),
               definitions
             })
             showBattle()
@@ -954,6 +1049,17 @@ export const registerBattleModule = defineModule(
               badMoraleRolledFor = cast
             }
             battle = cast
+            showBattle()
+          }
+        },
+        {
+          type: APP_FACT_BATTLE_CATAPULT_SHOT,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = shootCatapult(battle, event.detail)
             showBattle()
           }
         },
@@ -1032,6 +1138,7 @@ export const registerBattleModule = defineModule(
             started = null
             battle = null
             moving = null
+            throwing = null
             autoCombat = false
             outcome = null
           }
@@ -1165,6 +1272,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_FROZE,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_SPELL_CAST,
+      APP_FACT_BATTLE_CATAPULT_SHOT,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
@@ -1189,6 +1297,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_FROZE,
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_SPELL_CAST,
+      APP_FACT_BATTLE_CATAPULT_SHOT,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_FACT_RESOURCES_SPENT,

@@ -720,16 +720,18 @@ In three parts.
 - [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
-In nine parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
+In eleven parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
 - [x] 5.10.1 Walls and the drawbridge: a town with a Fort, Citadel or Castle is fought against its walls; walkers can't cross them, flyers fly over; the defender goes out and back through the drawbridge, which opens for them and shuts behind them
 - [x] 5.10.2 Holding the drawbridge: a dead stack on it keeps it open for good, a living attacker in front of it keeps it shut
 - [x] 5.10.3 Shooting at the walls: a shot from outside at a stack behind the walls does half damage, shown by the cursor and the damage range
 - [x] 5.10.4 Teleport and the walls: below Expert it can't take a stack across them
-- [ ] 5.10.5 The catapult: the attacker's war machine shoots at the wall segments and the drawbridge each round; destroyed ones can be walked through; their hit points by Fort or Castle; Earthquake
-- [ ] 5.10.6 The moat (Citadel and Castle): stops a stack for the round, damages it and takes 3 Defense; Advanced Teleport crosses it
-- [ ] 5.10.7 Arrow towers: the Keep (Citadel) and two more (Castle), their damage by the town's buildings, the catapult shooting at them
-- [ ] 5.10.8 Ballistics: aiming the catapult, two shots, the hit chances by level
-- [ ] 5.10.9 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
+- [x] 5.10.5 The catapult shoots: once a round, before every stack, at the weakest wall segment and then the drawbridge; destroyed segments can be walked through and shot through, a destroyed drawbridge stays open; their hit points by Fort or Castle
+- [ ] 5.10.6 The catapult as a war machine: the defenders can attack it, it never strikes back, destroyed it stops shooting; not counted for winning, back for the next siege
+- [ ] 5.10.7 Earthquake: one point of damage to two, three or four random parts of the walls
+- [ ] 5.10.8 The moat (Citadel and Castle): stops a stack for the round, damages it and takes 3 Defense; Advanced Teleport crosses it
+- [ ] 5.10.9 Arrow towers: the Keep (Citadel) and two more (Castle), their damage by the town's buildings, the catapult shooting at them
+- [ ] 5.10.10 Ballistics: aiming the catapult, two shots, the hit chances by level
+- [ ] 5.10.11 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
 
 ---
 

@@ -96,7 +96,8 @@ export function readBattleStacks() {
       (image) =>
         image.closest('[role="gridcell"]') &&
         !image.closest(BATTLE_EFFECT) &&
-        !image.closest(BATTLE_WALL)
+        !image.closest(BATTLE_WALL) &&
+        !image.closest(BATTLE_CATAPULT)
     )
     .map((creature) => ({
       stack: describeBattleStack(creature),
@@ -126,9 +127,30 @@ export function getBattleHex(row, column) {
 
 const BATTLE_EFFECT = '.battle-effect'
 const BATTLE_WALL = '.battlefield__wall'
+const BATTLE_CATAPULT = '.battle-catapult'
+const WALL_HIT = '.battle-wall-hit'
 
-// The walls of a siege, hex by hex: "Wall", or the drawbridge as "Drawbridge, shut" or
-// "Drawbridge, open".
+// The hex the attacker's catapult stands on, its front half's; null when it has none.
+export function readBattleCatapult() {
+  const catapult = getBattlefield().querySelector(BATTLE_CATAPULT)
+  return catapult ? readHexPosition(catapult.closest('[role="gridcell"]')) : null
+}
+
+export const countCatapultStones = () =>
+  within(getBattlefield()).queryAllByRole('img', { name: 'Catapult stone' }).length
+
+// Where a catapult stone landed and what it did: "Stone hit: damaged", "Stone hit: destroyed" or
+// "Stone hit: no damage".
+export function readWallHits() {
+  return [...getBattlefield().querySelectorAll(WALL_HIT)].map((hit) => ({
+    hit: hit.getAttribute('aria-label'),
+    ...readHexPosition(hit.closest('[role="gridcell"]'))
+  }))
+}
+
+// The walls of a siege, hex by hex: "Wall", "Damaged wall" or "Destroyed wall", and the
+// drawbridge as "Drawbridge, shut", "Drawbridge, open", "Damaged drawbridge, shut" or
+// "Destroyed drawbridge".
 export function readBattleWalls() {
   return [...getBattlefield().querySelectorAll(BATTLE_WALL)].map((wall) => ({
     wall: wall.getAttribute('aria-label'),

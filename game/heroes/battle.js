@@ -30,7 +30,13 @@ import {
 import { describeStack } from './hero-army.js'
 import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
-import { areOnOneSideOfTheWalls, blocksStanding, isShotThroughTheWalls } from './siege-walls.js'
+import {
+  blocksStanding,
+  canTeleportBetween,
+  describeCatapultShot,
+  hitWall,
+  isShotThroughTheWalls
+} from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
 const MORALE_CHANCE_IN = 24
@@ -136,7 +142,7 @@ export function heroBattleSide(hero, definitions) {
 }
 
 // A side without a hero has its creatures' morale alone, and no luck.
-export function createBattle({ attacker, defender, walls = false, definitions }) {
+export function createBattle({ attacker, defender, walls = null, definitions }) {
   const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
   const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
   const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
@@ -168,6 +174,8 @@ export function createBattle({ attacker, defender, walls = false, definitions })
     effects: [],
     messages: [],
     walls,
+    // The attacker's catapult shoots as each round starts, before every stack.
+    catapultReady: Boolean(walls),
     definitions
   }
 }
@@ -303,6 +311,7 @@ export function endTurn(battle, stackId) {
     waitedStackIds: [],
     moraleStackIds: [],
     turnStackId: null,
+    catapultReady: Boolean(battle.walls),
     stacks: withoutGoneClones(
       battle.stacks.map((stack) => ({
         ...countDownSpells(stack),
@@ -415,7 +424,7 @@ function canStandFor(battle, stack) {
   const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
   const side = fightsFor(stack)
   const blockedByWalls = (hex) =>
-    battle.walls && blocksStanding({ stacks: battle.stacks, side, hex })
+    battle.walls && blocksStanding({ walls: battle.walls, stacks: battle.stacks, side, hex })
   return (hex) =>
     isOnBattlefield(hex) &&
     getStackHexes(stack, hex).every(
@@ -430,7 +439,7 @@ export const canStackStandOn = (battle, stack, hex) => canStandFor(battle, stack
 
 export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls }) =>
   canStackStandOn(battle, stack, hex) &&
-  (teleportsAcrossWalls || !battle.walls || areOnOneSideOfTheWalls(stack.hex, hex))
+  (teleportsAcrossWalls || !battle.walls || canTeleportBetween(battle.walls, stack.hex, hex))
 
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
@@ -588,7 +597,8 @@ function hasDistancePenalty(stack, target) {
 
 // Either penalty halves the shot, and both together halve it only once.
 const hasShotPenalty = (battle, stack, target) =>
-  hasDistancePenalty(stack, target) || (battle.walls && isShotThroughTheWalls(stack, target))
+  hasDistancePenalty(stack, target) ||
+  (battle.walls && isShotThroughTheWalls(battle.walls, stack, target))
 
 export function getShotTargets(battle, stack) {
   if (!canShoot(battle, stack)) {
@@ -1057,6 +1067,15 @@ export function resolveShot(battle, { stackId, strikes }) {
 }
 
 export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
+
+export function shootCatapult(battle, shot) {
+  return {
+    ...battle,
+    walls: hitWall(battle.walls, shot),
+    catapultReady: false,
+    messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
+  }
+}
 
 export function getArmyAfterBattle(battle, side, army) {
   return army.map((slot, index) => {
