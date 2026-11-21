@@ -51,6 +51,7 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   mind: Boolean(spell?.mind),
   notOnHypnotized: Boolean(spell?.notOnHypnotized),
   teleports: Boolean(spell?.teleports),
+  teleportsAcrossWalls: spell?.teleports?.acrossWalls[skillLevel] ?? false,
   sacrifices: Boolean(spell?.sacrifices),
   highestTierCloned: spell?.clones?.highestTier[skillLevel] ?? null,
   spellLevel: spell?.level ?? 0,
