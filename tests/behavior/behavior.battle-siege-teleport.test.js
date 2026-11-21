@@ -116,14 +116,28 @@ const aDefenceScenario = (level) =>
     )
     .withDefinitions(definitions)
 
-const setupApp = (scenario) =>
+// The catapult's first shot, as the battle opens, aims at the third of the four equally strong
+// segments, the Mid-Lower Wall, hits it and does 2 damage, which brings it down. Later shots do
+// no damage.
+const MID_LOWER_WALL_DESTROYED = [0.5, 0, 0.9]
+
+function catapultRolls(values = []) {
+  const rolls = [...values]
+  return () => rolls.shift() ?? 0
+}
+
+const setupApp = (scenario, catapult) =>
   setupMovementBehaviorApp({
     loadGameOptions: scenario.build(),
-    appConfig: { random: LOWEST_ROLLS, interactionModalTransitionMs: 0 }
+    appConfig: {
+      random: LOWEST_ROLLS,
+      catapultRandom: catapultRolls(catapult),
+      interactionModalTransitionMs: 0
+    }
   })
 
-async function attackKirkwall(level) {
-  const app = await setupApp(anAttackScenario(level))
+async function attackKirkwall(level, catapult) {
+  const app = await setupApp(anAttackScenario(level), catapult)
   await loadAppStyles()
   confirmTileClickByDispatch(KIRKWALL_GATE.x, KIRKWALL_GATE.y)
   await waitMs()
@@ -222,6 +236,36 @@ describe('siege teleport behavior', () => {
         INSIDE,
         String(SPELL_POINTS - 3)
       ])
+    })
+  })
+
+  describe('the player attacks a town whose Mid-Lower Wall is destroyed', () => {
+    // From row 8, column 8 the way to row 8, column 13 goes through the gap where the Mid-Lower
+    // Wall was; the way to row 2, column 13 crosses the walls above it.
+    const BY_THE_GAP = { row: 8, column: 8 }
+    const THROUGH_THE_GAP = { row: 8, column: 13 }
+
+    async function runnerByTheGap(level) {
+      const app = await attackKirkwall(level, MID_LOWER_WALL_DESTROYED)
+      await clickBattleHex(app.user, BY_THE_GAP.row, BY_THE_GAP.column)
+      await waitMs(1000)
+      return app
+    }
+
+    test('given Basic Water Magic when the stack is teleported through the gap to a hex inside then it stands there', async () => {
+      const { user } = await runnerByTheGap(BASIC)
+      await pickToTeleport(user, BY_THE_GAP)
+
+      await teleportTo(user, THROUGH_THE_GAP)
+
+      expect(runnerAt()).toEqual(THROUGH_THE_GAP)
+    })
+
+    test('given Basic Water Magic when Teleport is aimed across a standing part of the walls then it is an invalid destination', async () => {
+      const { user } = await runnerByTheGap(BASIC)
+      await pickToTeleport(user, BY_THE_GAP)
+
+      expect(await aimAt(user, INSIDE)).toEqual(REFUSED)
     })
   })
 

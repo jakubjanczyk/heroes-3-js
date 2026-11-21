@@ -76,7 +76,11 @@ const BEHIND_A_WALL = { row: 2, column: 13 }
 const SHOT = 'The Shooter does 10 damage.'
 const HALVED_SHOT = 'The Shooter does 5 damage.'
 
-const lastCombatMessage = () => readCombatMessages().at(-1)
+// The catapult's shot as the next round starts comes after the shooter's in the log.
+const lastCombatMessage = () =>
+  readCombatMessages()
+    .filter((message) => !message.startsWith('The Catapult'))
+    .at(-1)
 
 const positionOf = (name) => {
   const { row, column } = readBattleStacks().find(({ stack }) => stack.startsWith(name))
@@ -100,10 +104,24 @@ const anAttackScenario = ({ army, garrison, buildings = ['FORT'] }) =>
     )
     .withDefinitions(definitions)
 
-const setupApp = (scenario, options = {}) =>
+// The catapult's first shot, as the battle opens, aims at the third of the four equally strong
+// segments, the Mid-Lower Wall, hits it and does 2 damage, which brings it down. Later shots do
+// no damage.
+const MID_LOWER_WALL_DESTROYED = [0.5, 0, 0.9]
+
+function catapultRolls(values = []) {
+  const rolls = [...values]
+  return () => rolls.shift() ?? 0
+}
+
+const setupApp = (scenario, { catapult, ...options } = {}) =>
   setupMovementBehaviorApp({
     loadGameOptions: scenario.build(),
-    appConfig: { random: LOWEST_ROLLS, interactionModalTransitionMs: 0 },
+    appConfig: {
+      random: LOWEST_ROLLS,
+      catapultRandom: catapultRolls(catapult),
+      interactionModalTransitionMs: 0
+    },
     ...options
   })
 
@@ -247,6 +265,48 @@ describe('siege shooting behavior', () => {
       await hoverBattleHex(user, slug.row, slug.column)
 
       expect(getBattleStatusBarText()).toBe('Shoot Slug (10 shots left, damage 5)')
+    })
+  })
+
+  describe('through the broken walls', () => {
+    // From row 8, column 8 the way to the Slug goes through the gap where the Mid-Lower Wall was.
+    const BY_THE_GAP = { row: 8, column: 8 }
+
+    async function shooterBy(hex) {
+      const app = await attackTown(
+        anAttackScenario({ army: [stack('SHOOTER')], garrison: [stack('SLUG')] }),
+        { catapult: MID_LOWER_WALL_DESTROYED }
+      )
+      await moveAndWait(app.user, hex)
+      return app
+    }
+
+    test("a shot through a destroyed segment's gap at a stack behind it does full damage", async () => {
+      const { user } = await shooterBy(BY_THE_GAP)
+      const slug = positionOf('Slug')
+
+      await shootAt(user, slug.row, slug.column)
+
+      expect(lastCombatMessage()).toBe(SHOT)
+    })
+
+    test("the mouse over a stack behind a destroyed segment's gap shows the full damage", async () => {
+      const { user } = await shooterBy(BY_THE_GAP)
+      const slug = positionOf('Slug')
+
+      await hoverBattleHex(user, slug.row, slug.column)
+
+      expect(getBattleStatusBarText()).toBe('Shoot Slug (10 shots left, damage 10)')
+      expect(getCursorOver(getBattleHex(slug.row, slug.column))).toBe('battle-shoot')
+    })
+
+    test('a shot at a stack behind a standing segment is still halved while another segment is destroyed', async () => {
+      const { user } = await shooterBy(SHOOTER_CLOSE_TO_THE_WALLS)
+      const slug = positionOf('Slug')
+
+      await shootAt(user, slug.row, slug.column)
+
+      expect(lastCombatMessage()).toBe(HALVED_SHOT)
     })
   })
 
