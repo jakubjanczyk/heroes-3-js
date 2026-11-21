@@ -75,6 +75,16 @@ const SHUT_WALLS = [
 
 const drawbridgeOf = (walls) => walls.filter(({ wall }) => wall.startsWith('Drawbridge'))
 
+const IN_FRONT_OF_THE_DRAWBRIDGE = { row: 6, column: 9 }
+const A_WALL = { row: 5, column: 10 }
+const OUTER_DRAWBRIDGE = { row: 6, column: 10 }
+const INNER_DRAWBRIDGE = { row: 6, column: 11 }
+const BEHIND_THE_DRAWBRIDGE = { row: 6, column: 12 }
+const BEHIND_A_WALL = { row: 2, column: 13 }
+
+const reachableAmong = (hexes) =>
+  hexes.filter(({ row, column }) => isBattleHexReachable(row, column))
+
 // The player's hero attacks blue's town. Its entrance is at (4, 3); the hero starts two tiles below
 // it. A lone stack starts on row 6: the attacker's in column 1, the defender's in column 15.
 const TOWN_ENTRANCE = { x: 4, y: 3 }
@@ -201,19 +211,15 @@ describe('siege walls behavior', () => {
     test("the attacker's walking stack can't reach the walls, the shut drawbridge or the hexes behind them", async () => {
       await attackTown(anAttackScenario())
 
-      expect({
-        inFrontOfTheDrawbridge: isBattleHexReachable(6, 9),
-        wall: isBattleHexReachable(5, 10),
-        drawbridge: isBattleHexReachable(6, 10),
-        behindTheDrawbridge: isBattleHexReachable(6, 12),
-        behindTheWall: isBattleHexReachable(2, 13)
-      }).toEqual({
-        inFrontOfTheDrawbridge: true,
-        wall: false,
-        drawbridge: false,
-        behindTheDrawbridge: false,
-        behindTheWall: false
-      })
+      expect(
+        reachableAmong([
+          IN_FRONT_OF_THE_DRAWBRIDGE,
+          A_WALL,
+          OUTER_DRAWBRIDGE,
+          BEHIND_THE_DRAWBRIDGE,
+          BEHIND_A_WALL
+        ])
+      ).toEqual([IN_FRONT_OF_THE_DRAWBRIDGE])
     })
 
     test("clicking a hex behind the walls leaves the attacker's walking stack where it is", async () => {
@@ -235,11 +241,7 @@ describe('siege walls behavior', () => {
     test("the attacker's flying stack can't land on a wall or on the shut drawbridge", async () => {
       await attackTown(anAttackScenario({ army: [stack('FLYER')] }))
 
-      expect({
-        wall: isBattleHexReachable(5, 10),
-        outerDrawbridge: isBattleHexReachable(6, 10),
-        innerDrawbridge: isBattleHexReachable(6, 11)
-      }).toEqual({ wall: false, outerDrawbridge: false, innerDrawbridge: false })
+      expect(reachableAmong([A_WALL, OUTER_DRAWBRIDGE, INNER_DRAWBRIDGE])).toEqual([])
     })
 
     // Blue's Raider acts first but can't get at the player's Slug behind the walls.
