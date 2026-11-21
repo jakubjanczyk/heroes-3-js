@@ -273,10 +273,10 @@ describe('siege catapult as a target behavior', () => {
 
       await attackTheCatapult(user)
 
-      expect({
-        hit: readCombatMessages().includes('The Strikers do 100 damage.'),
-        struckBack: readCombatMessages().filter((message) => /^The Catapult does? \d/.test(message))
-      }).toEqual({ hit: true, struckBack: [] })
+      expect(readCombatMessages()).toContain('The Strikers do 100 damage.')
+      expect(
+        readCombatMessages().filter((message) => /^The Catapult does? \d/.test(message))
+      ).toEqual([])
     })
 
     test("the defender's shooter shoots the catapult", async () => {
@@ -311,10 +311,10 @@ describe('siege catapult as a target behavior', () => {
 
       await pointAtBattleHexSide(user, CATAPULT.row, CATAPULT.column, 'right')
 
-      expect({
-        status: getBattleStatusBarText(),
-        cursor: getCursorOver(getBattleHex(CATAPULT.row, CATAPULT.column))
-      }).toEqual({ status: 'Attack Catapult (damage 100)', cursor: 'battle-attack-from-right' })
+      expect(getBattleStatusBarText()).toBe('Attack Catapult (damage 100)')
+      expect(getCursorOver(getBattleHex(CATAPULT.row, CATAPULT.column))).toBe(
+        'battle-attack-from-right'
+      )
     })
 
     // Blue's Brute walks one hex a round towards it, and is still two hexes away.
@@ -338,15 +338,9 @@ describe('siege catapult as a target behavior', () => {
 
       await attackTheCatapult(user)
 
-      expect({
-        log: readCombatMessages().find((message) => message.startsWith('The Strikers')),
-        destroyed: catapultMessages().at(-1),
-        picture: readBattleCatapultPicture()
-      }).toEqual({
-        log: 'The Strikers do 1000 damage.',
-        destroyed: 'The Catapult is destroyed.',
-        picture: 'Destroyed Catapult'
-      })
+      expect(readCombatMessages()).toContain('The Strikers do 1000 damage.')
+      expect(catapultMessages().at(-1)).toBe('The Catapult is destroyed.')
+      expect(readBattleCatapultPicture()).toBe('Destroyed Catapult')
     })
 
     test("a destroyed catapult doesn't shoot when the next round starts", async () => {
@@ -463,10 +457,8 @@ describe('siege catapult as a target behavior', () => {
       confirmTileClickByDispatch(SOUTHWATCH.x, SOUTHWATCH.y)
       await waitMs(1000)
 
-      expect({ catapult: readBattleCatapult(), picture: readBattleCatapultPicture() }).toEqual({
-        catapult: CATAPULT,
-        picture: 'Catapult'
-      })
+      expect(readBattleCatapult()).toEqual(CATAPULT)
+      expect(readBattleCatapultPicture()).toBe('Catapult')
     })
 
     test("blue's defending stacks go for the catapult when it is the nearest enemy stack", async () => {
@@ -509,10 +501,8 @@ describe('siege catapult as a target behavior', () => {
 
       await hoverBattleHex(user, CATAPULT.row, CATAPULT.column)
 
-      expect([
-        getBattleStatusBarText(),
-        getCursorOver(getBattleHex(CATAPULT.row, CATAPULT.column))
-      ]).toEqual(['Select Spell Target', 'battle-blocked'])
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+      expect(getCursorOver(getBattleHex(CATAPULT.row, CATAPULT.column))).toBe('battle-blocked')
     })
 
     test("a mind spell can't be cast on the catapult", async () => {
@@ -522,10 +512,8 @@ describe('siege catapult as a target behavior', () => {
 
       await hoverBattleHex(user, CATAPULT.row, CATAPULT.column)
 
-      expect([
-        getBattleStatusBarText(),
-        getCursorOver(getBattleHex(CATAPULT.row, CATAPULT.column))
-      ]).toEqual(['Select Spell Target', 'battle-blocked'])
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+      expect(getCursorOver(getBattleHex(CATAPULT.row, CATAPULT.column))).toBe('battle-blocked')
     })
 
     test('the attacking hero can cast Shield on their own catapult', async () => {
@@ -562,13 +550,10 @@ describe('siege catapult as a target behavior', () => {
       await waitMs(1000)
       await passTheRound(reloaded.user)
 
-      expect({
-        picture: readBattleCatapultPicture(),
-        shots: catapultMessages().filter((message) => message.includes('Wall'))
-      }).toEqual({
-        picture: 'Destroyed Catapult',
-        shots: ['The Catapult hits the Upper Wall, but does no damage.']
-      })
+      expect(readBattleCatapultPicture()).toBe('Destroyed Catapult')
+      expect(catapultMessages().filter((message) => message.includes('Wall'))).toEqual([
+        'The Catapult hits the Upper Wall, but does no damage.'
+      ])
     })
   })
 })
