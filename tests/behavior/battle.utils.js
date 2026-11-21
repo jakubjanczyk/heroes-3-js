@@ -92,7 +92,12 @@ export function getBattlefield() {
 export function readBattleStacks() {
   return within(getBattlefield())
     .queryAllByRole('img')
-    .filter((image) => image.closest('[role="gridcell"]') && !image.closest(BATTLE_EFFECT))
+    .filter(
+      (image) =>
+        image.closest('[role="gridcell"]') &&
+        !image.closest(BATTLE_EFFECT) &&
+        !image.closest(BATTLE_WALL)
+    )
     .map((creature) => ({
       stack: describeBattleStack(creature),
       ...readHexPosition(creature.closest('[role="gridcell"]'))
@@ -120,6 +125,16 @@ export function getBattleHex(row, column) {
 }
 
 const BATTLE_EFFECT = '.battle-effect'
+const BATTLE_WALL = '.battlefield__wall'
+
+// The walls of a siege, hex by hex: "Wall", or the drawbridge as "Drawbridge, shut" or
+// "Drawbridge, open".
+export function readBattleWalls() {
+  return [...getBattlefield().querySelectorAll(BATTLE_WALL)].map((wall) => ({
+    wall: wall.getAttribute('aria-label'),
+    ...readHexPosition(wall.closest('[role="gridcell"]'))
+  }))
+}
 
 // The pictures shown over a stack as its morale or luck takes effect: "Good morale", "Bad morale"
 // or "Good luck", with the hex of the stack it is over.
