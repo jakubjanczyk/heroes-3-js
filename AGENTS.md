@@ -50,13 +50,13 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - semicolons as needed
   - cognitive complexity of at most 15 per function, and no nested ternaries; split a function rather than silencing the rule
 - Prefer descriptive names (`movementPointsMax`, `screenToTile`) over abbreviations.
-- Keep comments to a minimum: write one only when the code can't be understood without it (a surprising rule or edge case, or why something is done the odd way it is). Rename or restructure instead where you can.
-  - No comment that restates the code, the function or variable name, or the test name.
+- In source code, keep comments to a minimum: write one only when the code can't be understood without it (a surprising rule or edge case, or why something is done the odd way it is). Rename or restructure instead where you can.
+  - No comment that restates the code or the function or variable name.
   - No header comments describing what a module, function, helper or state variable does, its parameters or what it returns.
   - This is a Heroes 3 game, so don't write "as in Heroes 3", "Heroes 3 does…" or "the Heroes 3 <thing>".
-  - Never mention VCMI (or its classes, functions and files) in code, test comments or docs. Describe the rule itself instead. The `game-sources` and `new-map-object` skills name it only as a source to check rules against.
-  - Not every function, variable or test helper needs one; most need none.
-- In tests, a comment is worth it when it explains how an expected value is worked out (damage numbers, positions), not to narrate the steps.
+  - Never mention VCMI (or its classes, functions and files) in code or docs. Describe the rule itself instead. The `game-sources` and `new-map-object` skills name it only as a source to check rules against.
+  - Not every function or variable needs one; most need none.
+- Test files hold no comments. The test name says what is checked; named constants, helpers and builder values say how an expected value comes about (`HALVED_SHOT`, `SHOOTER_CLOSE_TO_THE_WALLS`, a creature built with damage 10 and no Attack).
 
 ## Game Rules & Map Objects
 
