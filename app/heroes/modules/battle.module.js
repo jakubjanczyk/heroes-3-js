@@ -57,6 +57,7 @@ import {
 } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
 import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.js'
+import { describeWalls } from '../../../game/heroes/siege-walls.js'
 import {
   battleSpellTargeting,
   castsOnAllStacks,
@@ -123,7 +124,12 @@ import {
   APP_UI_RESTORE_STARTED
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
-import { battleDefenderEvents, battleDefenderName, battleDefenderOf } from '../battle-defenders.js'
+import {
+  battleDefenderEvents,
+  battleDefenderName,
+  battleDefenderOf,
+  hasSiegeWalls
+} from '../battle-defenders.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
@@ -291,23 +297,25 @@ export const registerBattleModule = defineModule(
     // Other players' heroes fight where the player can't see: the battle AI plays both sides.
     const isUnseen = () => playerSide === null
 
+    const wallsOf = (stacks) => (battle.walls ? describeWalls(stacks) : [])
+
     function showBattle() {
       if (isUnseen()) {
         return
       }
 
       if (moving) {
+        const movingStacks = moving.battle.stacks.map((stack) =>
+          stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
+        )
         emit(APP_UI_BATTLE_UPDATED, {
           tile: started.tile,
           heroId,
           heroName: heroNameOf(),
           heroOwner: heroOwner(state.get(), heroId),
           defenderHero: defenderHeroOf(),
-          stacks: withHexes(
-            moving.battle.stacks.map((stack) =>
-              stack.id === moving.stackId ? { ...stack, hex: moving.hex } : stack
-            )
-          ),
+          stacks: withHexes(movingStacks),
+          walls: wallsOf(movingStacks),
           activeStackId: moving.stackId,
           moving: true,
           reachableHexes: [],
@@ -334,6 +342,7 @@ export const registerBattleModule = defineModule(
         heroOwner: heroOwner(state.get(), heroId),
         defenderHero: defenderHeroOf(),
         stacks: withHexes(battle.stacks),
+        walls: wallsOf(battle.stacks),
         activeStackId: activeStack?.id ?? null,
         reachableHexes: activeStack ? getStackReach(battle, activeStack) : [],
         attackTargets: activeStack ? getAttackTargets(battle, activeStack) : [],
@@ -886,6 +895,7 @@ export const registerBattleModule = defineModule(
                 heroArmy: hero?.army,
                 definitions
               }),
+              walls: hasSiegeWalls({ started, state }),
               definitions
             })
             showBattle()
