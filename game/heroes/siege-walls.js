@@ -48,6 +48,8 @@ export function blocksStanding({ stacks, side, hex }) {
 // The drawbridge's inner hex is the wall's hex on its row.
 const isInside = ({ row, column }) => column > (WALL_COLUMN_BY_ROW[row] ?? 10)
 
+export const areOnOneSideOfTheWalls = (hex, other) => isInside(hex) === isInside(other)
+
 // Every wall still stands, so a shot from outside at a stack wholly inside crosses one.
 export const isShotThroughTheWalls = (shooter, target) =>
   !isInside(shooter.hex) && getOccupiedHexes(target).every(isInside)
