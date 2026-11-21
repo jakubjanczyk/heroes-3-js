@@ -36,6 +36,13 @@ if (options.help || positionals.length !== 1) {
   process.exit(options.help ? 0 : 1)
 }
 
+const AUTHOR = [
+  '-c',
+  'user.name=Jakub Janczyk',
+  '-c',
+  'user.email=jakubjanczyk@users.noreply.github.com'
+]
+
 function git(...args) {
   return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' }).trim()
 }
@@ -132,10 +139,10 @@ const captions = options.captions ? JSON.parse(await readFile(options.captions, 
 const media = await collectMedia(path.resolve(positionals[0]), path.join(repoRoot, MEDIA_DIRECTORY))
 
 git('add', '--force', MEDIA_DIRECTORY)
-git('commit', '--quiet', '-m', 'pr: add screenshots for the description')
+git(...AUTHOR, 'commit', '--quiet', '-m', 'pr: add screenshots for the description')
 const mediaCommit = git('rev-parse', 'HEAD')
 git('rm', '-r', '--quiet', MEDIA_DIRECTORY)
-git('commit', '--quiet', '-m', 'pr: take the screenshots back out of the tree')
+git(...AUTHOR, 'commit', '--quiet', '-m', 'pr: take the screenshots back out of the tree')
 
 const urlOf = (file) =>
   `https://raw.githubusercontent.com/${slug}/${mediaCommit}/${MEDIA_DIRECTORY}/${file}`
