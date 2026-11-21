@@ -191,10 +191,8 @@ describe('siege walls behavior', () => {
     test("given the player's town has a Fort when blue's hero attacks it then the player defends it behind the walls", async () => {
       await defendAgainstBlue(aRunnerDefending())
 
-      expect({ walls: readBattleWalls(), active: readActiveStack() }).toEqual({
-        walls: SHUT_WALLS,
-        active: { stack: 'Runner 1', row: 6, column: 15 }
-      })
+      expect(readActiveStack()).toEqual({ stack: 'Runner 1', row: 6, column: 15 })
+      expect(readBattleWalls()).toEqual(SHUT_WALLS)
     })
 
     test('given a siege when the page reloads then the battlefield still has the walls', async () => {
@@ -250,13 +248,8 @@ describe('siege walls behavior', () => {
         aComputerAttackScenario({ garrison: [stack('SLUG')], blueArmy: [stack('RAIDER')] })
       )
 
-      expect({
-        raider: readBattleStacks().find(({ stack }) => stack === 'Raider 1'),
-        active: readActiveStack()
-      }).toEqual({
-        raider: { stack: 'Raider 1', row: 6, column: 1 },
-        active: { stack: 'Slug 1', row: 6, column: 15 }
-      })
+      expect(readBattleStacks()).toContainEqual({ stack: 'Raider 1', row: 6, column: 1 })
+      expect(readActiveStack()).toEqual({ stack: 'Slug 1', row: 6, column: 15 })
     })
   })
 
@@ -277,16 +270,11 @@ describe('siege walls behavior', () => {
 
       await moveActiveStackTo(user, 6, 8)
 
-      expect({
-        runner: readBattleStacks().find(({ stack }) => stack === 'Runner 1'),
-        drawbridge: drawbridgeOf(readBattleWalls())
-      }).toEqual({
-        runner: { stack: 'Runner 1', row: 6, column: 8 },
-        drawbridge: [
-          { wall: 'Drawbridge, shut', row: 6, column: 10 },
-          { wall: 'Drawbridge, shut', row: 6, column: 11 }
-        ]
-      })
+      expect(readBattleStacks()).toContainEqual({ stack: 'Runner 1', row: 6, column: 8 })
+      expect(drawbridgeOf(readBattleWalls())).toEqual([
+        { wall: 'Drawbridge, shut', row: 6, column: 10 },
+        { wall: 'Drawbridge, shut', row: 6, column: 11 }
+      ])
     })
 
     test("the defender's flying stack flies out over the walls", async () => {
