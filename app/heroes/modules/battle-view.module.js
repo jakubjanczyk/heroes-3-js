@@ -401,7 +401,7 @@ export const registerBattleViewModule = defineModule(
 
       const shot = findShot(hex)
       if (shot) {
-        return shot.distancePenalty ? 'shoot-penalty' : 'shoot'
+        return shot.penalty ? 'shoot-penalty' : 'shoot'
       }
 
       const attack = findAttack(hex, hexElementAt(hex))

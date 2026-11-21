@@ -30,7 +30,7 @@ import {
 import { describeStack } from './hero-army.js'
 import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
-import { blocksStanding } from './siege-walls.js'
+import { blocksStanding, isShotThroughTheWalls } from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
 const MORALE_CHANCE_IN = 24
@@ -582,17 +582,21 @@ function hasDistancePenalty(stack, target) {
   )
 }
 
+// Either penalty halves the shot, and both together halve it only once.
+const hasShotPenalty = (battle, stack, target) =>
+  hasDistancePenalty(stack, target) || (battle.walls && isShotThroughTheWalls(stack, target))
+
 export function getShotTargets(battle, stack) {
   if (!canShoot(battle, stack)) {
     return []
   }
 
   return attackableBy(battle, stack).map((target) => {
-    const distancePenalty = hasDistancePenalty(stack, target)
+    const penalty = hasShotPenalty(battle, stack, target)
     return {
       stackId: target.id,
-      distancePenalty,
-      damage: getDamageRange({ attacker: stack, defender: target, halved: distancePenalty })
+      penalty,
+      damage: getDamageRange({ attacker: stack, defender: target, halved: penalty })
     }
   })
 }
@@ -1029,7 +1033,7 @@ export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
       defender: target,
       random,
       luckRandom,
-      halved: hasDistancePenalty(stack, target)
+      halved: hasShotPenalty(battle, stack, target)
     })
   }
 }
