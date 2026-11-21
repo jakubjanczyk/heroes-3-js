@@ -10,6 +10,7 @@ import {
 import { describeStack } from '../../game/heroes/hero-army.js'
 import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings.js'
 import { splitMonster } from '../../game/heroes/monster-stacks.js'
+import { createSiegeWalls } from '../../game/heroes/siege-walls.js'
 import { heroById } from '../../game/heroes/state/hero-details.js'
 import { builtIn, townGarrison as garrisonOf, townOwner } from '../../game/heroes/state/towns.js'
 import {
@@ -237,9 +238,10 @@ const defenders = {
 
 export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?? monster
 
-export function hasSiegeWalls({ started, state }) {
+export function siegeWallsOf({ started, state }) {
   const townId = battleDefenderOf(started).townId?.({ started })
-  return Boolean(townId) && hasWalls(builtIn(state.get(), townId))
+  const built = townId ? builtIn(state.get(), townId) : null
+  return built && hasWalls(built) ? createSiegeWalls({ castle: built.has('CASTLE') }) : null
 }
 
 export function battleDefenderName({ started, state, definitions }) {

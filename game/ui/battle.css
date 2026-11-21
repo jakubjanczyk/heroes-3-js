@@ -169,6 +169,225 @@
   clip-path: none;
 }
 
+/* Cracks across the stone once the catapult has hit it, and a heap of rubble once it is down. */
+.battlefield__wall--damaged {
+  background:
+    linear-gradient(118deg, transparent 0 44%, rgba(20, 16, 12, 0.85) 44% 48%, transparent 48%),
+    linear-gradient(64deg, transparent 0 56%, rgba(20, 16, 12, 0.75) 56% 59%, transparent 59%),
+    linear-gradient(150deg, transparent 0 30%, rgba(20, 16, 12, 0.6) 30% 33%, transparent 33%),
+    repeating-linear-gradient(0deg, transparent 0 30%, rgba(40, 34, 28, 0.55) 30% 34%),
+    linear-gradient(160deg, #a49d8f, #7a7366 55%, #554f46);
+}
+
+.battlefield__wall--destroyed {
+  inset: 48% 4% 4%;
+  clip-path: none;
+  border-radius: 40% 40% 12% 12%;
+  background:
+    radial-gradient(circle at 20% 60%, #8a8274 0 14%, transparent 15%),
+    radial-gradient(circle at 48% 40%, #9c9486 0 17%, transparent 18%),
+    radial-gradient(circle at 76% 62%, #7d766a 0 15%, transparent 16%),
+    radial-gradient(circle at 36% 78%, #6c665b 0 12%, transparent 13%),
+    radial-gradient(circle at 64% 82%, #8f887b 0 13%, transparent 14%),
+    linear-gradient(180deg, rgba(70, 62, 52, 0.4), rgba(50, 44, 36, 0.85));
+  box-shadow: none;
+}
+
+.battlefield__wall--drawbridge.battlefield__wall--damaged {
+  background:
+    linear-gradient(120deg, transparent 0 46%, rgba(25, 12, 4, 0.9) 46% 50%, transparent 50%),
+    repeating-linear-gradient(90deg, transparent 0 22%, rgba(40, 22, 8, 0.7) 22% 26%),
+    linear-gradient(180deg, #8a5c30, #5c3a1b);
+}
+
+.battlefield__wall--drawbridge.battlefield__wall--destroyed {
+  inset: 40% 2% 10%;
+  opacity: 0.85;
+  border-radius: 0;
+  background:
+    linear-gradient(28deg, transparent 0 20%, #6b4521 20% 34%, transparent 34%),
+    linear-gradient(-18deg, transparent 0 48%, #7d5229 48% 62%, transparent 62%),
+    linear-gradient(8deg, transparent 0 70%, #5c3a1b 70% 84%, transparent 84%);
+}
+
+/* The attacker's catapult stands on its hex and the edge hex behind it, as a double-wide
+ * creature does. */
+.battle-catapult {
+  position: absolute;
+  inset-block: -20% 0;
+  inset-inline: -100% 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+
+  & svg {
+    inline-size: 90%;
+    overflow: visible;
+    filter: drop-shadow(0 2px 2px rgb(0 0 0 / 60%));
+  }
+}
+
+.battle-catapult__frame {
+  fill: none;
+  stroke: #6b4521;
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
+.battle-catapult__arm {
+  stroke: #8a5c30;
+  stroke-width: 6px;
+  stroke-linecap: round;
+}
+
+.battle-catapult__cup {
+  fill: #5c3a1b;
+}
+
+.battle-catapult__wheel {
+  fill: #3e2a16;
+  stroke: #a07a4a;
+  stroke-width: 3px;
+}
+
+/* The stone goes across the battlefield at an even pace while it rises and falls, landing on the
+ * wall it hits. */
+.battle-catapult-stone {
+  position: absolute;
+  z-index: 4;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+  animation: catapult-stone-across var(--stone-flight-ms, 0.7s) linear forwards;
+}
+
+.battle-catapult-stone__stone {
+  position: absolute;
+  inset-block-start: -12px;
+  inset-inline-start: -12px;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 45% 55% 50% 40%;
+  background: radial-gradient(circle at 35% 30%, #c9c2b3, #7d766a 60%, #4f4a42);
+  box-shadow: 0 3px 4px rgb(0 0 0 / 55%);
+  animation: catapult-stone-arc var(--stone-flight-ms, 0.7s) forwards;
+}
+
+@keyframes catapult-stone-across {
+  to {
+    translate: var(--stone-across) 0;
+  }
+}
+
+@keyframes catapult-stone-arc {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+
+  45% {
+    translate: 0 calc(var(--stone-down) * 0.45 - 140px);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+  }
+
+  to {
+    translate: 0 var(--stone-down);
+    rotate: 540deg;
+  }
+}
+
+/* Where the stone landed: a puff of dust; a wall that falls throws its stones down. */
+.battle-effect.battle-wall-hit {
+  inset-block-end: -20%;
+  inline-size: 96px;
+  block-size: 96px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  animation-name: wall-hit;
+}
+
+.battle-wall-hit__dust {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(245 238 220 / 100%) 0 18%,
+    rgb(200 188 165 / 90%) 38%,
+    rgb(150 138 118 / 55%) 58%,
+    transparent 72%
+  );
+  animation: wall-hit-dust var(--battle-effect-ms, 1s) ease-out forwards;
+}
+
+.battle-wall-hit--none .battle-wall-hit__dust {
+  inset: 18%;
+  opacity: 0.7;
+}
+
+.battle-wall-hit--damaged .battle-wall-hit__dust {
+  box-shadow: 0 0 0 3px rgb(255 210 120 / 45%);
+}
+
+.battle-wall-hit__rubble {
+  position: absolute;
+  inset-block-start: 40%;
+  inset-inline-start: calc(15% + var(--rubble-piece) * 12%);
+  inline-size: 13px;
+  block-size: 11px;
+  border-radius: 30%;
+  background: #8a8274;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 60%);
+  animation: wall-hit-rubble var(--battle-effect-ms, 1s) ease-in forwards;
+  animation-delay: calc(var(--rubble-piece) * 40ms);
+}
+
+@keyframes wall-hit {
+  from,
+  80% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes wall-hit-dust {
+  from {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+
+  45% {
+    transform: scale(1.2);
+    opacity: 0.95;
+  }
+
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes wall-hit-rubble {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+
+  to {
+    translate: calc((var(--rubble-piece) - 2.5) * 6px) 46px;
+    rotate: 200deg;
+  }
+}
+
 /* A creature stands on its hex, taller than it, with its count in a purple box at its feet. The
  * mouse points at hexes, not at the pictures reaching over them. */
 .battle-stack {
