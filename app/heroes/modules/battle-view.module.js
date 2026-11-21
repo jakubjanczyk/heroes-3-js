@@ -1,4 +1,4 @@
-import { areaTargetIds, canStackStandOn, getStackHexes } from '../../../game/heroes/battle.js'
+import { areaTargetIds, canTeleportTo, getStackHexes } from '../../../game/heroes/battle.js'
 import { canBeSacrificed, sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
 import { isSpellTarget } from '../../../game/heroes/battle-spells.js'
 import { areEnemies, fightsFor } from '../../../game/heroes/battle-stats.js'
@@ -318,10 +318,16 @@ export const registerBattleViewModule = defineModule(
         ? shown.stacks.find(({ id }) => id === pickedSpell.teleportingId)
         : null
 
-    const canTeleportTo = (hex) => canStackStandOn(shown, findTeleportingStack(), hex)
+    const canTeleportPickedStackTo = (hex) =>
+      canTeleportTo(
+        { ...shown, walls: shown.walls.length > 0 },
+        findTeleportingStack(),
+        hex,
+        pickedSpell.targeting
+      )
 
     function describeTeleportAim(hex) {
-      return canTeleportTo(hex) ? 'Teleport Here' : 'Invalid Teleport Destination'
+      return canTeleportPickedStackTo(hex) ? 'Teleport Here' : 'Invalid Teleport Destination'
     }
 
     function describeSpellAim(hex) {
@@ -349,7 +355,7 @@ export const registerBattleViewModule = defineModule(
       if (isPickingSacrifice()) {
         return pickSacrificeCursor(hex)
       }
-      if (findTeleportingStack() && canTeleportTo(hex)) {
+      if (findTeleportingStack() && canTeleportPickedStackTo(hex)) {
         return 'teleport'
       }
       if (findTeleportingStack()) {
@@ -367,7 +373,7 @@ export const registerBattleViewModule = defineModule(
       }
       const teleporting = findTeleportingStack()
       if (teleporting) {
-        return canTeleportTo(hex) ? getStackHexes(teleporting, hex) : []
+        return canTeleportPickedStackTo(hex) ? getStackHexes(teleporting, hex) : []
       }
       if (canAimAreaAt(hex)) {
         return getAreaHexes(hex, pickedSpell.targeting.area)
@@ -957,7 +963,7 @@ export const registerBattleViewModule = defineModule(
 
     // A click where the stack can't go waits for one where it can.
     function teleportPickedStackTo(hex) {
-      if (!canTeleportTo(hex)) {
+      if (!canTeleportPickedStackTo(hex)) {
         return
       }
       const { id: spellId, teleportingId: targetId } = pickedSpell

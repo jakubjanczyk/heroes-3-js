@@ -1,7 +1,7 @@
 import {
   areaTargetIds,
   attackStack,
-  canStackStandOn,
+  canTeleportTo,
   castDamageSpell,
   castHealingSpell,
   castLastingSpell,
@@ -746,10 +746,13 @@ export const registerBattleModule = defineModule(
 
     // Where Teleport takes its stack, or where the clone stands: undefined when there is no such
     // place, and nothing to keep for another spell.
-    function spellDestination(spell, { targetIds }, destination) {
+    function spellDestination({ hero, spell }, { targetIds }, destination) {
       const target = battle.stacks.find(({ id }) => id === targetIds[0])
       if (spell.teleports) {
-        return destination && canStackStandOn(battle, target, destination) ? destination : undefined
+        const targeting = battleSpellTargeting({ hero, spell, definitions })
+        return destination && canTeleportTo(battle, target, destination, targeting)
+          ? destination
+          : undefined
       }
       if (spell.clones) {
         return findCloneHex(battle, target) ?? undefined
@@ -777,7 +780,7 @@ export const registerBattleModule = defineModule(
         emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
         return
       }
-      const goesTo = targets && spellDestination(spell, targets, destination)
+      const goesTo = targets && spellDestination({ hero, spell }, targets, destination)
       if (goesTo === undefined || !targets) {
         return
       }

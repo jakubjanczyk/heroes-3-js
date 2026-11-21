@@ -30,7 +30,7 @@ import {
 import { describeStack } from './hero-army.js'
 import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
-import { blocksStanding, isShotThroughTheWalls } from './siege-walls.js'
+import { areOnOneSideOfTheWalls, blocksStanding, isShotThroughTheWalls } from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
 const MORALE_CHANCE_IN = 24
@@ -427,6 +427,10 @@ function canStandFor(battle, stack) {
 }
 
 export const canStackStandOn = (battle, stack, hex) => canStandFor(battle, stack)(hex)
+
+export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls }) =>
+  canStackStandOn(battle, stack, hex) &&
+  (teleportsAcrossWalls || !battle.walls || areOnOneSideOfTheWalls(stack.hex, hex))
 
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({

@@ -309,7 +309,7 @@ const teleportDefinitions = {
     .withLevel(3)
     .withSchools(['WATER'])
     .withCosts([15, 12, 6, 3])
-    .withTeleports(true)
+    .withTeleports({ acrossWalls: [false, false, false, true] })
     .describedAs('Teleport description.')
     .build(),
   CLONE: aSpellDefinition()
