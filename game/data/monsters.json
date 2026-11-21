@@ -394,5 +394,21 @@
     },
     "aiValue": 15,
     "abilities": []
+  },
+  "CATAPULT": {
+    "name": "Catapult",
+    "namePlural": "Catapults",
+    "faction": "NEUTRAL",
+    "tier": 1,
+    "attack": 10,
+    "defense": 10,
+    "damage": {
+      "min": 0,
+      "max": 0
+    },
+    "health": 1000,
+    "speed": 0,
+    "aiValue": 500,
+    "abilities": ["doubleWide", "warMachine"]
   }
 }

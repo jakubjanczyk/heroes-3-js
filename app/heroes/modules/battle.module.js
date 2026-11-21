@@ -59,7 +59,6 @@ import {
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
 import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.js'
 import {
-  CATAPULT_HEX,
   describeCatapultShot,
   describeWallPartHex,
   describeWalls,
@@ -314,8 +313,7 @@ export const registerBattleModule = defineModule(
 
     const siegeOf = (shown, stacks = shown.stacks) => ({
       walls: shown.walls ? describeWalls({ walls: shown.walls, stacks }) : [],
-      siege: shown.walls,
-      catapult: shown.walls ? CATAPULT_HEX : null
+      siege: shown.walls
     })
 
     function takeWallHits() {

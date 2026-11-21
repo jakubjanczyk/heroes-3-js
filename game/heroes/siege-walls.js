@@ -86,7 +86,7 @@ const isStandingWallHex = (walls, hex) => {
 // Shut, it is a wall for the attacker, and the defender's stacks open it unless an attacker's
 // stack stands in front of it.
 export function blocksStanding({ walls, stacks, side, hex }) {
-  if (isSameHex(hex, CATAPULT_HEX) || isStandingWallHex(walls, hex)) {
+  if (isStandingWallHex(walls, hex)) {
     return true
   }
   if (!isDrawbridgeHex(hex) || isDrawbridgeOpen({ walls, stacks })) {

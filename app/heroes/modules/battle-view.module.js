@@ -38,7 +38,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
 import {
-  renderCatapult,
+  renderCatapultPicture,
   renderCatapultStone,
   renderWall,
   renderWallHit
@@ -149,11 +149,15 @@ export const registerBattleViewModule = defineModule(
 
     // No creature pictures yet: a stack is drawn as monsters are on the map, with its count. The
     // back half of a double-wide creature only marks its hex for screen readers.
-    function createStack({ side, doubleWide, cloneOf }) {
+    function createStack({ side, doubleWide, cloneOf, warMachine }) {
       const stack = cloneTemplate('battle-stack-template')
       stack.classList.add(`battle-stack--${side}`)
       stack.classList.toggle('battle-stack--clone', Boolean(cloneOf))
       stack.classList.toggle('battle-stack--double-wide', Boolean(doubleWide))
+      if (warMachine) {
+        stack.classList.add('battle-stack--war-machine')
+        stack.querySelector('.battle-stack__creature').append(renderCatapultPicture(document))
+      }
       const backHalf = document.createElement('div')
       backHalf.className = 'battle-stack__back-half'
       backHalf.setAttribute('role', 'img')
@@ -162,11 +166,11 @@ export const registerBattleViewModule = defineModule(
 
     function drawStack(
       { stack: element, backHalf },
-      { name: creatureName, count, spellBalance, cloneOf }
+      { name: creatureName, count, spellBalance, cloneOf, warMachine }
     ) {
       const name = cloneOf ? `${creatureName} (clone)` : creatureName
       const isDead = count === 0
-      const label = isDead ? `Dead ${name}` : name
+      const label = isDead ? `${warMachine ? 'Destroyed' : 'Dead'} ${name}` : name
       element.classList.toggle('battle-stack--dead', isDead)
       const creature = element.querySelector('.battle-stack__creature')
       creature.setAttribute('aria-label', label)
@@ -668,13 +672,6 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
-    function showCatapult(catapult) {
-      battlefield.querySelector('.battle-catapult')?.remove()
-      if (catapult) {
-        hexElementAt(catapult).append(renderCatapult(document))
-      }
-    }
-
     function showCatapultStone(stone) {
       const catapult = battlefield.querySelector('.battle-catapult')
       if (!stone || !catapult || battlefield.querySelector('.battle-catapult-stone')) {
@@ -712,7 +709,6 @@ export const registerBattleViewModule = defineModule(
 
       showStacks(battle, previous)
       showWalls(battle.walls)
-      showCatapult(battle.catapult)
       showCatapultStone(battle.catapultStone)
       showWallHits(battle.wallHits)
 

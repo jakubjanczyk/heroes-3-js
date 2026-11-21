@@ -485,6 +485,7 @@
   },
   "IMPLOSION": {
     "name": "Implosion",
+    "notOnWarMachines": true,
     "level": 5,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -651,6 +652,7 @@
   },
   "DEATH_RIPPLE": {
     "name": "Death Ripple",
+    "notOnWarMachines": true,
     "level": 2,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -679,6 +681,7 @@
   },
   "DESTROY_UNDEAD": {
     "name": "Destroy Undead",
+    "notOnWarMachines": true,
     "level": 3,
     "schools": ["AIR"],
     "kind": "combat",
@@ -1069,6 +1072,7 @@
   },
   "RESURRECTION": {
     "name": "Resurrection",
+    "notOnWarMachines": true,
     "level": 4,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -1120,6 +1124,7 @@
   },
   "SACRIFICE": {
     "name": "Sacrifice",
+    "notOnWarMachines": true,
     "level": 5,
     "schools": ["FIRE"],
     "kind": "combat",
@@ -1210,6 +1215,7 @@
   },
   "BLOODLUST": {
     "name": "Bloodlust",
+    "notOnWarMachines": true,
     "level": 1,
     "schools": ["FIRE"],
     "kind": "combat",
@@ -1504,6 +1510,7 @@
   },
   "HASTE": {
     "name": "Haste",
+    "notOnWarMachines": true,
     "level": 1,
     "schools": ["AIR"],
     "kind": "combat",
@@ -1531,6 +1538,7 @@
   },
   "SLOW": {
     "name": "Slow",
+    "notOnWarMachines": true,
     "level": 1,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -1652,6 +1660,7 @@
   },
   "COUNTERSTRIKE": {
     "name": "Counterstrike",
+    "notOnWarMachines": true,
     "level": 4,
     "schools": ["AIR"],
     "kind": "combat",
@@ -1820,6 +1829,7 @@
   },
   "TELEPORT": {
     "name": "Teleport",
+    "notOnWarMachines": true,
     "level": 3,
     "schools": ["WATER"],
     "kind": "combat",
@@ -1873,6 +1883,7 @@
   },
   "CLONE": {
     "name": "Clone",
+    "notOnWarMachines": true,
     "level": 4,
     "schools": ["WATER"],
     "kind": "combat",

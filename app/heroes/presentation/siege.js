@@ -31,11 +31,10 @@ const CATAPULT_SHAPES = [
   ['circle', { class: 'battle-catapult__wheel', cx: '74', cy: '54', r: '9' }]
 ]
 
-export function renderCatapult(document) {
+export function renderCatapultPicture(document) {
   const element = document.createElement('div')
   element.className = 'battle-catapult'
-  element.setAttribute('role', 'img')
-  element.setAttribute('aria-label', 'Catapult')
+  element.setAttribute('aria-hidden', 'true')
   const picture = document.createElementNS(SVG, 'svg')
   picture.setAttribute('viewBox', '0 0 100 66')
   picture.setAttribute('aria-hidden', 'true')
