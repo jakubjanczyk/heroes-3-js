@@ -8,8 +8,10 @@ const SIEGE_EXPERIENCE = 500
 
 export const hasCreatures = (garrison) => (garrison ?? []).some(Boolean)
 
+export const hasWalls = (built) => fortLevelOf(built) > 0
+
 export function townCaptureExperience(built) {
-  return fortLevelOf(built) > 0 ? SIEGE_EXPERIENCE : 0
+  return hasWalls(built) ? SIEGE_EXPERIENCE : 0
 }
 
 // The garrison fights beside the hero defending its town, each stack in one of the hero's free

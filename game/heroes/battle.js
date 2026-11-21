@@ -30,6 +30,7 @@ import {
 import { describeStack } from './hero-army.js'
 import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
+import { blocksStanding } from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
 const MORALE_CHANCE_IN = 24
@@ -135,7 +136,7 @@ export function heroBattleSide(hero, definitions) {
 }
 
 // A side without a hero has its creatures' morale alone, and no luck.
-export function createBattle({ attacker, defender, definitions }) {
+export function createBattle({ attacker, defender, walls = false, definitions }) {
   const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
   const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
   const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
@@ -166,6 +167,7 @@ export function createBattle({ attacker, defender, definitions }) {
     // Each time morale or luck took effect, in order: { stackId, kind }.
     effects: [],
     messages: [],
+    walls,
     definitions
   }
 }
@@ -411,10 +413,16 @@ const coversHex = (stack, hex) => getStackHexes(stack).some((own) => isSameHex(o
 // Corpses lie on the ground: other stacks walk over them and stand on them.
 function canStandFor(battle, stack) {
   const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
+  const side = fightsFor(stack)
+  const blockedByWalls = (hex) =>
+    battle.walls && blocksStanding({ stacks: battle.stacks, side, hex })
   return (hex) =>
     isOnBattlefield(hex) &&
     getStackHexes(stack, hex).every(
-      (part) => isOnBattlefieldOrEdge(part) && !others.some((other) => coversHex(other, part))
+      (part) =>
+        isOnBattlefieldOrEdge(part) &&
+        !blockedByWalls(part) &&
+        !others.some((other) => coversHex(other, part))
     )
 }
 

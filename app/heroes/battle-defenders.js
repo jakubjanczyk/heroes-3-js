@@ -14,6 +14,7 @@ import { heroById } from '../../game/heroes/state/hero-details.js'
 import { builtIn, townGarrison as garrisonOf, townOwner } from '../../game/heroes/state/towns.js'
 import {
   BATTLE_DEFENDER_TOWN_GARRISON,
+  hasWalls,
   joinGarrison,
   splitGarrison,
   townCaptureExperience
@@ -117,6 +118,7 @@ const townGarrison = {
   side: ({ started }) => ({ army: started.defender.stacks }),
   surrenderRefusal: 'There is no hero to surrender to',
   owner: ({ started, state }) => townOwner(state.get(), started.entityId),
+  townId: ({ started }) => started.entityId,
   bonusExperience: ({ state, started }) =>
     townCaptureExperience(builtIn(state.get(), started.entityId)),
   win({ emit, state, heroId, started: { entityId } }) {
@@ -197,6 +199,7 @@ const enemyHero = {
     name: heroById(state.get(), defender.heroId)?.name,
     owner: heroOwner(state.get(), defender.heroId)
   }),
+  townId: ({ started: { defender } }) => defender.townId ?? null,
   bonusExperience: ({ state, started: { defender } }) =>
     DEFEATED_HERO_EXPERIENCE +
     (defender.townId ? townCaptureExperience(builtIn(state.get(), defender.townId)) : 0),
@@ -233,6 +236,11 @@ const defenders = {
 }
 
 export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?? monster
+
+export function hasSiegeWalls({ started, state }) {
+  const townId = battleDefenderOf(started).townId?.({ started })
+  return Boolean(townId) && hasWalls(builtIn(state.get(), townId))
+}
 
 export function battleDefenderName({ started, state, definitions }) {
   const defender = battleDefenderOf(started)

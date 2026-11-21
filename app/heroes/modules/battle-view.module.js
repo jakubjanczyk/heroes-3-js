@@ -647,6 +647,27 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    function wallLabel({ part, open }) {
+      if (part === 'drawbridge') {
+        return open ? 'Drawbridge, open' : 'Drawbridge, shut'
+      }
+      return 'Wall'
+    }
+
+    function showWalls(walls = []) {
+      for (const element of battlefield.querySelectorAll('.battlefield__wall')) {
+        element.remove()
+      }
+      for (const wall of walls) {
+        const element = document.createElement('div')
+        element.className = `battlefield__wall battlefield__wall--${wall.part}`
+        element.classList.toggle('battlefield__wall--open', Boolean(wall.open))
+        element.setAttribute('role', 'img')
+        element.setAttribute('aria-label', wallLabel(wall))
+        hexElementAt(wall).prepend(element)
+      }
+    }
+
     function showBattle(battle) {
       if (!gameShell) {
         return
@@ -661,6 +682,7 @@ export const registerBattleViewModule = defineModule(
       reachableKeys = new Set(battle.reachableHexes.map(hexKey))
 
       showStacks(battle, previous)
+      showWalls(battle.walls)
 
       for (const row of hexes) {
         for (const hexElement of row) {

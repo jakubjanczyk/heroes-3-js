@@ -720,16 +720,14 @@ In three parts.
 - [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
-- [ ] Entering a town that has defenders (a garrison, 6.4, or later an enemy hero) starts a battle; the town is captured only if the hero wins. Until then entering a neutral town captures it straight away (2.3b)
-- [ ] Combat at a fortified town includes walls
-- [ ] Wall segments with health points (can be destroyed by catapult)
-- [ ] Gate: main entry point, can be attacked/destroyed
-- [ ] Moat: slows/damages attackers crossing
-- [ ] Arrow towers: shoot attacking stacks each round
-- [ ] Catapult: attacker's siege weapon, targets walls/towers
-- [ ] Defender stacks placed inside walls
-- [ ] Attacker must breach walls or gate to reach defenders
-- [ ] Fort/Citadel/Castle determines wall strength and tower count
+In seven parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
+- [x] 5.10.1 Walls and the drawbridge: a town with a Fort, Citadel or Castle is fought against its walls; walkers can't cross them, flyers fly over; the defender goes out and back through the drawbridge, which opens for them and shuts behind them
+- [ ] 5.10.2 Behind the walls: a dead stack keeps the drawbridge open and an attacker in front of it keeps it shut; an attacker's shot from outside at a stack behind the walls does half damage; Teleport below Expert can't cross them
+- [ ] 5.10.3 The catapult: the attacker's war machine shoots at the wall segments and the drawbridge each round; destroyed ones can be walked through; their hit points by Fort or Castle; Earthquake
+- [ ] 5.10.4 The moat (Citadel and Castle): stops a stack for the round, damages it and takes 3 Defense; Advanced Teleport crosses it
+- [ ] 5.10.5 Arrow towers: the Keep (Citadel) and two more (Castle), their damage by the town's buildings, the catapult shooting at them
+- [ ] 5.10.6 Ballistics: aiming the catapult, two shots, the hit chances by level
+- [ ] 5.10.7 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
 
 ---
 
