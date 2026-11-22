@@ -166,6 +166,7 @@ function catapultShootingOf(attacker, definitions) {
   const { skill, shots, hitChance, damageChance } = definitions.monsters.CATAPULT.siegeShots
   const level = skillLevelOf(attacker, skill)
   return {
+    aimedByHero: level > 0,
     shots: shots[level],
     hitChance: Object.fromEntries(
       Object.entries(hitChance).map(([kind, chances]) => [kind, chances[level]])
@@ -247,6 +248,29 @@ const hasRoundStartTarget = (battle, shooter) =>
 // The next that shoots as the round starts, passing over one with nothing to shoot at.
 export const getRoundStartShooter = (battle) =>
   battle.roundStartShooters.find((shooter) => hasRoundStartTarget(battle, shooter)) ?? null
+
+export const isCatapultsTurn = (battle) => getRoundStartShooter(battle) === CATAPULT
+
+export const getCatapultStack = (battle) =>
+  battle.stacks.find(({ id }) => id === CATAPULT_STACK_ID) ?? null
+
+// The hero aims the round's first shot; a second goes where the first was aimed.
+export const canHeroAimCatapult = (battle) =>
+  Boolean(battle.catapultShooting?.aimedByHero) && battle.catapultAims.length === 0
+
+// A spell cast on the catapult's turn, before every stack, leaves the stacks' order to their speeds.
+function castTurnOf(battle) {
+  if (isCatapultsTurn(battle)) {
+    return { side: 'attacker', turnStackId: null }
+  }
+  const active = getActiveStack(battle)
+  return { side: active?.side, turnStackId: active?.id ?? null }
+}
+
+const castBy = (battle) => {
+  const { side, turnStackId } = castTurnOf(battle)
+  return { sidesCastThisRound: [...battle.sidesCastThisRound, side], turnStackId }
+}
 
 export const hasCastThisRound = (battle, side) => battle.sidesCastThisRound.includes(side)
 
@@ -486,7 +510,11 @@ export function freezeStack(battle, stackId) {
 }
 
 // +20% Defense, and at least 1 point.
+// Defend passes the catapult's turn, with no bonus.
 export function defendStack(battle, stackId) {
+  if (stackId === CATAPULT_STACK_ID) {
+    return afterRoundStartShot({ ...battle, roundStartShooters: withoutShooter(battle, CATAPULT) })
+  }
   const defended = {
     ...battle,
     stacks: battle.stacks.map((stack) => {
@@ -1054,8 +1082,7 @@ function castOnStacks(
     : []
   return {
     ...battle,
-    sidesCastThisRound: [...battle.sidesCastThisRound, getActiveStack(battle)?.side],
-    turnStackId: getActiveStack(battle)?.id ?? null,
+    ...castBy(battle),
     stacks: battle.stacks.map((stack) => (affectedIds.includes(stack.id) ? change(stack) : stack)),
     effects: [
       ...battle.effects,
@@ -1249,10 +1276,10 @@ const withoutShooter = (battle, done) =>
 const afterRoundStartShot = (battle) =>
   getRoundStartShooter(battle) ? battle : hitAsTurnStarts(battle)
 
-export const planBattleCatapultShot = (battle, random) =>
+export const planBattleCatapultShot = (battle, random, aimedByHero = null) =>
   planCatapultShot(battle.walls, random, {
     ...battle.catapultShooting,
-    aimed: battle.catapultAims.at(-1) ?? null
+    aimed: battle.catapultAims.at(-1) ?? aimedByHero
   })
 
 // A shot saved before the catapult could fire twice names only the part it hit.
@@ -1286,8 +1313,7 @@ export function shootTower(battle, { tower, targetId, damage }) {
 export function shakeWalls(battle, { heroName, spellName, wallHits }) {
   return {
     ...battle,
-    sidesCastThisRound: [...battle.sidesCastThisRound, getActiveStack(battle)?.side],
-    turnStackId: getActiveStack(battle)?.id ?? null,
+    ...castBy(battle),
     walls: wallHits.reduce(hitWall, battle.walls),
     messages: [
       ...battle.messages,

@@ -11,6 +11,7 @@ import {
 } from './app.utils.js'
 import {
   clickBattleButton,
+  clickBattleHex,
   countCatapultStones,
   isBattleHexReachable,
   LOWEST_ROLLS,
@@ -59,9 +60,11 @@ const ballistics = (level) => (level ? [{ skill: 'BALLISTICS', level }] : [])
 
 const UPPER_WALL = { row: 2, column: 12 }
 const MID_UPPER_WALL = { row: 5, column: 10 }
+const MID_LOWER_WALL = { row: 8, column: 11 }
+const LOWER_WALL = { row: 11, column: 12 }
+const DRAWBRIDGE = { row: 6, column: 11 }
 
 const AT_THE_FIRST = 0
-const AT_THE_FOURTH_OF_FOUR = 0.75
 const AT_THE_SECOND_OF_TWO = 0.5
 const AT_THE_SECOND_OF_THREE = 0.4
 const HITS = 0
@@ -130,15 +133,20 @@ async function attackTown(scenario, options) {
   return app
 }
 
+async function aimAt(user, hex) {
+  await clickBattleHex(user, hex.row, hex.column)
+  await waitMs()
+}
+
+async function attackAndAimAt(scenario, hex, options) {
+  const app = await attackTown(scenario, options)
+  await aimAt(app.user, hex)
+  return app
+}
+
 async function passTheRound(user) {
   await clickBattleButton(user, 'Defend')
   await waitMs(1000)
-}
-
-async function passRounds(user, rounds) {
-  for (let round = 0; round < rounds; round += 1) {
-    await passTheRound(user)
-  }
 }
 
 const COMPUTER_TURN_MS = 2000
@@ -169,17 +177,10 @@ const aComputerAttackScenario = (level) =>
     .withDefinitions(definitions)
 
 const FLIGHT_MS = 400
-const TWO_SHOTS_ON_THE_UPPER_WALL = [AT_THE_FIRST, HITS, ONE_POINT, HITS, ONE_POINT]
+const TWO_SHOTS_AIMED = [HITS, ONE_POINT, HITS, ONE_POINT]
+const TWO_SHOTS_AIMING_ITSELF_AT_THE_UPPER_WALL = [AT_THE_FIRST, ...TWO_SHOTS_AIMED]
 
-const UPPER_AND_MID_UPPER_WALLS_AT_ONE_HIT_POINT = [
-  AT_THE_FIRST,
-  HITS,
-  TWO_POINTS,
-  MISSES,
-  TWO_POINTS
-]
-const LOWER_AND_MID_LOWER_WALLS_AT_ONE_HIT_POINT = [
-  AT_THE_FOURTH_OF_FOUR,
+const TWO_POINTS_ON_THE_PART_AIMED_AT_AND_TWO_ON_ITS_NEIGHBOUR = [
   HITS,
   TWO_POINTS,
   MISSES,
@@ -188,12 +189,12 @@ const LOWER_AND_MID_LOWER_WALLS_AT_ONE_HIT_POINT = [
 
 describe('siege Ballistics behavior', () => {
   describe('shots', () => {
-    test('with Advanced Ballistics two stones fly one after the other as the round starts, and the log has a line for each', async () => {
-      await setupApp(anAttackScenario({ level: 'ADVANCED' }), {
-        rolls: TWO_SHOTS_ON_THE_UPPER_WALL,
+    test('with Advanced Ballistics two stones fly one after the other once the player aims, and the log has a line for each', async () => {
+      const { user } = await attackTown(anAttackScenario({ level: 'ADVANCED' }), {
+        rolls: TWO_SHOTS_AIMED,
         stepDelayMs: 100
       })
-      confirmTileClickByDispatch(TOWN_ENTRANCE.x, TOWN_ENTRANCE.y)
+      await clickBattleHex(user, UPPER_WALL.row, UPPER_WALL.column)
       await waitMs(FLIGHT_MS / 2)
       const stonesInTheFirstFlight = countCatapultStones()
       await waitMs(FLIGHT_MS)
@@ -212,11 +213,11 @@ describe('siege Ballistics behavior', () => {
     })
 
     test('the first stack acts only once the second stone has landed', async () => {
-      await setupApp(anAttackScenario({ level: 'ADVANCED' }), {
-        rolls: TWO_SHOTS_ON_THE_UPPER_WALL,
+      const { user } = await attackTown(anAttackScenario({ level: 'ADVANCED' }), {
+        rolls: TWO_SHOTS_AIMED,
         stepDelayMs: 100
       })
-      confirmTileClickByDispatch(TOWN_ENTRANCE.x, TOWN_ENTRANCE.y)
+      await clickBattleHex(user, UPPER_WALL.row, UPPER_WALL.column)
       await waitMs(FLIGHT_MS * 1.5)
       const reachableInTheSecondFlight = isBattleHexReachable(6, 2)
 
@@ -227,23 +228,23 @@ describe('siege Ballistics behavior', () => {
     })
 
     test('with Basic Ballistics the catapult shoots once a round', async () => {
-      await attackTown(anAttackScenario({ level: 'BASIC' }), {
-        rolls: TWO_SHOTS_ON_THE_UPPER_WALL
+      await attackAndAimAt(anAttackScenario({ level: 'BASIC' }), UPPER_WALL, {
+        rolls: TWO_SHOTS_AIMED
       })
 
       expect(catapultMessages()).toEqual(['The Catapult hits the Upper Wall.'])
     })
 
     test("both shots go at the same segment: two 1-point hits leave a Castle's Upper Wall at 1, and the next point destroys it", async () => {
-      const { user } = await attackTown(
+      const { user } = await attackAndAimAt(
         anAttackScenario({ level: 'ADVANCED', buildings: CASTLE }),
-        {
-          rolls: [...TWO_SHOTS_ON_THE_UPPER_WALL, HITS, ONE_POINT]
-        }
+        UPPER_WALL,
+        { rolls: [...TWO_SHOTS_AIMED, HITS, ONE_POINT] }
       )
       const afterTheFirstRound = catapultMessages()
-
       await passTheRound(user)
+
+      await aimAt(user, UPPER_WALL)
 
       expect(afterTheFirstRound).toEqual([
         'The Catapult hits the Upper Wall.',
@@ -253,18 +254,20 @@ describe('siege Ballistics behavior', () => {
     })
 
     test('when the first shot destroys the Upper Wall in a Castle the second goes at the nearest standing part by its roll, here the Upper Tower', async () => {
-      const { user } = await attackTown(
+      const { user } = await attackAndAimAt(
         anAttackScenario({ level: 'ADVANCED', buildings: CASTLE }),
+        UPPER_WALL,
         {
           rolls: [
-            ...UPPER_AND_MID_UPPER_WALLS_AT_ONE_HIT_POINT,
-            ...[AT_THE_FIRST, HITS, ONE_POINT],
+            ...TWO_POINTS_ON_THE_PART_AIMED_AT_AND_TWO_ON_ITS_NEIGHBOUR,
+            ...[HITS, ONE_POINT],
             ...[AT_THE_SECOND_OF_TWO, HITS, ONE_POINT]
           ]
         }
       )
-
       await passTheRound(user)
+
+      await aimAt(user, UPPER_WALL)
 
       expect(catapultMessages().slice(2)).toEqual([
         'The Catapult destroys the Upper Wall.',
@@ -273,18 +276,20 @@ describe('siege Ballistics behavior', () => {
     })
 
     test('the Keep counts as near the Lower Wall as the Mid-Lower Wall and the Lower Tower: the second shot goes at it by its roll', async () => {
-      const { user } = await attackTown(
+      const { user } = await attackAndAimAt(
         anAttackScenario({ level: 'ADVANCED', buildings: CASTLE }),
+        LOWER_WALL,
         {
           rolls: [
-            ...LOWER_AND_MID_LOWER_WALLS_AT_ONE_HIT_POINT,
-            ...[AT_THE_SECOND_OF_TWO, HITS, ONE_POINT],
+            ...TWO_POINTS_ON_THE_PART_AIMED_AT_AND_TWO_ON_ITS_NEIGHBOUR,
+            ...[HITS, ONE_POINT],
             ...[AT_THE_SECOND_OF_THREE, HITS, ONE_POINT]
           ]
         }
       )
-
       await passTheRound(user)
+
+      await aimAt(user, LOWER_WALL)
 
       expect(catapultMessages().slice(2)).toEqual([
         'The Catapult destroys the Lower Wall.',
@@ -293,14 +298,12 @@ describe('siege Ballistics behavior', () => {
     })
 
     test('when the first shot destroys the last standing part no second stone flies, and the first stack acts', async () => {
-      const { user } = await attackTown(anAttackScenario({ level: 'EXPERT' }), {
-        rolls: [
-          ...[AT_THE_FIRST, HITS, LOWEST_DAMAGE, HITS, LOWEST_DAMAGE],
-          ...[AT_THE_FIRST, HITS, LOWEST_DAMAGE, AT_THE_FIRST, HITS, LOWEST_DAMAGE]
-        ]
-      })
+      const { user } = await attackAndAimAt(anAttackScenario({ level: 'EXPERT' }), UPPER_WALL)
+      await passTheRound(user)
+      await aimAt(user, MID_LOWER_WALL)
+      await passTheRound(user)
 
-      await passRounds(user, 2)
+      await aimAt(user, DRAWBRIDGE)
 
       expect(catapultMessages()).toEqual([
         'The Catapult destroys the Upper Wall.',
@@ -315,8 +318,8 @@ describe('siege Ballistics behavior', () => {
 
   describe('chances and damage', () => {
     test('with Basic Ballistics a roll of 0.55 hits the segment aimed at', async () => {
-      await attackTown(anAttackScenario({ level: 'BASIC' }), {
-        rolls: [AT_THE_FIRST, WITHIN_BASIC_HIT_CHANCE, ONE_POINT]
+      await attackAndAimAt(anAttackScenario({ level: 'BASIC' }), UPPER_WALL, {
+        rolls: [WITHIN_BASIC_HIT_CHANCE, ONE_POINT]
       })
 
       expect(catapultMessages()).toEqual(['The Catapult hits the Upper Wall.'])
@@ -331,24 +334,24 @@ describe('siege Ballistics behavior', () => {
     })
 
     test('with Basic Ballistics a roll of 0.65 misses onto the nearest standing segment', async () => {
-      await attackTown(anAttackScenario({ level: 'BASIC' }), {
-        rolls: [AT_THE_FIRST, PAST_BASIC_HIT_CHANCE, ONE_POINT]
+      await attackAndAimAt(anAttackScenario({ level: 'BASIC' }), UPPER_WALL, {
+        rolls: [PAST_BASIC_HIT_CHANCE, ONE_POINT]
       })
 
       expect(catapultMessages()).toEqual(['The Catapult hits the Mid-Upper Wall.'])
     })
 
     test('with Expert Ballistics a roll of 0.7 hits the segment aimed at', async () => {
-      await attackTown(anAttackScenario({ level: 'EXPERT' }), {
-        rolls: [AT_THE_FIRST, WITHIN_EXPERT_HIT_CHANCE, LOWEST_DAMAGE]
+      await attackAndAimAt(anAttackScenario({ level: 'EXPERT' }), UPPER_WALL, {
+        rolls: [WITHIN_EXPERT_HIT_CHANCE, LOWEST_DAMAGE]
       })
 
       expect(catapultMessages().at(0)).toBe('The Catapult destroys the Upper Wall.')
     })
 
     test('with Basic Ballistics the lowest damage roll still does 1 point', async () => {
-      await attackTown(anAttackScenario({ level: 'BASIC' }), {
-        rolls: [AT_THE_FIRST, HITS, LOWEST_DAMAGE]
+      await attackAndAimAt(anAttackScenario({ level: 'BASIC' }), UPPER_WALL, {
+        rolls: [HITS, LOWEST_DAMAGE]
       })
 
       expect(wallAt(UPPER_WALL)).toBe('Damaged wall')
@@ -356,16 +359,16 @@ describe('siege Ballistics behavior', () => {
     })
 
     test("with Basic Ballistics a damage roll of 0.5 does 2 points, destroying a Fort's segment", async () => {
-      await attackTown(anAttackScenario({ level: 'BASIC' }), {
-        rolls: [AT_THE_FIRST, HITS, TWO_POINTS]
+      await attackAndAimAt(anAttackScenario({ level: 'BASIC' }), UPPER_WALL, {
+        rolls: [HITS, TWO_POINTS]
       })
 
       expect(catapultMessages()).toEqual(['The Catapult destroys the Upper Wall.'])
     })
 
     test("with Expert Ballistics the lowest damage roll does 2 points, destroying a Fort's segment", async () => {
-      await attackTown(anAttackScenario({ level: 'EXPERT' }), {
-        rolls: [AT_THE_FIRST, HITS, LOWEST_DAMAGE]
+      await attackAndAimAt(anAttackScenario({ level: 'EXPERT' }), UPPER_WALL, {
+        rolls: [HITS, LOWEST_DAMAGE]
       })
 
       expect(catapultMessages().at(0)).toBe('The Catapult destroys the Upper Wall.')
@@ -375,7 +378,7 @@ describe('siege Ballistics behavior', () => {
   describe('a computer attacker', () => {
     test("blue's hero with Advanced Ballistics attacking the player's town shoots twice a round", async () => {
       const app = await setupApp(aComputerAttackScenario('ADVANCED'), {
-        rolls: TWO_SHOTS_ON_THE_UPPER_WALL
+        rolls: TWO_SHOTS_AIMING_ITSELF_AT_THE_UPPER_WALL
       })
       await clickEndTurn(app.user)
       await waitMs(COMPUTER_TURN_MS)
@@ -390,16 +393,16 @@ describe('siege Ballistics behavior', () => {
   describe('reloading', () => {
     test('a reload while the second stone flies shows the walls as both shots left them, and neither is fired again', async () => {
       const eventLog = createMemoryEventLog()
-      await setupApp(anAttackScenario({ level: 'ADVANCED' }), {
-        rolls: TWO_SHOTS_ON_THE_UPPER_WALL,
+      const { user } = await attackTown(anAttackScenario({ level: 'ADVANCED' }), {
+        rolls: TWO_SHOTS_AIMED,
         stepDelayMs: 100,
         eventLog
       })
-      confirmTileClickByDispatch(TOWN_ENTRANCE.x, TOWN_ENTRANCE.y)
+      await clickBattleHex(user, UPPER_WALL.row, UPPER_WALL.column)
       await waitMs(FLIGHT_MS * 1.5)
 
       await setupApp(anAttackScenario({ level: 'ADVANCED' }), {
-        rolls: TWO_SHOTS_ON_THE_UPPER_WALL,
+        rolls: TWO_SHOTS_AIMED,
         eventLog
       })
       await waitMs(1000)

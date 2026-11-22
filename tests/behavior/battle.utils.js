@@ -153,6 +153,20 @@ export function readBattleTowers() {
   }))
 }
 
+// A tower's picture by its name as it reads: "Keep", "Damaged Upper Tower", "Destroyed Lower Tower".
+export function getBattleTower(name) {
+  return within(getBattlefield()).getByRole('img', { name })
+}
+
+export async function clickBattleTower(user, name) {
+  await user.click(getBattleTower(name))
+  await waitMs()
+}
+
+export async function hoverBattleTower(user, name) {
+  await user.hover(getBattleTower(name))
+}
+
 // The arrows in flight, by the tower they come from: "Keep arrow".
 export const readTowerArrows = () =>
   within(getBattlefield())

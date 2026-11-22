@@ -48,6 +48,7 @@ export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoComb
 export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove.requested'
 export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
 export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackShoot.requested'
+export const APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED = 'command.battle.catapultAim.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
 export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
 // The hero casts the spell on the stack `targetId`, or on every stack it can go on when the spell
