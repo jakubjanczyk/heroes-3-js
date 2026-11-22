@@ -35,6 +35,14 @@ export function townBuildingsCatalogue(definitions, townType) {
   }
 }
 
+// A building that upgrades another isn't a structure of its own, unless its data says otherwise
+// (`structure`): the Town Hall counts though it upgrades the Village Hall, the Fort doesn't though
+// it upgrades nothing.
+const isStructure = (building = {}) => building.structure ?? !building.upgrades
+
+export const structuresIn = (built, buildings) =>
+  [...built].filter((buildingId) => isStructure(buildings?.[buildingId])).length
+
 const NEIGHBOUR_OFFSETS = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => ({ x: dx, y: dy })))
 
 // A town can build a Shipyard only by the water: any water tile touching the town.

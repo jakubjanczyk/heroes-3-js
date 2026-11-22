@@ -1,10 +1,16 @@
 {
-  "VILLAGE_HALL": { "name": "Village Hall", "cost": {}, "income": { "GOLD_PILE": 500 } },
+  "VILLAGE_HALL": {
+    "name": "Village Hall",
+    "cost": {},
+    "income": { "GOLD_PILE": 500 },
+    "structure": false
+  },
   "TOWN_HALL": {
     "name": "Town Hall",
     "cost": { "GOLD_PILE": 2500 },
     "requires": ["VILLAGE_HALL", "TAVERN"],
     "upgrades": "VILLAGE_HALL",
+    "structure": true,
     "income": { "GOLD_PILE": 1000 }
   },
   "CITY_HALL": {
@@ -24,7 +30,8 @@
   },
   "FORT": {
     "name": "Fort",
-    "cost": { "WOOD_PILE": 20, "ORE_PILE": 20, "GOLD_PILE": 5000 }
+    "cost": { "WOOD_PILE": 20, "ORE_PILE": 20, "GOLD_PILE": 5000 },
+    "structure": false
   },
   "CITADEL": {
     "name": "Citadel",

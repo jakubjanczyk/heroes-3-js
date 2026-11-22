@@ -1,3 +1,4 @@
+import { towerWithStructures } from '../../game/heroes/arrow-towers.js'
 import { giveAllArtifacts } from '../../game/heroes/artifact-exchange.js'
 import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
 import { getArmyAfterBattle, heroBattleSide } from '../../game/heroes/battle.js'
@@ -18,7 +19,12 @@ import {
   townOwner,
   townType
 } from '../../game/heroes/state/towns.js'
-import { FORT_CHAIN, fortLevelOf } from '../../game/heroes/town-buildings.js'
+import {
+  FORT_CHAIN,
+  fortLevelOf,
+  structuresIn,
+  townBuildingsCatalogue
+} from '../../game/heroes/town-buildings.js'
 import {
   BATTLE_DEFENDER_TOWN_GARRISON,
   hasWalls,
@@ -248,7 +254,12 @@ const hasFortFor = (built, { from }) => fortLevelOf(built) > FORT_CHAIN.indexOf(
 
 const moatOfTown = (moat, built) => (moat && hasFortFor(built, moat) ? moat : null)
 
-const towersOfTown = (towers = [], built) => towers.filter((tower) => hasFortFor(built, tower))
+function towersOfTown(towers = [], built, buildings) {
+  const structures = structuresIn(built, buildings)
+  return towers
+    .filter((tower) => hasFortFor(built, tower))
+    .map((tower) => towerWithStructures(tower, structures))
+}
 
 export function siegeWallsOf({ started, state, definitions }) {
   const townId = battleDefenderOf(started).townId?.({ started })
@@ -256,11 +267,13 @@ export function siegeWallsOf({ started, state, definitions }) {
   if (!built || !hasWalls(built)) {
     return null
   }
-  const { moat, arrowTowers } = definitions?.towns?.[townType(state.get(), townId)] ?? {}
+  const type = townType(state.get(), townId)
+  const { moat, arrowTowers } = definitions?.towns?.[type] ?? {}
+  const { buildings } = townBuildingsCatalogue(definitions, type)
   return createSiegeWalls({
     castle: built.has('CASTLE'),
     moat: moatOfTown(moat, built),
-    towers: towersOfTown(arrowTowers, built)
+    towers: towersOfTown(arrowTowers, built, buildings)
   })
 }
 
