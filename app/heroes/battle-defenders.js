@@ -241,7 +241,11 @@ export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?
 export function siegeWallsOf({ started, state }) {
   const townId = battleDefenderOf(started).townId?.({ started })
   const built = townId ? builtIn(state.get(), townId) : null
-  return built && hasWalls(built) ? createSiegeWalls({ castle: built.has('CASTLE') }) : null
+  if (!built || !hasWalls(built)) {
+    return null
+  }
+  const castle = built.has('CASTLE')
+  return createSiegeWalls({ castle, moat: castle || built.has('CITADEL') })
 }
 
 export function battleDefenderName({ started, state, definitions }) {
