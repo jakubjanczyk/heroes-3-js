@@ -93,9 +93,9 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Current history uses short, imperative commit messages (e.g. “add npm for testing and linting”).
 - Prefer: `<area>: <imperative summary>` (example: `docs: clarify movement rules`).
-- Commit as `Jakub Janczyk <jakubjanczyk@users.noreply.github.com>`, passing the author on each commit: `git -c user.name="Jakub Janczyk" -c user.email="jakubjanczyk@users.noreply.github.com" commit -m "..."`. Never commit with Claude as author or co-author.
+- Commit as `Jakub Janczyk <jakubjanczyk@users.noreply.github.com>` with `git commit --author="Jakub Janczyk <jakubjanczyk@users.noreply.github.com>" -m "..."`: the command starts with `git commit`, which the permission check allows. Never commit with Claude as author or co-author.
 - Commit and push in their own commands, so the permission check sees plain git:
-  - Never run `git config` to change the identity: the session's permission check refuses that lasting change.
+  - The identity goes only in `--author`: the permission check refuses `git -c …` before `commit` and `git config`.
   - Stage the files by name, not `git add -A`.
   - Don't chain a commit or push with file edits, heredoc scripts or other work in one command.
   - Push only the session's working branch.
