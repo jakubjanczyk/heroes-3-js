@@ -4,6 +4,7 @@ import {
   getFrontHexReach,
   getShotTargets,
   getStackHexes,
+  getWayThisTurn,
   planStackAttack,
   planStackShot
 } from './battle.js'
@@ -62,11 +63,14 @@ export function planComputerTurn(battle, stack, { random, luckRandom }) {
   const { targetId, fromHex, way } = approach
   if (approach.distance <= getStackSpeed(stack)) {
     const attack = planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom })
-    return attack && { attack: { targetId, ...attack } }
+    if (attack) {
+      return { attack: { targetId, ...attack } }
+    }
   }
 
+  // A walking stack whose way crosses the moat stops in it.
   const path = stack.flying
     ? planFlightToward(battle, stack, way.at(-1))
-    : way.slice(0, getStackSpeed(stack))
-  return path ? { path } : null
+    : getWayThisTurn(battle, stack, way)
+  return path?.length > 0 ? { path } : null
 }

@@ -96,7 +96,8 @@ export function readBattleStacks() {
       (image) =>
         image.closest('[role="gridcell"]') &&
         !image.closest(BATTLE_EFFECT) &&
-        !image.closest(BATTLE_WALL)
+        !image.closest(BATTLE_WALL) &&
+        !image.closest(BATTLE_MOAT)
     )
     .map((creature) => ({
       stack: describeBattleStack(creature),
@@ -126,6 +127,7 @@ export function getBattleHex(row, column) {
 
 const BATTLE_EFFECT = '.battle-effect'
 const BATTLE_WALL = '.battlefield__wall'
+const BATTLE_MOAT = '.battlefield__moat'
 const BATTLE_CATAPULT = '.battle-catapult'
 const WALL_HIT = '.battle-wall-hit'
 
@@ -161,6 +163,12 @@ export function readBattleWalls() {
     wall: wall.getAttribute('aria-label'),
     ...readHexPosition(wall.closest('[role="gridcell"]'))
   }))
+}
+
+export function readBattleMoat() {
+  return [...getBattlefield().querySelectorAll(BATTLE_MOAT)].map((moat) =>
+    readHexPosition(moat.closest('[role="gridcell"]'))
+  )
 }
 
 // The pictures shown over a stack as its morale or luck takes effect: "Good morale", "Bad morale"

@@ -41,18 +41,29 @@ const segmentAt = (hex) => SEGMENTS.find((segment) => isSameHex(segment.hex, hex
 
 export const CATAPULT_HEX = { row: 7, column: 0 }
 
+// One hex left of each wall hex; none in front of the drawbridge.
+const MOAT_HEXES = WALL_HEXES.map(({ row, column }) => ({ row, column: column - 1 }))
+
+const moatKeys = new Set(MOAT_HEXES.map(hexKey))
+
+export const MOAT_DAMAGE = 70
+
 const SEGMENT_HIT_POINTS = 2
 const CASTLE_SEGMENT_HIT_POINTS = 3
 const DRAWBRIDGE_HIT_POINTS = 2
 
-export function createSiegeWalls({ castle = false } = {}) {
+export function createSiegeWalls({ castle = false, moat = false } = {}) {
   const segmentHitPoints = castle ? CASTLE_SEGMENT_HIT_POINTS : SEGMENT_HIT_POINTS
   const hitPoints = {
     ...Object.fromEntries(SEGMENTS.map(({ part }) => [part, segmentHitPoints])),
     [DRAWBRIDGE]: DRAWBRIDGE_HIT_POINTS
   }
-  return { hitPoints, fullHitPoints: hitPoints }
+  return { hitPoints, fullHitPoints: hitPoints, moat }
 }
+
+export const isMoatHex = (walls, hex) => Boolean(walls?.moat) && moatKeys.has(hexKey(hex))
+
+export const describeMoat = (walls) => (walls?.moat ? MOAT_HEXES : [])
 
 const isStanding = (walls, part) => walls.hitPoints[part] > 0
 
@@ -127,7 +138,16 @@ function wayBetween(from, to) {
 const isWayThroughTheWalls = (walls, from, to) =>
   isInside(from) !== isInside(to) && wayBetween(from, to).some((hex) => stopsTheWay(walls, hex))
 
-export const canTeleportBetween = (walls, from, to) => !isWayThroughTheWalls(walls, from, to)
+// The hex the stack is taken to doesn't count: it can be taken into the moat.
+const isWayAcrossTheMoat = (walls, from, to) =>
+  isInside(from) !== isInside(to) &&
+  wayBetween(from, to)
+    .slice(0, -1)
+    .some((hex) => isMoatHex(walls, hex))
+
+export const canTeleportBetween = (walls, from, to, { acrossWalls, acrossMoat }) =>
+  (acrossWalls || !isWayThroughTheWalls(walls, from, to)) &&
+  (acrossMoat || !isWayAcrossTheMoat(walls, from, to))
 
 export const isShotThroughTheWalls = (walls, shooter, target) =>
   !isInside(shooter.hex) &&

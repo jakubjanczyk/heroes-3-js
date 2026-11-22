@@ -62,6 +62,7 @@ import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.
 import {
   describeCatapultShot,
   describeEarthquakeHit,
+  describeMoat,
   describeWallPartHex,
   describeWalls,
   hasWallToShake,
@@ -317,6 +318,7 @@ export const registerBattleModule = defineModule(
 
     const siegeOf = (shown, stacks = shown.stacks) => ({
       walls: shown.walls ? describeWalls({ walls: shown.walls, stacks }) : [],
+      moat: describeMoat(shown.walls),
       siege: shown.walls
     })
 

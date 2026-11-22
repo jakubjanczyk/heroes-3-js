@@ -1835,7 +1835,10 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [15, 12, 6, 3],
-    "teleports": { "acrossWalls": [false, false, false, true] },
+    "teleports": {
+      "acrossWalls": [false, false, false, true],
+      "acrossMoat": [false, false, true, true]
+    },
     "mageGuildChances": { "CASTLE": 8 },
     "descriptions": [
       {

@@ -36,8 +36,11 @@ import {
   canTeleportBetween,
   describeCatapultShot,
   describeEarthquakeHit,
+  hasCatapultTarget,
   hitWall,
-  isShotThroughTheWalls
+  isMoatHex,
+  isShotThroughTheWalls,
+  MOAT_DAMAGE
 } from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
@@ -298,9 +301,30 @@ export const hasWaited = (battle, stackId) => battle.waitedStackIds.includes(sta
 // starts in the round after the cast.
 const endsNow = ({ endsOnOwnTurn, roundsLeft }) => endsOnOwnTurn && roundsLeft === 1
 
-// A defending stack keeps its Defense bonus until its next turn starts.
+// Once a round, as its turn starts: not when a stack that waited gets its turn back.
+const isHitByTheMoatNow = (battle, stack) =>
+  Boolean(stack?.inMoat) && !stack.warMachine && !hasWaited(battle, stack.id)
+
+const isCatapultShotDue = (battle) => battle.catapultReady && hasCatapultTarget(battle.walls)
+
+// A stack the moat kills as its turn starts has no turn.
+function hitAsTurnStarts(battle) {
+  const starting = getActiveStack(battle)
+  if (!isHitByTheMoatNow(battle, starting)) {
+    return battle
+  }
+  const hit = hitByTheMoat(battle, starting.id)
+  return isAlive(hit.stacks.find(({ id }) => id === starting.id)) ? hit : endTurn(hit, starting.id)
+}
+
+// As a round starts the catapult shoots before the first stack's turn, and so before the moat.
 function startNextTurn(battle) {
-  const active = getActiveStack(battle)
+  const started = startTurnOf(battle, getActiveStack(battle))
+  return isCatapultShotDue(started) ? started : hitAsTurnStarts(started)
+}
+
+// A defending stack keeps its Defense bonus until its next turn starts.
+function startTurnOf(battle, active) {
   if (!active?.defenseBonus && !(active?.spells ?? []).some(endsNow)) {
     return battle
   }
@@ -435,11 +459,47 @@ export function defendStack(battle, stackId) {
   return endTurn(defended, stackId)
 }
 
-export function moveStack(battle, stackId, hex) {
-  return {
+const isInTheMoat = (battle, stack, hex) =>
+  getStackHexes(stack, hex).some((part) => isMoatHex(battle.walls, part))
+
+const placeOn = (battle, stack, hex) => ({ ...stack, hex, inMoat: isInTheMoat(battle, stack, hex) })
+
+// Stepping from one hex of the moat to another is going into it again.
+const entersTheMoat = (battle, stack, hex) =>
+  getStackHexes(stack, hex).some((part) => isMoatHex(battle.walls, part) && !coversHex(stack, part))
+
+function hitByTheMoat(battle, stackId) {
+  const { damaged, ...losses } = damageStack(battle, stackId, MOAT_DAMAGE)
+  return clearGoneClones({
     ...battle,
-    stacks: battle.stacks.map((stack) => (stack.id === stackId ? { ...stack, hex } : stack))
+    stacks: battle.stacks.map((stack) => (stack.id === stackId ? damaged : stack)),
+    effects: [...battle.effects, { stackId, kind: 'spellHit', spellName: 'Moat' }],
+    messages: [
+      ...battle.messages,
+      ...describeDamage(`The Moat does ${MOAT_DAMAGE} damage.`, losses)
+    ]
+  })
+}
+
+export function moveStack(battle, stackId, hex) {
+  const mover = battle.stacks.find(({ id }) => id === stackId)
+  const moved = {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === stackId ? placeOn(battle, stack, hex) : stack
+    )
   }
+  return mover && entersTheMoat(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
+}
+
+// A walking stack stops on the first hex of the moat it steps into.
+const moatStopFor = (battle, stack) =>
+  stack.flying ? undefined : (hex) => entersTheMoat(battle, stack, hex)
+
+export function getWayThisTurn(battle, stack, way) {
+  const thisTurn = way.slice(0, getStackSpeed(stack))
+  const stop = stack.flying ? -1 : thisTurn.findIndex((hex) => entersTheMoat(battle, stack, hex))
+  return stop === -1 ? thisTurn : thisTurn.slice(0, stop + 1)
 }
 
 export function getStackHexes(stack, hex = stack.hex) {
@@ -466,16 +526,21 @@ function canStandFor(battle, stack) {
 
 export const canStackStandOn = (battle, stack, hex) => canStandFor(battle, stack)(hex)
 
-export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls }) =>
+export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls, teleportsAcrossMoat }) =>
   canStackStandOn(battle, stack, hex) &&
-  (teleportsAcrossWalls || !battle.walls || canTeleportBetween(battle.walls, stack.hex, hex))
+  (!battle.walls ||
+    canTeleportBetween(battle.walls, stack.hex, hex, {
+      acrossWalls: teleportsAcrossWalls,
+      acrossMoat: teleportsAcrossMoat
+    }))
 
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
     speed: getStackSpeed(stack),
     flying: stack.flying,
-    isFree: canStandFor(battle, stack)
+    isFree: canStandFor(battle, stack),
+    stopsAt: moatStopFor(battle, stack)
   })
 }
 
@@ -506,7 +571,13 @@ function planPathToFront(battle, stack, front) {
     return getHexDistance(stack.hex, front) <= getStackSpeed(stack) ? [front] : null
   }
 
-  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: getStackSpeed(stack) })
+  return findHexPath({
+    from: stack.hex,
+    to: front,
+    isFree,
+    maxSteps: getStackSpeed(stack),
+    stopsAt: moatStopFor(battle, stack)
+  })
 }
 
 // The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
@@ -678,9 +749,14 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random, luck
     return null
   }
 
+  // The moat on the way hits first: the ones left strike, and none if it killed them all.
+  const arrived = path.length > 0 ? moveStack(battle, stack.id, path.at(-1)) : battle
+  const attacker = arrived.stacks.find(({ id }) => id === stack.id)
   return {
     path,
-    strikes: strikeSequence({ attacker: stack, defender: target, random, luckRandom })
+    strikes: isAlive(attacker)
+      ? strikeSequence({ attacker, defender: target, random, luckRandom })
+      : []
   }
 }
 
@@ -950,8 +1026,9 @@ export const castLastingSpell = (
     putSpellOn(stack, spell)
   )
 
+// Taken into the moat, it isn't hit by it.
 export function teleportStack(battle, { destination, ...cast }) {
-  const teleported = castOnStacks(battle, cast, (stack) => ({ ...stack, hex: destination }))
+  const teleported = castOnStacks(battle, cast, (stack) => placeOn(battle, stack, destination))
   const effects = [...teleported.effects]
   effects[effects.length - 1] = { ...effects.at(-1), teleported: true }
   return { ...teleported, effects }
@@ -988,7 +1065,10 @@ export function cloneStack(battle, { destination, rounds, ...cast }) {
   const cloned = castOnStacks(battle, cast, (stack) => ({ ...stack, cloneId: cloneIdOf(stack) }))
   return {
     ...cloned,
-    stacks: [...cloned.stacks, cloneOf(original, { destination, rounds })]
+    stacks: [
+      ...cloned.stacks,
+      placeOn(battle, cloneOf(original, { destination, rounds }), destination)
+    ]
   }
 }
 
@@ -1063,6 +1143,10 @@ export const castHealingSpell = (battle, { healing, ...cast }) =>
 // The attack itself, before the attacker's turn ends.
 export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
+  const attacker = moved.stacks.find(({ id }) => id === stackId)
+  if (attacker && !isAlive(attacker)) {
+    return clearGoneClones(moved)
+  }
   const attacked = strikes.reduce(
     (current, strike) => applyStrike(current, strike, targetId),
     moved
@@ -1107,12 +1191,12 @@ export function resolveShot(battle, { stackId, strikes }) {
 export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
 
 export function shootCatapult(battle, shot) {
-  return {
+  return hitAsTurnStarts({
     ...battle,
     walls: hitWall(battle.walls, shot),
     catapultReady: false,
     messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
-  }
+  })
 }
 
 export function shakeWalls(battle, { heroName, spellName, wallHits }) {
