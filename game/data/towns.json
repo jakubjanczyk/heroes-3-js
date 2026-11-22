@@ -29,6 +29,7 @@
         "name": "Keep",
         "from": "CITADEL",
         "damage": { "min": 10, "max": 20 },
+        "perStructure": { "min": 2, "max": 4 },
         "hex": { "row": 5, "column": 15 }
       },
       {
@@ -36,6 +37,8 @@
         "name": "Upper Tower",
         "from": "CASTLE",
         "damage": { "min": 6, "max": 12 },
+        "perStructure": { "min": 2, "max": 4 },
+        "halfTheStructures": true,
         "hex": { "row": 0, "column": 11 },
         "stands": "above"
       },
@@ -44,6 +47,8 @@
         "name": "Lower Tower",
         "from": "CASTLE",
         "damage": { "min": 6, "max": 12 },
+        "perStructure": { "min": 2, "max": 4 },
+        "halfTheStructures": true,
         "hex": { "row": 10, "column": 11 },
         "stands": "below"
       }
@@ -52,7 +57,8 @@
       "BROTHERHOOD_OF_THE_SWORD": {
         "name": "Brotherhood of the Sword",
         "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 },
-        "requires": ["TAVERN"]
+        "requires": ["TAVERN"],
+        "structure": false
       },
       "LIGHTHOUSE": {
         "name": "Lighthouse",
@@ -68,6 +74,7 @@
         "name": "Griffin Bastion",
         "cost": { "GOLD_PILE": 1000 },
         "requires": ["GRIFFIN_TOWER"],
+        "structure": false,
         "horde": { "tier": 3, "amount": 3 }
       },
       "GUARDHOUSE": {

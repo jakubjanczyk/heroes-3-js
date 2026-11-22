@@ -77,6 +77,16 @@ const THE_TOWERS = [
   anArrowTower().lower().build()
 ]
 
+const TOWERED_BUILDINGS = {
+  STALL: { name: 'Stall' },
+  SHED: { name: 'Shed' },
+  FORGE: { name: 'Forge' },
+  HUT: { name: 'Hut' },
+  UPG_HUT: { name: 'Upg. Hut', upgrades: 'HUT' },
+  LODGE: { name: 'Lodge', upgrades: 'HUT', structure: true },
+  SHRINE: { name: 'Shrine', structure: false }
+}
+
 const definitionsWith = (towers = THE_TOWERS) => ({
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
@@ -99,7 +109,11 @@ const definitionsWith = (towers = THE_TOWERS) => ({
   spells: readGameData('spells.json'),
   heroes: readGameData('heroes.json'),
   towns: {
-    [TOWERED]: aTownDefinition().withName('Towered').withArrowTowers(towers).build(),
+    [TOWERED]: aTownDefinition()
+      .withName('Towered')
+      .withArrowTowers(towers)
+      .withBuildings(TOWERED_BUILDINGS)
+      .build(),
     [UNTOWERED]: aTownDefinition().withName('Untowered').build()
   },
   buildings: readGameData('buildings.json'),
@@ -111,6 +125,9 @@ const stack = (creature, count = 1) => ({ creature, count })
 const FORT = ['FORT']
 const CITADEL = ['FORT', 'CITADEL']
 const CASTLE = ['FORT', 'CITADEL', 'CASTLE']
+
+const THREE_STRUCTURES = ['STALL', 'SHED', 'FORGE']
+const KEEP_AT_THE_LOWEST_WITH_ONE_STRUCTURE = 'The Arrow Tower does 12 damage.'
 
 const NO_SKILLS = { attack: 0, defense: 0, power: 1, knowledge: 1 }
 
@@ -464,6 +481,91 @@ describe('siege arrow towers behavior', () => {
       await defendAgainstBlue(aDefenceScenario({ blueArmy: [stack('WISP', 5)] }))
 
       expect(towerLines()[0]).toBe('The Arrow Tower does 10 damage. One Wisp perishes.')
+    })
+  })
+
+  describe("from the town's buildings", () => {
+    test('each structure gives the Keep 2 more damage at the lowest roll', async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CITADEL, ...THREE_STRUCTURES] }) }),
+        { towerRolls: [LOWEST] }
+      )
+
+      expect(towerLines()).toEqual(['The Arrow Tower does 16 damage.'])
+    })
+
+    test('each structure gives the Keep 4 more damage at the highest roll', async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CITADEL, ...THREE_STRUCTURES] }) }),
+        { towerRolls: [HIGHEST] }
+      )
+
+      expect(towerLines()).toEqual(['The Arrow Tower does 32 damage.'])
+    })
+
+    test('the upper and lower towers get 2 more for every two structures at the lowest roll, an odd one left out', async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CASTLE, ...THREE_STRUCTURES] }) }),
+        { towerRolls: [LOWEST, LOWEST, LOWEST] }
+      )
+
+      expect(towerLines()).toEqual([
+        'The Arrow Tower does 16 damage.',
+        'The Arrow Tower does 8 damage.',
+        'The Arrow Tower does 8 damage.'
+      ])
+    })
+
+    test('the upper and lower towers get 4 more for every two structures at the highest roll', async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CASTLE, ...THREE_STRUCTURES] }) }),
+        { towerRolls: [LOWEST, HIGHEST, HIGHEST] }
+      )
+
+      expect(towerLines()).toEqual([
+        'The Arrow Tower does 16 damage.',
+        'The Arrow Tower does 16 damage.',
+        'The Arrow Tower does 16 damage.'
+      ])
+    })
+
+    test('a building and its upgrade count as one structure', async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CITADEL, 'HUT', 'UPG_HUT'] }) }),
+        { towerRolls: [LOWEST] }
+      )
+
+      expect(towerLines()).toEqual([KEEP_AT_THE_LOWEST_WITH_ONE_STRUCTURE])
+    })
+
+    test('an upgrade whose data says it is a structure counts', async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CITADEL, 'LODGE'] }) }),
+        { towerRolls: [LOWEST] }
+      )
+
+      expect(towerLines()).toEqual([KEEP_AT_THE_LOWEST_WITH_ONE_STRUCTURE])
+    })
+
+    test("a building whose data says it isn't a structure doesn't count", async () => {
+      await attackTown(
+        anAttackScenario({ town: aBlueTown({ buildings: [...CITADEL, 'STALL', 'SHRINE'] }) }),
+        { towerRolls: [LOWEST] }
+      )
+
+      expect(towerLines()).toEqual([KEEP_AT_THE_LOWEST_WITH_ONE_STRUCTURE])
+    })
+
+    test('a tower whose data gives other damage per structure shoots for that', async () => {
+      await attackTown(
+        anAttackScenario({
+          town: aBlueTown({ buildings: [...CITADEL, ...THREE_STRUCTURES] }),
+          towers: [anArrowTower().withPerStructure({ min: 5, max: 5 }).build()]
+        }),
+        { towerRolls: [LOWEST] }
+      )
+
+      expect(towerLines()).toEqual(['The Arrow Tower does 25 damage.'])
     })
   })
 
