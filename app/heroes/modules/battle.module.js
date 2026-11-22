@@ -341,7 +341,7 @@ export const registerBattleModule = defineModule(
     function flightOf({ battle: shown, shot, arrow }) {
       const flightMs = stepDelayMs * FLIGHT_STEPS
       if (shot) {
-        return { catapultStone: { to: describeWallPartHex(shot.part), flightMs } }
+        return { catapultStone: { to: describeWallPartHex(shown.walls, shot.part), flightMs } }
       }
       const { name, hex } = towerOf(shown.walls, arrow.tower)
       const target = shown.stacks.find(({ id }) => id === arrow.targetId)
@@ -715,7 +715,7 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      wallHits = [{ ...describeWallPartHex(shot.part), result }]
+      wallHits = [{ ...describeWallPartHex(battle.walls, shot.part), result }]
       showBattle()
       continueBattle()
     }
@@ -934,7 +934,7 @@ export const registerBattleModule = defineModule(
         cost: spellCost(hero, spell)
       })
       wallHits = hits.map((hit) => ({
-        ...describeWallPartHex(hit.part),
+        ...describeWallPartHex(shaken, hit.part),
         result: describeEarthquakeHit(shaken, hit).result,
         cause: 'earthquake'
       }))
