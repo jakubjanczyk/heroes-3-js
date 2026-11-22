@@ -35,6 +35,7 @@ import {
   CATAPULT_HEX,
   canTeleportBetween,
   describeCatapultShot,
+  describeEarthquakeHit,
   hitWall,
   isShotThroughTheWalls
 } from './siege-walls.js'
@@ -1111,6 +1112,20 @@ export function shootCatapult(battle, shot) {
     walls: hitWall(battle.walls, shot),
     catapultReady: false,
     messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
+  }
+}
+
+export function shakeWalls(battle, { heroName, spellName, wallHits }) {
+  return {
+    ...battle,
+    sidesCastThisRound: [...battle.sidesCastThisRound, getActiveStack(battle)?.side],
+    turnStackId: getActiveStack(battle)?.id ?? null,
+    walls: wallHits.reduce(hitWall, battle.walls),
+    messages: [
+      ...battle.messages,
+      describeCast(battle, { heroName, spellName, targetIds: [] }),
+      ...wallHits.map((hit) => describeEarthquakeHit(battle.walls, hit).message)
+    ]
   }
 }
 

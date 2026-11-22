@@ -34,6 +34,7 @@ import {
   resolveAttack,
   resolveShot,
   sacrificeStack,
+  shakeWalls,
   shootCatapult,
   shootStack,
   spellTargetIds,
@@ -60,9 +61,12 @@ import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes
 import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.js'
 import {
   describeCatapultShot,
+  describeEarthquakeHit,
   describeWallPartHex,
   describeWalls,
-  planCatapultShot
+  hasWallToShake,
+  planCatapultShot,
+  planEarthquake
 } from '../../../game/heroes/siege-walls.js'
 import {
   battleSpellTargeting,
@@ -863,6 +867,44 @@ export const registerBattleModule = defineModule(
       )
     }
 
+    // Only the attacker can shake the walls; the defender's book finds no one for it.
+    function castEarthquake(hero, spell, spellId) {
+      if (!hasWallToShake(battle.walls)) {
+        emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, { noWalls: true })
+        return
+      }
+      if (fightsFor(getActiveStack(battle)) !== 'attacker') {
+        emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
+        return
+      }
+      const points = spell.earthquake.points[spellSkillLevel(hero, spell)]
+      const hits = planEarthquake(battle.walls, points, catapultRandom)
+      const shaken = battle.walls
+      emit(APP_FACT_BATTLE_SPELL_CAST, {
+        heroId: hero.id,
+        spellId,
+        wallHits: hits,
+        cost: spellCost(hero, spell)
+      })
+      wallHits = hits.map((hit) => ({
+        ...describeWallPartHex(hit.part),
+        result: describeEarthquakeHit(shaken, hit).result,
+        cause: 'earthquake'
+      }))
+      showBattle()
+      continueBattle()
+    }
+
+    function requestCast(detail) {
+      const hero = heroById(state.get(), playerHeroId())
+      const spell = definitions.spells?.[detail.spellId]
+      if (!spell?.earthquake) {
+        castSpell(detail)
+      } else if (canHeroCast(hero, spell, detail.spellId)) {
+        castEarthquake(hero, spell, detail.spellId)
+      }
+    }
+
     function castSpell({ spellId, targetId, hex, destination, sacrificedId }) {
       const hero = heroById(state.get(), playerHeroId())
       const spell = definitions.spells?.[spellId]
@@ -1041,7 +1083,13 @@ export const registerBattleModule = defineModule(
               return
             }
 
-            const cast = castSpellOn(battle, event.detail)
+            const cast = event.detail.wallHits
+              ? shakeWalls(battle, {
+                  heroName: casterNameOf(event.detail.heroId),
+                  spellName: definitions.spells?.[event.detail.spellId]?.name,
+                  wallHits: event.detail.wallHits
+                })
+              : castSpellOn(battle, event.detail)
             // The same stack's turn goes on, its morale already rolled for.
             if (badMoraleRolledFor === battle) {
               badMoraleRolledFor = cast
@@ -1175,7 +1223,7 @@ export const registerBattleModule = defineModule(
           type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
           handler: (event) => {
             if (isLeadingHerosTurn()) {
-              castSpell(event.detail)
+              requestCast(event.detail)
             }
           }
         },
