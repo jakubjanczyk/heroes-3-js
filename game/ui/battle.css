@@ -30,8 +30,10 @@
   border: 2px solid var(--trim-gold-dark);
   box-shadow: inset 0 0 0 1px black;
 
-  /* Pointy-top hexes: as tall as 2/√3 of their width, rows overlapping by a quarter. */
-  --hex-width: min(calc(100cqw / 17.5), calc(84cqh / 9.8));
+  /* Pointy-top hexes: as tall as 2/√3 of their width, rows overlapping by a quarter. Under the
+     sky, the 11 rows (8.5 hexes tall) and a strip of one hex below them for the lower arrow
+     tower: 9.5 hexes in 85% of the height. */
+  --hex-width: min(calc(100cqw / 17.5), calc(85cqh / 9.5 / 1.1547));
   --hex-height: calc(var(--hex-width) * 1.1547);
 }
 
@@ -96,8 +98,9 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   position: absolute;
-  /* Below the sky, and in the middle of the field when it is taller than the hexes need. */
-  inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.25));
+  /* Below the sky, and in the middle of the field when it is taller than the hexes and the strip
+     under them need. */
+  inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.75));
   inset-inline-start: 50%;
   translate: -50% 0;
   inline-size: calc(var(--hex-width) * (17 + 0.5));
@@ -332,6 +335,65 @@
   to {
     translate: 0 var(--stone-down);
     rotate: 540deg;
+  }
+}
+
+/* An arrow tower stands over its hex without taking it: stacks still walk beneath it. */
+.battlefield__tower {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 8%;
+  inset-block: -70% 10%;
+  pointer-events: none;
+  border-radius: 6% 6% 0 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 18%, rgba(40, 34, 28, 0.5) 18% 21%),
+    linear-gradient(90deg, #6f685c, #b3ab9b 45%, #7d766a);
+  box-shadow:
+    inset 0 0 0 2px rgba(30, 26, 22, 0.7),
+    0 4px 6px rgb(0 0 0 / 45%);
+}
+
+/* The upper and lower towers stand past the wall's ends, off the battlefield. */
+.battlefield__tower--above {
+  inset-block: -150% 60%;
+}
+
+.battlefield__tower--below {
+  inset-block: 40% -100%;
+}
+
+.battlefield__tower-battlements {
+  position: absolute;
+  inset-inline: -8%;
+  inset-block-start: -14%;
+  block-size: 18%;
+  background: repeating-linear-gradient(90deg, #9c9485 0 20%, transparent 20% 30%);
+}
+
+.battle-tower-arrow {
+  position: absolute;
+  z-index: 4;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+  animation: tower-arrow-flight var(--arrow-flight-ms, 0.7s) linear forwards;
+}
+
+.battle-tower-arrow__arrow {
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-start: -14px;
+  inline-size: 28px;
+  block-size: 4px;
+  rotate: var(--arrow-angle, 0rad);
+  background: linear-gradient(90deg, #e8e0c8 0 18%, #6b4521 18% 82%, #2b2b2b 82%);
+  clip-path: polygon(0 0, 82% 0, 82% -100%, 100% 50%, 82% 200%, 82% 100%, 0 100%);
+}
+
+@keyframes tower-arrow-flight {
+  to {
+    translate: var(--arrow-across) var(--arrow-down);
   }
 }
 

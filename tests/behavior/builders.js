@@ -84,8 +84,47 @@ export const aTownDefinition = () =>
   builder({ name: 'Town', buildings: {} }, (town) => ({
     withMoat(moat) {
       town.moat = moat
+    },
+    withArrowTowers(towers) {
+      town.arrowTowers = towers
     }
   }))
+
+// One of a town type's arrow towers, the Keep unless told otherwise; the list's order is the
+// order they shoot in. from: the lowest fort that has it. hex: where it is drawn, in the
+// battle's own rows and columns; stands: 'above' or 'below' that hex, off the battlefield.
+export const anArrowTower = () =>
+  builder(
+    {
+      tower: 'KEEP',
+      name: 'Keep',
+      from: 'CITADEL',
+      damage: { min: 10, max: 20 },
+      hex: { row: 5, column: 15 }
+    },
+    (tower) => ({
+      upper() {
+        Object.assign(tower, {
+          tower: 'UPPER_TOWER',
+          name: 'Upper Tower',
+          from: 'CASTLE',
+          damage: { min: 6, max: 12 },
+          hex: { row: 0, column: 11 },
+          stands: 'above'
+        })
+      },
+      lower() {
+        Object.assign(tower, {
+          tower: 'LOWER_TOWER',
+          name: 'Lower Tower',
+          from: 'CASTLE',
+          damage: { min: 6, max: 12 },
+          hex: { row: 10, column: 11 },
+          stands: 'below'
+        })
+      }
+    })
+  )
 
 // from: the lowest fort that has it (FORT, CITADEL or CASTLE). hexes: in the battle's own rows
 // and columns, which count from 0 where the battlefield's labels count from 1.

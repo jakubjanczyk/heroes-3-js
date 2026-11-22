@@ -12,7 +12,7 @@ description: Use when a feature or fix is implemented and its tests pass, to fin
 
 ## 2. Commit and push
 
-- Commit as `AGENTS.md` says: the author passed with `git -c user.name=… -c user.email=… commit`, never set with `git config`, and an `<area>: <imperative summary>` message. Stage the files by name.
+- Commit as `AGENTS.md` says: `git commit --author="…"`, and an `<area>: <imperative summary>` message. Stage the files by name.
 - Push the working branch in a command of its own: `git push -u origin <branch>`.
 
 ## 3. Screenshots and recording

@@ -720,7 +720,7 @@ In three parts.
 - [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
-In eleven parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
+In fourteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
 - [x] 5.10.1 Walls and the drawbridge: a town with a Fort, Citadel or Castle is fought against its walls; walkers can't cross them, flyers fly over; the defender goes out and back through the drawbridge, which opens for them and shuts behind them
 - [x] 5.10.2 Holding the drawbridge: a dead stack on it keeps it open for good, a living attacker in front of it keeps it shut
 - [x] 5.10.3 Shooting at the walls: a shot from outside at a stack behind the walls does half damage, shown by the cursor and the damage range
@@ -730,9 +730,12 @@ In eleven parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town wi
 - [x] 5.10.7 Earthquake: one point of damage to two, three or four random parts of the walls
 - [x] 5.10.8 The moat (Citadel and Castle): stops a stack for the round, damages it and takes 3 Defense; Advanced Teleport crosses it
 - [x] 5.10.8b The moat from the town's data: its fort, hexes, damage, Defense loss, name, whether it stops walkers, when it hits and which sides, all in `towns.json`, so a moat made of those parts needs no code
-- [ ] 5.10.9 Arrow towers: the Keep (Citadel) and two more (Castle), their damage by the town's buildings, the catapult shooting at them
+- [x] 5.10.9 Arrow towers shoot: the Keep (Citadel) and two more (Castle), once a round before the catapult, at a target they pick, for their base damage (the Keep 10–20, the others 6–12)
+- [ ] 5.10.9b The towers' damage from the town's buildings: 2 more per structure for the Keep, 2 per two structures for the others
+- [ ] 5.10.9c The catapult and Earthquake at the towers: 2 hit points each, the catapult turning to them once the walls and the drawbridge are down, Earthquake's points on them, a destroyed tower stops shooting
 - [ ] 5.10.10 Ballistics: aiming the catapult, two shots, the hit chances by level
 - [ ] 5.10.11 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
+- [ ] 5.10.12 Controlling the towers: the defending player aims the arrow towers (with Artillery, as the game does, or by another way of controlling them if Artillery's war machines aren't there yet)
 
 ---
 

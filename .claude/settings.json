@@ -16,11 +16,6 @@
     ]
   },
   "permissions": {
-    "allow": [
-      "Bash(git commit:*)",
-      "Bash(git -c user.name=* commit:*)",
-      "Bash(git push:*)",
-      "Bash(git add:*)"
-    ]
+    "allow": ["Bash(git commit:*)", "Bash(git push:*)", "Bash(git add:*)"]
   }
 }
