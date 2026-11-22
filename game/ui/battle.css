@@ -364,6 +364,26 @@
   inset-block: -40% -50%;
 }
 
+/* A ruin: its top broken off, the stone left lower and darker. */
+.battlefield__tower--destroyed {
+  clip-path: polygon(
+    0 38%,
+    18% 30%,
+    30% 44%,
+    48% 26%,
+    62% 40%,
+    80% 32%,
+    100% 42%,
+    100% 100%,
+    0 100%
+  );
+  background:
+    radial-gradient(circle at 30% 50%, #5e584d 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 60%, #57514a 0 9%, transparent 10%),
+    repeating-linear-gradient(0deg, transparent 0 18%, rgba(30, 26, 22, 0.55) 18% 21%),
+    linear-gradient(90deg, #4f4a42, #7a7366 45%, #554f46);
+}
+
 .battlefield__tower-battlements {
   position: absolute;
   inset-inline: -8%;
