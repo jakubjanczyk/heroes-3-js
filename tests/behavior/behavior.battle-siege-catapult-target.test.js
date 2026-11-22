@@ -46,13 +46,11 @@ const aSturdyCreature = (name) =>
 
 const RUNNER = aSturdyCreature('Runner').withSpeed(20).withAiValue(1).build()
 const BRUTE = aSturdyCreature('Brute').withSpeed(1).withAiValue(1000).build()
-// Attack 10 against the catapult's Defense 10: each does its 10 damage.
 const STRIKER = aSturdyCreature('Striker')
   .withSpeed(20)
   .withAttack(10)
   .withDamage({ min: 10, max: 10 })
   .build()
-// It shoots from where it starts rather than walk out of the town.
 const ARCHER = aSturdyCreature('Archer')
   .withSpeed(1)
   .withAttack(10)
@@ -75,7 +73,6 @@ const WEAKLING = aCreatureDefinition()
   .withSpeed(1)
   .withAiValue(1)
   .build()
-// Blue's hero takes it for strong enough to attack the town with.
 const BLUFFER = aCreatureDefinition()
   .withName('Bluffer')
   .withNamePlural('Bluffers')
@@ -137,7 +134,6 @@ const stack = (creature, count = 1) => ({ creature, count })
 
 const NO_SKILLS = { attack: 0, defense: 0, power: 1, knowledge: 1 }
 
-// Rows and columns from 1, as the battle screen shows them.
 const CATAPULT = { row: 8, column: 1 }
 const NEXT_TO_THE_CATAPULT = { row: 8, column: 2 }
 const BELOW_THE_CATAPULT = { row: 9, column: 1 }
@@ -160,8 +156,6 @@ const setupApp = (scenario, { eventLog } = {}) =>
     ...(eventLog ? { eventLog } : {})
   })
 
-// The player's stack defends and the other side's stacks play their turns, and the next round
-// starts.
 async function passTheRound(user) {
   await clickBattleButton(user, 'Defend')
   await waitMs(1000)
@@ -171,8 +165,6 @@ async function attackTheCatapult(user) {
   await attackBattleHexFrom(user, CATAPULT.row, CATAPULT.column, 'right')
 }
 
-// Blue's hero attacks the player's town during blue's turn. The town's gate is at (20, 2), blue's
-// hero three tiles below it; the player's other hero is walled in by rock far away.
 const COMPUTER_TURN_MS = 2000
 const PLAYERS_GATE = { x: 20, y: 2 }
 
@@ -221,8 +213,6 @@ async function defendAgainstBlue(scenario, options) {
   return app
 }
 
-// The player's hero attacks blue's towns; Kirkwall's entrance is at (4, 3), the hero two tiles
-// below it, and Southwatch's at (10, 3).
 const KIRKWALL = { x: 4, y: 3 }
 const SOUTHWATCH = { x: 10, y: 3 }
 
@@ -258,7 +248,6 @@ async function attackTown(scenario, options) {
   return app
 }
 
-// The player's stack goes to the far corner, out of the way of blue's garrison.
 async function moveIntoTheCorner(user) {
   await moveActiveStackTo(user, TOP_LEFT_CORNER.row, TOP_LEFT_CORNER.column)
   await waitMs(1000)
@@ -289,7 +278,6 @@ describe('siege catapult as a target behavior', () => {
       expect(readCombatMessages()).toContain('The Archers do 50 damage.')
     })
 
-    // Defense 10 + 10 against Attack 10: 25% less.
     test("the attacking hero's Defense lowers the damage the catapult takes", async () => {
       const { user } = await defendAgainstBlue(
         aDefenceScenario({
@@ -317,7 +305,6 @@ describe('siege catapult as a target behavior', () => {
       )
     })
 
-    // Blue's Brute walks one hex a round towards it, and is still two hexes away.
     test("a defender's shooter next to the catapult can't shoot and attacks in melee", async () => {
       const { user } = await defendAgainstBlue(aDefenceScenario({ garrison: [stack('SPRINTER')] }))
       await moveActiveStackTo(user, BELOW_THE_CATAPULT.row, BELOW_THE_CATAPULT.column)
@@ -409,7 +396,6 @@ describe('siege catapult as a target behavior', () => {
       expect(readBattleCasualties('Attacker')).toEqual(['Weakling 1', 'Catapult 1'])
     })
 
-    // One Weakling of 1 health, and 500 for the beaten hero.
     test('the defending hero earns no experience for destroying the catapult', async () => {
       const { user } = await defendAgainstBlue(
         aDefenceScenario({
@@ -526,7 +512,6 @@ describe('siege catapult as a target behavior', () => {
   })
 
   describe('reloading', () => {
-    // 50 Wreckers do 500 a strike: the first leaves it standing, the second destroys it.
     test('after a reload a damaged catapult keeps its damage: the next hit destroys it', async () => {
       const eventLog = createMemoryEventLog()
       const scenario = () => anAttackScenario({ garrison: [stack('WRECKER', 50)] })
