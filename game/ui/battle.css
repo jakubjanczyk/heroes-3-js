@@ -31,9 +31,9 @@
   box-shadow: inset 0 0 0 1px black;
 
   /* Pointy-top hexes: as tall as 2/√3 of their width, rows overlapping by a quarter. Under the
-     sky, the 11 rows (8.5 hexes tall) and a strip of one hex below them for the lower arrow
-     tower: 9.5 hexes in 85% of the height. */
-  --hex-width: min(calc(100cqw / 17.5), calc(85cqh / 9.5 / 1.1547));
+     sky, the 11 rows (8.5 hexes tall) and a strip of half a hex below them for the lower arrow
+     tower: 9 hexes in 85% of the height. */
+  --hex-width: min(calc(100cqw / 17.5), calc(85cqh / 9 / 1.1547));
   --hex-height: calc(var(--hex-width) * 1.1547);
 }
 
@@ -100,7 +100,7 @@
   position: absolute;
   /* Below the sky, and in the middle of the field when it is taller than the hexes and the strip
      under them need. */
-  inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.75));
+  inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.5));
   inset-inline-start: 50%;
   translate: -50% 0;
   inline-size: calc(var(--hex-width) * (17 + 0.5));
@@ -354,13 +354,14 @@
     0 4px 6px rgb(0 0 0 / 45%);
 }
 
-/* The upper and lower towers stand past the wall's ends, off the battlefield. */
+/* The upper tower stands past the wall's top end; the lower one at its bottom end, over the
+   last row and half a hex below it. */
 .battlefield__tower--above {
   inset-block: -150% 60%;
 }
 
 .battlefield__tower--below {
-  inset-block: 40% -100%;
+  inset-block: -40% -50%;
 }
 
 .battlefield__tower-battlements {
