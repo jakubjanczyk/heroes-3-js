@@ -28,20 +28,33 @@ const SEGMENTS = [
   { part: 'MID_UPPER_WALL', name: 'Mid-Upper Wall', hex: { row: 4, column: 9 }, place: 2 },
   { part: 'MID_LOWER_WALL', name: 'Mid-Lower Wall', hex: { row: 7, column: 10 }, place: 4 },
   { part: 'LOWER_WALL', name: 'Lower Wall', hex: { row: 10, column: 11 }, place: 5 }
-]
+].map((segment) => ({ ...segment, along: segment.place, aimedAs: 'wall' }))
 
-const DRAWBRIDGE_PART = { part: DRAWBRIDGE, name: 'Drawbridge', hex: INNER_DRAWBRIDGE, place: 3 }
+const DRAWBRIDGE_PART = {
+  part: DRAWBRIDGE,
+  name: 'Drawbridge',
+  hex: INNER_DRAWBRIDGE,
+  place: 3,
+  along: 3,
+  aimedAs: 'drawbridge'
+}
 
 // A tower above the wall comes before its parts from the top, one below after them, and one
 // standing on the battlefield last.
 const TOWER_PLACES = { above: 0, below: 6, on: 7 }
 
-const towerPartOf = ({ tower, name, hex, stands = 'on' }) => ({
+// How near the parts are to each other: a tower standing on the battlefield counts as near the
+// wall's bottom end as the tower below it.
+const TOWER_ALONG_THE_WALL = { above: 0, below: 6, on: 6 }
+
+const towerPartOf = ({ tower, name, hex, stands = 'on', aimedAs = 'tower' }) => ({
   part: tower,
   name,
   hex,
   stands,
-  place: TOWER_PLACES[stands]
+  aimedAs,
+  place: TOWER_PLACES[stands],
+  along: TOWER_ALONG_THE_WALL[stands]
 })
 
 const shootableTowersOf = (walls) => towersOf(walls).filter(({ hitPoints }) => hitPoints > 0)
@@ -243,41 +256,50 @@ function aimOf(walls, random) {
 const pickOne = (choices, random) =>
   choices.length === 1 ? choices[0] : choices[Math.floor(random() * choices.length)]
 
-const HIT_CHANCE = 0.5
-
-function landingOf(walls, aim, random) {
-  if (random() < HIT_CHANCE) {
-    return aim
-  }
-  const others = SEGMENTS.filter(({ part }) => part !== aim.part && isStanding(walls, part))
-  if (others.length === 0) {
-    return aim
-  }
-  const nearest = Math.min(...others.map(({ place }) => Math.abs(place - aim.place)))
+function nearestOf(choices, from, random) {
+  const nearest = Math.min(...choices.map(({ along }) => Math.abs(along - from.along)))
   return pickOne(
-    others.filter(({ place }) => Math.abs(place - aim.place) === nearest),
+    choices.filter(({ along }) => Math.abs(along - from.along) === nearest),
     random
   )
 }
 
-const DAMAGE_CHANCES = [
-  { below: 0.1, damage: 0 },
-  { below: 0.7, damage: 1 },
-  { below: 1, damage: 2 }
-]
-
-const rollDamage = (random) => {
-  const roll = random()
-  return DAMAGE_CHANCES.find(({ below }) => roll < below)?.damage ?? 2
+function landingOf(walls, aim, hitChance, random) {
+  if (random() * 100 < hitChance[aim.aimedAs]) {
+    return aim
+  }
+  const others = SEGMENTS.filter(({ part }) => part !== aim.part && isStanding(walls, part))
+  return others.length === 0 ? aim : nearestOf(others, aim, random)
 }
 
-export function planCatapultShot(walls, random) {
-  const aim = aimOf(walls, random)
+function rollDamage(damageChance, random) {
+  const roll = random() * 100
+  let below = 0
+  const damage = damageChance.findIndex((chance) => {
+    below += chance
+    return roll < below
+  })
+  return damage === -1 ? damageChance.length - 1 : damage
+}
+
+// A shot after the first of the round goes at the same part; if that part has fallen, at the
+// nearest one still standing, of any kind.
+function nextAimOf(walls, aimed, random) {
+  const previous = partOf(walls, aimed)
+  if (isStanding(walls, aimed)) {
+    return previous
+  }
+  const standing = partsOf(walls).filter(({ part }) => isStanding(walls, part))
+  return standing.length === 0 ? null : nearestOf(standing, previous, random)
+}
+
+export function planCatapultShot(walls, random, { hitChance, damageChance, aimed = null }) {
+  const aim = aimed ? nextAimOf(walls, aimed, random) : aimOf(walls, random)
   if (!aim) {
     return null
   }
-  const landing = landingOf(walls, aim, random)
-  return { part: landing.part, damage: rollDamage(random) }
+  const landing = landingOf(walls, aim, hitChance, random)
+  return { aim: aim.part, part: landing.part, damage: rollDamage(damageChance, random) }
 }
 
 export const hasCatapultTarget = (walls) => aimOf(walls, () => 0) !== null

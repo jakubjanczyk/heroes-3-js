@@ -409,6 +409,17 @@
     "health": 1000,
     "speed": 0,
     "aiValue": 500,
-    "abilities": ["doubleWide", "warMachine"]
+    "abilities": ["doubleWide", "warMachine"],
+    "siegeShots": {
+      "skill": "BALLISTICS",
+      "shots": [1, 1, 2, 2],
+      "hitChance": {
+        "wall": [50, 60, 60, 75],
+        "drawbridge": [25, 30, 30, 40],
+        "keep": [5, 7, 7, 10],
+        "tower": [10, 15, 15, 20]
+      },
+      "damageChance": [[10, 60, 30], [0, 50, 50], [0, 50, 50], [0, 0, 100]]
+    }
   }
 }

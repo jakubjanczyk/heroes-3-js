@@ -109,7 +109,8 @@ export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
 // Bad morale: the stack loses its turn.
 export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
-// The part of the walls the attacker's catapult hit as the round started, and the damage it did.
+// The part of the walls the attacker's catapult aimed at as the round started, the part it hit
+// and the damage it did.
 export const APP_FACT_BATTLE_CATAPULT_SHOT = 'fact.battle.catapult.shot'
 // An arrow tower's shot as the round started: the tower, the stack it hit and the damage it did.
 export const APP_FACT_BATTLE_TOWER_SHOT = 'fact.battle.tower.shot'

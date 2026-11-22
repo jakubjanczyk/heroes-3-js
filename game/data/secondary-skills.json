@@ -93,9 +93,9 @@
     "name": "Ballistics",
     "worth": 500,
     "descriptions": {
-      "BASIC": "Gives control of the catapult in sieges and makes its shots more accurate.",
-      "ADVANCED": "The catapult shoots twice a round and hits harder.",
-      "EXPERT": "The catapult shoots twice a round, hits harder still and rarely misses."
+      "BASIC": "Basic Ballistics gives control of the catapult to the hero, allowing aimed shots with increased damage.",
+      "ADVANCED": "Advanced Ballistics gives control of the catapult to the hero, allowing two aimed shots with increased damage.",
+      "EXPERT": "Expert Ballistics gives control of the catapult to the hero, allowing two aimed shots at maximum damage."
     }
   },
   "EAGLE_EYE": {

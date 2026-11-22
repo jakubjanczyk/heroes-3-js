@@ -31,6 +31,7 @@ import {
   hasWaited,
   heroBattleSide,
   moveStack,
+  planBattleCatapultShot,
   planStackAttack,
   planStackMove,
   planStackShot,
@@ -71,7 +72,6 @@ import {
   describeWallPartHex,
   describeWalls,
   hasWallToShake,
-  planCatapultShot,
   planEarthquake,
   towerOf
 } from '../../../game/heroes/siege-walls.js'
@@ -652,7 +652,7 @@ export const registerBattleModule = defineModule(
 
       const shooter = getRoundStartShooter(battle)
       if (shooter === CATAPULT) {
-        void throwStone(planCatapultShot(battle.walls, catapultRandom))
+        void throwStone(planBattleCatapultShot(battle, catapultRandom))
         return
       }
       if (shooter) {

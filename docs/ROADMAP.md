@@ -720,7 +720,7 @@ In three parts.
 - [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
-In fourteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
+In sixteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
 - [x] 5.10.1 Walls and the drawbridge: a town with a Fort, Citadel or Castle is fought against its walls; walkers can't cross them, flyers fly over; the defender goes out and back through the drawbridge, which opens for them and shuts behind them
 - [x] 5.10.2 Holding the drawbridge: a dead stack on it keeps it open for good, a living attacker in front of it keeps it shut
 - [x] 5.10.3 Shooting at the walls: a shot from outside at a stack behind the walls does half damage, shown by the cursor and the damage range
@@ -733,7 +733,8 @@ In fourteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town 
 - [x] 5.10.9 Arrow towers shoot: the Keep (Citadel) and two more (Castle), once a round before the catapult, at a target they pick, for their base damage (the Keep 10–20, the others 6–12)
 - [x] 5.10.9b The towers' damage from the town's buildings: 2 more per structure for the Keep, 2 per two structures for the others
 - [x] 5.10.9c The catapult and Earthquake at the towers: 2 hit points each, the catapult turning to them once the walls and the drawbridge are down, Earthquake's points on them, a destroyed tower stops shooting
-- [ ] 5.10.10 Ballistics: aiming the catapult, two shots, the hit chances by level
+- [x] 5.10.10 Ballistics' shots: better chances to hit the wall and more damage by level, two shots from Advanced, the second at the nearest standing part if the first destroyed its target
+- [ ] 5.10.10b Aiming the catapult: with Ballistics the player's hero aims it on a turn of its own, the Keep, towers and drawbridge with their own chances; a spell can be cast first, Defend passes it
 - [ ] 5.10.11 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
 - [ ] 5.10.12 Controlling the towers: the defending player aims the arrow towers (with Artillery, as the game does, or by another way of controlling them if Artillery's war machines aren't there yet)
 
