@@ -95,6 +95,7 @@ export const isTowerStanding = (walls, tower) => (walls?.hitPoints[tower] ?? 1) 
 
 export const describeTowers = (walls) =>
   towersOf(walls).map(({ tower, name, hex, stands = 'on' }) => ({
+    tower,
     name,
     stands,
     state: walls.hitPoints[tower] === undefined ? 'standing' : stateOf(walls, tower),
@@ -303,6 +304,25 @@ export function planCatapultShot(walls, random, { hitChance, damageChance, aimed
 }
 
 export const hasCatapultTarget = (walls) => aimOf(walls, () => 0) !== null
+
+const aimedOnHexes = ({ part, hex, stands }) => {
+  if (part === DRAWBRIDGE) {
+    return DRAWBRIDGE_HEXES
+  }
+  // The tower below the wall is drawn under the Lower Wall's hex, which stays the wall's.
+  return stands === 'below' ? [] : [hex]
+}
+
+// A tower is also aimed at on its picture.
+export const describeCatapultTargets = (walls) =>
+  partsOf(walls)
+    .filter(({ part }) => isStanding(walls, part))
+    .map((target) => ({
+      part: target.part,
+      name: target.name,
+      hexes: aimedOnHexes(target),
+      ...(target.stands ? { tower: target.part } : {})
+    }))
 
 export function hitWall(walls, { part, damage }) {
   return {
