@@ -244,8 +244,11 @@ const defenders = {
 
 export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?? monster
 
-const moatOfTown = (moat, built) =>
-  moat && fortLevelOf(built) > FORT_CHAIN.indexOf(moat.from) ? moat : null
+const hasFortFor = (built, { from }) => fortLevelOf(built) > FORT_CHAIN.indexOf(from)
+
+const moatOfTown = (moat, built) => (moat && hasFortFor(built, moat) ? moat : null)
+
+const towersOfTown = (towers = [], built) => towers.filter((tower) => hasFortFor(built, tower))
 
 export function siegeWallsOf({ started, state, definitions }) {
   const townId = battleDefenderOf(started).townId?.({ started })
@@ -253,8 +256,12 @@ export function siegeWallsOf({ started, state, definitions }) {
   if (!built || !hasWalls(built)) {
     return null
   }
-  const { moat } = definitions?.towns?.[townType(state.get(), townId)] ?? {}
-  return createSiegeWalls({ castle: built.has('CASTLE'), moat: moatOfTown(moat, built) })
+  const { moat, arrowTowers } = definitions?.towns?.[townType(state.get(), townId)] ?? {}
+  return createSiegeWalls({
+    castle: built.has('CASTLE'),
+    moat: moatOfTown(moat, built),
+    towers: towersOfTown(arrowTowers, built)
+  })
 }
 
 export function battleDefenderName({ started, state, definitions }) {

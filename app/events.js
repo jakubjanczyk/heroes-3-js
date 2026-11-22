@@ -111,6 +111,8 @@ export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
 // The part of the walls the attacker's catapult hit as the round started, and the damage it did.
 export const APP_FACT_BATTLE_CATAPULT_SHOT = 'fact.battle.catapult.shot'
+// An arrow tower's shot as the round started: the tower, the stack it hit and the damage it did.
+export const APP_FACT_BATTLE_TOWER_SHOT = 'fact.battle.tower.shot'
 // The hero's spell, its target (`targetIds` for a spell that hit every stack), the spell points it cost, and the damage it did or, for a spell
 // that lasts, its effects and how many rounds they last; for Earthquake, `wallHits`: the parts of
 // the walls it hit and the damage each took.
@@ -242,6 +244,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_SPELL_CAST,
   APP_FACT_BATTLE_CATAPULT_SHOT,
+  APP_FACT_BATTLE_TOWER_SHOT,
   APP_FACT_MONSTER_DEFEATED,
   APP_FACT_MONSTER_COUNT_CHANGED,
   APP_FACT_RESOURCE_COLLECTED,

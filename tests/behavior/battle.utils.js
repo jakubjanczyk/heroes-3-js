@@ -97,7 +97,8 @@ export function readBattleStacks() {
         image.closest('[role="gridcell"]') &&
         !image.closest(BATTLE_EFFECT) &&
         !image.closest(BATTLE_WALL) &&
-        !image.closest(BATTLE_MOAT)
+        !image.closest(BATTLE_MOAT) &&
+        !image.closest(BATTLE_TOWER)
     )
     .map((creature) => ({
       stack: describeBattleStack(creature),
@@ -129,6 +130,7 @@ const BATTLE_EFFECT = '.battle-effect'
 const BATTLE_WALL = '.battlefield__wall'
 const BATTLE_MOAT = '.battlefield__moat'
 const BATTLE_CATAPULT = '.battle-catapult'
+const BATTLE_TOWER = '.battlefield__tower'
 const WALL_HIT = '.battle-wall-hit'
 
 // The hex the attacker's catapult stands on, its front half's; null when it has none.
@@ -142,6 +144,20 @@ export function readBattleCatapultPicture() {
   const catapult = getBattlefield().querySelector(BATTLE_CATAPULT)
   return catapult ? catapult.closest('[role="img"]').getAttribute('aria-label') : null
 }
+
+// The siege's arrow towers, by name, where they stand: "Keep", "Upper Tower", "Lower Tower".
+export function readBattleTowers() {
+  return [...getBattlefield().querySelectorAll(BATTLE_TOWER)].map((tower) => ({
+    tower: tower.getAttribute('aria-label'),
+    ...readHexPosition(tower.closest('[role="gridcell"]'))
+  }))
+}
+
+// The arrows in flight, by the tower they come from: "Keep arrow".
+export const readTowerArrows = () =>
+  within(getBattlefield())
+    .queryAllByRole('img', { name: / arrow$/ })
+    .map((arrow) => arrow.getAttribute('aria-label'))
 
 export const countCatapultStones = () =>
   within(getBattlefield()).queryAllByRole('img', { name: 'Catapult stone' }).length

@@ -103,3 +103,32 @@ export function renderWallHit(document, { result, cause = 'stone' }, effectMs) {
   }
   return element
 }
+
+export function renderTower(document, { name, stands }) {
+  const element = document.createElement('div')
+  element.className = `battlefield__tower battlefield__tower--${stands}`
+  element.setAttribute('role', 'img')
+  element.setAttribute('aria-label', name)
+  const battlements = document.createElement('span')
+  battlements.className = 'battlefield__tower-battlements'
+  element.append(battlements)
+  return element
+}
+
+// The arrow points the way it flies and goes straight at its target.
+export function renderTowerArrow(document, { name, from, to, flightMs }) {
+  const element = document.createElement('div')
+  element.className = 'battle-tower-arrow'
+  element.setAttribute('role', 'img')
+  element.setAttribute('aria-label', `${name} arrow`)
+  element.style.left = `${from.x}px`
+  element.style.top = `${from.y}px`
+  element.style.setProperty('--arrow-across', `${to.x - from.x}px`)
+  element.style.setProperty('--arrow-down', `${to.y - from.y}px`)
+  element.style.setProperty('--arrow-angle', `${Math.atan2(to.y - from.y, to.x - from.x)}rad`)
+  element.style.setProperty('--arrow-flight-ms', `${flightMs}ms`)
+  const arrow = document.createElement('div')
+  arrow.className = 'battle-tower-arrow__arrow'
+  element.append(arrow)
+  return element
+}

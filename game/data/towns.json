@@ -23,6 +23,31 @@
         { "row": 10, "column": 10 }
       ]
     },
+    "arrowTowers": [
+      {
+        "tower": "KEEP",
+        "name": "Keep",
+        "from": "CITADEL",
+        "damage": { "min": 10, "max": 20 },
+        "hex": { "row": 5, "column": 15 }
+      },
+      {
+        "tower": "UPPER_TOWER",
+        "name": "Upper Tower",
+        "from": "CASTLE",
+        "damage": { "min": 6, "max": 12 },
+        "hex": { "row": 0, "column": 11 },
+        "stands": "above"
+      },
+      {
+        "tower": "LOWER_TOWER",
+        "name": "Lower Tower",
+        "from": "CASTLE",
+        "damage": { "min": 6, "max": 12 },
+        "hex": { "row": 10, "column": 11 },
+        "stands": "below"
+      }
+    ],
     "buildings": {
       "BROTHERHOOD_OF_THE_SWORD": {
         "name": "Brotherhood of the Sword",
