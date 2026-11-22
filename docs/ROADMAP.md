@@ -732,7 +732,7 @@ In fourteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town 
 - [x] 5.10.8b The moat from the town's data: its fort, hexes, damage, Defense loss, name, whether it stops walkers, when it hits and which sides, all in `towns.json`, so a moat made of those parts needs no code
 - [x] 5.10.9 Arrow towers shoot: the Keep (Citadel) and two more (Castle), once a round before the catapult, at a target they pick, for their base damage (the Keep 10–20, the others 6–12)
 - [x] 5.10.9b The towers' damage from the town's buildings: 2 more per structure for the Keep, 2 per two structures for the others
-- [ ] 5.10.9c The catapult and Earthquake at the towers: 2 hit points each, the catapult turning to them once the walls and the drawbridge are down, Earthquake's points on them, a destroyed tower stops shooting
+- [x] 5.10.9c The catapult and Earthquake at the towers: 2 hit points each, the catapult turning to them once the walls and the drawbridge are down, Earthquake's points on them, a destroyed tower stops shooting
 - [ ] 5.10.10 Ballistics: aiming the catapult, two shots, the hit chances by level
 - [ ] 5.10.11 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
 - [ ] 5.10.12 Controlling the towers: the defending player aims the arrow towers (with Artillery, as the game does, or by another way of controlling them if Artillery's war machines aren't there yet)

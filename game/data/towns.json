@@ -30,6 +30,7 @@
         "from": "CITADEL",
         "damage": { "min": 10, "max": 20 },
         "perStructure": { "min": 2, "max": 4 },
+        "hitPoints": 2,
         "hex": { "row": 5, "column": 15 }
       },
       {
@@ -38,6 +39,7 @@
         "from": "CASTLE",
         "damage": { "min": 6, "max": 12 },
         "perStructure": { "min": 2, "max": 4 },
+        "hitPoints": 2,
         "halfTheStructures": true,
         "hex": { "row": 0, "column": 11 },
         "stands": "above"
@@ -48,6 +50,7 @@
         "from": "CASTLE",
         "damage": { "min": 6, "max": 12 },
         "perStructure": { "min": 2, "max": 4 },
+        "hitPoints": 2,
         "halfTheStructures": true,
         "hex": { "row": 10, "column": 11 },
         "stands": "below"

@@ -30,12 +30,29 @@ const SEGMENTS = [
   { part: 'LOWER_WALL', name: 'Lower Wall', hex: { row: 10, column: 11 }, place: 5 }
 ]
 
-const PARTS = [
+const DRAWBRIDGE_PART = { part: DRAWBRIDGE, name: 'Drawbridge', hex: INNER_DRAWBRIDGE, place: 3 }
+
+// A tower above the wall comes before its parts from the top, one below after them, and one
+// standing on the battlefield last.
+const TOWER_PLACES = { above: 0, below: 6, on: 7 }
+
+const towerPartOf = ({ tower, name, hex, stands = 'on' }) => ({
+  part: tower,
+  name,
+  hex,
+  stands,
+  place: TOWER_PLACES[stands]
+})
+
+const shootableTowersOf = (walls) => towersOf(walls).filter(({ hitPoints }) => hitPoints > 0)
+
+const partsOf = (walls) => [
   ...SEGMENTS,
-  { part: DRAWBRIDGE, name: 'Drawbridge', hex: INNER_DRAWBRIDGE, place: 3 }
+  DRAWBRIDGE_PART,
+  ...shootableTowersOf(walls).map(towerPartOf)
 ]
 
-const partOf = (part) => PARTS.find((each) => each.part === part)
+const partOf = (walls, part) => partsOf(walls).find((each) => each.part === part)
 
 const segmentAt = (hex) => SEGMENTS.find((segment) => isSameHex(segment.hex, hex))
 
@@ -49,7 +66,10 @@ export function createSiegeWalls({ castle = false, moat = null, towers = [] } = 
   const segmentHitPoints = castle ? CASTLE_SEGMENT_HIT_POINTS : SEGMENT_HIT_POINTS
   const hitPoints = {
     ...Object.fromEntries(SEGMENTS.map(({ part }) => [part, segmentHitPoints])),
-    [DRAWBRIDGE]: DRAWBRIDGE_HIT_POINTS
+    [DRAWBRIDGE]: DRAWBRIDGE_HIT_POINTS,
+    ...Object.fromEntries(
+      towers.filter((tower) => tower.hitPoints > 0).map((tower) => [tower.tower, tower.hitPoints])
+    )
   }
   return { hitPoints, fullHitPoints: hitPoints, moat, towers }
 }
@@ -58,8 +78,15 @@ export const towersOf = (walls) => walls?.towers ?? []
 
 export const towerOf = (walls, tower) => towersOf(walls).find((each) => each.tower === tower)
 
+export const isTowerStanding = (walls, tower) => (walls?.hitPoints[tower] ?? 1) > 0
+
 export const describeTowers = (walls) =>
-  towersOf(walls).map(({ name, hex, stands = 'on' }) => ({ name, stands, ...hex }))
+  towersOf(walls).map(({ tower, name, hex, stands = 'on' }) => ({
+    name,
+    stands,
+    state: walls.hitPoints[tower] === undefined ? 'standing' : stateOf(walls, tower),
+    ...hex
+  }))
 
 export const isMoatHex = (walls, hex) =>
   Boolean(walls?.moat?.hexes.some((moatHex) => isSameHex(moatHex, hex)))
@@ -184,14 +211,27 @@ export function describeWalls({ walls, stacks }) {
   ]
 }
 
-export const describeWallPartHex = (part) => partOf(part).hex
+export function describeWallPartHex(walls, part) {
+  const { hex, stands } = partOf(walls, part)
+  return stands ? { ...hex, tower: true } : hex
+}
 
-// Without Ballistics it aims at the weakest standing segment, and at the drawbridge only once
-// all four are down.
+// The Keep, standing on the battlefield, before the towers past the wall's ends.
+function towerAimOf(walls, random) {
+  const standing = shootableTowersOf(walls)
+    .map(towerPartOf)
+    .filter(({ part }) => isStanding(walls, part))
+  const onTheBattlefield = standing.filter(({ stands }) => stands === 'on')
+  const choices = onTheBattlefield.length > 0 ? onTheBattlefield : standing
+  return choices.length > 0 ? pickOne(choices, random) : null
+}
+
+// Without Ballistics it aims at the weakest standing segment, at the drawbridge only once all
+// four are down, and then at the towers.
 function aimOf(walls, random) {
   const standing = SEGMENTS.filter(({ part }) => isStanding(walls, part))
   if (standing.length === 0) {
-    return isStanding(walls, DRAWBRIDGE) ? partOf(DRAWBRIDGE) : null
+    return isStanding(walls, DRAWBRIDGE) ? DRAWBRIDGE_PART : towerAimOf(walls, random)
   }
   const fewest = Math.min(...standing.map(({ part }) => walls.hitPoints[part]))
   return pickOne(
@@ -250,7 +290,7 @@ export function hitWall(walls, { part, damage }) {
 }
 
 export function describeCatapultShot(walls, { part, damage }) {
-  const { name } = partOf(part)
+  const { name } = partOf(walls, part)
   if (damage === 0) {
     return { message: `The Catapult hits the ${name}, but does no damage.`, result: 'none' }
   }
@@ -260,33 +300,34 @@ export function describeCatapultShot(walls, { part, damage }) {
   return { message: `The Catapult hits the ${name}.`, result: 'damaged' }
 }
 
-const PARTS_FROM_THE_TOP = [...PARTS].sort((a, b) => a.place - b.place)
+const partsFromTheTop = (walls) => [...partsOf(walls)].sort((a, b) => a.place - b.place)
 
 export const hasWallToShake = (walls) =>
-  Boolean(walls) && PARTS.some(({ part }) => isStanding(walls, part))
+  Boolean(walls) && partsOf(walls).some(({ part }) => isStanding(walls, part))
 
 // Every point is placed before any damage is done; a part already given enough points to fall
 // takes no more, and points left over once every part would fall are lost.
 export function planEarthquake(walls, points, random) {
   const given = {}
+  const parts = partsFromTheTop(walls)
   for (let point = 0; point < points; point += 1) {
-    const candidates = PARTS_FROM_THE_TOP.filter(
-      ({ part }) => (given[part] ?? 0) < walls.hitPoints[part]
-    )
+    const candidates = parts.filter(({ part }) => (given[part] ?? 0) < walls.hitPoints[part])
     if (candidates.length === 0) {
       break
     }
     const { part } = pickOne(candidates, random)
     given[part] = (given[part] ?? 0) + 1
   }
-  return PARTS_FROM_THE_TOP.filter(({ part }) => given[part]).map(({ part }) => ({
-    part,
-    damage: given[part]
-  }))
+  return parts
+    .filter(({ part }) => given[part])
+    .map(({ part }) => ({
+      part,
+      damage: given[part]
+    }))
 }
 
 export function describeEarthquakeHit(walls, { part, damage }) {
-  const { name } = partOf(part)
+  const { name } = partOf(walls, part)
   return isStanding(hitWall(walls, { part, damage }), part)
     ? { message: `The Earthquake damages the ${name}.`, result: 'damaged' }
     : { message: `The Earthquake destroys the ${name}.`, result: 'destroyed' }

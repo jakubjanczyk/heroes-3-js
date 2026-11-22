@@ -102,6 +102,7 @@ export const anArrowTower = () =>
       from: 'CITADEL',
       damage: { min: 10, max: 20 },
       perStructure: { min: 2, max: 4 },
+      hitPoints: 2,
       hex: { row: 5, column: 15 }
     },
     (tower) => ({

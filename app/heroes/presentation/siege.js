@@ -104,14 +104,19 @@ export function renderWallHit(document, { result, cause = 'stone' }, effectMs) {
   return element
 }
 
-export function renderTower(document, { name, stands }) {
+const TOWER_LABELS = { standing: '', damaged: 'Damaged ', destroyed: 'Destroyed ' }
+
+// The game has no picture of a damaged tower: only a destroyed one looks different.
+export function renderTower(document, { name, stands, state = 'standing' }) {
   const element = document.createElement('div')
-  element.className = `battlefield__tower battlefield__tower--${stands}`
+  element.className = `battlefield__tower battlefield__tower--${stands} battlefield__tower--${state}`
   element.setAttribute('role', 'img')
-  element.setAttribute('aria-label', name)
-  const battlements = document.createElement('span')
-  battlements.className = 'battlefield__tower-battlements'
-  element.append(battlements)
+  element.setAttribute('aria-label', `${TOWER_LABELS[state]}${name}`)
+  if (state !== 'destroyed') {
+    const battlements = document.createElement('span')
+    battlements.className = 'battlefield__tower-battlements'
+    element.append(battlements)
+  }
   return element
 }
 
