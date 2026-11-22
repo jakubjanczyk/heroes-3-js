@@ -38,9 +38,10 @@ import {
   describeEarthquakeHit,
   hasCatapultTarget,
   hitWall,
+  isAffectedByTheMoat,
   isMoatHex,
   isShotThroughTheWalls,
-  MOAT_DAMAGE
+  moatOf
 } from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
@@ -303,7 +304,9 @@ const endsNow = ({ endsOnOwnTurn, roundsLeft }) => endsOnOwnTurn && roundsLeft =
 
 // Once a round, as its turn starts: not when a stack that waited gets its turn back.
 const isHitByTheMoatNow = (battle, stack) =>
-  Boolean(stack?.inMoat) && !stack.warMachine && !hasWaited(battle, stack.id)
+  Boolean(stack?.inMoat && moatOf(battle.walls).hitsAsTurnStarts) &&
+  !stack.warMachine &&
+  !hasWaited(battle, stack.id)
 
 const isCatapultShotDue = (battle) => battle.catapultReady && hasCatapultTarget(battle.walls)
 
@@ -460,24 +463,34 @@ export function defendStack(battle, stackId) {
 }
 
 const isInTheMoat = (battle, stack, hex) =>
+  isAffectedByTheMoat(battle.walls, stack) &&
   getStackHexes(stack, hex).some((part) => isMoatHex(battle.walls, part))
 
-const placeOn = (battle, stack, hex) => ({ ...stack, hex, inMoat: isInTheMoat(battle, stack, hex) })
+function placeOn(battle, stack, hex) {
+  const inMoat = isInTheMoat(battle, stack, hex)
+  const moatDefensePenalty = inMoat ? moatOf(battle.walls).defensePenalty : 0
+  return { ...stack, hex, inMoat, moatDefensePenalty }
+}
 
 // Stepping from one hex of the moat to another is going into it again.
 const entersTheMoat = (battle, stack, hex) =>
+  isAffectedByTheMoat(battle.walls, stack) &&
   getStackHexes(stack, hex).some((part) => isMoatHex(battle.walls, part) && !coversHex(stack, part))
 
+const isHitOnEntering = (battle, stack, hex) =>
+  Boolean(stack) && moatOf(battle.walls)?.hitsOnEntering && entersTheMoat(battle, stack, hex)
+
+const isStoppedByTheMoat = (battle, stack) =>
+  !stack.flying && Boolean(moatOf(battle.walls)?.stopsWalkers)
+
 function hitByTheMoat(battle, stackId) {
-  const { damaged, ...losses } = damageStack(battle, stackId, MOAT_DAMAGE)
+  const { name, damage } = moatOf(battle.walls)
+  const { damaged, ...losses } = damageStack(battle, stackId, damage)
   return clearGoneClones({
     ...battle,
     stacks: battle.stacks.map((stack) => (stack.id === stackId ? damaged : stack)),
-    effects: [...battle.effects, { stackId, kind: 'spellHit', spellName: 'Moat' }],
-    messages: [
-      ...battle.messages,
-      ...describeDamage(`The Moat does ${MOAT_DAMAGE} damage.`, losses)
-    ]
+    effects: [...battle.effects, { stackId, kind: 'spellHit', spellName: name }],
+    messages: [...battle.messages, ...describeDamage(`The ${name} does ${damage} damage.`, losses)]
   })
 }
 
@@ -489,16 +502,17 @@ export function moveStack(battle, stackId, hex) {
       stack.id === stackId ? placeOn(battle, stack, hex) : stack
     )
   }
-  return mover && entersTheMoat(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
+  return isHitOnEntering(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
 }
 
 // A walking stack stops on the first hex of the moat it steps into.
 const moatStopFor = (battle, stack) =>
-  stack.flying ? undefined : (hex) => entersTheMoat(battle, stack, hex)
+  isStoppedByTheMoat(battle, stack) ? (hex) => entersTheMoat(battle, stack, hex) : undefined
 
 export function getWayThisTurn(battle, stack, way) {
   const thisTurn = way.slice(0, getStackSpeed(stack))
-  const stop = stack.flying ? -1 : thisTurn.findIndex((hex) => entersTheMoat(battle, stack, hex))
+  const stopsAt = moatStopFor(battle, stack)
+  const stop = stopsAt ? thisTurn.findIndex(stopsAt) : -1
   return stop === -1 ? thisTurn : thisTurn.slice(0, stop + 1)
 }
 
