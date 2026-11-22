@@ -41,18 +41,11 @@ const segmentAt = (hex) => SEGMENTS.find((segment) => isSameHex(segment.hex, hex
 
 export const CATAPULT_HEX = { row: 7, column: 0 }
 
-// One hex left of each wall hex; none in front of the drawbridge.
-const MOAT_HEXES = WALL_HEXES.map(({ row, column }) => ({ row, column: column - 1 }))
-
-const moatKeys = new Set(MOAT_HEXES.map(hexKey))
-
-export const MOAT_DAMAGE = 70
-
 const SEGMENT_HIT_POINTS = 2
 const CASTLE_SEGMENT_HIT_POINTS = 3
 const DRAWBRIDGE_HIT_POINTS = 2
 
-export function createSiegeWalls({ castle = false, moat = false } = {}) {
+export function createSiegeWalls({ castle = false, moat = null } = {}) {
   const segmentHitPoints = castle ? CASTLE_SEGMENT_HIT_POINTS : SEGMENT_HIT_POINTS
   const hitPoints = {
     ...Object.fromEntries(SEGMENTS.map(({ part }) => [part, segmentHitPoints])),
@@ -61,9 +54,18 @@ export function createSiegeWalls({ castle = false, moat = false } = {}) {
   return { hitPoints, fullHitPoints: hitPoints, moat }
 }
 
-export const isMoatHex = (walls, hex) => Boolean(walls?.moat) && moatKeys.has(hexKey(hex))
+export const isMoatHex = (walls, hex) =>
+  Boolean(walls?.moat?.hexes.some((moatHex) => isSameHex(moatHex, hex)))
 
-export const describeMoat = (walls) => (walls?.moat ? MOAT_HEXES : [])
+export const describeMoat = (walls) => ({
+  name: walls?.moat?.name ?? '',
+  hexes: walls?.moat?.hexes ?? []
+})
+
+export const moatOf = (walls) => walls?.moat ?? null
+
+export const isAffectedByTheMoat = (walls, stack) =>
+  Boolean(walls?.moat?.affects.includes(stack.side))
 
 const isStanding = (walls, part) => walls.hitPoints[part] > 0
 

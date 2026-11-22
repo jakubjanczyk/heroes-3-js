@@ -49,6 +49,8 @@ const describeDamageRange = ({ min, max }) => (min === max ? `${min}` : `${min}-
 
 const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
 
+const NO_MOAT = Object.freeze({ name: '', hexes: [] })
+
 // The game plays a short animation over the stack; ours is the morale or luck picture, faded out.
 const EFFECT_MS = 1000
 const CHAIN_JUMP_MS = 300
@@ -673,12 +675,12 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
-    function showMoat(moat = []) {
+    function showMoat({ name, hexes } = NO_MOAT) {
       for (const element of battlefield.querySelectorAll('.battlefield__moat')) {
         element.remove()
       }
-      for (const hex of moat) {
-        hexElementAt(hex).prepend(renderMoat(document))
+      for (const hex of hexes) {
+        hexElementAt(hex).prepend(renderMoat(document, name))
       }
     }
 

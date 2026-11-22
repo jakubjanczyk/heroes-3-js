@@ -22,11 +22,11 @@ export function renderWall(document, wall) {
   return element
 }
 
-export function renderMoat(document) {
+export function renderMoat(document, name) {
   const element = document.createElement('div')
   element.className = 'battlefield__moat'
   element.setAttribute('role', 'img')
-  element.setAttribute('aria-label', 'Moat')
+  element.setAttribute('aria-label', name)
   return element
 }
 

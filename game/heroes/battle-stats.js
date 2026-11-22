@@ -36,15 +36,13 @@ export const getRetaliationsLeft = (stack) =>
 export const getRetaliationDamagePercent = (stack) =>
   100 + spellEffect(stack, 'retaliationDamagePercent')
 
-const MOAT_DEFENSE_PENALTY = 3
-
 const getDefenseBeforeFrenzy = (stack) =>
   Math.max(
     0,
     stack.defense +
       (stack.defenseBonus ?? 0) +
       spellEffect(stack, 'defense') -
-      (stack.inMoat ? MOAT_DEFENSE_PENALTY : 0)
+      (stack.moatDefensePenalty ?? 0)
   )
 
 const isFrenzied = (stack) => hasSpellEffect(stack, 'attackFromDefensePercent')
