@@ -78,8 +78,15 @@ export const towersOf = (walls) => walls?.towers ?? []
 
 export const towerOf = (walls, tower) => towersOf(walls).find((each) => each.tower === tower)
 
+export const isTowerStanding = (walls, tower) => (walls?.hitPoints[tower] ?? 1) > 0
+
 export const describeTowers = (walls) =>
-  towersOf(walls).map(({ name, hex, stands = 'on' }) => ({ name, stands, ...hex }))
+  towersOf(walls).map(({ tower, name, hex, stands = 'on' }) => ({
+    name,
+    stands,
+    state: walls.hitPoints[tower] === undefined ? 'standing' : stateOf(walls, tower),
+    ...hex
+  }))
 
 export const isMoatHex = (walls, hex) =>
   Boolean(walls?.moat?.hexes.some((moatHex) => isSameHex(moatHex, hex)))
@@ -204,14 +211,27 @@ export function describeWalls({ walls, stacks }) {
   ]
 }
 
-export const describeWallPartHex = (walls, part) => partOf(walls, part).hex
+export function describeWallPartHex(walls, part) {
+  const { hex, stands } = partOf(walls, part)
+  return stands ? { ...hex, tower: true } : hex
+}
 
-// Without Ballistics it aims at the weakest standing segment, and at the drawbridge only once
-// all four are down.
+// The Keep, standing on the battlefield, before the towers past the wall's ends.
+function towerAimOf(walls, random) {
+  const standing = shootableTowersOf(walls)
+    .map(towerPartOf)
+    .filter(({ part }) => isStanding(walls, part))
+  const onTheBattlefield = standing.filter(({ stands }) => stands === 'on')
+  const choices = onTheBattlefield.length > 0 ? onTheBattlefield : standing
+  return choices.length > 0 ? pickOne(choices, random) : null
+}
+
+// Without Ballistics it aims at the weakest standing segment, at the drawbridge only once all
+// four are down, and then at the towers.
 function aimOf(walls, random) {
   const standing = SEGMENTS.filter(({ part }) => isStanding(walls, part))
   if (standing.length === 0) {
-    return isStanding(walls, DRAWBRIDGE) ? DRAWBRIDGE_PART : null
+    return isStanding(walls, DRAWBRIDGE) ? DRAWBRIDGE_PART : towerAimOf(walls, random)
   }
   const fewest = Math.min(...standing.map(({ part }) => walls.hitPoints[part]))
   return pickOne(
@@ -291,19 +311,19 @@ export function planEarthquake(walls, points, random) {
   const given = {}
   const parts = partsFromTheTop(walls)
   for (let point = 0; point < points; point += 1) {
-    const candidates = parts.filter(
-      ({ part }) => (given[part] ?? 0) < walls.hitPoints[part]
-    )
+    const candidates = parts.filter(({ part }) => (given[part] ?? 0) < walls.hitPoints[part])
     if (candidates.length === 0) {
       break
     }
     const { part } = pickOne(candidates, random)
     given[part] = (given[part] ?? 0) + 1
   }
-  return parts.filter(({ part }) => given[part]).map(({ part }) => ({
-    part,
-    damage: given[part]
-  }))
+  return parts
+    .filter(({ part }) => given[part])
+    .map(({ part }) => ({
+      part,
+      damage: given[part]
+    }))
 }
 
 export function describeEarthquakeHit(walls, { part, damage }) {

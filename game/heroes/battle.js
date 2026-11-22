@@ -41,6 +41,7 @@ import {
   isAffectedByTheMoat,
   isMoatHex,
   isShotThroughTheWalls,
+  isTowerStanding,
   moatOf,
   towersOf
 } from './siege-walls.js'
@@ -222,7 +223,9 @@ const roundStartShootersOf = (battle) => [
 ]
 
 const hasRoundStartTarget = (battle, shooter) =>
-  shooter === CATAPULT ? hasCatapultTarget(battle.walls) : hasLivingStacks(battle, 'attacker')
+  shooter === CATAPULT
+    ? hasCatapultTarget(battle.walls)
+    : isTowerStanding(battle.walls, shooter) && hasLivingStacks(battle, 'attacker')
 
 // The next that shoots as the round starts, passing over one with nothing to shoot at.
 export const getRoundStartShooter = (battle) =>

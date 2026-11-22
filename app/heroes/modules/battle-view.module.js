@@ -726,7 +726,9 @@ export const registerBattleViewModule = defineModule(
     function showWallHits(wallHits = []) {
       for (const wallHit of wallHits) {
         const element = renderWallHit(document, wallHit, EFFECT_MS)
-        hexElementAt(wallHit).append(element)
+        const hexElement = hexElementAt(wallHit)
+        const onTheTower = wallHit.tower && hexElement.querySelector('.battlefield__tower')
+        ;(onTheTower || hexElement).append(element)
         setTimeout(() => element.remove(), EFFECT_MS)
       }
     }
