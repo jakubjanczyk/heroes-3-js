@@ -107,8 +107,9 @@ export function renderWallHit(document, { result, cause = 'stone' }, effectMs) {
 const TOWER_LABELS = { standing: '', damaged: 'Damaged ', destroyed: 'Destroyed ' }
 
 // The game has no picture of a damaged tower: only a destroyed one looks different.
-export function renderTower(document, { name, stands, state = 'standing' }) {
+export function renderTower(document, { tower, name, stands, state = 'standing' }) {
   const element = document.createElement('div')
+  element.dataset.tower = tower
   element.className = `battlefield__tower battlefield__tower--${stands} battlefield__tower--${state}`
   element.setAttribute('role', 'img')
   element.setAttribute('aria-label', `${TOWER_LABELS[state]}${name}`)

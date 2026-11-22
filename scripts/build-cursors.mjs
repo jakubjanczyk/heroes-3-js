@@ -332,6 +332,26 @@ const BATTLE_TELEPORT_ROWS = [
   '................'
 ]
 
+// The catapult's arm, its stone in the cup, on its base: aiming the catapult at a part of the walls.
+const BATTLE_CATAPULT_ROWS = [
+  '..........kkkk..',
+  '.........kSSSWk.',
+  '........kSSWSSDk',
+  '........kSSSSSDk',
+  '.......kkSSSDDk.',
+  '......kBbkkkkk..',
+  '.....kBbk.......',
+  '....kBbk........',
+  '...kBbk.........',
+  '..kBbk..........',
+  '.kBbkk..........',
+  'kBbkBbk.........',
+  'kbkBbbBk........',
+  'kkBbbbbBk.......',
+  'kBBBBBBBBk......',
+  'kkkkkkkkkk......'
+]
+
 const BATTLE_SACRIFICE_ROWS = [
   '.......kk.......',
   '......kGGk......',
@@ -603,6 +623,7 @@ const CURSORS = {
   'battle-spell': BATTLE_SPELL_ROWS,
   'battle-teleport': BATTLE_TELEPORT_ROWS,
   'battle-sacrifice': BATTLE_SACRIFICE_ROWS,
+  'battle-catapult': BATTLE_CATAPULT_ROWS,
   'battle-shoot': drawShootArrow(),
   'battle-shoot-penalty': drawBrokenShootArrow(),
   'battle-attack-from-left': BATTLE_ATTACK_FROM_LEFT_ROWS,

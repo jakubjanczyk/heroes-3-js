@@ -364,6 +364,11 @@
   inset-block: -40% -50%;
 }
 
+/* The catapult is aimed at a tower by its picture. */
+.battlefield--aiming-catapult .battlefield__tower:not(.battlefield__tower--destroyed) {
+  pointer-events: auto;
+}
+
 /* A ruin: its top broken off, the stone left lower and darker. */
 .battlefield__tower--destroyed {
   clip-path: polygon(

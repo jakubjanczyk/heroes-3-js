@@ -3,6 +3,7 @@ import {
   areaTargetIds,
   attackStack,
   CATAPULT,
+  canHeroAimCatapult,
   canTeleportTo,
   castDamageSpell,
   castHealingSpell,
@@ -20,6 +21,7 @@ import {
   getArmyAfterBattle,
   getAttackTargets,
   getBadMoraleChance,
+  getCatapultStack,
   getExperienceForKills,
   getGoodMoraleChance,
   getRoundStartShooter,
@@ -30,6 +32,7 @@ import {
   hasLivingStacks,
   hasWaited,
   heroBattleSide,
+  isCatapultsTurn,
   moveStack,
   planBattleCatapultShot,
   planStackAttack,
@@ -66,6 +69,7 @@ import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes
 import { defendingHeroExperience } from '../../../game/heroes/enemy-hero-battle.js'
 import {
   describeCatapultShot,
+  describeCatapultTargets,
   describeEarthquakeHit,
   describeMoat,
   describeTowers,
@@ -107,6 +111,7 @@ import {
 } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+  APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
   APP_COMMAND_BATTLE_RETREAT_REQUESTED,
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
@@ -381,6 +386,7 @@ export const registerBattleModule = defineModule(
         reachableHexes: [],
         attackTargets: [],
         shotTargets: [],
+        catapultTargets: [],
         messages: shown.messages,
         effects: [],
         canWait: false,
@@ -393,15 +399,30 @@ export const registerBattleModule = defineModule(
       })
     }
 
+    const NO_ORDERS = {
+      reachableHexes: [],
+      attackTargets: [],
+      shotTargets: [],
+      catapultTargets: []
+    }
+
     function activeStackView(activeStack) {
       if (!activeStack) {
-        return { activeStackId: null, reachableHexes: [], attackTargets: [], shotTargets: [] }
+        return { activeStackId: null, ...NO_ORDERS }
+      }
+      if (isCatapultAimTurn()) {
+        return {
+          activeStackId: activeStack.id,
+          ...NO_ORDERS,
+          catapultTargets: describeCatapultTargets(battle.walls)
+        }
       }
       return {
         activeStackId: activeStack.id,
         reachableHexes: getStackReach(battle, activeStack),
         attackTargets: getAttackTargets(battle, activeStack),
-        shotTargets: getShotTargets(battle, activeStack)
+        shotTargets: getShotTargets(battle, activeStack),
+        catapultTargets: []
       }
     }
 
@@ -415,7 +436,7 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      const activeStack = outcome ? null : getActiveStack(battle)
+      const activeStack = outcome ? null : turnStack()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
         heroId,
@@ -442,7 +463,7 @@ export const registerBattleModule = defineModule(
       const canLeadHero = isLeadingHerosTurn()
       return {
         canWait: canAct && !hasWaited(battle, activeStack.id),
-        canDefend: canAct,
+        canDefend: canAct || isCatapultAimTurn(),
         canRetreat: canLeadHero && canLeave(),
         surrenderRefusal:
           playerSide === 'attacker' ? battleDefenderOf(started).surrenderRefusal : null,
@@ -652,7 +673,9 @@ export const registerBattleModule = defineModule(
 
       const shooter = getRoundStartShooter(battle)
       if (shooter === CATAPULT) {
-        void throwStone(planBattleCatapultShot(battle, catapultRandom))
+        if (!aimsCatapult()) {
+          void throwStone(planBattleCatapultShot(battle, catapultRandom))
+        }
         return
       }
       if (shooter) {
@@ -692,7 +715,30 @@ export const registerBattleModule = defineModule(
       !moving &&
       !throwing &&
       !autoCombat &&
+      !getRoundStartShooter(battle) &&
       isPlayers(getActiveStack(battle))
+
+    // The player's hero with Ballistics aims the catapult, unless Auto combat plays for them.
+    const aimsCatapult = () =>
+      playerSide === 'attacker' && !autoCombat && canHeroAimCatapult(battle)
+
+    const isCatapultAimTurn = () =>
+      Boolean(battle) &&
+      !outcome &&
+      !moving &&
+      !throwing &&
+      isCatapultsTurn(battle) &&
+      aimsCatapult()
+
+    const turnStack = () =>
+      isCatapultAimTurn() ? getCatapultStack(battle) : getActiveStack(battle)
+
+    function aimCatapultAt(part) {
+      const canAim = describeCatapultTargets(battle.walls).some((target) => target.part === part)
+      if (canAim) {
+        void throwStone(planBattleCatapultShot(battle, catapultRandom, part))
+      }
+    }
 
     // The wall changes only once the stone lands on it.
     async function throwStone(shot) {
@@ -743,7 +789,8 @@ export const registerBattleModule = defineModule(
     }
 
     // The player leads a hero as the attacker, or as the defender when the defender is a hero.
-    const isLeadingHerosTurn = () => isPlayersTurn() && Boolean(playerHeroId())
+    const isLeadingHerosTurn = () =>
+      (isPlayersTurn() || isCatapultAimTurn()) && Boolean(playerHeroId())
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -832,7 +879,7 @@ export const registerBattleModule = defineModule(
     }
 
     function chooseSacrificeTargets(targeting, { targetId, sacrificedId }) {
-      const aim = { targeting, casterSide: fightsFor(getActiveStack(battle)) }
+      const aim = { targeting, casterSide: fightsFor(turnStack()) }
       const sacrificed = battle.stacks.find(({ id }) => id === sacrificedId)
       return sacrificeTargetIds(battle.stacks, aim).includes(targetId) &&
         sacrificed &&
@@ -920,7 +967,7 @@ export const registerBattleModule = defineModule(
         emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, { noWalls: true })
         return
       }
-      if (fightsFor(getActiveStack(battle)) !== 'attacker') {
+      if (fightsFor(turnStack()) !== 'attacker') {
         emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
         return
       }
@@ -1300,12 +1347,20 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
           handler: () => {
-            if (!isPlayersTurn()) {
+            if (!isPlayersTurn() && !isCatapultAimTurn()) {
               return
             }
 
-            emit(APP_FACT_BATTLE_STACK_DEFENDED, { stackId: getActiveStack(battle).id })
+            emit(APP_FACT_BATTLE_STACK_DEFENDED, { stackId: turnStack().id })
             continueBattle()
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED,
+          handler: (event) => {
+            if (isCatapultAimTurn()) {
+              aimCatapultAt(event.detail.part)
+            }
           }
         },
         {
@@ -1387,6 +1442,7 @@ export const registerBattleModule = defineModule(
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+      APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
       APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED

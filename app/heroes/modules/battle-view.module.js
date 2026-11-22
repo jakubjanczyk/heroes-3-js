@@ -16,6 +16,7 @@ import {
 } from '../../../game/heroes/battlefield.js'
 import {
   APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+  APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED,
   APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
   APP_COMMAND_BATTLE_RETREAT_REQUESTED,
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
@@ -132,6 +133,8 @@ export const registerBattleViewModule = defineModule(
     let shown = null
     let reachableKeys = new Set()
     let hoveredHex = null
+    // A tower's picture under the mouse: it stands over a hex that may be a wall's.
+    let hoveredTower = null
     let pointer = null
     let pointerType = 'mouse'
     let messageLog = null
@@ -243,6 +246,31 @@ export const registerBattleViewModule = defineModule(
 
     function isReachable(hex) {
       return reachableKeys.has(hexKey(hex))
+    }
+
+    const isAimingCatapult = () =>
+      Boolean(findIdleActiveStack()) && (shown.catapultTargets?.length ?? 0) > 0
+
+    function findCatapultTarget(hex, tower) {
+      if (tower) {
+        return shown.catapultTargets.find((target) => target.tower === tower) ?? null
+      }
+      return (
+        shown.catapultTargets.find((target) => target.hexes.some((own) => isSameHex(own, hex))) ??
+        null
+      )
+    }
+
+    function describeCatapultAim(hex) {
+      const target = findCatapultTarget(hex, hoveredTower)
+      return target ? `Shoot the Catapult at the ${target.name}` : ''
+    }
+
+    function pickCatapultCursor(hex) {
+      if (findCatapultTarget(hex, hoveredTower)) {
+        return 'catapult'
+      }
+      return EDGE_COLUMNS.includes(hex.column) && !hoveredTower ? null : 'blocked'
     }
 
     // The stack the player is moving, while it stands still waiting for an order.
@@ -406,6 +434,10 @@ export const registerBattleViewModule = defineModule(
         return describeSpellAim(hex)
       }
 
+      if (isAimingCatapult()) {
+        return describeCatapultAim(hex)
+      }
+
       if (findLivingStackOn(hex)) {
         return describeStackHex(hex, activeStack)
       }
@@ -439,6 +471,10 @@ export const registerBattleViewModule = defineModule(
         return pickSpellCursor(hex)
       }
 
+      if (isAimingCatapult()) {
+        return pickCatapultCursor(hex)
+      }
+
       const stack = findLivingStackOn(hex)
       if (stack) {
         return pickStackCursor(hex, stack, activeStack)
@@ -462,6 +498,14 @@ export const registerBattleViewModule = defineModule(
         return findSpellHexes(hex)
       }
 
+      if (isAimingCatapult()) {
+        return findCatapultTarget(hex, hoveredTower)?.hexes ?? []
+      }
+
+      return findOrderHexes(hex)
+    }
+
+    function findOrderHexes(hex) {
       const target = findLivingStackOn(hex)
       if (target) {
         const canHit = findShot(hex) || findAttack(hex, hexElementAt(hex))
@@ -530,6 +574,8 @@ export const registerBattleViewModule = defineModule(
       )
       messageLog.scrollTop = messageLog.scrollHeight
     }
+
+    const readTower = (element) => element?.closest?.('.battlefield__tower')?.dataset.tower ?? null
 
     function readHex(element) {
       const hexElement = battleScreen && element?.closest?.('.battlefield__hex')
@@ -750,6 +796,10 @@ export const registerBattleViewModule = defineModule(
       showWalls(battle.walls)
       showMoat(battle.moat)
       showTowers(battle.towers)
+      battlefield.classList.toggle(
+        'battlefield--aiming-catapult',
+        battle.catapultTargets.length > 0 && !battle.moving
+      )
       showCatapultStone(battle.catapultStone)
       showTowerArrow(battle.towerArrow)
       showWallHits(battle.wallHits)
@@ -999,6 +1049,7 @@ export const registerBattleViewModule = defineModule(
       shown = null
       reachableKeys = new Set()
       hoveredHex = null
+      hoveredTower = null
       pointer = null
       messageLog = null
       emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
@@ -1085,9 +1136,17 @@ export const registerBattleViewModule = defineModule(
     }
 
     // A click on a hex: move there, or shoot or attack the enemy standing on it.
-    function orderActiveStackTo(hex) {
+    function orderActiveStackTo(hex, tower) {
       if (pickedSpell) {
         castPickedSpellOn(hex)
+        return
+      }
+
+      if (isAimingCatapult()) {
+        const target = findCatapultTarget(hex, tower)
+        if (target) {
+          emit(APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED, { part: target.part })
+        }
         return
       }
 
@@ -1161,7 +1220,7 @@ export const registerBattleViewModule = defineModule(
             if (hex) {
               event.stopPropagation()
               pointer = { x: event.clientX, y: event.clientY }
-              orderActiveStackTo(hex)
+              orderActiveStackTo(hex, readTower(event.target))
             }
           }
         },
@@ -1206,6 +1265,7 @@ export const registerBattleViewModule = defineModule(
               statusNote = null
             }
             hoveredHex = hex
+            hoveredTower = readTower(event.target)
             describeHoveredHex()
           }
         }))
@@ -1229,6 +1289,7 @@ export const registerBattleViewModule = defineModule(
     ],
     produces: [
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
+      APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED,
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
       APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
