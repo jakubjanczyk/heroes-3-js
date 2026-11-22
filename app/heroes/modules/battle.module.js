@@ -1035,7 +1035,7 @@ export const registerBattleModule = defineModule(
                 heroArmy: hero?.army,
                 definitions
               }),
-              walls: siegeWallsOf({ started, state }),
+              walls: siegeWallsOf({ started, state, definitions }),
               definitions
             })
             showBattle()

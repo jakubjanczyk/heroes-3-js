@@ -79,6 +79,40 @@ export const aTown = () =>
     }
   }))
 
+// A town type's entry in the scenario's `towns` definitions; it has the buildings every town has.
+export const aTownDefinition = () =>
+  builder({ name: 'Town', buildings: {} }, (town) => ({
+    withMoat(moat) {
+      town.moat = moat
+    }
+  }))
+
+// from: the lowest fort that has it (FORT, CITADEL or CASTLE). hexes: in the battle's own rows
+// and columns, which count from 0 where the battlefield's labels count from 1.
+export const aMoat = () =>
+  builder({
+    name: 'Moat',
+    from: 'CITADEL',
+    damage: 70,
+    defensePenalty: 3,
+    stopsWalkers: true,
+    hitsOnEntering: true,
+    hitsAsTurnStarts: true,
+    affects: ['attacker', 'defender'],
+    hexes: [
+      { row: 0, column: 10 },
+      { row: 1, column: 10 },
+      { row: 2, column: 9 },
+      { row: 3, column: 9 },
+      { row: 4, column: 8 },
+      { row: 6, column: 8 },
+      { row: 7, column: 9 },
+      { row: 8, column: 9 },
+      { row: 9, column: 10 },
+      { row: 10, column: 10 }
+    ]
+  })
+
 export const aMine = () =>
   builder({ id: 'mine-1', kind: 'MINE', type: 'GOLD_MINE', tile: { x: 1, y: 0 } }, (mine) => ({
     ...placeable(mine),

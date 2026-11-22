@@ -12,7 +12,13 @@ import { BATTLE_DEFENDER_DWELLING_GUARDS } from '../../game/heroes/map-dwellings
 import { splitMonster } from '../../game/heroes/monster-stacks.js'
 import { createSiegeWalls } from '../../game/heroes/siege-walls.js'
 import { heroById } from '../../game/heroes/state/hero-details.js'
-import { builtIn, townGarrison as garrisonOf, townOwner } from '../../game/heroes/state/towns.js'
+import {
+  builtIn,
+  townGarrison as garrisonOf,
+  townOwner,
+  townType
+} from '../../game/heroes/state/towns.js'
+import { FORT_CHAIN, fortLevelOf } from '../../game/heroes/town-buildings.js'
 import {
   BATTLE_DEFENDER_TOWN_GARRISON,
   hasWalls,
@@ -238,14 +244,17 @@ const defenders = {
 
 export const battleDefenderOf = (started) => defenders[started.defender?.kind] ?? monster
 
-export function siegeWallsOf({ started, state }) {
+const moatOfTown = (moat, built) =>
+  moat && fortLevelOf(built) > FORT_CHAIN.indexOf(moat.from) ? moat : null
+
+export function siegeWallsOf({ started, state, definitions }) {
   const townId = battleDefenderOf(started).townId?.({ started })
   const built = townId ? builtIn(state.get(), townId) : null
   if (!built || !hasWalls(built)) {
     return null
   }
-  const castle = built.has('CASTLE')
-  return createSiegeWalls({ castle, moat: castle || built.has('CITADEL') })
+  const { moat } = definitions?.towns?.[townType(state.get(), townId)] ?? {}
+  return createSiegeWalls({ castle: built.has('CASTLE'), moat: moatOfTown(moat, built) })
 }
 
 export function battleDefenderName({ started, state, definitions }) {

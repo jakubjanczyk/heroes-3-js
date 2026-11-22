@@ -1,6 +1,28 @@
 {
   "CASTLE": {
     "name": "Castle",
+    "moat": {
+      "name": "Moat",
+      "from": "CITADEL",
+      "damage": 70,
+      "defensePenalty": 3,
+      "stopsWalkers": true,
+      "hitsOnEntering": true,
+      "hitsAsTurnStarts": true,
+      "affects": ["attacker", "defender"],
+      "hexes": [
+        { "row": 0, "column": 10 },
+        { "row": 1, "column": 10 },
+        { "row": 2, "column": 9 },
+        { "row": 3, "column": 9 },
+        { "row": 4, "column": 8 },
+        { "row": 6, "column": 8 },
+        { "row": 7, "column": 9 },
+        { "row": 8, "column": 9 },
+        { "row": 9, "column": 10 },
+        { "row": 10, "column": 10 }
+      ]
+    },
     "buildings": {
       "BROTHERHOOD_OF_THE_SWORD": {
         "name": "Brotherhood of the Sword",
