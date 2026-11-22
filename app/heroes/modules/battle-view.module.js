@@ -41,6 +41,8 @@ import {
   renderCatapultPicture,
   renderCatapultStone,
   renderMoat,
+  renderTower,
+  renderTowerArrow,
   renderWall,
   renderWallHit
 } from '../presentation/siege.js'
@@ -684,6 +686,29 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    function showTowers(towers = []) {
+      for (const element of battlefield.querySelectorAll('.battlefield__tower')) {
+        element.remove()
+      }
+      for (const tower of towers) {
+        hexElementAt(tower).append(renderTower(document, tower))
+      }
+    }
+
+    function showTowerArrow(arrow) {
+      if (!arrow || battlefield.querySelector('.battle-tower-arrow')) {
+        return
+      }
+      const element = renderTowerArrow(document, {
+        name: arrow.name,
+        from: centreWithin(battlefield, hexElementAt(arrow.from)),
+        to: centreWithin(battlefield, hexElementAt(arrow.to)),
+        flightMs: arrow.flightMs
+      })
+      battlefield.append(element)
+      setTimeout(() => element.remove(), arrow.flightMs)
+    }
+
     function showCatapultStone(stone) {
       const catapult = battlefield.querySelector('.battle-catapult')
       if (!stone || !catapult || battlefield.querySelector('.battle-catapult-stone')) {
@@ -722,7 +747,9 @@ export const registerBattleViewModule = defineModule(
       showStacks(battle, previous)
       showWalls(battle.walls)
       showMoat(battle.moat)
+      showTowers(battle.towers)
       showCatapultStone(battle.catapultStone)
+      showTowerArrow(battle.towerArrow)
       showWallHits(battle.wallHits)
 
       for (const row of hexes) {

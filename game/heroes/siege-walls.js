@@ -45,14 +45,21 @@ const SEGMENT_HIT_POINTS = 2
 const CASTLE_SEGMENT_HIT_POINTS = 3
 const DRAWBRIDGE_HIT_POINTS = 2
 
-export function createSiegeWalls({ castle = false, moat = null } = {}) {
+export function createSiegeWalls({ castle = false, moat = null, towers = [] } = {}) {
   const segmentHitPoints = castle ? CASTLE_SEGMENT_HIT_POINTS : SEGMENT_HIT_POINTS
   const hitPoints = {
     ...Object.fromEntries(SEGMENTS.map(({ part }) => [part, segmentHitPoints])),
     [DRAWBRIDGE]: DRAWBRIDGE_HIT_POINTS
   }
-  return { hitPoints, fullHitPoints: hitPoints, moat }
+  return { hitPoints, fullHitPoints: hitPoints, moat, towers }
 }
+
+export const towersOf = (walls) => walls?.towers ?? []
+
+export const towerOf = (walls, tower) => towersOf(walls).find((each) => each.tower === tower)
+
+export const describeTowers = (walls) =>
+  towersOf(walls).map(({ name, hex, stands = 'on' }) => ({ name, stands, ...hex }))
 
 export const isMoatHex = (walls, hex) =>
   Boolean(walls?.moat?.hexes.some((moatHex) => isSameHex(moatHex, hex)))
@@ -110,6 +117,8 @@ export function blocksStanding({ walls, stacks, side, hex }) {
 
 // The drawbridge's inner hex is the wall's hex on its row.
 const isInside = ({ row, column }) => column > (WALL_COLUMN_BY_ROW[row] ?? 10)
+
+export const isInsideTheWalls = (stack) => isInside(stack.hex)
 
 // The drawbridge's outer hex never stops a shot; its inner one does while it stands.
 const stopsTheWay = (walls, hex) =>

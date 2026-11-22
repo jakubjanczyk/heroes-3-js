@@ -41,7 +41,8 @@ import {
   isAffectedByTheMoat,
   isMoatHex,
   isShotThroughTheWalls,
-  moatOf
+  moatOf,
+  towersOf
 } from './siege-walls.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
@@ -138,6 +139,7 @@ function createStacks({ side, army, ...shared }) {
 }
 
 const CATAPULT_STACK_ID = 'attacker-catapult'
+const ARROW_TOWER_NAME = 'Arrow Tower'
 
 // An artifact that cancels morale or luck in battle leaves only the armies' penalties, on both
 // sides whichever hero wears it, and the spells' effects on them count for nothing.
@@ -201,14 +203,30 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
     effects: [],
     messages: [],
     walls,
-    // The attacker's catapult shoots as each round starts, before every stack.
-    catapultReady: Boolean(walls),
+    // What shoots as each round starts, in turn, before every stack.
+    roundStartShooters: walls ? [...towerIdsOf(walls), CATAPULT] : [],
     definitions
   }
 }
 
+export const CATAPULT = 'CATAPULT'
+
 const hasCatapult = (battle) =>
   battle.stacks.some((stack) => stack.id === CATAPULT_STACK_ID && isAlive(stack))
+
+const towerIdsOf = (walls) => towersOf(walls).map(({ tower }) => tower)
+
+const roundStartShootersOf = (battle) => [
+  ...towerIdsOf(battle.walls),
+  ...(hasCatapult(battle) ? [CATAPULT] : [])
+]
+
+const hasRoundStartTarget = (battle, shooter) =>
+  shooter === CATAPULT ? hasCatapultTarget(battle.walls) : hasLivingStacks(battle, 'attacker')
+
+// The next that shoots as the round starts, passing over one with nothing to shoot at.
+export const getRoundStartShooter = (battle) =>
+  battle.roundStartShooters.find((shooter) => hasRoundStartTarget(battle, shooter)) ?? null
 
 export const hasCastThisRound = (battle, side) => battle.sidesCastThisRound.includes(side)
 
@@ -308,8 +326,6 @@ const isHitByTheMoatNow = (battle, stack) =>
   !stack.warMachine &&
   !hasWaited(battle, stack.id)
 
-const isCatapultShotDue = (battle) => battle.catapultReady && hasCatapultTarget(battle.walls)
-
 // A stack the moat kills as its turn starts has no turn.
 function hitAsTurnStarts(battle) {
   const starting = getActiveStack(battle)
@@ -320,10 +336,11 @@ function hitAsTurnStarts(battle) {
   return isAlive(hit.stacks.find(({ id }) => id === starting.id)) ? hit : endTurn(hit, starting.id)
 }
 
-// As a round starts the catapult shoots before the first stack's turn, and so before the moat.
+// As a round starts the towers and the catapult shoot before the first stack's turn, and so before the
+// moat.
 function startNextTurn(battle) {
   const started = startTurnOf(battle, getActiveStack(battle))
-  return isCatapultShotDue(started) ? started : hitAsTurnStarts(started)
+  return getRoundStartShooter(started) ? started : hitAsTurnStarts(started)
 }
 
 // A defending stack keeps its Defense bonus until its next turn starts.
@@ -367,7 +384,7 @@ export function endTurn(battle, stackId) {
     waitedStackIds: [],
     moraleStackIds: [],
     turnStackId: null,
-    catapultReady: hasCatapult(battle),
+    roundStartShooters: roundStartShootersOf(battle),
     stacks: withoutGoneClones(
       battle.stacks.map((stack) => ({
         ...countDownSpells(stack),
@@ -1204,13 +1221,35 @@ export function resolveShot(battle, { stackId, strikes }) {
 
 export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
 
+const withoutShooter = (battle, done) =>
+  battle.roundStartShooters.filter((shooter) => shooter !== done)
+
+// Once the last of them has shot, the first stack's turn starts.
+const afterRoundStartShot = (battle) =>
+  getRoundStartShooter(battle) ? battle : hitAsTurnStarts(battle)
+
 export function shootCatapult(battle, shot) {
-  return hitAsTurnStarts({
+  return afterRoundStartShot({
     ...battle,
     walls: hitWall(battle.walls, shot),
-    catapultReady: false,
+    roundStartShooters: withoutShooter(battle, CATAPULT),
     messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
   })
+}
+
+export function shootTower(battle, { tower, targetId, damage }) {
+  const { damaged, ...losses } = damageStack(battle, targetId, damage)
+  return afterRoundStartShot(
+    clearGoneClones({
+      ...battle,
+      stacks: battle.stacks.map((stack) => (stack.id === targetId ? wakeUp(damaged) : stack)),
+      roundStartShooters: withoutShooter(battle, tower),
+      messages: [
+        ...battle.messages,
+        ...describeDamage(`The ${ARROW_TOWER_NAME} does ${damage} damage.`, losses)
+      ]
+    })
+  )
 }
 
 export function shakeWalls(battle, { heroName, spellName, wallHits }) {

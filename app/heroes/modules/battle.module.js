@@ -1,6 +1,8 @@
+import { planTowerShot } from '../../../game/heroes/arrow-towers.js'
 import {
   areaTargetIds,
   attackStack,
+  CATAPULT,
   canTeleportTo,
   castDamageSpell,
   castHealingSpell,
@@ -20,6 +22,7 @@ import {
   getBadMoraleChance,
   getExperienceForKills,
   getGoodMoraleChance,
+  getRoundStartShooter,
   getShotTargets,
   getStackHexes,
   getStackReach,
@@ -37,6 +40,7 @@ import {
   shakeWalls,
   shootCatapult,
   shootStack,
+  shootTower,
   spellTargetIds,
   teleportStack,
   waitStack
@@ -63,11 +67,13 @@ import {
   describeCatapultShot,
   describeEarthquakeHit,
   describeMoat,
+  describeTowers,
   describeWallPartHex,
   describeWalls,
   hasWallToShake,
   planCatapultShot,
-  planEarthquake
+  planEarthquake,
+  towerOf
 } from '../../../game/heroes/siege-walls.js'
 import {
   battleSpellTargeting,
@@ -123,6 +129,7 @@ import {
   APP_FACT_BATTLE_STACK_SHOT,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STARTED,
+  APP_FACT_BATTLE_TOWER_SHOT,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
@@ -145,7 +152,7 @@ import {
 
 const DEFAULT_STEP_DELAY_MS = 180
 const DEFAULT_HERO_NAME = 'Hero'
-const STONE_FLIGHT_STEPS = 4
+const FLIGHT_STEPS = 4
 
 // A sacrificed stack is gone from the battlefield, with no corpse.
 const withHexes = (stacks) =>
@@ -210,6 +217,7 @@ export const registerBattleModule = defineModule(
       typeof config?.resistanceRandom === 'function' ? config.resistanceRandom : Math.random
     const catapultRandom =
       typeof config?.catapultRandom === 'function' ? config.catapultRandom : random
+    const towerRandom = typeof config?.towerRandom === 'function' ? config.towerRandom : random
 
     let heroId = null
     // The side the viewing player plays: 'attacker', 'defender', or null for a battle of other
@@ -221,7 +229,8 @@ export const registerBattleModule = defineModule(
     let isRestoring = false
     // A move or attack is saved as one fact; until the walk ends the battle is shown as before.
     let moving = null
-    // The catapult's stone in flight: the battle is shown as before until it lands.
+    // The catapult's stone or a tower's arrow in flight: the battle is shown as before until it
+    // lands.
     let throwing = null
     // Where the last stone landed and what it did, shown once.
     let wallHits = []
@@ -319,6 +328,7 @@ export const registerBattleModule = defineModule(
     const siegeOf = (shown, stacks = shown.stacks) => ({
       walls: shown.walls ? describeWalls({ walls: shown.walls, stacks }) : [],
       moat: describeMoat(shown.walls),
+      towers: describeTowers(shown.walls),
       siege: shown.walls
     })
 
@@ -328,16 +338,23 @@ export const registerBattleModule = defineModule(
       return hits
     }
 
+    function flightOf({ battle: shown, shot, arrow }) {
+      const flightMs = stepDelayMs * FLIGHT_STEPS
+      if (shot) {
+        return { catapultStone: { to: describeWallPartHex(shot.part), flightMs } }
+      }
+      const { name, hex } = towerOf(shown.walls, arrow.tower)
+      const target = shown.stacks.find(({ id }) => id === arrow.targetId)
+      return { towerArrow: { name, from: hex, to: target.hex, flightMs } }
+    }
+
     function busyView() {
       if (throwing) {
         return {
           shown: throwing.battle,
           stacks: throwing.battle.stacks,
           activeStackId: null,
-          catapultStone: {
-            to: describeWallPartHex(throwing.shot.part),
-            flightMs: stepDelayMs * STONE_FLIGHT_STEPS
-          }
+          ...flightOf(throwing)
         }
       }
       const stacks = moving.battle.stacks.map((stack) =>
@@ -347,7 +364,7 @@ export const registerBattleModule = defineModule(
     }
 
     function showBusyBattle() {
-      const { shown, stacks, activeStackId, catapultStone = null } = busyView()
+      const { shown, stacks, activeStackId, catapultStone = null, towerArrow = null } = busyView()
       emit(APP_UI_BATTLE_UPDATED, {
         tile: started.tile,
         heroId,
@@ -357,6 +374,7 @@ export const registerBattleModule = defineModule(
         stacks: withHexes(stacks),
         ...siegeOf(shown, stacks),
         catapultStone,
+        towerArrow,
         wallHits: [],
         activeStackId,
         moving: true,
@@ -407,6 +425,7 @@ export const registerBattleModule = defineModule(
         stacks: withHexes(battle.stacks),
         ...siegeOf(battle),
         catapultStone: null,
+        towerArrow: null,
         wallHits: takeWallHits(),
         ...activeStackView(activeStack),
         messages: battle.messages,
@@ -631,9 +650,13 @@ export const registerBattleModule = defineModule(
         return
       }
 
-      const shot = battle.catapultReady ? planCatapultShot(battle.walls, catapultRandom) : null
-      if (shot) {
-        void throwStone(shot)
+      const shooter = getRoundStartShooter(battle)
+      if (shooter === CATAPULT) {
+        void throwStone(planCatapultShot(battle.walls, catapultRandom))
+        return
+      }
+      if (shooter) {
+        void shootArrow(planTowerShot(battle, shooter, towerRandom))
         return
       }
 
@@ -686,13 +709,35 @@ export const registerBattleModule = defineModule(
       const { result } = describeCatapultShot(battle.walls, shot)
       throwing = { battle, shot }
       emit(APP_FACT_BATTLE_CATAPULT_SHOT, shot)
-      await sleep(stepDelayMs * STONE_FLIGHT_STEPS)
+      await sleep(stepDelayMs * FLIGHT_STEPS)
       throwing = null
       if (started !== throwingBattle) {
         return
       }
 
       wallHits = [{ ...describeWallPartHex(shot.part), result }]
+      showBattle()
+      continueBattle()
+    }
+
+    // The target is hit only once the arrow lands on it.
+    async function shootArrow(arrow) {
+      const shootingBattle = started
+      passedTurns = 0
+      if (isUnseen()) {
+        emit(APP_FACT_BATTLE_TOWER_SHOT, arrow)
+        continueBattle()
+        return
+      }
+
+      throwing = { battle, arrow }
+      emit(APP_FACT_BATTLE_TOWER_SHOT, arrow)
+      await sleep(stepDelayMs * FLIGHT_STEPS)
+      throwing = null
+      if (started !== shootingBattle) {
+        return
+      }
+
       showBattle()
       continueBattle()
     }
@@ -1112,6 +1157,17 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_TOWER_SHOT,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = shootTower(battle, event.detail)
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_TURN_ENDED,
           handler: (event) => {
             if (!battle) {
@@ -1321,6 +1377,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_SPELL_CAST,
       APP_FACT_BATTLE_CATAPULT_SHOT,
+      APP_FACT_BATTLE_TOWER_SHOT,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
@@ -1346,6 +1403,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
       APP_FACT_BATTLE_SPELL_CAST,
       APP_FACT_BATTLE_CATAPULT_SHOT,
+      APP_FACT_BATTLE_TOWER_SHOT,
       APP_FACT_BATTLE_FINISHED,
       APP_FACT_BATTLE_ENDED,
       APP_FACT_RESOURCES_SPENT,
