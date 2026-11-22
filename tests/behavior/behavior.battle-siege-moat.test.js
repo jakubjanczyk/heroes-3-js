@@ -302,7 +302,7 @@ describe('siege moat behavior', () => {
       expect(moatLines()).toEqual([MOAT_HIT(7, 'Waders'), MOAT_HIT(7, 'Waders')])
     })
 
-    test("as the round starts the catapult shoots first, then the moat hits the stack whose turn starts", async () => {
+    test('as the round starts the catapult shoots first, then the moat hits the stack whose turn starts', async () => {
       const { user } = await wadersInTheMoat()
 
       await playOnToTheWadersNextTurn(user)
