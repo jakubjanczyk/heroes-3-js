@@ -210,13 +210,37 @@
     linear-gradient(8deg, transparent 0 70%, #5c3a1b 70% 84%, transparent 84%);
 }
 
-/* The attacker's catapult stands on its hex and the edge hex behind it, as a double-wide
- * creature does. */
+/* A war machine is drawn as itself rather than as a creature's box. */
+.battle-stack--war-machine .battle-stack__creature {
+  inset-inline: 0;
+  inset-block: -20% 0;
+  block-size: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.battle-stack--war-machine.battle-stack--spell-target .battle-stack__creature {
+  box-shadow: 0 0 6px 3px rgba(255, 140, 40, 0.9);
+}
+
+/* A destroyed war machine lies broken on the ground, its arm gone; stacks walk over it. */
+.battle-stack--war-machine.battle-stack--dead .battle-stack__creature {
+  inset-block: 10% 0;
+  block-size: auto;
+  filter: grayscale(1) brightness(0.45);
+  transform: rotate(-10deg);
+}
+
+.battle-stack--dead .battle-catapult__arm,
+.battle-stack--dead .battle-catapult__cup {
+  display: none;
+}
+
 .battle-catapult {
   position: absolute;
-  inset-block: -20% 0;
-  inset-inline: -100% 0;
-  z-index: 1;
+  inset: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
