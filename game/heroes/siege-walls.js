@@ -228,3 +228,35 @@ export function describeCatapultShot(walls, { part, damage }) {
   }
   return { message: `The Catapult hits the ${name}.`, result: 'damaged' }
 }
+
+const PARTS_FROM_THE_TOP = [...PARTS].sort((a, b) => a.place - b.place)
+
+export const hasWallToShake = (walls) =>
+  Boolean(walls) && PARTS.some(({ part }) => isStanding(walls, part))
+
+// Every point is placed before any damage is done; a part already given enough points to fall
+// takes no more, and points left over once every part would fall are lost.
+export function planEarthquake(walls, points, random) {
+  const given = {}
+  for (let point = 0; point < points; point += 1) {
+    const candidates = PARTS_FROM_THE_TOP.filter(
+      ({ part }) => (given[part] ?? 0) < walls.hitPoints[part]
+    )
+    if (candidates.length === 0) {
+      break
+    }
+    const { part } = pickOne(candidates, random)
+    given[part] = (given[part] ?? 0) + 1
+  }
+  return PARTS_FROM_THE_TOP.filter(({ part }) => given[part]).map(({ part }) => ({
+    part,
+    damage: given[part]
+  }))
+}
+
+export function describeEarthquakeHit(walls, { part, damage }) {
+  const { name } = partOf(part)
+  return isStanding(hitWall(walls, { part, damage }), part)
+    ? { message: `The Earthquake damages the ${name}.`, result: 'damaged' }
+    : { message: `The Earthquake destroys the ${name}.`, result: 'destroyed' }
+}

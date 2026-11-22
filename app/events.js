@@ -112,7 +112,8 @@ export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.chang
 // The part of the walls the attacker's catapult hit as the round started, and the damage it did.
 export const APP_FACT_BATTLE_CATAPULT_SHOT = 'fact.battle.catapult.shot'
 // The hero's spell, its target (`targetIds` for a spell that hit every stack), the spell points it cost, and the damage it did or, for a spell
-// that lasts, its effects and how many rounds they last.
+// that lasts, its effects and how many rounds they last; for Earthquake, `wallHits`: the parts of
+// the walls it hit and the damage each took.
 export const APP_FACT_BATTLE_SPELL_CAST = 'fact.battle.spell.cast'
 export const APP_FACT_MONSTER_DEFEATED = 'fact.monster.defeated'
 export const APP_FACT_MONSTER_COUNT_CHANGED = 'fact.monster.count.changed'

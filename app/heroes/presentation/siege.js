@@ -67,18 +67,20 @@ export function renderCatapultStone(document, { from, to, flightMs }) {
 }
 
 const HIT_LABELS = {
-  damaged: 'Stone hit: damaged',
-  destroyed: 'Stone hit: destroyed',
-  none: 'Stone hit: no damage'
+  damaged: 'hit: damaged',
+  destroyed: 'hit: destroyed',
+  none: 'hit: no damage'
 }
+
+const CAUSE_NAMES = { stone: 'Stone', earthquake: 'Earthquake' }
 
 const RUBBLE_PIECES = 6
 
-export function renderWallHit(document, { result }, effectMs) {
+export function renderWallHit(document, { result, cause = 'stone' }, effectMs) {
   const element = document.createElement('div')
   element.className = `battle-effect battle-wall-hit battle-wall-hit--${result}`
   element.setAttribute('role', 'img')
-  element.setAttribute('aria-label', HIT_LABELS[result])
+  element.setAttribute('aria-label', `${CAUSE_NAMES[cause]} ${HIT_LABELS[result]}`)
   element.style.setProperty('--battle-effect-ms', `${effectMs}ms`)
   const dust = document.createElement('span')
   dust.className = 'battle-wall-hit__dust'

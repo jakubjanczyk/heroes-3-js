@@ -7,7 +7,12 @@ export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? s
 export const canCastInBattle = (spell) =>
   Boolean(
     spell?.kind === 'combat' &&
-      (spell.damage || spell.teleports || spell.clones || spell.sacrifices || castRuleOf(spell))
+      (spell.damage ||
+        spell.teleports ||
+        spell.clones ||
+        spell.sacrifices ||
+        spell.earthquake ||
+        castRuleOf(spell))
   )
 
 // A damage spell hits an enemy stack, unless it hits the whole battlefield.

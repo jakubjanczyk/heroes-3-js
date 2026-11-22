@@ -727,7 +727,7 @@ In eleven parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town wi
 - [x] 5.10.4 Teleport and the walls: below Expert it can't take a stack across them
 - [x] 5.10.5 The catapult shoots: once a round, before every stack, at the weakest wall segment and then the drawbridge; destroyed segments can be walked through and shot through, a destroyed drawbridge stays open; their hit points by Fort or Castle
 - [x] 5.10.6 The catapult as a war machine: the defenders can attack it, it never strikes back, destroyed it stops shooting; not counted for winning, back for the next siege
-- [ ] 5.10.7 Earthquake: one point of damage to two, three or four random parts of the walls
+- [x] 5.10.7 Earthquake: one point of damage to two, three or four random parts of the walls
 - [ ] 5.10.8 The moat (Citadel and Castle): stops a stack for the round, damages it and takes 3 Defense; Advanced Teleport crosses it
 - [ ] 5.10.9 Arrow towers: the Keep (Citadel) and two more (Castle), their damage by the town's buildings, the catapult shooting at them
 - [ ] 5.10.10 Ballistics: aiming the catapult, two shots, the hit chances by level
@@ -1213,6 +1213,12 @@ The map is about 10,000 elements: a terrain tile per tile (4096 on the demo map)
 - [ ] Terrain, fog and road tiles placed with `left` / `top` instead of `transform`: cut that work to about 11 ms a step in the same trace, with nothing looking different
 - [ ] Measure again on a phone afterwards; if steps still stutter, draw terrain and fog on a canvas instead of one element per tile
 
+### 9.8 Battle Spells as Data
+Each battle spell with its own way of working is a special case in the code: `canCastInBattle` and `spellTargetSide` list the effects one by one, the battle module branches on them to pick targets, plan the cast and build its fact (`castEarthquake` beside `castSpell`, Teleport's destination, Sacrifice's raised stack), and the cast fact is replayed through another branch per effect (`castSpellOn`, the Earthquake's `wallHits`).
+- [ ] One handler per spell effect (damage, lasting, removing, healing, Teleport, Clone, Sacrifice, Earthquake), each saying whether it can be cast, what it needs aimed (nothing, a stack, a hex, a stack and a hex), how its cast is planned, what its fact holds and how the fact changes the battle; the battle module and the spell book ask the handler instead of branching on the spell
+- [ ] A new spell of an existing effect needs only its entry in `game/data/spells.json`; a new effect needs only its handler, with no change to the battle module, the spell book or the cast fact's replay
+- [ ] Old saves replay as before: the cast fact keeps its shape for each effect
+
 ---
 
 ## Milestone 10: Sprites, Animations & Audio Polish
@@ -1423,6 +1429,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 66. View World, with View Air and View Earth (4.8.8.5): the game's screen takes the adventure map's place and part of the sidebar, so it waits until the rest is done
 67. Faster map drawing (9.7): tiles placed without a transform each, so a step doesn't make the browser go over every tile
 68. Sleeping heroes (4.5.6): Sleep hero and Wake hero, Next Hero passing over sleeping heroes, moving one wakes it
+69. Battle spells as data (9.8): one handler per spell effect, so a new spell is only its definition
 
 ---
 

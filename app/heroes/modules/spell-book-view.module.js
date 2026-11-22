@@ -8,6 +8,7 @@ import {
   cannotAffordText,
   castsOnAllStacks,
   describeSpellBookSpread,
+  EARTHQUAKE_NO_GOOD_TEXT,
   hasSpellBook,
   SPELL_AFFECTS_NO_ONE_TEXT
 } from '../../../game/heroes/spell-book.js'
@@ -368,9 +369,12 @@ export const registerSpellBookViewModule = defineModule(
         { type: APP_UI_BATTLE_UPDATED, handler: (event) => (battleShown = event.detail) },
         {
           type: APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE,
-          handler: () => {
+          handler: (event) => {
             if (book) {
-              showMessage({ title: '', text: SPELL_AFFECTS_NO_ONE_TEXT })
+              const text = event.detail?.noWalls
+                ? EARTHQUAKE_NO_GOOD_TEXT
+                : SPELL_AFFECTS_NO_ONE_TEXT
+              showMessage({ title: '', text })
             }
           }
         },

@@ -382,6 +382,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [20, 17, 17, 17],
+    "earthquake": { "points": [2, 2, 3, 4] },
     "mageGuildChances": { "CASTLE": 4 },
     "descriptions": [
       {

@@ -55,6 +55,7 @@ export function spellSkillLevel(hero, spell) {
 
 export const castsOnAllStacks = (hero, spell) =>
   Boolean(spell?.targets) ||
+  Boolean(spell?.earthquake) ||
   (Boolean(castRuleOf(spell)?.allAtExpert) && spellSkillLevel(hero, spell) === SKILL_LEVELS.EXPERT)
 
 export function spellCost(hero, spell) {
@@ -202,6 +203,8 @@ export function describeSpellBookSpread({ hero, definitions, kind, school, sprea
 }
 
 export const SPELL_AFFECTS_NO_ONE_TEXT = 'That spell will affect no one!'
+export const EARTHQUAKE_NO_GOOD_TEXT =
+  'An earthquake will do you no good unless there are town walls to damage.'
 
 export function cannotAffordText(cost, spellPoints) {
   return `That spell costs ${cost} spell points.  Your hero only has ${spellPoints} spell points, and therefore can't cast the spell.`
