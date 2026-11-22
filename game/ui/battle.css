@@ -210,6 +210,18 @@
     linear-gradient(8deg, transparent 0 70%, #5c3a1b 70% 84%, transparent 84%);
 }
 
+/* The moat in front of a Citadel's or a Castle's walls: water under whatever stands in it. */
+.battlefield__moat {
+  position: absolute;
+  inset: 2% 4%;
+  pointer-events: none;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background:
+    repeating-linear-gradient(170deg, transparent 0 18%, rgba(190, 220, 255, 0.25) 18% 22%),
+    linear-gradient(180deg, #3d78b8, #23507f);
+  opacity: 0.85;
+}
+
 /* A war machine is drawn as itself rather than as a creature's box. */
 .battle-stack--war-machine .battle-stack__creature {
   inset-inline: 0;

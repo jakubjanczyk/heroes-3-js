@@ -15,6 +15,7 @@ import {
   playOnToNextRound,
   readBattleSpellPoints,
   readBattleStacks,
+  readCombatMessages,
   readHighlightedBattleHexes
 } from './battle.utils.js'
 import { aCreatureDefinition, aHero, aScenario, aSpellDefinition, aTown } from './builders.js'
@@ -36,7 +37,10 @@ const TELEPORT = aSpellDefinition()
   .withLevel(3)
   .withSchools(['WATER'])
   .withCosts([15, 12, 6, 3])
-  .withTeleports({ acrossWalls: [false, false, false, true] })
+  .withTeleports({
+    acrossWalls: [false, false, false, true],
+    acrossMoat: [false, false, true, true]
+  })
   .describedAs('Teleport description.')
   .build()
 
@@ -78,7 +82,7 @@ const INNER_DRAWBRIDGE = { row: 6, column: 11 }
 
 const KIRKWALL_GATE = { x: 4, y: 3 }
 
-const anAttackScenario = (level) =>
+const anAttackScenario = (level, buildings = ['FORT']) =>
   aScenario()
     .withSize(9, 7)
     .withEntities(
@@ -86,7 +90,7 @@ const anAttackScenario = (level) =>
       aTown()
         .named('Kirkwall')
         .ownedBy('blue')
-        .withBuildings(['FORT'])
+        .withBuildings(buildings)
         .withGarrison([stack('SLUG')])
         .at(KIRKWALL_GATE.x, KIRKWALL_GATE.y)
     )
@@ -136,8 +140,8 @@ const setupApp = (scenario, catapult) =>
     }
   })
 
-async function attackKirkwall(level, catapult) {
-  const app = await setupApp(anAttackScenario(level), catapult)
+async function attackKirkwall(level, catapult, buildings) {
+  const app = await setupApp(anAttackScenario(level, buildings), catapult)
   await loadAppStyles()
   confirmTileClickByDispatch(KIRKWALL_GATE.x, KIRKWALL_GATE.y)
   await waitMs()
@@ -266,6 +270,45 @@ describe('siege teleport behavior', () => {
       await pickToTeleport(user, BY_THE_GAP)
 
       expect(await aimAt(user, INSIDE)).toEqual(REFUSED)
+    })
+  })
+
+  describe('the player attacks a town with a Citadel whose Mid-Lower Wall is destroyed', () => {
+    const BY_THE_MOAT = { row: 8, column: 8 }
+    const ACROSS_THE_MOAT = { row: 8, column: 13 }
+    const IN_THE_MOAT = { row: 5, column: 9 }
+
+    async function runnerByTheMoat(level) {
+      const app = await attackKirkwall(level, MID_LOWER_WALL_DESTROYED, ['FORT', 'CITADEL'])
+      await clickBattleHex(app.user, BY_THE_MOAT.row, BY_THE_MOAT.column)
+      await waitMs(1000)
+      return app
+    }
+
+    test('given Basic Water Magic when Teleport is aimed through the gap across the moat then it is an invalid destination', async () => {
+      const { user } = await runnerByTheMoat(BASIC)
+      await pickToTeleport(user, BY_THE_MOAT)
+
+      expect(await aimAt(user, ACROSS_THE_MOAT)).toEqual(REFUSED)
+    })
+
+    test('given Advanced Water Magic when the stack is teleported through the gap across the moat then it stands inside', async () => {
+      const { user } = await runnerByTheMoat(ADVANCED)
+      await pickToTeleport(user, BY_THE_MOAT)
+
+      await teleportTo(user, ACROSS_THE_MOAT)
+
+      expect(runnerAt()).toEqual(ACROSS_THE_MOAT)
+    })
+
+    test('given Basic Water Magic when the stack is teleported into the moat then it stands there and the moat does it no damage', async () => {
+      const { user } = await attackKirkwall(BASIC, [], ['FORT', 'CITADEL'])
+      await pickToTeleport(user, ATTACKER_START)
+
+      await teleportTo(user, IN_THE_MOAT)
+
+      expect(runnerAt()).toEqual(IN_THE_MOAT)
+      expect(readCombatMessages().filter((line) => line.startsWith('The Moat'))).toEqual([])
     })
   })
 

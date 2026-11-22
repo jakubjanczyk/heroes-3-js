@@ -128,13 +128,14 @@ export function getAreaHexes(center, { from, to }) {
   return hexes
 }
 
-function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
+// A hex the walk `stopsAt` can be reached but not walked on from, unless the walk starts there.
+function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY, stopsAt = () => false }) {
   const steps = new Map([[hexKey(from), { hex: from, steps: 0, previous: null }]])
   const queue = [from]
   while (queue.length > 0) {
     const current = queue.shift()
     const { steps: currentSteps } = steps.get(hexKey(current))
-    if (currentSteps >= maxSteps) {
+    if (currentSteps >= maxSteps || (currentSteps > 0 && stopsAt(current))) {
       continue
     }
 
@@ -150,8 +151,8 @@ function walkFrom({ from, isFree, maxSteps = Number.POSITIVE_INFINITY }) {
   return steps
 }
 
-export function findHexPath({ from, to, isFree, maxSteps }) {
-  const reached = walkFrom({ from, isFree, maxSteps })
+export function findHexPath({ from, to, isFree, maxSteps, stopsAt }) {
+  const reached = walkFrom({ from, isFree, maxSteps, stopsAt })
   if (!reached.has(hexKey(to)) || isSameHex(to, from)) {
     return null
   }
@@ -163,7 +164,7 @@ export function findHexPath({ from, to, isFree, maxSteps }) {
   return path
 }
 
-export function getReachableHexes({ from, speed, flying, isFree }) {
+export function getReachableHexes({ from, speed, flying, isFree, stopsAt }) {
   if (flying) {
     return Array.from({ length: BATTLEFIELD_ROWS }, (_, row) =>
       Array.from({ length: BATTLEFIELD_COLUMNS }, (_, column) => ({ row, column }))
@@ -172,7 +173,7 @@ export function getReachableHexes({ from, speed, flying, isFree }) {
       .filter((hex) => !isSameHex(hex, from) && isFree(hex) && getHexDistance(from, hex) <= speed)
   }
 
-  return [...walkFrom({ from, isFree, maxSteps: speed }).values()]
+  return [...walkFrom({ from, isFree, maxSteps: speed, stopsAt }).values()]
     .filter(({ steps }) => steps > 0)
     .map(({ hex }) => hex)
 }

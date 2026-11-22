@@ -535,8 +535,8 @@
   }
 }
 
-/* The Fort icon, filling its frame once the town has a Fort: its towers tell the level, as the
-   town box's do. */
+/* The Fort icon, filling its frame once the town has a Fort: its towers tell the level and the
+   water under the walls the moat, as the town box's do. */
 .town-panel__fort {
   appearance: none;
   position: absolute;
@@ -550,11 +550,11 @@
   --fort-picture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M3 15V6h2v2h2V6h2v2h2V6h2v2h2V6h2v9z' fill='rgb(170,165,155)'/%3E%3C/svg%3E");
 
   &[data-level="2"] {
-    --fort-picture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M1 15V6h2v2h2V6h2v2h1V2h4v6h1V6h2v2h2V6h2v9z' fill='rgb(185,180,170)'/%3E%3C/svg%3E");
+    --fort-picture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 19'%3E%3Cpath d='M1 15V6h2v2h2V6h2v2h1V2h4v6h1V6h2v2h2V6h2v9z' fill='rgb(185,180,170)'/%3E%3Cpath d='M0 15.5h20V19H0z' fill='rgb(60,115,185)'/%3E%3C/svg%3E");
   }
 
   &[data-level="3"] {
-    --fort-picture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M1 15V3h3v3h3V5h2V1h2v4h2v1h3V3h3v12z' fill='rgb(205,200,190)'/%3E%3C/svg%3E");
+    --fort-picture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 19'%3E%3Cpath d='M1 15V3h3v3h3V5h2V1h2v4h2v1h3V3h3v12z' fill='rgb(205,200,190)'/%3E%3Cpath d='M0 15.5h20V19H0z' fill='rgb(60,115,185)'/%3E%3C/svg%3E");
   }
 
   &[hidden] {

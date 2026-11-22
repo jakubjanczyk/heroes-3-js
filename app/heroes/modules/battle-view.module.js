@@ -40,6 +40,7 @@ import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
 import {
   renderCatapultPicture,
   renderCatapultStone,
+  renderMoat,
   renderWall,
   renderWallHit
 } from '../presentation/siege.js'
@@ -672,6 +673,15 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    function showMoat(moat = []) {
+      for (const element of battlefield.querySelectorAll('.battlefield__moat')) {
+        element.remove()
+      }
+      for (const hex of moat) {
+        hexElementAt(hex).prepend(renderMoat(document))
+      }
+    }
+
     function showCatapultStone(stone) {
       const catapult = battlefield.querySelector('.battle-catapult')
       if (!stone || !catapult || battlefield.querySelector('.battle-catapult-stone')) {
@@ -709,6 +719,7 @@ export const registerBattleViewModule = defineModule(
 
       showStacks(battle, previous)
       showWalls(battle.walls)
+      showMoat(battle.moat)
       showCatapultStone(battle.catapultStone)
       showWallHits(battle.wallHits)
 

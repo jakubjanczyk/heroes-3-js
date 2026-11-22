@@ -22,6 +22,14 @@ export function renderWall(document, wall) {
   return element
 }
 
+export function renderMoat(document) {
+  const element = document.createElement('div')
+  element.className = 'battlefield__moat'
+  element.setAttribute('role', 'img')
+  element.setAttribute('aria-label', 'Moat')
+  return element
+}
+
 const CATAPULT_SHAPES = [
   ['path', { class: 'battle-catapult__frame', d: 'M14 50 L86 50 L70 34 L30 34 Z' }],
   ['path', { class: 'battle-catapult__frame', d: 'M44 34 L52 14 L60 34' }],
