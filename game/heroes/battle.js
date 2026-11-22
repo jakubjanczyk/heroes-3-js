@@ -32,6 +32,7 @@ import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
 import { getHeroPrimarySkills } from './primary-skills.js'
 import {
   blocksStanding,
+  CATAPULT_HEX,
   canTeleportBetween,
   describeCatapultShot,
   hitWall,
@@ -66,9 +67,12 @@ const UNKNOWN_CREATURE = Object.freeze({
   abilities: []
 })
 
-function createStacks({
+function createStack({
+  id,
   side,
-  army,
+  creature,
+  count,
+  hex,
   skills,
   morale = 0,
   luck = 0,
@@ -77,51 +81,58 @@ function createStacks({
   magicResistance = 0,
   definitions
 }) {
+  const definition = { ...UNKNOWN_CREATURE, ...definitions?.monsters?.[creature] }
+  const { abilities } = definition
+  const warMachine = abilities.includes('warMachine')
+  const shooter = abilities.includes('ranged')
+  const undead = abilities.includes('undead')
+  const unaffectedByMorale = undead || warMachine
+  return {
+    id,
+    side,
+    ...describeStack({ creature, count }, definitions),
+    initialCount: count,
+    speed: definition.speed,
+    tier: definition.tier ?? 1,
+    flying: abilities.includes('flying'),
+    doubleWide: abilities.includes('doubleWide'),
+    warMachine,
+    attack: definition.attack + (skills?.attack ?? 0),
+    defense: definition.defense + (skills?.defense ?? 0),
+    damage: definition.damage,
+    health: definition.health,
+    topHealth: definition.health,
+    strikes: abilities.includes('strikesTwice') ? 2 : 1,
+    retaliationsPerRound: warMachine ? 0 : getRetaliationsPerRound(abilities),
+    retaliationsUsed: 0,
+    defenseBonus: 0,
+    shots: shooter ? definition.shots : 0,
+    shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
+    shooter,
+    meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
+    morale: unaffectedByMorale ? 0 : morale,
+    unaffectedByMorale,
+    undead,
+    mindSpellImmune: undead || warMachine || immunities.mindSpells,
+    spellLevelImmunity: immunities.spellLevel,
+    magicResistance,
+    king: definition.king ?? null,
+    luck,
+    cancelledInBattle,
+    spells: [],
+    hex
+  }
+}
+
+function createStacks({ side, army, ...shared }) {
   const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
   const startHexes = getStartHexes({ side, stackCount: stacks.length })
-  return stacks.map(({ creature, count, slot }, index) => {
-    const definition = { ...UNKNOWN_CREATURE, ...definitions?.monsters?.[creature] }
-    const { abilities } = definition
-    const retaliationsPerRound = getRetaliationsPerRound(abilities)
-    const shooter = abilities.includes('ranged')
-    const undead = abilities.includes('undead')
-    const unaffectedByMorale = undead
-    return {
-      id: `${side}-${slot}`,
-      side,
-      ...describeStack({ creature, count }, definitions),
-      initialCount: count,
-      speed: definition.speed,
-      tier: definition.tier ?? 1,
-      flying: abilities.includes('flying'),
-      doubleWide: abilities.includes('doubleWide'),
-      attack: definition.attack + (skills?.attack ?? 0),
-      defense: definition.defense + (skills?.defense ?? 0),
-      damage: definition.damage,
-      health: definition.health,
-      topHealth: definition.health,
-      strikes: abilities.includes('strikesTwice') ? 2 : 1,
-      retaliationsPerRound,
-      retaliationsUsed: 0,
-      defenseBonus: 0,
-      shots: shooter ? definition.shots : 0,
-      shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
-      shooter,
-      meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
-      morale: unaffectedByMorale ? 0 : morale,
-      unaffectedByMorale,
-      undead,
-      mindSpellImmune: undead || immunities.mindSpells,
-      spellLevelImmunity: immunities.spellLevel,
-      magicResistance,
-      king: definition.king ?? null,
-      luck,
-      cancelledInBattle,
-      spells: [],
-      hex: startHexes[index]
-    }
-  })
+  return stacks.map(({ creature, count, slot }, index) =>
+    createStack({ id: `${side}-${slot}`, side, creature, count, hex: startHexes[index], ...shared })
+  )
 }
+
+const CATAPULT_STACK_ID = 'attacker-catapult'
 
 // An artifact that cancels morale or luck in battle leaves only the armies' penalties, on both
 // sides whichever hero wears it, and the spells' effects on them count for nothing.
@@ -146,11 +157,9 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
   const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
   const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
   const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
-  const stacksOf = (side) => {
+  const sharedOf = (side) => {
     const entity = sides[side]
-    return createStacks({
-      side,
-      army: entity.army,
+    return {
       skills: entity.skills,
       morale: inBattle('morale', getHeroMorale({ entity, definitions }).value),
       luck: inBattle('luck', getHeroLuck({ entity, definitions }).value),
@@ -158,10 +167,23 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
       immunities: artifactBattleImmunities(entity.artifacts, definitions),
       magicResistance: heroMagicResistance(entity),
       definitions
-    })
+    }
   }
+  const stacksOf = (side) => createStacks({ side, army: sides[side].army, ...sharedOf(side) })
+  const catapult = walls
+    ? [
+        createStack({
+          id: CATAPULT_STACK_ID,
+          side: 'attacker',
+          creature: 'CATAPULT',
+          count: 1,
+          hex: CATAPULT_HEX,
+          ...sharedOf('attacker')
+        })
+      ]
+    : []
   return {
-    stacks: [...stacksOf('attacker'), ...stacksOf('defender')],
+    stacks: [...stacksOf('attacker'), ...catapult, ...stacksOf('defender')],
     actedStackIds: [],
     sidesCastThisRound: [],
     waitedStackIds: [],
@@ -180,14 +202,20 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
   }
 }
 
+const hasCatapult = (battle) =>
+  battle.stacks.some((stack) => stack.id === CATAPULT_STACK_ID && isAlive(stack))
+
 export const hasCastThisRound = (battle, side) => battle.sidesCastThisRound.includes(side)
 
 export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
+// A war machine has no turn of its own.
+const stacksTakingTurns = (battle) => livingStacks(battle).filter((stack) => !stack.warMachine)
+
 // A blind stack loses its turns; once it can see again it takes its place by its speed.
-const actingStacks = (battle) => livingStacks(battle).filter((stack) => !isBlind(stack))
+const actingStacks = (battle) => stacksTakingTurns(battle).filter((stack) => !isBlind(stack))
 
 const wakeUp = (stack) => ({
   ...stack,
@@ -241,13 +269,13 @@ export function chainTargetIds(battle, { targeting, targetId, hex, strikes, rand
   return hitIds
 }
 
-// A clone doesn't keep its side in the battle.
+// A clone or a war machine doesn't keep its side in the battle.
 export const hasLivingStacks = (battle, side) =>
-  livingStacks(battle).some((stack) => stack.side === side && !stack.cloneOf)
+  stacksTakingTurns(battle).some((stack) => stack.side === side && !stack.cloneOf)
 
 // Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
 export function getTurnOrder(battle) {
-  return livingStacks(battle).sort((a, b) => getStackSpeed(b) - getStackSpeed(a))
+  return stacksTakingTurns(battle).sort((a, b) => getStackSpeed(b) - getStackSpeed(a))
 }
 
 // The stacks that waited act once every other stack has, the slowest first.
@@ -311,7 +339,7 @@ export function endTurn(battle, stackId) {
     waitedStackIds: [],
     moraleStackIds: [],
     turnStackId: null,
-    catapultReady: Boolean(battle.walls),
+    catapultReady: hasCatapult(battle),
     stacks: withoutGoneClones(
       battle.stacks.map((stack) => ({
         ...countDownSpells(stack),
@@ -682,9 +710,12 @@ function describeLosses(killed, nameFor) {
 }
 
 // "The Angels do 175 damage. 17 Pikemen perish."
-function describeDamage(dealt, { killed, nameFor, clone }) {
+function describeDamage(dealt, { killed, nameFor, clone, warMachine }) {
   if (clone) {
     return [dealt, `The ${clone.name} perish.`]
+  }
+  if (killed > 0 && warMachine) {
+    return [dealt, `The ${nameFor(1)} is destroyed.`]
   }
   return [killed === 0 ? dealt : `${dealt} ${describeLosses(killed, nameFor)}`]
 }
@@ -698,7 +729,13 @@ function damageStack(battle, stackId, damage) {
   const killed = stack.count - wounded.count
   // A corpse keeps the name it fell with.
   const damaged = { ...wounded, name: wounded.count > 0 ? nameFor(wounded.count) : stack.name }
-  return { damaged, killed, nameFor, clone: stack.cloneOf && damage > 0 ? stack : null }
+  return {
+    damaged,
+    killed,
+    nameFor,
+    clone: stack.cloneOf && damage > 0 ? stack : null,
+    warMachine: stack.warMachine
+  }
 }
 
 function describeDealt(attacker, damage, fireShield) {
@@ -1084,9 +1121,10 @@ export function getArmyAfterBattle(battle, side, army) {
   })
 }
 
-// The winner earns the health of every creature of the other side killed; clones earn nothing.
+// The winner earns the health of every creature of the other side killed; clones and war machines
+// earn nothing.
 export function getExperienceForKills(battle, winnerSide) {
   return battle.stacks
-    .filter((stack) => stack.side !== winnerSide && !stack.cloneOf)
+    .filter((stack) => stack.side !== winnerSide && !stack.cloneOf && !stack.warMachine)
     .reduce((sum, stack) => sum + (stack.initialCount - stack.count) * stack.health, 0)
 }

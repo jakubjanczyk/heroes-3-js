@@ -726,7 +726,7 @@ In eleven parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town wi
 - [x] 5.10.3 Shooting at the walls: a shot from outside at a stack behind the walls does half damage, shown by the cursor and the damage range
 - [x] 5.10.4 Teleport and the walls: below Expert it can't take a stack across them
 - [x] 5.10.5 The catapult shoots: once a round, before every stack, at the weakest wall segment and then the drawbridge; destroyed segments can be walked through and shot through, a destroyed drawbridge stays open; their hit points by Fort or Castle
-- [ ] 5.10.6 The catapult as a war machine: the defenders can attack it, it never strikes back, destroyed it stops shooting; not counted for winning, back for the next siege
+- [x] 5.10.6 The catapult as a war machine: the defenders can attack it, it never strikes back, destroyed it stops shooting; not counted for winning, back for the next siege
 - [ ] 5.10.7 Earthquake: one point of damage to two, three or four random parts of the walls
 - [ ] 5.10.8 The moat (Citadel and Castle): stops a stack for the round, damages it and takes 3 Defense; Advanced Teleport crosses it
 - [ ] 5.10.9 Arrow towers: the Keep (Citadel) and two more (Castle), their damage by the town's buildings, the catapult shooting at them

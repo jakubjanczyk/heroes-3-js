@@ -56,6 +56,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - This is a Heroes 3 game, so don't write "as in Heroes 3", "Heroes 3 does…" or "the Heroes 3 <thing>".
   - Never mention VCMI (or its classes, functions and files) in code or docs. Describe the rule itself instead. The `game-sources` and `new-map-object` skills name it only as a source to check rules against.
   - Not every function or variable needs one; most need none.
+- One `expect` per value checked: a test that checks the log line and the picture has two `expect`s, never one `expect` on an object or array gathering them (`expect({ log, picture }).toEqual(...)`). A failure then names the value that is wrong.
 - Test files hold no comments. The test name says what is checked; named constants, helpers and builder values say how an expected value comes about (`HALVED_SHOT`, `SHOOTER_CLOSE_TO_THE_WALLS`, a creature built with damage 10 and no Attack).
 
 ## Game Rules & Map Objects

@@ -96,8 +96,7 @@ export function readBattleStacks() {
       (image) =>
         image.closest('[role="gridcell"]') &&
         !image.closest(BATTLE_EFFECT) &&
-        !image.closest(BATTLE_WALL) &&
-        !image.closest(BATTLE_CATAPULT)
+        !image.closest(BATTLE_WALL)
     )
     .map((creature) => ({
       stack: describeBattleStack(creature),
@@ -134,6 +133,12 @@ const WALL_HIT = '.battle-wall-hit'
 export function readBattleCatapult() {
   const catapult = getBattlefield().querySelector(BATTLE_CATAPULT)
   return catapult ? readHexPosition(catapult.closest('[role="gridcell"]')) : null
+}
+
+// "Catapult", or "Destroyed Catapult" once it is a wreck; null when the battle has none.
+export function readBattleCatapultPicture() {
+  const catapult = getBattlefield().querySelector(BATTLE_CATAPULT)
+  return catapult ? catapult.closest('[role="img"]').getAttribute('aria-label') : null
 }
 
 export const countCatapultStones = () =>

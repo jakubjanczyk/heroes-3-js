@@ -26,7 +26,8 @@ describe('creature data', () => {
     ['SKELETON_WARRIOR', 'Skeleton Warrior', 'Skeleton Warriors'],
     ['CENTAUR', 'Centaur', 'Centaurs'],
     ['IMP', 'Imp', 'Imps'],
-    ['PEASANT', 'Peasant', 'Peasants']
+    ['PEASANT', 'Peasant', 'Peasants'],
+    ['CATAPULT', 'Catapult', 'Catapults']
   ])('%s is called %s, %s for several', (key, name, namePlural) => {
     expect(creatures[key]).toMatchObject({ name, namePlural })
   })
@@ -91,7 +92,8 @@ describe('creature data', () => {
     ['SKELETON_WARRIOR', 'NECROPOLIS', 1, ['undead'], undefined],
     ['CENTAUR', 'RAMPART', 1, ['doubleWide'], undefined],
     ['IMP', 'INFERNO', 1, [], undefined],
-    ['PEASANT', 'NEUTRAL', 1, [], undefined]
+    ['PEASANT', 'NEUTRAL', 1, [], undefined],
+    ['CATAPULT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined]
   ])('%s is a %s tier %i creature with abilities %o and %s shots', (key, faction, tier, abilities, shots) => {
     const creature = creatures[key]
 
@@ -128,7 +130,18 @@ describe('creature data', () => {
       // Their upgrades come with their towns.
       CENTAUR: null,
       IMP: null,
-      PEASANT: null
+      PEASANT: null,
+      CATAPULT: null
+    })
+  })
+
+  test('the Catapult has attack 10, defense 10, no damage, health 1000 and speed 0', () => {
+    expect(creatures.CATAPULT).toMatchObject({
+      attack: 10,
+      defense: 10,
+      damage: { min: 0, max: 0 },
+      health: 1000,
+      speed: 0
     })
   })
 })
