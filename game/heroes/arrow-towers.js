@@ -47,6 +47,17 @@ const targetsOf = (battle) =>
   battle.stacks.filter((stack) => isAlive(stack) && fightsFor(stack) === 'attacker')
 
 // The earlier stack in the attacker's army wins a tie.
+const NO_BONUS = { min: 0, max: 0 }
+
+export function towerWithStructures(tower, structures) {
+  const counted = tower.halfTheStructures ? Math.floor(structures / 2) : structures
+  const { min, max } = tower.perStructure ?? NO_BONUS
+  return {
+    ...tower,
+    damage: { min: tower.damage.min + min * counted, max: tower.damage.max + max * counted }
+  }
+}
+
 export function chooseTowerTarget(battle, tower) {
   return targetsOf(battle)
     .map((stack) => ({

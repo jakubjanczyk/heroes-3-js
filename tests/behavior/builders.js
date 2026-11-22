@@ -91,7 +91,8 @@ export const aTownDefinition = () =>
   }))
 
 // One of a town type's arrow towers, the Keep unless told otherwise; the list's order is the
-// order they shoot in. from: the lowest fort that has it. hex: where it is drawn, in the
+// order they shoot in. from: the lowest fort that has it. perStructure: the damage each of the
+// town's structures adds; halfTheStructures: only half of them, rounded down, count. hex: where it is drawn, in the
 // battle's own rows and columns; stands: 'above' or 'below' that hex, off the battlefield.
 export const anArrowTower = () =>
   builder(
@@ -100,6 +101,7 @@ export const anArrowTower = () =>
       name: 'Keep',
       from: 'CITADEL',
       damage: { min: 10, max: 20 },
+      perStructure: { min: 2, max: 4 },
       hex: { row: 5, column: 15 }
     },
     (tower) => ({
@@ -109,6 +111,7 @@ export const anArrowTower = () =>
           name: 'Upper Tower',
           from: 'CASTLE',
           damage: { min: 6, max: 12 },
+          halfTheStructures: true,
           hex: { row: 0, column: 11 },
           stands: 'above'
         })
@@ -119,6 +122,7 @@ export const anArrowTower = () =>
           name: 'Lower Tower',
           from: 'CASTLE',
           damage: { min: 6, max: 12 },
+          halfTheStructures: true,
           hex: { row: 10, column: 11 },
           stands: 'below'
         })
