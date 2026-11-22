@@ -733,7 +733,7 @@ In sixteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town w
 - [x] 5.10.9 Arrow towers shoot: the Keep (Citadel) and two more (Castle), once a round before the catapult, at a target they pick, for their base damage (the Keep 10–20, the others 6–12)
 - [x] 5.10.9b The towers' damage from the town's buildings: 2 more per structure for the Keep, 2 per two structures for the others
 - [x] 5.10.9c The catapult and Earthquake at the towers: 2 hit points each, the catapult turning to them once the walls and the drawbridge are down, Earthquake's points on them, a destroyed tower stops shooting
-- [ ] 5.10.10 Ballistics' shots: better chances to hit the wall and more damage by level, two shots from Advanced, the second at the nearest standing part if the first destroyed its target
+- [x] 5.10.10 Ballistics' shots: better chances to hit the wall and more damage by level, two shots from Advanced, the second at the nearest standing part if the first destroyed its target
 - [ ] 5.10.10b Aiming the catapult: with Ballistics the player's hero aims it on a turn of its own, the Keep, towers and drawbridge with their own chances; a spell can be cast first, Defend passes it
 - [ ] 5.10.11 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
 - [ ] 5.10.12 Controlling the towers: the defending player aims the arrow towers (with Artillery, as the game does, or by another way of controlling them if Artillery's war machines aren't there yet)

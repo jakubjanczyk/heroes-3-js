@@ -43,8 +43,10 @@ import {
   isShotThroughTheWalls,
   isTowerStanding,
   moatOf,
+  planCatapultShot,
   towersOf
 } from './siege-walls.js'
+import { skillLevelOf } from './spell-book.js'
 import { heroMagicResistance } from './spell-resistance.js'
 
 const MORALE_CHANCE_IN = 24
@@ -160,6 +162,18 @@ export function heroBattleSide(hero, definitions) {
   }
 }
 
+function catapultShootingOf(attacker, definitions) {
+  const { skill, shots, hitChance, damageChance } = definitions.monsters.CATAPULT.siegeShots
+  const level = skillLevelOf(attacker, skill)
+  return {
+    shots: shots[level],
+    hitChance: Object.fromEntries(
+      Object.entries(hitChance).map(([kind, chances]) => [kind, chances[level]])
+    ),
+    damageChance: damageChance[level]
+  }
+}
+
 // A side without a hero has its creatures' morale alone, and no luck.
 export function createBattle({ attacker, defender, walls = null, definitions }) {
   const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
@@ -206,6 +220,9 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
     walls,
     // What shoots as each round starts, in turn, before every stack.
     roundStartShooters: walls ? [...towerIdsOf(walls), CATAPULT] : [],
+    catapultShooting: walls ? catapultShootingOf(sides.attacker, definitions) : null,
+    // The parts the catapult aimed at this round, shot by shot.
+    catapultAims: [],
     definitions
   }
 }
@@ -388,6 +405,7 @@ export function endTurn(battle, stackId) {
     moraleStackIds: [],
     turnStackId: null,
     roundStartShooters: roundStartShootersOf(battle),
+    catapultAims: [],
     stacks: withoutGoneClones(
       battle.stacks.map((stack) => ({
         ...countDownSpells(stack),
@@ -1231,11 +1249,21 @@ const withoutShooter = (battle, done) =>
 const afterRoundStartShot = (battle) =>
   getRoundStartShooter(battle) ? battle : hitAsTurnStarts(battle)
 
+export const planBattleCatapultShot = (battle, random) =>
+  planCatapultShot(battle.walls, random, {
+    ...battle.catapultShooting,
+    aimed: battle.catapultAims.at(-1) ?? null
+  })
+
+// A shot saved before the catapult could fire twice names only the part it hit.
 export function shootCatapult(battle, shot) {
+  const catapultAims = [...battle.catapultAims, shot.aim ?? shot.part]
+  const done = catapultAims.length >= battle.catapultShooting.shots
   return afterRoundStartShot({
     ...battle,
     walls: hitWall(battle.walls, shot),
-    roundStartShooters: withoutShooter(battle, CATAPULT),
+    catapultAims,
+    roundStartShooters: done ? withoutShooter(battle, CATAPULT) : battle.roundStartShooters,
     messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
   })
 }
