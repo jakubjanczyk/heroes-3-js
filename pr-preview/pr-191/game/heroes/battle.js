@@ -314,9 +314,7 @@ function hitAsTurnStarts(battle) {
     return battle
   }
   const hit = hitByTheMoat(battle, starting.id)
-  return isAlive(hit.stacks.find(({ id }) => id === starting.id))
-    ? hit
-    : endTurn(hit, starting.id)
+  return isAlive(hit.stacks.find(({ id }) => id === starting.id)) ? hit : endTurn(hit, starting.id)
 }
 
 // As a round starts the catapult shoots before the first stack's turn, and so before the moat.
