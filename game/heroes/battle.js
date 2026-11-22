@@ -491,7 +491,7 @@ export function moveStack(battle, stackId, hex) {
       stack.id === stackId ? placeOn(battle, stack, hex) : stack
     )
   }
-  return entersTheMoat(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
+  return mover && entersTheMoat(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
 }
 
 // A walking stack stops on the first hex of the moat it steps into.
@@ -1145,7 +1145,8 @@ export const castHealingSpell = (battle, { healing, ...cast }) =>
 // The attack itself, before the attacker's turn ends.
 export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
-  if (!isAlive(moved.stacks.find(({ id }) => id === stackId))) {
+  const attacker = moved.stacks.find(({ id }) => id === stackId)
+  if (attacker && !isAlive(attacker)) {
     return clearGoneClones(moved)
   }
   const attacked = strikes.reduce(
