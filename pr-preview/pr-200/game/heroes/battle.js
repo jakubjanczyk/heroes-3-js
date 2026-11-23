@@ -1,0 +1,1376 @@
+import { artifactBattleImmunities, artifactsCancelInBattle } from './artifacts.js'
+import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
+import { isImmuneTo, isSpellTarget } from './battle-spells.js'
+import {
+  areEnemies,
+  fightsFor,
+  getShotDamagePercent,
+  getStackDefense,
+  getStackMorale,
+  getStackSpeed,
+  isBerserk,
+  isBlind
+} from './battle-stats.js'
+import {
+  BATTLEFIELD_COLUMNS,
+  BATTLEFIELD_ROWS,
+  findHexPath,
+  getAreaHexes,
+  getFrontHexFor,
+  getHexDistance,
+  getHexNeighbours,
+  getOccupiedHexes,
+  getReachableHexes,
+  getStartHexes,
+  hexKey,
+  isOnBattlefield,
+  isOnBattlefieldOrEdge,
+  isSameHex
+} from './battlefield.js'
+import { describeStack } from './hero-army.js'
+import { getHeroLuck, getHeroMorale } from './morale-and-luck.js'
+import { getHeroPrimarySkills } from './primary-skills.js'
+import {
+  blocksStanding,
+  CATAPULT_HEX,
+  canTeleportBetween,
+  describeCatapultShot,
+  describeEarthquakeHit,
+  hasCatapultTarget,
+  hitWall,
+  isAffectedByTheMoat,
+  isMoatHex,
+  isShotThroughTheWalls,
+  isTowerStanding,
+  moatOf,
+  planCatapultShot,
+  towersOf
+} from './siege-walls.js'
+import { skillLevelOf } from './spell-book.js'
+import { heroMagicResistance } from './spell-resistance.js'
+
+const MORALE_CHANCE_IN = 24
+// Bad morale freezes twice as often as good morale gives an extra turn.
+const BAD_MORALE_CHANCE_FACTOR = 2
+
+// A shot at a target more than this many hexes away does half damage.
+const SHOOTING_PENALTY_DISTANCE = 10
+
+// Griffins strike back twice a round and Royal Griffins every time; everyone else once.
+function getRetaliationsPerRound(abilities) {
+  if (abilities.includes('unlimitedRetaliations')) {
+    return Number.POSITIVE_INFINITY
+  }
+
+  return abilities.includes('twoRetaliations') ? 2 : 1
+}
+
+// Stats for a creature missing from the definitions.
+const UNKNOWN_CREATURE = Object.freeze({
+  speed: 0,
+  attack: 0,
+  defense: 0,
+  damage: { min: 1, max: 1 },
+  health: 1,
+  shots: 0,
+  abilities: []
+})
+
+function createStack({
+  id,
+  side,
+  creature,
+  count,
+  hex,
+  skills,
+  morale = 0,
+  luck = 0,
+  cancelledInBattle = [],
+  immunities = { mindSpells: false, spellLevel: 0 },
+  magicResistance = 0,
+  definitions
+}) {
+  const definition = { ...UNKNOWN_CREATURE, ...definitions?.monsters?.[creature] }
+  const { abilities } = definition
+  const warMachine = abilities.includes('warMachine')
+  const shooter = abilities.includes('ranged')
+  const undead = abilities.includes('undead')
+  const unaffectedByMorale = undead || warMachine
+  return {
+    id,
+    side,
+    ...describeStack({ creature, count }, definitions),
+    initialCount: count,
+    speed: definition.speed,
+    tier: definition.tier ?? 1,
+    flying: abilities.includes('flying'),
+    doubleWide: abilities.includes('doubleWide'),
+    warMachine,
+    attack: definition.attack + (skills?.attack ?? 0),
+    defense: definition.defense + (skills?.defense ?? 0),
+    damage: definition.damage,
+    health: definition.health,
+    topHealth: definition.health,
+    strikes: abilities.includes('strikesTwice') ? 2 : 1,
+    retaliationsPerRound: warMachine ? 0 : getRetaliationsPerRound(abilities),
+    retaliationsUsed: 0,
+    defenseBonus: 0,
+    shots: shooter ? definition.shots : 0,
+    shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
+    shooter,
+    meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
+    morale: unaffectedByMorale ? 0 : morale,
+    unaffectedByMorale,
+    undead,
+    mindSpellImmune: undead || warMachine || immunities.mindSpells,
+    spellLevelImmunity: immunities.spellLevel,
+    magicResistance,
+    king: definition.king ?? null,
+    luck,
+    cancelledInBattle,
+    spells: [],
+    hex
+  }
+}
+
+function createStacks({ side, army, ...shared }) {
+  const stacks = army.flatMap((stack, slot) => (stack ? [{ ...stack, slot }] : []))
+  const startHexes = getStartHexes({ side, stackCount: stacks.length })
+  return stacks.map(({ creature, count, slot }, index) =>
+    createStack({ id: `${side}-${slot}`, side, creature, count, hex: startHexes[index], ...shared })
+  )
+}
+
+const CATAPULT_STACK_ID = 'attacker-catapult'
+const ARROW_TOWER_NAME = 'Arrow Tower'
+
+// An artifact that cancels morale or luck in battle leaves only the armies' penalties, on both
+// sides whichever hero wears it, and the spells' effects on them count for nothing.
+const cancelledKinds = (sides, definitions) =>
+  ['morale', 'luck'].filter((kind) =>
+    sides.some((side) => artifactsCancelInBattle(side.artifacts, kind, definitions))
+  )
+
+export function heroBattleSide(hero, definitions) {
+  const skills = getHeroPrimarySkills({ entity: hero, definitions })
+  return {
+    army: hero?.army ?? [],
+    skills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
+    secondarySkills: hero?.secondarySkills,
+    battleBonuses: hero?.battleBonuses,
+    artifacts: hero?.artifacts
+  }
+}
+
+function catapultShootingOf(attacker, definitions) {
+  const { skill, shots, hitChance, damageChance } = definitions.monsters.CATAPULT.siegeShots
+  const level = skillLevelOf(attacker, skill)
+  return {
+    aimedByHero: level > 0,
+    shots: shots[level],
+    hitChance: Object.fromEntries(
+      Object.entries(hitChance).map(([kind, chances]) => [kind, chances[level]])
+    ),
+    damageChance: damageChance[level]
+  }
+}
+
+// A side without a hero has its creatures' morale alone, and no luck.
+export function createBattle({ attacker, defender, walls = null, definitions }) {
+  const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
+  const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
+  const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
+  const sharedOf = (side) => {
+    const entity = sides[side]
+    return {
+      skills: entity.skills,
+      morale: inBattle('morale', getHeroMorale({ entity, definitions }).value),
+      luck: inBattle('luck', getHeroLuck({ entity, definitions }).value),
+      cancelledInBattle,
+      immunities: artifactBattleImmunities(entity.artifacts, definitions),
+      magicResistance: heroMagicResistance(entity),
+      definitions
+    }
+  }
+  const stacksOf = (side) => createStacks({ side, army: sides[side].army, ...sharedOf(side) })
+  const catapult = walls
+    ? [
+        createStack({
+          id: CATAPULT_STACK_ID,
+          side: 'attacker',
+          creature: 'CATAPULT',
+          count: 1,
+          hex: CATAPULT_HEX,
+          ...sharedOf('attacker')
+        })
+      ]
+    : []
+  return {
+    stacks: [...stacksOf('attacker'), ...catapult, ...stacksOf('defender')],
+    actedStackIds: [],
+    sidesCastThisRound: [],
+    waitedStackIds: [],
+    // The stacks whose morale took effect this round, for good or bad: it does so once a round.
+    moraleStackIds: [],
+    // The stack whose turn goes on whatever the turn order says: its extra turn from good morale,
+    // or its turn after the hero cast a spell that changed the order.
+    turnStackId: null,
+    // Each time morale or luck took effect, in order: { stackId, kind }.
+    effects: [],
+    messages: [],
+    walls,
+    // What shoots as each round starts, in turn, before every stack.
+    roundStartShooters: walls ? [...towerIdsOf(walls), CATAPULT] : [],
+    catapultShooting: walls ? catapultShootingOf(sides.attacker, definitions) : null,
+    // The parts the catapult aimed at this round, shot by shot.
+    catapultAims: [],
+    definitions
+  }
+}
+
+export const CATAPULT = 'CATAPULT'
+
+const hasCatapult = (battle) =>
+  battle.stacks.some((stack) => stack.id === CATAPULT_STACK_ID && isAlive(stack))
+
+const towerIdsOf = (walls) => towersOf(walls).map(({ tower }) => tower)
+
+const roundStartShootersOf = (battle) => [
+  ...towerIdsOf(battle.walls),
+  ...(hasCatapult(battle) ? [CATAPULT] : [])
+]
+
+const hasRoundStartTarget = (battle, shooter) =>
+  shooter === CATAPULT
+    ? hasCatapultTarget(battle.walls)
+    : isTowerStanding(battle.walls, shooter) && hasLivingStacks(battle, 'attacker')
+
+const isWaitPhase = (battle) => {
+  const active = getActiveStack(battle)
+  return !active || hasWaited(battle, active.id)
+}
+
+// The catapult that waited comes back first among the stacks that waited.
+const isCatapultsWaitedTurn = (battle) =>
+  hasWaited(battle, CATAPULT_STACK_ID) &&
+  !battle.actedStackIds.includes(CATAPULT_STACK_ID) &&
+  !battle.turnStackId &&
+  hasCatapult(battle) &&
+  hasCatapultTarget(battle.walls) &&
+  isWaitPhase(battle)
+
+// The next that shoots before the stacks, passing over one with nothing to shoot at: as the round
+// starts, or the catapult once the stacks that didn't wait have acted.
+export function getRoundStartShooter(battle) {
+  const shooter = battle.roundStartShooters.find((next) => hasRoundStartTarget(battle, next))
+  if (shooter) {
+    return shooter
+  }
+  return isCatapultsWaitedTurn(battle) ? CATAPULT : null
+}
+
+export const isCatapultsTurn = (battle) => getRoundStartShooter(battle) === CATAPULT
+
+export const getCatapultStack = (battle) =>
+  battle.stacks.find(({ id }) => id === CATAPULT_STACK_ID) ?? null
+
+// The hero aims the round's first shot; a second goes where the first was aimed.
+export const canHeroAimCatapult = (battle) =>
+  Boolean(battle.catapultShooting?.aimedByHero) && battle.catapultAims.length === 0
+
+// A spell cast on the catapult's turn, before every stack, leaves the stacks' order to their speeds.
+function castTurnOf(battle) {
+  if (isCatapultsTurn(battle)) {
+    return { side: 'attacker', turnStackId: null }
+  }
+  const active = getActiveStack(battle)
+  return { side: active?.side, turnStackId: active?.id ?? null }
+}
+
+const castBy = (battle) => {
+  const { side, turnStackId } = castTurnOf(battle)
+  return { sidesCastThisRound: [...battle.sidesCastThisRound, side], turnStackId }
+}
+
+export const hasCastThisRound = (battle, side) => battle.sidesCastThisRound.includes(side)
+
+export const isAlive = (stack) => stack.count > 0
+
+const livingStacks = (battle) => battle.stacks.filter(isAlive)
+
+// A war machine has no turn of its own.
+const stacksTakingTurns = (battle) => livingStacks(battle).filter((stack) => !stack.warMachine)
+
+// A blind stack loses its turns; once it can see again it takes its place by its speed.
+const actingStacks = (battle) => stacksTakingTurns(battle).filter((stack) => !isBlind(stack))
+
+const wakeUp = (stack) => ({
+  ...stack,
+  spells: (stack.spells ?? []).filter(({ effects }) => effects.blind === undefined)
+})
+
+export function spellTargetIds(battle, targeting) {
+  const caster = getActiveStack(battle)
+  return caster
+    ? livingStacks(battle)
+        .filter((target) => isSpellTarget(targeting, target, fightsFor(caster)))
+        .map(({ id }) => id)
+    : []
+}
+
+// A stack immune to the spell is left out, even when it stands in the area.
+export function areaTargetIds(battle, targeting, hex) {
+  const areaHexes = getAreaHexes(hex, targeting.area)
+  return livingStacks(battle)
+    .filter(
+      (stack) =>
+        !isImmuneTo(targeting, stack) &&
+        getStackHexes(stack).some((own) => areaHexes.some((inArea) => isSameHex(own, inArea)))
+    )
+    .map(({ id }) => id)
+}
+
+function nearestHexes(from, stacks) {
+  const hexes = stacks.flatMap((stack) => getStackHexes(stack).map((hex) => ({ stack, hex })))
+  const nearest = Math.min(...hexes.map(({ hex }) => getHexDistance(from, hex)))
+  return hexes.filter(({ hex }) => getHexDistance(from, hex) === nearest)
+}
+
+// The bolt jumps from the hex it landed on to the nearest hex of a living stack it hasn't hit yet,
+// either side's and not immune to the spell; a tie between hexes as near is rolled.
+export function chainTargetIds(battle, { targeting, targetId, hex, strikes, random }) {
+  const hitIds = [targetId]
+  let from = hex
+  while (hitIds.length < strikes) {
+    const left = livingStacks(battle).filter(
+      (stack) => !hitIds.includes(stack.id) && !isImmuneTo(targeting, stack)
+    )
+    if (left.length === 0) {
+      break
+    }
+    const ties = nearestHexes(from, left)
+    const next = ties[Math.min(ties.length - 1, Math.floor(random() * ties.length))]
+    hitIds.push(next.stack.id)
+    from = next.hex
+  }
+  return hitIds
+}
+
+// A clone or a war machine doesn't keep its side in the battle.
+export const hasLivingStacks = (battle, side) =>
+  stacksTakingTurns(battle).some((stack) => stack.side === side && !stack.cloneOf)
+
+// Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
+export function getTurnOrder(battle) {
+  return stacksTakingTurns(battle).sort((a, b) => getStackSpeed(b) - getStackSpeed(a))
+}
+
+// The stacks that waited act once every other stack has, the slowest first.
+export function getActiveStack(battle) {
+  const turnGoesOn = livingStacks(battle).find(({ id }) => id === battle.turnStackId)
+  if (turnGoesOn) {
+    return turnGoesOn
+  }
+
+  const yetToAct = getTurnOrder(battle).filter(
+    (stack) => !isBlind(stack) && !battle.actedStackIds.includes(stack.id)
+  )
+  return yetToAct.find(({ id }) => !battle.waitedStackIds.includes(id)) ?? yetToAct.at(-1) ?? null
+}
+
+export const hasWaited = (battle, stackId) => battle.waitedStackIds.includes(stackId)
+
+// A spell that ends on the stack's own turn was cast for two rounds: it ends as the stack's turn
+// starts in the round after the cast.
+const endsNow = ({ endsOnOwnTurn, roundsLeft }) => endsOnOwnTurn && roundsLeft === 1
+
+// Once a round, as its turn starts: not when a stack that waited gets its turn back.
+const isHitByTheMoatNow = (battle, stack) =>
+  Boolean(stack?.inMoat && moatOf(battle.walls).hitsAsTurnStarts) &&
+  !stack.warMachine &&
+  !hasWaited(battle, stack.id)
+
+// A stack the moat kills as its turn starts has no turn.
+function hitAsTurnStarts(battle) {
+  const starting = getActiveStack(battle)
+  if (!isHitByTheMoatNow(battle, starting)) {
+    return battle
+  }
+  const hit = hitByTheMoat(battle, starting.id)
+  return isAlive(hit.stacks.find(({ id }) => id === starting.id)) ? hit : endTurn(hit, starting.id)
+}
+
+// As a round starts the towers and the catapult shoot before the first stack's turn, and so before the
+// moat.
+function startNextTurn(battle) {
+  const started = startTurnOf(battle, getActiveStack(battle))
+  return getRoundStartShooter(started) ? started : hitAsTurnStarts(started)
+}
+
+// A defending stack keeps its Defense bonus until its next turn starts.
+function startTurnOf(battle, active) {
+  if (!active?.defenseBonus && !(active?.spells ?? []).some(endsNow)) {
+    return battle
+  }
+
+  return {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === active.id
+        ? { ...stack, defenseBonus: 0, spells: stack.spells?.filter((spell) => !endsNow(spell)) }
+        : stack
+    )
+  }
+}
+
+// A spell cast for N rounds is gone as the (N + 1)th round from its cast starts. One with no
+// rounds lasts until the battle ends.
+function countDownSpells(stack) {
+  const spells = (stack.spells ?? [])
+    .map((spell) =>
+      spell.roundsLeft === null ? spell : { ...spell, roundsLeft: spell.roundsLeft - 1 }
+    )
+    .filter(({ roundsLeft }) => roundsLeft === null || roundsLeft > 0)
+  return { ...stack, spells }
+}
+
+// A new round also gives every stack its retaliations back, and the hero a spell to cast.
+export function endTurn(battle, stackId) {
+  const actedStackIds = [...battle.actedStackIds, stackId]
+  const goesOn = { ...battle, actedStackIds, turnStackId: null }
+  if (
+    actingStacks(battle).some(({ id }) => !actedStackIds.includes(id)) ||
+    isCatapultsWaitedTurn(goesOn)
+  ) {
+    return startNextTurn(goesOn)
+  }
+
+  return startNextTurn({
+    ...battle,
+    actedStackIds: [],
+    sidesCastThisRound: [],
+    waitedStackIds: [],
+    moraleStackIds: [],
+    turnStackId: null,
+    roundStartShooters: roundStartShootersOf(battle),
+    catapultAims: [],
+    stacks: withoutGoneClones(
+      battle.stacks.map((stack) => ({
+        ...countDownSpells(stack),
+        retaliationsUsed: 0
+      }))
+    )
+  })
+}
+
+export function waitStack(battle, stackId) {
+  if (stackId === CATAPULT_STACK_ID) {
+    return afterRoundStartShot({
+      ...battle,
+      waitedStackIds: [...battle.waitedStackIds, stackId],
+      roundStartShooters: withoutShooter(battle, CATAPULT)
+    })
+  }
+  return startNextTurn({
+    ...battle,
+    waitedStackIds: [...battle.waitedStackIds, stackId],
+    turnStackId: null
+  })
+}
+
+const hadMorale = (battle, stackId) => battle.moraleStackIds.includes(stackId)
+
+// After a stack moved, attacked or shot, and its target struck back: never after it defended,
+// died or won the battle, and once a round.
+export function getGoodMoraleChance(battle, stackId) {
+  const stack = livingStacks(battle).find(({ id }) => id === stackId)
+  const battleGoesOn = hasLivingStacks(battle, 'attacker') && hasLivingStacks(battle, 'defender')
+  const morale = stack ? getStackMorale(stack) : 0
+  if (!battleGoesOn || morale <= 0 || hadMorale(battle, stackId)) {
+    return 0
+  }
+
+  return morale / MORALE_CHANCE_IN
+}
+
+// As the stack's turn starts; not when a stack that waited gets its turn back, nor on an extra
+// turn.
+export function getBadMoraleChance(battle, stackId) {
+  const stack = livingStacks(battle).find(({ id }) => id === stackId)
+  const morale = stack ? getStackMorale(stack) : 0
+  if (morale >= 0 || hasWaited(battle, stackId) || hadMorale(battle, stackId)) {
+    return 0
+  }
+
+  return (-morale * BAD_MORALE_CHANCE_FACTOR) / MORALE_CHANCE_IN
+}
+
+const nameOf = (battle, stackId) => battle.stacks.find(({ id }) => id === stackId).name
+
+function giveExtraTurn(battle, stackId) {
+  return {
+    ...battle,
+    moraleStackIds: [...battle.moraleStackIds, stackId],
+    turnStackId: stackId,
+    effects: [...battle.effects, { stackId, kind: 'goodMorale' }],
+    messages: [
+      ...battle.messages,
+      `High morale enables the ${nameOf(battle, stackId)} to attack again.`
+    ]
+  }
+}
+
+// A stack whose morale took effect acts again; any other's turn ends.
+export function finishAction(battle, { stackId, goodMorale = false }) {
+  return goodMorale ? giveExtraTurn(battle, stackId) : endTurn(battle, stackId)
+}
+
+export function freezeStack(battle, stackId) {
+  return endTurn(
+    {
+      ...battle,
+      moraleStackIds: [...battle.moraleStackIds, stackId],
+      effects: [...battle.effects, { stackId, kind: 'badMorale' }],
+      messages: [
+        ...battle.messages,
+        `Low morale causes the ${nameOf(battle, stackId)} to freeze in panic.`
+      ]
+    },
+    stackId
+  )
+}
+
+// +20% Defense, and at least 1 point.
+// Defend passes the catapult's turn, with no bonus.
+export function defendStack(battle, stackId) {
+  if (stackId === CATAPULT_STACK_ID) {
+    return endCatapultsTurn(battle)
+  }
+  const defended = {
+    ...battle,
+    stacks: battle.stacks.map((stack) => {
+      if (stack.id !== stackId) {
+        return stack
+      }
+
+      return { ...stack, defenseBonus: Math.max(1, Math.floor(getStackDefense(stack) / 5)) }
+    })
+  }
+  return endTurn(defended, stackId)
+}
+
+const isInTheMoat = (battle, stack, hex) =>
+  isAffectedByTheMoat(battle.walls, stack) &&
+  getStackHexes(stack, hex).some((part) => isMoatHex(battle.walls, part))
+
+function placeOn(battle, stack, hex) {
+  const inMoat = isInTheMoat(battle, stack, hex)
+  const moatDefensePenalty = inMoat ? moatOf(battle.walls).defensePenalty : 0
+  return { ...stack, hex, inMoat, moatDefensePenalty }
+}
+
+// Stepping from one hex of the moat to another is going into it again.
+const entersTheMoat = (battle, stack, hex) =>
+  isAffectedByTheMoat(battle.walls, stack) &&
+  getStackHexes(stack, hex).some((part) => isMoatHex(battle.walls, part) && !coversHex(stack, part))
+
+const isHitOnEntering = (battle, stack, hex) =>
+  Boolean(stack) && moatOf(battle.walls)?.hitsOnEntering && entersTheMoat(battle, stack, hex)
+
+const isStoppedByTheMoat = (battle, stack) =>
+  !stack.flying && Boolean(moatOf(battle.walls)?.stopsWalkers)
+
+function hitByTheMoat(battle, stackId) {
+  const { name, damage } = moatOf(battle.walls)
+  const { damaged, ...losses } = damageStack(battle, stackId, damage)
+  return clearGoneClones({
+    ...battle,
+    stacks: battle.stacks.map((stack) => (stack.id === stackId ? damaged : stack)),
+    effects: [...battle.effects, { stackId, kind: 'spellHit', spellName: name }],
+    messages: [...battle.messages, ...describeDamage(`The ${name} does ${damage} damage.`, losses)]
+  })
+}
+
+export function moveStack(battle, stackId, hex) {
+  const mover = battle.stacks.find(({ id }) => id === stackId)
+  const moved = {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === stackId ? placeOn(battle, stack, hex) : stack
+    )
+  }
+  return isHitOnEntering(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
+}
+
+// A walking stack stops on the first hex of the moat it steps into.
+const moatStopFor = (battle, stack) =>
+  isStoppedByTheMoat(battle, stack) ? (hex) => entersTheMoat(battle, stack, hex) : undefined
+
+export function getWayThisTurn(battle, stack, way) {
+  const thisTurn = way.slice(0, getStackSpeed(stack))
+  const stopsAt = moatStopFor(battle, stack)
+  const stop = stopsAt ? thisTurn.findIndex(stopsAt) : -1
+  return stop === -1 ? thisTurn : thisTurn.slice(0, stop + 1)
+}
+
+export function getStackHexes(stack, hex = stack.hex) {
+  return getOccupiedHexes({ hex, doubleWide: stack.doubleWide, side: stack.side })
+}
+
+const coversHex = (stack, hex) => getStackHexes(stack).some((own) => isSameHex(own, hex))
+
+// Corpses lie on the ground: other stacks walk over them and stand on them.
+function canStandFor(battle, stack) {
+  const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
+  const side = fightsFor(stack)
+  const blockedByWalls = (hex) =>
+    battle.walls && blocksStanding({ walls: battle.walls, stacks: battle.stacks, side, hex })
+  return (hex) =>
+    isOnBattlefield(hex) &&
+    getStackHexes(stack, hex).every(
+      (part) =>
+        isOnBattlefieldOrEdge(part) &&
+        !blockedByWalls(part) &&
+        !others.some((other) => coversHex(other, part))
+    )
+}
+
+export const canStackStandOn = (battle, stack, hex) => canStandFor(battle, stack)(hex)
+
+export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls, teleportsAcrossMoat }) =>
+  canStackStandOn(battle, stack, hex) &&
+  (!battle.walls ||
+    canTeleportBetween(battle.walls, stack.hex, hex, {
+      acrossWalls: teleportsAcrossWalls,
+      acrossMoat: teleportsAcrossMoat
+    }))
+
+export function getFrontHexReach(battle, stack) {
+  return getReachableHexes({
+    from: stack.hex,
+    speed: getStackSpeed(stack),
+    flying: stack.flying,
+    isFree: canStandFor(battle, stack),
+    stopsAt: moatStopFor(battle, stack)
+  })
+}
+
+// A double-wide creature's back halves included, as the game shades them.
+export function getStackReach(battle, stack) {
+  const reach = new Map()
+  for (const front of getFrontHexReach(battle, stack)) {
+    for (const hex of getStackHexes(stack, front)) {
+      if (isOnBattlefield(hex) && !coversHex(stack, hex)) {
+        reach.set(hexKey(hex), hex)
+      }
+    }
+  }
+  return [...reach.values()]
+}
+
+function planPathToFront(battle, stack, front) {
+  if (isSameHex(stack.hex, front)) {
+    return []
+  }
+
+  const isFree = canStandFor(battle, stack)
+  if (!isFree(front)) {
+    return null
+  }
+
+  if (stack.flying) {
+    return getHexDistance(stack.hex, front) <= getStackSpeed(stack) ? [front] : null
+  }
+
+  return findHexPath({
+    from: stack.hex,
+    to: front,
+    isFree,
+    maxSteps: getStackSpeed(stack),
+    stopsAt: moatStopFor(battle, stack)
+  })
+}
+
+// The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
+// puts its back half there instead.
+export function planStackMove(battle, stack, hex) {
+  if (coversHex(stack, hex)) {
+    return null
+  }
+
+  const path = planPathToFront(battle, stack, hex)
+  if (path || !stack.doubleWide) {
+    return path
+  }
+
+  return planPathToFront(battle, stack, getFrontHexFor({ hex, side: stack.side }))
+}
+
+// Stays when already on `fromHex`, else the front half goes there, else the back half.
+function planAttackPosition(battle, stack, fromHex) {
+  if (coversHex(stack, fromHex)) {
+    return []
+  }
+
+  const fronts = stack.doubleWide
+    ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
+    : [fromHex]
+  for (const front of fronts) {
+    const path = planPathToFront(battle, stack, front)
+    if (path) {
+      return path
+    }
+  }
+  return null
+}
+
+function getHexesNextTo(target) {
+  const own = getStackHexes(target)
+  const next = new Map()
+  for (const hex of own.flatMap((part) => getHexNeighbours(part, { withEdges: true }))) {
+    if (!own.some((part) => isSameHex(part, hex))) {
+      next.set(hexKey(hex), hex)
+    }
+  }
+  return [...next.values()]
+}
+
+// However many turns it takes; null when the stack cannot get there.
+function findWayToFront(battle, stack, front) {
+  if (isSameHex(stack.hex, front)) {
+    return { way: [], distance: 0 }
+  }
+
+  const isFree = canStandFor(battle, stack)
+  if (!isFree(front)) {
+    return null
+  }
+
+  if (stack.flying) {
+    return { way: [front], distance: getHexDistance(stack.hex, front) }
+  }
+
+  const way = findHexPath({ from: stack.hex, to: front, isFree })
+  return way && { way, distance: way.length }
+}
+
+// Every hex next to a living stack the stack can attack, in army slot order, which settles ties.
+export function getApproaches(battle, stack) {
+  return attackableBy(battle, stack).flatMap((target) =>
+    getHexesNextTo(target).flatMap((fromHex) => {
+      if (coversHex(stack, fromHex)) {
+        return [{ targetId: target.id, fromHex, way: [], distance: 0 }]
+      }
+
+      const fronts = stack.doubleWide
+        ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
+        : [fromHex]
+      const ways = fronts.map((front) => findWayToFront(battle, stack, front)).filter(Boolean)
+      if (ways.length === 0) {
+        return []
+      }
+
+      const nearest = ways.reduce((best, way) => (way.distance < best.distance ? way : best))
+      return [{ targetId: target.id, fromHex, ...nearest }]
+    })
+  )
+}
+
+// A berserk stack attacks any stack, its own side's too.
+function attackableBy(battle, stack) {
+  const others = livingStacks(battle).filter(({ id }) => id !== stack.id)
+  return isBerserk(stack) ? others : others.filter((other) => areEnemies(other, stack))
+}
+
+// A stack that started on the other side from the one the shooter fights for: a hypnotized stack
+// doesn't stop its old side's shooters, and its old side stops it shooting. Any stack stops a
+// berserk shooter.
+const blocksShooter = (shooter, other) => isBerserk(shooter) || other.side !== fightsFor(shooter)
+
+// A shooter with a stack that blocks it next to it can only fight hand to hand.
+export function canShoot(battle, stack) {
+  if (stack.shots === 0 || getShotDamagePercent(stack) === 0) {
+    return false
+  }
+
+  const blockers = livingStacks(battle).filter(
+    (other) => other.id !== stack.id && blocksShooter(stack, other)
+  )
+  return !getHexesNextTo(stack).some((hex) => blockers.some((blocker) => coversHex(blocker, hex)))
+}
+
+// Measured from the shooter's hex to the nearest hex of the target.
+function hasDistancePenalty(stack, target) {
+  return getStackHexes(target).every(
+    (hex) => getHexDistance(stack.hex, hex) > SHOOTING_PENALTY_DISTANCE
+  )
+}
+
+// Either penalty halves the shot, and both together halve it only once.
+const hasShotPenalty = (battle, stack, target) =>
+  hasDistancePenalty(stack, target) ||
+  (battle.walls && isShotThroughTheWalls(battle.walls, stack, target))
+
+export function getShotTargets(battle, stack) {
+  if (!canShoot(battle, stack)) {
+    return []
+  }
+
+  return attackableBy(battle, stack).map((target) => {
+    const penalty = hasShotPenalty(battle, stack, target)
+    return {
+      stackId: target.id,
+      penalty,
+      damage: getDamageRange({ attacker: stack, defender: target, halved: penalty })
+    }
+  })
+}
+
+// A shooter that can shoot does not walk up to attack.
+export function getAttackTargets(battle, stack) {
+  if (canShoot(battle, stack)) {
+    return []
+  }
+
+  return attackableBy(battle, stack)
+    .map((target) => ({
+      stackId: target.id,
+      fromHexes: getHexesNextTo(target).filter((hex) => planAttackPosition(battle, stack, hex)),
+      damage: getDamageRange({
+        attacker: stack,
+        defender: target,
+        melee: true,
+        halved: stack.meleePenalty
+      })
+    }))
+    .filter(({ fromHexes }) => fromHexes.length > 0)
+}
+
+// The way there and every strike with its rolled damage, or null when the stack cannot attack
+// the target from `fromHex`.
+export function planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom }) {
+  const target = attackableBy(battle, stack).find(({ id }) => id === targetId)
+  const isNextToTarget =
+    !canShoot(battle, stack) &&
+    target &&
+    fromHex &&
+    getHexesNextTo(target).some((hex) => isSameHex(hex, fromHex))
+  const path = isNextToTarget ? planAttackPosition(battle, stack, fromHex) : null
+  if (!path) {
+    return null
+  }
+
+  // The moat on the way hits first: the ones left strike, and none if it killed them all.
+  const arrived = path.length > 0 ? moveStack(battle, stack.id, path.at(-1)) : battle
+  const attacker = arrived.stacks.find(({ id }) => id === stack.id)
+  return {
+    path,
+    strikes: isAlive(attacker)
+      ? strikeSequence({ attacker, defender: target, random, luckRandom })
+      : []
+  }
+}
+
+const CLONE_SPELL = 'CLONE'
+
+// A clone is gone once it is hit, its original dies or its rounds are over.
+const isCloneGone = (clone, stacks) =>
+  !isAlive(clone) ||
+  !stacks.some((stack) => stack.id === clone.cloneOf && isAlive(stack)) ||
+  !(clone.spells ?? []).some(({ spellId }) => spellId === CLONE_SPELL)
+
+function withoutGoneClones(stacks) {
+  const goneIds = stacks
+    .filter((stack) => stack.cloneOf && isCloneGone(stack, stacks))
+    .map(({ id }) => id)
+  if (goneIds.length === 0) {
+    return stacks
+  }
+  return stacks
+    .filter(({ id }) => !goneIds.includes(id))
+    .map((stack) => (goneIds.includes(stack.cloneId) ? { ...stack, cloneId: null } : stack))
+}
+
+const clearGoneClones = (battle) => ({ ...battle, stacks: withoutGoneClones(battle.stacks) })
+
+function describeLosses(killed, nameFor) {
+  return killed === 1 ? `One ${nameFor(1)} perishes.` : `${killed} ${nameFor(killed)} perish.`
+}
+
+// "The Angels do 175 damage. 17 Pikemen perish."
+function describeDamage(dealt, { killed, nameFor, clone, warMachine }) {
+  if (clone) {
+    return [dealt, `The ${clone.name} perish.`]
+  }
+  if (killed > 0 && warMachine) {
+    return [dealt, `The ${nameFor(1)} is destroyed.`]
+  }
+  return [killed === 0 ? dealt : `${dealt} ${describeLosses(killed, nameFor)}`]
+}
+
+// The stack after taking the damage, and how many of its creatures died.
+function damageStack(battle, stackId, damage) {
+  const stack = battle.stacks.find(({ id }) => id === stackId)
+  const nameFor = (count) =>
+    describeStack({ creature: stack.creature, count }, battle.definitions).name
+  const wounded = takeDamage(stack, damage)
+  const killed = stack.count - wounded.count
+  // A corpse keeps the name it fell with.
+  const damaged = { ...wounded, name: wounded.count > 0 ? nameFor(wounded.count) : stack.name }
+  return {
+    damaged,
+    killed,
+    nameFor,
+    clone: stack.cloneOf && damage > 0 ? stack : null,
+    warMachine: stack.warMachine
+  }
+}
+
+function describeDealt(attacker, damage, fireShield) {
+  if (fireShield) {
+    return `The Fire Shield does ${damage} damage.`
+  }
+  return attacker.count === 1
+    ? `The ${attacker.name} does ${damage} damage.`
+    : `The ${attacker.name} do ${damage} damage.`
+}
+
+// A Fire Shield's burst shows over the stack it shields as it burns the striker.
+function strikeEffects({ attackerId, lucky, fireShield }) {
+  if (fireShield) {
+    return [{ stackId: attackerId, kind: 'spellHit', spellName: 'Fire Shield' }]
+  }
+  return lucky ? [{ stackId: attackerId, kind: 'goodLuck' }] : []
+}
+
+function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield }, retaliatorId) {
+  const attacker = battle.stacks.find(({ id }) => id === attackerId)
+  const { damaged, ...losses } = damageStack(battle, defenderId, damage)
+  const dealt = describeDealt(attacker, damage, fireShield)
+
+  return {
+    ...battle,
+    stacks: battle.stacks.map((stack) => {
+      if (stack.id === defenderId) {
+        return wakeUp(damaged)
+      }
+
+      if (stack.id === attackerId && attackerId === retaliatorId && !fireShield) {
+        return { ...stack, retaliationsUsed: stack.retaliationsUsed + 1 }
+      }
+
+      return stack
+    }),
+    effects: [...battle.effects, ...strikeEffects({ attackerId, lucky, fireShield })],
+    messages: [
+      ...battle.messages,
+      ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
+      ...describeDamage(dealt, losses)
+    ]
+  }
+}
+
+// Several stacks hit: the log counts creatures rather than naming any one stack's.
+function describeSpellLosses(damaged) {
+  if (damaged.length === 1) {
+    return damaged[0]
+  }
+  const killed = damaged.reduce((sum, hit) => sum + hit.killed, 0)
+  const nameFor =
+    damaged.length === 1 ? damaged[0].nameFor : (count) => (count === 1 ? 'creature' : 'creatures')
+  return { killed, nameFor }
+}
+
+// Each stack hit takes its own damage: a Protection lessens it on the stack it is on.
+export const castDamageSpell = (battle, cast) => clearGoneClones(damageBySpell(battle, cast))
+
+function damageBySpell(battle, { heroName, spellName, hits: aimed, chained, resistedIds = [] }) {
+  const targetIds = aimed.map(({ stackId }) => stackId)
+  const cast = castOnStacks(
+    battle,
+    { heroName, spellName, targetIds, chained, resistedIds },
+    (stack) => stack
+  )
+  const hits = aimed.filter(({ stackId }) => !resistedIds.includes(stackId))
+  if (hits.length === 0) {
+    return cast
+  }
+  const damaged = hits.map(({ stackId, damage }) => damageStack(battle, stackId, damage))
+  const total = hits.reduce((sum, { damage }) => sum + damage, 0)
+  return {
+    ...cast,
+    stacks: cast.stacks.map((stack) => {
+      const hit = damaged.find(({ damaged }) => damaged.id === stack.id)
+      return hit ? wakeUp(hit.damaged) : stack
+    }),
+    messages: [
+      ...cast.messages,
+      ...describeDamage(`The ${spellName} does ${total} damage.`, describeSpellLosses(damaged))
+    ]
+  }
+}
+
+const addEffects = (earlier, effects) =>
+  Object.fromEntries(
+    Object.entries(effects).map(([key, value]) => [key, value + (earlier?.[key] ?? 0)])
+  )
+
+const longerOf = (rounds, earlier) =>
+  rounds === null || earlier === null ? null : Math.max(rounds, earlier ?? 0)
+
+// Cast again on a stack that has it, the spell takes the new effects and the longer duration; a
+// spell that adds up adds its effects to the earlier ones.
+// A spell that ends others (Berserk and Hypnotize end each other) takes them off the stack, and
+// one that removes the harmful spells (Anti-Magic) takes off all of them but Disrupting Ray.
+const isEndedBy = (spell, { spellId, endsSpellIds = [], removesHarmful }) =>
+  spell.spellId === spellId ||
+  endsSpellIds.includes(spell.spellId) ||
+  Boolean(removesHarmful && !spell.helpful && spell.removable !== false)
+
+function putSpellOn(
+  stack,
+  {
+    spellId,
+    effects: cast,
+    rounds,
+    helpful,
+    addsUp,
+    removable,
+    endsOnOwnTurn,
+    endsOnOwnAttack,
+    ...ending
+  }
+) {
+  const earlier = (stack.spells ?? []).find((spell) => spell.spellId === spellId)
+  const roundsLeft = longerOf(rounds, earlier?.roundsLeft)
+  const effects = addsUp ? addEffects(earlier?.effects, cast) : cast
+  const kept = (stack.spells ?? []).filter((spell) => !isEndedBy(spell, { spellId, ...ending }))
+  return {
+    ...stack,
+    spells: [
+      ...kept,
+      { spellId, effects, roundsLeft, helpful, removable, endsOnOwnTurn, endsOnOwnAttack }
+    ]
+  }
+}
+
+// A strike back is not the stack's own attack.
+function endOwnAttackSpells(battle, stackId) {
+  return {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === stackId
+        ? {
+            ...stack,
+            spells: (stack.spells ?? []).filter(({ endsOnOwnAttack }) => !endsOnOwnAttack)
+          }
+        : stack
+    )
+  }
+}
+
+const removeSpellsFrom = (stack) => ({
+  ...stack,
+  spells: (stack.spells ?? []).filter(({ removable }) => removable === false)
+})
+
+// Only the top creature is healed: creatures already killed stay dead.
+const healTopCreature = (stack, healing) => ({
+  ...stack,
+  topHealth: Math.min(stack.health, stack.topHealth + healing)
+})
+
+function describeCast(battle, { heroName, spellName, targetIds }) {
+  if (targetIds.length !== 1) {
+    return `${heroName} casts '${spellName}'.`
+  }
+  const target = battle.stacks.find(({ id }) => id === targetIds[0])
+  return `${heroName} casts '${spellName}' on the ${target.name}.`
+}
+
+// A chain spell's hits come one after another, each from the stack hit before it.
+function spellHitEffects({ spellName, targetIds, chained, resistedIds }) {
+  return targetIds.map((stackId, place) => {
+    const hit = { stackId, kind: 'spellHit', spellName }
+    const shown = resistedIds.includes(stackId) ? { ...hit, resisted: true } : hit
+    return chained && place > 0 ? { ...shown, place, from: targetIds[place - 1] } : shown
+  })
+}
+
+const describeResisted = ({ name, count }, spellName) =>
+  `The ${name} ${count === 1 ? 'resists' : 'resist'} the ${spellName}.`
+
+// The spell changes its targets but those that resisted it; the stack whose turn it is keeps it.
+function castOnStacks(
+  battle,
+  { heroName, spellName, targetIds, chained, castMessage, resistedIds = [] },
+  change
+) {
+  const stackById = (id) => battle.stacks.find((stack) => stack.id === id)
+  const affectedIds = targetIds.filter((id) => !resistedIds.includes(id))
+  const named = castMessage
+    ? affectedIds.map((id) => castMessage.replace('%s', stackById(id).name))
+    : []
+  return {
+    ...battle,
+    ...castBy(battle),
+    stacks: battle.stacks.map((stack) => (affectedIds.includes(stack.id) ? change(stack) : stack)),
+    effects: [
+      ...battle.effects,
+      ...spellHitEffects({ spellName, targetIds, chained, resistedIds })
+    ],
+    messages: [
+      ...battle.messages,
+      describeCast(battle, { heroName, spellName, targetIds }),
+      ...resistedIds.map((id) => describeResisted(stackById(id), spellName)),
+      ...named
+    ]
+  }
+}
+
+export const castLastingSpell = (
+  battle,
+  { heroName, spellName, targetIds, castMessage, resistedIds, ...spell }
+) =>
+  castOnStacks(battle, { heroName, spellName, targetIds, castMessage, resistedIds }, (stack) =>
+    putSpellOn(stack, spell)
+  )
+
+// Taken into the moat, it isn't hit by it.
+export function teleportStack(battle, { destination, ...cast }) {
+  const teleported = castOnStacks(battle, cast, (stack) => placeOn(battle, stack, destination))
+  const effects = [...teleported.effects]
+  effects[effects.length - 1] = { ...effects.at(-1), teleported: true }
+  return { ...teleported, effects }
+}
+
+const cloneIdOf = (original) => `${original.id}-clone`
+
+// The clone is a new stack of the creatures on the hero's side, free of the original's spells.
+function cloneOf(original, { destination, rounds }) {
+  return {
+    ...original,
+    id: cloneIdOf(original),
+    side: 'attacker',
+    initialCount: original.count,
+    hex: destination,
+    retaliationsUsed: 0,
+    defenseBonus: 0,
+    cloneOf: original.id,
+    cloneId: null,
+    spells: [
+      {
+        spellId: CLONE_SPELL,
+        effects: {},
+        roundsLeft: rounds,
+        helpful: true,
+        removable: false
+      }
+    ]
+  }
+}
+
+export function cloneStack(battle, { destination, rounds, ...cast }) {
+  const original = battle.stacks.find(({ id }) => id === cast.targetIds[0])
+  const cloned = castOnStacks(battle, cast, (stack) => ({ ...stack, cloneId: cloneIdOf(stack) }))
+  return {
+    ...cloned,
+    stacks: [
+      ...cloned.stacks,
+      placeOn(battle, cloneOf(original, { destination, rounds }), destination)
+    ]
+  }
+}
+
+// The nearest hex to the original the clone fits on; on a tie the one further toward the enemy,
+// then the one nearest the original's row.
+export function findCloneHex(battle, original) {
+  const canStand = canStandFor(battle, { ...original, id: null, side: 'attacker' })
+  const hexes = []
+  for (let row = 0; row < BATTLEFIELD_ROWS; row += 1) {
+    for (let column = 0; column < BATTLEFIELD_COLUMNS; column += 1) {
+      if (canStand({ row, column })) {
+        hexes.push({ row, column })
+      }
+    }
+  }
+  const rank = (hex) => [
+    getHexDistance(original.hex, hex),
+    -hex.column,
+    Math.abs(hex.row - original.hex.row)
+  ]
+  const compare = (a, b) => {
+    const [first, second] = [rank(a), rank(b)]
+    return first[0] - second[0] || first[1] - second[1] || first[2] - second[2]
+  }
+  return hexes.sort(compare)[0] ?? null
+}
+
+// The health heals the top creature, then brings back whole creatures, never more than the stack
+// started the battle with. A stack brought back from the dead comes back free of spells.
+function raiseStack(stack, healing, definitions) {
+  const left = stack.count > 0 ? (stack.count - 1) * stack.health + stack.topHealth : 0
+  const total = Math.min(stack.initialCount * stack.health, left + healing)
+  const count = Math.ceil(total / stack.health)
+  return {
+    ...stack,
+    count,
+    topHealth: total - (count - 1) * stack.health,
+    name: describeStack({ creature: stack.creature, count }, definitions).name,
+    spells: stack.count > 0 ? stack.spells : []
+  }
+}
+
+function describeRisen(risen, stack, definitions) {
+  const name = describeStack({ creature: stack.creature, count: risen }, definitions).name
+  return risen === 1 ? `1 ${name} rises from the dead!` : `${risen} ${name} rise from the dead!`
+}
+
+// The sacrificed stack leaves no corpse.
+export function sacrificeStack(battle, { sacrificedId, healing, ...cast }) {
+  const before = battle.stacks.find(({ id }) => id === cast.targetIds[0])
+  const raised = castOnStacks(battle, cast, (stack) =>
+    raiseStack(stack, healing, battle.definitions)
+  )
+  const risen = raised.stacks.find(({ id }) => id === before.id).count - before.count
+  return clearGoneClones({
+    ...raised,
+    stacks: raised.stacks.map((stack) =>
+      stack.id === sacrificedId ? { ...stack, count: 0, sacrificed: true } : stack
+    ),
+    messages:
+      risen > 0
+        ? [...raised.messages, describeRisen(risen, before, battle.definitions)]
+        : raised.messages
+  })
+}
+
+export const castRemovingSpell = (battle, cast) => castOnStacks(battle, cast, removeSpellsFrom)
+
+export const castHealingSpell = (battle, { healing, ...cast }) =>
+  castOnStacks(battle, cast, (stack) => healTopCreature(stack, healing))
+
+// The attack itself, before the attacker's turn ends.
+export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
+  const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
+  const attacker = moved.stacks.find(({ id }) => id === stackId)
+  if (attacker && !isAlive(attacker)) {
+    return clearGoneClones(moved)
+  }
+  const attacked = strikes.reduce(
+    (current, strike) => applyStrike(current, strike, targetId),
+    moved
+  )
+  return clearGoneClones(endOwnAttackSpells(attacked, stackId))
+}
+
+export const attackStack = (battle, attack) => finishAction(resolveAttack(battle, attack), attack)
+
+// Every shot with its rolled damage, or null when the stack cannot shoot the target.
+export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
+  const target = attackableBy(battle, stack).find(({ id }) => id === targetId)
+  if (!target || !canShoot(battle, stack)) {
+    return null
+  }
+
+  return {
+    strikes: shotSequence({
+      attacker: stack,
+      defender: target,
+      random,
+      luckRandom,
+      halved: hasShotPenalty(battle, stack, target)
+    })
+  }
+}
+
+// The shot itself, before the shooter's turn ends.
+export function resolveShot(battle, { stackId, strikes }) {
+  const shot = endOwnAttackSpells(
+    strikes.reduce((current, strike) => applyStrike(current, strike, null), battle),
+    stackId
+  )
+  return clearGoneClones({
+    ...shot,
+    stacks: shot.stacks.map((stack) =>
+      stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
+    )
+  })
+}
+
+export const shootStack = (battle, shot) => finishAction(resolveShot(battle, shot), shot)
+
+const withoutShooter = (battle, done) =>
+  battle.roundStartShooters.filter((shooter) => shooter !== done)
+
+// Once the last of them has shot, the first stack's turn starts.
+const afterRoundStartShot = (battle) =>
+  getRoundStartShooter(battle) ? battle : hitAsTurnStarts(battle)
+
+// After its waited turn the round goes on as after any stack's.
+const endCatapultsTurn = (battle, after = battle) =>
+  isCatapultsWaitedTurn(battle)
+    ? endTurn(after, CATAPULT_STACK_ID)
+    : afterRoundStartShot({ ...after, roundStartShooters: withoutShooter(battle, CATAPULT) })
+
+export const planBattleCatapultShot = (battle, random, aimedByHero = null) =>
+  planCatapultShot(battle.walls, random, {
+    ...battle.catapultShooting,
+    aimed: battle.catapultAims.at(-1) ?? aimedByHero
+  })
+
+// A shot saved before the catapult could fire twice names only the part it hit.
+export function shootCatapult(battle, shot) {
+  const catapultAims = [...battle.catapultAims, shot.aim ?? shot.part]
+  const done = catapultAims.length >= battle.catapultShooting.shots
+  const fired = {
+    ...battle,
+    walls: hitWall(battle.walls, shot),
+    catapultAims,
+    messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
+  }
+  return done ? endCatapultsTurn(battle, fired) : afterRoundStartShot(fired)
+}
+
+export function shootTower(battle, { tower, targetId, damage }) {
+  const { damaged, ...losses } = damageStack(battle, targetId, damage)
+  return afterRoundStartShot(
+    clearGoneClones({
+      ...battle,
+      stacks: battle.stacks.map((stack) => (stack.id === targetId ? wakeUp(damaged) : stack)),
+      roundStartShooters: withoutShooter(battle, tower),
+      messages: [
+        ...battle.messages,
+        ...describeDamage(`The ${ARROW_TOWER_NAME} does ${damage} damage.`, losses)
+      ]
+    })
+  )
+}
+
+export function shakeWalls(battle, { heroName, spellName, wallHits }) {
+  return {
+    ...battle,
+    ...castBy(battle),
+    walls: wallHits.reduce(hitWall, battle.walls),
+    messages: [
+      ...battle.messages,
+      describeCast(battle, { heroName, spellName, targetIds: [] }),
+      ...wallHits.map((hit) => describeEarthquakeHit(battle.walls, hit).message)
+    ]
+  }
+}
+
+export function getArmyAfterBattle(battle, side, army) {
+  return army.map((slot, index) => {
+    const stack = battle.stacks.find(({ id }) => id === `${side}-${index}`)
+    return slot && stack?.count > 0 ? { creature: stack.creature, count: stack.count } : null
+  })
+}
+
+// The winner earns the health of every creature of the other side killed; clones and war machines
+// earn nothing.
+export function getExperienceForKills(battle, winnerSide) {
+  return battle.stacks
+    .filter((stack) => stack.side !== winnerSide && !stack.cloneOf && !stack.warMachine)
+    .reduce((sum, stack) => sum + (stack.initialCount - stack.count) * stack.health, 0)
+}
