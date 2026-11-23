@@ -93,13 +93,13 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Current history uses short, imperative commit messages (e.g. “add npm for testing and linting”).
 - Prefer: `<area>: <imperative summary>` (example: `docs: clarify movement rules`).
-- Commit with a plain `git commit -m "..."`, as the session's git identity: no `--author`, `git -c …` or `git config`, which the permission check refuses.
+- Commit with a plain `git commit -m "..."`: no `--author`, `git -c …` or `git config`, which the permission check refuses. The session-start hook (`.claude/hooks/session-start.sh`) sets `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL`, so the commit's author is Jakub Janczyk. Check the first commit with `git log -1 --format='%an <%ae>'`; if it says Claude, tell the user rather than work around it.
 - Commit and push in their own commands, so the permission check sees plain git:
   - Stage the files by name, not `git add -A`.
   - Don't chain a commit or push with file edits, heredoc scripts or other work in one command.
   - Push only the session's working branch.
   - Commit and push only once the user has approved what is being committed: a plan waiting for approval (the `next-part` skill) stays uncommitted until they reply.
-- Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines, and no session links.
+- Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines, and no session links. `.claude/hooks/block-session-links.mjs` refuses a commit, PR or comment that has one; drop it and run the call again.
 - PRs should include:
   - a short description of user-visible behavior
   - links to the roadmap item and the feature's note (e.g. `docs/notes/2026-10-30-combination-artifacts.md`)
