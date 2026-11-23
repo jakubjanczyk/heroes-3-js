@@ -21,6 +21,7 @@ import {
   hoverBattleHex,
   hoverBattleTower,
   LOWEST_ROLLS,
+  moveActiveStackTo,
   pickSpell,
   readActiveStack,
   readBattleResultsSide,
@@ -41,6 +42,12 @@ const aSturdyCreature = (name) =>
 
 const RUNNER = aSturdyCreature('Runner').withSpeed(20).withAiValue(1).build()
 const PLODDER = aSturdyCreature('Plodder').withSpeed(18).withAiValue(1).build()
+const KILLER = aSturdyCreature('Killer')
+  .withSpeed(19)
+  .withAttack(50)
+  .withDamage({ min: 100, max: 100 })
+  .withAiValue(1)
+  .build()
 const ARCHER = aSturdyCreature('Archer')
   .withSpeed(1)
   .withAiValue(1)
@@ -53,7 +60,7 @@ const definitions = {
   heroClasses: readGameData('hero-classes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   resources: readGameData('resources.json'),
-  monsters: { ...readGameData('monsters.json'), RUNNER, PLODDER, ARCHER },
+  monsters: { ...readGameData('monsters.json'), RUNNER, PLODDER, KILLER, ARCHER },
   spells: readGameData('spells.json'),
   heroes: readGameData('heroes.json'),
   towns: readGameData('towns.json'),
@@ -114,18 +121,23 @@ const anAttacker = ({ level = 'BASIC', army = [stack('RUNNER')] } = {}) =>
     .withArmy(army)
     .at(4, 5)
 
-const aBlueTown = (buildings = FORT) =>
+const aBlueTown = (buildings = FORT, garrison = [stack('ARCHER')]) =>
   aTown()
     .named('Kirkwall')
     .ownedBy('blue')
     .withBuildings(buildings)
-    .withGarrison([stack('ARCHER')])
+    .withGarrison(garrison)
     .at(TOWN_ENTRANCE.x, TOWN_ENTRANCE.y)
 
-const anAttackScenario = ({ hero = anAttacker(), buildings = FORT, defender = null } = {}) =>
+const anAttackScenario = ({
+  hero = anAttacker(),
+  buildings = FORT,
+  garrison,
+  defender = null
+} = {}) =>
   aScenario()
     .withSize(9, 7)
-    .withEntities(hero, aBlueTown(buildings), ...(defender ? [defender] : []))
+    .withEntities(hero, aBlueTown(buildings, garrison), ...(defender ? [defender] : []))
     .withDefinitions(definitions)
 
 const setupApp = (scenario, { rolls = [], stepDelayMs = 0, eventLog } = {}) =>
@@ -156,6 +168,11 @@ async function attackCastle(options) {
 async function aimAt(user, hex) {
   await clickBattleHex(user, hex.row, hex.column)
   await waitMs()
+}
+
+async function waitWith(user) {
+  await clickBattleButton(user, 'Wait')
+  await waitMs(1000)
 }
 
 async function passTheRound(user) {
@@ -380,10 +397,10 @@ describe('aiming the catapult behavior', () => {
       expect(readActiveStack().stack).toBe('Runner 1')
     })
 
-    test("Wait is greyed out on the catapult's turn", async () => {
+    test("Wait is enabled on the catapult's turn", async () => {
       await attackTown()
 
-      expect(getBattleButton('Wait').disabled).toBe(true)
+      expect(getBattleButton('Wait').disabled).toBe(false)
     })
 
     test('Auto combat turned on during its turn lets the catapult aim itself', async () => {
@@ -422,6 +439,50 @@ describe('aiming the catapult behavior', () => {
     })
   })
 
+  describe("the catapult's Wait", () => {
+    const TOP_LEFT_CORNER = { row: 1, column: 1 }
+
+    test("Wait on the catapult's turn fires no stone, and the first stack's turn starts", async () => {
+      const { user } = await attackTown()
+
+      await clickBattleButton(user, 'Wait')
+      await waitMs()
+
+      expect(catapultMessages()).toEqual([])
+      expect(readActiveStack().stack).toBe('Runner 1')
+    })
+
+    test("the catapult's waited turn comes before the other stacks that waited", async () => {
+      const { user } = await attackTown()
+
+      await waitWith(user)
+      await waitWith(user)
+
+      expect(readActiveStack().stack).toBe(CATAPULT)
+    })
+
+    test('clicking a wall segment on the waited turn shoots at it', async () => {
+      const { user } = await attackTown(anAttackScenario(), { rolls: [HITS, ONE_POINT] })
+      await waitWith(user)
+      await passTheRound(user)
+
+      await aimAt(user, UPPER_WALL)
+
+      expect(catapultMessages()).toEqual(['The Catapult hits the Upper Wall.'])
+    })
+
+    test('a catapult destroyed before its waited turn has no turn back', async () => {
+      const { user } = await attackTown(anAttackScenario({ garrison: [stack('KILLER', 10)] }))
+      await waitWith(user)
+
+      await moveActiveStackTo(user, TOP_LEFT_CORNER.row, TOP_LEFT_CORNER.column)
+      await waitMs(1000)
+
+      expect(catapultMessages()).toEqual(['The Catapult is destroyed.'])
+      expect(readActiveStack().stack).toBe('Runner 1')
+    })
+  })
+
   describe('reloading', () => {
     test("a reload on the catapult's turn is still its turn", async () => {
       const eventLog = createMemoryEventLog()
@@ -452,6 +513,18 @@ describe('aiming the catapult behavior', () => {
         'The Catapult hits the Upper Wall.',
         'The Catapult destroys the Upper Wall.'
       ])
+    })
+
+    test('a reload after the catapult waited still brings its turn back in the wait phase', async () => {
+      const eventLog = createMemoryEventLog()
+      const { user } = await attackTown(anAttackScenario(), { eventLog })
+      await waitWith(user)
+      await waitWith(user)
+
+      await setupApp(anAttackScenario(), { eventLog })
+      await waitMs(1000)
+
+      expect(readActiveStack().stack).toBe(CATAPULT)
     })
   })
 })

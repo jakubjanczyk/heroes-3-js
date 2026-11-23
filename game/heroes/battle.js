@@ -245,9 +245,29 @@ const hasRoundStartTarget = (battle, shooter) =>
     ? hasCatapultTarget(battle.walls)
     : isTowerStanding(battle.walls, shooter) && hasLivingStacks(battle, 'attacker')
 
-// The next that shoots as the round starts, passing over one with nothing to shoot at.
-export const getRoundStartShooter = (battle) =>
-  battle.roundStartShooters.find((shooter) => hasRoundStartTarget(battle, shooter)) ?? null
+const isWaitPhase = (battle) => {
+  const active = getActiveStack(battle)
+  return !active || hasWaited(battle, active.id)
+}
+
+// The catapult that waited comes back first among the stacks that waited.
+const isCatapultsWaitedTurn = (battle) =>
+  hasWaited(battle, CATAPULT_STACK_ID) &&
+  !battle.actedStackIds.includes(CATAPULT_STACK_ID) &&
+  !battle.turnStackId &&
+  hasCatapult(battle) &&
+  hasCatapultTarget(battle.walls) &&
+  isWaitPhase(battle)
+
+// The next that shoots before the stacks, passing over one with nothing to shoot at: as the round
+// starts, or the catapult once the stacks that didn't wait have acted.
+export function getRoundStartShooter(battle) {
+  const shooter = battle.roundStartShooters.find((next) => hasRoundStartTarget(battle, next))
+  if (shooter) {
+    return shooter
+  }
+  return isCatapultsWaitedTurn(battle) ? CATAPULT : null
+}
 
 export const isCatapultsTurn = (battle) => getRoundStartShooter(battle) === CATAPULT
 
@@ -417,8 +437,12 @@ function countDownSpells(stack) {
 // A new round also gives every stack its retaliations back, and the hero a spell to cast.
 export function endTurn(battle, stackId) {
   const actedStackIds = [...battle.actedStackIds, stackId]
-  if (actingStacks(battle).some(({ id }) => !actedStackIds.includes(id))) {
-    return startNextTurn({ ...battle, actedStackIds, turnStackId: null })
+  const goesOn = { ...battle, actedStackIds, turnStackId: null }
+  if (
+    actingStacks(battle).some(({ id }) => !actedStackIds.includes(id)) ||
+    isCatapultsWaitedTurn(goesOn)
+  ) {
+    return startNextTurn(goesOn)
   }
 
   return startNextTurn({
@@ -440,6 +464,13 @@ export function endTurn(battle, stackId) {
 }
 
 export function waitStack(battle, stackId) {
+  if (stackId === CATAPULT_STACK_ID) {
+    return afterRoundStartShot({
+      ...battle,
+      waitedStackIds: [...battle.waitedStackIds, stackId],
+      roundStartShooters: withoutShooter(battle, CATAPULT)
+    })
+  }
   return startNextTurn({
     ...battle,
     waitedStackIds: [...battle.waitedStackIds, stackId],
@@ -513,7 +544,7 @@ export function freezeStack(battle, stackId) {
 // Defend passes the catapult's turn, with no bonus.
 export function defendStack(battle, stackId) {
   if (stackId === CATAPULT_STACK_ID) {
-    return afterRoundStartShot({ ...battle, roundStartShooters: withoutShooter(battle, CATAPULT) })
+    return endCatapultsTurn(battle)
   }
   const defended = {
     ...battle,
@@ -1276,6 +1307,12 @@ const withoutShooter = (battle, done) =>
 const afterRoundStartShot = (battle) =>
   getRoundStartShooter(battle) ? battle : hitAsTurnStarts(battle)
 
+// After its waited turn the round goes on as after any stack's.
+const endCatapultsTurn = (battle, after = battle) =>
+  isCatapultsWaitedTurn(battle)
+    ? endTurn(after, CATAPULT_STACK_ID)
+    : afterRoundStartShot({ ...after, roundStartShooters: withoutShooter(battle, CATAPULT) })
+
 export const planBattleCatapultShot = (battle, random, aimedByHero = null) =>
   planCatapultShot(battle.walls, random, {
     ...battle.catapultShooting,
@@ -1286,13 +1323,13 @@ export const planBattleCatapultShot = (battle, random, aimedByHero = null) =>
 export function shootCatapult(battle, shot) {
   const catapultAims = [...battle.catapultAims, shot.aim ?? shot.part]
   const done = catapultAims.length >= battle.catapultShooting.shots
-  return afterRoundStartShot({
+  const fired = {
     ...battle,
     walls: hitWall(battle.walls, shot),
     catapultAims,
-    roundStartShooters: done ? withoutShooter(battle, CATAPULT) : battle.roundStartShooters,
     messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
-  })
+  }
+  return done ? endCatapultsTurn(battle, fired) : afterRoundStartShot(fired)
 }
 
 export function shootTower(battle, { tower, targetId, damage }) {

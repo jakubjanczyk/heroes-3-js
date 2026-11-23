@@ -462,7 +462,7 @@ export const registerBattleModule = defineModule(
       const canAct = isPlayersTurn()
       const canLeadHero = isLeadingHerosTurn()
       return {
-        canWait: canAct && !hasWaited(battle, activeStack.id),
+        canWait: (canAct || isCatapultAimTurn()) && !hasWaited(battle, activeStack.id),
         canDefend: canAct || isCatapultAimTurn(),
         canRetreat: canLeadHero && canLeave(),
         surrenderRefusal:
@@ -1335,7 +1335,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
           handler: () => {
-            const stack = isPlayersTurn() && getActiveStack(battle)
+            const stack = (isPlayersTurn() || isCatapultAimTurn()) && turnStack()
             if (!stack || hasWaited(battle, stack.id)) {
               return
             }
