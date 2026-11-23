@@ -93,7 +93,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
 
 - Current history uses short, imperative commit messages (e.g. “add npm for testing and linting”).
 - Prefer: `<area>: <imperative summary>` (example: `docs: clarify movement rules`).
-- Commit with a plain `git commit -m "..."`, as the session's git identity: no `--author`, `git -c …` or `git config`, which the permission check refuses.
+- Commit with a plain `git commit -m "..."`: no `--author`, `git -c …` or `git config`, which the permission check refuses. The session-start hook (`.claude/hooks/session-start.sh`) sets `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL`, so the commit's author is Jakub Janczyk. Check the first commit with `git log -1 --format='%an <%ae>'`; if it says Claude, tell the user rather than work around it.
 - Commit and push in their own commands, so the permission check sees plain git:
   - Stage the files by name, not `git add -A`.
   - Don't chain a commit or push with file edits, heredoc scripts or other work in one command.
