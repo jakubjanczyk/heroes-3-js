@@ -99,7 +99,7 @@ Deployment (GitHub Pages, served from the `gh-pages` branch):
   - Don't chain a commit or push with file edits, heredoc scripts or other work in one command.
   - Push only the session's working branch.
   - Commit and push only once the user has approved what is being committed: a plan waiting for approval (the `next-part` skill) stays uncommitted until they reply.
-- Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines, and no session links.
+- Never mention Claude or Claude Code in commit messages, PR titles or bodies, or GitHub comments: no `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines, and no session links. `.claude/hooks/block-session-links.mjs` refuses a commit, PR or comment that has one; drop it and run the call again.
 - PRs should include:
   - a short description of user-visible behavior
   - links to the roadmap item and the feature's note (e.g. `docs/notes/2026-10-30-combination-artifacts.md`)
