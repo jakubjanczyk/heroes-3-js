@@ -17,8 +17,10 @@ import {
   rollHeroesForHire,
   rollRumour,
   rumourText,
+  startingTownTypes,
   withHeroesWhoLeft
 } from '../../../game/heroes/tavern.js'
+import { DEFAULT_PLAYER } from '../../../game/state/core-slices.js'
 import {
   activePlayer,
   heroIdAt,
@@ -49,6 +51,7 @@ export const registerTavernModule = defineModule(
     let definitions = {}
     let townsById = new Map()
     let pool = []
+    let townTypesStartedAs = {}
     let openTownId = null
 
     function heroNamesOnMap(current) {
@@ -82,6 +85,7 @@ export const registerTavernModule = defineModule(
             heroNamesOnMap: [...heroNamesOnMap(state.get()), ...(hiredName ? [hiredName] : [])],
             kept,
             isReplacement: Boolean(hiredName),
+            startingTownType: townTypesStartedAs[player],
             random
           }),
           rumour
@@ -233,6 +237,14 @@ export const registerTavernModule = defineModule(
               .filter(Boolean)
               .map(({ name, heroClass }) => ({ name, heroClass }))
             pool = heroPool(definitions.heroes, startingHeroes)
+            townTypesStartedAs = startingTownTypes({
+              towns: entities.filter((entity) => isTown(entity) && entity.owner),
+              heroes: entities.filter(isHero).map(({ id, owner = DEFAULT_PLAYER }) => ({
+                owner,
+                heroClass: heroById(state.get(), id)?.heroClass
+              })),
+              heroClasses: definitions.heroClasses
+            })
             openTownId = null
           }
         },

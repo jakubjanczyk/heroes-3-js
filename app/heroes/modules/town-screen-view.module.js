@@ -12,8 +12,8 @@ import {
 } from '../../events.js'
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { createArmyRearranging } from '../presentation/army-rearranging.js'
-import { CASTLE_BUILDING_ART, castleBackgroundArt } from '../presentation/castle-town-art.js'
 import { renderArmyStack } from '../presentation/hero-box.js'
+import { townArt } from '../presentation/town-art.js'
 import { renderTownList } from '../presentation/town-list.js'
 
 const NO_ARMY = []
@@ -87,18 +87,18 @@ export const registerTownScreenViewModule = defineModule(
       icon.dataset.level = String(fort?.level ?? 0)
     }
 
-    function createPicture() {
+    function createPicture(art) {
       const picture = document.createElementNS(SVG_NS, 'svg')
       picture.setAttribute('class', 'town-screen__picture')
       picture.setAttribute('viewBox', PICTURE_VIEW_BOX)
       picture.setAttribute('preserveAspectRatio', 'xMidYMid meet')
-      picture.innerHTML = `<g aria-hidden="true">${castleBackgroundArt()}</g><g class="town-screen__buildings"></g>`
+      picture.innerHTML = `<g role="img" aria-label="${art.backdropName}">${art.backdrop()}</g><g class="town-screen__buildings"></g>`
       return picture
     }
 
     // What a building opens is marked as on the panel's buttons, so the Hall, Fort and recruit
     // windows open from the picture as from the panel.
-    function renderBuilding({ buildingId, name, x, y, action }) {
+    function renderBuilding({ buildingId, name, x, y, action }, art) {
       const building = document.createElementNS(SVG_NS, 'g')
       building.setAttribute('class', 'town-building')
       building.setAttribute('role', 'button')
@@ -110,16 +110,20 @@ export const registerTownScreenViewModule = defineModule(
       } else if (action) {
         building.setAttribute('data-town-action', action.opens)
       }
-      building.innerHTML = (CASTLE_BUILDING_ART[buildingId] ?? placeholderArt)()
+      building.innerHTML = (art.buildings[buildingId] ?? placeholderArt)()
       return building
     }
 
-    function showPicture(picture) {
+    function showPicture(picture, townType) {
       const view = townScreen.querySelector('.town-screen__view')
-      if (!view.firstElementChild) {
-        view.append(createPicture())
+      const art = townArt(townType)
+      if (view.dataset.townType !== townType) {
+        view.dataset.townType = townType
+        view.replaceChildren(createPicture(art))
       }
-      view.querySelector('.town-screen__buildings').replaceChildren(...picture.map(renderBuilding))
+      view
+        .querySelector('.town-screen__buildings')
+        .replaceChildren(...picture.map((building) => renderBuilding(building, art)))
     }
 
     function frameVisitingHero(framed) {
@@ -176,7 +180,8 @@ export const registerTownScreenViewModule = defineModule(
       hallName,
       creatures,
       fort,
-      picture
+      picture,
+      townType
     }) {
       if (!gameShell) {
         return
@@ -206,7 +211,7 @@ export const registerTownScreenViewModule = defineModule(
       townScreen.querySelector('.town-panel__income').textContent = String(goldIncome)
       townScreen.querySelector('.town-panel__hall').dataset.status = hallName
       fillSlots(townScreen.querySelector('[aria-label="Garrison"]'), garrison)
-      showPicture(picture)
+      showPicture(picture, townType)
       showCreatures(creatures)
       showFortIcon(fort)
       showVisitingHero(visitingHero)
