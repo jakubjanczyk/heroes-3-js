@@ -189,6 +189,14 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 - 2 in all, however many Pegasus stacks (the engine takes the highest; the wiki: "2 extra spell points").
 - Only the other side's hero: the Pegasi's own hero pays the normal cost (both sources).
 - The battle's spell book shows and checks the raised cost: a hero with 5 points can't cast a 5-point spell against Pegasi ("not enough spell points", as now).
+- A hypnotized Pegasus still raises the costs of the side it came with, not of its new side's enemy: the engine compares the stack's owner, which Hypnotize doesn't change (the wiki doesn't say).
+- Outside battle the spell book shows the hero's usual costs.
+
+### How it is built (6.5.4c)
+
+- A creature's `magicDamper` in `monsters.json` (2 for both Pegasi) is copied onto its battle stacks, as `magicResistanceAura` is.
+- A spell's cost in battle is its cost for the hero plus the highest `magicDamper` among the other side's stacks, by the side each stack came with (`side`, not who it fights for now), dead stacks included: a battle keeps its dead stacks with a count of 0, so "at the start of the battle" needs nothing more. A clone is the caster's own side, so it never counts.
+- The battle module checks and saves that cost in the spell-cast fact, as it saves the cost now, so a reload spends the same points; the battle's spell book shows it on each spell and in "That spell costs …".
 
 ### Spell immunity (Dragons, 6.5.4a)
 
