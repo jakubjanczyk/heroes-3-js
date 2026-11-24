@@ -1,5 +1,11 @@
 import { resourcesWorth, townDevelopmentWorth } from './computer-worth.js'
-import { BUILDING_STATUS, buildingStatus, missingRequirements } from './town-buildings.js'
+import {
+  BUILDING_STATUS,
+  buildingStatus,
+  FORT_CHAIN,
+  fortLevelOf,
+  missingRequirements
+} from './town-buildings.js'
 import { canAfford } from './treasury.js'
 
 // The longest a computer player saves for a building, in days of its income.
@@ -88,14 +94,43 @@ function goalsOf({ catalogue, context, definitions }) {
     .filter((goal) => isWithinReach(goal, catalogue, context))
 }
 
+// A threatened town with a Fort or a Citadel builds the next of them before anything else, when
+// it can today.
+function nextWalls({ buildings }, { town, builtElsewhere, treasury }) {
+  const fortLevel = fortLevelOf(town.built)
+  const buildingId = FORT_CHAIN[fortLevel]
+  if (fortLevel === 0 || !buildings[buildingId]) {
+    return null
+  }
+  const status = buildingStatus({
+    buildingId,
+    building: buildings[buildingId],
+    town,
+    builtElsewhere,
+    treasury
+  })
+  return status === BUILDING_STATUS.BUILDABLE ? { build: buildingId } : null
+}
+
 // What a computer player's town does today: `build` a step towards the building worth the most
 // for its cost, or `save` that step's cost when `treasury` can't pay it yet, `maySave` allowing.
 // A building is aimed for only when `income` makes up what it and its steps are short of within a
 // week. With nothing worth anything to build or save for, the
 // first building of the Hall it can pay for; null for nothing.
-export function decideTownBuilding({ catalogue, context, definitions, income, maySave }) {
+export function decideTownBuilding({
+  catalogue,
+  context,
+  definitions,
+  income,
+  maySave,
+  isThreatened = false
+}) {
   if (context.town.hasBuiltToday) {
     return null
+  }
+  const walls = isThreatened ? nextWalls(catalogue, context) : null
+  if (walls) {
+    return walls
   }
 
   const { buildings } = catalogue

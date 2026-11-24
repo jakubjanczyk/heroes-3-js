@@ -11,6 +11,7 @@ import {
   decideTownRecruits,
   dwellingRecruitCount
 } from '../../../game/heroes/computer-recruiting.js'
+import { threatenedTownIds } from '../../../game/heroes/computer-threats.js'
 import { decideTownBuilding } from '../../../game/heroes/computer-towns.js'
 import { MOVEMENT_INTERACTION_KIND_DWELLING_VISIT } from '../../../game/heroes/interaction-kinds.js'
 import { buildingContextOf } from '../../../game/heroes/state/building-context.js'
@@ -219,6 +220,13 @@ export const registerComputerPlayersModule = defineModule(
     // Each town builds, or the first that can't pay for what it wants saves for it.
     function buildInTowns(player) {
       const income = dailyIncomeOfPlayer(state.get(), player, definitions)
+      const threatened = threatenedTownIds({
+        state: state.get(),
+        player,
+        towns: targets.filter(({ id }) => townOwner(state.get(), id) === player),
+        routesOf,
+        definitions
+      })
       let kept = null
       for (const townId of townIdsOf(state.get(), player)) {
         const context = buildingContextOf(state.get(), townId, {
@@ -229,7 +237,8 @@ export const registerComputerPlayersModule = defineModule(
           context: { ...context, treasury: leftOver(context.treasury, kept ?? {}) },
           definitions,
           income,
-          maySave: kept === null
+          maySave: kept === null,
+          isThreatened: threatened.has(townId)
         })
         if (decision?.build) {
           emit(APP_COMMAND_TOWN_BUILD_REQUESTED, { entityId: townId, buildingId: decision.build })

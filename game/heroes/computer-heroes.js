@@ -13,7 +13,7 @@ import {
 import { hasFullBackpack } from './artifacts.js'
 import { computerChoiceAt } from './computer-choices.js'
 import { dwellingRecruitCount, stacksLedOutOfTown } from './computer-recruiting.js'
-import { canBeat, heroStrength, outmatches } from './computer-strength.js'
+import { canBeat, heroStrength, outmatches, withWalls } from './computer-strength.js'
 import { createDangerMap } from './computer-threats.js'
 import { createTargetWorth, heroRisk, teachesWorthlessSkill } from './computer-worth.js'
 import {
@@ -81,7 +81,10 @@ function canTakeTown(state, target, { heroId, definitions }) {
   const defenders = townDefenders(state, target).filter(Boolean)
   return (
     defenders.length === 0 ||
-    canBeat({ hero: heroById(state, heroId), enemyArmy: defenders, definitions })
+    outmatches(
+      heroStrength(heroById(state, heroId), definitions),
+      withWalls(state, target.id, getArmyStrength(defenders, definitions))
+    )
   )
 }
 
@@ -262,7 +265,11 @@ function ownTownsOf(state, targets, player) {
 function strengthInTown(decision, town) {
   const { state, hero, definitions } = decision
   const army = joinGarrison(hero.army, townGarrison(state, town.id)).army
-  return heroStrength({ ...hero, army }, definitions)
+  return withWalls(state, town.id, heroStrength({ ...hero, army }, definitions))
+}
+
+function garrisonStrength({ state, definitions }, town) {
+  return withWalls(state, town.id, getArmyStrength(townGarrison(state, town.id), definitions))
 }
 
 function strengthAt(decision, tile) {
@@ -281,13 +288,13 @@ function movesTo(nearest) {
 // Its own town an enemy hero could take next turn, and that the hero would hold, it goes back to
 // today, or stays in.
 function defendTown(decision) {
-  const { state, heroId, routes, ownTowns, dangerAt, definitions } = decision
+  const { state, heroId, routes, ownTowns, dangerAt } = decision
   const free = ownTowns.filter((town) => [null, heroId].includes(heroIdAt(state, town.tile)))
   const danger = dangerAt(free.map(({ tile }) => tile))
   const threatened = free.filter(
     (town, index) =>
       danger[index] > 0 &&
-      !outmatches(getArmyStrength(townGarrison(state, town.id), definitions), danger[index]) &&
+      !outmatches(garrisonStrength(decision, town), danger[index]) &&
       outmatches(strengthInTown(decision, town), danger[index])
   )
   if (threatened.some((town) => sameTile(town.tile, decision.tile))) {
@@ -395,6 +402,5 @@ export function decideComputerHeroMove({
   if (!nearest || decision.routes.chargeStepsToday(nearest.path).length === 0) {
     return null
   }
-  console.log('MOVE', heroId, JSON.stringify(nearest.path), nearest.target?.id)
   return movesTo(nearest)
 }
