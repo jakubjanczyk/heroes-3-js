@@ -1,9 +1,10 @@
-import { planTowerShot } from '../../../game/heroes/arrow-towers.js'
+import { getTowerTargets, planTowerShot } from '../../../game/heroes/arrow-towers.js'
 import {
   areaTargetIds,
   attackStack,
   CATAPULT,
   canHeroAimCatapult,
+  canHeroAimTowers,
   canTeleportTo,
   castDamageSpell,
   castHealingSpell,
@@ -382,6 +383,7 @@ export const registerBattleModule = defineModule(
         towerArrow,
         wallHits: [],
         activeStackId,
+        activeTower: null,
         moving: true,
         reachableHexes: [],
         attackTargets: [],
@@ -407,6 +409,15 @@ export const registerBattleModule = defineModule(
     }
 
     function activeStackView(activeStack) {
+      if (isTowersTurn()) {
+        const tower = controlledShooter()
+        return {
+          activeStackId: null,
+          activeTower: { tower, side: getTurnSide(battle) },
+          ...NO_ORDERS,
+          shotTargets: getTowerTargets(battle, tower)
+        }
+      }
       if (!activeStack) {
         return { activeStackId: null, ...NO_ORDERS }
       }
@@ -722,7 +733,11 @@ export const registerBattleModule = defineModule(
     // The player's hero with Ballistics aims the catapult, unless Auto combat plays for them.
     const aimsCatapult = () => playerSide === 'attacker' && canHeroAimCatapult(battle)
 
-    const controlsShooter = (shooter) => !autoCombat && shooter === CATAPULT && aimsCatapult()
+    // The defending player's hero with Artillery aims the towers.
+    const aimsTowers = () => playerSide === 'defender' && canHeroAimTowers(battle)
+
+    const controlsShooter = (shooter) =>
+      !autoCombat && (shooter === CATAPULT ? aimsCatapult() : aimsTowers())
 
     // The tower or the catapult whose turn the player plays, before every stack's.
     function controlledShooter() {
@@ -736,6 +751,15 @@ export const registerBattleModule = defineModule(
     const isCatapultAimTurn = () => controlledShooter() === CATAPULT
 
     const isShootersTurn = () => Boolean(controlledShooter())
+
+    const isTowersTurn = () => isShootersTurn() && !isCatapultAimTurn()
+
+    function aimTowerAt(targetId) {
+      const arrow = planTowerShot(battle, controlledShooter(), towerRandom, targetId)
+      if (arrow) {
+        void shootArrow(arrow)
+      }
+    }
 
     const shooterStackId = (shooter) =>
       shooter === CATAPULT ? getCatapultStack(battle).id : shooter
@@ -1332,6 +1356,10 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
           handler: (event) => {
+            if (isTowersTurn()) {
+              aimTowerAt(event.detail.targetId)
+              return
+            }
             if (!isPlayersTurn()) {
               return
             }

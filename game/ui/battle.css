@@ -364,6 +364,19 @@
   inset-block: -40% -50%;
 }
 
+/* The tower whose turn the player plays, outlined as the active stack is. */
+.battlefield__tower--active {
+  outline: 2px solid oklch(0.92 0.17 98);
+  outline-offset: 1px;
+  animation: battle-stack-active 1s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battlefield__tower--active {
+    animation: none;
+  }
+}
+
 /* The catapult is aimed at a tower by its picture. */
 .battlefield--aiming-catapult .battlefield__tower:not(.battlefield__tower--destroyed) {
   pointer-events: auto;

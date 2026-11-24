@@ -158,6 +158,12 @@ export function getBattleTower(name) {
   return within(getBattlefield()).getByRole('img', { name })
 }
 
+// The tower whose turn the player plays: "Keep", "Upper Tower", "Lower Tower", or null.
+export function readActiveTower() {
+  const active = getBattlefield().querySelector(`${BATTLE_TOWER}[aria-current="true"]`)
+  return active ? active.getAttribute('aria-label') : null
+}
+
 export async function clickBattleTower(user, name) {
   await user.click(getBattleTower(name))
   await waitMs()

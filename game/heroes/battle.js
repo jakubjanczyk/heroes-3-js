@@ -222,6 +222,7 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
     // What shoots as each round starts, in turn, before every stack.
     roundStartShooters: walls ? [...towerIdsOf(walls), CATAPULT] : [],
     catapultShooting: walls ? catapultShootingOf(sides.attacker, definitions) : null,
+    towersAimedByHero: Boolean(walls) && skillLevelOf(sides.defender, ARTILLERY) > 0,
     // The parts the catapult aimed at this round, shot by shot.
     catapultAims: [],
     definitions
@@ -229,6 +230,10 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
 }
 
 export const CATAPULT = 'CATAPULT'
+
+const ARTILLERY = 'ARTILLERY'
+
+export const canHeroAimTowers = (battle) => battle.towersAimedByHero
 
 const hasCatapult = (battle) =>
   battle.stacks.some((stack) => stack.id === CATAPULT_STACK_ID && isAlive(stack))

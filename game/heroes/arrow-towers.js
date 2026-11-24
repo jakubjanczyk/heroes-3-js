@@ -71,9 +71,20 @@ export function chooseTowerTarget(battle, tower) {
     ?.stack
 }
 
-export function planTowerShot(battle, towerId, random) {
+export const getTowerTargets = (battle, towerId) => {
   const tower = towerOf(battle.walls, towerId)
-  const target = tower && chooseTowerTarget(battle, tower)
+  return targetsOf(battle).map((stack) => ({
+    stackId: stack.id,
+    damage: { min: damageTo(stack, tower.damage.min), max: damageTo(stack, tower.damage.max) }
+  }))
+}
+
+const aimedTarget = (battle, targetId) => targetsOf(battle).find(({ id }) => id === targetId)
+
+export function planTowerShot(battle, towerId, random, aimedAt = null) {
+  const tower = towerOf(battle.walls, towerId)
+  const target =
+    tower && (aimedAt ? aimedTarget(battle, aimedAt) : chooseTowerTarget(battle, tower))
   if (!target) {
     return null
   }
