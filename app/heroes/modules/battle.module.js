@@ -103,6 +103,7 @@ import {
   TAVERN_ROLE_RETREATED,
   TAVERN_ROLE_SURRENDERED
 } from '../../../game/heroes/tavern.js'
+import { NO_DEFENDER_BONUSES, withDefenderSkills } from '../../../game/heroes/town-visit-bonuses.js'
 import {
   activePlayer,
   firstHeroIdOf,
@@ -154,7 +155,7 @@ import {
   battleDefenderName,
   battleDefenderOf,
   siegeWallsOf,
-  townDefenderMoraleOf
+  townDefenderBonusesOf
 } from '../battle-defenders.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
@@ -251,6 +252,8 @@ export const registerBattleModule = defineModule(
     let badMoraleRolledFor = null
     // How many of the battle's morale and luck effects the player has been shown.
     let effectsShown = 0
+    // What the town's buildings give its defenders, in a battle for a town.
+    let defenderBonuses = NO_DEFENDER_BONUSES
 
     function heroNameOf() {
       return heroById(state.get(), heroId)?.name ?? DEFAULT_HERO_NAME
@@ -263,6 +266,12 @@ export const registerBattleModule = defineModule(
     }
 
     const playerHeroId = () => (playerSide === 'defender' ? defenderHeroOf()?.id : heroId)
+
+    // The player's hero as it casts: a town's defender has the Power its buildings give.
+    function castingHero() {
+      const hero = heroById(state.get(), playerHeroId())
+      return playerSide === 'defender' ? withDefenderSkills(hero, defenderBonuses) : hero
+    }
 
     function enemyHeroOf() {
       if (playerSide === 'defender') {
@@ -1030,7 +1039,7 @@ export const registerBattleModule = defineModule(
     }
 
     function requestCast(detail) {
-      const hero = heroById(state.get(), playerHeroId())
+      const hero = castingHero()
       const spell = definitions.spells?.[detail.spellId]
       if (!spell?.earthquake) {
         castSpell(detail)
@@ -1040,7 +1049,7 @@ export const registerBattleModule = defineModule(
     }
 
     function castSpell({ spellId, targetId, hex, destination, sacrificedId }) {
-      const hero = heroById(state.get(), playerHeroId())
+      const hero = castingHero()
       const spell = definitions.spells?.[spellId]
       const targets = canHeroCast(hero, spell, spellId)
         ? chooseSpellTargets(hero, spell, { targetId, hex, sacrificedId })
@@ -1159,6 +1168,7 @@ export const registerBattleModule = defineModule(
             heroId = started.heroId ?? firstHeroIdOf(state.get(), viewingPlayer(state.get()))
             playerSide = sideOfViewingPlayer()
             const hero = heroById(state.get(), heroId)
+            defenderBonuses = townDefenderBonusesOf({ started, state, definitions })
             battle = createBattle({
               attacker: heroBattleSide(hero, definitions),
               defender: battleDefenderOf(started).side({
@@ -1168,7 +1178,7 @@ export const registerBattleModule = defineModule(
                 definitions
               }),
               walls: siegeWallsOf({ started, state, definitions }),
-              defenderMorale: townDefenderMoraleOf({ started, state, definitions }),
+              defenderBonuses,
               definitions
             })
             showBattle()

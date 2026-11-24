@@ -80,7 +80,7 @@ Then list it in the tables above, and in `check-definition.js` if it brings a me
 
 ## How it's built
 
-- `game/heroes/visitable-objects/definitions.js`: finds an object's data by its entity kind, fills in rolled values and rolls them.
+- `game/heroes/visitable-objects/definitions.js`: finds an object's data by its entity kind, fills in rolled values and rolls them. A town's building with a `visit` in its data is visited the same way (`TOWN_BUILDING`, `docs/notes/2026-11-24-town-factions.md`, 6.5.3).
 - `game/heroes/visitable-objects/rewards.js`: per reward type, what the hero gains on this visit and the popup's line on it.
 - `game/heroes/visitable-objects/visits.js`: decides a visit (`resolveVisit`): turned away with a message, a choice, a yes/no question, or the rewards given. It also says what the status bar and popup add.
 - `app/heroes/modules/visitable-objects.module.js`: rolls the per-game values on `command.game.setup.requested`, takes `command.mapObject.visit.requested`, and turns each gain into its fact. The pictures under a message come from `app/heroes/presentation/visit-rewards.js`.

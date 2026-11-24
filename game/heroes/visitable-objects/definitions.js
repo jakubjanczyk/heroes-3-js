@@ -1,4 +1,5 @@
 import { describeSecondarySkill } from '../secondary-skills.js'
+import { TOWN_BUILDING_KIND, townBuildingVisit } from '../town-visit-bonuses.js'
 
 const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   BONUS_OBJECT: 'bonusObjects',
@@ -12,7 +13,10 @@ export function isVisitableObject(entity) {
   return Boolean(DEFINITIONS_KEY_BY_KIND[entity?.kind])
 }
 
-export function visitableDefinition(definitions, { kind, type } = {}) {
+export function visitableDefinition(definitions, { kind, type, townType, buildingId } = {}) {
+  if (kind === TOWN_BUILDING_KIND) {
+    return townBuildingVisit(definitions, townType, buildingId) ?? {}
+  }
   return definitions?.[DEFINITIONS_KEY_BY_KIND[kind]]?.[type] ?? {}
 }
 

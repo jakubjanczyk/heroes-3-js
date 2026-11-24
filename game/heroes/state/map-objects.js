@@ -1,4 +1,4 @@
-import { isDwelling, isEntityKind, isMine } from '../../domain/entity-queries.js'
+import { isDwelling, isEntityKind, isMine, isTown } from '../../domain/entity-queries.js'
 import { DEFAULT_PLAYER } from '../../state/core-slices.js'
 import { calendarDateOfTurn } from '../calendar.js'
 import {
@@ -6,6 +6,8 @@ import {
   guardsOfDwelling,
   weeklyGrowthOfDwelling
 } from '../map-dwellings.js'
+import { townBuildingsCatalogue } from '../town-buildings.js'
+import { townBuildingVisitEntity } from '../town-visit-bonuses.js'
 import { scenarioChestContents } from '../treasure-chest.js'
 import {
   isVisitableObject,
@@ -116,24 +118,43 @@ function updateObject(objects, entityId, update) {
   return object ? { ...objects, [entityId]: { ...object, ...update(object) } } : objects
 }
 
-// Each bonus object and resource generator: the values it rolled (a Tree of Knowledge's price,
-// a Witch Hut's skill, this week's luck of a Fountain of Fortune), the players whose heroes have
-// been inside and whether any hero has this week.
+function freshVisits(entity, values = {}) {
+  return { ...entity, values, visitedBy: [], visitedThisWeek: false }
+}
+
+function visitedTownBuildings(scenario, definitions) {
+  const towns = (scenario?.entities ?? []).filter(isTown)
+  return towns.flatMap((town) =>
+    Object.keys(townBuildingsCatalogue(definitions, town.type).buildings)
+      .map((buildingId) =>
+        townBuildingVisitEntity(definitions, {
+          townId: town.id,
+          townType: town.type,
+          buildingId
+        })
+      )
+      .filter(Boolean)
+  )
+}
+
+// Each bonus object, resource generator and town building a hero can visit: the values it rolled
+// (a Tree of Knowledge's price, a Witch Hut's skill, this week's luck of a Fountain of Fortune),
+// the players whose heroes have been inside and whether any hero has this week.
 export const visitableObjectsSlice = {
   key: 'visitableObjects',
   initial: ({ scenario, definitions }) =>
-    Object.fromEntries(
-      (scenario?.entities ?? []).filter(isVisitableObject).map((entity) => [
-        entity.id,
-        {
-          kind: entity.kind,
-          type: entity.type,
-          values: scenarioValues(definitions, entity),
-          visitedBy: [],
-          visitedThisWeek: false
-        }
+    Object.fromEntries([
+      ...(scenario?.entities ?? [])
+        .filter(isVisitableObject)
+        .map((entity) => [
+          entity.id,
+          freshVisits({ kind: entity.kind, type: entity.type }, scenarioValues(definitions, entity))
+        ]),
+      ...visitedTownBuildings(scenario, definitions).map(({ id, ...entity }) => [
+        id,
+        freshVisits(entity)
       ])
-    ),
+    ]),
   on: {
     'fact.mapObject.values.rolled': (objects, { values }) =>
       Object.entries(values).reduce(

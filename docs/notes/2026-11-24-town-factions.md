@@ -40,8 +40,8 @@ Checked against the Heroes 3 wiki's raw page source (Stables, Brotherhood of the
 
 ### How it is built
 
-- The Stables' data says what it gives: `weekBonus` in `towns.json` (400 movement points, the message, and `sharedWith: "STABLES"`, the map object whose bonus it shares). The hero's week bonus is saved with `fact.hero.weekBonus.gained` as the map's Stables' is, so the map's Stables see it and the next days add it.
-- The Tavern's and the Brotherhood's `defenderMorale` in `buildings.json` and `towns.json` are added to the defending side's morale when the battle is for a town: a garrison or a hero in it, walls or none.
+- The Stables' data says what it gives: its `visit` in `towns.json` (since 6.5.3; a `weekMovementPoints` reward of 400, the message, and `sharesBonusWith: "STABLES"`, the map object whose bonus it shares). The hero's week bonus is saved with `fact.hero.weekBonus.gained` as the map's Stables' is, so the map's Stables see it and the next days add it.
+- The Tavern's and the Brotherhood's morale (`defenderBonuses` since 6.5.3) in `buildings.json` and `towns.json` are added to the defending side's morale when the battle is for a town: a garrison or a hero in it, walls or none.
 
 ### Left for later (6.5.1)
 
@@ -86,3 +86,38 @@ Checked against the Heroes 3 wiki's raw page source (Tavern, Hero class) and aga
 
 - The engine weighs each class's chance to be offered by the player's town type, and never offers two heroes of one class at once. Neither is on the wiki's Tavern page; left until the other factions' heroes exist (each faction's heroes part), when it would matter.
 - Each faction's Mage Guild room (its town part).
+
+## 6.5.3 Special buildings as data
+
+Checked against the Heroes 3 wiki's raw page source (Wall of Knowledge, Order of Fire, Hall of Valhalla, Cage of Warlords, Mana Vortex, Fountain of Fortune, Brimstone Stormclouds, Glyphs of Fear, Blood Obelisk, `Translation_Data/GENRLTXT.TXT`), the game's manual (quoted in a web search) and the reference engine's town data.
+
+### The kinds of special building
+
+- **A bonus once per visiting hero**: Wall of Knowledge (Tower, +1 Knowledge), Order of Fire (Inferno, +1 Power), Hall of Valhalla (Stronghold, +1 Attack), Cage of Warlords (Fortress, +1 Defense), Academy of Battle Scholars (Dungeon, +1000 experience). Their messages are `core.genrltxt.581` to `585`. All five agree in both sources; the Academy has no wiki page of its own, only its text.
+  - Once per hero for each town: a hero who used one town's Wall of Knowledge still gets +1 from another town's (the manual: "once per hero per scenario for each Wall of Knowledge visited"; the engine keeps each town's building's visitors).
+  - Given on walking into the town, and on building it while a hero is in the town, as the Stables (the engine runs a town building's visit both times).
+  - A hero who already used it gets no message (the engine shows nothing then; as the Stables).
+- **A bonus that lasts the week**: the Stables (6.5.1); the Mana Vortex (Dungeon) is once a week for the first hero, not once per hero (wiki: "Only one hero per week can use this effect"; the engine resets its visitors each week). Its reward, spell points to twice the maximum (`core.genrltxt.579`), is a new reward type and comes with Dungeon's town part; this part only brings the once-a-week limit for a town building.
+- **A bonus to the town's defenders**: the Tavern (+1 morale) and the Brotherhood of the Sword (+2 morale, 6.5.1), Fountain of Fortune (Rampart, +2 luck), Brimstone Stormclouds (Inferno, +2 Power), Glyphs of Fear and Blood Obelisk (Fortress, +2 Attack and +2 Defense; the wiki and the engine swap which gives which, settled in Fortress's town part).
+- **Their own screen or rule**, staying code: Castle Gate, Skeleton Transformer, Magic University, Freelancer's Guild, Library, Lookout Tower, Cover of Darkness, Necromancy Amplifier, Mystic Pond, Treasury, Portal of Summoning, Escape Tunnel, the Grail buildings.
+
+### What we decided
+
+- A building's `visit` in its data has the map objects' fields: `visits` (`oncePerHero`, `whileBonusLasts`, `oncePerWeek`), `rewards` (the map objects' reward types: `primarySkills`, `experience`, `weekMovementPoints`, ...) and `messages.gives`. The Stables become `"visits": "whileBonusLasts"` with a `weekMovementPoints` reward and `sharesBonusWith: "STABLES"`, so the map's Stables and the town's still share one bonus.
+- `oncePerHero` and `oncePerWeek` are kept for each town's building, not for the building type.
+- `defenderMorale` becomes `defenderBonuses`: `{ morale, luck, attack, defense, power }`, any of them. They count in any battle for the town, as the morale does (6.5.1): for the garrison and for a hero in the town. Morale and luck stay within -3 and +3. Not shown on the hero screen, as the morale isn't.
+- Proven with a test town type built by the builders: no real faction's building is added in this part (each comes with its faction's town part).
+
+- A garrison without a hero gets them too, as it gets the morale (agreed). The wiki gives Attack, Defense, Power and luck to "defending heroes" ("the hero defending the town" for luck); the engine puts them on the town, which its garrison's creatures take too.
+
+### How it is built
+
+- A building's `visit` (`towns.json` or `buildings.json`) is read as a map object's data. Each town's building is a visitable object of its own, `<town id>/<building id>` (kind `TOWN_BUILDING`), kept in the `visitableObjects` slice from the start for every building of the town's type with a `visit`, so `oncePerWeek` and `oncePerHero` count it apart from the same building in another town. Its type is its `sharesBonusWith`, or the building's id.
+- The `town-visit-bonuses` module asks for a visit (`command.townBuilding.visit.requested`) of each such building when a hero walks into the town, and of the one just built while a hero is there; the `visitable-objects` module decides and gives it as for a map object, with the same facts.
+- `defenderBonuses` are worked out as the battle for the town starts: morale and luck join the defending side's, Attack and Defense its skills, and Power the player's defending hero's as they cast.
+
+### Left for later (6.5.3)
+
+- The Mana Vortex's reward (Dungeon's town part); which hero gets it with two in the town (the garrisoned one, wiki) waits for a garrisoned hero.
+- A hero hired in a town with one of these buildings (the engine gives nothing until the hero walks in again; not checked against a second source).
+- A computer hero's town visit (as 6.5.1).

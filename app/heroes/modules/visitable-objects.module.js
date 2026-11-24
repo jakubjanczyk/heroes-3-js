@@ -1,6 +1,8 @@
 import { computerChoiceAt } from '../../../game/heroes/computer-choices.js'
 import { heroById } from '../../../game/heroes/state/hero-details.js'
 import { visitableValues } from '../../../game/heroes/state/map-objects.js'
+import { builtIn, townType } from '../../../game/heroes/state/towns.js'
+import { townBuildingVisitEntity } from '../../../game/heroes/town-visit-bonuses.js'
 import {
   isVisitableObject,
   rollMissingValues
@@ -19,6 +21,7 @@ import {
   APP_COMMAND_GAME_SETUP_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
+  APP_COMMAND_TOWN_BUILDING_VISIT_REQUESTED,
   APP_FACT_HERO_ARMY_CHANGED,
   APP_FACT_HERO_BATTLE_BONUS_GAINED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,
@@ -204,9 +207,20 @@ export const registerVisitableObjectsModule = defineModule(
       })
     }
 
-    function visit({ heroId, entityId }) {
+    function townBuildingOf({ townId, buildingId }) {
       const current = state.get()
-      const entity = entities.get(entityId)
+      if (!builtIn(current, townId).has(buildingId)) {
+        return null
+      }
+      return townBuildingVisitEntity(definitions, {
+        townId,
+        townType: townType(current, townId),
+        buildingId
+      })
+    }
+
+    function visit(heroId, entity) {
+      const current = state.get()
       const player = heroOwner(current, heroId)
       if (!entity || player !== activePlayer(current)) {
         return
@@ -216,9 +230,14 @@ export const registerVisitableObjectsModule = defineModule(
         return
       }
 
-      emit(APP_FACT_MAP_OBJECT_VISITED, { heroId, entityId, entityType: entity.type, player })
+      emit(APP_FACT_MAP_OBJECT_VISITED, {
+        heroId,
+        entityId: entity.id,
+        entityType: entity.type,
+        player
+      })
       if (hasAny(result.rolledValues)) {
-        emit(APP_FACT_MAP_OBJECT_VALUES_ROLLED, { values: { [entityId]: result.rolledValues } })
+        emit(APP_FACT_MAP_OBJECT_VALUES_ROLLED, { values: { [entity.id]: result.rolledValues } })
       }
       if (result.outcome === 'choice' || result.outcome === 'question') {
         if (isViewingPlayers(heroId)) {
@@ -268,7 +287,11 @@ export const registerVisitableObjectsModule = defineModule(
         },
         {
           type: APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
-          handler: (event) => visit(event.detail)
+          handler: ({ detail }) => visit(detail.heroId, entities.get(detail.entityId))
+        },
+        {
+          type: APP_COMMAND_TOWN_BUILDING_VISIT_REQUESTED,
+          handler: ({ detail }) => visit(detail.heroId, townBuildingOf(detail))
         },
         {
           type: APP_UI_INTERACTION_MODAL_CONFIRMED,
@@ -289,6 +312,7 @@ export const registerVisitableObjectsModule = defineModule(
       APP_FACT_WORLD_READY,
       APP_COMMAND_GAME_SETUP_REQUESTED,
       APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED,
+      APP_COMMAND_TOWN_BUILDING_VISIT_REQUESTED,
       APP_UI_INTERACTION_MODAL_CONFIRMED
     ],
     produces: [

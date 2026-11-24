@@ -48,6 +48,7 @@ import {
 } from './siege-walls.js'
 import { skillLevelOf } from './spell-book.js'
 import { heroMagicResistance } from './spell-resistance.js'
+import { addedSkills, NO_DEFENDER_BONUSES } from './town-visit-bonuses.js'
 
 const MORALE_CHANCE_IN = 24
 // Bad morale freezes twice as often as good morale gives an extra turn.
@@ -176,15 +177,23 @@ function catapultShootingOf(attacker, definitions) {
 }
 
 // A side without a hero has its creatures' morale alone, and no luck. The defenders of a town also
-// have the morale its buildings give them (`defenderMorale`).
+// have what its buildings give them (`defenderBonuses`), with a hero or without.
 export function createBattle({
   attacker,
   defender,
   walls = null,
-  defenderMorale = [],
+  defenderBonuses = NO_DEFENDER_BONUSES,
   definitions
 }) {
-  const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
+  const sides = {
+    attacker: { army: [], ...attacker },
+    defender: {
+      army: [],
+      ...defender,
+      skills: addedSkills(defender?.skills, defenderBonuses.skills)
+    }
+  }
+  const townModifiersOf = (side, kind) => (side === 'defender' ? defenderBonuses[kind] : [])
   const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
   const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
   const sharedOf = (side) => {
@@ -196,10 +205,13 @@ export function createBattle({
         getHeroMorale({
           entity,
           definitions,
-          townModifiers: side === 'defender' ? defenderMorale : []
+          townModifiers: townModifiersOf(side, 'morale')
         }).value
       ),
-      luck: inBattle('luck', getHeroLuck({ entity, definitions }).value),
+      luck: inBattle(
+        'luck',
+        getHeroLuck({ entity, definitions, townModifiers: townModifiersOf(side, 'luck') }).value
+      ),
       cancelledInBattle,
       immunities: artifactBattleImmunities(entity.artifacts, definitions),
       magicResistance: heroMagicResistance(entity),
