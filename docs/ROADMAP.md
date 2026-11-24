@@ -857,6 +857,13 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
 - [x] 6.5.1 Castle's own buildings: the town's Stables give a visiting hero the map Stables' movement points; the Tavern and the Brotherhood of the Sword raise the morale of the town's defenders
 - [x] 6.5.2 A second town type from the data alone: the town's picture art, Hall and recruit windows read from the town type, each hero class belongs to a town type, and the tavern's first hero of the week is of the player's starting town type
 - [x] 6.5.3 Special buildings as data: a building's visit bonus uses the map objects' reward types and visit limits (`visit` in its data: once per hero, while the bonus lasts, once a week), and the defenders' bonuses become one `defenderBonuses` (morale, luck, Attack, Defense, Spell Power) in place of `defenderMorale`, so the Wall of Knowledge or the Glyphs of Fear are only data
+- [ ] 6.5.4 Rampart's creatures, in six parts:
+  - [ ] 6.5.4a The thirteen creatures, the Dragons' immunity to spells of level 1-3 / 1-4, and the Dragons as kings for Slayer
+  - [ ] 6.5.4b Magic resistance: the Dwarves' own, and the Unicorns' aura for the stacks next to them
+  - [ ] 6.5.4c The Pegasi's magic damper: the enemy hero's spells cost 2 more
+  - [ ] 6.5.4d The Dendroids' binding
+  - [ ] 6.5.4e The Unicorns' blinding attack
+  - [ ] 6.5.4f The Dragons' breath
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
 - [ ] Minimum viable: **Castle** faction fully implemented

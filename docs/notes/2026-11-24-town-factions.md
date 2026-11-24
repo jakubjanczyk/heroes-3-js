@@ -121,3 +121,88 @@ Checked against the Heroes 3 wiki's raw page source (Wall of Knowledge, Order of
 - The Mana Vortex's reward (Dungeon's town part); which hero gets it with two in the town (the garrisoned one, wiki) waits for a garrisoned hero.
 - A hero hired in a town with one of these buildings (the engine gives nothing until the hero walks in again; not checked against a second source).
 - A computer hero's town visit (as 6.5.1).
+
+## 6.5.4 Rampart's creatures
+
+The first of Rampart's three parts. Too large for one PR with every ability, so in six:
+
+- **6.5.4a The creatures**: the thirteen creatures not yet in `monsters.json` (the Centaur is), the Dragons' spell immunity, and the Dragons as kings for Slayer: data the battle already reads.
+- **6.5.4b Magic resistance**: the Dwarves' own, and the Unicorns' aura.
+- **6.5.4c Magic damper**: the Pegasi.
+- **6.5.4d Binding**: the Dendroids.
+- **6.5.4e Blinding attack**: the Unicorns.
+- **6.5.4f Breath**: the Dragons.
+
+Until its part, a creature fights without that ability.
+
+The demo map gets a few stacks of Rampart's creatures as map monsters (agreed), so they can be met and seen.
+
+Rampart's creatures meet the player as map monsters and in a scenario's armies; recruiting them comes with Rampart's town (6.5.5) and its map dwellings (6.5.6).
+
+### The creatures
+
+Checked against the Heroes 3 wiki's raw page source (each creature's `Template:Creature/<name>`, the creature pages and `Translation_Data/CRTRAITS.TXT` for names and plurals) and the reference engine's Rampart creature data (levels, upgrades, double-wide, shots and abilities). The engine's data holds no stats, so attack, defense, damage, health, speed, growth, cost and AI value are checked against the wiki only, as the Castle's were; the Dragons' also against the wiki's Dragon page's own table.
+
+| Creature | Tier | Att | Def | Damage | HP | Speed | Growth | Cost | AI value | Abilities |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Centaur (have) | 1 | 5 | 3 | 2–3 | 8 | 6 | 14 | 70 | 100 | double-wide |
+| Centaur Captain | 1 | 6 | 3 | 2–3 | 10 | 8 | 14 | 90 | 138 | double-wide |
+| Dwarf | 2 | 6 | 7 | 2–4 | 20 | 3 | 8 | 120 | 138 | 20% magic resistance |
+| Battle Dwarf | 2 | 7 | 7 | 2–4 | 20 | 5 | 8 | 150 | 209 | 40% magic resistance |
+| Wood Elf | 3 | 9 | 5 | 3–5 | 15 | 6 | 7 | 200 | 234 | shoots, 24 shots |
+| Grand Elf | 3 | 9 | 5 | 3–5 | 15 | 7 | 7 | 225 | 331 | shoots twice, 24 shots |
+| Pegasus | 4 | 9 | 8 | 5–9 | 30 | 8 | 5 | 250 | 518 | flies, double-wide, magic damper |
+| Silver Pegasus | 4 | 9 | 10 | 5–9 | 30 | 12 | 5 | 275 | 532 | flies, double-wide, magic damper |
+| Dendroid Guard | 5 | 9 | 12 | 10–14 | 55 | 3 | 3 | 350 | 517 | binds (6.5.4d) |
+| Dendroid Soldier | 5 | 9 | 12 | 10–14 | 65 | 4 | 3 | 425 | 803 | binds (6.5.4d) |
+| Unicorn | 6 | 15 | 14 | 18–22 | 90 | 7 | 2 | 850 | 1806 | double-wide, aura of magic resistance, blinding attack (6.5.4e) |
+| War Unicorn | 6 | 15 | 14 | 18–22 | 110 | 9 | 2 | 950 | 2030 | double-wide, aura of magic resistance, blinding attack (6.5.4e) |
+| Green Dragon | 7 | 18 | 18 | 40–50 | 180 | 10 | 1 | 2400 + 1 crystal | 4872 | flies, double-wide, immune to spells of level 1–3, breath (6.5.4f) |
+| Gold Dragon | 7 | 27 | 27 | 40–50 | 250 | 16 | 1 | 4000 + 2 crystal | 8613 | flies, double-wide, immune to spells of level 1–4, breath (6.5.4f) |
+
+- The Centaur gets `upgradesTo: CENTAUR_CAPTAIN`, and each basic creature its upgrade.
+- Growth bonuses from the Miners' Guild and the Dendroid Saplings come with Rampart's town.
+
+### Magic resistance (Dwarves, 6.5.4b)
+
+- A Dwarf stack resists a hostile spell with a 20% chance, a Battle Dwarf stack 40%, rolled as the Resistance skill's chance is now: the same log line, the same "resisted" sign on the stack, each stack in an area spell rolling on its own (wiki Magic resistance; the engine's creature data).
+- It is the creature's own, so it counts with no hero too: map monsters resist the player's spells.
+- With a hero's Resistance the two add up (a Battle Dwarf under Expert Resistance: 60%), at most 100% (the engine sums them; the wiki doesn't say how they combine).
+
+### Aura of magic resistance (Unicorns, 6.5.4b)
+
+- A stack standing next to one of the side's Unicorns or War Unicorns (next to either of its two hexes) gets a 20% chance to resist hostile spells; not the Unicorn itself (wiki: "does not apply to the creature itself"). Several Unicorns next to a stack still give 20% (wiki: "does not stack with multiple units of Unicorns"; the engine takes the highest).
+- Only the Unicorns' own side's stacks (the engine; the wiki says "nearby units"). A hypnotized Unicorn protects the side that controls it (the engine).
+- With the stack's own resistance, the aura is a second roll: a Dwarf next to a Unicorn resists 1 − 0.8 × 0.8 = 36% (the engine; the wiki doesn't say).
+- It follows where the stacks stand when the spell is cast.
+
+### Magic damper (Pegasi, 6.5.4c)
+
+- A hero facing an army that had Pegasi or Silver Pegasi at the start of the battle pays 2 more spell points for each spell, until the battle ends, even after the Pegasi die (wiki; the engine counts dead stacks too).
+- 2 in all, however many Pegasus stacks (the engine takes the highest; the wiki: "2 extra spell points").
+- Only the other side's hero: the Pegasi's own hero pays the normal cost (both sources).
+- The battle's spell book shows and checks the raised cost: a hero with 5 points can't cast a 5-point spell against Pegasi ("not enough spell points", as now).
+
+### Spell immunity (Dragons, 6.5.4a)
+
+- Green Dragons can't be the target of spells of level 1–3, Gold Dragons of level 1–4, either side's spells, helpful ones too, as the Power of the Dragon Father's immunity works now (wiki Spell immunity and the creature texts "Immune to spell levels 1-3." / "1-4."; the engine's creature data).
+- Area spells of those levels leave them out; Armageddon (level 4) hits Green Dragons, not Gold.
+
+### Kings (Slayer, 6.5.4a)
+
+- Both Dragons are kings of the first group: Slayer's +8 Attack reaches them from no skill up (wiki King and Slayer pages, the engine's creature data), where the Angels need Advanced.
+
+### Left for later (6.5.4a to 6.5.4c)
+
+- The binding, blinding attack and breath: 6.5.4d to 6.5.4f.
+- The Pegasi lowering the cost of an enemy that casts: computer heroes don't cast yet (5.8 later).
+- Growth bonuses, recruiting: Rampart's town (6.5.5) and dwellings (6.5.6).
+- The Orb of Vulnerability cancelling magic resistance (7.8, with the artifact).
+
+## 6.5.4d to 6.5.4f Rampart's attack abilities (planned)
+
+Checked so far against the wiki and the engine; planned in full when it is next.
+
+- **Binding** (6.5.4d, Dendroid Guards and Soldiers): a stack they hit, by attack or retaliation, can't move until the binding Dendroids move away, are killed, or the bound stack is Dispelled or Teleported; it can still attack what stands next to it, shoot, wait and defend. Anti-Magic and immunities don't stop it. Log: "Roots and vines bind the %s to the ground!" (`core.genrltxt.560`).
+- **Blinding attack** (6.5.4e, Unicorns): after an attack or retaliation, a 20% chance to Blind the target for 3 rounds; dragons, undead and other creatures immune to Blind aren't blinded, and magic resistance can stop it (the engine). The wiki says Basic Blind (the target strikes back at 50%), the engine casts it at Expert (no retaliation): to be asked.
+- **Breath** (6.5.4f, Green and Gold Dragons): a melee attack also hits the stack on the hex behind the target in the attack's direction, friend or foe, its damage worked out on its own; a double-wide stack isn't hit twice. Facing a double-wide target from above or below, the hex behind is the one on the side the dragon came from.
