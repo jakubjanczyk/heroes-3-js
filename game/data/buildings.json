@@ -47,7 +47,11 @@
     "upgrades": "CITADEL",
     "creatureGrowthPercent": 100
   },
-  "TAVERN": { "name": "Tavern", "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 } },
+  "TAVERN": {
+    "name": "Tavern",
+    "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 },
+    "defenderMorale": 1
+  },
   "MARKETPLACE": { "name": "Marketplace", "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 } },
   "RESOURCE_SILO": {
     "name": "Resource Silo",
