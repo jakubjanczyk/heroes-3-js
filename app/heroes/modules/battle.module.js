@@ -59,7 +59,11 @@ import {
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
 import { canBeSacrificed, sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
-import { canCastInBattle, isHelpful } from '../../../game/heroes/battle-spells.js'
+import {
+  canCastInBattle,
+  isHelpful,
+  magicDamperAgainst
+} from '../../../game/heroes/battle-spells.js'
 import {
   fightsFor,
   getSpellBalance,
@@ -490,6 +494,7 @@ export const registerBattleModule = defineModule(
           playerSide === 'attacker' ? battleDefenderOf(started).surrenderRefusal : null,
         surrender: canLeadHero ? surrenderOffer() : null,
         casterHeroId: playerHeroId() ?? null,
+        extraSpellCost: magicDamperAgainst(battle.stacks, playerSide),
         canCastSpell:
           canLeadHero &&
           !hasCastThisRound(battle, playerSide) &&
@@ -1000,13 +1005,16 @@ export const registerBattleModule = defineModule(
       return null
     }
 
+    const heroSpellCost = (hero, spell) =>
+      spellCost(hero, spell, magicDamperAgainst(battle.stacks, playerSide))
+
     function canHeroCast(hero, spell, spellId) {
       return (
         !hasCastThisRound(battle, playerSide) &&
         hasSpellBook(hero) &&
         knownSpells(hero, definitions).includes(spellId) &&
         canCastInBattle(spell) &&
-        spellCost(hero, spell) <= getHeroSpellPoints({ entity: hero, definitions }).value
+        heroSpellCost(hero, spell) <= getHeroSpellPoints({ entity: hero, definitions }).value
       )
     }
 
@@ -1027,7 +1035,7 @@ export const registerBattleModule = defineModule(
         heroId: hero.id,
         spellId,
         wallHits: hits,
-        cost: spellCost(hero, spell)
+        cost: heroSpellCost(hero, spell)
       })
       wallHits = hits.map((hit) => ({
         ...describeWallPartHex(shaken, hit.part),
@@ -1072,7 +1080,7 @@ export const registerBattleModule = defineModule(
         ...castDetailOn(hero, spell, targets),
         ...(goesTo ? { destination: goesTo } : {}),
         ...(resistedIds.length > 0 ? { resistedIds } : {}),
-        cost: spellCost(hero, spell)
+        cost: heroSpellCost(hero, spell)
       })
       continueBattle()
     }

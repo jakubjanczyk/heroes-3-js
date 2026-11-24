@@ -217,7 +217,7 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 ### Left for later (6.5.4a to 6.5.4c)
 
 - The binding, blinding attack and breath: 6.5.4d to 6.5.4f.
-- The Pegasi lowering the cost of an enemy that casts: computer heroes don't cast yet (5.8 later).
+- The player's Pegasi raising a computer hero's spell costs: computer heroes don't cast yet (5.8 later).
 - Growth bonuses, recruiting: Rampart's town (6.5.5) and dwellings (6.5.6).
 - The Orb of Vulnerability cancelling magic resistance (7.8, with the artifact).
 - The player's stacks of Dwarves, or next to Unicorns, resisting a computer hero's spells: computer heroes don't cast yet (5.8 later). The Unicorns' blinding attack meeting magic resistance comes with it (6.5.4e).
