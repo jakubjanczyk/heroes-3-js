@@ -91,6 +91,7 @@ const catapultMessages = () =>
 const TOWN_ENTRANCE = { x: 4, y: 3 }
 
 const FORT = ['FORT']
+const CITADEL = ['FORT', 'CITADEL']
 const CASTLE = ['FORT', 'CITADEL', 'CASTLE']
 
 const aBlueTown = (buildings = FORT) =>
@@ -152,7 +153,7 @@ async function passTheRound(user) {
 const COMPUTER_TURN_MS = 2000
 const PLAYERS_GATE = { x: 20, y: 2 }
 
-const aComputerAttackScenario = (level) =>
+const aComputerAttackScenario = (level, buildings = FORT) =>
   aScenario()
     .withSize(30, 6)
     .withRockAround(2, 5)
@@ -162,7 +163,7 @@ const aComputerAttackScenario = (level) =>
         .withId('town-1')
         .named('Whitemoon')
         .ownedByPlayer()
-        .withBuildings(FORT)
+        .withBuildings(buildings)
         .withGarrison([stack('RUNNER')])
         .at(PLAYERS_GATE.x, PLAYERS_GATE.y),
       aHero()
@@ -176,9 +177,18 @@ const aComputerAttackScenario = (level) =>
     )
     .withDefinitions(definitions)
 
+async function defendAgainstBlue(scenario, options) {
+  const app = await setupApp(scenario, options)
+  await clickEndTurn(app.user)
+  await waitMs(COMPUTER_TURN_MS)
+  return app
+}
+
 const FLIGHT_MS = 400
 const TWO_SHOTS_AIMED = [HITS, ONE_POINT, HITS, ONE_POINT]
-const TWO_SHOTS_AIMING_ITSELF_AT_THE_UPPER_WALL = [AT_THE_FIRST, ...TWO_SHOTS_AIMED]
+const DESTROYS = [HITS, TWO_POINTS]
+const DAMAGES = [HITS, ONE_POINT]
+const AT_THE_SECOND_OF_FOUR = 0.25
 
 const TWO_POINTS_ON_THE_PART_AIMED_AT_AND_TWO_ON_ITS_NEIGHBOUR = [
   HITS,
@@ -377,16 +387,104 @@ describe('siege Ballistics behavior', () => {
 
   describe('a computer attacker', () => {
     test("blue's hero with Advanced Ballistics attacking the player's town shoots twice a round", async () => {
-      const app = await setupApp(aComputerAttackScenario('ADVANCED'), {
-        rolls: TWO_SHOTS_AIMING_ITSELF_AT_THE_UPPER_WALL
-      })
-      await clickEndTurn(app.user)
-      await waitMs(COMPUTER_TURN_MS)
+      await defendAgainstBlue(aComputerAttackScenario('ADVANCED'), { rolls: TWO_SHOTS_AIMED })
 
       expect(catapultMessages()).toEqual([
-        'The Catapult hits the Upper Wall.',
-        'The Catapult destroys the Upper Wall.'
+        'The Catapult hits the Drawbridge.',
+        'The Catapult destroys the Drawbridge.'
       ])
+    })
+  })
+
+  describe('aiming itself with Ballistics', () => {
+    test("blue's hero with Basic Ballistics attacking the player's town shoots at the drawbridge first", async () => {
+      await defendAgainstBlue(aComputerAttackScenario('BASIC'), { rolls: DAMAGES })
+
+      expect(catapultMessages()).toEqual(['The Catapult hits the Drawbridge.'])
+    })
+
+    test('once the drawbridge is down and all four segments stand, it shoots at the segment with the fewest hit points', async () => {
+      const { user } = await defendAgainstBlue(aComputerAttackScenario('BASIC'), {
+        rolls: [...DESTROYS, AT_THE_SECOND_OF_FOUR, ...DAMAGES, ...DAMAGES]
+      })
+      await passTheRound(user)
+
+      await passTheRound(user)
+
+      expect(catapultMessages()).toEqual([
+        'The Catapult destroys the Drawbridge.',
+        'The Catapult hits the Mid-Upper Wall.',
+        'The Catapult destroys the Mid-Upper Wall.'
+      ])
+    })
+
+    test('once a segment is down, it shoots at the Keep, not the segments still standing', async () => {
+      const { user } = await defendAgainstBlue(aComputerAttackScenario('BASIC', CITADEL), {
+        rolls: [...DESTROYS, AT_THE_FIRST, ...DESTROYS, ...DAMAGES]
+      })
+      await passTheRound(user)
+
+      await passTheRound(user)
+
+      expect(catapultMessages()).toEqual([
+        'The Catapult destroys the Drawbridge.',
+        'The Catapult destroys the Upper Wall.',
+        'The Catapult hits the Keep.'
+      ])
+    })
+
+    test('with the Keep down, it shoots at one of the two towers, picked by the roll', async () => {
+      const { user } = await defendAgainstBlue(aComputerAttackScenario('BASIC', CASTLE), {
+        rolls: [
+          ...DESTROYS,
+          ...[AT_THE_FIRST, ...DESTROYS],
+          ...DAMAGES,
+          ...DESTROYS,
+          ...[AT_THE_SECOND_OF_TWO, ...DAMAGES]
+        ]
+      })
+      for (let round = 0; round < 4; round += 1) {
+        await passTheRound(user)
+      }
+
+      expect(catapultMessages().slice(3)).toEqual([
+        'The Catapult destroys the Keep.',
+        'The Catapult hits the Lower Tower.'
+      ])
+    })
+
+    test('with the drawbridge and the Keep down, it goes back to the segments left standing', async () => {
+      const { user } = await defendAgainstBlue(aComputerAttackScenario('BASIC', CITADEL), {
+        rolls: [...DESTROYS, AT_THE_FIRST, ...DESTROYS, ...DESTROYS, AT_THE_FIRST, ...DAMAGES]
+      })
+      for (let round = 0; round < 3; round += 1) {
+        await passTheRound(user)
+      }
+
+      expect(catapultMessages().slice(2)).toEqual([
+        'The Catapult destroys the Keep.',
+        'The Catapult hits the Mid-Upper Wall.'
+      ])
+    })
+
+    test("without Ballistics, blue's catapult still shoots the weakest segment before the drawbridge", async () => {
+      await defendAgainstBlue(aComputerAttackScenario(null), {
+        rolls: [AT_THE_FIRST, HITS, ONE_POINT_WITHOUT_THE_SKILL]
+      })
+
+      expect(catapultMessages()).toEqual(['The Catapult hits the Upper Wall.'])
+    })
+
+    test("the player's hero with Ballistics in Auto combat shoots at the drawbridge first", async () => {
+      const { user } = await attackTown(anAttackScenario({ level: 'BASIC' }), {
+        rolls: DAMAGES,
+        stepDelayMs: 100
+      })
+
+      await clickBattleButton(user, 'Auto combat')
+      await waitMs(FLIGHT_MS * 1.5)
+
+      expect(catapultMessages().at(0)).toBe('The Catapult hits the Drawbridge.')
     })
   })
 

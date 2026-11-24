@@ -166,7 +166,7 @@ function catapultShootingOf(attacker, definitions) {
   const { skill, shots, hitChance, damageChance } = definitions.monsters.CATAPULT.siegeShots
   const level = skillLevelOf(attacker, skill)
   return {
-    aimedByHero: level > 0,
+    hasBallistics: level > 0,
     shots: shots[level],
     hitChance: Object.fromEntries(
       Object.entries(hitChance).map(([kind, chances]) => [kind, chances[level]])
@@ -276,7 +276,7 @@ export const getCatapultStack = (battle) =>
 
 // The hero aims the round's first shot; a second goes where the first was aimed.
 export const canHeroAimCatapult = (battle) =>
-  Boolean(battle.catapultShooting?.aimedByHero) && battle.catapultAims.length === 0
+  Boolean(battle.catapultShooting?.hasBallistics) && battle.catapultAims.length === 0
 
 // A spell cast on the catapult's turn, before every stack, leaves the stacks' order to their speeds.
 function castTurnOf(battle) {

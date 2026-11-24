@@ -240,17 +240,34 @@ function towerAimOf(walls, random) {
   return choices.length > 0 ? pickOne(choices, random) : null
 }
 
-// Without Ballistics it aims at the weakest standing segment, at the drawbridge only once all
-// four are down, and then at the towers.
-function aimOf(walls, random) {
+function weakestSegmentOf(walls, random) {
   const standing = SEGMENTS.filter(({ part }) => isStanding(walls, part))
   if (standing.length === 0) {
-    return isStanding(walls, DRAWBRIDGE) ? DRAWBRIDGE_PART : towerAimOf(walls, random)
+    return null
   }
   const fewest = Math.min(...standing.map(({ part }) => walls.hitPoints[part]))
   return pickOne(
     standing.filter(({ part }) => walls.hitPoints[part] === fewest),
     random
+  )
+}
+
+const drawbridgeAimOf = (walls) => (isStanding(walls, DRAWBRIDGE) ? DRAWBRIDGE_PART : null)
+
+const allSegmentsStand = (walls) => SEGMENTS.every(({ part }) => isStanding(walls, part))
+
+// Without Ballistics it aims at the weakest standing segment, at the drawbridge only once all
+// four are down, and then at the towers. With it, at the drawbridge first, then at the segments
+// only while all four stand, then at the towers, and at what is left of the segments last.
+function aimOf(walls, random, hasBallistics) {
+  if (!hasBallistics) {
+    return weakestSegmentOf(walls, random) ?? drawbridgeAimOf(walls) ?? towerAimOf(walls, random)
+  }
+  return (
+    drawbridgeAimOf(walls) ??
+    (allSegmentsStand(walls) ? weakestSegmentOf(walls, random) : null) ??
+    towerAimOf(walls, random) ??
+    weakestSegmentOf(walls, random)
   )
 }
 
@@ -294,8 +311,12 @@ function nextAimOf(walls, aimed, random) {
   return standing.length === 0 ? null : nearestOf(standing, previous, random)
 }
 
-export function planCatapultShot(walls, random, { hitChance, damageChance, aimed = null }) {
-  const aim = aimed ? nextAimOf(walls, aimed, random) : aimOf(walls, random)
+export function planCatapultShot(
+  walls,
+  random,
+  { hitChance, damageChance, hasBallistics = false, aimed = null }
+) {
+  const aim = aimed ? nextAimOf(walls, aimed, random) : aimOf(walls, random, hasBallistics)
   if (!aim) {
     return null
   }
@@ -303,7 +324,7 @@ export function planCatapultShot(walls, random, { hitChance, damageChance, aimed
   return { aim: aim.part, part: landing.part, damage: rollDamage(damageChance, random) }
 }
 
-export const hasCatapultTarget = (walls) => aimOf(walls, () => 0) !== null
+export const hasCatapultTarget = (walls) => aimOf(walls, () => 0, false) !== null
 
 const aimedOnHexes = ({ part, hex, stands }) => {
   if (part === DRAWBRIDGE) {
