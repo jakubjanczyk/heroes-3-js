@@ -47,7 +47,7 @@ const aCreature = (name) =>
 const ONE_TOWER_SHOT_KILLS_ONE = 10
 
 const SLUG = aCreature('Slug').build()
-const WISP = aCreature('Wisp').withHealth(ONE_TOWER_SHOT_KILLS_ONE).build()
+const WISP = aCreature('Wisp').withHealth(ONE_TOWER_SHOT_KILLS_ONE).withAiValue(1000).build()
 const ARMOURED = aCreature('Armoured').withDefense(50).build()
 const GUARD = aCreature('Guard').build()
 const FLYER = aCreature('Flyer')
@@ -64,7 +64,7 @@ const aShooter = (name) =>
   aCreature(name).withHealth(ONE_TOWER_SHOT_KILLS_ONE).withShots(99).withAbilities(['ranged'])
 const SHOOTER = aShooter('Shooter').build()
 const CHEAP = aShooter('Cheap').build()
-const PRECIOUS = aShooter('Precious').withAiValue(1000).build()
+const PRECIOUS = aShooter('Precious').withAiValue(2000).build()
 const BRUTE = aCreature('Brute').withHealth(ONE_TOWER_SHOT_KILLS_ONE).withAiValue(1000).build()
 const SENTRY = aCreature('Sentry').withSpeed(20).build()
 

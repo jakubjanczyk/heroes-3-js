@@ -13,8 +13,9 @@ function visibleEnemyHeroes({ state, player, definitions }) {
 }
 
 // For each tile, the strength of the strongest enemy hero that can get there next turn without a
-// battle on the way, or 0. The deciding hero is taken off the map, as it may move away first.
-export function createDangerMap({ state, player, heroId, routesOf, definitions }) {
+// battle on the way, or 0. The deciding hero, if any, is taken off the map, as it may move away
+// first.
+export function createDangerMap({ state, player, heroId = null, routesOf, definitions }) {
   const enemies = visibleEnemyHeroes({ state, player, definitions })
 
   return function dangerAt(tiles) {
@@ -29,4 +30,11 @@ export function createDangerMap({ state, player, heroId, routesOf, definitions }
     }
     return danger
   }
+}
+
+export function threatenedTownIds({ state, player, towns, routesOf, definitions }) {
+  const danger = createDangerMap({ state, player, routesOf, definitions })(
+    towns.map(({ tile }) => tile)
+  )
+  return new Set(towns.filter((_, index) => danger[index] > 0).map(({ id }) => id))
 }

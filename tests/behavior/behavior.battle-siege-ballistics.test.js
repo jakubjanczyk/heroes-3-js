@@ -31,7 +31,7 @@ const aSturdyCreature = (name) =>
     .withHealth(1000)
 
 const RUNNER = aSturdyCreature('Runner').withSpeed(20).withAiValue(1).build()
-const BRUTE = aSturdyCreature('Brute').withSpeed(1).withAiValue(1000).build()
+const BRUTE = aSturdyCreature('Brute').withSpeed(1).withAiValue(20000).build()
 const ARCHER = aSturdyCreature('Archer')
   .withSpeed(1)
   .withAiValue(1)
