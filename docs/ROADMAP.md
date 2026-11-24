@@ -738,7 +738,7 @@ In eighteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town 
 - [x] 5.10.10c The catapult's Wait: its turn comes back first among the stacks that waited
 - [x] 5.10.11 The catapult aiming itself with Ballistics: for a computer attacker and in Auto combat, the drawbridge first, then the walls while all four stand, then the Keep and the towers
 - [x] 5.10.11b The computer and the walls: the walls in its weighing of a town and of its own threatened towns, a threatened town building its Citadel or Castle first
-- [ ] 5.10.12 Controlling the towers: the defending player aims the arrow towers (with Artillery, as the game does, or by another way of controlling them if Artillery's war machines aren't there yet)
+- [x] 5.10.12 Controlling the towers: the player's hero defending with Artillery aims each arrow tower on a turn of its own as the round starts, clicking any stack of the attacker's side; on that turn the hero can cast first, Wait brings it back first in the wait phase, Defend passes it, Auto combat lets it aim itself
 
 ---
 
