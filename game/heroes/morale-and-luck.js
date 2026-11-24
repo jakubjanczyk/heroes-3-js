@@ -129,7 +129,7 @@ function describe(kind, modifiers, { min, max }) {
   }
 }
 
-export function getHeroMorale({ entity, definitions }) {
+export function getHeroMorale({ entity, definitions, townModifiers = [] }) {
   const creatures = armyCreatures(entity, definitions)
   return describe(
     'morale',
@@ -139,7 +139,8 @@ export function getHeroMorale({ entity, definitions }) {
       ...townsModifier(creatures, artifactTownsCountingAsOne(entity?.artifacts, definitions)),
       ...undeadModifier(creatures),
       ...angelsModifier(creatures),
-      ...objectBonusModifiers(entity, 'morale', definitions)
+      ...objectBonusModifiers(entity, 'morale', definitions),
+      ...townModifiers
     ],
     { min: MIN_MORALE, max: MAX_MORALE }
   )

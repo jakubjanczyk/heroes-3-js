@@ -854,7 +854,7 @@ Stages, one PR each, done in this order:
 
 ### 6.5 Town Factions
 In parts. See `docs/notes/2026-11-24-town-factions.md`.
-- [ ] 6.5.1 Castle's own buildings: the town's Stables give a visiting hero the map Stables' movement points; the Tavern and the Brotherhood of the Sword raise the morale of the town's defenders
+- [x] 6.5.1 Castle's own buildings: the town's Stables give a visiting hero the map Stables' movement points; the Tavern and the Brotherhood of the Sword raise the morale of the town's defenders
 - [ ] 6.5.2 A second town type from the data alone: the town's picture, Hall, heroes' classes and the tavern's first hero of the week read from the town type
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
@@ -974,7 +974,7 @@ Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-bo
 #### 7.6.4 Stables
 - [x] +400 movement points now and at the start of each day until the end of the week; another Stables does nothing that week
 - [x] Cavaliers upgraded to Champions for free, on any visit
-- [ ] The Castle town's Stables building gives the same movement points (6.5.1)
+- [x] The Castle town's Stables building gives the same movement points (6.5.1)
 
 - [ ] Later: the Buoy and the Mermaids on water (7.10)
 

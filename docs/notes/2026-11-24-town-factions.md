@@ -25,7 +25,7 @@ Checked against the Heroes 3 wiki's raw page source (Stables, Brotherhood of the
 - The message opens over the town screen as it opens (our choice; the sources don't say).
 - Message: "The head groom approaches leading a fine looking war horse. "This steed will help speed you in your travels. Alas, his endurance will wane with a lot of heavy riding, and you must return for a fresh mount at the start of the week."" (`core.genrltxt.580`, the engine's Stables reward, the wiki's GENRLTXT copy).
 - When: on walking into the town, and when the Stables are built while a hero is in the town (the engine). The engine shows no message when the hero already has the bonus; we show none either.
-- Any owner's hero gets it, the computer's too (the engine gives it to every visiting hero).
+- Any owner's hero gets it in the engine, the computer's too. Here only the player's heroes do for now: a computer hero's walk into a town doesn't count as a visit yet (it doesn't learn the Mage Guild's spells either).
 
 ### The Tavern and the Brotherhood of the Sword
 
@@ -37,6 +37,13 @@ Checked against the Heroes 3 wiki's raw page source (Stables, Brotherhood of the
 - It counts for a garrison without a hero too (the engine; the game's manual: "all garrisoned creatures during a siege").
 - Not shown in the hero screen's morale popup, which shows the hero's morale outside battle.
 
+### How it is built
+
+- The Stables' data says what it gives: `weekBonus` in `towns.json` (400 movement points, the message, and `sharedWith: "STABLES"`, the map object whose bonus it shares). The hero's week bonus is saved with `fact.hero.weekBonus.gained` as the map's Stables' is, so the map's Stables see it and the next days add it.
+- The Tavern's and the Brotherhood's `defenderMorale` in `buildings.json` and `towns.json` are added to the defending side's morale when the battle is for a town: a garrison or a hero in it, walls or none.
+
 ### Left for later
+
+- A computer hero walking into a town with the Stables (with computer heroes' town visits); a hero hired in a town with the Stables (the engine gives the bonus as the hired hero appears in the town; not checked against a second source).
 
 - The Lighthouse's sea movement (7.10); the Colossus (with the Grail, 7.11); the Tavern's better troop estimates of enemy towns (with Visions and the Thieves' Guild, already in 8.1).
