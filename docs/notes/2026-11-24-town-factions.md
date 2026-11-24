@@ -176,6 +176,13 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 - With the stack's own resistance, the aura is a second roll: a Dwarf next to a Unicorn resists 1 − 0.8 × 0.8 = 36% (the engine; the wiki doesn't say).
 - It follows where the stacks stand when the spell is cast.
 
+### How it is built (6.5.4b)
+
+- A creature's `magicResistance` in `monsters.json` (20 for the Dwarf, 40 for the Battle Dwarf) is added to its hero's Resistance as its stacks are made, at most 100: one roll, as the hero's Resistance is now.
+- A creature's `magicResistanceAura` (20 for both Unicorns) is a second roll for each stack of the same side standing next to one of its hexes, worked out where the stacks stand as the spell is cast; the highest aura counts when several touch a stack. The side is the one the Unicorn fights for now, so a hypnotized Unicorn protects its new side.
+- Both only against hostile spells, as Resistance now (`isResistible`): Bless, Dispel and the other spells on one's own side never fail.
+- The creature popup shows no abilities yet, so it doesn't list the resistance (as with the Dragons' immunity).
+
 ### Magic damper (Pegasi, 6.5.4c)
 
 - A hero facing an army that had Pegasi or Silver Pegasi at the start of the battle pays 2 more spell points for each spell, until the battle ends, even after the Pegasi die (wiki; the engine counts dead stacks too).
@@ -205,6 +212,7 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 - The Pegasi lowering the cost of an enemy that casts: computer heroes don't cast yet (5.8 later).
 - Growth bonuses, recruiting: Rampart's town (6.5.5) and dwellings (6.5.6).
 - The Orb of Vulnerability cancelling magic resistance (7.8, with the artifact).
+- The player's stacks of Dwarves, or next to Unicorns, resisting a computer hero's spells: computer heroes don't cast yet (5.8 later). The Unicorns' blinding attack meeting magic resistance comes with it (6.5.4e).
 
 ## 6.5.4d to 6.5.4f Rampart's attack abilities (planned)
 
