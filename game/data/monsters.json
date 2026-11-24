@@ -395,6 +395,7 @@
       "GOLD_PILE": 120
     },
     "aiValue": 138,
+    "magicResistance": 20,
     "abilities": []
   },
   "BATTLE_DWARF": {
@@ -415,6 +416,7 @@
       "GOLD_PILE": 150
     },
     "aiValue": 209,
+    "magicResistance": 40,
     "abilities": []
   },
   "WOOD_ELF": {
@@ -561,6 +563,7 @@
       "GOLD_PILE": 850
     },
     "aiValue": 1806,
+    "magicResistanceAura": 20,
     "abilities": ["doubleWide"]
   },
   "WAR_UNICORN": {
@@ -581,6 +584,7 @@
       "GOLD_PILE": 950
     },
     "aiValue": 2030,
+    "magicResistanceAura": 20,
     "abilities": ["doubleWide"]
   },
   "GREEN_DRAGON": {
