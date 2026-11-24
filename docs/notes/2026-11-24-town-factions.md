@@ -192,6 +192,13 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 
 - Both Dragons are kings of the first group: Slayer's +8 Attack reaches them from no skill up (wiki King and Slayer pages, the engine's creature data), where the Angels need Advanced.
 
+### How it is built (6.5.4a)
+
+- The creatures are entries in `monsters.json`, with the abilities the battle already reads (`flying`, `doubleWide`, `ranged`, `shootsTwice`); an ability that comes in a later part is added to the data with that part.
+- A creature's `spellLevelImmunity` (3 for Green Dragons, 4 for Gold) is its stacks' immunity to spells of that level and below, the higher of it and an artifact's (the Power of the Dragon Father's 4), so targeting, Expert's all-stacks spells and Armageddon treat it as they treat the artifact's.
+- The Dragons' `king: 1` is the first group, which Slayer already reaches from no skill.
+- The demo map has Dwarves, Wood Elves, Unicorns, Pegasi and Green Dragons east of the first hero.
+
 ### Left for later (6.5.4a to 6.5.4c)
 
 - The binding, blinding attack and breath: 6.5.4d to 6.5.4f.
