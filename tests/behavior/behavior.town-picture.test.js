@@ -3,14 +3,17 @@ import { describe, expect, test } from 'vitest'
 
 import { getTownInTownList } from './adventure-panels.utils.js'
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
-import { aHero, aScenario, aTown } from './builders.js'
+import { aCreatureDefinition, aHero, aScenario, aTown, aTownDefinition } from './builders.js'
 import { queryRecruitWindow, readChosenRecruitCreature } from './recruit-window.utils.js'
 import {
   buildInTown,
   clickBuildingOnPicture,
   hoverBuildingOnPicture,
+  leaveTown,
   queryFortWindow,
   queryHall,
+  readHall,
+  readTownBackdrop,
   readTownPicture,
   readTownStatusBar,
   unhoverBuildingOnPicture
@@ -34,6 +37,54 @@ const aPictureScenario = (buildings) =>
     .withDefinitions(gameDefinitions)
     .withStartingResources({ GOLD_PILE: 20000, WOOD_PILE: 20, ORE_PILE: 20 })
 
+const WOODLAND = 'WOODLAND'
+const TREANT = 'TREANT'
+
+const woodlandDefinitions = {
+  ...gameDefinitions,
+  monsters: {
+    ...gameDefinitions.monsters,
+    [TREANT]: aCreatureDefinition().withName('Treant').withNamePlural('Treants').withTier(1).build()
+  },
+  towns: {
+    ...gameDefinitions.towns,
+    [WOODLAND]: aTownDefinition()
+      .withName('Woodland')
+      .withBuildings({
+        TREANT_GROVE: { name: 'Treant Grove', cost: { GOLD_PILE: 500 }, creature: TREANT }
+      })
+      .withHall([[['VILLAGE_HALL', 'TOWN_HALL']], [['TREANT_GROVE']]])
+      .withPicture({
+        VILLAGE_HALL: { x: 100, y: 100 },
+        TAVERN: { x: 200, y: 100 },
+        TREANT_GROVE: { x: 300, y: 100 }
+      })
+      .build()
+  }
+}
+
+const anElmhollow = (buildings = []) =>
+  aTown()
+    .withId('town-2')
+    .withType(WOODLAND)
+    .named('Elmhollow')
+    .ownedByPlayer()
+    .withBuildings(buildings)
+
+async function startInElmhollow(buildings) {
+  const app = await setupMovementBehaviorApp({
+    loadGameOptions: aScenario()
+      .withSize(8, 7)
+      .withEntities(aHero().at(4, 5), anElmhollow(buildings).at(4, 3))
+      .withDefinitions(woodlandDefinitions)
+      .withStartingResources({ GOLD_PILE: 20000 })
+      .build(),
+    appConfig: { interactionModalTransitionMs: 0 }
+  })
+  await app.user.dblClick(getTownInTownList('Elmhollow'))
+  return app
+}
+
 async function startInWhitemoon(buildings, options = {}) {
   const app = await setupMovementBehaviorApp({
     loadGameOptions: aPictureScenario(buildings).build(),
@@ -46,6 +97,12 @@ async function startInWhitemoon(buildings, options = {}) {
 
 describe('town picture behavior', () => {
   describe('what it shows', () => {
+    test('a Castle town shows the Castle by the sea', async () => {
+      await startInWhitemoon([])
+
+      expect(readTownBackdrop()).toBe('The Castle by the sea')
+    })
+
     test('a town with nothing else built shows its Village Hall', async () => {
       await startInWhitemoon([])
 
@@ -174,6 +231,67 @@ describe('town picture behavior', () => {
       await clickBuildingOnPicture(user, 'Village Hall')
 
       expect(queryHall()).toBeTruthy()
+    })
+  })
+
+  describe('a town of another type', () => {
+    test("shows the buildings its type's picture places", async () => {
+      await startInElmhollow(['TAVERN', 'TREANT_GROVE'])
+
+      expect(readTownPicture()).toEqual(['Tavern', 'Treant Grove', 'Village Hall'])
+    })
+
+    test("leaves out a building its type's picture has no place for", async () => {
+      await startInElmhollow(['TAVERN', 'BLACKSMITH'])
+
+      expect(readTownPicture()).toEqual(['Tavern', 'Village Hall'])
+    })
+
+    test('a type without art of its own shows a plain backdrop', async () => {
+      await startInElmhollow([])
+
+      expect(readTownBackdrop()).toBe('Plain backdrop')
+    })
+
+    test('opened after a Castle town, it shows its own backdrop', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(16, 7)
+          .withEntities(aHero().at(0, 6), aWhitemoon().at(4, 3), anElmhollow().at(12, 3))
+          .withDefinitions(woodlandDefinitions)
+          .build(),
+        appConfig: { interactionModalTransitionMs: 0 }
+      })
+      await user.dblClick(getTownInTownList('Whitemoon'))
+      await leaveTown(user)
+
+      await user.dblClick(getTownInTownList('Elmhollow'))
+
+      expect(readTownBackdrop()).toBe('Plain backdrop')
+    })
+
+    test("clicking its dwelling opens its creature's recruit window", async () => {
+      const { user } = await startInElmhollow(['TREANT_GROVE'])
+
+      await clickBuildingOnPicture(user, 'Treant Grove')
+
+      expect(queryRecruitWindow('Recruit Treants')).toBeTruthy()
+    })
+
+    test("clicking its hall opens the Hall with its type's rows", async () => {
+      const { user } = await startInElmhollow([])
+
+      await clickBuildingOnPicture(user, 'Village Hall')
+
+      expect(readHall()).toEqual([['Town Hall'], ['Treant Grove']])
+    })
+
+    test('a building built from its Hall shows on its picture', async () => {
+      const { user } = await startInElmhollow([])
+
+      await buildInTown(user, 'Treant Grove')
+
+      expect(readTownPicture()).toEqual(['Treant Grove', 'Village Hall'])
     })
   })
 })

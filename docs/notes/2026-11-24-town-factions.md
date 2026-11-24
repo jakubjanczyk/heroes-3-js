@@ -77,7 +77,12 @@ Checked against the Heroes 3 wiki's raw page source (Tavern, Hero class) and aga
 - With no free hero of that town type, the slot takes any free hero (the engine).
 - The town type the player started as: the type of the player's town at the game's start; the first of them in the scenario if they own several types (our choice: our scenarios have no chosen faction per player). A player who starts with no town started as the town type of their first hero's class (agreed).
 
-### Left for later
+### How it is built
+
+- `app/heroes/presentation/town-art.js` holds each town type's backdrop and building art; the town screen picks it by the town's type and draws it anew when a town of another type opens. A type missing from it gets the plain backdrop and plain building blocks.
+- The tavern works out each player's starting town type when the world is ready, from the scenario's entities (the town's owner and type, the hero's owner and class), so a reload gives the same answer whatever was captured since.
+
+### Left for later (6.5.2)
 
 - The engine weighs each class's chance to be offered by the player's town type, and never offers two heroes of one class at once. Neither is on the wiki's Tavern page; left until the other factions' heroes exist (each faction's heroes part), when it would matter.
 - Each faction's Mage Guild room (its town part).

@@ -241,6 +241,10 @@ function getTownPicture() {
   return within(getTownScreen()).getByRole('group', { name: 'Town picture' })
 }
 
+export function readTownBackdrop() {
+  return within(getTownPicture()).getByRole('img').getAttribute('aria-label')
+}
+
 // The names of the buildings drawn on the town picture, in alphabetical order.
 export function readTownPicture() {
   return within(getTownPicture())
