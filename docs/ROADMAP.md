@@ -192,6 +192,13 @@ As in H3: a one-line status bar between the map and the resource bar. Text only,
 - [x] The bar empties when the mouse leaves the map
 - [ ] Later: hovering over HUD buttons shows what they do ("End turn"), as in H3
 
+### 2.6 Kingdom Overview Screen
+The full screen behind the Kingdom overview button (shown disabled since 1.3); the info box's small overview is 2.4b.
+- [ ] Every hero of the player in a row: portrait, primary skills, morale, luck, spell points, secondary skills, army and artifacts
+- [ ] Every town in a row: picture, name, income, its garrison and visiting hero, the creatures it can recruit
+- [ ] The player's mines by resource, the daily income of each resource and the gold total
+- [ ] Clicking a hero or town opens its screen
+
 ---
 
 ## Milestone 3: Game Economy & Time
@@ -307,6 +314,8 @@ The H3 hero screen, laid out as the game's; see `docs/notes/2026-10-23-hero-scre
 - [ ] Hero has a portrait image (displayed in HUD sidebar, hero panel, map)
 - [ ] Hero class: Knight, Cleric, Ranger, Druid, etc. (affects starting stats/skills)
 - [ ] Hero specialty: unique bonus (e.g. "+1 Attack per level", "Archery specialist")
+  - [ ] Every hero's specialty in the data, by kind: a creature (bonus growing with level), a secondary skill, a spell, a resource a day, a primary skill per level, a war machine (5.11), speed; each kind built once, so a hero is only data
+  - [ ] Shown in the hero screen's specialty frame and its right-click popup
 - [ ] Hero biography text (flavor)
 - [ ] Multiple hero types defined in hero data files
 
@@ -740,6 +749,16 @@ In eighteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town 
 - [x] 5.10.11b The computer and the walls: the walls in its weighing of a town and of its own threatened towns, a threatened town building its Citadel or Castle first
 - [x] 5.10.12 Controlling the towers: the player's hero defending with Artillery aims each arrow tower on a turn of its own as the round starts, clicking any stack of the attacker's side; on that turn the hero can cast first, Wait brings it back first in the wait phase, Defend passes it, Auto combat lets it aim itself
 
+### 5.11 War Machines & Tactics
+The Ballista, the Ammo Cart and the First Aid Tent, and placing the army before a battle. Rules checked with the `game-sources` skill when planned; split into parts then.
+- [ ] War machines in their own slots on the hero screen, beside the army; shown on the battlefield in their places
+- [ ] **Ballista**: shoots on its turn; the Artillery skill aims it and adds its bonuses (4.7)
+- [ ] **First Aid Tent**: heals a stack on its turn; the First Aid skill heals more and aims it (4.7)
+- [ ] **Ammo Cart**: the hero's shooters never run out of shots while it stands
+- [ ] War machines can be attacked and destroyed; a destroyed one is lost after the battle
+- [ ] Bought at the town's Blacksmith (6.2) and the War Machine Factory on the map (7.16); some heroes start with one, and the matching specialties (4.4)
+- [ ] **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
+
 ---
 
 ## Milestone 6: Town Development
@@ -775,6 +794,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
   - Citadel: moat + tower, +50% creature growth
   - Castle: 2 towers, +100% creature growth (replaces the Citadel's +50%, doesn't add to it)
 - [ ] **Tavern**: recruit heroes, +1 morale to visiting hero
+  - [ ] Rumours: the tavern window shows a rumour of the week, from the game's list or the scenario's own
 - [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count)
 - [ ] **Resource Silo**: provides +1 of a specific resource per day (faction-dependent)
 - [ ] **Blacksmith**: provides ballista (first aid tent/ammo cart) to visiting heroes
@@ -874,6 +894,7 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
 - [ ] Faction-specific creature lineup and stats
 - [ ] Faction-specific special buildings
 - [ ] Mage Guild per faction: highest level, spell odds, Tower's Library (4.8.2 later)
+- [ ] Every faction's special buildings, each checked with the `game-sources` skill as its faction comes (for example Necropolis's Skeleton Transformer and Cover of Darkness, Dungeon's Mana Vortex and Portal of Summoning, Stronghold's Freelancer's Guild, Rampart's Treasury)
 
 ---
 
@@ -1103,6 +1124,80 @@ Checked against the Heroes 3 wiki (Grail). Split into parts when it comes up.
 - [ ] Taken into a town, it builds the town's Grail building: +5000 gold a day and +50% creature growth, plus the faction's own bonus (Castle's Colossus: +2 morale for all the owner's heroes; the others with their factions, 6.5)
 - [ ] The Grail building counts as a structure for the arrow towers (5.10.9b)
 - [ ] The computer digging for the Grail (8.4)
+
+Sections 7.12 to 7.23 are objects and world rules the game has that were not yet planned. Each one's rules, numbers and texts are checked with the `game-sources` skill, and its size with the `new-map-object` skill, when it is planned. Where an object only needs reward types and visit limits that exist, it is data only (`game/data/bonus-objects.json`).
+
+### 7.12 Pickups
+Objects taken once by the first hero, then gone, like the resources and the Treasure Chest.
+- [ ] **Campfire**: gold and one other resource
+- [ ] **Lean-To**: a few of one resource
+- [ ] **Wagon**, **Skeleton**, **Corpse**: an artifact or resources, or nothing; the object stays, emptied
+- [ ] **Warrior's Tomb**: an artifact, with a morale penalty for the hero who robs it; asks first
+- [ ] **Pandora's Box**: whatever the scenario puts in it (experience, resources, creatures, spells, artifacts, primary or secondary skills), sometimes guarded; asks first
+- [ ] On water (with boats, 7.10): **Sea Chest**, **Flotsam**, **Shipwreck Survivor**
+
+### 7.13 Creature Banks
+A guarded object: beating its guards gives its treasure once, rolled from a few levels per bank.
+- [ ] The visit asks first, naming the bank; the battle is fought against its guards set out around the hero's army
+- [ ] The treasure (resources, artifacts, creatures joining the army) given after a won battle; the bank then stays empty
+- [ ] The banks: Crypt, Cyclops Stockpile, Dwarven Treasury, Griffin Conservatory, Imp Cache, Medusa Stores, Naga Bank, Dragon Fly Hive, Dragon Utopia
+- [ ] Graveyard, Shipwreck and Derelict Ship (on water, 7.10), which take morale from the hero who robs them
+- [ ] The right-click popup says whether it has been visited
+- [ ] The computer weighing a bank against its guards (8.4)
+
+### 7.14 Quests
+- [ ] **Seer's Hut**: asks for something (a hero level, primary skills, beating a hero or monster, artifacts, creatures, resources, being a given hero or class) and gives its reward when it is brought; the scenario sets both
+- [ ] **Quest Guard**: the same, but it blocks the way and goes away once the quest is done
+- [ ] **Keymaster's Tent** (eight colours) and **Border Guard** / **Border Gate** of the same colour: a hero who has visited the tent can pass
+- [ ] Quest Log: the button (shown disabled since 1.3) opens the list of the player's quests and what each still needs
+- [ ] The computer taking quests it can finish (8.4)
+
+### 7.15 Prison
+- [ ] A hero from the scenario sits in the Prison; the first of the player's heroes to visit frees them, if the player has fewer than the heroes allowed (4.5)
+- [ ] The freed hero joins with the level, skills, spells and artifacts the scenario gives them
+
+### 7.16 Trading and Services
+- [ ] **Trading Post**: trades resources at the rates of a Marketplace (6.2)
+- [ ] **Black Market**: sells a few artifacts, rolled at the start and again each month
+- [ ] **University**: teaches a few secondary skills for gold
+- [ ] **Hill Fort**: upgrades creatures in the hero's army, cheaper the lower their level
+- [ ] **Refugee Camp**: creatures for hire, a new kind each week
+- [ ] **Sanctuary**: a hero standing in it can't be attacked
+- [ ] **Den of Thieves**: opens the Thieves' Guild screen (8.1)
+- [ ] **Altar of Sacrifice**: trades artifacts or creatures for experience
+- [ ] **War Machine Factory**: sells the war machines (5.11)
+- [ ] **Shipyard** on the map, with boats (7.10)
+
+### 7.17 Map Garrisons
+- [ ] A garrison standing in a pass: a battle against its creatures, no hero needed; the winner flags it and can leave creatures in it
+- [ ] Only its owner's heroes walk through it; its creatures defend it like a town's garrison
+- [ ] The **Anti-Magic Garrison**: no spells in its battles
+
+### 7.18 Scouting Objects
+- [ ] **Redwood Observatory** and **Pillar of Fire**: reveal the map around them
+- [ ] **Cartographers** (land, sea, underground): reveal the whole of that part of the map for gold
+- [ ] **Hut of the Magi**: shows the places of every **Eye of the Magi** on the map
+- [ ] **Cover of Darkness** on the map: hides the land around it from the other players (fog of war, 7.1)
+
+### 7.19 Abandoned Mine
+- [ ] A gold mine taken by creatures: the hero fights them, then the mine is flagged like the others (3.3)
+
+### 7.20 Signs and Ocean Bottles
+- [ ] A sign shows the scenario's message when visited; an Ocean Bottle (on water, 7.10) shows it and is gone
+
+### 7.21 Underground Level
+- [ ] A scenario with two levels, surface and underground, each with its own terrain, objects and fog of war
+- [ ] The Underground button (shown disabled since 1.3) switches the map and the minimap between them
+- [ ] The Subterranean Gate (7.9) takes a hero between them; the rest of the game (pathfinding, the computer, View Earth) across both
+
+### 7.22 Map Events
+- [ ] Timed events: on a day the scenario sets, the players it names get a message and resources
+- [ ] Event tiles: an invisible spot that gives a message, experience, skills, resources, artifacts, creatures or a battle to the first hero (or each, as the scenario says) stepping on it, for the players it names
+- [ ] Town events: a building or creatures added to a town on a set day
+
+### 7.23 Weekly Events
+- [ ] The start of a week names it after a creature, whose growth goes up everywhere that week
+- [ ] A month can bring a creature's double growth, or the Plague, which halves every creature pool
 
 ## Milestone 8: AI & Opponents
 
@@ -1452,6 +1547,23 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 67. Faster map drawing (9.7): tiles placed without a transform each, so a step doesn't make the browser go over every tile
 68. Sleeping heroes (4.5.6): Sleep hero and Wake hero, Next Hero passing over sleeping heroes, moving one wakes it
 69. Battle spells as data (9.8): one handler per spell effect, so a new spell is only its definition
+
+### Phase 8 - "Full Maps"
+What most real maps use and the roadmap had not planned. The data-only objects come first, as they need little code.
+
+70. Pickups (7.12) and signs (7.20)
+71. Creature banks (7.13): the guards' battle and the treasure, then each bank as data
+72. Hero specialties (4.4)
+73. War machines and Tactics (5.11), with the Blacksmith (6.2)
+74. Trading and services (7.16): Trading Post with the Marketplace (6.2), Hill Fort, University, Refugee Camp, Black Market, Sanctuary, Altar of Sacrifice
+75. Quests (7.14): Keymaster's Tent and Border Guard, then Seer's Hut and Quest Guard, then the Quest Log
+76. Prison (7.15)
+77. Map garrisons (7.17) and the Abandoned Mine (7.19)
+78. Scouting objects (7.18)
+79. Weekly events (7.23) and tavern rumours (6.2)
+80. Map events (7.22)
+81. Kingdom Overview screen (2.6)
+82. Underground level (7.21), with the Subterranean Gate (7.9)
 
 ---
 
