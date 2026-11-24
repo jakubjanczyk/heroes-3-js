@@ -250,23 +250,30 @@ const isWaitPhase = (battle) => {
   return !active || hasWaited(battle, active.id)
 }
 
-// The catapult that waited comes back first among the stacks that waited.
-const isCatapultsWaitedTurn = (battle) =>
-  hasWaited(battle, CATAPULT_STACK_ID) &&
-  !battle.actedStackIds.includes(CATAPULT_STACK_ID) &&
+const shooterStackIdOf = (shooter) => (shooter === CATAPULT ? CATAPULT_STACK_ID : shooter)
+
+const shooterOfStackId = (battle, stackId) =>
+  stackId === CATAPULT_STACK_ID
+    ? CATAPULT
+    : (towerIdsOf(battle.walls).find((tower) => tower === stackId) ?? null)
+
+const isShootersWaitedTurn = (battle, shooter) =>
+  hasWaited(battle, shooterStackIdOf(shooter)) &&
+  !battle.actedStackIds.includes(shooterStackIdOf(shooter)) &&
   !battle.turnStackId &&
-  hasCatapult(battle) &&
-  hasCatapultTarget(battle.walls) &&
+  hasRoundStartTarget(battle, shooter) &&
   isWaitPhase(battle)
 
+// A tower or the catapult that waited comes back first among the stacks that waited, the towers
+// before the catapult.
+const waitedShooterOf = (battle) =>
+  roundStartShootersOf(battle).find((shooter) => isShootersWaitedTurn(battle, shooter)) ?? null
+
 // The next that shoots before the stacks, passing over one with nothing to shoot at: as the round
-// starts, or the catapult once the stacks that didn't wait have acted.
+// starts, or one that waited once the stacks that didn't wait have acted.
 export function getRoundStartShooter(battle) {
   const shooter = battle.roundStartShooters.find((next) => hasRoundStartTarget(battle, next))
-  if (shooter) {
-    return shooter
-  }
-  return isCatapultsWaitedTurn(battle) ? CATAPULT : null
+  return shooter ?? waitedShooterOf(battle)
 }
 
 export const isCatapultsTurn = (battle) => getRoundStartShooter(battle) === CATAPULT
@@ -278,10 +285,12 @@ export const getCatapultStack = (battle) =>
 export const canHeroAimCatapult = (battle) =>
   Boolean(battle.catapultShooting?.hasBallistics) && battle.catapultAims.length === 0
 
-// A spell cast on the catapult's turn, before every stack, leaves the stacks' order to their speeds.
+// A spell cast on a tower's or the catapult's turn, before every stack, leaves the stacks' order to
+// their speeds.
 function castTurnOf(battle) {
-  if (isCatapultsTurn(battle)) {
-    return { side: 'attacker', turnStackId: null }
+  const shooter = getRoundStartShooter(battle)
+  if (shooter) {
+    return { side: shooterSide(shooter), turnStackId: null }
   }
   const active = getActiveStack(battle)
   return { side: active?.side, turnStackId: active?.id ?? null }
@@ -309,11 +318,23 @@ const wakeUp = (stack) => ({
   spells: (stack.spells ?? []).filter(({ effects }) => effects.blind === undefined)
 })
 
+const shooterSide = (shooter) => (shooter === CATAPULT ? 'attacker' : 'defender')
+
+// The side whose hero casts on this turn: a tower's or the catapult's, or the active stack's.
+export function getTurnSide(battle) {
+  const shooter = getRoundStartShooter(battle)
+  if (shooter) {
+    return shooterSide(shooter)
+  }
+  const active = getActiveStack(battle)
+  return active ? fightsFor(active) : null
+}
+
 export function spellTargetIds(battle, targeting) {
-  const caster = getActiveStack(battle)
-  return caster
+  const casterSide = getTurnSide(battle)
+  return casterSide
     ? livingStacks(battle)
-        .filter((target) => isSpellTarget(targeting, target, fightsFor(caster)))
+        .filter((target) => isSpellTarget(targeting, target, casterSide))
         .map(({ id }) => id)
     : []
 }
@@ -440,7 +461,7 @@ export function endTurn(battle, stackId) {
   const goesOn = { ...battle, actedStackIds, turnStackId: null }
   if (
     actingStacks(battle).some(({ id }) => !actedStackIds.includes(id)) ||
-    isCatapultsWaitedTurn(goesOn)
+    waitedShooterOf(goesOn)
   ) {
     return startNextTurn(goesOn)
   }
@@ -464,11 +485,12 @@ export function endTurn(battle, stackId) {
 }
 
 export function waitStack(battle, stackId) {
-  if (stackId === CATAPULT_STACK_ID) {
+  const shooter = shooterOfStackId(battle, stackId)
+  if (shooter) {
     return afterRoundStartShot({
       ...battle,
       waitedStackIds: [...battle.waitedStackIds, stackId],
-      roundStartShooters: withoutShooter(battle, CATAPULT)
+      roundStartShooters: withoutShooter(battle, shooter)
     })
   }
   return startNextTurn({
@@ -543,8 +565,9 @@ export function freezeStack(battle, stackId) {
 // +20% Defense, and at least 1 point.
 // Defend passes the catapult's turn, with no bonus.
 export function defendStack(battle, stackId) {
-  if (stackId === CATAPULT_STACK_ID) {
-    return endCatapultsTurn(battle)
+  const shooter = shooterOfStackId(battle, stackId)
+  if (shooter) {
+    return endShootersTurn(battle, shooter)
   }
   const defended = {
     ...battle,
@@ -1308,10 +1331,10 @@ const afterRoundStartShot = (battle) =>
   getRoundStartShooter(battle) ? battle : hitAsTurnStarts(battle)
 
 // After its waited turn the round goes on as after any stack's.
-const endCatapultsTurn = (battle, after = battle) =>
-  isCatapultsWaitedTurn(battle)
-    ? endTurn(after, CATAPULT_STACK_ID)
-    : afterRoundStartShot({ ...after, roundStartShooters: withoutShooter(battle, CATAPULT) })
+const endShootersTurn = (battle, shooter, after = battle) =>
+  isShootersWaitedTurn(battle, shooter)
+    ? endTurn(after, shooterStackIdOf(shooter))
+    : afterRoundStartShot({ ...after, roundStartShooters: withoutShooter(battle, shooter) })
 
 export const planBattleCatapultShot = (battle, random, aimedByHero = null) =>
   planCatapultShot(battle.walls, random, {
@@ -1329,22 +1352,20 @@ export function shootCatapult(battle, shot) {
     catapultAims,
     messages: [...battle.messages, describeCatapultShot(battle.walls, shot).message]
   }
-  return done ? endCatapultsTurn(battle, fired) : afterRoundStartShot(fired)
+  return done ? endShootersTurn(battle, CATAPULT, fired) : afterRoundStartShot(fired)
 }
 
 export function shootTower(battle, { tower, targetId, damage }) {
   const { damaged, ...losses } = damageStack(battle, targetId, damage)
-  return afterRoundStartShot(
-    clearGoneClones({
-      ...battle,
-      stacks: battle.stacks.map((stack) => (stack.id === targetId ? wakeUp(damaged) : stack)),
-      roundStartShooters: withoutShooter(battle, tower),
-      messages: [
-        ...battle.messages,
-        ...describeDamage(`The ${ARROW_TOWER_NAME} does ${damage} damage.`, losses)
-      ]
-    })
-  )
+  const shot = clearGoneClones({
+    ...battle,
+    stacks: battle.stacks.map((stack) => (stack.id === targetId ? wakeUp(damaged) : stack)),
+    messages: [
+      ...battle.messages,
+      ...describeDamage(`The ${ARROW_TOWER_NAME} does ${damage} damage.`, losses)
+    ]
+  })
+  return endShootersTurn(battle, tower, shot)
 }
 
 export function shakeWalls(battle, { heroName, spellName, wallHits }) {
