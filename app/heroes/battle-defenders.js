@@ -32,7 +32,7 @@ import {
   splitGarrison,
   townCaptureExperience
 } from '../../game/heroes/town-garrison.js'
-import { townDefenderMorale } from '../../game/heroes/town-visit-bonuses.js'
+import { NO_DEFENDER_BONUSES, townDefenderBonuses } from '../../game/heroes/town-visit-bonuses.js'
 import { heroOwner } from '../../game/state/queries.js'
 import {
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
@@ -278,13 +278,13 @@ export function siegeWallsOf({ started, state, definitions }) {
   })
 }
 
-export function townDefenderMoraleOf({ started, state, definitions }) {
+export function townDefenderBonusesOf({ started, state, definitions }) {
   const townId = battleDefenderOf(started).townId?.({ started })
   if (!townId) {
-    return []
+    return NO_DEFENDER_BONUSES
   }
   const { buildings } = townBuildingsCatalogue(definitions, townType(state.get(), townId))
-  return townDefenderMorale({ built: builtIn(state.get(), townId), buildings })
+  return townDefenderBonuses({ built: builtIn(state.get(), townId), buildings })
 }
 
 export function battleDefenderName({ started, state, definitions }) {

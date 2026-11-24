@@ -146,11 +146,12 @@ export function getHeroMorale({ entity, definitions, townModifiers = [] }) {
   )
 }
 
-export function getHeroLuck({ entity, definitions }) {
+export function getHeroLuck({ entity, definitions, townModifiers = [] }) {
   const modifiers = [
     ...skillModifier(entity, 'LUCK', definitions),
     ...artifactModifiers(entity, 'luck', definitions),
-    ...objectBonusModifiers(entity, 'luck', definitions)
+    ...objectBonusModifiers(entity, 'luck', definitions),
+    ...townModifiers
   ]
   return describe('luck', modifiers, {
     min: MIN_LUCK,
