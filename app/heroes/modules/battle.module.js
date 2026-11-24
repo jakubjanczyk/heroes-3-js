@@ -153,7 +153,8 @@ import {
   battleDefenderEvents,
   battleDefenderName,
   battleDefenderOf,
-  siegeWallsOf
+  siegeWallsOf,
+  townDefenderMoraleOf
 } from '../battle-defenders.js'
 
 const DEFAULT_STEP_DELAY_MS = 180
@@ -1167,6 +1168,7 @@ export const registerBattleModule = defineModule(
                 definitions
               }),
               walls: siegeWallsOf({ started, state, definitions }),
+              defenderMorale: townDefenderMoraleOf({ started, state, definitions }),
               definitions
             })
             showBattle()

@@ -175,8 +175,15 @@ function catapultShootingOf(attacker, definitions) {
   }
 }
 
-// A side without a hero has its creatures' morale alone, and no luck.
-export function createBattle({ attacker, defender, walls = null, definitions }) {
+// A side without a hero has its creatures' morale alone, and no luck. The defenders of a town also
+// have the morale its buildings give them (`defenderMorale`).
+export function createBattle({
+  attacker,
+  defender,
+  walls = null,
+  defenderMorale = [],
+  definitions
+}) {
   const sides = { attacker: { army: [], ...attacker }, defender: { army: [], ...defender } }
   const cancelledInBattle = cancelledKinds(Object.values(sides), definitions)
   const inBattle = (kind, value) => (cancelledInBattle.includes(kind) ? Math.min(0, value) : value)
@@ -184,7 +191,14 @@ export function createBattle({ attacker, defender, walls = null, definitions }) 
     const entity = sides[side]
     return {
       skills: entity.skills,
-      morale: inBattle('morale', getHeroMorale({ entity, definitions }).value),
+      morale: inBattle(
+        'morale',
+        getHeroMorale({
+          entity,
+          definitions,
+          townModifiers: side === 'defender' ? defenderMorale : []
+        }).value
+      ),
       luck: inBattle('luck', getHeroLuck({ entity, definitions }).value),
       cancelledInBattle,
       immunities: artifactBattleImmunities(entity.artifacts, definitions),

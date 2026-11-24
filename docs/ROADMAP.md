@@ -853,6 +853,11 @@ Stages, one PR each, done in this order:
 - [x] Garrison shown in town view as a row of 7 slots (6.3.1)
 
 ### 6.5 Town Factions
+In parts. See `docs/notes/2026-11-24-town-factions.md`.
+- [x] 6.5.1 Castle's own buildings: the town's Stables give a visiting hero the map Stables' movement points; the Tavern and the Brotherhood of the Sword raise the morale of the town's defenders
+- [ ] 6.5.2 A second town type from the data alone: the town's picture, Hall, heroes' classes and the tavern's first hero of the week read from the town type
+  - [ ] Special buildings as data: a building's visit bonus uses the map objects' reward types and visit limits (`visit` in its data: once per hero, while the bonus lasts, once a week), and the defenders' bonuses become one `defenderBonuses` (morale, luck, Attack, Defense, Spell Power) in place of `defenderMorale`, so the Wall of Knowledge or the Glyphs of Fear are only data
+- [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
 - [ ] Minimum viable: **Castle** faction fully implemented
 - [ ] Faction list (implement progressively):
@@ -970,7 +975,7 @@ Bonuses that don't last. Built in four parts; see `docs/notes/2026-10-28-stat-bo
 #### 7.6.4 Stables
 - [x] +400 movement points now and at the start of each day until the end of the week; another Stables does nothing that week
 - [x] Cavaliers upgraded to Champions for free, on any visit
-- [ ] The Castle town's Stables building gives the same movement points (6.5)
+- [x] The Castle town's Stables building gives the same movement points (6.5.1)
 
 - [ ] Later: the Buoy and the Mermaids on water (7.10)
 
@@ -1089,6 +1094,15 @@ See `docs/notes/2026-10-30-combination-artifacts.md`.
 - [ ] Sea monsters and floating resources on water
 
 ---
+
+### 7.11 The Grail
+Checked against the Heroes 3 wiki (Grail). Split into parts when it comes up.
+- [ ] Obelisks on the map: each one visited reveals a part of the puzzle map, which shows where the Grail is buried
+- [ ] Digging: takes all of a hero's movement points (none spent that day) and a free backpack slot; only the buried spot gives the Grail
+- [ ] The Grail carried like an artifact, lost if its hero retreats, surrenders or is beaten
+- [ ] Taken into a town, it builds the town's Grail building: +5000 gold a day and +50% creature growth, plus the faction's own bonus (Castle's Colossus: +2 morale for all the owner's heroes; the others with their factions, 6.5)
+- [ ] The Grail building counts as a structure for the arrow towers (5.10.9b)
+- [ ] The computer digging for the Grail (8.4)
 
 ## Milestone 8: AI & Opponents
 
@@ -1429,6 +1443,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 59. Animations (10.3)
 60. Map portals (7.9)
 61. Water & boats (7.10)
+61b. The Grail (7.11): obelisks and the puzzle map, digging, the Grail buildings
 62. Hot-seat multiplayer (8.2)
 63. Map editor (9.6)
 64. Quieter event bus (9.4): no route events on hover
