@@ -366,8 +366,9 @@
 
 /* The tower whose turn the player plays, outlined as the active stack is. */
 .battlefield__tower--active {
-  outline: 2px solid oklch(0.92 0.17 98);
-  outline-offset: 1px;
+  outline: 3px solid oklch(0.92 0.17 98);
+  outline-offset: 2px;
+  filter: drop-shadow(0 0 6px oklch(0.92 0.17 98 / 0.8));
   animation: battle-stack-active 1s ease-in-out infinite alternate;
 }
 
