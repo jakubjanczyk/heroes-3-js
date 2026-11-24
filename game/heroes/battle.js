@@ -124,7 +124,7 @@ function createStack({
     unaffectedByMorale,
     undead,
     mindSpellImmune: undead || warMachine || immunities.mindSpells,
-    spellLevelImmunity: immunities.spellLevel,
+    spellLevelImmunity: Math.max(immunities.spellLevel, definition.spellLevelImmunity ?? 0),
     magicResistance,
     king: definition.king ?? null,
     luck,

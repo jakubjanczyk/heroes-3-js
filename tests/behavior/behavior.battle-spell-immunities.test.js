@@ -29,6 +29,7 @@ import {
   OWN_HEX,
   stack
 } from './battle-lasting-spells.fixtures.js'
+import { aCreatureDefinition } from './builders.js'
 import { readSpellBookMessage, readSpellBookSpellPoints } from './spell-book.utils.js'
 
 const anAdvanced = (skill, army) =>
@@ -251,6 +252,91 @@ describe('battle spell immunities behavior', () => {
         'Archers 10',
         'Pikemen 20'
       ])
+    })
+  })
+
+  describe('creatures immune to spells up to a level', () => {
+    const IMMUNE_CREATURES = {
+      WYRM: aCreatureDefinition()
+        .withName('Wyrm')
+        .withNamePlural('Wyrms')
+        .withSpellLevelImmunity(3)
+        .build(),
+      DRAKE: aCreatureDefinition()
+        .withName('Drake')
+        .withNamePlural('Drakes')
+        .withSpellLevelImmunity(4)
+        .build()
+    }
+
+    const aWyrmCaster = (options = {}) =>
+      aCaster({
+        knowledge: 4,
+        spells: ['HASTE', 'BLESS', ...CONTROL_SPELLS, ...DAMAGE_SPELLS],
+        ...options
+      })
+
+    const aFightWithImmune = ({ hero = aWyrmCaster(), monster = 'WYRM' } = {}) =>
+      aFight({ hero, monster, count: 50, creatures: IMMUNE_CREATURES })
+
+    const enemyStack = (name) => readBattleStacks().find(({ stack }) => stack.startsWith(name))
+
+    test('given Magic Arrow is picked when the mouse is over enemy creatures immune to spells of level 1-3 then the status bar asks for a target and the cursor is blocked', async () => {
+      const { user } = await startBattleWithStyles(aFightWithImmune())
+      await pickSpell(user, 'Magic Arrow')
+
+      await hoverBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+      expect(getCursorOver(getBattleHex(ENEMY_HEX.row, ENEMY_HEX.column))).toBe('battle-blocked')
+    })
+
+    test('given Magic Arrow is picked when enemy creatures immune to spells of level 1-3 are clicked then the spell is cancelled and no spell points are spent', async () => {
+      const { user } = await startBattle(aFightWithImmune())
+      await pickSpell(user, 'Magic Arrow')
+
+      await clickBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+      const statusBar = getBattleStatusBarText()
+
+      expect(statusBar).toBe('Spell cancelled')
+      expect(await readBattleSpellPoints(user)).toBe('40')
+    })
+
+    test("given Haste is picked when the hero's own creatures immune to spells of level 1-3 are clicked then the spell is cancelled", async () => {
+      const hero = aWyrmCaster({ army: [stack('WYRM', 10)] })
+      const { user } = await startBattle(aFightWithImmune({ hero, monster: 'PIKEMAN' }))
+      await pickSpell(user, 'Haste')
+
+      await clickBattleHex(user, OWN_HEX.row, OWN_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Spell cancelled')
+    })
+
+    // Armageddon does 30 + 2 × 50 = 130: 13 of the 10-health Wyrms perish.
+    test('given Armageddon, a spell of level 4, is cast then creatures immune to spells of level 1-3 take its damage', async () => {
+      const { user } = await startBattle(aFightWithImmune())
+
+      await pickSpell(user, 'Armageddon')
+
+      expect(enemyStack('Wyrms').stack).toBe('Wyrms 37')
+    })
+
+    test('given Armageddon, a spell of level 4, is cast then creatures immune to spells of level 1-4 take none', async () => {
+      const { user } = await startBattle(aFightWithImmune({ monster: 'DRAKE' }))
+
+      await pickSpell(user, 'Armageddon')
+
+      expect(enemyStack('Drakes').stack).toBe('Drakes 50')
+    })
+
+    test('given an Expert Water hero whose only stack is immune to spells of level 1-3 when Bless is picked then the book says the spell will affect no one and keeps all 20 spell points', async () => {
+      const hero = anExpert('WATER_MAGIC', [stack('WYRM', 10)])
+      const { user } = await startBattle(aFightWithImmune({ hero, monster: 'PIKEMAN' }))
+
+      await pickSpell(user, 'Bless')
+
+      expect(readSpellBookMessage()).toEqual(['', 'That spell will affect no one!'])
+      expect(readSpellBookSpellPoints()).toBe('20')
     })
   })
 })
