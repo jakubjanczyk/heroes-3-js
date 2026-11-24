@@ -39,7 +39,7 @@ const gameDefinitions = {
 
 // Computer players start with 7500 gold, 10 wood, 10 ore and 4 of each rare resource, too little
 // for some buildings; a test that needs one of them makes it cheaper.
-function withCheaperBuildings(costs) {
+function withBuildingCosts(costs) {
   const cheaper = (catalogue) =>
     Object.fromEntries(
       Object.entries(catalogue).map(([buildingId, building]) => [
@@ -53,6 +53,10 @@ function withCheaperBuildings(costs) {
     towns: { ...towns, CASTLE: { ...towns.CASTLE, buildings: cheaper(towns.CASTLE.buildings) } }
   }
 }
+
+// The player's hero can reach a town two tiles from it next turn, which makes a town with a Fort
+// build its Citadel first; this one costs more than blue has.
+const CITADEL_BEYOND_REACH = { CITADEL: { GOLD_PILE: 100000 } }
 
 const CASTLE_HALL_BUILDINGS = towns.CASTLE.hall.flat(2)
 
@@ -133,7 +137,9 @@ describe('computer towns building behavior', () => {
   // at 35 more AI value than Pikemen are worth 490, for 1000 gold and 5 ore (2250).
   test("blue's town builds its Town Hall before a dwelling upgrade worth less for its cost", async () => {
     const { user } = await setupApp(
-      aTownScenario(aBlueKirkwall().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE']))
+      aTownScenario(
+        aBlueKirkwall().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE'])
+      ).withDefinitions(withBuildingCosts(CITADEL_BEYOND_REACH))
     )
 
     await endDays(user)
@@ -147,7 +153,9 @@ describe('computer towns building behavior', () => {
     const { user } = await setupApp(
       aTownScenario(
         aBlueKirkwall().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE'])
-      ).withDefinitions(withCheaperBuildings({ UPG_GUARDHOUSE: { GOLD_PILE: 100 } }))
+      ).withDefinitions(
+        withBuildingCosts({ ...CITADEL_BEYOND_REACH, UPG_GUARDHOUSE: { GOLD_PILE: 100 } })
+      )
     )
 
     await endDays(user)
@@ -198,7 +206,7 @@ describe('computer towns building behavior', () => {
   test("blue's town passes over a building it can't save for within a week of income", async () => {
     const { user } = await setupApp(
       aTownScenario(aBlueKirkwall().withBuildings(['TAVERN'])).withDefinitions(
-        withCheaperBuildings({ TOWN_HALL: { GOLD_PILE: 20000 } })
+        withBuildingCosts({ TOWN_HALL: { GOLD_PILE: 20000 } })
       )
     )
 
@@ -219,7 +227,12 @@ describe('computer towns building behavior', () => {
       aTownScenario(
         aBlueKirkwall().withBuildings(['TAVERN', 'FORT']),
         aMine().withType('SAWMILL').ownedBy('blue').at(22, 6)
-      ).withDefinitions(withCheaperBuildings({ TOWN_HALL: { GOLD_PILE: 1000, WOOD_PILE: 12 } }))
+      ).withDefinitions(
+        withBuildingCosts({
+          ...CITADEL_BEYOND_REACH,
+          TOWN_HALL: { GOLD_PILE: 1000, WOOD_PILE: 12 }
+        })
+      )
     )
 
     await endDays(user)
@@ -240,7 +253,12 @@ describe('computer towns building behavior', () => {
           aBlueGreenfield().withBuildings(['TAVERN', 'FORT', 'GUARDHOUSE']),
           aMine().withType('SAWMILL').ownedBy('blue').at(22, 6)
         )
-        .withDefinitions(withCheaperBuildings({ TOWN_HALL: { GOLD_PILE: 2000, WOOD_PILE: 12 } }))
+        .withDefinitions(
+          withBuildingCosts({
+            ...CITADEL_BEYOND_REACH,
+            TOWN_HALL: { GOLD_PILE: 2000, WOOD_PILE: 12 }
+          })
+        )
     )
 
     await endDays(user)
@@ -268,7 +286,7 @@ describe('computer towns building behavior', () => {
           aBlueKirkwall().withBuildings(allCastleBuildingsExcept(UNAFFORDABLE_BUT_CAPITOL)),
           aBlueGreenfield().withBuildings([...HALLS, ...FORTS])
         )
-        .withDefinitions(withCheaperBuildings({ CAPITOL: { GOLD_PILE: 1000 } }))
+        .withDefinitions(withBuildingCosts({ CAPITOL: { GOLD_PILE: 1000 } }))
     )
 
     await endDays(user)
@@ -322,7 +340,7 @@ describe('computer towns building behavior', () => {
   test("the fort icon in blue's town box shows a Fort the day after blue builds one", async () => {
     const { user } = await setupApp(
       aTownScenario(aBlueKirkwall().withBuildings([...HALLS, 'CAPITOL'])).withDefinitions(
-        withCheaperBuildings({ FORT: { GOLD_PILE: 1000 } })
+        withBuildingCosts({ FORT: { GOLD_PILE: 1000 } })
       )
     )
 
@@ -361,6 +379,121 @@ describe('computer towns building behavior', () => {
       await waitMs(COMPUTER_TURN_MS)
 
       expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual(['Tavern', 'Village Hall'])
+    })
+  })
+
+  // The player's hero starts two tiles below Kirkwall's gate, so it can reach it next turn. With
+  // only a Tavern and a Fort, Kirkwall would build its Town Hall.
+  describe('a threatened town', () => {
+    const readKirkwallFort = async (user) => {
+      await holdRightButtonOn(user, KIRKWALL.x, KIRKWALL.y)
+      return readTownBox(screen.getByRole('tooltip')).buildings
+    }
+
+    test("blue's town with a Fort builds its Citadel first when a red hero can reach its gate next turn", async () => {
+      const { user } = await setupApp(
+        aTownScenario(aBlueKirkwall().withBuildings(['TAVERN', 'FORT']))
+      )
+
+      await endDays(user)
+
+      expect(await readKirkwallFort(user)).toEqual(['Citadel'])
+    })
+
+    test("blue's town with a Citadel builds its Castle first", async () => {
+      const { user } = await setupApp(
+        aTownScenario(aBlueKirkwall().withBuildings(['TAVERN', 'FORT', 'CITADEL']))
+      )
+
+      await endDays(user)
+
+      expect(await readKirkwallFort(user)).toEqual(['Castle'])
+    })
+
+    test("blue's threatened town builds its Citadel though its garrison alone would hold it", async () => {
+      const { user } = await setupApp(
+        aTownScenario(
+          aBlueKirkwall().withBuildings(['TAVERN', 'FORT']).withGarrison(ARMY_THAT_WINS)
+        )
+      )
+
+      await endDays(user)
+
+      expect(await readKirkwallFort(user)).toEqual(['Citadel'])
+    })
+
+    test("blue's threatened town with no Fort builds its Town Hall, not a Fort", async () => {
+      const { user } = await setupApp(aTownScenario(aBlueKirkwall().withBuildings(['TAVERN'])))
+
+      await endDays(user)
+
+      expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual(['Tavern', 'Town Hall'])
+    })
+
+    test("blue's threatened town that can't pay for its Citadel builds its Town Hall", async () => {
+      const { user } = await setupApp(
+        aTownScenario(aBlueKirkwall().withBuildings(['TAVERN', 'FORT'])).withDefinitions(
+          withBuildingCosts({ CITADEL: { GOLD_PILE: 20000 } })
+        )
+      )
+
+      await endDays(user)
+
+      expect(await readPictureOfTownTakenAt(KIRKWALL)).toEqual(['Fort', 'Tavern', 'Town Hall'])
+    })
+
+    test("blue's town builds its Town Hall when the red hero is too far to reach its gate next turn", async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(60, 7)
+          .withEntities(aHero().at(40, 5), aBlueKirkwall().withBuildings(['TAVERN', 'FORT']))
+          .withDefinitions(gameDefinitions)
+      )
+
+      await endDays(user)
+
+      expect(await readKirkwallFort(user)).toEqual(['Fort'])
+    })
+
+    // Blue sees five tiles round Kirkwall; the red hero, 13 tiles from its gate, is out of
+    // its sight. Red's town lets the player see Kirkwall.
+    test("blue's town builds its Town Hall when the red hero stands on a tile blue hasn't explored", async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(30, 7)
+          .withFogOfWar(true)
+          .withEntities(
+            aHero().at(17, 3),
+            aTown().withId('town-3').named('Redwater').ownedByPlayer().at(7, 6),
+            aBlueKirkwall().withBuildings(['TAVERN', 'FORT'])
+          )
+          .withDefinitions(gameDefinitions)
+      )
+
+      await endDays(user)
+
+      expect(await readKirkwallFort(user)).toEqual(['Fort'])
+    })
+
+    // Kirkwall saves for its Town Hall, 2 wood short with a Sawmill's 2 a day, and keeps 6000 gold
+    // and 12 wood: 1500 gold are left, too little for Greenfield's Citadel.
+    test("blue's threatened second town doesn't build its Citadel with the gold its first town keeps", async () => {
+      const { user } = await setupApp(
+        aScenario()
+          .withSize(30, 7)
+          .withEntities(
+            aHero().at(12, 5),
+            aBlueKirkwall().withBuildings(['TAVERN']),
+            aBlueGreenfield().withBuildings(['TAVERN', 'FORT']),
+            aMine().withType('SAWMILL').ownedBy('blue').at(22, 6)
+          )
+          .withDefinitions(withBuildingCosts({ TOWN_HALL: { GOLD_PILE: 6000, WOOD_PILE: 12 } }))
+      )
+
+      await endDays(user)
+      await holdRightButtonOn(user, GREENFIELD.x, GREENFIELD.y)
+
+      expect(readTownBox(screen.getByRole('tooltip')).buildings).toEqual(['Fort'])
     })
   })
 })

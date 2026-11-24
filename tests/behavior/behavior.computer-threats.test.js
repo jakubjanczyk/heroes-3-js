@@ -39,6 +39,9 @@ const definitions = {
 
 const COMPUTER_TURN_MS = 2000
 
+const CITADEL = ['FORT', 'CITADEL']
+const CASTLE = ['FORT', 'CITADEL', 'CASTLE']
+
 const NO_SKILLS = { attack: 0, defense: 0, power: 1, knowledge: 1 }
 
 const weaklings = (count) => [{ creature: 'WEAKLING', count }]
@@ -62,13 +65,15 @@ const aRowScenario = (...entities) =>
 // bottom row runs past it.
 const GATE = { x: 20, y: 2 }
 
-const aBlueTown = (garrison = []) =>
-  aTown().withId('town-1').ownedBy('blue').withGarrison(garrison).at(GATE.x, GATE.y)
+const aBlueTown = (garrison = [], built = undefined) => {
+  const town = aTown().withId('town-1').ownedBy('blue').withGarrison(garrison)
+  return (built ? town.withBuildings(built) : town).at(GATE.x, GATE.y)
+}
 
-const aTownScenario = ({ garrison, entities }) =>
+const aTownScenario = ({ garrison, built, entities }) =>
   aScenario()
     .withSize(40, 4)
-    .withEntities(aBlueTown(garrison), ...entities)
+    .withEntities(aBlueTown(garrison, built), ...entities)
     .withDefinitions(definitions)
 
 const setupApp = (scenario) => setupMovementBehaviorApp({ loadGameOptions: scenario.build() })
@@ -139,6 +144,56 @@ describe('computer heroes keeping away from threats behavior', () => {
       await startBlueTurn(
         aTownScenario({
           garrison: [{ creature: 'COLOSSUS', count: 1 }],
+          entities: [aRedHero(6, weaklings(20), 2), aBlueHero(16, weaklings(10), 2)]
+        })
+      )
+
+      expectHeroAt(GATE.x, GATE.y, 'hero-2')
+    })
+  })
+
+  describe('the walls of its own town', () => {
+    // The garrison's Weakling (60) and the Citadel's 4000 outmatch the red hero's ten (600).
+    test('no blue hero goes back to its town with a Citadel when the garrison and the walls are stronger than the red hero', async () => {
+      await startBlueTurn(
+        aTownScenario({
+          garrison: weaklings(1),
+          built: CITADEL,
+          entities: [
+            aRedHero(7, weaklings(10), 2),
+            aBlueHero(26, weaklings(20), 2),
+            aPile('pile', 30, 2)
+          ]
+        })
+      )
+
+      expectResourceNotPresent('pile')
+    })
+
+    // The red hero's 160 Weaklings are worth 9600, and a tenth more is 10560: blue's twenty (1200)
+    // hold the town only with the Castle's 10000.
+    test('a blue hero goes back to its town with a Castle it holds only with the walls', async () => {
+      await startBlueTurn(
+        aTownScenario({
+          built: CASTLE,
+          entities: [
+            aRedHero(7, weaklings(160), 2),
+            aBlueHero(26, weaklings(20), 2),
+            aPile('pile', 30, 2)
+          ]
+        })
+      )
+
+      expectHeroAt(GATE.x, GATE.y, 'hero-2')
+    })
+
+    // With the garrison's Weakling and the Citadel's 4000, blue's ten Weaklings (600) outmatch the
+    // red hero's twenty (1200); without the walls they don't.
+    test('a blue hero keeps away in its own town with a Citadel when the walls make it safe', async () => {
+      await startBlueTurn(
+        aTownScenario({
+          garrison: weaklings(1),
+          built: CITADEL,
           entities: [aRedHero(6, weaklings(20), 2), aBlueHero(16, weaklings(10), 2)]
         })
       )

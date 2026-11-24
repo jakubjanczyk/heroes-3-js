@@ -322,6 +322,87 @@ describe('computer heroes attacking towns behavior', () => {
     })
   })
 
+  describe('the walls', () => {
+    const CITADEL = ['FORT', 'CITADEL']
+    const CASTLE = ['FORT', 'CITADEL', 'CASTLE']
+
+    // Ten Skeletons are worth 600; with a Citadel's 4000 and a tenth more, 5060.
+    const STRONGER_THAN_A_CITADEL = [stack('WEAKLING', 85)]
+    const STRONGER_THAN_THE_GARRISON_ALONE = [stack('WEAKLING', 12)]
+
+    const aWalledWhitemoon = (built, garrison = [stack('SKELETON', 10)]) =>
+      aWhitemoon(garrison).withBuildings(built)
+
+    test("blue's hero leaves alone a red town with a Citadel whose garrison it would beat without the walls", async () => {
+      await startBlueTurn(
+        aTownScenario({
+          town: aWalledWhitemoon(CITADEL),
+          blueHero: aBlueHero(STRONGER_THAN_THE_GARRISON_ALONE)
+        })
+      )
+
+      expect(queryBattleScreen()).toBeNull()
+      expect(readTownFlags()).toEqual(['Red player flag'])
+    })
+
+    test("blue's hero attacks a red town with a Citadel when stronger than the garrison and the walls by more than a tenth", async () => {
+      await startBlueTurn(
+        aTownScenario({
+          town: aWalledWhitemoon(CITADEL),
+          blueHero: aBlueHero(STRONGER_THAN_A_CITADEL)
+        })
+      )
+
+      expect(queryBattleScreen()).not.toBeNull()
+    })
+
+    test("blue's hero leaves alone a red town with a Castle it would attack were it only a Citadel", async () => {
+      await startBlueTurn(
+        aTownScenario({
+          town: aWalledWhitemoon(CASTLE),
+          blueHero: aBlueHero(STRONGER_THAN_A_CITADEL)
+        })
+      )
+
+      expect(queryBattleScreen()).toBeNull()
+    })
+
+    test("blue's hero attacks a red town with only a Fort as though it had no walls", async () => {
+      await startBlueTurn(
+        aTownScenario({
+          town: aWalledWhitemoon(['FORT']),
+          blueHero: aBlueHero(STRONGER_THAN_THE_GARRISON_ALONE)
+        })
+      )
+
+      expect(queryBattleScreen()).not.toBeNull()
+    })
+
+    test("blue's hero walks into an undefended red town with a Castle and takes it", async () => {
+      await startBlueTurn(
+        aTownScenario({
+          town: aWalledWhitemoon(CASTLE, []),
+          blueHero: aBlueHero([stack('WEAKLING', 1)])
+        })
+      )
+
+      expect(queryBattleScreen()).toBeNull()
+      expect(readTownFlags()).toEqual(['Blue player flag'])
+    })
+
+    test("blue's hero attacks a red hero in his town with a Citadel, the walls counted once for him and the garrison", async () => {
+      await startBlueTurn(
+        aTownScenario({
+          town: aWalledWhitemoon(CITADEL, [stack('SKELETON', 5)]),
+          blueHero: aBlueHero(STRONGER_THAN_A_CITADEL),
+          others: [aRedHeroInTown([stack('SKELETON', 5)])]
+        })
+      )
+
+      expect(readBattleHeroes()).toEqual([BLUE_HERO, HERO])
+    })
+  })
+
   describe('the garrison defends alone', () => {
     test("the battle screen opens during blue's turn, blue's hero on the left and the red garrison on the right", async () => {
       await startBlueTurn(aGarrisonThatWins())
