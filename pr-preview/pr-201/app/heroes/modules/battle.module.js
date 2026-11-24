@@ -1406,7 +1406,7 @@ export const registerBattleModule = defineModule(
             }
 
             emit(APP_FACT_BATTLE_AUTO_COMBAT_CHANGED, { enabled: !autoCombat })
-            if (autoCombat && !moving) {
+            if (autoCombat && !moving && !throwing) {
               continueBattle()
             }
           }
