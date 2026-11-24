@@ -720,7 +720,7 @@ In three parts.
 - [x] Post-combat: return to adventure map, dead monsters removed, hero continues
 
 ### 5.10 Siege Combat
-In seventeen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
+In eighteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town with defenders already starts a battle that captures it only on a win (8.1.6, 8.1.11); until 5.10.1 it is fought on an open field.
 - [x] 5.10.1 Walls and the drawbridge: a town with a Fort, Citadel or Castle is fought against its walls; walkers can't cross them, flyers fly over; the defender goes out and back through the drawbridge, which opens for them and shuts behind them
 - [x] 5.10.2 Holding the drawbridge: a dead stack on it keeps it open for good, a living attacker in front of it keeps it shut
 - [x] 5.10.3 Shooting at the walls: a shot from outside at a stack behind the walls does half damage, shown by the cursor and the damage range
@@ -736,7 +736,8 @@ In seventeen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town
 - [x] 5.10.10 Ballistics' shots: better chances to hit the wall and more damage by level, two shots from Advanced, the second at the nearest standing part if the first destroyed its target
 - [x] 5.10.10b Aiming the catapult: with Ballistics the player's hero aims it on a turn of its own, after the towers and before every stack, by clicking a wall segment, the drawbridge, the Keep or a tower, each with its own chance; on that turn the hero can cast a spell first, Defend passes it, Auto combat lets it aim itself, Retreat and Surrender work; with nothing left standing it has no turn
 - [x] 5.10.10c The catapult's Wait: its turn comes back first among the stacks that waited
-- [ ] 5.10.11 The computer and the walls: the walls in its weighing of a town, a threatened town building its walls, the catapult's automatic aim
+- [ ] 5.10.11 The catapult aiming itself with Ballistics: for a computer attacker and in Auto combat, the drawbridge first, then the walls while all four stand, then the Keep and the towers
+- [ ] 5.10.11b The computer and the walls: the walls in its weighing of a town and of its own threatened towns, a threatened town building its Citadel or Castle first
 - [ ] 5.10.12 Controlling the towers: the defending player aims the arrow towers (with Artillery, as the game does, or by another way of controlling them if Artillery's war machines aren't there yet)
 
 ---
