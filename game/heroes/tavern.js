@@ -82,6 +82,31 @@ export function isBackFromBattle({ role }) {
   return role === TAVERN_ROLE_RETREATED || role === TAVERN_ROLE_SURRENDERED
 }
 
+// A player started as the town type of their first town in the scenario, or with none, of their
+// first hero's class.
+export function startingTownTypes({ towns, heroes, heroClasses }) {
+  const types = {}
+  for (const { owner, type } of towns) {
+    types[owner] ??= type
+  }
+  for (const { owner, heroClass } of heroes) {
+    types[owner] ??= heroClasses?.[heroClass]?.town
+  }
+  return types
+}
+
+// The week's left-most hero is of the town type the player started as, while one is free.
+function poolForSlot({ pool, heroClasses, takenNames, slot, isReplacement, startingTownType }) {
+  if (slot > 0 || isReplacement || !startingTownType) {
+    return pool
+  }
+  const ofStartingType = pool.filter(
+    ({ name, heroClass }) =>
+      !takenNames.has(name) && heroClasses?.[heroClass]?.town === startingTownType
+  )
+  return ofStartingType.length > 0 ? ofStartingType : pool
+}
+
 // Heroes on the map are never offered. `kept` holds the heroes still offered, null where a new one
 // is needed; a hero filling the place of one just hired is a replacement.
 export function rollHeroesForHire({
@@ -90,15 +115,22 @@ export function rollHeroesForHire({
   heroNamesOnMap,
   kept,
   isReplacement,
+  startingTownType,
   random
 }) {
   const takenNames = new Set([...heroNamesOnMap, ...kept.filter(Boolean).map(({ name }) => name)])
-  return kept.map((hero) => {
+  return kept.map((hero, slot) => {
     if (hero) {
       return hero
     }
 
-    const rolled = rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random })
+    const rolled = rollHeroForHire({
+      pool: poolForSlot({ pool, heroClasses, takenNames, slot, isReplacement, startingTownType }),
+      heroClasses,
+      takenNames,
+      isReplacement,
+      random
+    })
     if (rolled) {
       takenNames.add(rolled.name)
     }

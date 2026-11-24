@@ -16,7 +16,8 @@ import {
   isDefendedAgainst,
   townGarrison,
   townIdsOf,
-  townOwner
+  townOwner,
+  townType
 } from '../../../game/heroes/state/towns.js'
 import {
   BUILDING_STATUS,
@@ -232,6 +233,7 @@ export const registerTownModule = defineModule(
       const built = builtIn(current, openTownId)
       emit(APP_UI_TOWN_UPDATED, {
         entityId: openTownId,
+        townType: townType(current, openTownId),
         name: nameOf(openTownId),
         garrison: getTownGarrison({
           entity: { garrison: townGarrison(current, openTownId) },

@@ -13,9 +13,10 @@ import {
   readSelectedHeroInHeroList
 } from './adventure-panels.utils.js'
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
-import { aHero, aScenario, aTown } from './builders.js'
+import { aHero, aScenario, aTown, aTownDefinition } from './builders.js'
 import {
   closeTavern,
+  enterTownAt,
   getHireButton,
   getVisitingHero,
   hireHero,
@@ -385,6 +386,128 @@ describe('town tavern behavior', () => {
       await openTavernIn(reloaded.user)
 
       expect(readHeroesForHire()).toEqual(['Orrin', 'Valeska'])
+    })
+  })
+
+  describe("the week's first hero", () => {
+    const WOODLAND = 'WOODLAND'
+    const KNIGHT = gameDefinitions.heroClasses.KNIGHT
+    const RANGER = { ...KNIGHT, name: 'Ranger', town: WOODLAND }
+    const knight = (name) => ({ name, heroClass: 'KNIGHT' })
+    const ranger = (name) => ({ name, heroClass: 'RANGER' })
+
+    const woodlandDefinitions = {
+      ...gameDefinitions,
+      heroClasses: { KNIGHT, RANGER },
+      heroes: {
+        ORRIN: knight('Orrin'),
+        VALESKA: knight('Valeska'),
+        IVOR: ranger('Ivor'),
+        MEPHALA: ranger('Mephala')
+      },
+      towns: {
+        ...gameDefinitions.towns,
+        [WOODLAND]: aTownDefinition()
+          .withName('Woodland')
+          .withPicture({ VILLAGE_HALL: { x: 100, y: 100 }, TAVERN: { x: 200, y: 100 } })
+          .build()
+      }
+    }
+
+    const anElmhollow = () =>
+      aTown()
+        .withId('town-3')
+        .withType(WOODLAND)
+        .named('Elmhollow')
+        .ownedByPlayer()
+        .withBuildings(TAVERN)
+        .at(8, 3)
+
+    const aWoodlandScenario = ({
+      heroes = [aHero().withName('Sir Christian').at(0, 6)],
+      towns = [anElmhollow()]
+    } = {}) => aTavernScenario({ heroes, towns }).withDefinitions(woodlandDefinitions)
+
+    test('on the first day the left-most hero is of the town type the player started as', async () => {
+      const { user } = await setupApp(aWoodlandScenario())
+
+      await openTavernIn(user, 'Elmhollow')
+
+      expect(readHeroesForHire()).toEqual(['Ivor', 'Orrin'])
+    })
+
+    test('a tavern of another town type also offers a hero of the starting town type first', async () => {
+      const { user } = await setupApp(aWoodlandScenario({ towns: [anElmhollow(), aWhitemoon()] }))
+
+      await openTavernIn(user, 'Whitemoon')
+
+      expect(readHeroesForHire()).toEqual(['Ivor', 'Orrin'])
+    })
+
+    test('a new week again offers a hero of the starting town type first', async () => {
+      let roll = 0
+      const { user } = await setupApp(aWoodlandScenario(), { random: () => roll })
+      await openTavernIn(user, 'Elmhollow')
+      await closeTavern(user)
+      await leaveTown(user)
+      roll = 0.5
+
+      await endTurns(user, 7)
+      await openTavernIn(user, 'Elmhollow')
+
+      expect(readHeroesForHire()).toEqual(['Mephala', 'Valeska'])
+    })
+
+    test("the hero who takes the left-most hero's place may be of any town type", async () => {
+      const { user } = await setupApp(aWoodlandScenario())
+      await hireHeroInTown(user, 'Ivor', 'Elmhollow')
+
+      await openTavern(user)
+
+      expect(readHeroesForHire()).toEqual(['Valeska', 'Orrin'])
+    })
+
+    test('with every hero of the starting town type on the map, the left-most hero is of another', async () => {
+      const { user } = await setupApp(
+        aWoodlandScenario({
+          heroes: [
+            aHero().withName('Ivor').withHeroClass('RANGER').at(0, 6),
+            aHero().withId('hero-2').withName('Mephala').withHeroClass('RANGER').at(1, 6)
+          ]
+        })
+      )
+
+      await openTavernIn(user, 'Elmhollow')
+
+      expect(readHeroesForHire()).toEqual(['Orrin', 'Valeska'])
+    })
+
+    test("a player who starts with no town gets a hero of their first hero's class's town type first", async () => {
+      const { user } = await setupApp(
+        aWoodlandScenario({
+          heroes: [aHero().withName('Gem').withHeroClass('RANGER').at(4, 4)],
+          towns: [aTown().named('Whitemoon').withBuildings(TAVERN).at(4, 3)]
+        })
+      )
+      await enterTownAt(4, 3)
+
+      await openTavern(user)
+
+      expect(readHeroesForHire()).toEqual(['Ivor', 'Orrin'])
+    })
+
+    test('after a reload, the tavern offers the same heroes', async () => {
+      const scenario = aWoodlandScenario()
+      const eventLog = createMemoryEventLog()
+      const { user } = await setupApp(scenario, { eventLog })
+      await openTavernIn(user, 'Elmhollow')
+      await closeTavern(user)
+      await leaveTown(user)
+
+      const reloaded = await setupApp(scenario, { eventLog, random: HIGHEST_ROLLS })
+      await openTavernIn(reloaded.user, 'Elmhollow')
+
+      expect(readHeroesForHire()).toEqual(['Ivor', 'Orrin'])
     })
   })
 })
