@@ -279,6 +279,20 @@ export const registerBattleViewModule = defineModule(
       return activeStack && !shown.moving ? activeStack : null
     }
 
+    // A tower stands off the battlefield, so its turn has no active stack.
+    const findIdleTower = () => (shown?.activeTower && !shown.moving ? shown.activeTower : null)
+
+    // The side whose turn waits for the player's order.
+    function idleTurnSide() {
+      const activeStack = findIdleActiveStack()
+      return activeStack ? fightsFor(activeStack) : (findIdleTower()?.side ?? null)
+    }
+
+    function describeTowerAim(hex) {
+      const shot = findShot(hex)
+      return shot ? `Shoot ${shot.target.name} (damage ${describeDamageRange(shot.damage)})` : ''
+    }
+
     function describeStackHex(hex, activeStack) {
       const shot = findShot(hex)
       if (shot) {
@@ -293,8 +307,8 @@ export const registerBattleViewModule = defineModule(
     }
 
     function isPickedSpellTarget(target) {
-      const caster = findIdleActiveStack()
-      return Boolean(caster) && isSpellTarget(pickedSpell.targeting, target, fightsFor(caster))
+      const casterSide = idleTurnSide()
+      return Boolean(casterSide) && isSpellTarget(pickedSpell.targeting, target, casterSide)
     }
 
     function findCorpseOn(hex) {
@@ -305,7 +319,7 @@ export const registerBattleViewModule = defineModule(
 
     const sacrificeAim = () => ({
       targeting: pickedSpell.targeting,
-      casterSide: fightsFor(findIdleActiveStack())
+      casterSide: idleTurnSide()
     })
 
     // Sacrifice brings back a stack that lost creatures, or a dead one no stack stands on.
@@ -317,7 +331,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function findSpellTarget(hex) {
-      if (!findIdleActiveStack()) {
+      if (!idleTurnSide()) {
         return null
       }
       if (pickedSpell.targeting.sacrifices) {
@@ -425,8 +439,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function describeHex(hex) {
-      const activeStack = findIdleActiveStack()
-      if (!activeStack) {
+      if (!idleTurnSide()) {
         return ''
       }
 
@@ -434,10 +447,15 @@ export const registerBattleViewModule = defineModule(
         return describeSpellAim(hex)
       }
 
-      if (isAimingCatapult()) {
-        return describeCatapultAim(hex)
+      if (findIdleTower()) {
+        return describeTowerAim(hex)
       }
 
+      return isAimingCatapult() ? describeCatapultAim(hex) : describeActiveStackHex(hex)
+    }
+
+    function describeActiveStackHex(hex) {
+      const activeStack = findIdleActiveStack()
       if (findLivingStackOn(hex)) {
         return describeStackHex(hex, activeStack)
       }
@@ -462,8 +480,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function pickCursor(hex) {
-      const activeStack = findIdleActiveStack()
-      if (!activeStack) {
+      if (!idleTurnSide()) {
         return null
       }
 
@@ -471,10 +488,15 @@ export const registerBattleViewModule = defineModule(
         return pickSpellCursor(hex)
       }
 
-      if (isAimingCatapult()) {
-        return pickCatapultCursor(hex)
+      if (findIdleTower()) {
+        return findShot(hex) ? 'shoot' : 'blocked'
       }
 
+      return isAimingCatapult() ? pickCatapultCursor(hex) : pickActiveStackCursor(hex)
+    }
+
+    function pickActiveStackCursor(hex) {
+      const activeStack = findIdleActiveStack()
       const stack = findLivingStackOn(hex)
       if (stack) {
         return pickStackCursor(hex, stack, activeStack)
@@ -490,7 +512,7 @@ export const registerBattleViewModule = defineModule(
     // The cursor shadow: the hex under the mouse, or every hex of the enemy it would attack
     // or shoot. Not after a tap, or the hex would stay lit once the finger is gone.
     function findHighlightedHexes(hex) {
-      if (!hex || !findIdleActiveStack() || pointerType === 'touch') {
+      if (!hex || !idleTurnSide() || pointerType === 'touch') {
         return []
       }
 
@@ -516,7 +538,7 @@ export const registerBattleViewModule = defineModule(
     }
 
     function findStacksSpellWouldHit(hex) {
-      if (!hex || !pickedSpell || !findIdleActiveStack() || pointerType === 'touch') {
+      if (!hex || !pickedSpell || !idleTurnSide() || pointerType === 'touch') {
         return []
       }
       if (isPickingSacrifice()) {
@@ -732,12 +754,13 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
-    function showTowers(towers = []) {
+    function showTowers(towers = [], activeTower = null) {
       for (const element of battlefield.querySelectorAll('.battlefield__tower')) {
         element.remove()
       }
       for (const tower of towers) {
-        hexElementAt(tower).append(renderTower(document, tower))
+        const isActive = tower.tower === activeTower?.tower
+        hexElementAt(tower).append(renderTower(document, { ...tower, isActive }))
       }
     }
 
@@ -795,7 +818,7 @@ export const registerBattleViewModule = defineModule(
       showStacks(battle, previous)
       showWalls(battle.walls)
       showMoat(battle.moat)
-      showTowers(battle.towers)
+      showTowers(battle.towers, battle.activeTower)
       battlefield.classList.toggle(
         'battlefield--aiming-catapult',
         battle.catapultTargets.length > 0 && !battle.moving
@@ -1143,21 +1166,40 @@ export const registerBattleViewModule = defineModule(
       }
 
       if (isAimingCatapult()) {
-        const target = findCatapultTarget(hex, tower)
-        if (target) {
-          emit(APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED, { part: target.part })
-        }
+        aimCatapultAt(hex, tower)
         return
       }
 
+      if (findIdleTower()) {
+        shootAt(hex)
+        return
+      }
+
+      orderStackTo(hex)
+    }
+
+    function aimCatapultAt(hex, tower) {
+      const target = findCatapultTarget(hex, tower)
+      if (target) {
+        emit(APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED, { part: target.part })
+      }
+    }
+
+    function shootAt(hex) {
+      const shot = findShot(hex)
+      if (shot) {
+        emit(APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED, { targetId: shot.target.id })
+      }
+      return Boolean(shot)
+    }
+
+    function orderStackTo(hex) {
       if (!findLivingStackOn(hex)) {
         emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
         return
       }
 
-      const shot = findShot(hex)
-      if (shot) {
-        emit(APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED, { targetId: shot.target.id })
+      if (shootAt(hex)) {
         return
       }
 

@@ -1,9 +1,10 @@
-import { planTowerShot } from '../../../game/heroes/arrow-towers.js'
+import { getTowerTargets, planTowerShot } from '../../../game/heroes/arrow-towers.js'
 import {
   areaTargetIds,
   attackStack,
   CATAPULT,
   canHeroAimCatapult,
+  canHeroAimTowers,
   canTeleportTo,
   castDamageSpell,
   castHealingSpell,
@@ -28,11 +29,11 @@ import {
   getShotTargets,
   getStackHexes,
   getStackReach,
+  getTurnSide,
   hasCastThisRound,
   hasLivingStacks,
   hasWaited,
   heroBattleSide,
-  isCatapultsTurn,
   moveStack,
   planBattleCatapultShot,
   planStackAttack,
@@ -382,6 +383,7 @@ export const registerBattleModule = defineModule(
         towerArrow,
         wallHits: [],
         activeStackId,
+        activeTower: null,
         moving: true,
         reachableHexes: [],
         attackTargets: [],
@@ -407,6 +409,15 @@ export const registerBattleModule = defineModule(
     }
 
     function activeStackView(activeStack) {
+      if (isTowersTurn()) {
+        const tower = controlledShooter()
+        return {
+          activeStackId: null,
+          activeTower: { tower, side: getTurnSide(battle) },
+          ...NO_ORDERS,
+          shotTargets: getTowerTargets(battle, tower)
+        }
+      }
       if (!activeStack) {
         return { activeStackId: null, ...NO_ORDERS }
       }
@@ -451,19 +462,19 @@ export const registerBattleModule = defineModule(
         ...activeStackView(activeStack),
         messages: battle.messages,
         effects: takeNewEffects(),
-        ...playerActions(activeStack),
+        ...playerActions(),
         results: outcome ? describeResults() : null,
         autoCombat,
         stepDelayMs
       })
     }
 
-    function playerActions(activeStack) {
+    function playerActions() {
       const canAct = isPlayersTurn()
       const canLeadHero = isLeadingHerosTurn()
       return {
-        canWait: (canAct || isCatapultAimTurn()) && !hasWaited(battle, activeStack.id),
-        canDefend: canAct || isCatapultAimTurn(),
+        canWait: (canAct || isShootersTurn()) && !hasWaited(battle, turnStackId()),
+        canDefend: canAct || isShootersTurn(),
         canRetreat: canLeadHero && canLeave(),
         surrenderRefusal:
           playerSide === 'attacker' ? battleDefenderOf(started).surrenderRefusal : null,
@@ -672,10 +683,11 @@ export const registerBattleModule = defineModule(
       }
 
       const shooter = getRoundStartShooter(battle)
+      if (shooter && controlsShooter(shooter)) {
+        return
+      }
       if (shooter === CATAPULT) {
-        if (!aimsCatapult()) {
-          void throwStone(planBattleCatapultShot(battle, catapultRandom))
-        }
+        void throwStone(planBattleCatapultShot(battle, catapultRandom))
         return
       }
       if (shooter) {
@@ -719,16 +731,43 @@ export const registerBattleModule = defineModule(
       isPlayers(getActiveStack(battle))
 
     // The player's hero with Ballistics aims the catapult, unless Auto combat plays for them.
-    const aimsCatapult = () =>
-      playerSide === 'attacker' && !autoCombat && canHeroAimCatapult(battle)
+    const aimsCatapult = () => playerSide === 'attacker' && canHeroAimCatapult(battle)
 
-    const isCatapultAimTurn = () =>
-      Boolean(battle) &&
-      !outcome &&
-      !moving &&
-      !throwing &&
-      isCatapultsTurn(battle) &&
-      aimsCatapult()
+    // The defending player's hero with Artillery aims the towers.
+    const aimsTowers = () => playerSide === 'defender' && canHeroAimTowers(battle)
+
+    const controlsShooter = (shooter) =>
+      !autoCombat && (shooter === CATAPULT ? aimsCatapult() : aimsTowers())
+
+    // The tower or the catapult whose turn the player plays, before every stack's.
+    function controlledShooter() {
+      if (!battle || outcome || moving || throwing) {
+        return null
+      }
+      const shooter = getRoundStartShooter(battle)
+      return shooter && controlsShooter(shooter) ? shooter : null
+    }
+
+    const isCatapultAimTurn = () => controlledShooter() === CATAPULT
+
+    const isShootersTurn = () => Boolean(controlledShooter())
+
+    const isTowersTurn = () => isShootersTurn() && !isCatapultAimTurn()
+
+    function aimTowerAt(targetId) {
+      const arrow = planTowerShot(battle, controlledShooter(), towerRandom, targetId)
+      if (arrow) {
+        void shootArrow(arrow)
+      }
+    }
+
+    const shooterStackId = (shooter) =>
+      shooter === CATAPULT ? getCatapultStack(battle).id : shooter
+
+    function turnStackId() {
+      const shooter = controlledShooter()
+      return shooter ? shooterStackId(shooter) : getActiveStack(battle)?.id
+    }
 
     const turnStack = () =>
       isCatapultAimTurn() ? getCatapultStack(battle) : getActiveStack(battle)
@@ -790,7 +829,7 @@ export const registerBattleModule = defineModule(
 
     // The player leads a hero as the attacker, or as the defender when the defender is a hero.
     const isLeadingHerosTurn = () =>
-      (isPlayersTurn() || isCatapultAimTurn()) && Boolean(playerHeroId())
+      (isPlayersTurn() || isShootersTurn()) && Boolean(playerHeroId())
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -879,7 +918,7 @@ export const registerBattleModule = defineModule(
     }
 
     function chooseSacrificeTargets(targeting, { targetId, sacrificedId }) {
-      const aim = { targeting, casterSide: fightsFor(turnStack()) }
+      const aim = { targeting, casterSide: getTurnSide(battle) }
       const sacrificed = battle.stacks.find(({ id }) => id === sacrificedId)
       return sacrificeTargetIds(battle.stacks, aim).includes(targetId) &&
         sacrificed &&
@@ -967,7 +1006,7 @@ export const registerBattleModule = defineModule(
         emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, { noWalls: true })
         return
       }
-      if (fightsFor(turnStack()) !== 'attacker') {
+      if (getTurnSide(battle) !== 'attacker') {
         emit(APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE, {})
         return
       }
@@ -1317,6 +1356,10 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
           handler: (event) => {
+            if (isTowersTurn()) {
+              aimTowerAt(event.detail.targetId)
+              return
+            }
             if (!isPlayersTurn()) {
               return
             }
@@ -1335,23 +1378,23 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
           handler: () => {
-            const stack = (isPlayersTurn() || isCatapultAimTurn()) && turnStack()
-            if (!stack || hasWaited(battle, stack.id)) {
+            const stackId = (isPlayersTurn() || isShootersTurn()) && turnStackId()
+            if (!stackId || hasWaited(battle, stackId)) {
               return
             }
 
-            emit(APP_FACT_BATTLE_STACK_WAITED, { stackId: stack.id })
+            emit(APP_FACT_BATTLE_STACK_WAITED, { stackId })
             continueBattle()
           }
         },
         {
           type: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
           handler: () => {
-            if (!isPlayersTurn() && !isCatapultAimTurn()) {
+            if (!isPlayersTurn() && !isShootersTurn()) {
               return
             }
 
-            emit(APP_FACT_BATTLE_STACK_DEFENDED, { stackId: turnStack().id })
+            emit(APP_FACT_BATTLE_STACK_DEFENDED, { stackId: turnStackId() })
             continueBattle()
           }
         },
