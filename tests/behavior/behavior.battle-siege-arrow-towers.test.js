@@ -331,6 +331,22 @@ describe('siege arrow towers behavior', () => {
       expect(isBattleHexReachable(NEXT_TO_THE_SLUG.row, NEXT_TO_THE_SLUG.column)).toBe(true)
     })
 
+    test('Auto combat turned on while an arrow flies lets the towers go on shooting one at a time', async () => {
+      const { user } = await setupApp(
+        anAttackScenario({ town: aBlueTown({ buildings: CASTLE }) }),
+        { stepDelayMs: 100 }
+      )
+      confirmTileClickByDispatch(TOWN_ENTRANCE.x, TOWN_ENTRANCE.y)
+      await waitMs(FLIGHT_MS / 2)
+
+      await clickBattleButton(user, 'Auto combat')
+      const rightAfterTheClick = readTowerArrows()
+      await waitMs(FLIGHT_MS)
+
+      expect(rightAfterTheClick).toEqual(['Keep arrow'])
+      expect(readTowerArrows()).toEqual(['Upper Tower arrow'])
+    })
+
     test('they shoot again as the next round starts', async () => {
       const { user } = await attackTown()
 

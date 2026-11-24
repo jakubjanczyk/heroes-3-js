@@ -244,6 +244,7 @@ Left for later: each faction's own walls, moat and Tower's land mines (6.5); the
   - Shots, chances and misses as in 5.10.10: a miss goes to the nearest standing segment, a second shot goes where the first was aimed, or to the nearest part standing if that fell.
   - Without Ballistics it aims as in 5.10.5 and 5.10.9c.
   - What is saved: nothing new; each shot is saved with its aim and the part it hit, as now.
+  - Fixed with it: Auto combat turned on while an arrow or a stone was in the air started a second run of turns beside the one the landing carries on, so two stacks acted at once; it now waits for the landing.
   - Refactor (agreed with the plan): the catapult's `aimedByHero` becomes `hasBallistics`, since the skill now decides both whether the player aims and how the catapult aims itself.
 - **5.10.11b, the computer and the walls** (checked against the reference engine's AI: its town defence estimate and its building choice for a threatened town; the original game's AI is not documented, so the rules are ours, after it):
   - The walls' worth: a town with a Citadel counts 4000 more, with a Castle 10000, added once to what defends it (the garrison, with a hero standing in it). A Fort counts nothing, though it has walls in battle. A town nobody defends counts nothing for its walls: there is no battle.
