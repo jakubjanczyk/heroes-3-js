@@ -50,7 +50,7 @@
   "TAVERN": {
     "name": "Tavern",
     "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 },
-    "defenderMorale": 1
+    "defenderBonuses": { "morale": 1 }
   },
   "MARKETPLACE": { "name": "Marketplace", "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 } },
   "RESOURCE_SILO": {

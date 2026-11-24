@@ -65,7 +65,7 @@
         "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 },
         "requires": ["TAVERN"],
         "structure": false,
-        "defenderMorale": 2
+        "defenderBonuses": { "morale": 2 }
       },
       "LIGHTHOUSE": {
         "name": "Lighthouse",
@@ -76,10 +76,13 @@
         "name": "Stables",
         "cost": { "WOOD_PILE": 10, "GOLD_PILE": 2000 },
         "requires": ["BARRACKS"],
-        "weekBonus": {
-          "sharedWith": "STABLES",
-          "movementPoints": 400,
-          "message": "The head groom approaches leading a fine looking war horse. \"This steed will help speed you in your travels. Alas, his endurance will wane with a lot of heavy riding, and you must return for a fresh mount at the start of the week.\""
+        "visit": {
+          "sharesBonusWith": "STABLES",
+          "visits": "whileBonusLasts",
+          "rewards": [{ "type": "weekMovementPoints", "amount": 400 }],
+          "messages": {
+            "gives": "The head groom approaches leading a fine looking war horse. \"This steed will help speed you in your travels. Alas, his endurance will wane with a lot of heavy riding, and you must return for a fresh mount at the start of the week.\""
+          }
         }
       },
       "GRIFFIN_BASTION": {

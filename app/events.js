@@ -67,6 +67,7 @@ export const APP_COMMAND_TOWN_RECRUIT_REQUESTED = 'command.town.recruit.requeste
 export const APP_COMMAND_DWELLING_RECRUIT_REQUESTED = 'command.dwelling.recruit.requested'
 // A hero entered a bonus object or a resource generator.
 export const APP_COMMAND_MAP_OBJECT_VISIT_REQUESTED = 'command.mapObject.visit.requested'
+export const APP_COMMAND_TOWN_BUILDING_VISIT_REQUESTED = 'command.townBuilding.visit.requested'
 export const APP_COMMAND_TOWN_STACK_MOVE_REQUESTED = 'command.town.stackMove.requested'
 export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.requested'
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
