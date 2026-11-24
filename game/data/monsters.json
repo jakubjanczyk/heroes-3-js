@@ -340,6 +340,7 @@
     "namePlural": "Centaurs",
     "faction": "RAMPART",
     "tier": 1,
+    "upgradesTo": "CENTAUR_CAPTAIN",
     "attack": 5,
     "defense": 3,
     "damage": {
@@ -354,6 +355,280 @@
     },
     "aiValue": 100,
     "abilities": ["doubleWide"]
+  },
+  "CENTAUR_CAPTAIN": {
+    "name": "Centaur Captain",
+    "namePlural": "Centaur Captains",
+    "faction": "RAMPART",
+    "tier": 1,
+    "attack": 6,
+    "defense": 3,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "health": 10,
+    "speed": 8,
+    "growth": 14,
+    "cost": {
+      "GOLD_PILE": 90
+    },
+    "aiValue": 138,
+    "abilities": ["doubleWide"]
+  },
+  "DWARF": {
+    "name": "Dwarf",
+    "namePlural": "Dwarves",
+    "faction": "RAMPART",
+    "tier": 2,
+    "upgradesTo": "BATTLE_DWARF",
+    "attack": 6,
+    "defense": 7,
+    "damage": {
+      "min": 2,
+      "max": 4
+    },
+    "health": 20,
+    "speed": 3,
+    "growth": 8,
+    "cost": {
+      "GOLD_PILE": 120
+    },
+    "aiValue": 138,
+    "abilities": []
+  },
+  "BATTLE_DWARF": {
+    "name": "Battle Dwarf",
+    "namePlural": "Battle Dwarves",
+    "faction": "RAMPART",
+    "tier": 2,
+    "attack": 7,
+    "defense": 7,
+    "damage": {
+      "min": 2,
+      "max": 4
+    },
+    "health": 20,
+    "speed": 5,
+    "growth": 8,
+    "cost": {
+      "GOLD_PILE": 150
+    },
+    "aiValue": 209,
+    "abilities": []
+  },
+  "WOOD_ELF": {
+    "name": "Wood Elf",
+    "namePlural": "Wood Elves",
+    "faction": "RAMPART",
+    "tier": 3,
+    "upgradesTo": "GRAND_ELF",
+    "attack": 9,
+    "defense": 5,
+    "damage": {
+      "min": 3,
+      "max": 5
+    },
+    "health": 15,
+    "speed": 6,
+    "growth": 7,
+    "cost": {
+      "GOLD_PILE": 200
+    },
+    "aiValue": 234,
+    "shots": 24,
+    "abilities": ["ranged"]
+  },
+  "GRAND_ELF": {
+    "name": "Grand Elf",
+    "namePlural": "Grand Elves",
+    "faction": "RAMPART",
+    "tier": 3,
+    "attack": 9,
+    "defense": 5,
+    "damage": {
+      "min": 3,
+      "max": 5
+    },
+    "health": 15,
+    "speed": 7,
+    "growth": 7,
+    "cost": {
+      "GOLD_PILE": 225
+    },
+    "aiValue": 331,
+    "shots": 24,
+    "abilities": ["ranged", "shootsTwice"]
+  },
+  "PEGASUS": {
+    "name": "Pegasus",
+    "namePlural": "Pegasi",
+    "faction": "RAMPART",
+    "tier": 4,
+    "upgradesTo": "SILVER_PEGASUS",
+    "attack": 9,
+    "defense": 8,
+    "damage": {
+      "min": 5,
+      "max": 9
+    },
+    "health": 30,
+    "speed": 8,
+    "growth": 5,
+    "cost": {
+      "GOLD_PILE": 250
+    },
+    "aiValue": 518,
+    "abilities": ["flying", "doubleWide"]
+  },
+  "SILVER_PEGASUS": {
+    "name": "Silver Pegasus",
+    "namePlural": "Silver Pegasi",
+    "faction": "RAMPART",
+    "tier": 4,
+    "attack": 9,
+    "defense": 10,
+    "damage": {
+      "min": 5,
+      "max": 9
+    },
+    "health": 30,
+    "speed": 12,
+    "growth": 5,
+    "cost": {
+      "GOLD_PILE": 275
+    },
+    "aiValue": 532,
+    "abilities": ["flying", "doubleWide"]
+  },
+  "DENDROID_GUARD": {
+    "name": "Dendroid Guard",
+    "namePlural": "Dendroid Guards",
+    "faction": "RAMPART",
+    "tier": 5,
+    "upgradesTo": "DENDROID_SOLDIER",
+    "attack": 9,
+    "defense": 12,
+    "damage": {
+      "min": 10,
+      "max": 14
+    },
+    "health": 55,
+    "speed": 3,
+    "growth": 3,
+    "cost": {
+      "GOLD_PILE": 350
+    },
+    "aiValue": 517,
+    "abilities": []
+  },
+  "DENDROID_SOLDIER": {
+    "name": "Dendroid Soldier",
+    "namePlural": "Dendroid Soldiers",
+    "faction": "RAMPART",
+    "tier": 5,
+    "attack": 9,
+    "defense": 12,
+    "damage": {
+      "min": 10,
+      "max": 14
+    },
+    "health": 65,
+    "speed": 4,
+    "growth": 3,
+    "cost": {
+      "GOLD_PILE": 425
+    },
+    "aiValue": 803,
+    "abilities": []
+  },
+  "UNICORN": {
+    "name": "Unicorn",
+    "namePlural": "Unicorns",
+    "faction": "RAMPART",
+    "tier": 6,
+    "upgradesTo": "WAR_UNICORN",
+    "attack": 15,
+    "defense": 14,
+    "damage": {
+      "min": 18,
+      "max": 22
+    },
+    "health": 90,
+    "speed": 7,
+    "growth": 2,
+    "cost": {
+      "GOLD_PILE": 850
+    },
+    "aiValue": 1806,
+    "abilities": ["doubleWide"]
+  },
+  "WAR_UNICORN": {
+    "name": "War Unicorn",
+    "namePlural": "War Unicorns",
+    "faction": "RAMPART",
+    "tier": 6,
+    "attack": 15,
+    "defense": 14,
+    "damage": {
+      "min": 18,
+      "max": 22
+    },
+    "health": 110,
+    "speed": 9,
+    "growth": 2,
+    "cost": {
+      "GOLD_PILE": 950
+    },
+    "aiValue": 2030,
+    "abilities": ["doubleWide"]
+  },
+  "GREEN_DRAGON": {
+    "name": "Green Dragon",
+    "namePlural": "Green Dragons",
+    "faction": "RAMPART",
+    "tier": 7,
+    "upgradesTo": "GOLD_DRAGON",
+    "attack": 18,
+    "defense": 18,
+    "damage": {
+      "min": 40,
+      "max": 50
+    },
+    "health": 180,
+    "speed": 10,
+    "growth": 1,
+    "cost": {
+      "GOLD_PILE": 2400,
+      "CRYSTAL_PILE": 1
+    },
+    "aiValue": 4872,
+    "king": 1,
+    "spellLevelImmunity": 3,
+    "abilities": ["flying", "doubleWide"]
+  },
+  "GOLD_DRAGON": {
+    "name": "Gold Dragon",
+    "namePlural": "Gold Dragons",
+    "faction": "RAMPART",
+    "tier": 7,
+    "attack": 27,
+    "defense": 27,
+    "damage": {
+      "min": 40,
+      "max": 50
+    },
+    "health": 250,
+    "speed": 16,
+    "growth": 1,
+    "cost": {
+      "GOLD_PILE": 4000,
+      "CRYSTAL_PILE": 2
+    },
+    "aiValue": 8613,
+    "king": 1,
+    "spellLevelImmunity": 4,
+    "abilities": ["flying", "doubleWide"]
   },
   "IMP": {
     "name": "Imp",
