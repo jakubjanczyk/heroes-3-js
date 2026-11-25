@@ -70,7 +70,7 @@ export const registerMageGuildModule = defineModule(
     }
 
     function show() {
-      const { builtLevel, highestLevel } = guildOf(openTownId)
+      const { type, builtLevel, highestLevel } = guildOf(openTownId)
       const rolled = mageGuildSpellsOf(state.get(), openTownId)
       const levels = Array.from({ length: highestLevel }, (_, index) => {
         const level = index + 1
@@ -81,7 +81,7 @@ export const registerMageGuildModule = defineModule(
           closedScrolls: isBuilt ? 0 : spellPlacesAt(level)
         }
       })
-      emit(APP_UI_MAGE_GUILD_UPDATED, { entityId: openTownId, levels })
+      emit(APP_UI_MAGE_GUILD_UPDATED, { entityId: openTownId, townType: type, levels })
     }
 
     function rollMissingLevels(townId) {

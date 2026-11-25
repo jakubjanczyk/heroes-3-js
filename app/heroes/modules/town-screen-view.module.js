@@ -26,6 +26,13 @@ function placeholderArt() {
   return '<rect width="40" height="40" fill="#e6e2d6" stroke="#2a221c"/>'
 }
 
+function housesShownWith(picture, art) {
+  const standing = new Set(picture.map(({ buildingId }) => buildingId))
+  return art.houses.filter(({ hallsShowingThem }) =>
+    hallsShowingThem.some((hall) => standing.has(hall))
+  )
+}
+
 function buildingAt(target) {
   return target?.closest?.('.town-building') ?? null
 }
@@ -92,7 +99,7 @@ export const registerTownScreenViewModule = defineModule(
       picture.setAttribute('class', 'town-screen__picture')
       picture.setAttribute('viewBox', PICTURE_VIEW_BOX)
       picture.setAttribute('preserveAspectRatio', 'xMidYMid meet')
-      picture.innerHTML = `<g role="img" aria-label="${art.backdropName}">${art.backdrop()}</g><g class="town-screen__buildings"></g>`
+      picture.innerHTML = `<g role="img" aria-label="${art.backdropName}">${art.backdrop()}</g><g class="town-screen__houses"></g><g class="town-screen__buildings"></g>`
       return picture
     }
 
@@ -117,6 +124,15 @@ export const registerTownScreenViewModule = defineModule(
       return building
     }
 
+    function renderHouses({ x, y, art }) {
+      const houses = document.createElementNS(SVG_NS, 'g')
+      houses.setAttribute('role', 'img')
+      houses.setAttribute('aria-label', 'Village houses')
+      houses.setAttribute('transform', `translate(${x} ${y})`)
+      houses.innerHTML = art()
+      return houses
+    }
+
     function showPicture(picture, townType) {
       const view = townScreen.querySelector('.town-screen__view')
       const art = townArt(townType)
@@ -124,6 +140,9 @@ export const registerTownScreenViewModule = defineModule(
         view.dataset.townType = townType
         view.replaceChildren(createPicture(art))
       }
+      view
+        .querySelector('.town-screen__houses')
+        .replaceChildren(...housesShownWith(picture, art).map(renderHouses))
       view
         .querySelector('.town-screen__buildings')
         .replaceChildren(...picture.map((building) => renderBuilding(building, art)))

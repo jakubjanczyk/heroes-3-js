@@ -3,6 +3,8 @@
 // places. Laid out after the game's Castle, so that each
 // building can be told apart at a glance.
 
+import { archedOpening, cloud, OPENING, OUTLINE, polygon, rect, smoke } from './town-art-shapes.js'
+
 const STONE = '#e6e2d6'
 const STONE_SHADE = '#bcb5a5'
 const STONE_DARK = '#80796d'
@@ -15,16 +17,6 @@ const WOOD_DARK = '#5c3a1f'
 const BLUE = '#2c40a0'
 const BLUE_DARK = '#1d2b70'
 const GOLD = '#e6bb3e'
-const OPENING = '#2b2420'
-const OUTLINE = 'stroke="#2a221c" stroke-width="0.8" stroke-linejoin="round"'
-
-function rect(x, y, width, height, fill, extra = '') {
-  return `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fill}" ${extra}/>`
-}
-
-function polygon(points, fill, extra = '') {
-  return `<polygon points="${points}" fill="${fill}" ${extra}/>`
-}
 
 // Merlons along the top of a wall or tower.
 function crenels(x, y, width, size = 4) {
@@ -33,11 +25,6 @@ function crenels(x, y, width, size = 4) {
   return Array.from({ length: count }, (_, index) =>
     rect(x + index * step, y - size, step / 2 + size / 4, size, STONE, OUTLINE)
   ).join('')
-}
-
-function archedOpening(x, y, width, height, fill = OPENING) {
-  const radius = width / 2
-  return `<path d="M${x} ${y + height}V${y + radius}a${radius} ${radius} 0 0 1 ${width} 0V${y + height}z" fill="${fill}"/>`
 }
 
 // A stone tower: its sunlit face, the shaded side, merlons and windows.
@@ -107,14 +94,6 @@ function timberHouse(x, y, width, height, roofHeight) {
       ROOF_SHADE
     )
   ].join('')
-}
-
-function cloud(x, y, scale = 1) {
-  return `<g transform="translate(${x} ${y}) scale(${scale})" fill="white" opacity="0.85"><ellipse cx="0" cy="0" rx="34" ry="10"/><ellipse cx="-18" cy="-6" rx="16" ry="10"/><ellipse cx="10" cy="-10" rx="20" ry="13"/></g>`
-}
-
-function smoke(x, y) {
-  return `<g fill="#9a958d" opacity="0.6"><circle cx="${x}" cy="${y}" r="4"/><circle cx="${x + 4}" cy="${y - 7}" r="5"/><circle cx="${x + 9}" cy="${y - 15}" r="6"/></g>`
 }
 
 function villageHall() {
@@ -527,5 +506,16 @@ export function castleBackgroundArt() {
     `<path d="M40 120l20 30M120 90l10 40M200 120l20 40M260 160l20 30" stroke="#9a7442" stroke-width="3"/>`,
     `<path d="M-800 236 H0 Q200 190 420 214 T800 238 H1600 V1000 H-800 Z" fill="url(#castle-ground)"/>`,
     `<path d="M150 374 Q260 330 400 318 T800 300 H1600 V316 H800 Q600 322 430 336 T200 374 Z" fill="#c8b07a" opacity="0.8"/>`
+  ].join('')
+}
+
+// Through the Mage Guild's window: a purple sky over green hills.
+export function castleGuildWindowArt() {
+  return [
+    `<defs><linearGradient id="castle-window-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a2bd8"/><stop offset="0.67" stop-color="#c64ae6"/><stop offset="1" stop-color="#e07af0"/></linearGradient></defs>`,
+    rect(0, 0, 138, 104, 'url(#castle-window-sky)'),
+    rect(0, 103, 138, 95, '#4c7e26'),
+    '<ellipse cx="41" cy="198" rx="62" ry="40" fill="#3c6e22"/>',
+    '<ellipse cx="110" cy="198" rx="55" ry="35" fill="#5e9a30"/>'
   ].join('')
 }
