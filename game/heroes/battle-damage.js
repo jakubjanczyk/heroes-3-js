@@ -141,9 +141,28 @@ export function strikeSequence({
   defender,
   random,
   luckRandom = NO_LUCK,
-  castAfterHit = () => null
+  castAfterHit = () => null,
+  breathTargetOf = () => null
 }) {
   const strikes = []
+  const breathed = new Map()
+  // The stack beyond takes its own roll, never a lucky one, and doesn't strike back.
+  const breathe = (from, to, dealtPercent) => {
+    const found = from.breath ? breathTargetOf(from, to) : null
+    const victim = found && (breathed.get(found.id) ?? found)
+    if (!victim || victim.count === 0) {
+      return null
+    }
+    const damage = applyAttackAndDefense(rollBaseDamage(from, random), {
+      attacker: from,
+      defender: victim,
+      melee: true,
+      halved: from.meleePenalty,
+      dealtPercent
+    })
+    breathed.set(victim.id, takeDamage(victim, damage))
+    return { defenderId: victim.id, damage }
+  }
   const strike = (from, to, dealtPercent = 100) => {
     const { damageWithoutDefences, ...rolled } = rollStrike({
       attacker: from,
@@ -155,8 +174,13 @@ export function strikeSequence({
       dealtPercent
     })
     const struck = takeDamage(to, rolled.damage)
+    const breath = breathe(from, to, dealtPercent)
     const enchanted = struck.count > 0 ? castAfterHit(from, struck) : null
-    strikes.push(enchanted ? { ...rolled, castsSpell: true } : rolled)
+    strikes.push({
+      ...rolled,
+      ...(enchanted ? { castsSpell: true } : {}),
+      ...(breath ? { breath } : {})
+    })
     const burn = fireShieldDamage({ shielded: to, striker: from, damageWithoutDefences })
     if (burn > 0) {
       strikes.push({ attackerId: to.id, defenderId: from.id, damage: burn, fireShield: true })

@@ -256,7 +256,7 @@ Checked against the Heroes 3 wiki's raw page source (Dendroid Guard and Dendroid
 Checked so far against the wiki and the engine; planned in full when it is next.
 
 - **Blinding attack** (6.5.4e, Unicorns): after an attack or retaliation, a 20% chance to Blind the target for 3 rounds; dragons, undead and other creatures immune to Blind aren't blinded, and magic resistance can stop it (the engine). The wiki says Basic Blind (the target strikes back at 50%), the engine casts it at Expert (no retaliation): to be asked.
-- **Breath** (6.5.4f, Green and Gold Dragons): a melee attack also hits the stack on the hex behind the target in the attack's direction, friend or foe, its damage worked out on its own; a double-wide stack isn't hit twice. Facing a double-wide target from above or below, the hex behind is the one on the side the dragon came from.
+- **Breath** (6.5.4f, Green and Gold Dragons): planned in full below.
 
 ## 6.5.4e The Unicorns' blinding attack
 
@@ -282,4 +282,46 @@ Checked against the Heroes 3 wiki's raw page source (Unicorn and War Unicorn, Bl
 ### Left for later (6.5.4e)
 
 - Magic Plains (expert) and Fiery Fields, with battlefield terrain.
+- A creature window listing the ability.
+
+## 6.5.4f The Dragons' breath
+
+Checked against the Heroes 3 wiki's raw page source (Breath attack, Green Dragon and Gold Dragon, Blind, `GENRLTXT.TXT`), a web search (nothing more on luck or the log), and an open-source engine's creature config (`creatures/rampart.json`) and its battle code (which hexes an attack reaches, the secondary targets' damage, luck and log).
+
+### The rules
+
+- **What it hits**: a Green or Gold Dragons' melee hit also hits the stack on the hex behind the struck hex, in the direction of the attack: from the Dragons' hex the attack is made from, through the struck hex, one hex further (wiki: "also attacks the hex behind, in the direction of the attack"; the engine steps twice in that direction).
+- **Friend or foe**: whatever living stack stands there, the Dragons' own side's too (wiki: "will also damage the hero's own troops if they are standing directly behind the attacked hex"; the engine's breath reaches friendly hexes). Nothing when the hex is empty, off the battlefield or holds only a corpse.
+- **A double-wide target isn't hit twice**: struck along its length, the hex behind is its own other half and nothing further burns (wiki: "Creatures that are two hexes wide do not suffer double damage"; the engine never hits the struck stack again). A double-wide stack behind is hit once.
+- **Its strike back breathes too** (the engine runs the same attack for a strike back; the Green and Gold Dragon page's advice of making them hit their own troops by retaliation).
+- **Even when the hit kills the target** the hex behind is burnt (the engine works out both targets before the hit).
+- **Damage**: worked out on its own for the stack behind: its own damage roll, against its Defense and its spells (wiki: "Damage for each attacked stack is calculated separately"; the engine rolls each target). The stack behind doesn't strike back.
+- **Luck**: a lucky strike doubles only the target's damage, not the breath's (the engine, which says so of the original game and offers the other as an option). The wiki says nothing; agreed to follow the engine.
+- **What being hit does to the stack behind**: it is woken from Blind (or Stone Gaze, Paralyze later) as any damage wakes it (the engine takes those spells off on any loss of health; wiki Blind: until attacked). Its Fire Shield doesn't burn the Dragons, which never struck it (the engine's Fire Shield answers only a stack that could strike it from where it stands).
+- **Combat log**: one line for the attack's whole damage, "The Green Dragons do 450 damage." (`core.genrltxt.377`), then, when the breath hit a stack, the deaths of both counted together as creatures: "12 creatures perish." / "One creature perishes." (`core.genrltxt.379`, `378`, with `42`/`43` "creature(s)"), as an area spell's line now. Without a stack behind, the line names the target as now. The texts are the wiki's copy; how they combine is the engine's only.
+
+### The Dragons above or below a target
+
+- A double-wide Dragon right above or below a target can touch it with both its hexes. The wiki: the hex behind is on the side the Dragons came from, or by the army's facing when they came straight down. The engine: the Dragons' front hex.
+- Agreed: the hex the attack is made from is the one the sword cursor shows (`fromHex`, as now), and the breath goes on through the target from there. It agrees with the wiki when the Dragons come from the left of an attacker's army, and with the engine when they stand still; it differs from the wiki for Dragons coming from the right.
+- A strike back has no cursor: the Dragons breathe from their front hex when both touch the attacker (the engine).
+- A double-wide target touched by one Dragon hex at both its halves (the Dragon right above its middle): the struck hex is its back half (the engine prefers it; the wiki doesn't say).
+
+### What we decided
+
+- A creature's `breath: true` in `monsters.json`, on both Dragons.
+- The breath's hit is saved with the strike it comes from (`breath: { defenderId, damage }` on the strike), so a reload shows the same battle.
+
+### How it is built
+
+- `getHexBeyond(from, through)` in `battlefield.js` gives the hex on the other side of `through`, seen from `from`.
+- `battle-breath.js` finds the stack beyond: from the hex the attack is made from, or the striking-back stack's front hex that touches the attacker, through the struck stack's hex next to it (its back half when both touch).
+- The strike sequence rolls the breath's damage right after the strike's, without luck, and keeps the stack beyond as it is hurt, so a second breath in the same attack (two breathing stacks fighting) counts what the first did.
+- The combat log puts both hits in one line, as an area spell's.
+
+### Left for later (6.5.4f)
+
+- The computer weighing the breath when it picks a target (smarter combat AI, 5.7b); its Dragons breathe already.
+- The other breathing creatures (Red and Black Dragons, Firebirds and Phoenixes) with their factions: data only.
+- The hover's damage estimate shows only the target's, as now.
 - A creature window listing the ability.
