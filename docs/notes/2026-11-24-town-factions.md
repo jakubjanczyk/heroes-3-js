@@ -414,3 +414,32 @@ The buildings every town has keep their data (`buildings.json`). Rampart has no 
 - The computer weighing the Mystic Pond and the Treasury when it picks what to build (8.4): until then it sees them as buildings with no income.
 - The Resource Silo's crystal (6.2), the Blacksmith's First Aid Tent (5.11), the Grail's Spirit Guardian (7.11).
 - Rampart's heroes, hero classes and map dwellings: 6.5.6.
+
+## 6.5.5b Rampart's town picture
+
+Stand-ins drawn in SVG, as the Castle's are, laid out after the game's Rampart: its backdrop, each of its buildings' art at the places 6.5.5a gave them, the village houses that come with the hall, and the view from its Mage Guild's window.
+
+Checked against the Heroes 3 wiki's raw page source (Rampart: its gallery's town background and building renders) and the reference engine's Rampart and Castle town data (the backdrop, the structures and their places, the Mage Guild room, window and scroll places) and its Mage Guild screen code. A web search found nothing more on the town screen.
+
+### What the game shows
+
+- **The backdrop**: a wide green meadow in a valley, forested hills on both sides, mist over the far end of the valley, a few rocks in the grass on the left and on the right (the wiki's town background, 800 x 374, the size of ours). No houses in it, unlike the Castle's.
+- **The buildings**: timber and thatch, with stone at the base of the bigger ones (the wiki's renders): the castle a stone keep with timber upper floors, the halls and the Tavern thatched timber houses, the Marketplace tents and stalls, the Resource Silo a wooden cart, the Homestead an elven house with stone chimneys. The Mage Guild is a pagoda standing in a lake, one storey per level (the wiki's render; the engine gives each level its own picture at a place a little higher and further left, 454,200 to 384,104, as our data already has). The other buildings have no render on the wiki; they are drawn after their names (the Dragon Cliffs a rock face, the Unicorn Glade a glade, the Enchanted Spring a spring, the Dendroid Arches trees bent into arches, the Mystic Pond a pond, the Fountain of Fortune a fountain in it).
+- **The village houses**: Rampart's houses aren't in the backdrop; small thatched houses are added as the hall grows: a group with the Town Hall (at 293,235), more with the City Hall (295,191) and with the Capitol (260,171) (the engine's town data; the wiki's "Houses" render). They can't be clicked or hovered (the engine gives them no outline or area). The Castle has none: its houses are in its backdrop.
+- **The Mage Guild room is the same for every town** (the engine: one room picture, `guildBackground`, for all, and the same scroll places for all): only the window's view of the land outside is the town's own, at the same place (332,76). So Rampart's Mage Guild is the Castle's room with Rampart's view through the window. What that view shows isn't online; ours is a small copy of Rampart's backdrop, the misty valley between its forested hills, so the window shows the land the player saw on the town screen (agreed).
+
+### What we decided
+
+- The backdrop is named "Rampart's misty valley" for the player who can't see it, as the Castle's is "The Castle by the sea" (our wording, agreed).
+- The houses come in this part (agreed). They are part of the town type's art, drawn with the hall level that brings them and kept with every hall above it (our reading of the engine's data: each group stays once built).
+- The Mage Guild window's view is named too ("View of Rampart's valley", "View of the Castle's land"); a type without art gets a plain sky and grass view.
+
+### How it is built
+
+- `rampart-town-art.js` next to `castle-town-art.js`, the SVG shapes both use in `town-art-shapes.js`. `town-art.js` gives each town type its backdrop, buildings, `houses` (each group's place, its drawing and the halls it stands with, `hallsShowingThem`, drawn behind the buildings and not clickable) and `guildWindow` (its view's name and drawing).
+- The Mage Guild's update carries the town's type, and the view draws that type's window.
+
+### Left for later (6.5.5b)
+
+- Animation (10.3): the engine has an animated detail on Rampart's picture (`extraAnimation`, 327,236), as the Castle's waterfall; not drawn.
+- The Grail's building (7.11), as for the Castle.
