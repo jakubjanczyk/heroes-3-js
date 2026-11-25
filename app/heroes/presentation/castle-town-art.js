@@ -3,6 +3,8 @@
 // places. Laid out after the game's Castle, so that each
 // building can be told apart at a glance.
 
+import { archedOpening, cloud, OPENING, OUTLINE, polygon, rect, smoke } from './town-art-shapes.js'
+
 const STONE = '#e6e2d6'
 const STONE_SHADE = '#bcb5a5'
 const STONE_DARK = '#80796d'
@@ -15,16 +17,6 @@ const WOOD_DARK = '#5c3a1f'
 const BLUE = '#2c40a0'
 const BLUE_DARK = '#1d2b70'
 const GOLD = '#e6bb3e'
-const OPENING = '#2b2420'
-const OUTLINE = 'stroke="#2a221c" stroke-width="0.8" stroke-linejoin="round"'
-
-function rect(x, y, width, height, fill, extra = '') {
-  return `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fill}" ${extra}/>`
-}
-
-function polygon(points, fill, extra = '') {
-  return `<polygon points="${points}" fill="${fill}" ${extra}/>`
-}
 
 // Merlons along the top of a wall or tower.
 function crenels(x, y, width, size = 4) {
@@ -33,11 +25,6 @@ function crenels(x, y, width, size = 4) {
   return Array.from({ length: count }, (_, index) =>
     rect(x + index * step, y - size, step / 2 + size / 4, size, STONE, OUTLINE)
   ).join('')
-}
-
-function archedOpening(x, y, width, height, fill = OPENING) {
-  const radius = width / 2
-  return `<path d="M${x} ${y + height}V${y + radius}a${radius} ${radius} 0 0 1 ${width} 0V${y + height}z" fill="${fill}"/>`
 }
 
 // A stone tower: its sunlit face, the shaded side, merlons and windows.
@@ -107,14 +94,6 @@ function timberHouse(x, y, width, height, roofHeight) {
       ROOF_SHADE
     )
   ].join('')
-}
-
-function cloud(x, y, scale = 1) {
-  return `<g transform="translate(${x} ${y}) scale(${scale})" fill="white" opacity="0.85"><ellipse cx="0" cy="0" rx="34" ry="10"/><ellipse cx="-18" cy="-6" rx="16" ry="10"/><ellipse cx="10" cy="-10" rx="20" ry="13"/></g>`
-}
-
-function smoke(x, y) {
-  return `<g fill="#9a958d" opacity="0.6"><circle cx="${x}" cy="${y}" r="4"/><circle cx="${x + 4}" cy="${y - 7}" r="5"/><circle cx="${x + 9}" cy="${y - 15}" r="6"/></g>`
 }
 
 function villageHall() {
