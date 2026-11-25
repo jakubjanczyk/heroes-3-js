@@ -45,6 +45,7 @@ import { registerTownPortalViewModule } from './modules/town-portal-view.module.
 import { registerTownRecruitViewModule } from './modules/town-recruit-view.module.js'
 import { registerTownScreenViewModule } from './modules/town-screen-view.module.js'
 import { registerTownVisitBonusesModule } from './modules/town-visit-bonuses.module.js'
+import { registerTownWeeklyResourcesModule } from './modules/town-weekly-resources.module.js'
 import { registerTreasureChestsModule } from './modules/treasure-chests.module.js'
 import { registerTurnModule } from './modules/turn.module.js'
 import { registerVisitableObjectsModule } from './modules/visitable-objects.module.js'
@@ -62,6 +63,7 @@ export const heroesAppContent = Object.freeze({
   }),
   modules: Object.freeze([
     registerTurnModule,
+    registerTownWeeklyResourcesModule,
     registerMinesModule,
     registerDwellingsModule,
     registerVisitableObjectsModule,

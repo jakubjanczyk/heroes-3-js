@@ -33,7 +33,7 @@ function isFirstWeekOfGame(state) {
   return month === 1 && week === 1
 }
 
-function rolledResources({ resources, firstWeek, oneOf, anyOf, amount }, { state, random }) {
+export function rolledResources({ resources, firstWeek, oneOf, anyOf, amount }, { state, random }) {
   if (oneOf) {
     return oneOf[Math.floor(random() * oneOf.length)]
   }

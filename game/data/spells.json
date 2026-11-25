@@ -5,7 +5,7 @@
     "schools": ["WATER"],
     "kind": "adventure",
     "costs": [8, 7, 7, 7],
-    "mageGuildChances": { "CASTLE": 3 },
+    "mageGuildChances": { "CASTLE": 3, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Summon Boat",
@@ -31,7 +31,7 @@
     "schools": ["WATER"],
     "kind": "adventure",
     "costs": [8, 6, 6, 6],
-    "mageGuildChances": { "CASTLE": 6 },
+    "mageGuildChances": { "CASTLE": 6, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Scuttle Boat",
@@ -62,7 +62,7 @@
       "minimumRange": 3,
       "detailsFrom": { "MONSTER": 0, "HERO": 2, "TOWN": 3 }
     },
-    "mageGuildChances": { "CASTLE": 2 },
+    "mageGuildChances": { "CASTLE": 2, "RAMPART": 2 },
     "descriptions": [
       {
         "title": "Visions",
@@ -88,7 +88,7 @@
     "schools": ["EARTH"],
     "kind": "adventure",
     "costs": [2, 1, 1, 1],
-    "mageGuildChances": { "CASTLE": 3 },
+    "mageGuildChances": { "CASTLE": 3, "RAMPART": 3 },
     "descriptions": [
       {
         "title": "View earth",
@@ -114,7 +114,7 @@
     "schools": ["AIR"],
     "kind": "adventure",
     "costs": [4, 2, 2, 2],
-    "mageGuildChances": { "CASTLE": 2 },
+    "mageGuildChances": { "CASTLE": 2, "RAMPART": 2 },
     "descriptions": [
       {
         "title": "Disguise",
@@ -140,7 +140,7 @@
     "schools": ["AIR"],
     "kind": "adventure",
     "costs": [2, 1, 1, 1],
-    "mageGuildChances": { "CASTLE": 3 },
+    "mageGuildChances": { "CASTLE": 3, "RAMPART": 3 },
     "descriptions": [
       {
         "title": "View Air",
@@ -167,6 +167,7 @@
     "kind": "adventure",
     "costs": [20, 15, 15, 15],
     "fly": { "penalty": [40, 40, 20, 0] },
+    "mageGuildChances": { "RAMPART": 16 },
     "descriptions": [
       {
         "title": "Fly",
@@ -192,7 +193,7 @@
     "schools": ["WATER"],
     "kind": "adventure",
     "costs": [12, 8, 8, 8],
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Water Walk",
@@ -223,6 +224,7 @@
       "movementPoints": [300, 300, 300, 200],
       "range": { "x": 9, "y": 8 }
     },
+    "mageGuildChances": { "RAMPART": 20 },
     "descriptions": [
       {
         "title": "Dimension Door",
@@ -252,7 +254,7 @@
       "choosesTown": [false, false, true, true],
       "movementPoints": [300, 300, 300, 200]
     },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Town Portal",
@@ -278,7 +280,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Quicksand",
@@ -304,7 +306,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [18, 15, 15, 15],
-    "mageGuildChances": { "CASTLE": 8 },
+    "mageGuildChances": { "CASTLE": 8, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Land Mine",
@@ -330,7 +332,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [12, 9, 9, 9],
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Force Field",
@@ -356,7 +358,7 @@
     "schools": ["FIRE"],
     "kind": "combat",
     "costs": [8, 6, 6, 6],
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Fire Wall",
@@ -383,7 +385,7 @@
     "kind": "combat",
     "costs": [20, 17, 17, 17],
     "earthquake": { "points": [2, 2, 3, 4] },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Earthquake",
@@ -410,7 +412,7 @@
     "kind": "combat",
     "costs": [5, 4, 4, 4],
     "damage": { "base": [10, 10, 20, 30], "perPower": 10 },
-    "mageGuildChances": { "CASTLE": 30 },
+    "mageGuildChances": { "CASTLE": 30, "RAMPART": 30 },
     "descriptions": [
       {
         "title": "Magic Arrow",
@@ -437,7 +439,7 @@
     "kind": "combat",
     "costs": [8, 6, 6, 6],
     "damage": { "base": [10, 10, 20, 50], "perPower": 20 },
-    "mageGuildChances": { "CASTLE": 50 },
+    "mageGuildChances": { "CASTLE": 50, "RAMPART": 50 },
     "descriptions": [
       {
         "title": "Ice Bolt",
@@ -464,7 +466,7 @@
     "kind": "combat",
     "costs": [10, 8, 8, 8],
     "damage": { "base": [10, 10, 20, 50], "perPower": 25 },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Lightning Bolt",
@@ -492,6 +494,7 @@
     "kind": "combat",
     "costs": [30, 25, 25, 25],
     "damage": { "base": [100, 100, 200, 300], "perPower": 75 },
+    "mageGuildChances": { "RAMPART": 16 },
     "descriptions": [
       {
         "title": "Implosion",
@@ -519,7 +522,7 @@
     "costs": [24, 20, 20, 20],
     "damage": { "base": [25, 25, 50, 100], "perPower": 40 },
     "chain": { "strikes": [4, 4, 5, 5], "factor": 0.5 },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Chain Lightning",
@@ -547,7 +550,7 @@
     "costs": [12, 9, 9, 9],
     "damage": { "base": [15, 15, 30, 60], "perPower": 10 },
     "area": { "from": 1, "to": 1 },
-    "mageGuildChances": { "CASTLE": 16 },
+    "mageGuildChances": { "CASTLE": 16, "RAMPART": 16 },
     "descriptions": [
       {
         "title": "Frost Ring",
@@ -575,7 +578,7 @@
     "costs": [15, 12, 12, 12],
     "damage": { "base": [15, 15, 30, 60], "perPower": 10 },
     "area": { "from": 0, "to": 1 },
-    "mageGuildChances": { "CASTLE": 8 },
+    "mageGuildChances": { "CASTLE": 8, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Fireball",
@@ -603,7 +606,7 @@
     "costs": [16, 12, 12, 12],
     "damage": { "base": [20, 20, 40, 80], "perPower": 10 },
     "area": { "from": 0, "to": 2 },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Inferno",
@@ -631,7 +634,7 @@
     "costs": [16, 12, 12, 12],
     "damage": { "base": [25, 25, 50, 100], "perPower": 25 },
     "area": { "from": 0, "to": 1 },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Meteor Shower",
@@ -687,7 +690,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [15, 12, 12, 12],
-    "mageGuildChances": { "CASTLE": 12 },
+    "mageGuildChances": { "CASTLE": 12, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Destroy Undead",
@@ -745,7 +748,7 @@
       "target": "own",
       "effects": { "meleeDamageTakenPercent": [-15, -15, -30, -30] }
     },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 3 },
     "descriptions": [
       {
         "title": "Shield",
@@ -776,7 +779,7 @@
       "target": "own",
       "effects": { "rangedDamageTakenPercent": [-25, -25, -50, -50] }
     },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Air Shield",
@@ -807,7 +810,7 @@
       "raisedBySorcery": true,
       "effects": { "fireShieldPercent": [20, 20, 25, 30] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Fire Shield",
@@ -838,7 +841,7 @@
       "target": "own",
       "effects": { "airSpellDamageTakenPercent": [-30, -30, -50, -50] }
     },
-    "mageGuildChances": { "CASTLE": 2 },
+    "mageGuildChances": { "CASTLE": 2, "RAMPART": 2 },
     "descriptions": [
       {
         "title": "Protection from Air",
@@ -869,7 +872,7 @@
       "target": "own",
       "effects": { "fireSpellDamageTakenPercent": [-30, -30, -50, -50] }
     },
-    "mageGuildChances": { "CASTLE": 3 },
+    "mageGuildChances": { "CASTLE": 3, "RAMPART": 3 },
     "descriptions": [
       {
         "title": "Protection from Fire",
@@ -900,7 +903,7 @@
       "target": "own",
       "effects": { "waterSpellDamageTakenPercent": [-30, -30, -50, -50] }
     },
-    "mageGuildChances": { "CASTLE": 3 },
+    "mageGuildChances": { "CASTLE": 3, "RAMPART": 3 },
     "descriptions": [
       {
         "title": "Protection from Water",
@@ -931,7 +934,7 @@
       "target": "own",
       "effects": { "earthSpellDamageTakenPercent": [-30, -30, -50, -50] }
     },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Protection from Earth",
@@ -963,7 +966,7 @@
       "removesHarmfulSpells": true,
       "effects": { "spellLevelImmunity": [3, 3, 4, 5] }
     },
-    "mageGuildChances": { "CASTLE": 12 },
+    "mageGuildChances": { "CASTLE": 12, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Anti-magic",
@@ -994,7 +997,7 @@
       "allAtExpert": true
     },
     "ignoresSpellLevelImmunity": true,
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Dispel",
@@ -1020,6 +1023,7 @@
     "schools": ["AIR"],
     "kind": "combat",
     "costs": [25, 20, 20, 20],
+    "mageGuildChances": { "RAMPART": 16 },
     "descriptions": [
       {
         "title": "Magic Mirror",
@@ -1051,7 +1055,7 @@
       "base": [10, 10, 20, 30],
       "perPower": 5
     },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Cure",
@@ -1078,7 +1082,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [20, 16, 16, 16],
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Resurrection",
@@ -1163,7 +1167,7 @@
       "target": "own",
       "effects": { "maximumDamage": [0, 0, 1, 1] }
     },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Bless",
@@ -1253,7 +1257,7 @@
       "shootersOnly": true,
       "effects": { "rangedAttack": [3, 3, 6, 6] }
     },
-    "mageGuildChances": { "CASTLE": 6 },
+    "mageGuildChances": { "CASTLE": 6, "RAMPART": 6 },
     "descriptions": [
       {
         "title": "Precision",
@@ -1284,7 +1288,7 @@
       "target": "enemy",
       "effects": { "attack": [-3, -3, -6, -6] }
     },
-    "mageGuildChances": { "CASTLE": 2 },
+    "mageGuildChances": { "CASTLE": 2, "RAMPART": 2 },
     "descriptions": [
       {
         "title": "Weakness",
@@ -1311,7 +1315,7 @@
     "kind": "combat",
     "costs": [5, 4, 4, 4],
     "lasting": { "allAtExpert": true, "target": "own", "effects": { "defense": [3, 3, 6, 6] } },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Stone Skin",
@@ -1344,7 +1348,7 @@
       "cannotBeRemoved": true,
       "effects": { "defense": [-3, -3, -4, -5] }
     },
-    "mageGuildChances": { "CASTLE": 6 },
+    "mageGuildChances": { "CASTLE": 6, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Disrupting Ray",
@@ -1375,7 +1379,7 @@
       "target": "own",
       "effects": { "attack": [2, 2, 4, 4], "defense": [2, 2, 4, 4], "speed": [2, 2, 4, 4] }
     },
-    "mageGuildChances": { "CASTLE": 10 },
+    "mageGuildChances": { "CASTLE": 10, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Prayer",
@@ -1403,7 +1407,7 @@
     "mind": true,
     "costs": [12, 9, 9, 9],
     "lasting": { "allAtExpert": true, "target": "own", "effects": { "morale": [1, 1, 2, 2] } },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Mirth",
@@ -1435,7 +1439,7 @@
       "target": "enemy",
       "effects": { "morale": [-1, -1, -2, -2] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Sorrow",
@@ -1462,7 +1466,7 @@
     "kind": "combat",
     "costs": [7, 5, 5, 5],
     "lasting": { "allAtExpert": true, "target": "own", "effects": { "luck": [1, 1, 2, 2] } },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 6 },
     "descriptions": [
       {
         "title": "Fortune",
@@ -1489,7 +1493,7 @@
     "kind": "combat",
     "costs": [12, 9, 9, 9],
     "lasting": { "allAtExpert": true, "target": "enemy", "effects": { "luck": [-1, -1, -2, -2] } },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Misfortune",
@@ -1517,7 +1521,7 @@
     "kind": "combat",
     "costs": [6, 5, 5, 5],
     "lasting": { "allAtExpert": true, "target": "own", "effects": { "speed": [3, 3, 5, 5] } },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Haste",
@@ -1549,7 +1553,7 @@
       "target": "enemy",
       "effects": { "speedPercent": [-25, -25, -50, -50] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Slow",
@@ -1579,7 +1583,7 @@
       "target": "own",
       "effects": { "attackAgainstKings": [8, 8, 8, 8], "kingsReached": [1, 1, 2, 3] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Slayer",
@@ -1611,7 +1615,7 @@
       "untilOwnTurn": true,
       "effects": { "attackFromDefensePercent": [100, 100, 150, 200] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Frenzy",
@@ -1671,7 +1675,7 @@
       "target": "own",
       "effects": { "extraRetaliations": [1, 1, 2, 2] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 10 },
     "descriptions": [
       {
         "title": "Counterstrike",
@@ -1710,7 +1714,7 @@
       "endsSpells": ["HYPNOTIZE"],
       "effects": { "berserk": [1, 1, 1, 1] }
     },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Berserk",
@@ -1743,7 +1747,7 @@
       "endsSpells": ["BERSERK"],
       "effects": { "hypnotized": [1, 1, 1, 1] }
     },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Hypnotize",
@@ -1776,7 +1780,7 @@
       "allAtExpert": true,
       "effects": { "shotDamagePercent": [-50, -50, -100, -100] }
     },
-    "mageGuildChances": { "CASTLE": 8 },
+    "mageGuildChances": { "CASTLE": 8, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Forgetfulness",
@@ -1808,7 +1812,7 @@
       "castMessage": "The %s cannot see!",
       "effects": { "blind": [1, 1, 1, 1], "retaliationDamagePercent": [-50, -50, -75, -100] }
     },
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 6 },
     "descriptions": [
       {
         "title": "Blind",
@@ -1839,7 +1843,7 @@
       "acrossWalls": [false, false, false, true],
       "acrossMoat": [false, false, true, true]
     },
-    "mageGuildChances": { "CASTLE": 8 },
+    "mageGuildChances": { "CASTLE": 8, "RAMPART": 8 },
     "descriptions": [
       {
         "title": "Teleport",
@@ -1865,7 +1869,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [7, 5, 5, 5],
-    "mageGuildChances": { "CASTLE": 4 },
+    "mageGuildChances": { "CASTLE": 4, "RAMPART": 4 },
     "descriptions": [
       {
         "title": "Remove Obstacle",
@@ -1893,7 +1897,7 @@
     "kind": "combat",
     "costs": [24, 20, 20, 20],
     "clones": { "highestTier": [5, 5, 6, 7] },
-    "mageGuildChances": { "CASTLE": 5 },
+    "mageGuildChances": { "CASTLE": 5, "RAMPART": 5 },
     "descriptions": [
       {
         "title": "Clone",
@@ -1944,6 +1948,7 @@
     "schools": ["EARTH"],
     "kind": "combat",
     "costs": [25, 20, 20, 20],
+    "mageGuildChances": { "RAMPART": 16 },
     "descriptions": [
       {
         "title": "Summon Earth Elemental",
@@ -1969,6 +1974,7 @@
     "schools": ["WATER"],
     "kind": "combat",
     "costs": [25, 20, 20, 20],
+    "mageGuildChances": { "RAMPART": 16 },
     "descriptions": [
       {
         "title": "Summon Water Elemental",
