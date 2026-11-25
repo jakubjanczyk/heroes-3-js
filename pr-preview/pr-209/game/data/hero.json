@@ -1,0 +1,6 @@
+{
+  "id": "HERO",
+  "name": "Hero",
+  "heroClass": "KNIGHT",
+  "movementPointsMax": 1500
+}
