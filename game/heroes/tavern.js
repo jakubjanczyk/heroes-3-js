@@ -1,4 +1,5 @@
 import { countArtifacts } from './artifacts.js'
+import { heroOfTheGame } from './secondary-skills.js'
 
 export const HEROES_FOR_HIRE = 2
 export const MAX_HEROES_PER_PLAYER = 8
@@ -25,24 +26,37 @@ function pick(items, random) {
   return items[Math.floor(random() * items.length)]
 }
 
+// A war machine keeps its stack's place in the roll but isn't brought until there are war machines.
+const isCreatureStack = (stack) => Boolean(stack.creature)
+
 function rollStartingArmy(startingArmy = [], random) {
   const roll = 1 + Math.floor(random() * 100)
   return startingArmy
     .filter((_stack, index) => roll <= (STARTING_STACK_CHANCES[index] ?? 0))
+    .filter(isCreatureStack)
     .map(({ creature, min, max }) => ({
       creature,
       count: min + Math.floor(random() * (max - min + 1))
     }))
 }
 
-// A hero who takes a hired one's place brings a single creature of their faction's first level.
+// A hero who takes a hired one's place brings a single creature of their first starting stack.
 function rollReplacementArmy(startingArmy = []) {
-  return startingArmy.slice(0, 1).map(({ creature }) => ({ creature, count: 1 }))
+  return startingArmy
+    .filter(isCreatureStack)
+    .slice(0, 1)
+    .map(({ creature }) => ({ creature, count: 1 }))
 }
 
-// A hero who retreated comes back with one creature of their class's first starting stack.
-export function armyAfterRetreat(heroClass, heroClasses) {
-  return rollReplacementArmy(heroClasses?.[heroClass]?.startingArmy)
+// A hero may have a starting army of their own; otherwise they bring their class's.
+function startingArmyOf({ startingArmy, heroClass }, heroClasses) {
+  return startingArmy ?? heroClasses?.[heroClass]?.startingArmy
+}
+
+// A hero who retreated comes back with one creature of their first starting stack.
+export function armyAfterRetreat({ name, heroClass }, { heroes, heroClasses } = {}) {
+  const ownData = heroOfTheGame(heroes, name)
+  return rollReplacementArmy(startingArmyOf({ heroClass, ...ownData }, heroClasses))
 }
 
 function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random }) {
@@ -51,8 +65,9 @@ function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random 
     return null
   }
 
-  const { name, heroClass, heroId } = pick(candidates, random)
-  const startingArmy = heroClasses?.[heroClass]?.startingArmy
+  const hero = pick(candidates, random)
+  const { name, heroClass, heroId } = hero
+  const startingArmy = startingArmyOf(hero, heroClasses)
   return {
     ...(heroId ? { heroId } : {}),
     name,

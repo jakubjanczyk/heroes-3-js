@@ -444,7 +444,7 @@ Checked against the Heroes 3 wiki's raw page source (Rampart: its gallery's town
 - Animation (10.3): the engine has an animated detail on Rampart's picture (`extraAnimation`, 327,236), as the Castle's waterfall; not drawn.
 - The Grail's building (7.11), as for the Castle.
 
-## 6.5.6 Rampart's heroes and map dwellings (planned)
+## 6.5.6 Rampart's heroes and map dwellings
 
 Rampart's two hero classes, its sixteen heroes, and its seven creature dwellings on the adventure map. One PR: both halves are mostly data.
 
@@ -521,6 +521,13 @@ Growth and price are the creature's; levels 5–7 are guarded by three weeks of 
 - Ufretin's and Gem's skills in the wiki's order: Resistance then Luck, First Aid then Wisdom (our pick where the two sources differ).
 - The demo map gets the Centaur Stables, the Dwarf Cottage and the Dendroid Arches near Elfwind; no Rampart hero, as the tavern offers them (agreed).
 - A war machine in a starting army is in the data (`warMachine` in place of `creature`) and left out until war machines (5.11).
+
+### How it is built
+
+- `hero-classes.json` has the Cleric, Ranger and Druid; `heroes.json` the Clerics, Tyris, the Rangers and the Druids, a Druid's or Cleric's spell as `spellBook` and `spells`.
+- A hero's `startingArmy` in `heroes.json` takes the place of the class's. A stack with `warMachine` in place of `creature` keeps its place in the roll (the second stack on 88 or less, the third on 25 or less) and is left out of the army. A hero taking a hired one's place, or back after retreating, brings one creature of the first creature stack of their own starting army.
+- A dwelling's `footprint` in `dwellings.json` (offsets from the entrance, as the bonus objects' are); without one it blocks the tile left of the entrance.
+- The demo map has the Centaur Stables, the Dwarf Cottage and the Dendroid Arches south of Elfwind.
 
 ### Left for later (6.5.6)
 

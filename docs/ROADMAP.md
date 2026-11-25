@@ -887,7 +887,7 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
 - [x] 6.5.5 Rampart's town, in two parts:
   - [x] 6.5.5a Rampart's town and its buildings: its dwellings, Hall, Mage Guild to level 5 with its spell odds, moat and arrow towers, the Miners' Guild and Dendroid Saplings, the Fountain of Fortune's luck for defenders; the Mystic Pond's rare resources and the Treasury's 10% interest each week
   - [x] 6.5.5b Rampart's town picture: its backdrop, its buildings' art, the village houses that come with the hall and the view from its Mage Guild's window
-- [ ] 6.5.6 Rampart's heroes and hero classes (Rangers and Druids, each hero's own starting army and the Druids' spells), and its seven creature dwellings on the map (footprints moved to the dwellings' data)
+- [x] 6.5.6 Rampart's heroes and hero classes (Rangers and Druids, each hero's own starting army and the Druids' spells), and its seven creature dwellings on the map (footprints moved to the dwellings' data)
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
 - [ ] Minimum viable: **Castle** faction fully implemented

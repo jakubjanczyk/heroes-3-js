@@ -567,7 +567,7 @@ export const registerBattleModule = defineModule(
         heroClass: hero.heroClass,
         army: surrendered
           ? getArmyAfterBattle(battle, side, hero.army)
-          : armyAfterRetreat(hero.heroClass, definitions.heroClasses),
+          : armyAfterRetreat(hero, definitions),
         role: surrendered ? TAVERN_ROLE_SURRENDERED : TAVERN_ROLE_RETREATED,
         turnNumber: turnNumber(current),
         ...(activePlayer(current) === player ? {} : { afterOwnTurn: true }),

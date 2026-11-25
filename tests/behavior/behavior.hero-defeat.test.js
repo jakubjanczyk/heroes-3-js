@@ -20,6 +20,7 @@ import {
   createMemoryEventLog,
   flushMicrotasks,
   readGameData,
+  readKnightsForHire,
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
@@ -65,7 +66,7 @@ import {
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
-  heroes: readGameData('heroes.json'),
+  heroes: readKnightsForHire(),
   secondarySkills: readGameData('secondary-skills.json'),
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),

@@ -47,6 +47,19 @@ const GUARDHOUSE_TILES = [
   [2, 1]
 ]
 
+const GUARDHOUSE_DEFINITIONS = {
+  dwellings: {
+    GUARDHOUSE: {
+      name: 'Guardhouse',
+      creature: 'PIKEMAN',
+      footprint: [
+        { x: -1, y: -1 },
+        { x: -1, y: 0 }
+      ]
+    }
+  }
+}
+
 const DEFAULT_MINIMAP_BOUNDS = {
   left: 0,
   top: 0,
@@ -483,7 +496,11 @@ describe('minimap behavior', () => {
     test('given a dwelling when the minimap renders then its tiles are drawn neutral grey', async () => {
       await loadAppStyles()
       await setupApp(
-        aScenario().withSize(5, 3).withEntities(aHero().at(0, 2), aDwelling().at(2, 1)).build()
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(0, 2), aDwelling().at(2, 1))
+          .withDefinitions(GUARDHOUSE_DEFINITIONS)
+          .build()
       )
 
       const colours = GUARDHOUSE_TILES.map(([x, y]) => backgroundOf(getMinimapTile(x, y)))
@@ -528,7 +545,11 @@ describe('minimap behavior', () => {
     test('given the hero flagged a dwelling when the minimap renders then its tiles are drawn in the player colour', async () => {
       await loadAppStyles()
       await setupApp(
-        aScenario().withSize(5, 3).withEntities(aHero().at(2, 2), aDwelling().at(2, 1)).build()
+        aScenario()
+          .withSize(5, 3)
+          .withEntities(aHero().at(2, 2), aDwelling().at(2, 1))
+          .withDefinitions(GUARDHOUSE_DEFINITIONS)
+          .build()
       )
 
       confirmTileClickByDispatch(2, 1)
