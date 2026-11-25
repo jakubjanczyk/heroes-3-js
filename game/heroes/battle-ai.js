@@ -8,7 +8,7 @@ import {
   planStackAttack,
   planStackShot
 } from './battle.js'
-import { getStackSpeed } from './battle-stats.js'
+import { getMovementRange } from './battle-stats.js'
 import { getHexDistance } from './battlefield.js'
 
 // A first, simple combat AI: shoot the nearest enemy stack when the stack can, else go for the
@@ -61,7 +61,7 @@ export function planComputerTurn(battle, stack, { random, luckRandom }) {
   }
 
   const { targetId, fromHex, way } = approach
-  if (approach.distance <= getStackSpeed(stack)) {
+  if (approach.distance <= getMovementRange(stack)) {
     const attack = planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom })
     if (attack) {
       return { attack: { targetId, ...attack } }

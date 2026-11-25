@@ -524,7 +524,8 @@
       "GOLD_PILE": 350
     },
     "aiValue": 517,
-    "abilities": []
+    "abilities": [],
+    "binds": true
   },
   "DENDROID_SOLDIER": {
     "name": "Dendroid Soldier",
@@ -544,7 +545,8 @@
       "GOLD_PILE": 425
     },
     "aiValue": 803,
-    "abilities": []
+    "abilities": [],
+    "binds": true
   },
   "UNICORN": {
     "name": "Unicorn",

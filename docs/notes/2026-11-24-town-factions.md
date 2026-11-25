@@ -234,15 +234,19 @@ Checked against the Heroes 3 wiki's raw page source (Dendroid Guard and Dendroid
 - **Spells**: Dispel takes it off (wiki, engine), and a bound stack with no other spell can be Dispelled. Teleport frees it (wiki), as the Dendroids are then no longer next to it. Cure doesn't (wiki, engine). Anti-Magic on the stack doesn't keep it from being bound (wiki); immunities don't either (the engine's binding ignores them). Anti-Magic cast on a stack already bound frees it, as it takes off every spell that isn't helpful (the engine; the wiki says nothing, agreed to follow the engine).
 - **Combat log**: "Roots and vines bind the %s to the ground!" (`core.genrltxt.560`, wiki copy), with the stack's plural name, after the hit's damage line; written each time they bind, a stack already bound too (engine).
 - Nothing else shows it: the battle has no creature window yet; the bound stack's turn shades no hex to move to.
+- A bound shooter has the Dendroids next to it, which already keeps it from shooting; it shoots while bound only when its own berserk Dendroids bound it, and a bound computer stack always has the Dendroids to attack. Neither gets a test of its own.
 
 ### What we decided
 
 - A creature's `binds: true` in `monsters.json`, on both Dendroids.
 - A bound stack carries the binding as a spell with no rounds, harmful and removable, naming the stacks that bound it, so Dispel takes it off as it takes off the others; Teleport takes it off too.
 - A bound computer stack attacks a stack next to it or else lets its turn pass, as a computer stack with nowhere to go does now.
+- A binding is checked as each action ends (a walk, an attack, a shot, a spell, the moat) and as each turn ends, and dropped for good once broken.
 - The demo map gets a stack of Dendroid Guards near the others of Rampart, so binding can be met and seen.
 
 ### Left for later (6.5.4d)
+
+- The count box of a stack that is only bound shows the harmful spells' colour; the engine has a neutral picture for it, not checked against the game.
 
 - Harpies (Stronghold) striking Dendroids and flying back: a bound Harpy doesn't fly back (engine), with Stronghold's creatures.
 - A creature window in battle showing the binding: not built for any spell yet.

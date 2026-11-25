@@ -1,9 +1,11 @@
 import { artifactBattleImmunities, artifactsCancelInBattle } from './artifacts.js'
+import { bindStack, describeBinding, withoutBrokenBindings } from './battle-binding.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isImmuneTo, isSpellTarget } from './battle-spells.js'
 import {
   areEnemies,
   fightsFor,
+  getMovementRange,
   getShotDamagePercent,
   getStackDefense,
   getStackMorale,
@@ -133,6 +135,7 @@ function createStack({
     undead,
     ...spellTraitsOf(definition, { immunities, magicResistance, mindless: undead || warMachine }),
     king: definition.king ?? null,
+    binds: Boolean(definition.binds),
     luck,
     cancelledInBattle,
     spells: [],
@@ -493,7 +496,8 @@ function countDownSpells(stack) {
 }
 
 // A new round also gives every stack its retaliations back, and the hero a spell to cast.
-export function endTurn(battle, stackId) {
+export function endTurn(ended, stackId) {
+  const battle = settleStacks(ended)
   const actedStackIds = [...battle.actedStackIds, stackId]
   const goesOn = { ...battle, actedStackIds, turnStackId: null }
   if (
@@ -568,7 +572,7 @@ const nameOf = (battle, stackId) => battle.stacks.find(({ id }) => id === stackI
 
 function giveExtraTurn(battle, stackId) {
   return {
-    ...battle,
+    ...settleStacks(battle),
     moraleStackIds: [...battle.moraleStackIds, stackId],
     turnStackId: stackId,
     effects: [...battle.effects, { stackId, kind: 'goodMorale' }],
@@ -643,7 +647,7 @@ const isStoppedByTheMoat = (battle, stack) =>
 function hitByTheMoat(battle, stackId) {
   const { name, damage } = moatOf(battle.walls)
   const { damaged, ...losses } = damageStack(battle, stackId, damage)
-  return clearGoneClones({
+  return settleStacks({
     ...battle,
     stacks: battle.stacks.map((stack) => (stack.id === stackId ? damaged : stack)),
     effects: [...battle.effects, { stackId, kind: 'spellHit', spellName: name }],
@@ -659,7 +663,7 @@ export function moveStack(battle, stackId, hex) {
       stack.id === stackId ? placeOn(battle, stack, hex) : stack
     )
   }
-  return isHitOnEntering(battle, mover, hex) ? hitByTheMoat(moved, stackId) : moved
+  return isHitOnEntering(battle, mover, hex) ? hitByTheMoat(moved, stackId) : settleStacks(moved)
 }
 
 // A walking stack stops on the first hex of the moat it steps into.
@@ -667,7 +671,7 @@ const moatStopFor = (battle, stack) =>
   isStoppedByTheMoat(battle, stack) ? (hex) => entersTheMoat(battle, stack, hex) : undefined
 
 export function getWayThisTurn(battle, stack, way) {
-  const thisTurn = way.slice(0, getStackSpeed(stack))
+  const thisTurn = way.slice(0, getMovementRange(stack))
   const stopsAt = moatStopFor(battle, stack)
   const stop = stopsAt ? thisTurn.findIndex(stopsAt) : -1
   return stop === -1 ? thisTurn : thisTurn.slice(0, stop + 1)
@@ -708,7 +712,7 @@ export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls, telepo
 export function getFrontHexReach(battle, stack) {
   return getReachableHexes({
     from: stack.hex,
-    speed: getStackSpeed(stack),
+    speed: getMovementRange(stack),
     flying: stack.flying,
     isFree: canStandFor(battle, stack),
     stopsAt: moatStopFor(battle, stack)
@@ -739,14 +743,14 @@ function planPathToFront(battle, stack, front) {
   }
 
   if (stack.flying) {
-    return getHexDistance(stack.hex, front) <= getStackSpeed(stack) ? [front] : null
+    return getHexDistance(stack.hex, front) <= getMovementRange(stack) ? [front] : null
   }
 
   return findHexPath({
     from: stack.hex,
     to: front,
     isFree,
-    maxSteps: getStackSpeed(stack),
+    maxSteps: getMovementRange(stack),
     stopsAt: moatStopFor(battle, stack)
   })
 }
@@ -951,7 +955,12 @@ function withoutGoneClones(stacks) {
     .map((stack) => (goneIds.includes(stack.cloneId) ? { ...stack, cloneId: null } : stack))
 }
 
-const clearGoneClones = (battle) => ({ ...battle, stacks: withoutGoneClones(battle.stacks) })
+// After anything that moves or kills a stack: clones whose time is over go, and so do bindings whose
+// binders are gone.
+const settleStacks = (battle) => ({
+  ...battle,
+  stacks: withoutBrokenBindings(withoutGoneClones(battle.stacks))
+})
 
 function describeLosses(killed, nameFor) {
   return killed === 1 ? `One ${nameFor(1)} perishes.` : `${killed} ${nameFor(killed)} perish.`
@@ -1008,11 +1017,12 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield
   const { damaged, ...losses } = damageStack(battle, defenderId, damage)
   const dealt = describeDealt(attacker, damage, fireShield)
 
+  const binds = attacker.binds && !fireShield && isAlive(damaged)
   return {
     ...battle,
     stacks: battle.stacks.map((stack) => {
       if (stack.id === defenderId) {
-        return wakeUp(damaged)
+        return binds ? bindStack(wakeUp(damaged), attackerId) : wakeUp(damaged)
       }
 
       if (stack.id === attackerId && attackerId === retaliatorId && !fireShield) {
@@ -1025,7 +1035,8 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield
     messages: [
       ...battle.messages,
       ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
-      ...describeDamage(dealt, losses)
+      ...describeDamage(dealt, losses),
+      ...(binds ? [describeBinding(damaged)] : [])
     ]
   }
 }
@@ -1042,7 +1053,7 @@ function describeSpellLosses(damaged) {
 }
 
 // Each stack hit takes its own damage: a Protection lessens it on the stack it is on.
-export const castDamageSpell = (battle, cast) => clearGoneClones(damageBySpell(battle, cast))
+export const castDamageSpell = (battle, cast) => settleStacks(damageBySpell(battle, cast))
 
 function damageBySpell(battle, { heroName, spellName, hits: aimed, chained, resistedIds = [] }) {
   const targetIds = aimed.map(({ stackId }) => stackId)
@@ -1174,7 +1185,9 @@ function castOnStacks(
   return {
     ...battle,
     ...castBy(battle),
-    stacks: battle.stacks.map((stack) => (affectedIds.includes(stack.id) ? change(stack) : stack)),
+    stacks: withoutBrokenBindings(
+      battle.stacks.map((stack) => (affectedIds.includes(stack.id) ? change(stack) : stack))
+    ),
     effects: [
       ...battle.effects,
       ...spellHitEffects({ spellName, targetIds, chained, resistedIds })
@@ -1293,7 +1306,7 @@ export function sacrificeStack(battle, { sacrificedId, healing, ...cast }) {
     raiseStack(stack, healing, battle.definitions)
   )
   const risen = raised.stacks.find(({ id }) => id === before.id).count - before.count
-  return clearGoneClones({
+  return settleStacks({
     ...raised,
     stacks: raised.stacks.map((stack) =>
       stack.id === sacrificedId ? { ...stack, count: 0, sacrificed: true } : stack
@@ -1315,13 +1328,13 @@ export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
   const moved = path.length > 0 ? moveStack(battle, stackId, path.at(-1)) : battle
   const attacker = moved.stacks.find(({ id }) => id === stackId)
   if (attacker && !isAlive(attacker)) {
-    return clearGoneClones(moved)
+    return settleStacks(moved)
   }
   const attacked = strikes.reduce(
     (current, strike) => applyStrike(current, strike, targetId),
     moved
   )
-  return clearGoneClones(endOwnAttackSpells(attacked, stackId))
+  return settleStacks(endOwnAttackSpells(attacked, stackId))
 }
 
 export const attackStack = (battle, attack) => finishAction(resolveAttack(battle, attack), attack)
@@ -1350,7 +1363,7 @@ export function resolveShot(battle, { stackId, strikes }) {
     strikes.reduce((current, strike) => applyStrike(current, strike, null), battle),
     stackId
   )
-  return clearGoneClones({
+  return settleStacks({
     ...shot,
     stacks: shot.stacks.map((stack) =>
       stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
@@ -1394,7 +1407,7 @@ export function shootCatapult(battle, shot) {
 
 export function shootTower(battle, { tower, targetId, damage }) {
   const { damaged, ...losses } = damageStack(battle, targetId, damage)
-  const shot = clearGoneClones({
+  const shot = settleStacks({
     ...battle,
     stacks: battle.stacks.map((stack) => (stack.id === targetId ? wakeUp(damaged) : stack)),
     messages: [

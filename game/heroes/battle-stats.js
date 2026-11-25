@@ -1,3 +1,5 @@
+import { isBound } from './battle-binding.js'
+
 const spellEffect = (stack, key) =>
   (stack.spells ?? []).reduce((sum, { effects }) => sum + (effects[key] ?? 0), 0)
 
@@ -5,6 +7,9 @@ export const getStackSpeed = (stack) =>
   Math.floor(
     ((stack.speed + spellEffect(stack, 'speed')) * (100 + spellEffect(stack, 'speedPercent'))) / 100
   )
+
+// A bound stack keeps its speed for the turn order, but can't move.
+export const getMovementRange = (stack) => (isBound(stack) ? 0 : getStackSpeed(stack))
 
 const hasSpellEffect = (stack, key) =>
   (stack.spells ?? []).some(({ effects }) => effects[key] !== undefined)
