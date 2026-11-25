@@ -6,7 +6,7 @@ import { weeklyGrowthByTier } from '../creature-recruitment.js'
 import { flaggedDwellingCountsByCreature } from '../map-dwellings.js'
 import { startingBuildingsOf, townBuildingsCatalogue } from '../town-buildings.js'
 import { hasCreatures } from '../town-garrison.js'
-import { dailyIncomeOfTown } from '../town-income.js'
+import { dailyIncomeOfTown, weeklyInterestOfTown } from '../town-income.js'
 
 function withoutTown(townIds, townId) {
   return townIds?.includes(townId) ? townIds.filter((id) => id !== townId) : townIds
@@ -116,7 +116,9 @@ function endTurn(towns, { turnNumber }, { definitions, previousState }) {
       {
         ...town,
         builtToday: false,
-        ...(isNewWeek ? growCreatures(town, definitions, mapDwellings) : {})
+        ...(isNewWeek
+          ? { ...growCreatures(town, definitions, mapDwellings), producedThisWeek: null }
+          : {})
       }
     ])
   )
@@ -164,6 +166,8 @@ export const townsSlice = {
     'fact.town.creatures.recruited': recruitCreatures,
     'fact.town.garrison.changed': (towns, { entityId, garrison }) =>
       updateTown(towns, entityId, () => ({ garrison })),
+    'fact.town.resources.produced': (towns, { entityId, resources }) =>
+      updateTown(towns, entityId, () => ({ producedThisWeek: resources })),
     'fact.turn.ended': endTurn
   }
 }
@@ -228,6 +232,18 @@ export function dailyIncomeOf(townState, definitions) {
     buildings: catalogueOf(townState, definitions).buildings,
     built: new Set(townState.built)
   })
+}
+
+export function weeklyInterestOf(townState, definitions, resources) {
+  return weeklyInterestOfTown({
+    buildings: catalogueOf(townState, definitions).buildings,
+    built: townState.built,
+    resources
+  })
+}
+
+export function producedThisWeek(state, townId) {
+  return state.towns.byId[townId]?.producedThisWeek ?? null
 }
 
 export function townType(state, townId) {

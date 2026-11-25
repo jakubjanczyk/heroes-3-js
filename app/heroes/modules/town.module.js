@@ -14,6 +14,7 @@ import {
   builtIn,
   dailyIncomeOf,
   isDefendedAgainst,
+  producedThisWeek,
   townGarrison,
   townIdsOf,
   townOwner,
@@ -259,7 +260,9 @@ export const registerTownModule = defineModule(
         picture: describeTownPicture({
           ...catalogueOf(openTownId),
           built,
-          monsters: definitions.monsters
+          monsters: definitions.monsters,
+          producedThisWeek: producedThisWeek(current, openTownId),
+          resources: definitions.resources
         }),
         hall: describeHall({
           catalogue: catalogueOf(openTownId),

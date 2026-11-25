@@ -110,6 +110,9 @@ export const registerTownScreenViewModule = defineModule(
       } else if (action) {
         building.setAttribute('data-town-action', action.opens)
       }
+      if (action?.opens === 'message') {
+        building.setAttribute('data-town-message', action.message)
+      }
       building.innerHTML = (art.buildings[buildingId] ?? placeholderArt)()
       return building
     }

@@ -402,6 +402,13 @@ The buildings every town has keep their data (`buildings.json`). Rampart has no 
 - The Mystic Pond's data says what it makes (`weeklyResources`, with the map objects' `anyOf` and `amount`); the Treasury's says its interest (`weeklyInterest: { "GOLD_PILE": 10 }`). Another town's building of the same kind is then data.
 - The pond's roll is saved as a fact at the week's start, so a reload gives the same resources and the same message.
 
+### How it is built (6.5.5a)
+
+- Rampart is an entry in `towns.json`; its dwellings, hordes, Fountain and Mage Guild levels use what the town code already reads. Its spells' weights are `mageGuildChances.RAMPART` in `spells.json`.
+- A building's `weeklyResources` (the map objects' `anyOf` and `amount`) is rolled for each owned town as the week starts, by the `town-weekly-resources` module, and saved as `fact.town.resources.produced` (the town, its owner, the resources). The kingdoms slice adds them to the owner, the towns slice keeps them for the pond's message until the next week starts.
+- A building's `weeklyInterest` (`{ "GOLD_PILE": 10 }`, in percent) is paid by the kingdoms slice as the new week's first day comes, on the resources the player held, before the day's income; rounded down for each building.
+- Clicking a building with weekly resources, or one built over it, opens the town's message with the descriptions (a building's `description`) of the building and those under it, then what the pond made.
+
 ### Left for later (6.5.5a)
 
 - The computer weighing the Mystic Pond and the Treasury when it picks what to build (8.4): until then it sees them as buildings with no income.
