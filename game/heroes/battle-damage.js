@@ -136,7 +136,13 @@ export function takeDamage(stack, damage) {
 
 // Attack, retaliation, then the second strike of a creature that strikes twice (Crusaders). A
 // Fire Shield burns the stack that struck it right after each strike.
-export function strikeSequence({ attacker, defender, random, luckRandom = NO_LUCK }) {
+export function strikeSequence({
+  attacker,
+  defender,
+  random,
+  luckRandom = NO_LUCK,
+  castAfterHit = () => null
+}) {
   const strikes = []
   const strike = (from, to, dealtPercent = 100) => {
     const { damageWithoutDefences, ...rolled } = rollStrike({
@@ -148,17 +154,19 @@ export function strikeSequence({ attacker, defender, random, luckRandom = NO_LUC
       halved: from.meleePenalty,
       dealtPercent
     })
-    strikes.push(rolled)
+    const struck = takeDamage(to, rolled.damage)
+    const enchanted = struck.count > 0 ? castAfterHit(from, struck) : null
+    strikes.push(enchanted ? { ...rolled, castsSpell: true } : rolled)
     const burn = fireShieldDamage({ shielded: to, striker: from, damageWithoutDefences })
     if (burn > 0) {
       strikes.push({ attackerId: to.id, defenderId: from.id, damage: burn, fireShield: true })
     }
-    return { striker: takeDamage(from, burn), struck: takeDamage(to, rolled.damage) }
+    return { striker: takeDamage(from, burn), struck: enchanted ?? struck }
   }
 
   const first = strike(attacker, defender)
-  // A blind stack strikes back weaker, or not at all.
-  const retaliationPercent = getRetaliationDamagePercent(defender)
+  // A blind stack strikes back weaker, or not at all, blinded by the hit itself too.
+  const retaliationPercent = getRetaliationDamagePercent(first.struck)
   const retaliates =
     first.striker.count > 0 &&
     first.struck.count > 0 &&

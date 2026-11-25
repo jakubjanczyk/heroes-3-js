@@ -1,7 +1,7 @@
 import { artifactBattleImmunities, artifactsCancelInBattle } from './artifacts.js'
 import { bindStack, describeBinding, withoutBrokenBindings } from './battle-binding.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
-import { isImmuneTo, isSpellTarget } from './battle-spells.js'
+import { isImmuneTo, isSpellTarget, spellTargeting } from './battle-spells.js'
 import {
   areEnemies,
   fightsFor,
@@ -49,7 +49,7 @@ import {
   towersOf
 } from './siege-walls.js'
 import { skillLevelOf } from './spell-book.js'
-import { heroMagicResistance } from './spell-resistance.js'
+import { heroMagicResistance, rollResisted } from './spell-resistance.js'
 import { addedSkills, NO_DEFENDER_BONUSES } from './town-visit-bonuses.js'
 
 const MORALE_CHANCE_IN = 24
@@ -136,6 +136,7 @@ function createStack({
     ...spellTraitsOf(definition, { immunities, magicResistance, mindless: undead || warMachine }),
     king: definition.king ?? null,
     binds: Boolean(definition.binds),
+    spellAfterAttack: definition.spellAfterAttack ?? null,
     luck,
     cancelledInBattle,
     spells: [],
@@ -912,7 +913,18 @@ export function getAttackTargets(battle, stack) {
 
 // The way there and every strike with its rolled damage, or null when the stack cannot attack
 // the target from `fromHex`.
-export function planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom }) {
+export function planStackAttack(
+  battle,
+  stack,
+  {
+    targetId,
+    fromHex,
+    random,
+    luckRandom,
+    abilityRandom = Math.random,
+    resistanceRandom = Math.random
+  }
+) {
   const target = attackableBy(battle, stack).find(({ id }) => id === targetId)
   const isNextToTarget =
     !canShoot(battle, stack) &&
@@ -930,10 +942,50 @@ export function planStackAttack(battle, stack, { targetId, fromHex, random, luck
   return {
     path,
     strikes: isAlive(attacker)
-      ? strikeSequence({ attacker, defender: target, random, luckRandom })
+      ? strikeSequence({
+          attacker,
+          defender: target,
+          random,
+          luckRandom,
+          castAfterHit: castAfterHit(arrived, { abilityRandom, resistanceRandom })
+        })
       : []
   }
 }
+
+const spellAfterAttackOf = (battle, striker) => {
+  const ability = striker.spellAfterAttack
+  const spell = battle.definitions?.spells?.[ability?.spell]
+  return spell?.lasting ? { ability, spell } : null
+}
+
+const castAfterAttack = ({ ability, spell }) => ({
+  spellId: ability.spell,
+  effects: Object.fromEntries(
+    Object.entries(spell.lasting.effects).map(([key, values]) => [key, values[ability.skill]])
+  ),
+  rounds: ability.rounds,
+  helpful: false,
+  removable: !spell.lasting.cannotBeRemoved
+})
+
+// Nothing is rolled for a stack the spell can't go on; one that resists it is left as it was.
+const castAfterHit =
+  (battle, { abilityRandom, resistanceRandom }) =>
+  (striker, struck) => {
+    const cast = spellAfterAttackOf(battle, striker)
+    if (!cast || isImmuneTo(spellTargeting(cast.spell, cast.ability.skill), struck)) {
+      return null
+    }
+    if (abilityRandom() * 100 >= cast.ability.chance) {
+      return null
+    }
+    const stacks = battle.stacks.map((stack) => (stack.id === struck.id ? struck : stack))
+    if (rollResisted(stacks, [struck.id], resistanceRandom).length > 0) {
+      return null
+    }
+    return putSpellOn(struck, castAfterAttack(cast))
+  }
 
 const CLONE_SPELL = 'CLONE'
 
@@ -1012,17 +1064,31 @@ function strikeEffects({ attackerId, lucky, fireShield }) {
   return lucky ? [{ stackId: attackerId, kind: 'goodLuck' }] : []
 }
 
-function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield }, retaliatorId) {
+function hitStack(damaged, { binds, cast, attackerId }) {
+  const woken = wakeUp(damaged)
+  const enchanted = cast ? putSpellOn(woken, castAfterAttack(cast)) : woken
+  return binds ? bindStack(enchanted, attackerId) : enchanted
+}
+
+const describeCastAfterHit = (cast, stack) =>
+  cast?.spell.lasting.castMessage ? [cast.spell.lasting.castMessage.replace('%s', stack.name)] : []
+
+function applyStrike(
+  battle,
+  { attackerId, defenderId, damage, lucky, fireShield, castsSpell },
+  retaliatorId
+) {
   const attacker = battle.stacks.find(({ id }) => id === attackerId)
   const { damaged, ...losses } = damageStack(battle, defenderId, damage)
   const dealt = describeDealt(attacker, damage, fireShield)
 
   const binds = attacker.binds && !fireShield && isAlive(damaged)
+  const cast = castsSpell ? spellAfterAttackOf(battle, attacker) : null
   return {
     ...battle,
     stacks: battle.stacks.map((stack) => {
       if (stack.id === defenderId) {
-        return binds ? bindStack(wakeUp(damaged), attackerId) : wakeUp(damaged)
+        return hitStack(damaged, { binds, cast, attackerId })
       }
 
       if (stack.id === attackerId && attackerId === retaliatorId && !fireShield) {
@@ -1031,12 +1097,17 @@ function applyStrike(battle, { attackerId, defenderId, damage, lucky, fireShield
 
       return stack
     }),
-    effects: [...battle.effects, ...strikeEffects({ attackerId, lucky, fireShield })],
+    effects: [
+      ...battle.effects,
+      ...strikeEffects({ attackerId, lucky, fireShield }),
+      ...(cast ? [{ stackId: defenderId, kind: 'spellHit', spellName: cast.spell.name }] : [])
+    ],
     messages: [
       ...battle.messages,
       ...(lucky ? [`Good luck shines on the ${attacker.name}.`] : []),
       ...describeDamage(dealt, losses),
-      ...(binds ? [describeBinding(damaged)] : [])
+      ...(binds ? [describeBinding(damaged)] : []),
+      ...describeCastAfterHit(cast, damaged)
     ]
   }
 }
