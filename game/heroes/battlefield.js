@@ -177,3 +177,21 @@ export function getReachableHexes({ from, speed, flying, isFree, stopsAt }) {
     .filter(({ steps }) => steps > 0)
     .map(({ hex }) => hex)
 }
+
+const OPPOSITE_SIDES = {
+  left: 'right',
+  right: 'left',
+  'top-left': 'bottom-right',
+  'top-right': 'bottom-left',
+  'bottom-left': 'top-right',
+  'bottom-right': 'top-left'
+}
+
+// Null past the edge columns or the top and bottom rows.
+export function getHexBeyond(from, through) {
+  const side = Object.keys(OPPOSITE_SIDES).find((option) => {
+    const neighbour = getHexNeighbourOnSide(through, option)
+    return neighbour && isSameHex(neighbour, from)
+  })
+  return side ? getHexNeighbourOnSide(through, OPPOSITE_SIDES[side]) : null
+}

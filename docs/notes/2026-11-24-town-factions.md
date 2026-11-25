@@ -310,7 +310,14 @@ Checked against the Heroes 3 wiki's raw page source (Breath attack, Green Dragon
 ### What we decided
 
 - A creature's `breath: true` in `monsters.json`, on both Dragons.
-- The breath's hit is a strike of its own in the attack's strikes (with its rolled damage), saved with the attack as the others, so a reload shows the same battle.
+- The breath's hit is saved with the strike it comes from (`breath: { defenderId, damage }` on the strike), so a reload shows the same battle.
+
+### How it is built
+
+- `getHexBeyond(from, through)` in `battlefield.js` gives the hex on the other side of `through`, seen from `from`.
+- `battle-breath.js` finds the stack beyond: from the hex the attack is made from, or the striking-back stack's front hex that touches the attacker, through the struck stack's hex next to it (its back half when both touch).
+- The strike sequence rolls the breath's damage right after the strike's, without luck, and keeps the stack beyond as it is hurt, so a second breath in the same attack (two breathing stacks fighting) counts what the first did.
+- The combat log puts both hits in one line, as an area spell's.
 
 ### Left for later (6.5.4f)
 

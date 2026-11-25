@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { findHexPath, getHexNeighbours, getReachableHexes } from './battlefield.js'
+import { findHexPath, getHexBeyond, getHexNeighbours, getReachableHexes } from './battlefield.js'
 
 const hex = (row, column) => ({ row, column })
 const sortHexes = (hexes) => [...hexes].sort((a, b) => a.row - b.row || a.column - b.column)
@@ -96,5 +96,32 @@ describe('getReachableHexes', () => {
 
     expect(reachable).toContainEqual(hex(5, 2))
     expect(reachable).not.toContainEqual(hex(5, 1))
+  })
+})
+
+describe('getHexBeyond', () => {
+  test.each([
+    ['left', 'a shifted', hex(4, 5), hex(4, 6), hex(4, 7)],
+    ['right', 'a shifted', hex(4, 7), hex(4, 6), hex(4, 5)],
+    ['top-left', 'a shifted', hex(3, 6), hex(4, 6), hex(5, 7)],
+    ['top-right', 'a shifted', hex(3, 7), hex(4, 6), hex(5, 6)],
+    ['bottom-left', 'a shifted', hex(5, 6), hex(4, 6), hex(3, 7)],
+    ['bottom-right', 'a shifted', hex(5, 7), hex(4, 6), hex(3, 6)],
+    ['left', 'an unshifted', hex(5, 5), hex(5, 6), hex(5, 7)],
+    ['right', 'an unshifted', hex(5, 7), hex(5, 6), hex(5, 5)],
+    ['top-left', 'an unshifted', hex(4, 5), hex(5, 6), hex(6, 6)],
+    ['top-right', 'an unshifted', hex(4, 6), hex(5, 6), hex(6, 5)],
+    ['bottom-left', 'an unshifted', hex(6, 5), hex(5, 6), hex(4, 6)],
+    ['bottom-right', 'an unshifted', hex(6, 6), hex(5, 6), hex(4, 5)]
+  ])('seen from the %s of a hex on %s row, the hex beyond it is on its other side', (_, __, from, through, beyond) => {
+    expect(getHexBeyond(from, through)).toEqual(beyond)
+  })
+
+  test('the hex beyond a hex on the top row, seen from below, is off the field', () => {
+    expect(getHexBeyond(hex(1, 6), hex(0, 6))).toBeNull()
+  })
+
+  test('the hex beyond a hex in the last column, seen from its left, is the edge column', () => {
+    expect(getHexBeyond(hex(5, 13), hex(5, 14))).toEqual(hex(5, 15))
   })
 })

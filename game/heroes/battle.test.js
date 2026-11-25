@@ -2,7 +2,15 @@ import { readFileSync } from 'node:fs'
 
 import { describe, expect, test } from 'vitest'
 
-import { createBattle, endTurn, getShotTargets, planStackShot, shootStack } from './battle.js'
+import {
+  createBattle,
+  endTurn,
+  getShotTargets,
+  planStackAttack,
+  planStackShot,
+  resolveAttack,
+  shootStack
+} from './battle.js'
 
 const monsters = JSON.parse(readFileSync(new URL('../data/monsters.json', import.meta.url), 'utf8'))
 
@@ -45,5 +53,71 @@ describe('battle shots', () => {
     const battle = shootTimes(archersAgainstPikemen(), 11)
 
     expect(getShotTargets(battle, findStack(battle, 'attacker'))).toHaveLength(1)
+  })
+})
+
+const BREATHER = {
+  name: 'Breather',
+  namePlural: 'Breathers',
+  attack: 5,
+  defense: 5,
+  damage: { min: 10, max: 10 },
+  health: 100,
+  speed: 1,
+  abilities: ['doubleWide'],
+  breath: true
+}
+
+const hex = (row, column) => ({ row, column })
+
+const ABOVE_THE_MIDDLE_OF_THE_BREATHERS = hex(4, 7)
+const BEYOND_FROM_THE_BREATHERS_FRONT = hex(3, 8)
+const BEYOND_FROM_THE_BREATHERS_BACK = hex(3, 7)
+const TEN_LESS_THE_THREE_THE_BREATH_KILLS = 7
+
+const placed = (battle, hexes) => ({
+  ...battle,
+  stacks: battle.stacks.map((stack) =>
+    hexes[stack.id] ? { ...stack, hex: hexes[stack.id] } : stack
+  )
+})
+
+describe('battle breath', () => {
+  test('given a stack touching both halves of the Breathers attacks them then their strike back breathes on from their front hex', () => {
+    const battle = placed(
+      createBattle({
+        attacker: {
+          army: [
+            { creature: 'PIKEMAN', count: 50 },
+            { creature: 'PIKEMAN', count: 10 },
+            { creature: 'PIKEMAN', count: 10 }
+          ]
+        },
+        defender: { army: [{ creature: 'BREATHER', count: 3 }] },
+        definitions: { monsters: { ...monsters, BREATHER } }
+      }),
+      {
+        'attacker-0': ABOVE_THE_MIDDLE_OF_THE_BREATHERS,
+        'attacker-1': BEYOND_FROM_THE_BREATHERS_FRONT,
+        'attacker-2': BEYOND_FROM_THE_BREATHERS_BACK,
+        'defender-0': hex(5, 7)
+      }
+    )
+    const attackers = battle.stacks.find(({ id }) => id === 'attacker-0')
+    const plan = planStackAttack(battle, attackers, {
+      targetId: 'defender-0',
+      fromHex: ABOVE_THE_MIDDLE_OF_THE_BREATHERS,
+      random: LOWEST_ROLLS
+    })
+
+    const attacked = resolveAttack(battle, {
+      stackId: 'attacker-0',
+      targetId: 'defender-0',
+      ...plan
+    })
+
+    const countOf = (id) => attacked.stacks.find((stack) => stack.id === id).count
+    expect(countOf('attacker-1')).toBe(TEN_LESS_THE_THREE_THE_BREATH_KILLS)
+    expect(countOf('attacker-2')).toBe(10)
   })
 })

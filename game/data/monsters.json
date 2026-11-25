@@ -615,6 +615,7 @@
     "aiValue": 4872,
     "king": 1,
     "spellLevelImmunity": 3,
+    "breath": true,
     "abilities": ["flying", "doubleWide"]
   },
   "GOLD_DRAGON": {
@@ -638,6 +639,7 @@
     "aiValue": 8613,
     "king": 1,
     "spellLevelImmunity": 4,
+    "breath": true,
     "abilities": ["flying", "doubleWide"]
   },
   "IMP": {
