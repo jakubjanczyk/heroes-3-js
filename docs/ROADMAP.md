@@ -880,7 +880,7 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
 - [ ] 6.5.4 Rampart's creatures, in six parts:
   - [x] 6.5.4a The thirteen creatures, the Dragons' immunity to spells of level 1-3 / 1-4, and the Dragons as kings for Slayer
   - [x] 6.5.4b Magic resistance: the Dwarves' own, and the Unicorns' aura for the stacks next to them
-  - [ ] 6.5.4c The Pegasi's magic damper: the enemy hero's spells cost 2 more
+  - [x] 6.5.4c The Pegasi's magic damper: the enemy hero's spells cost 2 more
   - [ ] 6.5.4d The Dendroids' binding
   - [ ] 6.5.4e The Unicorns' blinding attack
   - [ ] 6.5.4f The Dragons' breath

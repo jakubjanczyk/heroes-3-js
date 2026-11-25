@@ -160,7 +160,8 @@ export const registerSpellBookViewModule = defineModule(
         definitions,
         kind,
         school: place().school,
-        spread: place().spread
+        spread: place().spread,
+        extraCost: inBattle ? (battleShown?.extraSpellCost ?? 0) : 0
       })
     }
 

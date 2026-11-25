@@ -481,7 +481,8 @@
       "GOLD_PILE": 250
     },
     "aiValue": 518,
-    "abilities": ["flying", "doubleWide"]
+    "abilities": ["flying", "doubleWide"],
+    "magicDamper": 2
   },
   "SILVER_PEGASUS": {
     "name": "Silver Pegasus",
@@ -501,7 +502,8 @@
       "GOLD_PILE": 275
     },
     "aiValue": 532,
-    "abilities": ["flying", "doubleWide"]
+    "abilities": ["flying", "doubleWide"],
+    "magicDamper": 2
   },
   "DENDROID_GUARD": {
     "name": "Dendroid Guard",
