@@ -222,10 +222,38 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 - The Orb of Vulnerability cancelling magic resistance (7.8, with the artifact).
 - The player's stacks of Dwarves, or next to Unicorns, resisting a computer hero's spells: computer heroes don't cast yet (5.8 later). The Unicorns' blinding attack meeting magic resistance comes with it (6.5.4e).
 
-## 6.5.4d to 6.5.4f Rampart's attack abilities (planned)
+## 6.5.4d The Dendroids' binding
+
+Checked against the Heroes 3 wiki's raw page source (Dendroid Guard and Dendroid Soldier, Teleport, Cure, Dispel, Anti-Magic, `GENRLTXT.TXT`) and an open-source engine's creature and spell config (`creatures/rampart.json`, `spells/ability.json`, `spells/timed.json`) and its battle code (casting after an attack, when a binding breaks, a bound stack's movement).
+
+### The rules
+
+- **What binds**: a Dendroid Guards' or Dendroid Soldiers' hit, by their attack or their strike back (wiki: "Dendroids' attacks"; the engine casts the binding after every one of their strikes, a strike back too). A stack the hit kills isn't bound. Any stack they hit, their own side's too when they are berserk (wiki fan opinion; the engine binds whatever they hit).
+- **What it does**: the bound stack can't move: no hex to walk or fly to (the engine gives it no movement). It can still attack a stack next to it from where it stands, shoot, wait and defend.
+- **When it ends**: once the Dendroids that bound it are no longer next to it: they moved away, were killed or were teleported (wiki: "until the stack of Dendroids that entangled them moves or perishes"; the engine checks after every action and as the bound stack's turn starts). Coming back next to it doesn't bind it again; only a new hit does. Bound by two stacks of Dendroids, it stays bound while either is next to it (engine).
+- **Spells**: Dispel takes it off (wiki, engine), and a bound stack with no other spell can be Dispelled. Teleport frees it (wiki), as the Dendroids are then no longer next to it. Cure doesn't (wiki, engine). Anti-Magic on the stack doesn't keep it from being bound (wiki); immunities don't either (the engine's binding ignores them). Anti-Magic cast on a stack already bound frees it, as it takes off every spell that isn't helpful (the engine; the wiki says nothing, agreed to follow the engine).
+- **Combat log**: "Roots and vines bind the %s to the ground!" (`core.genrltxt.560`, wiki copy), with the stack's plural name, after the hit's damage line; written each time they bind, a stack already bound too (engine).
+- Nothing else shows it: the battle has no creature window yet; the bound stack's turn shades no hex to move to.
+- A bound shooter has the Dendroids next to it, which already keeps it from shooting; it shoots while bound only when its own berserk Dendroids bound it, and a bound computer stack always has the Dendroids to attack. Neither gets a test of its own.
+
+### What we decided
+
+- A creature's `binds: true` in `monsters.json`, on both Dendroids.
+- A bound stack carries the binding as a spell with no rounds, harmful and removable, naming the stacks that bound it, so Dispel takes it off as it takes off the others; Teleport takes it off too.
+- A bound computer stack attacks a stack next to it or else lets its turn pass, as a computer stack with nowhere to go does now.
+- A binding is checked as each action ends (a walk, an attack, a shot, a spell, the moat) and as each turn ends, and dropped for good once broken.
+- The demo map gets a stack of Dendroid Guards near the others of Rampart, so binding can be met and seen.
+
+### Left for later (6.5.4d)
+
+- The count box of a stack that is only bound shows the harmful spells' colour; the engine has a neutral picture for it, not checked against the game.
+
+- Harpies (Stronghold) striking Dendroids and flying back: a bound Harpy doesn't fly back (engine), with Stronghold's creatures.
+- A creature window in battle showing the binding: not built for any spell yet.
+
+## 6.5.4e and 6.5.4f Rampart's attack abilities (planned)
 
 Checked so far against the wiki and the engine; planned in full when it is next.
 
-- **Binding** (6.5.4d, Dendroid Guards and Soldiers): a stack they hit, by attack or retaliation, can't move until the binding Dendroids move away, are killed, or the bound stack is Dispelled or Teleported; it can still attack what stands next to it, shoot, wait and defend. Anti-Magic and immunities don't stop it. Log: "Roots and vines bind the %s to the ground!" (`core.genrltxt.560`).
 - **Blinding attack** (6.5.4e, Unicorns): after an attack or retaliation, a 20% chance to Blind the target for 3 rounds; dragons, undead and other creatures immune to Blind aren't blinded, and magic resistance can stop it (the engine). The wiki says Basic Blind (the target strikes back at 50%), the engine casts it at Expert (no retaliation): to be asked.
 - **Breath** (6.5.4f, Green and Gold Dragons): a melee attack also hits the stack on the hex behind the target in the attack's direction, friend or foe, its damage worked out on its own; a double-wide stack isn't hit twice. Facing a double-wide target from above or below, the hex behind is the one on the side the dragon came from.

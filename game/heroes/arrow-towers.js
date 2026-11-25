@@ -1,6 +1,6 @@
 import { canShoot, getApproaches, isAlive } from './battle.js'
 import { takeDamage } from './battle-damage.js'
-import { fightsFor, getDamageTakenPercent, getStackSpeed, isBlind } from './battle-stats.js'
+import { fightsFor, getDamageTakenPercent, getMovementRange, isBlind } from './battle-stats.js'
 import { isInsideTheWalls, towerOf } from './siege-walls.js'
 
 const healthOf = (stack) => Math.max(0, (stack.count - 1) * stack.health + stack.topHealth)
@@ -11,7 +11,7 @@ const damageTo = (target, roll) =>
 
 const canStrikeOnItsTurn = (battle, stack) =>
   canShoot(battle, stack) ||
-  getApproaches(battle, stack).some(({ distance }) => distance <= getStackSpeed(stack))
+  getApproaches(battle, stack).some(({ distance }) => distance <= getMovementRange(stack))
 
 const killedBy = (stack, damage) => stack.count - takeDamage(stack, damage).count
 

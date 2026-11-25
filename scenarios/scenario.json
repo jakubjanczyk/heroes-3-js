@@ -170,6 +170,7 @@
     {"id": "monster-23", "kind": "MONSTER", "type": "UNICORN", "count": 3, "tile": {"x": 11, "y": 6}},
     {"id": "monster-24", "kind": "MONSTER", "type": "PEGASUS", "count": 5, "tile": {"x": 15, "y": 6}},
     {"id": "monster-25", "kind": "MONSTER", "type": "GREEN_DRAGON", "count": 2, "tile": {"x": 16, "y": 4}},
+    {"id": "monster-26", "kind": "MONSTER", "type": "DENDROID_GUARD", "count": 4, "tile": {"x": 12, "y": 1}},
     {"id": "chest-1", "kind": "TREASURE_CHEST", "type": "TREASURE_CHEST", "tier": 2, "tile": {"x": 8, "y": 3}},
     {"id": "chest-2", "kind": "TREASURE_CHEST", "type": "TREASURE_CHEST", "tier": 1, "tile": {"x": 2, "y": 7}},
     {"id": "chest-4", "kind": "TREASURE_CHEST", "type": "TREASURE_CHEST", "tier": "artifact", "tile": {"x": 4, "y": 2}},
