@@ -227,6 +227,8 @@ export const registerBattleModule = defineModule(
     const luckRandom = typeof config?.luckRandom === 'function' ? config.luckRandom : Math.random
     const resistanceRandom =
       typeof config?.resistanceRandom === 'function' ? config.resistanceRandom : Math.random
+    const abilityRandom =
+      typeof config?.abilityRandom === 'function' ? config.abilityRandom : Math.random
     const catapultRandom =
       typeof config?.catapultRandom === 'function' ? config.catapultRandom : random
     const towerRandom = typeof config?.towerRandom === 'function' ? config.towerRandom : random
@@ -591,7 +593,12 @@ export const registerBattleModule = defineModule(
     const shotDetail = (detail) => withGoodMoraleRoll(detail, resolveShot(battle, detail))
 
     function playComputerTurn(stack) {
-      const plan = planComputerTurn(battle, stack, { random, luckRandom })
+      const plan = planComputerTurn(battle, stack, {
+        random,
+        luckRandom,
+        abilityRandom,
+        resistanceRandom
+      })
       if (plan?.shot) {
         void walkThenShow({
           stack,
@@ -891,7 +898,15 @@ export const registerBattleModule = defineModule(
     function attackWithActiveStack({ targetId, fromHex }) {
       const stack = getActiveStack(battle)
       const attack =
-        stack && planStackAttack(battle, stack, { targetId, fromHex, random, luckRandom })
+        stack &&
+        planStackAttack(battle, stack, {
+          targetId,
+          fromHex,
+          random,
+          luckRandom,
+          abilityRandom,
+          resistanceRandom
+        })
       if (!attack) {
         return
       }

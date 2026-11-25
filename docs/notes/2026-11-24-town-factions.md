@@ -269,14 +269,14 @@ Checked against the Heroes 3 wiki's raw page source (Unicorn and War Unicorn, Bl
 - **Its strength**: the wiki gives Basic Blind (Unicorn page; Damage page: "Unicorns and War Unicorns cast Blind with basic proficiency, unless the battle takes place on Magic Plains"): the stack strikes back at 50% when attacked and woken. The engine casts it at Expert (spell level 3 in its data): no strike back at all. Agreed to follow the wiki: Basic.
 - **The strike back to the Unicorns' own attack**: the engine casts the Blind right after the Unicorns' hit, before the stack strikes back; it then strikes back as a blind stack does (none at Expert, 50% at Basic) and stays blind, since striking back isn't being attacked. The wiki's Retaliation page: "can Blind on attack which prevents creatures from acting and decreases damage of their first retaliation by 50%". Agreed: the stack is blinded before it strikes back, strikes back at 50% and stays blind.
 - **Who can't be blinded**: whoever the hero's Blind can't reach: the undead and creatures immune to mind spells, Dragons' level immunity (Blind is level 2), the Pendant of Second Sight; no roll is made then (engine: it checks the spell can be cast before rolling).
-- **Resistance**: the target's magic resistance (the Dwarves', the hero's Resistance skill, a Unicorn aura next to it) can resist it, as a hostile spell (engine: a creature's spell is resisted as a hero's). The wiki says nothing. Shown as other resisted spells are.
+- **Resistance**: the target's magic resistance (the Dwarves', the hero's Resistance skill, a Unicorn aura next to it) can resist it, as a hostile spell (engine: a creature's spell is resisted as a hero's). The wiki says nothing. Neither source gives a combat log line for it, so a resisted blinding leaves no line (our choice).
 - **Combat log**: "The %s cannot see!" (`core.genrltxt.556`, the Blind spell's line, wiki copy), with the stack's plural name, after the hit's damage line (engine).
 - Magic Plains and the Fiery Fields don't exist yet (battlefield terrain later).
 
 ### What we decided
 
-- A creature's `blindingAttack` in `monsters.json`: `{ chance: 20, rounds: 3, skill: 1 }` (Basic), on both Unicorns, so the next creature that casts a spell after its hit (Medusas' Stone Gaze, Scorpicores' Paralyze, ...) can reuse it with its own spell later.
-- The roll is planned with the strikes, as the damage rolls are, and saved with the attack, so a reload shows the same battle.
+- A creature's `spellAfterAttack` in `monsters.json`: `{ spell: "BLIND", chance: 20, rounds: 3, skill: 1 }` (Basic), on both Unicorns, so the next creature that casts a spell after its hit (Medusas' Stone Gaze, Scorpicores' Paralyze, ...) is only data if its spell is a lasting one. The spell's effects are its data's at that skill, for that many rounds.
+- The roll is planned with the strikes, as the damage rolls are, and saved with the attack (`castsSpell` on the strike), so a reload shows the same battle. The stack's strike back is worked out with the spell already on it.
 - The demo map's Unicorns already stand east of the first hero; no change.
 
 ### Left for later (6.5.4e)

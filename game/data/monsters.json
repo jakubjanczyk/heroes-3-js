@@ -568,6 +568,7 @@
     },
     "aiValue": 1806,
     "magicResistanceAura": 20,
+    "spellAfterAttack": { "spell": "BLIND", "chance": 20, "rounds": 3, "skill": 1 },
     "abilities": ["doubleWide"]
   },
   "WAR_UNICORN": {
@@ -589,6 +590,7 @@
     },
     "aiValue": 2030,
     "magicResistanceAura": 20,
+    "spellAfterAttack": { "spell": "BLIND", "chance": 20, "rounds": 3, "skill": 1 },
     "abilities": ["doubleWide"]
   },
   "GREEN_DRAGON": {
