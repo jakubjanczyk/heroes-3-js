@@ -89,6 +89,8 @@ export const registerTownRecruitViewModule = defineModule(
       const { target } = event
       if (target.closest('[data-town-message-action="close"]')) {
         closeMessage()
+      } else if (target.closest('[data-town-message]')) {
+        openMessage(target.closest('[data-town-message]').dataset.townMessage)
       } else if (target.closest('[data-recruit-tier]')) {
         openRecruitWindowFor(Number(target.closest('[data-recruit-tier]').dataset.recruitTier))
       }

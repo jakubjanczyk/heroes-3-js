@@ -1,10 +1,11 @@
 import { DEFAULT_PLAYER, playerColorsOf } from '../../state/core-slices.js'
 import { heroOwner, playerColors } from '../../state/queries.js'
+import { calendarDateOfTurn } from '../calendar.js'
 import { dailyIncomeOfMines } from '../mine-income.js'
 import { COMPUTER_STARTING_RESOURCES, startingResourcesOf } from '../starting-resources.js'
 import { sumIncomes } from '../town-income.js'
 import { mineIdsOf } from './map-objects.js'
-import { dailyIncomeOf, townIdsOf } from './towns.js'
+import { dailyIncomeOf, townIdsOf, weeklyInterestOf } from './towns.js'
 
 function addResources(resources, added = {}, sign = 1) {
   const totals = { ...resources }
@@ -38,10 +39,29 @@ export function dailyIncomeOfPlayer(state, player, definitions) {
   return sumIncomes([...towns, mines])
 }
 
-function payIncome(kingdoms, _detail, { previousState, definitions }) {
+// Counted on what the player holds as the week ends, before the new day's income.
+function weeklyInterestOfPlayer(state, player, definitions) {
+  const resources = resourcesOf(state, player)
+  return sumIncomes(
+    townIdsOf(state, player).map((townId) =>
+      weeklyInterestOf(state.towns.byId[townId], definitions, resources)
+    )
+  )
+}
+
+function payIncome(kingdoms, { turnNumber }, { previousState, definitions }) {
+  const isNewWeek = calendarDateOfTurn(turnNumber).day === 1
   return playerColors(previousState).reduce(
     (paid, player) =>
-      changeResources(paid, player, dailyIncomeOfPlayer(previousState, player, definitions)),
+      changeResources(
+        changeResources(
+          paid,
+          player,
+          isNewWeek ? weeklyInterestOfPlayer(previousState, player, definitions) : {}
+        ),
+        player,
+        dailyIncomeOfPlayer(previousState, player, definitions)
+      ),
     kingdoms
   )
 }
@@ -67,6 +87,8 @@ export const kingdomsSlice = {
     'fact.treasureChest.opened': (kingdoms, { heroId, resources }, { previousState }) =>
       resources ? changeResources(kingdoms, finderOf(previousState, heroId), resources) : kingdoms,
     'fact.resources.gained': (kingdoms, { player = DEFAULT_PLAYER, resources }) =>
+      changeResources(kingdoms, player, resources),
+    'fact.town.resources.produced': (kingdoms, { player, resources }) =>
       changeResources(kingdoms, player, resources),
     'fact.resources.spent': (kingdoms, { player = DEFAULT_PLAYER, resources }) =>
       changeResources(kingdoms, player, resources, -1),

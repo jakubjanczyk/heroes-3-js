@@ -274,5 +274,267 @@
       "PORTAL_OF_GLORY": { "x": 380, "y": 4, "z": -3 },
       "UPG_PORTAL_OF_GLORY": { "x": 380, "y": 4, "z": -3 }
     }
+  },
+  "RAMPART": {
+    "name": "Rampart",
+    "moat": {
+      "name": "Moat",
+      "from": "CITADEL",
+      "damage": 70,
+      "defensePenalty": 3,
+      "stopsWalkers": true,
+      "hitsOnEntering": true,
+      "hitsAsTurnStarts": true,
+      "affects": ["attacker", "defender"],
+      "hexes": [
+        { "row": 0, "column": 10 },
+        { "row": 1, "column": 10 },
+        { "row": 2, "column": 9 },
+        { "row": 3, "column": 9 },
+        { "row": 4, "column": 8 },
+        { "row": 6, "column": 8 },
+        { "row": 7, "column": 9 },
+        { "row": 8, "column": 9 },
+        { "row": 9, "column": 10 },
+        { "row": 10, "column": 10 }
+      ]
+    },
+    "arrowTowers": [
+      {
+        "tower": "KEEP",
+        "name": "Main Building",
+        "aimedAs": "keep",
+        "from": "CITADEL",
+        "damage": { "min": 10, "max": 20 },
+        "perStructure": { "min": 2, "max": 4 },
+        "hitPoints": 2,
+        "hex": { "row": 5, "column": 15 }
+      },
+      {
+        "tower": "UPPER_TOWER",
+        "name": "Upper Tower",
+        "aimedAs": "tower",
+        "from": "CASTLE",
+        "damage": { "min": 6, "max": 12 },
+        "perStructure": { "min": 2, "max": 4 },
+        "hitPoints": 2,
+        "halfTheStructures": true,
+        "hex": { "row": 0, "column": 11 },
+        "stands": "above"
+      },
+      {
+        "tower": "LOWER_TOWER",
+        "name": "Lower Tower",
+        "aimedAs": "tower",
+        "from": "CASTLE",
+        "damage": { "min": 6, "max": 12 },
+        "perStructure": { "min": 2, "max": 4 },
+        "hitPoints": 2,
+        "halfTheStructures": true,
+        "hex": { "row": 10, "column": 11 },
+        "stands": "below"
+      }
+    ],
+    "buildings": {
+      "MYSTIC_POND": {
+        "name": "Mystic Pond",
+        "cost": {
+          "WOOD_PILE": 2,
+          "MERCURY_PILE": 2,
+          "ORE_PILE": 2,
+          "SULFUR_PILE": 2,
+          "CRYSTAL_PILE": 2,
+          "GEMS_PILE": 2,
+          "GOLD_PILE": 2000
+        },
+        "description": "The Mystic Pond produces a small random number of resources each week.",
+        "weeklyResources": {
+          "anyOf": ["MERCURY_PILE", "SULFUR_PILE", "CRYSTAL_PILE", "GEMS_PILE"],
+          "amount": { "min": 1, "max": 4 }
+        }
+      },
+      "FOUNTAIN_OF_FORTUNE": {
+        "name": "Fountain of Fortune",
+        "cost": { "CRYSTAL_PILE": 10, "GOLD_PILE": 1500 },
+        "requires": ["MYSTIC_POND"],
+        "upgrades": "MYSTIC_POND",
+        "structure": false,
+        "description": "The Fountain of Fortune increases the luck of the garrison hero by +2 when defending against a siege.",
+        "defenderBonuses": { "luck": 2 }
+      },
+      "TREASURY": {
+        "name": "Treasury",
+        "cost": { "WOOD_PILE": 5, "ORE_PILE": 10, "GOLD_PILE": 5000 },
+        "requires": ["MINERS_GUILD"],
+        "weeklyInterest": { "GOLD_PILE": 10 }
+      },
+      "MINERS_GUILD": {
+        "name": "Miners' Guild",
+        "cost": { "GOLD_PILE": 1000 },
+        "requires": ["DWARF_COTTAGE"],
+        "structure": false,
+        "horde": { "tier": 2, "amount": 4 }
+      },
+      "DENDROID_SAPLINGS": {
+        "name": "Dendroid Saplings",
+        "cost": { "GOLD_PILE": 2000 },
+        "requires": ["DENDROID_ARCHES"],
+        "structure": false,
+        "horde": { "tier": 5, "amount": 2 }
+      },
+      "CENTAUR_STABLES": {
+        "name": "Centaur Stables",
+        "cost": { "WOOD_PILE": 5, "GOLD_PILE": 500 },
+        "requires": ["FORT"],
+        "creature": "CENTAUR"
+      },
+      "UPG_CENTAUR_STABLES": {
+        "name": "Upg. Centaur Stables",
+        "cost": { "WOOD_PILE": 5, "GOLD_PILE": 1000 },
+        "requires": ["CENTAUR_STABLES"],
+        "creature": "CENTAUR_CAPTAIN",
+        "upgrades": "CENTAUR_STABLES"
+      },
+      "DWARF_COTTAGE": {
+        "name": "Dwarf Cottage",
+        "cost": { "WOOD_PILE": 5, "GOLD_PILE": 1000 },
+        "requires": ["CENTAUR_STABLES"],
+        "creature": "DWARF"
+      },
+      "UPG_DWARF_COTTAGE": {
+        "name": "Upg. Dwarf Cottage",
+        "cost": { "WOOD_PILE": 5, "GOLD_PILE": 1000 },
+        "requires": ["DWARF_COTTAGE"],
+        "creature": "BATTLE_DWARF",
+        "upgrades": "DWARF_COTTAGE"
+      },
+      "HOMESTEAD": {
+        "name": "Homestead",
+        "cost": { "WOOD_PILE": 10, "GOLD_PILE": 1500 },
+        "requires": ["CENTAUR_STABLES"],
+        "creature": "WOOD_ELF"
+      },
+      "UPG_HOMESTEAD": {
+        "name": "Upg. Homestead",
+        "cost": { "WOOD_PILE": 10, "GOLD_PILE": 1500 },
+        "requires": ["HOMESTEAD"],
+        "creature": "GRAND_ELF",
+        "upgrades": "HOMESTEAD"
+      },
+      "ENCHANTED_SPRING": {
+        "name": "Enchanted Spring",
+        "cost": { "CRYSTAL_PILE": 10, "GOLD_PILE": 2000 },
+        "requires": ["HOMESTEAD"],
+        "creature": "PEGASUS"
+      },
+      "UPG_ENCHANTED_SPRING": {
+        "name": "Upg. Enchanted Spring",
+        "cost": { "CRYSTAL_PILE": 5, "GOLD_PILE": 2000 },
+        "requires": ["ENCHANTED_SPRING"],
+        "creature": "SILVER_PEGASUS",
+        "upgrades": "ENCHANTED_SPRING"
+      },
+      "DENDROID_ARCHES": {
+        "name": "Dendroid Arches",
+        "cost": { "GOLD_PILE": 2500 },
+        "requires": ["HOMESTEAD"],
+        "creature": "DENDROID_GUARD"
+      },
+      "UPG_DENDROID_ARCHES": {
+        "name": "Upg. Dendroid Arches",
+        "cost": { "GOLD_PILE": 1500 },
+        "requires": ["DENDROID_ARCHES"],
+        "creature": "DENDROID_SOLDIER",
+        "upgrades": "DENDROID_ARCHES"
+      },
+      "UNICORN_GLADE": {
+        "name": "Unicorn Glade",
+        "cost": { "WOOD_PILE": 5, "ORE_PILE": 5, "GEMS_PILE": 10, "GOLD_PILE": 4000 },
+        "requires": ["ENCHANTED_SPRING", "DENDROID_ARCHES"],
+        "creature": "UNICORN"
+      },
+      "UPG_UNICORN_GLADE": {
+        "name": "Upg. Unicorn Glade",
+        "cost": { "GEMS_PILE": 5, "GOLD_PILE": 3000 },
+        "requires": ["UNICORN_GLADE"],
+        "creature": "WAR_UNICORN",
+        "upgrades": "UNICORN_GLADE"
+      },
+      "DRAGON_CLIFFS": {
+        "name": "Dragon Cliffs",
+        "cost": { "ORE_PILE": 30, "CRYSTAL_PILE": 20, "GOLD_PILE": 10000 },
+        "requires": ["UNICORN_GLADE", "MAGE_GUILD_2"],
+        "creature": "GREEN_DRAGON"
+      },
+      "UPG_DRAGON_CLIFFS": {
+        "name": "Upg. Dragon Cliffs",
+        "cost": { "ORE_PILE": 30, "CRYSTAL_PILE": 20, "GOLD_PILE": 20000 },
+        "requires": ["DRAGON_CLIFFS", "MAGE_GUILD_3"],
+        "creature": "GOLD_DRAGON",
+        "upgrades": "DRAGON_CLIFFS"
+      }
+    },
+    "hall": [
+      [
+        ["VILLAGE_HALL", "TOWN_HALL", "CITY_HALL", "CAPITOL"],
+        ["FORT", "CITADEL", "CASTLE"],
+        ["TAVERN"],
+        ["BLACKSMITH"]
+      ],
+      [
+        ["MARKETPLACE", "RESOURCE_SILO"],
+        ["MAGE_GUILD_1", "MAGE_GUILD_2", "MAGE_GUILD_3", "MAGE_GUILD_4", "MAGE_GUILD_5"],
+        ["MYSTIC_POND", "FOUNTAIN_OF_FORTUNE"]
+      ],
+      [["TREASURY"], ["DENDROID_SAPLINGS"], ["MINERS_GUILD"]],
+      [
+        ["CENTAUR_STABLES", "UPG_CENTAUR_STABLES"],
+        ["DWARF_COTTAGE", "UPG_DWARF_COTTAGE"],
+        ["HOMESTEAD", "UPG_HOMESTEAD"],
+        ["ENCHANTED_SPRING", "UPG_ENCHANTED_SPRING"]
+      ],
+      [
+        ["DENDROID_ARCHES", "UPG_DENDROID_ARCHES"],
+        ["UNICORN_GLADE", "UPG_UNICORN_GLADE"],
+        ["DRAGON_CLIFFS", "UPG_DRAGON_CLIFFS"]
+      ]
+    ],
+    "picture": {
+      "VILLAGE_HALL": { "x": 565, "y": 216, "z": 0 },
+      "TOWN_HALL": { "x": 538, "y": 187, "z": 0 },
+      "CITY_HALL": { "x": 538, "y": 187, "z": 0 },
+      "CAPITOL": { "x": 534, "y": 187, "z": 0 },
+      "FORT": { "x": 63, "y": 25, "z": -4 },
+      "CITADEL": { "x": 79, "y": 18, "z": -4 },
+      "CASTLE": { "x": 79, "y": 18, "z": -4 },
+      "TAVERN": { "x": 181, "y": 229, "z": 1 },
+      "BLACKSMITH": { "x": 558, "y": 105, "z": -3 },
+      "MARKETPLACE": { "x": 129, "y": 301, "z": 3 },
+      "RESOURCE_SILO": { "x": 245, "y": 324, "z": 4 },
+      "MAGE_GUILD_1": { "x": 454, "y": 200, "z": -1 },
+      "MAGE_GUILD_2": { "x": 438, "y": 178, "z": -1 },
+      "MAGE_GUILD_3": { "x": 418, "y": 153, "z": -1 },
+      "MAGE_GUILD_4": { "x": 406, "y": 129, "z": -1 },
+      "MAGE_GUILD_5": { "x": 384, "y": 104, "z": -1 },
+      "MYSTIC_POND": { "x": 555, "y": 297, "z": 2 },
+      "FOUNTAIN_OF_FORTUNE": { "x": 555, "y": 297, "z": 2 },
+      "TREASURY": { "x": 0, "y": 181, "z": 1 },
+      "MINERS_GUILD": { "x": 0, "y": 154, "z": -2 },
+      "DENDROID_SAPLINGS": { "x": 47, "y": 142, "z": -1 },
+      "CENTAUR_STABLES": { "x": 0, "y": 236, "z": 2 },
+      "UPG_CENTAUR_STABLES": { "x": 0, "y": 236, "z": 2 },
+      "DWARF_COTTAGE": { "x": 0, "y": 154, "z": -2 },
+      "UPG_DWARF_COTTAGE": { "x": 0, "y": 143, "z": -2 },
+      "HOMESTEAD": { "x": 668, "y": 101, "z": -1 },
+      "UPG_HOMESTEAD": { "x": 665, "y": 101, "z": -1 },
+      "ENCHANTED_SPRING": { "x": 287, "y": 73, "z": -1 },
+      "UPG_ENCHANTED_SPRING": { "x": 287, "y": 28, "z": -1 },
+      "DENDROID_ARCHES": { "x": 68, "y": 146, "z": -1 },
+      "UPG_DENDROID_ARCHES": { "x": 63, "y": 146, "z": -1 },
+      "UNICORN_GLADE": { "x": 362, "y": 90, "z": -2 },
+      "UPG_UNICORN_GLADE": { "x": 362, "y": 90, "z": -2 },
+      "DRAGON_CLIFFS": { "x": 502, "y": 27, "z": -5 },
+      "UPG_DRAGON_CLIFFS": { "x": 502, "y": 5, "z": -5 }
+    }
   }
 }

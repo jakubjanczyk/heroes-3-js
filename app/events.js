@@ -133,6 +133,8 @@ export const APP_FACT_TOWN_BUILDING_BUILT = 'fact.town.building.built'
 // Creatures bought from a town's dwelling, leaving fewer there to buy.
 export const APP_FACT_TOWN_CREATURES_RECRUITED = 'fact.town.creatures.recruited'
 export const APP_FACT_TOWN_GARRISON_CHANGED = 'fact.town.garrison.changed'
+// What an owned town's buildings with weekly resources (the Mystic Pond) made as the week started.
+export const APP_FACT_TOWN_RESOURCES_PRODUCED = 'fact.town.resources.produced'
 export const APP_FACT_MINE_CAPTURED = 'fact.mine.captured'
 export const APP_FACT_DWELLING_FLAGGED = 'fact.dwelling.flagged'
 export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.recruited'
@@ -260,6 +262,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_TOWN_BUILDING_BUILT,
   APP_FACT_TOWN_CREATURES_RECRUITED,
   APP_FACT_TOWN_GARRISON_CHANGED,
+  APP_FACT_TOWN_RESOURCES_PRODUCED,
   APP_FACT_RESOURCES_SPENT,
   APP_FACT_MINE_CAPTURED,
   APP_FACT_DWELLING_FLAGGED,
