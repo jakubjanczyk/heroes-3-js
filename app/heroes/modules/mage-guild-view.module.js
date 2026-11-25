@@ -7,6 +7,7 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderDescriptionPopup } from '../presentation/artifacts.js'
 import { SCROLL_PLACES, SCROLL_SIZE } from '../presentation/mage-guild-room.js'
+import { townArt } from '../presentation/town-art.js'
 
 function placeAt(element, [x, y]) {
   element.style.setProperty('--x', String(x))
@@ -69,6 +70,13 @@ export const registerMageGuildViewModule = defineModule(
       return group
     }
 
+    function showWindowView(townType) {
+      const { name, art } = townArt(townType).guildWindow
+      const view = part('.mage-guild__window')
+      view.setAttribute('aria-label', name)
+      view.innerHTML = `<svg viewBox="0 0 138 198" preserveAspectRatio="xMidYMid slice">${art()}</svg>`
+    }
+
     function open(update) {
       if (!guildWindow && !isOpenRequested) {
         return
@@ -82,6 +90,7 @@ export const registerMageGuildViewModule = defineModule(
         part('.mage-guild').focus()
       }
       guild = update
+      showWindowView(update.townType)
       part('.mage-guild__levels').replaceChildren(...guild.levels.map(renderLevel))
     }
 

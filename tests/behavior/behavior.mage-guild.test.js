@@ -16,7 +16,7 @@ import {
   readGameData,
   setupMovementBehaviorApp
 } from './app.utils.js'
-import { aHero, aScenario, aSpellDefinition, aTown } from './builders.js'
+import { aHero, aScenario, aSpellDefinition, aTown, aTownDefinition } from './builders.js'
 import { clickHeroInHeroList, readHeroScreenSpellBook } from './hero-screen.utils.js'
 import {
   clickSpellBookControl,
@@ -45,6 +45,7 @@ import {
   readMageGuildLevels,
   readMageGuildMessage,
   readMageGuildStatusBar,
+  readMageGuildWindowView,
   releaseRightButton
 } from './town-screen.utils.js'
 
@@ -80,6 +81,7 @@ const guildSpells = {
 const MORE_LEVEL_1 = ['Bless', 'Cure', 'Dispel', 'Haste', 'Shield', 'Slow', 'Stone Skin']
 
 const castle = readGameData('towns.json').CASTLE
+const rampart = readGameData('towns.json').RAMPART
 
 const gameDefinitions = (spells = guildSpells, towns = { CASTLE: castle }) => ({
   hero: { name: 'Sir Christian' },
@@ -154,6 +156,16 @@ function guildNameOnPicture(scenario) {
   return `Mage Guild Level ${town.buildings.length}`
 }
 
+const aTownOfType = (type) =>
+  aTown().withType(type).named('Whitemoon').ownedByPlayer().withBuildings(['MAGE_GUILD_1'])
+
+const aGlade = () =>
+  aTownDefinition()
+    .withName('Glade')
+    .withHall([[['VILLAGE_HALL']], [['MAGE_GUILD_1']]])
+    .withPicture({ VILLAGE_HALL: { x: 100, y: 100 }, MAGE_GUILD_1: { x: 200, y: 100 } })
+    .build()
+
 const closedScrolls = (count) => new Array(count).fill('Closed scroll')
 
 describe('mage guild behavior', () => {
@@ -190,6 +202,30 @@ describe('mage guild behavior', () => {
       await hoverMageGuildCloseButton(user)
 
       expect(readMageGuildStatusBar()).toBe('Exit Mage Guild')
+    })
+  })
+
+  describe('its window', () => {
+    test("a Castle town's Mage Guild looks out on the Castle's land", async () => {
+      await startInMageGuild(aGuildScenario())
+
+      expect(readMageGuildWindowView()).toBe("View of the Castle's land")
+    })
+
+    test("a Rampart town's Mage Guild looks out on Rampart's valley", async () => {
+      const definitions = gameDefinitions(guildSpells, { CASTLE: castle, RAMPART: rampart })
+
+      await startInMageGuild(aGuildScenario({ town: aTownOfType('RAMPART'), definitions }))
+
+      expect(readMageGuildWindowView()).toBe("View of Rampart's valley")
+    })
+
+    test('a town type without art of its own looks out on a plain view', async () => {
+      const definitions = gameDefinitions(guildSpells, { CASTLE: castle, GLADE: aGlade() })
+
+      await startInMageGuild(aGuildScenario({ town: aTownOfType('GLADE'), definitions }))
+
+      expect(readMageGuildWindowView()).toBe('Plain view')
     })
   })
 

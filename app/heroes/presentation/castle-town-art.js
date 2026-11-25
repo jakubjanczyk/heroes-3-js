@@ -508,3 +508,14 @@ export function castleBackgroundArt() {
     `<path d="M150 374 Q260 330 400 318 T800 300 H1600 V316 H800 Q600 322 430 336 T200 374 Z" fill="#c8b07a" opacity="0.8"/>`
   ].join('')
 }
+
+// Through the Mage Guild's window: a purple sky over green hills.
+export function castleGuildWindowArt() {
+  return [
+    `<defs><linearGradient id="castle-window-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a2bd8"/><stop offset="0.67" stop-color="#c64ae6"/><stop offset="1" stop-color="#e07af0"/></linearGradient></defs>`,
+    rect(0, 0, 138, 104, 'url(#castle-window-sky)'),
+    rect(0, 103, 138, 95, '#4c7e26'),
+    '<ellipse cx="41" cy="198" rx="62" ry="40" fill="#3c6e22"/>',
+    '<ellipse cx="110" cy="198" rx="55" ry="35" fill="#5e9a30"/>'
+  ].join('')
+}

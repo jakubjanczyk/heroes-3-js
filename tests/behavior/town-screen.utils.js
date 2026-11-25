@@ -242,7 +242,26 @@ function getTownPicture() {
 }
 
 export function readTownBackdrop() {
-  return within(getTownPicture()).getByRole('img').getAttribute('aria-label')
+  const [backdrop] = within(getTownPicture()).getAllByRole('img')
+  return backdrop.getAttribute('aria-label')
+}
+
+// How many groups of village houses stand on the town picture.
+export function readTownHouses() {
+  return within(getTownPicture()).queryAllByRole('img', { name: 'Village houses' }).length
+}
+
+function getHousesOnPicture() {
+  const [houses] = within(getTownPicture()).getAllByRole('img', { name: 'Village houses' })
+  return houses
+}
+
+export async function hoverHousesOnPicture(user) {
+  await user.hover(getHousesOnPicture())
+}
+
+export async function clickHousesOnPicture(user) {
+  await user.click(getHousesOnPicture())
 }
 
 // The names of the buildings drawn on the town picture, in alphabetical order.
@@ -441,6 +460,10 @@ function getMageGuild() {
 export async function openMageGuild(user, buildingName = 'Mage Guild Level 1') {
   await clickBuildingOnPicture(user, buildingName)
   getMageGuild()
+}
+
+export function readMageGuildWindowView() {
+  return within(getMageGuild()).getByRole('img', { name: /view/i }).getAttribute('aria-label')
 }
 
 function getMageGuildCloseButton() {

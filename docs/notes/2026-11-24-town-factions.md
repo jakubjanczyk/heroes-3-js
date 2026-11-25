@@ -436,7 +436,7 @@ Checked against the Heroes 3 wiki's raw page source (Rampart: its gallery's town
 
 ### How it is built
 
-- `rampart-town-art.js` next to `castle-town-art.js`, with the SVG shapes both use moved to one module; `town-art.js` gains Rampart's entry, each type's `decorations` (the houses: the hall that brings them, a place and an SVG drawing, drawn under the buildings and not clickable) and each type's `guildWindow` (its view's name and drawing).
+- `rampart-town-art.js` next to `castle-town-art.js`, the SVG shapes both use in `town-art-shapes.js`. `town-art.js` gives each town type its backdrop, buildings, `houses` (each group's place, its drawing and the halls it stands with, `hallsShowingThem`, drawn behind the buildings and not clickable) and `guildWindow` (its view's name and drawing).
 - The Mage Guild's update carries the town's type, and the view draws that type's window.
 
 ### Left for later (6.5.5b)

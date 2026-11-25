@@ -8,12 +8,15 @@ import { queryRecruitWindow, readChosenRecruitCreature } from './recruit-window.
 import {
   buildInTown,
   clickBuildingOnPicture,
+  clickHousesOnPicture,
   hoverBuildingOnPicture,
+  hoverHousesOnPicture,
   leaveTown,
   queryFortWindow,
   queryHall,
   readHall,
   readTownBackdrop,
+  readTownHouses,
   readTownPicture,
   readTownStatusBar,
   unhoverBuildingOnPicture
@@ -82,6 +85,27 @@ async function startInElmhollow(buildings) {
     appConfig: { interactionModalTransitionMs: 0 }
   })
   await app.user.dblClick(getTownInTownList('Elmhollow'))
+  return app
+}
+
+const anElfwind = (buildings = []) =>
+  aTown()
+    .withId('town-3')
+    .withType('RAMPART')
+    .named('Elfwind')
+    .ownedByPlayer()
+    .withBuildings(buildings)
+
+async function startInElfwind(buildings) {
+  const app = await setupMovementBehaviorApp({
+    loadGameOptions: aScenario()
+      .withSize(8, 7)
+      .withEntities(aHero().at(4, 5), anElfwind(buildings).at(4, 3))
+      .withDefinitions(gameDefinitions)
+      .build(),
+    appConfig: { interactionModalTransitionMs: 0 }
+  })
+  await app.user.dblClick(getTownInTownList('Elfwind'))
   return app
 }
 
@@ -292,6 +316,64 @@ describe('town picture behavior', () => {
       await buildInTown(user, 'Treant Grove')
 
       expect(readTownPicture()).toEqual(['Treant Grove', 'Village Hall'])
+    })
+  })
+
+  describe('a Rampart town', () => {
+    test("shows Rampart's misty valley", async () => {
+      await startInElfwind([])
+
+      expect(readTownBackdrop()).toBe("Rampart's misty valley")
+    })
+
+    test.each([
+      { hall: 'Village Hall', built: [], houses: 0 },
+      { hall: 'Town Hall', built: ['TOWN_HALL'], houses: 1 },
+      { hall: 'City Hall', built: ['TOWN_HALL', 'CITY_HALL'], houses: 2 },
+      { hall: 'Capitol', built: ['TOWN_HALL', 'CITY_HALL', 'CAPITOL'], houses: 3 }
+    ])('with a $hall shows $houses groups of village houses', async ({ built, houses }) => {
+      await startInElfwind(built)
+
+      expect(readTownHouses()).toBe(houses)
+    })
+
+    test('a Castle town shows no village houses, whatever its hall', async () => {
+      await startInWhitemoon(['TOWN_HALL', 'CITY_HALL', 'CAPITOL'])
+
+      expect(readTownHouses()).toBe(0)
+    })
+
+    test('hovering the village houses leaves the status bar empty', async () => {
+      const { user } = await startInElfwind(['TOWN_HALL'])
+
+      await hoverHousesOnPicture(user)
+
+      expect(readTownStatusBar()).toBe('')
+    })
+
+    test('clicking the village houses opens nothing', async () => {
+      const { user } = await startInElfwind(['TOWN_HALL'])
+
+      await clickHousesOnPicture(user)
+
+      expect(queryHall()).toBeNull()
+    })
+
+    test('a Castle town opened after it shows the Castle by the sea', async () => {
+      const { user } = await setupMovementBehaviorApp({
+        loadGameOptions: aScenario()
+          .withSize(16, 7)
+          .withEntities(aHero().at(0, 6), aWhitemoon().at(4, 3), anElfwind().at(12, 3))
+          .withDefinitions(gameDefinitions)
+          .build(),
+        appConfig: { interactionModalTransitionMs: 0 }
+      })
+      await user.dblClick(getTownInTownList('Elfwind'))
+      await leaveTown(user)
+
+      await user.dblClick(getTownInTownList('Whitemoon'))
+
+      expect(readTownBackdrop()).toBe('The Castle by the sea')
     })
   })
 })
