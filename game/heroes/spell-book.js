@@ -58,8 +58,8 @@ export const castsOnAllStacks = (hero, spell) =>
   Boolean(spell?.earthquake) ||
   (Boolean(castRuleOf(spell)?.allAtExpert) && spellSkillLevel(hero, spell) === SKILL_LEVELS.EXPERT)
 
-export function spellCost(hero, spell) {
-  return spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
+export function spellCost(hero, spell, extraCost = 0) {
+  return (spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0) + extraCost
 }
 
 const powerOf = (hero, definitions) =>
@@ -140,10 +140,10 @@ function compareSpells(a, b) {
   )
 }
 
-function describeSpell(id, spell, { hero, spellPoints, definitions }) {
+function describeSpell(id, spell, { hero, spellPoints, definitions, extraCost }) {
   const skillLevel = spellSkillLevel(hero, spell)
   const levelName = SPELL_LEVEL_NAMES[spell.level] ?? ''
-  const cost = spellCost(hero, spell)
+  const cost = spellCost(hero, spell, extraCost)
   const description = spell.descriptions?.[skillLevel] ?? { title: spell.name, text: '' }
   return {
     id,
@@ -158,7 +158,7 @@ function describeSpell(id, spell, { hero, spellPoints, definitions }) {
   }
 }
 
-function spellsInBook({ hero, definitions, kind, school }) {
+function spellsInBook({ hero, definitions, kind, school, extraCost }) {
   const { value: spellPoints } = getHeroSpellPoints({ entity: hero, definitions })
   return knownSpells(hero, definitions)
     .map((id) => [id, definitions?.spells?.[id]])
@@ -167,7 +167,7 @@ function spellsInBook({ hero, definitions, kind, school }) {
         spell && spell.kind === kind && (school === ALL_SCHOOLS || spell.schools?.includes(school))
     )
     .sort(([, a], [, b]) => compareSpells(a, b))
-    .map(([id, spell]) => describeSpell(id, spell, { hero, spellPoints, definitions }))
+    .map(([id, spell]) => describeSpell(id, spell, { hero, spellPoints, definitions, extraCost }))
 }
 
 function spreadsOf(spells, school) {
@@ -190,8 +190,15 @@ function spellsOnSpread(spells, school, spread) {
 
 // One spread of the book: the spells on it, with the school's heading first on a school's first
 // spread, and how many spreads the bookmark has.
-export function describeSpellBookSpread({ hero, definitions, kind, school, spread }) {
-  const spells = spellsInBook({ hero, definitions, kind, school })
+export function describeSpellBookSpread({
+  hero,
+  definitions,
+  kind,
+  school,
+  spread,
+  extraCost = 0
+}) {
+  const spells = spellsInBook({ hero, definitions, kind, school, extraCost })
   const spreads = spreadsOf(spells, school)
   const shown = Math.min(Math.max(0, spread), spreads - 1)
   return {

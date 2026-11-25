@@ -77,6 +77,14 @@ const UNKNOWN_CREATURE = Object.freeze({
   abilities: []
 })
 
+const spellTraitsOf = (definition, { immunities, magicResistance, mindless }) => ({
+  mindSpellImmune: mindless || immunities.mindSpells,
+  spellLevelImmunity: Math.max(immunities.spellLevel, definition.spellLevelImmunity ?? 0),
+  magicResistance: Math.min(100, magicResistance + (definition.magicResistance ?? 0)),
+  magicResistanceAura: definition.magicResistanceAura ?? 0,
+  magicDamper: definition.magicDamper ?? 0
+})
+
 function createStack({
   id,
   side,
@@ -123,10 +131,7 @@ function createStack({
     morale: unaffectedByMorale ? 0 : morale,
     unaffectedByMorale,
     undead,
-    mindSpellImmune: undead || warMachine || immunities.mindSpells,
-    spellLevelImmunity: Math.max(immunities.spellLevel, definition.spellLevelImmunity ?? 0),
-    magicResistance: Math.min(100, magicResistance + (definition.magicResistance ?? 0)),
-    magicResistanceAura: definition.magicResistanceAura ?? 0,
+    ...spellTraitsOf(definition, { immunities, magicResistance, mindless: undead || warMachine }),
     king: definition.king ?? null,
     luck,
     cancelledInBattle,
