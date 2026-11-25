@@ -1,5 +1,6 @@
 import { artifactBattleImmunities, artifactsCancelInBattle } from './artifacts.js'
 import { bindStack, describeBinding, withoutBrokenBindings } from './battle-binding.js'
+import { breathTargetFinder } from './battle-breath.js'
 import { getDamageRange, shotSequence, strikeSequence, takeDamage } from './battle-damage.js'
 import { isImmuneTo, isSpellTarget, spellTargeting } from './battle-spells.js'
 import {
@@ -136,6 +137,7 @@ function createStack({
     ...spellTraitsOf(definition, { immunities, magicResistance, mindless: undead || warMachine }),
     king: definition.king ?? null,
     binds: Boolean(definition.binds),
+    breath: Boolean(definition.breath),
     spellAfterAttack: definition.spellAfterAttack ?? null,
     luck,
     cancelledInBattle,
@@ -947,7 +949,8 @@ export function planStackAttack(
           defender: target,
           random,
           luckRandom,
-          castAfterHit: castAfterHit(arrived, { abilityRandom, resistanceRandom })
+          castAfterHit: castAfterHit(arrived, { abilityRandom, resistanceRandom }),
+          breathTargetOf: breathTargetFinder(arrived.stacks, { attackerId: stack.id, fromHex })
         })
       : []
   }
@@ -1075,12 +1078,15 @@ const describeCastAfterHit = (cast, stack) =>
 
 function applyStrike(
   battle,
-  { attackerId, defenderId, damage, lucky, fireShield, castsSpell },
+  { attackerId, defenderId, damage, lucky, fireShield, castsSpell, breath },
   retaliatorId
 ) {
   const attacker = battle.stacks.find(({ id }) => id === attackerId)
-  const { damaged, ...losses } = damageStack(battle, defenderId, damage)
-  const dealt = describeDealt(attacker, damage, fireShield)
+  const hit = damageStack(battle, defenderId, damage)
+  const { damaged } = hit
+  const burnt = breath ? damageStack(battle, breath.defenderId, breath.damage) : null
+  const dealt = describeDealt(attacker, damage + (breath?.damage ?? 0), fireShield)
+  const losses = burnt ? describeLossesOfAll([hit, burnt]) : hit
 
   const binds = attacker.binds && !fireShield && isAlive(damaged)
   const cast = castsSpell ? spellAfterAttackOf(battle, attacker) : null
@@ -1089,6 +1095,10 @@ function applyStrike(
     stacks: battle.stacks.map((stack) => {
       if (stack.id === defenderId) {
         return hitStack(damaged, { binds, cast, attackerId })
+      }
+
+      if (stack.id === burnt?.damaged.id) {
+        return wakeUp(burnt.damaged)
       }
 
       if (stack.id === attackerId && attackerId === retaliatorId && !fireShield) {
@@ -1113,7 +1123,7 @@ function applyStrike(
 }
 
 // Several stacks hit: the log counts creatures rather than naming any one stack's.
-function describeSpellLosses(damaged) {
+function describeLossesOfAll(damaged) {
   if (damaged.length === 1) {
     return damaged[0]
   }
@@ -1147,7 +1157,7 @@ function damageBySpell(battle, { heroName, spellName, hits: aimed, chained, resi
     }),
     messages: [
       ...cast.messages,
-      ...describeDamage(`The ${spellName} does ${total} damage.`, describeSpellLosses(damaged))
+      ...describeDamage(`The ${spellName} does ${total} damage.`, describeLossesOfAll(damaged))
     ]
   }
 }
