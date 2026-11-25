@@ -257,3 +257,29 @@ Checked so far against the wiki and the engine; planned in full when it is next.
 
 - **Blinding attack** (6.5.4e, Unicorns): after an attack or retaliation, a 20% chance to Blind the target for 3 rounds; dragons, undead and other creatures immune to Blind aren't blinded, and magic resistance can stop it (the engine). The wiki says Basic Blind (the target strikes back at 50%), the engine casts it at Expert (no retaliation): to be asked.
 - **Breath** (6.5.4f, Green and Gold Dragons): a melee attack also hits the stack on the hex behind the target in the attack's direction, friend or foe, its damage worked out on its own; a double-wide stack isn't hit twice. Facing a double-wide target from above or below, the hex behind is the one on the side the dragon came from.
+
+## 6.5.4e The Unicorns' blinding attack
+
+Checked against the Heroes 3 wiki's raw page source (Unicorn and War Unicorn, Blind, Damage, Retaliation, Magic resistance, `GENRLTXT.TXT`), the game's manual as the wiki quotes it ("This attack has a 20% chance of blinding an opponent"), a web search, and an open-source engine's creature and spell config (`creatures/rampart.json`, `spells/timed.json`) and its battle code (spells cast after an attack, the caster's spell level, the duration of a creature's spell, magic resistance).
+
+### The rules
+
+- **When**: after a Unicorns' or War Unicorns' hit, a 20% chance to cast Blind on the stack they hit (wiki, manual, engine). A stack the hit kills isn't blinded (engine). Their strike back counts too: the engine casts after every strike, the wiki says "after attacking them".
+- **How long**: 3 rounds (wiki: "for 3 rounds"; the engine gives a creature's spells a power of 3), unless the stack is attacked or Dispelled or Cured first, as the hero's Blind (4.8.7.1a).
+- **Its strength**: the wiki gives Basic Blind (Unicorn page; Damage page: "Unicorns and War Unicorns cast Blind with basic proficiency, unless the battle takes place on Magic Plains"): the stack strikes back at 50% when attacked and woken. The engine casts it at Expert (spell level 3 in its data): no strike back at all. Agreed to follow the wiki: Basic.
+- **The strike back to the Unicorns' own attack**: the engine casts the Blind right after the Unicorns' hit, before the stack strikes back; it then strikes back as a blind stack does (none at Expert, 50% at Basic) and stays blind, since striking back isn't being attacked. The wiki's Retaliation page: "can Blind on attack which prevents creatures from acting and decreases damage of their first retaliation by 50%". Agreed: the stack is blinded before it strikes back, strikes back at 50% and stays blind.
+- **Who can't be blinded**: whoever the hero's Blind can't reach: the undead and creatures immune to mind spells, Dragons' level immunity (Blind is level 2), the Pendant of Second Sight; no roll is made then (engine: it checks the spell can be cast before rolling).
+- **Resistance**: the target's magic resistance (the Dwarves', the hero's Resistance skill, a Unicorn aura next to it) can resist it, as a hostile spell (engine: a creature's spell is resisted as a hero's). The wiki says nothing. Neither source gives a combat log line for it, so a resisted blinding leaves no line (our choice).
+- **Combat log**: "The %s cannot see!" (`core.genrltxt.556`, the Blind spell's line, wiki copy), with the stack's plural name, after the hit's damage line (engine).
+- Magic Plains and the Fiery Fields don't exist yet (battlefield terrain later).
+
+### What we decided
+
+- A creature's `spellAfterAttack` in `monsters.json`: `{ spell: "BLIND", chance: 20, rounds: 3, skill: 1 }` (Basic), on both Unicorns, so the next creature that casts a spell after its hit (Medusas' Stone Gaze, Scorpicores' Paralyze, ...) is only data if its spell is a lasting one. The spell's effects are its data's at that skill, for that many rounds.
+- The roll is planned with the strikes, as the damage rolls are, and saved with the attack (`castsSpell` on the strike), so a reload shows the same battle. The stack's strike back is worked out with the spell already on it.
+- The demo map's Unicorns already stand east of the first hero; no change.
+
+### Left for later (6.5.4e)
+
+- Magic Plains (expert) and Fiery Fields, with battlefield terrain.
+- A creature window listing the ability.

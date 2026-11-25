@@ -882,7 +882,7 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
   - [x] 6.5.4b Magic resistance: the Dwarves' own, and the Unicorns' aura for the stacks next to them
   - [x] 6.5.4c The Pegasi's magic damper: the enemy hero's spells cost 2 more
   - [x] 6.5.4d The Dendroids' binding: a stack they hit can't move until they move away or are killed, or it is Dispelled or Teleported
-  - [ ] 6.5.4e The Unicorns' blinding attack
+  - [x] 6.5.4e The Unicorns' blinding attack
   - [ ] 6.5.4f The Dragons' breath
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
