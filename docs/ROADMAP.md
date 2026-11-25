@@ -884,6 +884,10 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
   - [x] 6.5.4d The Dendroids' binding: a stack they hit can't move until they move away or are killed, or it is Dispelled or Teleported
   - [x] 6.5.4e The Unicorns' blinding attack
   - [x] 6.5.4f The Dragons' breath: a melee hit also hits the stack on the hex beyond the target, friend or foe
+- [ ] 6.5.5 Rampart's town, in two parts:
+  - [ ] 6.5.5a Rampart's town and its buildings: its dwellings, Hall, Mage Guild to level 5 with its spell odds, moat and arrow towers, the Miners' Guild and Dendroid Saplings, the Fountain of Fortune's luck for defenders; the Mystic Pond's rare resources and the Treasury's 10% interest each week
+  - [ ] 6.5.5b Rampart's town picture: its backdrop, its buildings' art and its Mage Guild room
+- [ ] 6.5.6 Rampart's heroes and hero classes, and its creature dwellings on the map
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
 - [ ] Minimum viable: **Castle** faction fully implemented

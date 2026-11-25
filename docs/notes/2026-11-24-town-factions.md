@@ -325,3 +325,85 @@ Checked against the Heroes 3 wiki's raw page source (Breath attack, Green Dragon
 - The other breathing creatures (Red and Black Dragons, Firebirds and Phoenixes) with their factions: data only.
 - The hover's damage estimate shows only the target's, as now.
 - A creature window listing the ability.
+
+## 6.5.5 Rampart's town
+
+The second of Rampart's three parts, in two:
+
+- **6.5.5a Rampart's town and its buildings**: the town type in `towns.json` (its buildings, Hall, where the picture places each building, Mage Guild to level 5 with Rampart's spell odds, moat and arrow towers), so a Rampart town can be built up and its creatures recruited; and the two buildings no town has yet: the Mystic Pond and the Treasury. Drawn with the plain backdrop and plain building blocks a type without art gets (6.5.2).
+- **6.5.5b Rampart's town picture**: its backdrop, its buildings' art and its Mage Guild room.
+
+Checked against the Heroes 3 wiki's raw page source (Rampart, the `RampartBuildingsDwellings` template, Mystic Pond, Fountain of Fortune, Treasury, Miners' Guild, Dendroid Saplings, Moat, Arrow tower, Mage Guild and its Spell probability table, `Translation_Data/BldgSpec.txt`, `Walls.txt` and `GENRLTXT.TXT`), the reference engine's Rampart town data, moat data, new-week income code and town screen code, and web search results quoting other fan sites (the fan sites themselves can't be fetched from here).
+
+### The buildings
+
+The buildings every town has keep their data (`buildings.json`). Rampart has no Shipyard (both sources).
+
+| Building | Cost | Requires | Gives |
+|---|---|---|---|
+| Centaur Stables | 5 wood, 500 gold | Fort | Centaurs |
+| Upg. Centaur Stables | 5 wood, 1000 gold | Centaur Stables | Centaur Captains |
+| Dwarf Cottage | 5 wood, 1000 gold | Centaur Stables | Dwarves |
+| Upg. Dwarf Cottage | 5 wood, 1000 gold | Dwarf Cottage | Battle Dwarves |
+| Homestead | 10 wood, 1500 gold | Centaur Stables | Wood Elves |
+| Upg. Homestead | 10 wood, 1500 gold | Homestead | Grand Elves |
+| Enchanted Spring | 10 crystal, 2000 gold | Homestead | Pegasi |
+| Upg. Enchanted Spring | 5 crystal, 2000 gold | Enchanted Spring | Silver Pegasi |
+| Dendroid Arches | 2500 gold | Homestead | Dendroid Guards |
+| Upg. Dendroid Arches | 1500 gold | Dendroid Arches | Dendroid Soldiers |
+| Unicorn Glade | 5 wood, 5 ore, 10 gems, 4000 gold | Enchanted Spring, Dendroid Arches | Unicorns |
+| Upg. Unicorn Glade | 5 gems, 3000 gold | Unicorn Glade | War Unicorns |
+| Dragon Cliffs | 30 ore, 20 crystal, 10000 gold | Unicorn Glade, Mage Guild Level 2 | Green Dragons |
+| Upg. Dragon Cliffs | 30 ore, 20 crystal, 20000 gold | Dragon Cliffs, Mage Guild Level 3 | Gold Dragons |
+| Miners' Guild | 1000 gold | Dwarf Cottage | +4 Dwarves a week (horde) |
+| Dendroid Saplings | 2000 gold | Dendroid Arches | +2 Dendroids a week (horde) |
+| Mystic Pond | 2 of each resource but gold, 2000 gold | — | 1–4 of a rare resource each week |
+| Fountain of Fortune | 10 crystal, 1500 gold | Mystic Pond (upgrades it) | +2 luck for the town's defenders |
+| Treasury | 5 wood, 10 ore, 5000 gold | Miners' Guild | 10% interest on gold each week |
+
+- Costs: the wiki (its dwelling template and building pages; the totals on its Rampart page add up to them) and web search results quoting two other fan wikis. They differ on two: one search result gives the Centaur Stables 10 wood, and one gives the Upg. Dwarf Cottage 1500 gold; we take the wiki's, which the other results share. The upgraded Unicorn Glade's and the special buildings' costs are in the wiki only.
+- Requirements: the engine's town data, and the web search results for the dwellings (the wiki's dwelling template has none). The special buildings' requirements are on their wiki pages too, and agree.
+- Hall, five rows (the engine's town data): Village Hall to Capitol, Fort to Castle, Tavern, Blacksmith; Marketplace and Resource Silo, Mage Guild 1–5, Mystic Pond and Fountain of Fortune; Treasury, Dendroid Saplings, Miners' Guild; dwellings 1–4; dwellings 5–7.
+- Structures for the arrow towers: the Mystic Pond and the Treasury are, the Fountain of Fortune, Miners' Guild and Dendroid Saplings aren't (wiki Arrow tower; our rule already says a building that upgrades another isn't, and the horde buildings say `structure: false` as the Griffin Bastion does).
+- Where the picture places each building is ours, as the Castle's is; the engine's positions are the starting point. The art comes in 6.5.5b.
+- The Resource Silo's crystal (6.2, which brings the Silo) and the Blacksmith's First Aid Tent (5.11) wait for those features.
+
+### Mage Guild
+
+- Up to level 5 (both sources).
+- The spells' weights per slot are the wiki's Spell Slot Probabilities table, Rampart's column; each level adds up to 100. Never: Bloodlust, Curse, Death Ripple, Animate Dead, Armageddon, Summon Air Elemental, Summon Fire Elemental, Sacrifice (the table's zeros, and the wiki's Rampart page lists the same). The weights are in the wiki only (the engine reads them from the game's files, which aren't online).
+- Level 5 offers the Earth and Water Elementals and Magic Mirror, which can't be cast yet (5.8), as Castle's guild offers Resurrection now.
+- The Mage Guild room stays the Castle's until 6.5.5b.
+
+### Walls
+
+- The moat: brambles, 70 damage, Defense -3, the Castle's hexes and rules (wiki Moat; the engine's Rampart moat has the Castle's damage, Defense loss and hexes). Its name in the game's text is "Moat", as the Castle's (`Walls.txt`).
+- The arrow towers as the Castle's (wiki Arrow tower: the same for every town). The Keep is called "Main Building" in Rampart's walls text (`Walls.txt`; one source, as the engine has no texts); we use that name (agreed).
+
+### The Mystic Pond
+
+- At the start of each week, each Rampart town with a Mystic Pond gives its owner 1–4 of one of mercury, sulfur, crystal or gems, picked at random each week (wiki: "Produces 1–4 Mercury, Sulfur, Crystal, or Gems on the first day of every week"; the engine rolls the resource, then 1–4, at the new week and adds it to the owner's income).
+- A pond built during a week gives nothing until the next week starts. A neutral town's pond gives nothing (the engine pays only players' towns).
+- It keeps producing once the Fountain of Fortune is built over it (the engine checks the pond is built, which it still is).
+- Clicking the pond (or the Fountain) on the town picture shows its description and what it made: "The pond produced 3 Gems this week." (`core.genrltxt.678`, "The pond produced %d %s this week."), or "The pond has not produced anything yet." (`core.genrltxt.677`) before its first week (the engine's town screen; the texts from the wiki's `GENRLTXT.TXT`). With the Fountain, the Fountain's description comes first, then the pond's (the engine). Descriptions from `BldgSpec.txt`: "The Mystic Pond produces a small random number of resources each week." and "The Fountain of Fortune increases the luck of the garrison hero by +2 when defending against a siege."
+
+### The Treasury
+
+- At the start of each week, each Treasury gives its owner 10% of the gold they had at the end of the last day, rounded down; two Treasuries give 20% (wiki: "extra gold equal to 10% of the player's total gold they had on the seventh day of the last week", "cumulative"; the engine adds gold / 10 per Treasury before the day's income).
+- Counted before the new day's income is added (both sources).
+
+### The Fountain of Fortune
+
+- +2 luck for the town's defenders: data only (`defenderBonuses`, 6.5.3). The wiki says "the hero defending the town"; a garrison without a hero gets it too, as decided for every defenders' bonus in 6.5.3.
+
+### What we decided
+
+- A Rampart town in the demo map: the neutral town south-east of the first hero (`town-2`) becomes a Rampart, so it can be taken and built up (agreed).
+- The Mystic Pond's data says what it makes (`weeklyResources`, with the map objects' `anyOf` and `amount`); the Treasury's says its interest (`weeklyInterest: { "GOLD_PILE": 10 }`). Another town's building of the same kind is then data.
+- The pond's roll is saved as a fact at the week's start, so a reload gives the same resources and the same message.
+
+### Left for later (6.5.5a)
+
+- The computer weighing the Mystic Pond and the Treasury when it picks what to build (8.4): until then it sees them as buildings with no income.
+- The Resource Silo's crystal (6.2), the Blacksmith's First Aid Tent (5.11), the Grail's Spirit Guardian (7.11).
+- Rampart's heroes, hero classes and map dwellings: 6.5.6.
