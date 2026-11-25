@@ -289,6 +289,31 @@ describe('computer heroes weighing targets behavior', () => {
       expectResourceNotPresent('wood')
       expectResourcePresent('gems')
     })
+
+    const TOO_FAR_FOR_TODAY = 30
+
+    test("blue's hero doesn't set off for a pile in a stronger red hero's reach that it can't reach today", async () => {
+      await startBlueTurn(
+        aDangerScenario(SKELETONS(10), TOO_FAR_FOR_TODAY, aPile('gems', 'GEMS_PILE', 5, 0))
+      )
+
+      expect(blueHeroX()).toBe(TOO_FAR_FOR_TODAY)
+    })
+
+    // The gems' 650 over 25 tiles' 1.67 days would score 390; the gold's 100 over 0.6 days, 166.
+    test("blue's hero takes a poorer pile out of red's reach over a richer one in it that it can't reach today", async () => {
+      await startBlueTurn(
+        aDangerScenario(
+          SKELETONS(10),
+          TOO_FAR_FOR_TODAY,
+          aPile('gems', 'GEMS_PILE', 5, 0),
+          aPile('gold', 'GOLD_PILE', 39, 0)
+        )
+      )
+
+      expectResourceNotPresent('gold')
+      expectResourcePresent('gems')
+    })
   })
 })
 

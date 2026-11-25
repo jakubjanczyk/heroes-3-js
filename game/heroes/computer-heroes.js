@@ -317,12 +317,14 @@ function safeTilesToday(decision) {
   return reachable.filter(({ tile }, index) => isSafeAt(decision, tile, danger[index]))
 }
 
-// Where a stronger enemy hero can reach it next turn, a target is worth less what the hero risks
-// there; an exploration tile there isn't one. A hero already in such reach goes to the best
-// target out of it, else to the best as it is.
+// Where a stronger enemy hero can reach it next turn, a target the hero gets to today is worth
+// less what the hero risks there; one further off isn't a target, as the hero would flee its
+// danger the next day before getting there. An exploration tile there isn't one either. A hero
+// already in such reach goes to the best target out of it, else to the best as it is.
 function goTo(decision, candidates, { worthOf, risk = null }) {
+  const { routes, isThreatened } = decision
   const order = byWorthForDays(decision.maxMovementPoints)
-  const reachable = reachableByCost(candidates, decision.routes)
+  const reachable = reachableByCost(candidates, routes)
     .map((candidate) => ({ ...candidate, worth: worthOf(candidate.target) }))
     .sort(order)
   const danger = decision.dangerAt(reachable.map(standingTile))
@@ -332,7 +334,8 @@ function goTo(decision, candidates, { worthOf, risk = null }) {
         return [candidate]
       }
       const worth = candidate.worth - risk
-      return risk !== null && !decision.isThreatened && worth > 0 ? [{ ...candidate, worth }] : []
+      const isWorthTheRisk = risk !== null && !isThreatened && worth > 0
+      return isWorthTheRisk && reachesToday(routes, candidate.path) ? [{ ...candidate, worth }] : []
     })
     .sort(order)
   return weighed[0] ?? (decision.isThreatened ? reachable[0] : undefined)
