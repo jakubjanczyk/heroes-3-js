@@ -14,6 +14,24 @@ Too large for one PR. Proposed split:
   - its town: buildings, Hall, picture, special buildings, Mage Guild (highest level, odds, spells it never gets), walls (moat or land mines, arrow towers);
   - its heroes and hero classes, and its creature dwellings on the map.
 
+## Adding a town
+
+A town type is data and art. Code is only for a rule no town has yet. Follow the `game-sources` skill for every number and text, and write them in this note under the faction's parts.
+
+1. **Creatures**: each one in `monsters.json` with `faction` set to the town type. An ability that no creature has yet is code, with its own part (as 6.5.4b to 6.5.4f).
+2. **The town**: an entry in `towns.json`, keyed by the type the scenario's town uses (`"type": "RAMPART"`):
+   - `buildings`: the town's own buildings, on top of those every town has (`buildings.json`). An entry here with a shared building's id replaces the shared data. A dwelling names its `creature` and a horde building its `horde`. A building that replaces another names it in `upgrades`. A building that upgrades another doesn't count toward the town's structures. Set `structure` only to change that, either way.
+   - What special buildings give is data, in fields the code already reads: `visit` (a once-per-hero or weekly bonus, in the map objects' reward format), `defenderBonuses`, `income`, `creatureGrowthPercent`, `weeklyResources`, `weeklyInterest`. See 6.5.3 and 6.5.5.
+   - `hall`: the Hall's rows. Each row is a list of chains, and a chain is the buildings one slot shows in turn. The highest Mage Guild level in the rows is the town's highest level. Leave out a building the town lacks, as Rampart leaves out the Shipyard.
+   - `picture`: `{ x, y, z }` on the 800x374 picture for every building drawn.
+   - `moat` and `arrowTowers`, with the town's own names and damage.
+3. **Mage Guild odds**: `mageGuildChances.<TYPE>` on every spell the town's Mage Guild can offer, in `spells.json`. A spell without one is never offered there.
+4. **Heroes**: the town's two classes in `hero-classes.json` (`town` set to the type) and its heroes in `heroes.json`. A hero's own `startingArmy`, `spellBook` and `spells` override their class's.
+5. **Map dwellings**: one entry in `dwellings.json` per creature tier, with a `footprint` when it blocks more than the tile left of its entrance (the `new-map-object` skill).
+6. **Art**: `app/heroes/presentation/<town>-town-art.js` exports one `<TOWN>_TOWN_ART` object: `backdropName`, `backdrop`, `buildings` (art keyed by building id), `houses` when village houses come with the hall, and `guildWindow`. Add it to `TOWN_ART` in `town-art.js`. Shapes shared by every town go in `town-art-shapes.js`. Until its art exists, a town is drawn with the plain backdrop and plain blocks, so the art can be its own part.
+7. **Demo map**: turn one of the neutral towns in `scenarios/scenario.json` into the new type, and place its creatures and map dwellings where the first hero can reach them.
+8. **Tests**: behavior tests build their own test town with the builders (`tests/behavior/builders.js`). Test only rules that are new: a town that is all data needs no new tests.
+
 ## 6.5.1 Castle's own buildings
 
 Checked against the Heroes 3 wiki's raw page source (Stables, Brotherhood of the Sword, Tavern, Morale, `Translation_Data/GENRLTXT.TXT`) and against the reference engine's Castle town data and its town code.
