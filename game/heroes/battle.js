@@ -305,8 +305,9 @@ export function createBattle({
         })
       ]
     : []
-  return {
+  const battle = {
     stacks: [...stacksOf('attacker'), ...catapult, ...stacksOf('defender')],
+    tactics: null,
     actedStackIds: [],
     sidesCastThisRound: [],
     waitedStackIds: [],
@@ -327,6 +328,8 @@ export function createBattle({
     catapultAims: [],
     definitions
   }
+  const tactics = tacticsOf(sides)
+  return tactics ? startTactics(battle, tactics) : battle
 }
 
 export const CATAPULT = 'CATAPULT'
@@ -777,20 +780,29 @@ export const canTeleportTo = (battle, stack, hex, { teleportsAcrossWalls, telepo
       acrossMoat: teleportsAcrossMoat
     }))
 
-export function getFrontHexReach(battle, stack) {
+const turnMove = (battle, stack) => ({
+  range: getMovementRange(stack),
+  stopsAt: moatStopFor(battle, stack),
+  isFront: () => true
+})
+
+function frontHexReach(battle, stack, { range, stopsAt, isFront }) {
   return getReachableHexes({
     from: stack.hex,
-    speed: getMovementRange(stack),
+    speed: range,
     flying: stack.flying,
     isFree: canStandFor(battle, stack),
-    stopsAt: moatStopFor(battle, stack)
-  })
+    stopsAt
+  }).filter(isFront)
 }
 
+export const getFrontHexReach = (battle, stack) =>
+  frontHexReach(battle, stack, turnMove(battle, stack))
+
 // A double-wide creature's back halves included, as the game shades them.
-export function getStackReach(battle, stack) {
+function reachOf(stack, fronts) {
   const reach = new Map()
-  for (const front of getFrontHexReach(battle, stack)) {
+  for (const front of fronts) {
     for (const hex of getStackHexes(stack, front)) {
       if (isOnBattlefield(hex) && !coversHex(stack, hex)) {
         reach.set(hexKey(hex), hex)
@@ -800,43 +812,112 @@ export function getStackReach(battle, stack) {
   return [...reach.values()]
 }
 
-function planPathToFront(battle, stack, front) {
+export const getStackReach = (battle, stack) => reachOf(stack, getFrontHexReach(battle, stack))
+
+function planPathToFront(battle, stack, front, { range, stopsAt, isFront }) {
   if (isSameHex(stack.hex, front)) {
     return []
   }
 
   const isFree = canStandFor(battle, stack)
-  if (!isFree(front)) {
+  if (!isFree(front) || !isFront(front)) {
     return null
   }
 
   if (stack.flying) {
-    return getHexDistance(stack.hex, front) <= getMovementRange(stack) ? [front] : null
+    return getHexDistance(stack.hex, front) <= range ? [front] : null
   }
 
-  return findHexPath({
-    from: stack.hex,
-    to: front,
-    isFree,
-    maxSteps: getMovementRange(stack),
-    stopsAt: moatStopFor(battle, stack)
-  })
+  return findHexPath({ from: stack.hex, to: front, isFree, maxSteps: range, stopsAt })
 }
 
 // The path of the stack's front half, or null. A double-wide creature that cannot stand on `hex`
 // puts its back half there instead.
-export function planStackMove(battle, stack, hex) {
+function planMove(battle, stack, hex, move) {
   if (coversHex(stack, hex)) {
     return null
   }
 
-  const path = planPathToFront(battle, stack, hex)
+  const path = planPathToFront(battle, stack, hex, move)
   if (path || !stack.doubleWide) {
     return path
   }
 
-  return planPathToFront(battle, stack, getFrontHexFor({ hex, side: stack.side }))
+  return planPathToFront(battle, stack, getFrontHexFor({ hex, side: stack.side }), move)
 }
+
+export const planStackMove = (battle, stack, hex) =>
+  planMove(battle, stack, hex, turnMove(battle, stack))
+
+// In the tactics phase a stack goes anywhere in its side's band it has a way to, however slow.
+const TACTICS = 'TACTICS'
+const ANY_DISTANCE = BATTLEFIELD_COLUMNS * BATTLEFIELD_ROWS
+
+const isInTacticsBand = ({ side, columns }, { column }) =>
+  side === 'attacker' ? column < columns : column >= BATTLEFIELD_COLUMNS - columns
+
+const tacticsMove = (battle) => ({
+  range: ANY_DISTANCE,
+  stopsAt: undefined,
+  isFront: (hex) => isInTacticsBand(battle.tactics, hex)
+})
+
+// Each level of the enemy hero's Tactics cancels one of the hero's; what is left of Basic,
+// Advanced or Expert places the army in the side's first 3, 5 or 7 columns.
+function tacticsOf(sides) {
+  const lead = skillLevelOf(sides.attacker, TACTICS) - skillLevelOf(sides.defender, TACTICS)
+  if (lead === 0) {
+    return null
+  }
+  return { side: lead > 0 ? 'attacker' : 'defender', columns: 1 + 2 * Math.abs(lead) }
+}
+
+const isPlaceable = (stack) => isAlive(stack) && !stack.warMachine && getMovementRange(stack) > 0
+
+export const getTacticsStacks = (battle) =>
+  battle.tactics
+    ? battle.stacks.filter((stack) => stack.side === battle.tactics.side && isPlaceable(stack))
+    : []
+
+const withTacticsStack = (battle, stackId) => ({
+  ...battle,
+  tactics: { ...battle.tactics, stackId }
+})
+
+function startTactics(battle, tactics) {
+  const withTactics = { ...battle, tactics }
+  const [first] = getTacticsStacks(withTactics)
+  return first ? withTacticsStack(withTactics, first.id) : battle
+}
+
+export const isTacticsPhase = (battle) => Boolean(battle.tactics)
+
+export const getTacticsSide = (battle) => battle.tactics?.side ?? null
+
+export const getTacticsStack = (battle) =>
+  getTacticsStacks(battle).find(({ id }) => id === battle.tactics.stackId) ?? null
+
+export const getTacticsReach = (battle, stack) =>
+  reachOf(stack, frontHexReach(battle, stack, tacticsMove(battle)))
+
+export const planTacticsMove = (battle, stack, hex) =>
+  planMove(battle, stack, hex, tacticsMove(battle))
+
+export const selectTacticsStack = (battle, stackId) =>
+  getTacticsStacks(battle).some(({ id }) => id === stackId)
+    ? withTacticsStack(battle, stackId)
+    : battle
+
+export function selectNextTacticsStack(battle) {
+  const stacks = getTacticsStacks(battle)
+  const index = stacks.findIndex(({ id }) => id === battle.tactics.stackId)
+  return withTacticsStack(battle, stacks[(index + 1) % stacks.length].id)
+}
+
+export const placeStack = (battle, stackId, hex) =>
+  selectNextTacticsStack(withTacticsStack(moveStack(battle, stackId, hex), stackId))
+
+export const endTactics = (battle) => ({ ...battle, tactics: null })
 
 // Stays when already on `fromHex`, else the front half goes there, else the back half.
 function planAttackPosition(battle, stack, fromHex) {
@@ -848,7 +929,7 @@ function planAttackPosition(battle, stack, fromHex) {
     ? [fromHex, getFrontHexFor({ hex: fromHex, side: stack.side })]
     : [fromHex]
   for (const front of fronts) {
-    const path = planPathToFront(battle, stack, front)
+    const path = planPathToFront(battle, stack, front, turnMove(battle, stack))
     if (path) {
       return path
     }

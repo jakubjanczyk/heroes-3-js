@@ -15,6 +15,7 @@ import {
   cloneStack,
   createBattle,
   defendStack,
+  endTactics,
   endTurn,
   findCloneHex,
   finishAction,
@@ -32,21 +33,29 @@ import {
   getShotTargets,
   getStackHexes,
   getStackReach,
+  getTacticsReach,
+  getTacticsSide,
+  getTacticsStack,
   getTurnSide,
   hasCastThisRound,
   hasLivingStacks,
   hasWaited,
   healStack,
   heroBattleSide,
+  isTacticsPhase,
   moveStack,
+  placeStack,
   planBattleCatapultShot,
   planStackAttack,
   planStackHeal,
   planStackMove,
   planStackShot,
+  planTacticsMove,
   resolveAttack,
   resolveShot,
   sacrificeStack,
+  selectNextTacticsStack,
+  selectTacticsStack,
   shakeWalls,
   shootCatapult,
   shootStack,
@@ -133,6 +142,9 @@ import {
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
+  APP_COMMAND_BATTLE_TACTICS_END_REQUESTED,
+  APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED,
+  APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED,
   APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_CATAPULT_SHOT,
@@ -144,9 +156,11 @@ import {
   APP_FACT_BATTLE_STACK_FROZE,
   APP_FACT_BATTLE_STACK_HEALED,
   APP_FACT_BATTLE_STACK_MOVED,
+  APP_FACT_BATTLE_STACK_PLACED,
   APP_FACT_BATTLE_STACK_SHOT,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STARTED,
+  APP_FACT_BATTLE_TACTICS_ENDED,
   APP_FACT_BATTLE_TOWER_SHOT,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
@@ -420,6 +434,7 @@ export const registerBattleModule = defineModule(
         canDefend: false,
         canRetreat: false,
         canCastSpell: false,
+        tactics: isShownTactics(),
         results: null,
         autoCombat,
         stepDelayMs
@@ -434,7 +449,17 @@ export const registerBattleModule = defineModule(
       catapultTargets: []
     }
 
+    function tacticsStackView() {
+      const stack = isPlayersTactics() ? getTacticsStack(battle) : null
+      return stack
+        ? { activeStackId: stack.id, ...NO_ORDERS, reachableHexes: getTacticsReach(battle, stack) }
+        : { activeStackId: null, ...NO_ORDERS }
+    }
+
     function activeStackView(activeStack) {
+      if (isTacticsPhase(battle)) {
+        return tacticsStackView()
+      }
       if (isTowersTurn()) {
         const tower = controlledShooter()
         return {
@@ -508,8 +533,10 @@ export const registerBattleModule = defineModule(
         surrender: canLeadHero ? surrenderOffer() : null,
         casterHeroId: playerHeroId() ?? null,
         extraSpellCost: magicDamperAgainst(battle.stacks, playerSide),
+        tactics: isShownTactics(),
         canCastSpell:
           canLeadHero &&
+          !isTacticsPhase(battle) &&
           !hasCastThisRound(battle, playerSide) &&
           hasSpellBook(heroById(state.get(), playerHeroId()))
       }
@@ -742,16 +769,14 @@ export const registerBattleModule = defineModule(
         return
       }
 
+      if (isTacticsPhase(battle)) {
+        playTacticsPhase()
+        return
+      }
+
       const shooter = getRoundStartShooter(battle)
-      if (shooter && controlsShooter(shooter)) {
-        return
-      }
-      if (shooter === CATAPULT) {
-        void throwStone(planBattleCatapultShot(battle, catapultRandom))
-        return
-      }
       if (shooter) {
-        void shootArrow(planTowerShot(battle, shooter, towerRandom))
+        playRoundStartShooter(shooter)
         return
       }
 
@@ -765,6 +790,27 @@ export const registerBattleModule = defineModule(
       if (!isPlayers(stack) || autoCombat) {
         playComputerTurn(stack)
       }
+    }
+
+    function playRoundStartShooter(shooter) {
+      if (controlsShooter(shooter)) {
+        return
+      }
+      if (shooter === CATAPULT) {
+        void throwStone(planBattleCatapultShot(battle, catapultRandom))
+        return
+      }
+      void shootArrow(planTowerShot(battle, shooter, towerRandom))
+    }
+
+    // The computer, and Auto combat for the player, end the tactics phase without placing a stack.
+    function playTacticsPhase() {
+      if (getTacticsSide(battle) === playerSide && !autoCombat) {
+        return
+      }
+
+      emit(APP_FACT_BATTLE_TACTICS_ENDED, {})
+      continueBattle()
     }
 
     function freezesInPanic(stack) {
@@ -795,8 +841,19 @@ export const registerBattleModule = defineModule(
       !moving &&
       !throwing &&
       !autoCombat &&
+      !isTacticsPhase(battle) &&
       !getRoundStartShooter(battle) &&
       isPlayers(getActiveStack(battle))
+
+    // The tactics phase the player's hero places their army in, as the view shows it.
+    const isShownTactics = () =>
+      Boolean(battle) &&
+      !outcome &&
+      !autoCombat &&
+      isTacticsPhase(battle) &&
+      getTacticsSide(battle) === playerSide
+
+    const isPlayersTactics = () => isShownTactics() && !moving && !throwing
 
     // The player's hero with Ballistics aims the catapult, unless Auto combat plays for them.
     const aimsCatapult = () => playerSide === 'attacker' && canHeroAimCatapult(battle)
@@ -809,7 +866,7 @@ export const registerBattleModule = defineModule(
 
     // The tower or the catapult whose turn the player plays, before every stack's.
     function controlledShooter() {
-      if (!battle || outcome || moving || throwing) {
+      if (!battle || outcome || moving || throwing || isTacticsPhase(battle)) {
         return null
       }
       const shooter = getRoundStartShooter(battle)
@@ -897,7 +954,7 @@ export const registerBattleModule = defineModule(
 
     // The player leads a hero as the attacker, or as the defender when the defender is a hero.
     const isLeadingHerosTurn = () =>
-      (isPlayersTurn() || isShootersTurn()) && Boolean(playerHeroId())
+      (isPlayersTurn() || isShootersTurn() || isPlayersTactics()) && Boolean(playerHeroId())
 
     async function walkThenShow({ stack, path, fact, detail }) {
       const walkingBattle = started
@@ -938,6 +995,21 @@ export const registerBattleModule = defineModule(
         path,
         fact: APP_FACT_BATTLE_STACK_MOVED,
         detail: moveDetail(stack.id, path)
+      })
+    }
+
+    function placeTacticsStack(hex) {
+      const stack = getTacticsStack(battle)
+      const path = stack && planTacticsMove(battle, stack, hex)
+      if (!path?.length) {
+        return
+      }
+
+      void walkThenShow({
+        stack,
+        path,
+        fact: APP_FACT_BATTLE_STACK_PLACED,
+        detail: { stackId: stack.id, path }
       })
     }
 
@@ -1283,6 +1355,29 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_STACK_PLACED,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            const { stackId, path } = event.detail
+            battle = placeStack(battle, stackId, path.at(-1))
+            showBattle()
+          }
+        },
+        {
+          type: APP_FACT_BATTLE_TACTICS_ENDED,
+          handler: () => {
+            if (!battle) {
+              return
+            }
+
+            battle = endTactics(battle)
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_STACK_ATTACKED,
           handler: (event) => {
             if (!battle) {
@@ -1442,11 +1537,42 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
           handler: (event) => {
+            if (isPlayersTactics()) {
+              placeTacticsStack(event.detail.hex)
+              return
+            }
             if (!isPlayersTurn()) {
               return
             }
 
             moveActiveStack(event.detail.hex)
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED,
+          handler: (event) => {
+            if (isPlayersTactics()) {
+              battle = selectTacticsStack(battle, event.detail.stackId)
+              showBattle()
+            }
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED,
+          handler: () => {
+            if (isPlayersTactics()) {
+              battle = selectNextTacticsStack(battle)
+              showBattle()
+            }
+          }
+        },
+        {
+          type: APP_COMMAND_BATTLE_TACTICS_END_REQUESTED,
+          handler: () => {
+            if (isPlayersTactics()) {
+              emit(APP_FACT_BATTLE_TACTICS_ENDED, {})
+              continueBattle()
+            }
           }
         },
         {
@@ -1484,7 +1610,7 @@ export const registerBattleModule = defineModule(
         {
           type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
           handler: (event) => {
-            if (isLeadingHerosTurn()) {
+            if (isLeadingHerosTurn() && !isTacticsPhase(battle)) {
               requestCast(event.detail)
             }
           }
@@ -1580,6 +1706,8 @@ export const registerBattleModule = defineModule(
       APP_UI_RESTORE_COMPLETED,
       APP_FACT_BATTLE_STARTED,
       APP_FACT_BATTLE_STACK_MOVED,
+      APP_FACT_BATTLE_STACK_PLACED,
+      APP_FACT_BATTLE_TACTICS_ENDED,
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_STACK_SHOT,
       APP_FACT_BATTLE_STACK_HEALED,
@@ -1595,6 +1723,9 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_ENDED,
       APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+      APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED,
+      APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED,
+      APP_COMMAND_BATTLE_TACTICS_END_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
@@ -1609,6 +1740,8 @@ export const registerBattleModule = defineModule(
     produces: [
       APP_UI_BATTLE_UPDATED,
       APP_FACT_BATTLE_STACK_MOVED,
+      APP_FACT_BATTLE_STACK_PLACED,
+      APP_FACT_BATTLE_TACTICS_ENDED,
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_STACK_SHOT,
       APP_FACT_BATTLE_STACK_HEALED,

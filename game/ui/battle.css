@@ -769,6 +769,24 @@
   grid-template-rows: 1fr 1fr;
   gap: 2px;
   inline-size: 1.25rem;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.battle-bar__tactics {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 3px;
+  block-size: 100%;
+  min-block-size: 0;
+
+  &[hidden] {
+    display: none;
+  }
 }
 
 .battle-bar__arrow {

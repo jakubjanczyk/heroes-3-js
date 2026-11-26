@@ -174,9 +174,9 @@
     "name": "Tactics",
     "worth": 500,
     "descriptions": {
-      "BASIC": "Lets the hero place their troops up to 3 columns forward before a battle.",
-      "ADVANCED": "Lets the hero place their troops up to 5 columns forward before a battle.",
-      "EXPERT": "Lets the hero place their troops up to 7 columns forward before a battle."
+      "BASIC": "Basic Tactics allows you to rearrange your troops just before combat, within three hex rows of the commanding hero.",
+      "ADVANCED": "Advanced Tactics allows you to rearrange your troops just before combat, within five hex rows of the commanding hero.",
+      "EXPERT": "Expert Tactics allows you to rearrange your troops just before combat, within seven hex rows of the commanding hero."
     }
   },
   "ARTILLERY": {
