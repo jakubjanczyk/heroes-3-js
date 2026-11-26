@@ -5,8 +5,8 @@ const DIPLOMACY_DISCOUNT_PERCENT = Object.freeze({ BASIC: 20, ADVANCED: 40, EXPE
 const goldCostOf = ({ creature, count }, definitions) =>
   (definitions?.monsters?.[creature]?.cost?.GOLD_PILE ?? 0) * count
 
-// Half the gold the hero's creatures left would cost to recruit, less Diplomacy's discount. Clones
-// aren't paid for.
+// Half the gold the hero's creatures and war machines left would cost, less Diplomacy's
+// discount. Clones aren't paid for.
 export function surrenderPrice({ battle, hero, definitions, side = 'attacker' }) {
   const recruitCost = battle.stacks
     .filter((stack) => stack.side === side && stack.count > 0 && !stack.cloneOf)

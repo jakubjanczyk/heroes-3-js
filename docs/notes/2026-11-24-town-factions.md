@@ -384,7 +384,7 @@ The buildings every town has keep their data (`buildings.json`). Rampart has no 
 - Hall, five rows (the engine's town data): Village Hall to Capitol, Fort to Castle, Tavern, Blacksmith; Marketplace and Resource Silo, Mage Guild 1–5, Mystic Pond and Fountain of Fortune; Treasury, Dendroid Saplings, Miners' Guild; dwellings 1–4; dwellings 5–7.
 - Structures for the arrow towers: the Mystic Pond and the Treasury are, the Fountain of Fortune, Miners' Guild and Dendroid Saplings aren't (wiki Arrow tower; our rule already says a building that upgrades another isn't, and the horde buildings say `structure: false` as the Griffin Bastion does).
 - Where the picture places each building is ours, as the Castle's is; the engine's positions are the starting point. The art comes in 6.5.5b.
-- The Resource Silo's crystal (6.2, which brings the Silo) and the Blacksmith's First Aid Tent (5.11) wait for those features.
+- The Resource Silo's crystal (6.2, which brings the Silo) waits for that feature; the Blacksmith sells the First Aid Tent (5.11.6).
 
 ### Mage Guild
 
@@ -430,7 +430,7 @@ The buildings every town has keep their data (`buildings.json`). Rampart has no 
 ### Left for later (6.5.5a)
 
 - The computer weighing the Mystic Pond and the Treasury when it picks what to build (8.4): until then it sees them as buildings with no income.
-- The Resource Silo's crystal (6.2), the Blacksmith's First Aid Tent (5.11), the Grail's Spirit Guardian (7.11).
+- The Resource Silo's crystal (6.2), the Grail's Spirit Guardian (7.11).
 - Rampart's heroes, hero classes and map dwellings: 6.5.6.
 
 ## 6.5.5b Rampart's town picture

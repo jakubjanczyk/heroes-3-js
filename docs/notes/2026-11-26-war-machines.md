@@ -139,7 +139,6 @@ Checked against the Heroes 3 wiki's raw page source (Blacksmith, War Machine, `T
 - **Saved**: the gold spent and the war machine given, as facts, so a reload keeps both.
 - **Surrender.** A Ballista, Ammo Cart or First Aid Tent still standing adds half its price to the surrender price, as a creature adds half its cost, before Diplomacy's discount (the engine counts every living unit of the side, war machines included, at its creature's cost; the wiki says nothing; decided with the user). The Catapult has no price and adds nothing.
 
-What we decide:
-- The town's entry in `towns.json` names what its Blacksmith sells (`"blacksmith": "BALLISTA"`), and each war machine artifact gets its `cost` in gold, as other artifacts have.
+As built: the town's entry in `towns.json` names what its Blacksmith sells (`"blacksmith": "BALLISTA"`), and each war machine's creature in `monsters.json` has its `cost` in gold, as creatures have, so the surrender price counts it with no code of its own. Buying is saved as the gold spent and the hero's artifacts changed, the facts other artifact moves already save.
 
 Left for later: the War Machine Factory on the map (7.16); the Ballista Yard (Stronghold, 6.5); the war machine specialties (4.4); the computer buying them (8.4); the Blacksmith's right-click info (6.1).
