@@ -413,7 +413,7 @@ function dragonCliffs(upgraded) {
   ].join('')
 }
 
-export const RAMPART_BUILDING_ART = {
+const BUILDING_ART = {
   VILLAGE_HALL: villageHall,
   TOWN_HALL: townHall,
   CITY_HALL: cityHall,
@@ -457,7 +457,7 @@ function hutGroup(huts) {
 
 // The village grows with the hall: a group of houses comes with the Town Hall, another with the
 // City Hall and a third with the Capitol, each placed on the picture as the buildings are.
-export const RAMPART_HOUSES = [
+const HOUSES = [
   {
     hallsShowingThem: ['TOWN_HALL', 'CITY_HALL', 'CAPITOL'],
     x: 293,
@@ -501,7 +501,7 @@ function mist(x, y, scale, opacity) {
 
 // A wide green meadow in a valley between forested hills, mist over its far end. It reaches past
 // the 800x374 picture, as the Castle's does.
-export function rampartBackgroundArt() {
+function backdrop() {
   const pinesLeft = [30, 62, 96, 130, 168, 204, 240]
     .map((x, index) => pine(x, 128 - (index % 2) * 6, 34 + (index % 3) * 6))
     .join('')
@@ -527,7 +527,7 @@ export function rampartBackgroundArt() {
   ].join('')
 }
 
-export function rampartGuildWindowArt() {
+function guildWindow() {
   return [
     `<defs><linearGradient id="rampart-window-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8c0c4"/><stop offset="1" stop-color="#eceee8"/></linearGradient></defs>`,
     rect(0, 0, 138, 198, 'url(#rampart-window-sky)'),
@@ -539,4 +539,12 @@ export function rampartGuildWindowArt() {
     `<path d="M0 124 Q70 116 138 124 V198 H0 Z" fill="#5f8a3a"/>`,
     rock(10, 160, 30, 16)
   ].join('')
+}
+
+export const RAMPART_TOWN_ART = {
+  backdropName: "Rampart's misty valley",
+  backdrop,
+  buildings: BUILDING_ART,
+  houses: HOUSES,
+  guildWindow: { name: "View of Rampart's valley", art: guildWindow }
 }
