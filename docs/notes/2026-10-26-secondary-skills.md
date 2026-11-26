@@ -79,7 +79,7 @@ The wiki's Knight table also lists Interference (5), a Horn of the Abyss skill w
 | Estates | +125 / 250 / 500 gold a day | 3.2 |
 | Fire, Air, Water, Earth Magic | that school's spells cheaper and stronger | 4.8, 5.8 |
 | Scholar | teach spells up to level 2 / 3 / 4 to a hero met | 4.8, 4.5.3 |
-| Tactics | place the army up to 3 / 5 / 7 columns forward before battle | 5.3 |
+| Tactics | place the army in the side's first 3 / 5 / 7 columns before battle | 5.11.7 |
 | Artillery | control of the ballista, chance of double damage | war machines |
 | Learning | experience +5 / 10 / 15% | 4.2 |
 | Offense | melee damage +10 / 20 / 30% | 5.6 |

@@ -51,6 +51,11 @@ export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackSho
 export const APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED = 'command.battle.stackHeal.requested'
 export const APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED = 'command.battle.catapultAim.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
+// In the tactics phase: the player picks one of their stacks to place, or the next one.
+export const APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED =
+  'command.battle.tacticsStackSelect.requested'
+export const APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED = 'command.battle.tacticsNext.requested'
+export const APP_COMMAND_BATTLE_TACTICS_END_REQUESTED = 'command.battle.tacticsEnd.requested'
 export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
 // The hero casts the spell on the stack `targetId`, or on every stack it can go on when the spell
 // hits them all at the hero's skill level.
@@ -115,6 +120,9 @@ export const APP_FACT_BATTLE_STACK_HEALED = 'fact.battle.stack.healed'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_BATTLE_STACK_WAITED = 'fact.battle.stack.waited'
 export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
+// In the tactics phase: a stack walked to where its hero placed it, and the phase is over.
+export const APP_FACT_BATTLE_STACK_PLACED = 'fact.battle.stack.placed'
+export const APP_FACT_BATTLE_TACTICS_ENDED = 'fact.battle.tactics.ended'
 // Bad morale: the stack loses its turn.
 export const APP_FACT_BATTLE_STACK_FROZE = 'fact.battle.stack.froze'
 export const APP_FACT_BATTLE_AUTO_COMBAT_CHANGED = 'fact.battle.autoCombat.changed'
@@ -257,6 +265,8 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STACK_DEFENDED,
+  APP_FACT_BATTLE_STACK_PLACED,
+  APP_FACT_BATTLE_TACTICS_ENDED,
   APP_FACT_BATTLE_STACK_FROZE,
   APP_FACT_BATTLE_AUTO_COMBAT_CHANGED,
   APP_FACT_BATTLE_SPELL_CAST,

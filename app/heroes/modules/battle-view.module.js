@@ -27,6 +27,9 @@ import {
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
+  APP_COMMAND_BATTLE_TACTICS_END_REQUESTED,
+  APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED,
+  APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED,
   APP_FACT_BATTLE_ENDED,
   APP_FACT_WORLD_READY,
   APP_UI_ADVENTURE_MAP_COVERED,
@@ -77,8 +80,14 @@ const COMMAND_BY_ACTION = {
   'auto-combat': APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
   wait: APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
   defend: APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
-  'close-results': APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED
+  'close-results': APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
+  'tactics-next': APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED,
+  'tactics-end': APP_COMMAND_BATTLE_TACTICS_END_REQUESTED
 }
+
+const TACTICS_PHASE = 'Tactics Phase'
+const TACTICS_PHASE_TEXT =
+  'In the Tactics Phase, a hero with superior Tactics skill may arrange his armies before combat begins.'
 
 // Full-screen battle over the adventure map, cloned from `#battle-screen-template` in index.html:
 // the battlefield with its hexes, the hero and the stacks, and the combat bar along the bottom.
@@ -825,6 +834,13 @@ export const registerBattleViewModule = defineModule(
       }
     }
 
+    // A reload comes back to the phase without its message.
+    function showTacticsPhaseStart(battle, previous) {
+      if (battle.tactics && !previous?.tactics && !isRestoring) {
+        askQuestion({ name: TACTICS_PHASE, text: TACTICS_PHASE_TEXT, canCancel: false })
+      }
+    }
+
     function showBattle(battle) {
       if (!gameShell) {
         return
@@ -863,6 +879,7 @@ export const registerBattleViewModule = defineModule(
         showEffect(effect)
       }
       showActions(battle)
+      showTacticsPhaseStart(battle, previous)
       showResults(battle.results)
       describeHoveredHex()
     }
@@ -947,9 +964,14 @@ export const registerBattleViewModule = defineModule(
       canCastSpell,
       autoCombat,
       surrenderRefusal,
-      surrender
+      surrender,
+      tactics
     }) {
       const button = (action) => battleScreen.querySelector(`[data-battle-action="${action}"]`)
+      for (const part of ['.battle-bar__log', '.battle-bar__scroll']) {
+        battleScreen.querySelector(part).hidden = Boolean(tactics)
+      }
+      battleScreen.querySelector('.battle-bar__tactics').hidden = !tactics
       button('surrender').title = surrenderRefusal ?? 'Surrender (S)'
       button('surrender').disabled = !surrender
       button('cast-spell').disabled = !canCastSpell
@@ -957,7 +979,7 @@ export const registerBattleViewModule = defineModule(
       button('defend').disabled = !canDefend
       button('retreat').disabled = !canRetreat
       button('auto-combat').setAttribute('aria-pressed', String(Boolean(autoCombat)))
-      if (!canRetreat) {
+      if (!canRetreat && question?.name !== TACTICS_PHASE) {
         closeQuestion()
       }
     }
@@ -970,7 +992,7 @@ export const registerBattleViewModule = defineModule(
       element.querySelector('[data-battle-action="cancel-question"]').hidden = !canCancel
       battleScreen.append(element)
       element.querySelector('[data-battle-action="confirm-question"]').focus()
-      question = { element, onConfirm }
+      question = { name, element, onConfirm }
     }
 
     function closeQuestion() {
@@ -1222,7 +1244,13 @@ export const registerBattleViewModule = defineModule(
     }
 
     function orderStackTo(hex) {
-      if (!findLivingStackOn(hex)) {
+      const stack = findLivingStackOn(hex)
+      const placing = shown.tactics && findIdleActiveStack()
+      if (placing && stack && !areEnemies(stack, placing)) {
+        emit(APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED, { stackId: stack.id })
+        return
+      }
+      if (!stack) {
         emit(APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED, { hex })
         return
       }
@@ -1369,6 +1397,9 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_RESULTS_CLOSE_REQUESTED,
       APP_COMMAND_BATTLE_RETREAT_REQUESTED,
       APP_COMMAND_BATTLE_SURRENDER_REQUESTED,
+      APP_COMMAND_BATTLE_TACTICS_END_REQUESTED,
+      APP_COMMAND_BATTLE_TACTICS_NEXT_REQUESTED,
+      APP_COMMAND_BATTLE_TACTICS_STACK_SELECT_REQUESTED,
       APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,

@@ -423,7 +423,7 @@ Each comes with the feature it changes; the note has every skill's numbers.
 - [ ] Learning (4.2)
 - [ ] Archery, Offense, Armorer (5.6)
 - [x] Leadership and Luck (4.9)
-- [ ] Tactics (5.3), Ballistics (5.10), Artillery and First Aid (with war machines)
+- [x] Tactics (5.11.7), Ballistics (5.10), Artillery and First Aid (with war machines)
 - [ ] Diplomacy (5.2, 5.7)
 - [ ] Wisdom, Mysticism, Intelligence, Eagle Eye, Scholar and the four schools of magic (4.8); Sorcery and Resistance (5.8)
 - [ ] Necromancy (with the Necropolis)
@@ -758,7 +758,7 @@ The Ballista, the Ammo Cart, the First Aid Tent and the Catapult, and placing th
 - [x] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
 - [x] 5.11.6 Bought at the town's Blacksmith (6.2), in its recruit window: one of the town's war machine, none when the hero has it; a standing war machine adds half its price to the surrender price
 - [ ] The War Machine Factory on the map (7.16), and the war machine specialties (4.4)
-- [ ] 5.11.7 **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
+- [x] 5.11.7 **Tactics**: a hero with Tactics places their stacks before the first round, in their side's first 3, 5 or 7 columns, each level of the enemy hero's Tactics cancelling one of theirs; Next and End Tactics Phase in the bar; Retreat and Surrender allowed, no spells; in sieges too (4.7)
 
 ---
 

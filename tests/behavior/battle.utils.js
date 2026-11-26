@@ -440,6 +440,18 @@ export function readBattleQuestion(dialog) {
   return within(dialog).getByRole('paragraph').textContent
 }
 
+export function queryTacticsPhaseMessage() {
+  return screen.queryByRole('dialog', { name: 'Tactics Phase' })
+}
+
+// The message that opens a tactics phase, closed with OK; nothing when the battle has none.
+export async function closeTacticsPhaseMessage(user) {
+  const message = queryTacticsPhaseMessage()
+  if (message) {
+    await user.click(within(message).getByRole('button', { name: 'OK' }))
+  }
+}
+
 // Clicks Surrender and answers the enemy hero's offer.
 export async function surrender(user, { confirm = true } = {}) {
   await clickBattleButton(user, 'Surrender')
