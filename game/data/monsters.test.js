@@ -142,7 +142,7 @@ describe('creature data', () => {
       ['doubleWide', 'warMachine', 'ranged', 'unlimitedShots', 'damageTimesHeroAttack'],
       undefined
     ],
-    ['AMMO_CART', 'NEUTRAL', 1, ['warMachine'], undefined],
+    ['AMMO_CART', 'NEUTRAL', 1, ['warMachine', 'suppliesShots'], undefined],
     ['FIRST_AID_TENT', 'NEUTRAL', 1, ['doubleWide', 'warMachine', 'heals'], undefined],
     ['CATAPULT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined]
   ])('%s is a %s tier %i creature with abilities %o and %s shots', (key, faction, tier, abilities, shots) => {

@@ -146,6 +146,7 @@ function createStack({
     flying: abilities.includes('flying'),
     doubleWide: abilities.includes('doubleWide'),
     warMachine,
+    suppliesShots: abilities.includes('suppliesShots'),
     attack: definition.attack + (skills?.attack ?? 0),
     defense: definition.defense + (skills?.defense ?? 0),
     damage: abilities.includes('damageTimesHeroAttack')
@@ -1540,7 +1541,9 @@ export function planStackShot(battle, stack, { targetId, random, luckRandom, abi
 
   return {
     strikes: shotSequence({
-      attacker: stack,
+      attacker: hasShotsSupplied(battle, stack)
+        ? { ...stack, shots: Number.POSITIVE_INFINITY }
+        : stack,
       defender: target,
       random,
       luckRandom,
@@ -1550,8 +1553,19 @@ export function planStackShot(battle, stack, { targetId, random, luckRandom, abi
   }
 }
 
+// A stack that changed sides is supplied by the side it started on.
+const hasShotsSupplied = (battle, shooter) =>
+  battle.stacks.some(
+    (stack) => stack.suppliesShots && stack.side === shooter.side && isAlive(stack)
+  )
+
+const shotsUsed = (battle, shooter, strikes) =>
+  hasShotsSupplied(battle, shooter) ? 0 : strikes.length
+
 // The shot itself, before the shooter's turn ends.
 export function resolveShot(battle, { stackId, strikes }) {
+  const shooter = battle.stacks.find(({ id }) => id === stackId)
+  const used = shotsUsed(battle, shooter, strikes)
   const shot = endOwnAttackSpells(
     strikes.reduce((current, strike) => applyStrike(current, strike, null), battle),
     stackId
@@ -1559,7 +1573,7 @@ export function resolveShot(battle, { stackId, strikes }) {
   return settleStacks({
     ...shot,
     stacks: shot.stacks.map((stack) =>
-      stack.id === stackId ? { ...stack, shots: stack.shots - strikes.length } : stack
+      stack.id === stackId ? { ...stack, shots: stack.shots - used } : stack
     )
   })
 }

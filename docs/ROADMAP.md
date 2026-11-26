@@ -595,7 +595,7 @@ See `docs/notes/2026-10-20-battle-attacks.md` and `docs/notes/2026-10-20-ranged-
 - [x] Ranged: half damage at a target more than 10 hexes away (distance penalty)
 - [x] Status bar over a target: "Shoot Pikemen (12 shots left, damage 21-31)"; the cursor is an arrow, broken when the distance penalty applies
 - [ ] Ranged: blocked by castle walls in line of fire (in H3 only walls block a shot: siege, 5.10)
-- [ ] Shots left shown in the creature's info window (needs the window) and the Ammo Cart
+- [ ] Shots left shown in the creature's info window (needs the window); the Ammo Cart is 5.11.5
 - [ ] Attack animation: brief visual for attack, damage number shown
 - [x] A stack at 0 units stays on its hex as a corpse: it gets no turn, and other stacks can stand on it
 - [ ] Death animation
@@ -755,7 +755,7 @@ The Ballista, the Ammo Cart, the First Aid Tent and the Catapult, and placing th
 - [x] 5.11.2 On the battlefield: the Ballista, Ammo Cart and First Aid Tent in their places as targets; destroyed ones are lost after the battle; a hero defending a town has no Ballista
 - [x] 5.11.3 **Ballista**: shoots on its turn, after every stack that didn't wait, for 2–3 times the hero's Attack plus one, and aims itself; Artillery lets the player aim it, with a chance of double damage and two shots from Advanced (4.7)
 - [x] 5.11.4 **First Aid Tent**: heals a stack's top creature on its turn after the Ballista's, by 1–25; First Aid aims it and heals up to 50, 75 or 100 (4.7)
-- [ ] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
+- [x] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
 - [ ] 5.11.6 Bought at the town's Blacksmith (6.2); the War Machine Factory on the map with 7.16, and the war machine specialties with 4.4
 - [ ] 5.11.7 **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
 

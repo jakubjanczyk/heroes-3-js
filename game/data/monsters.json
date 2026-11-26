@@ -717,7 +717,7 @@
     "health": 100,
     "speed": 0,
     "aiValue": 400,
-    "abilities": ["warMachine"]
+    "abilities": ["warMachine", "suppliesShots"]
   },
   "FIRST_AID_TENT": {
     "name": "First Aid Tent",
