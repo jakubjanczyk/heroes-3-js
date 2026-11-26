@@ -759,9 +759,14 @@ export const registerBattleModule = defineModule(
       return chance > 0 && moraleRandom() < chance
     }
 
-    // A berserk stack's turn plays itself, whoever's it is.
+    // A berserk stack's turn plays itself, whoever's it is, and so does a war machine's the hero
+    // doesn't aim.
     const isPlayers = (stack) =>
-      Boolean(stack) && !isUnseen() && !isBerserk(stack) && fightsFor(stack) === playerSide
+      Boolean(stack) &&
+      !isUnseen() &&
+      !isBerserk(stack) &&
+      (!stack.warMachine || stack.aimedByHero) &&
+      fightsFor(stack) === playerSide
 
     const isPlayersTurn = () =>
       Boolean(battle) &&
@@ -942,7 +947,8 @@ export const registerBattleModule = defineModule(
 
     function shootWithActiveStack({ targetId }) {
       const stack = getActiveStack(battle)
-      const shot = stack && planStackShot(battle, stack, { targetId, random, luckRandom })
+      const shot =
+        stack && planStackShot(battle, stack, { targetId, random, luckRandom, abilityRandom })
       if (!shot) {
         return
       }

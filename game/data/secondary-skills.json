@@ -183,9 +183,9 @@
     "name": "Artillery",
     "worth": 500,
     "descriptions": {
-      "BASIC": "Gives control of the Ballista, with a 50% chance of double damage.",
-      "ADVANCED": "Gives control of the Ballista, with a 75% chance of double damage.",
-      "EXPERT": "Gives control of the Ballista, which always does double damage."
+      "BASIC": "Basic Artillery gives control of the ballista to the hero, allowing two shots with a 50% chance to inflict double damage.",
+      "ADVANCED": "Advanced Artillery gives control of the ballista to the hero, allowing two shots with a 75% chance to inflict double damage.",
+      "EXPERT": "Expert Artillery gives control of the ballista to the hero, allowing two shots which inflict double damage."
     }
   },
   "LEARNING": {

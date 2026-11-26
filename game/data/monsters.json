@@ -696,7 +696,12 @@
     "health": 250,
     "speed": 0,
     "aiValue": 600,
-    "abilities": ["doubleWide", "warMachine"]
+    "abilities": ["doubleWide", "warMachine", "ranged", "unlimitedShots", "damageTimesHeroAttack"],
+    "controlledBy": {
+      "skill": "ARTILLERY",
+      "shotsPerTurn": [1, 1, 2, 2],
+      "doubleDamageChance": [0, 50, 75, 100]
+    }
   },
   "AMMO_CART": {
     "name": "Ammo Cart",
