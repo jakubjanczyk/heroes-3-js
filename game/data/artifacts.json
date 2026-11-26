@@ -581,6 +581,7 @@
     "name": "Catapult",
     "slot": "CATAPULT",
     "warMachine": true,
+    "creature": "CATAPULT",
     "everyHero": true,
     "mustBeEquipped": true,
     "description": "Use this war machine to target your enemy's fortifications in combat."
@@ -589,18 +590,21 @@
     "name": "Ballista",
     "slot": "BALLISTA",
     "warMachine": true,
+    "creature": "BALLISTA",
     "description": "Use this war machine to target your enemy's troops in combat."
   },
   "AMMO_CART": {
     "name": "Ammo Cart",
     "slot": "AMMO_CART",
     "warMachine": true,
+    "creature": "AMMO_CART",
     "description": "The Ammo Cart ensures that your missile troops will never run out of ammunition in combat."
   },
   "FIRST_AID_TENT": {
     "name": "First Aid Tent",
     "slot": "FIRST_AID_TENT",
     "warMachine": true,
+    "creature": "FIRST_AID_TENT",
     "description": "The First Aid Tent provides healing to your troops during each round of combat."
   }
 }

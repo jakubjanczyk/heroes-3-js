@@ -25,6 +25,7 @@ import {
   getOccupiedHexes,
   getReachableHexes,
   getStartHexes,
+  getWarMachineHex,
   hexKey,
   isOnBattlefield,
   isOnBattlefieldOrEdge,
@@ -155,6 +156,29 @@ function createStacks({ side, army, ...shared }) {
 }
 
 const CATAPULT_STACK_ID = 'attacker-catapult'
+const FIELD_WAR_MACHINE_SLOTS = ['AMMO_CART', 'BALLISTA', 'FIRST_AID_TENT']
+
+const warMachineStackId = (side, slot) => `${side}-${slot.toLowerCase().replaceAll('_', '-')}`
+
+function heroWarMachines(artifacts, definitions) {
+  return FIELD_WAR_MACHINE_SLOTS.flatMap((slot) => {
+    const creature = definitions?.artifacts?.[artifacts?.worn?.[slot]]?.creature
+    return creature ? [{ slot, creature }] : []
+  })
+}
+
+function createWarMachineStacks({ side, warMachines = [], ...shared }) {
+  return warMachines.map(({ slot, creature }) =>
+    createStack({
+      id: warMachineStackId(side, slot),
+      side,
+      creature,
+      count: 1,
+      hex: getWarMachineHex({ side, slot }),
+      ...shared
+    })
+  )
+}
 const ARROW_TOWER_NAME = 'Arrow Tower'
 
 // An artifact that cancels morale or luck in battle leaves only the armies' penalties, on both
@@ -164,10 +188,14 @@ const cancelledKinds = (sides, definitions) =>
     sides.some((side) => artifactsCancelInBattle(side.artifacts, kind, definitions))
   )
 
-export function heroBattleSide(hero, definitions) {
+// A hero defending a town fights without their Ballista.
+export function heroBattleSide(hero, definitions, { defendingTown = false } = {}) {
   const skills = getHeroPrimarySkills({ entity: hero, definitions })
   return {
     army: hero?.army ?? [],
+    warMachines: heroWarMachines(hero?.artifacts, definitions).filter(
+      ({ slot }) => !defendingTown || slot !== 'BALLISTA'
+    ),
     skills: Object.fromEntries(skills.map(({ key, value }) => [key, value])),
     secondarySkills: hero?.secondarySkills,
     battleBonuses: hero?.battleBonuses,
@@ -230,7 +258,10 @@ export function createBattle({
       definitions
     }
   }
-  const stacksOf = (side) => createStacks({ side, army: sides[side].army, ...sharedOf(side) })
+  const stacksOf = (side) => [
+    ...createStacks({ side, army: sides[side].army, ...sharedOf(side) }),
+    ...createWarMachineStacks({ side, warMachines: sides[side].warMachines, ...sharedOf(side) })
+  ]
   const catapult = walls
     ? [
         createStack({
@@ -1511,6 +1542,12 @@ export function shakeWalls(battle, { heroName, spellName, wallHits }) {
     ]
   }
 }
+
+// The slots of the side's war machines destroyed in the battle; the catapult is never lost.
+export const getDestroyedWarMachines = (battle, side) =>
+  FIELD_WAR_MACHINE_SLOTS.filter((slot) =>
+    battle.stacks.some(({ id, count }) => id === warMachineStackId(side, slot) && count === 0)
+  )
 
 export function getArmyAfterBattle(battle, side, army) {
   return army.map((slot, index) => {

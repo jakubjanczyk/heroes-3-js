@@ -38,6 +38,35 @@ Checked against the Heroes 3 wiki's raw page source (War Machine, `Translation_D
 - **Counting artifacts.** The tavern's "… with N artifacts" (`core.genrltxt.215`) leaves out the war machines and the spell book (the engine's tavern window). The Thieves' Guild's "most artifacts" counts every worn artifact in the engine, war machines included; nothing says what the game does. We leave them out there too (decided with the user), as the repo already leaves out the spell book (it is not an artifact here). Not checked.
 - **No class and no cost here.** An artifact chest picks only Treasure artifacts, so war machines are never found in one. Their prices come with the Blacksmith (5.11.6).
 
-As built: a war machine is an artifact with `"warMachine": true` in `game/data/artifacts.json`, its slot one of `BALLISTA`, `AMMO_CART`, `FIRST_AID_TENT` and `CATAPULT`; `"everyHero"` gives it to every hero and `"mustBeEquipped"` keeps it in its slot. A beaten hero's war machines go to the winner as their other artifacts do, into a free slot of their own kind only, and never the Catapult (the engine; not checked in the game).
+As built: a war machine is an artifact with `"warMachine": true` in `game/data/artifacts.json`, its slot one of `BALLISTA`, `AMMO_CART`, `FIRST_AID_TENT` and `CATAPULT`; `"everyHero"` gives it to every hero and `"mustBeEquipped"` keeps it in its slot. A beaten hero's war machines don't go to the winner: they aren't really artifacts and can't be captured (decided with the user in 5.11.2, which changed what 5.11.1 built from the engine). Between the player's own heroes they are still traded in the exchange window.
 
 Left for later parts: everything in battle (5.11.2–5.11.5), buying them (5.11.6) and whether a hero back in the tavern keeps theirs (with the hero who retreated, 4.5.5). Pictures stay the artifacts' stand-ins (the name in the frame) until the sprites (10.1).
+
+## 5.11.2 On the battlefield
+
+Checked against the Heroes 3 wiki's raw page source (War Machine, `Template:Creature/Ballista`, `Template:Creature/Ammo_Cart`, `Template:Creature/First_Aid_Tent`, Combat), the game's manual (its war machine table, as quoted by a web search) and the reference engine (its battle set-up, its battle layout's war machine hexes, its battle's end and casualties, its creature entries).
+
+- **Who has them in battle.** A hero's Ballista, Ammo Cart and First Aid Tent stand on their side of the battlefield in every battle that hero fights, attacking or defending, against a monster, a guard, a garrison or a hero (the wiki: "When purchased, they participate in combat on the owner's side of the battlefield"; the engine places each war machine artifact the hero wears). A side without a hero (a monster, a garrison on its own) has none. The Catapult stays as it is: the attacker's, in a siege only (5.10.6).
+- **A hero defending a town** has their Ammo Cart and First Aid Tent but not their Ballista (the engine leaves the defender's Ballista out in a battle at a town, as the original game does; the wiki says nothing; a web search found nothing either). We follow the engine (decided with the user).
+- **Where they stand** (the engine's war machine hexes; the wiki's "Army organization with War Machines" picture shows the same places). Rows and columns as in `battlefield.js`:
+  - the attacker: the Ammo Cart on row 1, the Ballista on row 3, the First Aid Tent on row 9, all in column 0; the catapult stays on row 7;
+  - the defender: the same rows in column 14.
+  
+  The armies' start rows (0, 2, 4, 5, 6, 8, 10) never use rows 1, 3, 7 and 9, so nothing overlaps.
+- **Their stats** (the wiki's creature tables; the manual's war machine table agrees on the Ballista's 10, 10 and 250 health and the others' health):
+
+  | | Attack | Defense | Damage | Health | Speed | Size |
+  |---|---|---|---|---|---|---|
+  | Ballista | 10 | 10 | 2–3 | 250 | 0 | two hexes |
+  | Ammo Cart | 0 | 5 | 0 | 100 | 0 | one hex |
+  | First Aid Tent | 0 | 0 | 0 | 75 | 0 | two hexes |
+
+  The size is the engine's (`doubleWide` for the Ballista and the tent, not the cart) and the wiki's (`size` 2, 1, 2). A two-hex one has its back half on the edge column, as the catapult does. The hero's Attack and Defense are added to them as to the catapult (agreed for the catapult in 5.10.6).
+- **As targets** they are what the catapult already is (5.10.6): the enemy's stacks walk or fly to them, shoot them and cast on them; they never strike back; next to an enemy shooter they keep it from shooting; they take no turn (in this part none of them acts), have no morale, and don't count for winning, so a side with only war machines left has lost. They are immune to the same spells as the catapult (the wiki's list is for all war machines). The arrow towers go for a creature before a war machine, as they already do. The log says "The Ballista is destroyed." when one falls, as for the catapult.
+- **Destroyed ones are lost.** After the battle a destroyed Ballista, Ammo Cart or First Aid Tent is gone from the hero's slot, whoever won; the Catapult never is (the engine removes every destroyed war machine but the catapult from the hero; the wiki, Combat: the catapult "can be destroyed only temporarily"). Whether destroyed or not, a beaten hero's war machines are never captured (decided with the user).
+- **Experience and casualties.** The winner earns no experience for them (already so for every war machine). A destroyed one is listed among its side's casualties in the results window, as the destroyed catapult is (the engine counts them as casualties).
+- **On screen** each has a stand-in picture of its own, as the catapult has, until the sprites (10.1); hovering one shows its name in the status bar and the attack cursor, as for the catapult.
+
+As built: a war machine artifact names its battle creature (`"creature": "BALLISTA"` in `artifacts.json`), and the creatures are in `monsters.json` with the `warMachine` ability; their rows are in `battlefield.js`, the catapult's included. Each has a stand-in picture until the sprites (10.1).
+
+Left for later parts: the Ballista shooting (5.11.3), the tent healing (5.11.4), the cart's shots (5.11.5); paying for standing war machines when surrendering (the engine counts half their price, with their prices, 5.11.6); a battle without war machines at a creature bank (7.13); a retreated hero keeping theirs (4.5.5); the computer counting them in an army's strength (8.4); their right-click popups, with the battle's stack popups.

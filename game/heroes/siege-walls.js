@@ -3,6 +3,7 @@ import {
   getHexDistance,
   getHexNeighbours,
   getOccupiedHexes,
+  getWarMachineHex,
   hexKey,
   isSameHex
 } from './battlefield.js'
@@ -69,7 +70,7 @@ const partOf = (walls, part) => partsOf(walls).find((each) => each.part === part
 
 const segmentAt = (hex) => SEGMENTS.find((segment) => isSameHex(segment.hex, hex))
 
-export const CATAPULT_HEX = { row: 7, column: 0 }
+export const CATAPULT_HEX = getWarMachineHex({ side: 'attacker', slot: 'CATAPULT' })
 
 const SEGMENT_HIT_POINTS = 2
 const CASTLE_SEGMENT_HIT_POINTS = 3
