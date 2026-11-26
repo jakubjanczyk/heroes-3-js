@@ -695,6 +695,7 @@
     },
     "health": 250,
     "speed": 0,
+    "cost": { "GOLD_PILE": 2500 },
     "aiValue": 600,
     "abilities": ["doubleWide", "warMachine", "ranged", "unlimitedShots", "damageTimesHeroAttack"],
     "controlledBy": {
@@ -716,8 +717,9 @@
     },
     "health": 100,
     "speed": 0,
+    "cost": { "GOLD_PILE": 1000 },
     "aiValue": 400,
-    "abilities": ["warMachine"]
+    "abilities": ["warMachine", "suppliesShots"]
   },
   "FIRST_AID_TENT": {
     "name": "First Aid Tent",
@@ -732,6 +734,7 @@
     },
     "health": 75,
     "speed": 0,
+    "cost": { "GOLD_PILE": 750 },
     "aiValue": 300,
     "abilities": ["doubleWide", "warMachine", "heals"],
     "controlledBy": {

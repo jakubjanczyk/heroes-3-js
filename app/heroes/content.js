@@ -6,6 +6,8 @@ import { registerAdventureOptionsViewModule } from './modules/adventure-options-
 import { registerAdventureSpellsModule } from './modules/adventure-spells.module.js'
 import { registerBattleModule } from './modules/battle.module.js'
 import { registerBattleViewModule } from './modules/battle-view.module.js'
+import { registerBlacksmithModule } from './modules/blacksmith.module.js'
+import { registerBlacksmithViewModule } from './modules/blacksmith-view.module.js'
 import { registerComputerPlayersModule } from './modules/computer-players.module.js'
 import { registerDwellingRecruitViewModule } from './modules/dwelling-recruit-view.module.js'
 import { registerDwellingsModule } from './modules/dwellings.module.js'
@@ -79,6 +81,7 @@ export const heroesAppContent = Object.freeze({
     registerThievesGuildModule,
     registerMageGuildModule,
     registerMarketplaceModule,
+    registerBlacksmithModule,
     registerTownVisitBonusesModule,
     registerScholarModule,
     registerAdventureSpellsModule,
@@ -109,6 +112,7 @@ export const heroesAppContent = Object.freeze({
     registerThievesGuildViewModule,
     registerMageGuildViewModule,
     registerMarketplaceViewModule,
+    registerBlacksmithViewModule,
     registerHeroScreenViewModule,
     registerSpellBookViewModule,
     registerTownPortalViewModule,

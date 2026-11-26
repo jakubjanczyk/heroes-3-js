@@ -26,7 +26,13 @@ import {
   surrender
 } from './battle.utils.js'
 import { aFightWithAHero, HERO, stack } from './battle-lasting-spells.fixtures.js'
-import { aHero, aMonster, aScenario } from './builders.js'
+import {
+  aCreatureDefinition,
+  aHero,
+  aMonster,
+  aScenario,
+  aWarMachineDefinition
+} from './builders.js'
 
 const ENEMY_HERO = 'Valeska'
 
@@ -36,20 +42,46 @@ const aBlueHero = (army = [stack('PIKEMAN', 10)]) =>
 // 10 Pikemen at 60 gold and 5 Archers at 100 gold cost 1100 to recruit, so 550 to surrender.
 const PIKEMEN_AND_ARCHERS = [stack('PIKEMAN', 10), stack('ARCHER', 5)]
 
+const CART_PRICE = 1000
+
+const warMachineDefinitions = {
+  creatures: {
+    CART: aCreatureDefinition()
+      .withName('Cart')
+      .withNamePlural('Carts')
+      .withSpeed(0)
+      .withAbilities(['warMachine'])
+      .withCost({ GOLD_PILE: CART_PRICE })
+      .build()
+  },
+  artifacts: {
+    CART: aWarMachineDefinition()
+      .withName('Cart')
+      .withSlot('AMMO_CART')
+      .withCreature('CART')
+      .build()
+  }
+}
+
 const aSurrenderFight = ({
   army = PIKEMEN_AND_ARCHERS,
   enemyArmy,
   gold = 1000,
-  skills = []
+  skills = [],
+  artifacts = []
 } = {}) => {
   const enemy = aBlueHero(enemyArmy)
   return aFightWithAHero({
-    hero: aHero().withName(HERO).withArmy(army).withSecondarySkills(skills),
+    hero: aHero()
+      .withName(HERO)
+      .withArmy(army)
+      .withSecondarySkills(skills)
+      .withArtifacts(artifacts),
     enemy
   })
     .withStartingResources({ GOLD_PILE: gold })
     .withDefinitions({
-      ...aFightWithAHero({ enemy }).build().definitions,
+      ...aFightWithAHero({ enemy, ...warMachineDefinitions }).build().definitions,
       resources: readGameData('resources.json')
     })
 }
@@ -122,6 +154,14 @@ describe('battle surrender behavior', () => {
 
       // An Angel costs 3000 gold and 1 gem.
       expect(readBattleQuestion(getSurrenderDialog())).toBe(offerFor(1500))
+    })
+
+    test('given the hero’s war machine still stands then the price counts half of its price too', async () => {
+      const { user } = await startBattle(aSurrenderFight({ artifacts: ['CART'] }))
+
+      await clickBattleButton(user, 'Surrender')
+
+      expect(readBattleQuestion(getSurrenderDialog())).toBe(offerFor(550 + CART_PRICE / 2))
     })
 
     test('given the hero has Expert Diplomacy then surrendering costs 60% less', async () => {

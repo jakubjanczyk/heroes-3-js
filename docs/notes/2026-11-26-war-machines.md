@@ -109,3 +109,36 @@ Checked against the Heroes 3 wiki's raw page source (War Machine, First Aid, Com
 As built: the tent's entry in `monsters.json` has the `heals` ability and `controlledBy` with the skill and its healing by level (none, Basic, Advanced, Expert). A war machine that shoots or heals takes turns as a stack. The heal is saved as `fact.battle.stack.healed` with the health given back.
 
 Left for later: the First Aid specialty (Rion, Gem, Verdish: +5% healing per level, 4.4); the computer weighing First Aid (8.4); the tent's right-click popup, with the battle's stack popups.
+
+## 5.11.5 The Ammo Cart
+
+Checked against the Heroes 3 wiki's raw page source (War Machine, Shots, `Template:Creature/Ammo_Cart`) and the reference engine (a stack's shots, the check for its side's Ammo Cart).
+
+- **Shots aren't used while it stands.** "The Ammo Cart provides unlimited shots for creatures and War Machines with ranged attacks until the Ammo Cart is destroyed, after which their shots will deplete as normal" (the wiki's War Machine page); "The shots start to decrease right after the Ammo Cart is destroyed" (its Shots page). The engine does the same: while the side's cart is alive, a shot uses no ammunition, so a shooter's count stays where it was and goes down from there once the cart falls.
+- **On screen** the status bar still shows the shooter's count, which doesn't go down: "Shoot Pikemen (12 shots left, damage 21-31)" after any number of shots (the engine shows the count left, which the cart keeps as it is; the wiki says nothing). A shooter that shoots twice (Marksmen) shoots both even with one shot left, as it uses none.
+- **Whose shooters.** Only its own side's: the enemy's cart does nothing for the hero's shooters. A stack that changed sides (hypnotized) is served by the cart of the side it started on, not the one it fights for (the engine matches the cart to the stack's side at the start of the battle; the wiki says nothing; decided with the user).
+- **Who it helps.** The Ballista and the arrow towers already never run out (5.11.3, 5.10.9), and the catapult's shots are its turn's, not ammunition; so in practice it serves creature shooters.
+- **It takes no turn**, as built in 5.11.2.
+- **Saved**: nothing new; the shots left follow from the saved shots and whether the cart stood at each one.
+
+As built: the cart's entry in `monsters.json` has the `suppliesShots` ability; a shot by a stack whose starting side has a standing stack with it uses no shots, and a stack that shoots twice shoots both.
+
+Left for later: a creature bank battle, where the cart doesn't stand on the battlefield but still gives unlimited shots (the wiki and the engine; 7.13); the shots left in the creature's info window (with the battle's stack popups).
+
+## 5.11.6 The Blacksmith
+
+Checked against the Heroes 3 wiki's raw page source (Blacksmith, War Machine, `Template:Creature/Ballista`, `Template:Creature/Ammo_Cart`, `Template:Creature/First_Aid_Tent`, `Translation_Data/GENRLTXT.TXT`, `Translation_Data/JKTEXT.TXT`) and the reference engine (the town screen's Blacksmith, its window, the war machine each faction's Blacksmith sells, buying an artifact in a town, whether a hero can take a war machine). The fandom wiki couldn't be reached from the session; a web search found nothing more.
+
+- **What it sells.** Each faction's Blacksmith sells one war machine: Castle's the Ballista, Rampart's the First Aid Tent (the wiki's Blacksmith and War Machine pages; the engine's faction data). The others, for the factions to come: Tower, Inferno and Stronghold the Ammo Cart; Necropolis and Fortress the First Aid Tent; Dungeon and Conflux the Ballista.
+- **Prices**, in gold only: Ballista 2500, Ammo Cart 1000, First Aid Tent 750 (the wiki's Blacksmith page and the war machines' creature templates; the Ballista's 1500 is Horn of the Abyss's and left out). The engine reads them from the game's data, which isn't online, so only the wiki confirms them.
+- **Opening it.** Clicking the Blacksmith on the town picture opens it.
+  - With no hero in the town: "Only visiting heroes may use the Blacksmith." (`core.genrltxt.273`, "Only visiting heroes may use the %s.", the engine), and no window.
+  - With a hero there: the game's Blacksmith window (the engine) has the title "Build a new Ballista" (`core.genrltxt.274`), the war machine's picture, "Resource cost:" (`JKTEXT.TXT`) with the price, and Buy and Cancel ("Build Ballista", "Don't build Ballista", `core.genrltxt.595`, `596`). We don't build that window: the Blacksmith opens the town's recruit window instead (decided with the user), "Recruit Ballista" with the war machine's picture, Cost Per Troop, Available, Recruit and Total Cost, the slider, Max, Recruit and Cancel. Available is 1, or 0 when the hero already has that war machine (one of each; the engine's check that a hero can take it). The slider goes no higher than 1, starts at 1 when the player can afford it and at 0 otherwise, and Recruit is greyed out at 0, as for creatures. Enter recruits, Escape cancels. The Catapult is never sold.
+- **Buying** spends the gold, puts the war machine in the hero's slot and closes the window (the engine closes it on Buy; the recruit window goes back to the town screen as it does for creatures). The hero then has it in their next battle, as built in 5.11.2.
+- **Whose hero.** The hero standing in the town, in the player's own town on their turn, as for the Mage Guild's spell book. The computer buying war machines waits for its decisions on spending (8.4).
+- **Saved**: the gold spent and the war machine given, as facts, so a reload keeps both.
+- **Surrender.** A Ballista, Ammo Cart or First Aid Tent still standing adds half its price to the surrender price, as a creature adds half its cost, before Diplomacy's discount (the engine counts every living unit of the side, war machines included, at its creature's cost; the wiki says nothing; decided with the user). The Catapult has no price and adds nothing.
+
+As built: the town's entry in `towns.json` names what its Blacksmith sells (`"blacksmith": "BALLISTA"`), and each war machine's creature in `monsters.json` has its `cost` in gold, as creatures have, so the surrender price counts it with no code of its own. Buying is saved as the gold spent and the hero's artifacts changed, the facts other artifact moves already save.
+
+Left for later: the War Machine Factory on the map (7.16); the Ballista Yard (Stronghold, 6.5); the war machine specialties (4.4); the computer buying them (8.4); the Blacksmith's right-click info (6.1).
