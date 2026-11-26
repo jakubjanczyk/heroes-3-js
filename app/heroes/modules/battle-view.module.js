@@ -877,7 +877,7 @@ export const registerBattleViewModule = defineModule(
         return effect
       }
       if (kind === 'firstAid') {
-        effect.className = 'battle-effect first-aid'
+        effect.className = 'battle-effect spell-hit'
         effect.setAttribute('aria-label', 'First Aid')
         return effect
       }
