@@ -74,6 +74,8 @@ export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.r
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
 export const APP_COMMAND_TAVERN_HIRE_REQUESTED = 'command.tavern.hire.requested'
 export const APP_COMMAND_MAGE_GUILD_OPEN_REQUESTED = 'command.mageGuild.open.requested'
+export const APP_COMMAND_BLACKSMITH_OPEN_REQUESTED = 'command.blacksmith.open.requested'
+export const APP_COMMAND_BLACKSMITH_BUY_REQUESTED = 'command.blacksmith.buy.requested'
 export const APP_COMMAND_THIEVES_GUILD_OPEN_REQUESTED = 'command.thievesGuild.open.requested'
 export const APP_COMMAND_SCENARIO_INFO_OPEN_REQUESTED = 'command.scenarioInfo.open.requested'
 export const APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED =
@@ -224,6 +226,7 @@ export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
 export const APP_UI_THIEVES_GUILD_UPDATED = 'ui.thievesGuild.updated'
 export const APP_UI_SCENARIO_INFO_UPDATED = 'ui.scenarioInfo.updated'
 export const APP_UI_MAGE_GUILD_UPDATED = 'ui.mageGuild.updated'
+export const APP_UI_BLACKSMITH_UPDATED = 'ui.blacksmith.updated'
 export const APP_UI_GAME_ENDED = 'ui.game.ended'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 
