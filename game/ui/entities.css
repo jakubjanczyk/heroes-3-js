@@ -137,7 +137,8 @@
   text-shadow: 0 1px 1px black;
 }
 
-.entity--bonus-object {
+.entity--bonus-object,
+.entity--market {
   z-index: var(--z-entity-bonus-object);
   pointer-events: none;
   display: grid;

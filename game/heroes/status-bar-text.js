@@ -10,6 +10,7 @@ const DEFINITIONS_KEY_BY_KIND = Object.freeze({
   DWELLING: 'dwellings',
   RESOURCE_GENERATOR: 'resourceGenerators',
   BONUS_OBJECT: 'bonusObjects',
+  MARKET: 'markets',
   TOWN: 'towns'
 })
 

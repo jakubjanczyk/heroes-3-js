@@ -1,7 +1,7 @@
 import { mostLots, tradeOf, tradeRate } from '../../../game/heroes/marketplace.js'
 import { resourcesOf } from '../../../game/heroes/state/kingdoms.js'
 import { builtIn, marketplaceCountOf, townOwner } from '../../../game/heroes/state/towns.js'
-import { viewingPlayer } from '../../../game/state/queries.js'
+import { heroIdAt, heroOwner, viewingPlayer } from '../../../game/state/queries.js'
 import {
   APP_COMMAND_MARKETPLACE_OPEN_REQUESTED,
   APP_COMMAND_MARKETPLACE_TRADE_REQUESTED,
@@ -14,13 +14,28 @@ import { defineModule } from '../../modules/shared/module-runtime.js'
 export const registerMarketplaceModule = defineModule(
   ({ emit, state }) => {
     let definitions = {}
+    let markets = new Map()
 
-    function traderOf(current, townId) {
+    function townTraderOf(current, townId) {
       const player = townOwner(current, townId)
       if (player !== viewingPlayer(current) || !builtIn(current, townId).has('MARKETPLACE')) {
         return null
       }
       return { player, marketplaces: marketplaceCountOf(current, player) }
+    }
+
+    function marketTraderOf(current, market) {
+      const player = heroOwner(current, heroIdAt(current, market.tile))
+      const marketplaces = definitions.markets?.[market.type]?.marketplaces
+      if (!player || player !== viewingPlayer(current) || !marketplaces) {
+        return null
+      }
+      return { player, marketplaces }
+    }
+
+    function traderOf(current, entityId) {
+      const market = markets.get(entityId)
+      return market ? marketTraderOf(current, market) : townTraderOf(current, entityId)
     }
 
     function ratesOf(resourceTypes, marketplaces) {
@@ -37,16 +52,16 @@ export const registerMarketplaceModule = defineModule(
       )
     }
 
-    function show(townId, { traded = false } = {}) {
+    function show(entityId, { traded = false } = {}) {
       const current = state.get()
-      const trader = traderOf(current, townId)
+      const trader = traderOf(current, entityId)
       if (!trader) {
         return
       }
       const held = resourcesOf(current, trader.player)
       const resourceTypes = Object.keys(definitions.resources ?? {})
       emit(APP_UI_MARKETPLACE_UPDATED, {
-        townId,
+        entityId,
         traded,
         resources: resourceTypes.map((resourceType) => ({
           resourceType,
@@ -57,9 +72,9 @@ export const registerMarketplaceModule = defineModule(
       })
     }
 
-    function trade({ townId, given, received, lots }) {
+    function trade({ entityId, given, received, lots }) {
       const current = state.get()
-      const trader = traderOf(current, townId)
+      const trader = traderOf(current, entityId)
       const rate =
         trader && tradeRate(definitions.marketplace, trader.marketplaces, given, received)
       const held = resourcesOf(current, trader?.player)[given] ?? 0
@@ -72,7 +87,7 @@ export const registerMarketplaceModule = defineModule(
         given: { [given]: amounts.given },
         received: { [received]: amounts.received }
       })
-      show(townId, { traded: true })
+      show(entityId, { traded: true })
     }
 
     return {
@@ -81,6 +96,11 @@ export const registerMarketplaceModule = defineModule(
           type: APP_FACT_WORLD_READY,
           handler: (event) => {
             definitions = event.detail.definitions ?? {}
+            markets = new Map(
+              (event.detail.scenario?.entities ?? [])
+                .filter((entity) => entity.kind === 'MARKET')
+                .map((entity) => [entity.id, entity])
+            )
           }
         },
         {
