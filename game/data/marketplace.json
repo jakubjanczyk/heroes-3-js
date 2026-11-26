@@ -1,0 +1,21 @@
+{
+  "kinds": {
+    "WOOD_PILE": "basic",
+    "MERCURY_PILE": "rare",
+    "ORE_PILE": "basic",
+    "SULFUR_PILE": "rare",
+    "CRYSTAL_PILE": "rare",
+    "GEMS_PILE": "rare",
+    "GOLD_PILE": "gold"
+  },
+  "rates": {
+    "gold-basic": { "give": [2500, 1667, 1250, 1000, 833, 714, 625, 556, 500] },
+    "gold-rare": { "give": [5000, 3333, 2500, 2000, 1667, 1429, 1250, 1111, 1000] },
+    "basic-gold": { "receive": [25, 37, 50, 62, 75, 88, 100, 112, 125] },
+    "basic-basic": { "give": [10, 7, 5, 4, 3, 3, 3, 2, 2] },
+    "basic-rare": { "give": [20, 13, 10, 8, 7, 6, 5, 4, 4] },
+    "rare-gold": { "receive": [50, 75, 100, 125, 150, 175, 200, 225, 250] },
+    "rare-basic": { "give": [5, 3, 3, 2, 2, 1, 1, 1, 1] },
+    "rare-rare": { "give": [10, 7, 5, 4, 3, 3, 3, 2, 2] }
+  }
+}

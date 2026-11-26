@@ -24,6 +24,8 @@ import { registerInfoBoxModule } from './modules/info-box.module.js'
 import { registerInfoPopupModule } from './modules/info-popup.module.js'
 import { registerMageGuildModule } from './modules/mage-guild.module.js'
 import { registerMageGuildViewModule } from './modules/mage-guild-view.module.js'
+import { registerMarketplaceModule } from './modules/marketplace.module.js'
+import { registerMarketplaceViewModule } from './modules/marketplace-view.module.js'
 import { registerMinesModule } from './modules/mines.module.js'
 import { registerMinimapShieldViewModule } from './modules/minimap-shield-view.module.js'
 import { registerMinimapViewModule } from './modules/minimap-view.module.js'
@@ -78,6 +80,7 @@ export const heroesAppContent = Object.freeze({
     registerTavernModule,
     registerThievesGuildModule,
     registerMageGuildModule,
+    registerMarketplaceModule,
     registerBlacksmithModule,
     registerTownVisitBonusesModule,
     registerScholarModule,
@@ -108,6 +111,7 @@ export const heroesAppContent = Object.freeze({
     registerTavernViewModule,
     registerThievesGuildViewModule,
     registerMageGuildViewModule,
+    registerMarketplaceViewModule,
     registerBlacksmithViewModule,
     registerHeroScreenViewModule,
     registerSpellBookViewModule,

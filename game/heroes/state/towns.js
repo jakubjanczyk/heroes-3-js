@@ -201,6 +201,11 @@ export function tavernCountOf(state, player) {
   return townIdsOf(state, player).filter((townId) => builtIn(state, townId).has('TAVERN')).length
 }
 
+export function marketplaceCountOf(state, player) {
+  return townIdsOf(state, player).filter((townId) => builtIn(state, townId).has('MARKETPLACE'))
+    .length
+}
+
 export function hasBuiltToday(state, townId) {
   return Boolean(state.towns.byId[townId]?.builtToday)
 }
