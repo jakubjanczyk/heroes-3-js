@@ -89,6 +89,32 @@ const spellTraitsOf = (definition, { immunities, magicResistance, mindless }) =>
   magicDamper: definition.magicDamper ?? 0
 })
 
+// The Ballista's 2-3 is multiplied by the hero's Attack plus one.
+const timesHeroAttack = ({ min, max }, skills) => {
+  const times = (skills?.attack ?? 0) + 1
+  return { min: min * times, max: max * times }
+}
+
+function shotsOf({ abilities, shots }, shooter) {
+  if (!shooter) {
+    return 0
+  }
+  return abilities.includes('unlimitedShots') ? Number.POSITIVE_INFINITY : shots
+}
+
+// A hero with the skill at any level aims the war machine; the level sets its shots and chances.
+function heroControlOf({ controlledBy }, heroSkillLevelOf) {
+  if (!controlledBy) {
+    return null
+  }
+  const level = heroSkillLevelOf(controlledBy.skill)
+  return {
+    aimedByHero: level > 0,
+    shotsPerTurn: controlledBy.shotsPerTurn[level],
+    doubleDamageChance: controlledBy.doubleDamageChance[level]
+  }
+}
+
 function createStack({
   id,
   side,
@@ -101,10 +127,12 @@ function createStack({
   cancelledInBattle = [],
   immunities = { mindSpells: false, spellLevel: 0 },
   magicResistance = 0,
+  heroSkillLevelOf = () => 0,
   definitions
 }) {
   const definition = { ...UNKNOWN_CREATURE, ...definitions?.monsters?.[creature] }
   const { abilities } = definition
+  const control = heroControlOf(definition, heroSkillLevelOf)
   const warMachine = abilities.includes('warMachine')
   const shooter = abilities.includes('ranged')
   const undead = abilities.includes('undead')
@@ -121,15 +149,19 @@ function createStack({
     warMachine,
     attack: definition.attack + (skills?.attack ?? 0),
     defense: definition.defense + (skills?.defense ?? 0),
-    damage: definition.damage,
+    damage: abilities.includes('damageTimesHeroAttack')
+      ? timesHeroAttack(definition.damage, skills)
+      : definition.damage,
     health: definition.health,
     topHealth: definition.health,
     strikes: abilities.includes('strikesTwice') ? 2 : 1,
     retaliationsPerRound: warMachine ? 0 : getRetaliationsPerRound(abilities),
     retaliationsUsed: 0,
     defenseBonus: 0,
-    shots: shooter ? definition.shots : 0,
-    shotsPerTurn: abilities.includes('shootsTwice') ? 2 : 1,
+    shots: shotsOf(definition, shooter),
+    shotsPerTurn: control?.shotsPerTurn ?? (abilities.includes('shootsTwice') ? 2 : 1),
+    aimedByHero: Boolean(control?.aimedByHero),
+    doubleDamageChance: control?.doubleDamageChance ?? 0,
     shooter,
     meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
     morale: unaffectedByMorale ? 0 : morale,
@@ -255,6 +287,7 @@ export function createBattle({
       cancelledInBattle,
       immunities: artifactBattleImmunities(entity.artifacts, definitions),
       magicResistance: heroMagicResistance(entity),
+      heroSkillLevelOf: (skill) => skillLevelOf(entity, skill),
       definitions
     }
   }
@@ -381,8 +414,9 @@ export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
-// A war machine has no turn of its own.
-const stacksTakingTurns = (battle) => livingStacks(battle).filter((stack) => !stack.warMachine)
+// A war machine that doesn't shoot has no turn of its own.
+const stacksTakingTurns = (battle) =>
+  livingStacks(battle).filter((stack) => !stack.warMachine || stack.shooter)
 
 // A blind stack loses its turns; once it can see again it takes its place by its speed.
 const actingStacks = (battle) => stacksTakingTurns(battle).filter((stack) => !isBlind(stack))
@@ -453,7 +487,7 @@ export function chainTargetIds(battle, { targeting, targetId, hex, strikes, rand
 
 // A clone or a war machine doesn't keep its side in the battle.
 export const hasLivingStacks = (battle, side) =>
-  stacksTakingTurns(battle).some((stack) => stack.side === side && !stack.cloneOf)
+  livingStacks(battle).some((stack) => stack.side === side && !stack.cloneOf && !stack.warMachine)
 
 // Stable sort: on a speed tie the attacker's stacks, already first in slot order, keep going first.
 export function getTurnOrder(battle) {
@@ -651,7 +685,9 @@ export function defendStack(battle, stackId) {
         return stack
       }
 
-      return { ...stack, defenseBonus: Math.max(1, Math.floor(getStackDefense(stack) / 5)) }
+      return stack.warMachine
+        ? stack
+        : { ...stack, defenseBonus: Math.max(1, Math.floor(getStackDefense(stack) / 5)) }
     })
   }
   return endTurn(defended, stackId)
@@ -885,10 +921,14 @@ function attackableBy(battle, stack) {
 // berserk shooter.
 const blocksShooter = (shooter, other) => isBerserk(shooter) || other.side !== fightsFor(shooter)
 
-// A shooter with a stack that blocks it next to it can only fight hand to hand.
+// A shooter with a stack that blocks it next to it can only fight hand to hand; a war machine
+// shoots all the same.
 export function canShoot(battle, stack) {
   if (stack.shots === 0 || getShotDamagePercent(stack) === 0) {
     return false
+  }
+  if (stack.warMachine) {
+    return true
   }
 
   const blockers = livingStacks(battle).filter(
@@ -1452,7 +1492,7 @@ export function resolveAttack(battle, { stackId, targetId, path, strikes }) {
 export const attackStack = (battle, attack) => finishAction(resolveAttack(battle, attack), attack)
 
 // Every shot with its rolled damage, or null when the stack cannot shoot the target.
-export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
+export function planStackShot(battle, stack, { targetId, random, luckRandom, abilityRandom }) {
   const target = attackableBy(battle, stack).find(({ id }) => id === targetId)
   if (!target || !canShoot(battle, stack)) {
     return null
@@ -1464,6 +1504,7 @@ export function planStackShot(battle, stack, { targetId, random, luckRandom }) {
       defender: target,
       random,
       luckRandom,
+      abilityRandom,
       halved: hasShotPenalty(battle, stack, target)
     })
   }

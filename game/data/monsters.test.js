@@ -135,7 +135,13 @@ describe('creature data', () => {
     ['GOLD_DRAGON', 'RAMPART', 7, ['flying', 'doubleWide'], undefined],
     ['IMP', 'INFERNO', 1, [], undefined],
     ['PEASANT', 'NEUTRAL', 1, [], undefined],
-    ['BALLISTA', 'NEUTRAL', 5, ['doubleWide', 'warMachine'], undefined],
+    [
+      'BALLISTA',
+      'NEUTRAL',
+      5,
+      ['doubleWide', 'warMachine', 'ranged', 'unlimitedShots', 'damageTimesHeroAttack'],
+      undefined
+    ],
     ['AMMO_CART', 'NEUTRAL', 1, ['warMachine'], undefined],
     ['FIRST_AID_TENT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined],
     ['CATAPULT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined]

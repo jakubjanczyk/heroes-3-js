@@ -20,6 +20,8 @@ const DEFENSE_REDUCTION_CAP = 700
 const MOST_ROLLS = 10
 // A lucky strike adds +100% next to the attack bonus, not under its cap.
 const LUCKY_BONUS = 1000
+// So does the Ballista's double damage.
+const DOUBLED_BONUS = 1000
 const LUCK_CHANCE_IN = 24
 const NO_LUCK = () => 1
 // A shot at a target more than 10 hexes away, and a shooter's melee attack, do half damage.
@@ -33,6 +35,7 @@ function applyAttackAndDefense(
     melee = false,
     halved = false,
     lucky = false,
+    doubled = false,
     dealtPercent = 100,
     withoutDefences = false
   }
@@ -41,7 +44,8 @@ function applyAttackAndDefense(
     getStackAttack(attacker, { melee, against: defender }) - getStackDefense(defender)
   const bonus =
     Math.min(Math.max(advantage, 0) * ATTACK_BONUS_PER_POINT, ATTACK_BONUS_CAP) +
-    (lucky ? LUCKY_BONUS : 0)
+    (lucky ? LUCKY_BONUS : 0) +
+    (doubled ? DOUBLED_BONUS : 0)
   const reduction = withoutDefences
     ? 0
     : Math.min(Math.max(-advantage, 0) * DEFENSE_REDUCTION_PER_POINT, DEFENSE_REDUCTION_CAP)
@@ -94,9 +98,22 @@ const rollsLucky = (stack, luckRandom) => {
   return luck > 0 && luckRandom() < luck / LUCK_CHANCE_IN
 }
 
-function rollStrike({ attacker, defender, random, luckRandom, melee, halved, dealtPercent }) {
+const rollsDoubled = (stack, abilityRandom) =>
+  stack.doubleDamageChance > 0 && abilityRandom() * 100 < stack.doubleDamageChance
+
+function rollStrike({
+  attacker,
+  defender,
+  random,
+  luckRandom,
+  abilityRandom = NO_LUCK,
+  melee,
+  halved,
+  dealtPercent
+}) {
   const lucky = rollsLucky(attacker, luckRandom)
-  const strike = { attacker, defender, melee, halved, lucky, dealtPercent }
+  const doubled = rollsDoubled(attacker, abilityRandom)
+  const strike = { attacker, defender, melee, halved, lucky, doubled, dealtPercent }
   const baseDamage = rollBaseDamage(attacker, random)
   return {
     attackerId: attacker.id,
@@ -208,7 +225,14 @@ export function strikeSequence({
 
 // A shot gets no retaliation. Marksmen shoot a second time while the target lives and they have a
 // shot left.
-export function shotSequence({ attacker, defender, random, luckRandom = NO_LUCK, halved }) {
+export function shotSequence({
+  attacker,
+  defender,
+  random,
+  luckRandom = NO_LUCK,
+  abilityRandom,
+  halved
+}) {
   const strikes = []
   let target = defender
   for (let shot = 0; shot < Math.min(attacker.shotsPerTurn, attacker.shots); shot += 1) {
@@ -216,7 +240,14 @@ export function shotSequence({ attacker, defender, random, luckRandom = NO_LUCK,
       break
     }
 
-    const rolled = rollStrike({ attacker, defender: target, random, luckRandom, halved })
+    const rolled = rollStrike({
+      attacker,
+      defender: target,
+      random,
+      luckRandom,
+      abilityRandom,
+      halved
+    })
     strikes.push(rolled)
     target = takeDamage(target, rolled.damage)
   }

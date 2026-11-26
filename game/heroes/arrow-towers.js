@@ -1,52 +1,15 @@
-import { canShoot, getApproaches, isAlive } from './battle.js'
-import { takeDamage } from './battle-damage.js'
-import { fightsFor, getDamageTakenPercent, getMovementRange, isBlind } from './battle-stats.js'
-import { isInsideTheWalls, towerOf } from './siege-walls.js'
-
-const healthOf = (stack) => Math.max(0, (stack.count - 1) * stack.health + stack.topHealth)
+import { isAlive } from './battle.js'
+import { fightsFor, getDamageTakenPercent } from './battle-stats.js'
+import { chooseSelfAimedTarget } from './self-aimed-shots.js'
+import { towerOf } from './siege-walls.js'
 
 // The tower's roll is its damage: it has no Attack, and the target's Defense counts for nothing.
 const damageTo = (target, roll) =>
   Math.max(1, Math.floor((roll * getDamageTakenPercent(target)) / 100))
 
-const canStrikeOnItsTurn = (battle, stack) =>
-  canShoot(battle, stack) ||
-  getApproaches(battle, stack).some(({ distance }) => distance <= getMovementRange(stack))
-
-const killedBy = (stack, damage) => stack.count - takeDamage(stack, damage).count
-
-// The worth lost: the damage, at most all its health, at the worth of a health point, and the
-// creatures killed at theirs.
-function worthLost(battle, tower, target) {
-  const aiValue = battle.definitions?.monsters?.[target.creature]?.aiValue ?? 0
-  const least = damageTo(target, tower.damage.min)
-  const most = damageTo(target, tower.damage.max)
-  const damage = Math.min(healthOf(target), (least + most) / 2)
-  const killed = (killedBy(target, least) + killedBy(target, most)) / 2
-  return (damage * aiValue) / target.health + killed * aiValue
-}
-
-// Each rule in turn: the first that tells two stacks apart settles it.
-const PREFERENCES = [
-  ({ blind }) => !blind,
-  ({ stack }) => !stack.warMachine,
-  ({ canStrike }) => canStrike,
-  ({ inside }) => inside
-]
-
-function isBetter(candidate, best) {
-  for (const prefers of PREFERENCES) {
-    if (prefers(candidate) !== prefers(best)) {
-      return prefers(candidate)
-    }
-  }
-  return candidate.worth > best.worth
-}
-
 const targetsOf = (battle) =>
   battle.stacks.filter((stack) => isAlive(stack) && fightsFor(stack) === 'attacker')
 
-// The earlier stack in the attacker's army wins a tie.
 const NO_BONUS = { min: 0, max: 0 }
 
 export function towerWithStructures(tower, structures) {
@@ -58,24 +21,22 @@ export function towerWithStructures(tower, structures) {
   }
 }
 
-export function chooseTowerTarget(battle, tower) {
-  return targetsOf(battle)
-    .map((stack) => ({
-      stack,
-      blind: isBlind(stack),
-      canStrike: canStrikeOnItsTurn(battle, stack),
-      inside: isInsideTheWalls(stack),
-      worth: worthLost(battle, tower, stack)
-    }))
-    .reduce((best, candidate) => (!best || isBetter(candidate, best) ? candidate : best), null)
-    ?.stack
-}
+const damageRangeTo = (target, { min, max }) => ({
+  min: damageTo(target, min),
+  max: damageTo(target, max)
+})
+
+const chooseTowerTarget = (battle, tower) =>
+  chooseSelfAimedTarget(
+    battle,
+    targetsOf(battle).map((stack) => ({ stack, damage: damageRangeTo(stack, tower.damage) }))
+  )
 
 export const getTowerTargets = (battle, towerId) => {
   const tower = towerOf(battle.walls, towerId)
   return targetsOf(battle).map((stack) => ({
     stackId: stack.id,
-    damage: { min: damageTo(stack, tower.damage.min), max: damageTo(stack, tower.damage.max) }
+    damage: damageRangeTo(stack, tower.damage)
   }))
 }
 
