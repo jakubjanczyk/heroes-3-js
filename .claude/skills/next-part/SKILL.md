@@ -11,11 +11,13 @@ Takes a session from "what's next?" to an approved list of test scenarios in one
 
 - `git remote get-url origin` must point to `jakubjanczyk/heroes-3-js`. If it doesn't, stop and tell the user this session has another repository checked out; don't plan from it.
 - `git fetch origin main`. Start the working branch from the latest `origin/main` unless it already holds unmerged work for this part.
-- List the open PRs. A part with an open PR is in progress, not next: name it to the user and take the one after it.
+- List the open PRs. A part with an open PR is in progress.
+- List the other running sessions: `list_sessions` with `mine: true`, keeping those whose `status_bucket` is working or blocked (not this session). Their titles are mostly "Next part", so for each read its last assistant messages (`list_events` with `kinds: ["assistant"]`, `limit: 100`) to learn which part it took and which screens, modules and data files it touches. Each such part is in progress too. Done when every running session has a part named, or is marked as unrelated to the roadmap. If the session tools are missing, say so and go by open PRs only.
 
 ## 2. Pick the part
 
 - Read "Recommended Work Order" at the end of `docs/ROADMAP.md`, take the first item not finished, then in its section (`### 4.8`, say) the first part whose boxes aren't all ticked.
+- Pick work fully independent of everything in progress: not the same part, not a part that builds on an unmerged one, and not one that changes the same screen, module, rules file or data file, so the PRs merge without conflicts. Walk down the work order until a part passes; name the in-progress parts you skipped, and what each one is doing, in one line each.
 - Read the part's note in `docs/notes/` if it has one, and the notes of the parts before it.
 - If the order between two items is a priority call rather than a dependency, say so in one line; don't argue it.
 - A part bigger than one PR (several screens, or rules and their UI both large) gets split first: propose the parts, and once agreed write them to the roadmap and the note.
