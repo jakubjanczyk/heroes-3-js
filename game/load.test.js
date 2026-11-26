@@ -67,7 +67,8 @@ describe('bootstrap', () => {
       artifacts: { CENTAURS_AXE: { name: "Centaur's Axe", slot: 'WEAPON' } },
       obstacles: { MOUNTAIN_1: { name: 'Mountain', look: 'mountain', blocks: [{ x: 0, y: 0 }] } },
       spells: { MAGIC_ARROW: { name: 'Magic Arrow', level: 1 } },
-      scoreRanks: { Imp: { from: 1, to: 4 } }
+      scoreRanks: { Imp: { from: 1, to: 4 } },
+      marketplace: { kinds: { GOLD_PILE: 'gold' }, rates: {} }
     }
 
     const fetch = createFakeFetch({
@@ -88,7 +89,8 @@ describe('bootstrap', () => {
       './game/data/artifacts.json': definitions.artifacts,
       './game/data/obstacles.json': definitions.obstacles,
       './game/data/spells.json': definitions.spells,
-      './game/data/score-ranks.json': definitions.scoreRanks
+      './game/data/score-ranks.json': definitions.scoreRanks,
+      './game/data/marketplace.json': definitions.marketplace
     })
 
     const loaded = await loadGame({ fetch })

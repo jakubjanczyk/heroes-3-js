@@ -795,7 +795,8 @@ See `docs/notes/2026-10-21-town-buildings.md`.
   - Castle: 2 towers, +100% creature growth (replaces the Citadel's +50%, doesn't add to it)
 - [ ] **Tavern**: recruit heroes, +1 morale to visiting hero
   - [ ] Rumours: the tavern window shows a rumour of the week, from the game's list or the scenario's own
-- [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count), with 7.16.1; giving resources to another player with hot-seat (8.2)
+- [x] **Marketplace**: trade resources (exchange ratios depend on marketplace count), 7.16.1
+  - [ ] Giving resources to another player, with hot-seat (8.2)
 - [ ] **Resource Silo**: provides +1 of a specific resource per day (faction-dependent)
 - [ ] **Blacksmith**: provides ballista (first aid tent/ammo cart) to visiting heroes
 - [ ] **Mage Guild** (levels 1-5): teaches spells to visiting heroes (4.8.2)
@@ -1169,7 +1170,7 @@ A guarded object: beating its guards gives its treasure once, rolled from a few 
 
 ### 7.16 Trading and Services
 The Marketplace and the Trading Post first, then the services one part each. See `docs/notes/2026-11-26-trading.md`.
-- [ ] 7.16.1 **Marketplace** (6.2): clicking it on the town picture opens the trading window; one resource traded for another in whole lots, at a rate set by how many Marketplaces the player owns
+- [x] 7.16.1 **Marketplace** (6.2): clicking it on the town picture opens the trading window; one resource traded for another in whole lots, at a rate set by how many Marketplaces the player owns
 - [ ] 7.16.2 **Trading Post**: a hero visiting it opens the same window, at the rate of five Marketplaces
 - [ ] **Black Market**: sells a few artifacts, rolled at the start and again each month
 - [ ] **University**: teaches a few secondary skills for gold

@@ -74,6 +74,8 @@ export const APP_COMMAND_TOWN_STACK_SPLIT_REQUESTED = 'command.town.stackSplit.r
 export const APP_COMMAND_TAVERN_OPEN_REQUESTED = 'command.tavern.open.requested'
 export const APP_COMMAND_TAVERN_HIRE_REQUESTED = 'command.tavern.hire.requested'
 export const APP_COMMAND_MAGE_GUILD_OPEN_REQUESTED = 'command.mageGuild.open.requested'
+export const APP_COMMAND_MARKETPLACE_OPEN_REQUESTED = 'command.marketplace.open.requested'
+export const APP_COMMAND_MARKETPLACE_TRADE_REQUESTED = 'command.marketplace.trade.requested'
 export const APP_COMMAND_THIEVES_GUILD_OPEN_REQUESTED = 'command.thievesGuild.open.requested'
 export const APP_COMMAND_SCENARIO_INFO_OPEN_REQUESTED = 'command.scenarioInfo.open.requested'
 export const APP_COMMAND_TOWN_GARRISON_STACK_MOVE_REQUESTED =
@@ -144,6 +146,8 @@ export const APP_FACT_DWELLING_CREATURES_RECRUITED = 'fact.dwelling.creatures.re
 export const APP_FACT_DWELLING_GUARDS_CHANGED = 'fact.dwelling.guards.changed'
 export const APP_FACT_RESOURCES_SPENT = 'fact.resources.spent'
 export const APP_FACT_RESOURCES_GAINED = 'fact.resources.gained'
+// A trade at a market: one resource given for another, at the market's rate.
+export const APP_FACT_RESOURCES_TRADED = 'fact.resources.traded'
 // A hero of the player entered the object, whether or not it gave them anything.
 export const APP_FACT_MAP_OBJECT_VISITED = 'fact.mapObject.visited'
 // The values a map object rolls once per game or once per week, such as a Witch Hut's skill.
@@ -224,6 +228,7 @@ export const APP_UI_TAVERN_UPDATED = 'ui.tavern.updated'
 export const APP_UI_THIEVES_GUILD_UPDATED = 'ui.thievesGuild.updated'
 export const APP_UI_SCENARIO_INFO_UPDATED = 'ui.scenarioInfo.updated'
 export const APP_UI_MAGE_GUILD_UPDATED = 'ui.mageGuild.updated'
+export const APP_UI_MARKETPLACE_UPDATED = 'ui.marketplace.updated'
 export const APP_UI_GAME_ENDED = 'ui.game.ended'
 export const APP_UI_DEV_FOG_OF_WAR_CHANGED = 'ui.dev.fogOfWar.changed'
 
@@ -273,6 +278,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_DWELLING_CREATURES_RECRUITED,
   APP_FACT_DWELLING_GUARDS_CHANGED,
   APP_FACT_RESOURCES_GAINED,
+  APP_FACT_RESOURCES_TRADED,
   APP_FACT_MAP_OBJECT_VISITED,
   APP_FACT_MAP_OBJECT_VALUES_ROLLED,
   APP_FACT_HERO_BONUS_OBJECT_VISITED,

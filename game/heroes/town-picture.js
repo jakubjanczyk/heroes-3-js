@@ -41,9 +41,9 @@ function weeklyResourcesMessage(buildingId, { buildings, producedThisWeek, resou
 }
 
 // What clicking a building opens: the hall the Hall, the fort the Fort window, the Tavern the
-// tavern, the Mage Guild its screen, a dwelling or its horde building (Griffin Bastion) the
-// dwelling's recruit window, the Mystic Pond its message. The other buildings' screens don't
-// exist yet, so clicking them does nothing.
+// tavern, the Mage Guild its screen, the Marketplace the trading window, a dwelling or its horde
+// building (Griffin Bastion) the dwelling's recruit window, the Mystic Pond its message. The other
+// buildings' screens don't exist yet, so clicking them does nothing.
 function openedBy(buildingId, building, monsters, town) {
   if (buildingId === 'TAVERN') {
     return { opens: 'tavern' }
@@ -56,6 +56,9 @@ function openedBy(buildingId, building, monsters, town) {
   }
   if (isMageGuild(buildingId)) {
     return { opens: 'mage-guild' }
+  }
+  if (buildingId === 'MARKETPLACE') {
+    return { opens: 'marketplace' }
   }
 
   const tier = monsters?.[building.creature]?.tier ?? building.horde?.tier

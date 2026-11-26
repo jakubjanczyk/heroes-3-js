@@ -92,6 +92,8 @@ export const kingdomsSlice = {
       changeResources(kingdoms, player, resources),
     'fact.resources.spent': (kingdoms, { player = DEFAULT_PLAYER, resources }) =>
       changeResources(kingdoms, player, resources, -1),
+    'fact.resources.traded': (kingdoms, { player, given, received }) =>
+      changeResources(changeResources(kingdoms, player, given, -1), player, received),
     'fact.turn.ended': payIncome
   }
 }

@@ -7,6 +7,7 @@ import {
   APP_FACT_RESOURCE_COLLECTED,
   APP_FACT_RESOURCES_GAINED,
   APP_FACT_RESOURCES_SPENT,
+  APP_FACT_RESOURCES_TRADED,
   APP_FACT_TREASURE_CHEST_OPENED,
   APP_FACT_TURN_ENDED,
   APP_FACT_WORLD_READY,
@@ -130,7 +131,8 @@ export const registerHudModule = defineModule(
         { type: APP_FACT_RESOURCE_COLLECTED, handler: renderResourceTotals },
         { type: APP_FACT_RESOURCES_GAINED, handler: renderResourceTotals },
         { type: APP_FACT_TREASURE_CHEST_OPENED, handler: renderResourceTotals },
-        { type: APP_FACT_RESOURCES_SPENT, handler: renderResourceTotals }
+        { type: APP_FACT_RESOURCES_SPENT, handler: renderResourceTotals },
+        { type: APP_FACT_RESOURCES_TRADED, handler: renderResourceTotals }
       ]
     }
   },
@@ -144,7 +146,8 @@ export const registerHudModule = defineModule(
       APP_FACT_RESOURCE_COLLECTED,
       APP_FACT_RESOURCES_GAINED,
       APP_FACT_TREASURE_CHEST_OPENED,
-      APP_FACT_RESOURCES_SPENT
+      APP_FACT_RESOURCES_SPENT,
+      APP_FACT_RESOURCES_TRADED
     ],
     produces: [APP_COMMAND_MOVE_CONTINUE_REQUESTED, APP_COMMAND_END_TURN_REQUESTED]
   }

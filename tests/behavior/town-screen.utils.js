@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/dom'
+import { fireEvent, screen, within } from '@testing-library/dom'
 import { expect } from 'vitest'
 
 import { confirmTileClickByDispatch } from './adventure-map.utils.js'
@@ -651,4 +651,105 @@ export function readBestMonsters() {
     const monster = within(cell).queryByRole('img', { name: /^(?!.* player flag$)/ })
     return monster ? monster.getAttribute('aria-label') : null
   })
+}
+
+export function queryMarketplace() {
+  return screen.queryByRole('dialog', { name: 'Marketplace' })
+}
+
+function getMarketplace() {
+  const marketplace = queryMarketplace()
+  expect(marketplace).toBeTruthy()
+  return marketplace
+}
+
+export async function openMarketplace(user) {
+  await clickBuildingOnPicture(user, 'Marketplace')
+  getMarketplace()
+}
+
+function getMarketplacePanel(panelName) {
+  return within(getMarketplace()).getByRole('group', { name: panelName })
+}
+
+function getMarketplaceResource(panelName, resourceName) {
+  return within(getMarketplacePanel(panelName)).getByRole('button', { name: resourceName })
+}
+
+// Each "<resource> <amount or rate>", as the panel shows it.
+function readMarketplacePanel(panelName) {
+  return within(getMarketplacePanel(panelName))
+    .getAllByRole('button')
+    .map((resource) => `${resource.getAttribute('aria-label')} ${resource.textContent}`.trim())
+}
+
+export function readKingdomResources() {
+  return readMarketplacePanel('Kingdom Resources')
+}
+
+export function readTradeRates() {
+  return readMarketplacePanel('Available for Trade')
+}
+
+export function readMerchantLine() {
+  return within(getMarketplace()).getByRole('paragraph', { name: 'Merchant' }).textContent
+}
+
+export async function pickResourceToGive(user, resourceName) {
+  await user.click(getMarketplaceResource('Kingdom Resources', resourceName))
+}
+
+export async function pickResourceToReceive(user, resourceName) {
+  await user.click(getMarketplaceResource('Available for Trade', resourceName))
+}
+
+function readPickedResource(panelName) {
+  return within(getMarketplacePanel(panelName))
+    .getAllByRole('button')
+    .find((resource) => resource.getAttribute('aria-pressed') === 'true')
+    ?.getAttribute('aria-label')
+}
+
+export function readPickedResourceToGive() {
+  return readPickedResource('Kingdom Resources')
+}
+
+export function readPickedResourceToReceive() {
+  return readPickedResource('Available for Trade')
+}
+
+function getTradeSlider() {
+  return within(getMarketplace()).getByRole('slider', { name: 'Quantity to trade' })
+}
+
+export function setTradeQuantity(lots) {
+  fireEvent.input(getTradeSlider(), { target: { value: String(lots) } })
+}
+
+export function readTradeQuantity() {
+  return Number(getTradeSlider().value)
+}
+
+export function readAmountToGive() {
+  return within(getMarketplace()).getByLabelText('To give').textContent
+}
+
+export function readAmountToReceive() {
+  return within(getMarketplace()).getByLabelText('To receive').textContent
+}
+
+export function getTradeButton() {
+  return within(getMarketplace()).getByRole('button', { name: 'Trade' })
+}
+
+export async function clickTradeMax(user) {
+  await user.click(within(getMarketplace()).getByRole('button', { name: 'Max' }))
+}
+
+export async function trade(user) {
+  await user.click(getTradeButton())
+}
+
+export async function closeMarketplace(user) {
+  await user.click(within(getMarketplace()).getByRole('button', { name: 'Done' }))
 }
