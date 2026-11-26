@@ -8,6 +8,7 @@ import {
 } from '../../../game/heroes/artifact-exchange.js'
 import {
   equippedForGoodAt,
+  isWarMachine,
   putBackHeldArtifact,
   putHeldArtifact,
   scrollBackpack,
@@ -173,9 +174,13 @@ export const registerHeroArtifactsModule = defineModule(
     const heldInExchange = (heroIds) =>
       SIDES.map((side) => exchangedArtifacts(heroIds, side)).find((artifacts) => artifacts?.held)
 
+    // Alone on the hero screen, a war machine has no other place to go, so it isn't picked up.
     function takeFromSelectedHero(place) {
       const artifacts = heroById(state.get(), selectedHeroId())?.artifacts
-      if (!refusedToTake(artifacts, place)) {
+      if (refusedToTake(artifacts, place)) {
+        return
+      }
+      if (!isWarMachine(artifacts?.worn?.[place.slot], definitions)) {
         rearrange((each) => takeArtifact(each, place, definitions))
       }
     }

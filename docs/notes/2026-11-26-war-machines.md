@@ -6,7 +6,7 @@ Roadmap 5.11: the Ballista, the Ammo Cart, the First Aid Tent and the Catapult, 
 
 Too large for one PR. Split:
 
-- **5.11.1 War machines on the hero**: the hero carries them, in their four slots on the hero screen and the exchange window. Every hero has a Catapult; a hired hero brings the war machine in their starting army; a scenario can give a hero one. They stay in their slots: the Catapult can't be moved, and none goes to the backpack. The other three can be traded between heroes in the exchange window.
+- **5.11.1 War machines on the hero**: the hero carries them, in their four slots on the hero screen and the exchange window. Every hero has a Catapult; a hired hero brings the war machine in their starting army; a scenario can give a hero one. They stay in their slots: the Catapult can't be moved, and none goes to the backpack. The other three can be traded between heroes in the exchange window; on the hero screen alone they aren't picked up at all.
 - **5.11.2 On the battlefield**: the hero's Ballista, Ammo Cart and First Aid Tent stand in their places in battle as targets. They can be attacked and destroyed, and a destroyed one is lost after the battle. They do nothing yet.
 - **5.11.3 The Ballista shoots**, at the end of each round; its damage grows with the hero's Attack. Artillery aims it and adds its bonuses.
 - **5.11.4 The First Aid Tent heals** at the end of each round; First Aid heals more and aims it.
@@ -25,6 +25,7 @@ Checked against the Heroes 3 wiki's raw page source (War Machine, `Translation_D
 - **Moving them.** "War Machines (except Catapults) can be traded between heroes, but cannot be dismissed or placed in the hero's backpack" (wiki). The engine says the same:
   - Clicking the Catapult says "The Catapult must be equipped." (`core.genrltxt.312`), and it stays where it is.
   - A war machine dropped on a backpack frame isn't put there. The message is "Alas, your backpack cannot hold something as large as a Ballista." (`core.genrltxt.153`, with the war machine's name), and the war machine stays in hand.
+  - On the hero screen alone, clicking a Ballista, Ammo Cart or First Aid Tent doesn't pick it up: it fits only its own slot, so there is nowhere to put it (decided with the user; the engine picks it up). In the exchange window it is picked up and can go to the other hero's slot, and the backpack message shows there.
   - It fits only its own slot, as any artifact fits only its kind.
   - In the exchange window the Ballista, Ammo Cart and First Aid Tent go to the other hero's slot as other artifacts do; the Catapult gives the same message there.
 - **Names and descriptions** (`artraits.txt`):

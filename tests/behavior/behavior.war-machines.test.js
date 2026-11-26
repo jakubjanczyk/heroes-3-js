@@ -5,15 +5,16 @@ import { answerMessage, readMessage } from './adventure-panels.utils.js'
 import { readGameData, setupMovementBehaviorApp } from './app.utils.js'
 import { aHero, anArtifactDefinition, aScenario, aWarMachineDefinition } from './builders.js'
 import {
+  clickHeroExchangeBackpackFrame,
   clickHeroExchangeButton,
   clickHeroExchangeWarMachineFrame,
   meetHeroAt,
   readHeroExchangeBackpack,
+  readHeroExchangeHeldArtifact,
   readHeroExchangeWarMachines
 } from './hero-exchange.utils.js'
 import {
   clickHeroInHeroList,
-  clickHeroScreenBackpackFrame,
   clickHeroScreenWarMachineFrame,
   holdRightButtonOnHeroScreenWarMachineFrame,
   hoverHeroScreenWarMachineFrame,
@@ -162,23 +163,8 @@ describe('war machines behavior', () => {
       expect(readHeroScreenWarMachines()).toEqual({ Catapult: 'Catapult' })
     })
 
-    test('a war machine put on a backpack frame stays held, with a message that it is too large', async () => {
+    test('clicking a war machine leaves it in its frame, as it has nowhere else to go', async () => {
       const { user } = await startOnHeroScreen(aHeroWith([BALLISTA]))
-      await clickHeroScreenWarMachineFrame(user, 'Ballista')
-
-      await clickHeroScreenBackpackFrame(user, 1)
-
-      expect(readMessage()).toBe(
-        'Alas, your backpack cannot hold something as large as a Ballista.'
-      )
-      await answerMessage(user, 'OK')
-      expect(readHeroScreenBackpack()).toEqual([])
-      expect(readHeroScreenHeldArtifact()).toBe('Ballista')
-    })
-
-    test('a held war machine goes back to its frame when clicked there', async () => {
-      const { user } = await startOnHeroScreen(aHeroWith([BALLISTA]))
-      await clickHeroScreenWarMachineFrame(user, 'Ballista')
 
       await clickHeroScreenWarMachineFrame(user, 'Ballista')
 
@@ -212,6 +198,20 @@ describe('war machines behavior', () => {
         Ballista: 'Ballista',
         Catapult: 'Catapult'
       })
+    })
+
+    test('a war machine put on a backpack frame stays held, with a message that it is too large', async () => {
+      const { user } = await startOnHeroExchange(aMeetingScenario({ left: [BALLISTA] }))
+      await clickHeroExchangeWarMachineFrame(user, HERO, 'Ballista')
+
+      await clickHeroExchangeBackpackFrame(user, OTHER_HERO, 1)
+
+      expect(readMessage()).toBe(
+        'Alas, your backpack cannot hold something as large as a Ballista.'
+      )
+      await answerMessage(user, 'OK')
+      expect(readHeroExchangeBackpack(OTHER_HERO)).toEqual([])
+      expect(readHeroExchangeHeldArtifact()).toBe('Ballista')
     })
 
     test('clicking a Catapult says it must be equipped', async () => {
