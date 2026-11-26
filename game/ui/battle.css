@@ -1011,6 +1011,49 @@
   animation-name: spell-hit;
 }
 
+/* A red cross in a green-white glow rising over the healed stack. */
+.battle-effect.first-aid {
+  inset-block-end: 20%;
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 0;
+  border: none;
+  background:
+    linear-gradient(rgb(210 40 40), rgb(210 40 40)) center / 12px 36px no-repeat,
+    linear-gradient(rgb(210 40 40), rgb(210 40 40)) center / 36px 12px no-repeat,
+    radial-gradient(
+      circle,
+      rgb(255 255 255 / 95%) 0 30%,
+      rgb(170 255 170 / 75%) 45%,
+      rgb(80 200 110 / 35%) 60%,
+      transparent 72%
+    );
+  box-shadow: none;
+  animation-name: first-aid;
+}
+
+@keyframes first-aid {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.5);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+
+  70% {
+    opacity: 0.9;
+    transform: translateY(-6px) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-14px) scale(1);
+  }
+}
+
 /* A shield ring where the spell would have burst. */
 .battle-effect.spell-resisted {
   inset-block-end: 20%;

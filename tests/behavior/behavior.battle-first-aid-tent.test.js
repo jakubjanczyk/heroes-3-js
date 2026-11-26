@@ -10,6 +10,7 @@ import {
   getBattleStatusBarText,
   hoverBattleHex,
   readActiveStack,
+  readBattleEffects,
   readBattleStacks,
   readCombatMessages,
   reloadBattle,
@@ -352,6 +353,15 @@ describe('the First Aid Tent in battle behavior', () => {
       expect(tentLines()).toEqual([
         `The First Aid Tent heals the Patient removing ${healed} points of damage.`
       ])
+    })
+
+    test('the healed stack shows the first aid picture over it', async () => {
+      const { user } = await fight(aFirstAidFight())
+      await defend(user)
+
+      await clickBattleHex(user, OWN_STACK.row, OWN_STACK.column)
+
+      expect(readBattleEffects()).toEqual([{ effect: 'First Aid', ...OWN_STACK }])
     })
 
     test("the hero casts a spell on the tent's turn, then the tent heals", async () => {
