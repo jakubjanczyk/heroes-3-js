@@ -248,12 +248,16 @@
   transform: rotate(-10deg);
 }
 
-.battle-stack--dead .battle-catapult__arm,
-.battle-stack--dead .battle-catapult__cup {
+.battle-stack--dead .battle-war-machine__arm,
+.battle-stack--dead .battle-war-machine__string,
+.battle-stack--dead .battle-war-machine__bolt,
+.battle-stack--dead .battle-war-machine__iron,
+.battle-stack--dead .battle-war-machine__cross {
   display: none;
 }
 
-.battle-catapult {
+.battle-catapult,
+.battle-war-machine {
   position: absolute;
   inset: 0;
   display: flex;
@@ -268,24 +272,68 @@
   }
 }
 
-.battle-catapult__frame {
+/* The defender's war machines face left, towards the attacker. */
+.battle-stack--defender .battle-war-machine svg {
+  transform: scaleX(-1);
+}
+
+.battle-war-machine__wood {
   fill: none;
   stroke: #6b4521;
   stroke-width: 6px;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-.battle-catapult__arm {
+.battle-war-machine__arm {
+  fill: none;
   stroke: #8a5c30;
   stroke-width: 6px;
   stroke-linecap: round;
 }
 
-.battle-catapult__cup {
-  fill: #5c3a1b;
+.battle-war-machine__string {
+  fill: none;
+  stroke: #e8dcc0;
+  stroke-width: 2px;
 }
 
-.battle-catapult__wheel {
+.battle-war-machine__bolt {
+  stroke: #9aa3ad;
+  stroke-width: 4px;
+  stroke-linecap: round;
+}
+
+.battle-war-machine__iron {
+  fill: #3b3b40;
+  stroke: #1d1d20;
+  stroke-width: 2px;
+}
+
+.battle-war-machine__crate {
+  fill: #8a5c30;
+  stroke: #4a2f15;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.battle-war-machine__canvas {
+  fill: #e9e1c8;
+  stroke: #8f8466;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.battle-war-machine__doorway {
+  fill: #4a3a24;
+}
+
+.battle-war-machine__cross {
+  stroke: #c8202a;
+  stroke-width: 5px;
+}
+
+.battle-war-machine__wheel {
   fill: #3e2a16;
   stroke: #a07a4a;
   stroke-width: 3px;

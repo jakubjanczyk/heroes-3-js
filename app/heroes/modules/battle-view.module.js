@@ -39,7 +39,6 @@ import {
 import { defineModule } from '../../modules/shared/module-runtime.js'
 import { renderMoraleOrLuckIcon } from '../presentation/morale-and-luck.js'
 import {
-  renderCatapultPicture,
   renderCatapultStone,
   renderMoat,
   renderTower,
@@ -47,6 +46,7 @@ import {
   renderWall,
   renderWallHit
 } from '../presentation/siege.js'
+import { renderWarMachinePicture } from '../presentation/war-machines.js'
 
 const describeDamageRange = ({ min, max }) => (min === max ? `${min}` : `${min}-${max}`)
 
@@ -155,16 +155,18 @@ export const registerBattleViewModule = defineModule(
       return hexes[row]?.[column + 1] ?? null
     }
 
-    // No creature pictures yet: a stack is drawn as monsters are on the map, with its count. The
-    // back half of a double-wide creature only marks its hex for screen readers.
-    function createStack({ side, doubleWide, cloneOf, warMachine }) {
+    // No creature pictures yet: a stack is drawn as monsters are on the map, with its count, and a
+    // war machine as itself. The back half of a double-wide creature only marks its hex for screen
+    // readers.
+    function createStack({ side, creature, doubleWide, cloneOf, warMachine }) {
       const stack = cloneTemplate('battle-stack-template')
       stack.classList.add(`battle-stack--${side}`)
       stack.classList.toggle('battle-stack--clone', Boolean(cloneOf))
       stack.classList.toggle('battle-stack--double-wide', Boolean(doubleWide))
-      if (warMachine) {
+      const picture = warMachine ? renderWarMachinePicture(document, creature) : null
+      if (picture) {
         stack.classList.add('battle-stack--war-machine')
-        stack.querySelector('.battle-stack__creature').append(renderCatapultPicture(document))
+        stack.querySelector('.battle-stack__creature').append(picture)
       }
       const backHalf = document.createElement('div')
       backHalf.className = 'battle-stack__back-half'

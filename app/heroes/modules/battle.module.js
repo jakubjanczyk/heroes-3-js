@@ -1,4 +1,5 @@
 import { getTowerTargets, planTowerShot } from '../../../game/heroes/arrow-towers.js'
+import { withoutWornIn } from '../../../game/heroes/artifacts.js'
 import {
   areaTargetIds,
   attackStack,
@@ -23,6 +24,7 @@ import {
   getAttackTargets,
   getBadMoraleChance,
   getCatapultStack,
+  getDestroyedWarMachines,
   getExperienceForKills,
   getGoodMoraleChance,
   getRoundStartShooter,
@@ -144,6 +146,7 @@ import {
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_ENTITY_REMOVED,
   APP_FACT_HERO_ARMY_CHANGED,
+  APP_FACT_HERO_ARTIFACTS_CHANGED,
   APP_FACT_HERO_WENT_TO_TAVERN,
   APP_FACT_RESOURCES_GAINED,
   APP_FACT_RESOURCES_SPENT,
@@ -504,11 +507,26 @@ export const registerBattleModule = defineModule(
       }
     }
 
+    function loseDestroyedWarMachines() {
+      const heroIds = { attacker: heroId, defender: defenderHeroOf()?.id }
+      for (const [side, sideHeroId] of Object.entries(heroIds)) {
+        const artifacts = heroById(state.get(), sideHeroId)?.artifacts
+        const destroyed = getDestroyedWarMachines(battle, side)
+        if (artifacts && destroyed.length > 0) {
+          emit(APP_FACT_HERO_ARTIFACTS_CHANGED, {
+            heroId: sideHeroId,
+            artifacts: withoutWornIn(artifacts, destroyed)
+          })
+        }
+      }
+    }
+
     function winBattle() {
       const fought = { emit, state, heroId, battle, started, definitions }
       const defender = battleDefenderOf(started)
       const experience = experienceForWin()
       const army = getArmyAfterBattle(battle, 'attacker', heroById(state.get(), heroId)?.army ?? [])
+      loseDestroyedWarMachines()
       emit(APP_FACT_BATTLE_ENDED, { entityId: started.entityId, heroId, winner: 'attacker' })
       emit(APP_FACT_HERO_ARMY_CHANGED, { heroId, army })
       defender.win(fought)
@@ -525,6 +543,7 @@ export const registerBattleModule = defineModule(
       const survivors = battle.stacks.filter(
         (stack) => stack.side === 'defender' && stack.count > 0
       )
+      loseDestroyedWarMachines()
       emit(APP_FACT_BATTLE_ENDED, { entityId: started.entityId, heroId, winner: 'defender' })
       defender.lose({ ...fought, survivors })
       emit(APP_FACT_ENTITY_REMOVED, { entityId: heroId })
@@ -539,6 +558,7 @@ export const registerBattleModule = defineModule(
       const leftId = defenderHeroOf().id
       const experience = getExperienceForKills(battle, 'attacker')
       const army = getArmyAfterBattle(battle, 'attacker', heroById(state.get(), heroId)?.army ?? [])
+      loseDestroyedWarMachines()
       emitAll([
         {
           type: APP_FACT_BATTLE_ENDED,
@@ -1544,6 +1564,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_RESOURCES_GAINED,
       ...battleDefenderEvents,
       APP_FACT_HERO_ARMY_CHANGED,
+      APP_FACT_HERO_ARTIFACTS_CHANGED,
       APP_FACT_HERO_WENT_TO_TAVERN,
       APP_COMMAND_HERO_EXPERIENCE_GAIN_REQUESTED,
       APP_UI_BATTLE_SPELL_AFFECTS_NO_ONE

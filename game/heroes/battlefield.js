@@ -24,6 +24,14 @@ export function getStartHexes({ side, stackCount }) {
   return (START_ROWS_BY_STACK_COUNT[stackCount] ?? []).map((row) => ({ row, column }))
 }
 
+// The war machines stand in their side's first column, on rows the armies never start on.
+const WAR_MACHINE_ROWS = { AMMO_CART: 1, BALLISTA: 3, CATAPULT: 7, FIRST_AID_TENT: 9 }
+
+export const getWarMachineHex = ({ side, slot }) => ({
+  row: WAR_MACHINE_ROWS[slot],
+  column: START_COLUMN_BY_SIDE[side]
+})
+
 export const isOnBattlefield = ({ row, column }) =>
   row >= 0 && row < BATTLEFIELD_ROWS && column >= 0 && column < BATTLEFIELD_COLUMNS
 
