@@ -27,6 +27,7 @@ import {
   getDestroyedWarMachines,
   getExperienceForKills,
   getGoodMoraleChance,
+  getHealTargets,
   getRoundStartShooter,
   getShotTargets,
   getStackHexes,
@@ -35,10 +36,12 @@ import {
   hasCastThisRound,
   hasLivingStacks,
   hasWaited,
+  healStack,
   heroBattleSide,
   moveStack,
   planBattleCatapultShot,
   planStackAttack,
+  planStackHeal,
   planStackMove,
   planStackShot,
   resolveAttack,
@@ -125,6 +128,7 @@ import {
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
@@ -138,6 +142,7 @@ import {
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_FROZE,
+  APP_FACT_BATTLE_STACK_HEALED,
   APP_FACT_BATTLE_STACK_MOVED,
   APP_FACT_BATTLE_STACK_SHOT,
   APP_FACT_BATTLE_STACK_WAITED,
@@ -407,6 +412,7 @@ export const registerBattleModule = defineModule(
         reachableHexes: [],
         attackTargets: [],
         shotTargets: [],
+        healTargetIds: [],
         catapultTargets: [],
         messages: shown.messages,
         effects: [],
@@ -424,6 +430,7 @@ export const registerBattleModule = defineModule(
       reachableHexes: [],
       attackTargets: [],
       shotTargets: [],
+      healTargetIds: [],
       catapultTargets: []
     }
 
@@ -452,6 +459,7 @@ export const registerBattleModule = defineModule(
         reachableHexes: getStackReach(battle, activeStack),
         attackTargets: getAttackTargets(battle, activeStack),
         shotTargets: getShotTargets(battle, activeStack),
+        healTargetIds: getHealTargets(battle, activeStack).map(({ id }) => id),
         catapultTargets: []
       }
     }
@@ -629,6 +637,16 @@ export const registerBattleModule = defineModule(
         return
       }
 
+      if (plan?.heal) {
+        void walkThenShow({
+          stack,
+          path: [],
+          fact: APP_FACT_BATTLE_STACK_HEALED,
+          detail: { stackId: stack.id, ...plan.heal }
+        })
+        return
+      }
+
       if (plan?.attack) {
         void walkThenShow({
           stack,
@@ -759,13 +777,16 @@ export const registerBattleModule = defineModule(
       return chance > 0 && moraleRandom() < chance
     }
 
+    // A healer with nobody to heal has no order to wait for.
+    const hasOrders = (stack) => !stack.healing || getHealTargets(battle, stack).length > 0
+
     // A berserk stack's turn plays itself, whoever's it is, and so does a war machine's the hero
     // doesn't aim.
     const isPlayers = (stack) =>
       Boolean(stack) &&
       !isUnseen() &&
       !isBerserk(stack) &&
-      (!stack.warMachine || stack.aimedByHero) &&
+      (!stack.warMachine || (stack.aimedByHero && hasOrders(stack))) &&
       fightsFor(stack) === playerSide
 
     const isPlayersTurn = () =>
@@ -959,6 +980,19 @@ export const registerBattleModule = defineModule(
         fact: APP_FACT_BATTLE_STACK_SHOT,
         detail: shotDetail({ stackId: stack.id, targetId, strikes: shot.strikes })
       })
+    }
+
+    function healWithActiveStack({ targetId }) {
+      const stack = getActiveStack(battle)
+      const heal = stack && planStackHeal(battle, stack, { targetId, random })
+      if (heal) {
+        void walkThenShow({
+          stack,
+          path: [],
+          fact: APP_FACT_BATTLE_STACK_HEALED,
+          detail: { stackId: stack.id, ...heal }
+        })
+      }
     }
 
     function chooseAreaTargets(targeting, hex) {
@@ -1271,6 +1305,17 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_STACK_HEALED,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = healStack(battle, event.detail)
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_SPELL_CAST,
           handler: (event) => {
             if (!battle) {
@@ -1429,6 +1474,14 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
+          handler: (event) => {
+            if (isPlayersTurn()) {
+              healWithActiveStack(event.detail)
+            }
+          }
+        },
+        {
           type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
           handler: (event) => {
             if (isLeadingHerosTurn()) {
@@ -1529,6 +1582,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_MOVED,
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_STACK_SHOT,
+      APP_FACT_BATTLE_STACK_HEALED,
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
@@ -1543,6 +1597,7 @@ export const registerBattleModule = defineModule(
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
@@ -1556,6 +1611,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_MOVED,
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_STACK_SHOT,
+      APP_FACT_BATTLE_STACK_HEALED,
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,

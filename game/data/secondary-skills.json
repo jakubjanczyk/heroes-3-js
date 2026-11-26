@@ -246,9 +246,9 @@
     "name": "First Aid",
     "worth": 0,
     "descriptions": {
-      "BASIC": "Gives control of the First Aid Tent, which heals up to 50 health.",
-      "ADVANCED": "Gives control of the First Aid Tent, which heals up to 75 health.",
-      "EXPERT": "Gives control of the First Aid Tent, which heals up to 100 health."
+      "BASIC": "Basic First Aid gives control of the first aid tent to the hero, healing 50 points of damage to the first unit of the selected stack.",
+      "ADVANCED": "Advanced First Aid gives control of the first aid tent to the hero, healing 75 points of damage to the first unit of the selected stack.",
+      "EXPERT": "Expert First Aid gives control of the first aid tent to the hero, healing 100 points of damage to the first unit of the selected stack."
     }
   }
 }
