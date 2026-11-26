@@ -1337,7 +1337,8 @@ export function healStack(battle, { stackId, targetId, healing }) {
     messages: [
       ...battle.messages,
       `The ${nameOf(battle, stackId)} heals the ${nameOf(battle, targetId)} removing ${healing} points of damage.`
-    ]
+    ],
+    effects: [...battle.effects, { stackId: targetId, kind: 'firstAid' }]
   }
   return endTurn(healed, stackId)
 }
