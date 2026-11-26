@@ -1,11 +1,13 @@
 import {
   canShoot,
+  chooseHealTarget,
   getApproaches,
   getFrontHexReach,
   getShotTargets,
   getStackHexes,
   getWayThisTurn,
   planStackAttack,
+  planStackHeal,
   planStackShot
 } from './battle.js'
 import { getMovementRange } from './battle-stats.js'
@@ -62,9 +64,18 @@ function findNearestShotTarget(battle, stack) {
   )
 }
 
+function planHeal(battle, stack, { random }) {
+  const target = chooseHealTarget(battle, stack)
+  return target ? { heal: planStackHeal(battle, stack, { targetId: target.id, random }) } : null
+}
+
 // `{ shot }` with the target and the shots, `{ attack }` with the target, the way there and the
-// strikes, `{ path }` for a move, or null when the stack can do nothing and its turn passes.
+// strikes, `{ heal }` with the target and the health, `{ path }` for a move, or null when the
+// stack can do nothing and its turn passes.
 export function planComputerTurn(battle, stack, rolls) {
+  if (stack.healing > 0) {
+    return planHeal(battle, stack, rolls)
+  }
   if (canShoot(battle, stack)) {
     const { stackId: targetId } = findShotTarget(battle, stack)
     return { shot: { targetId, ...planStackShot(battle, stack, { targetId, ...rolls }) } }

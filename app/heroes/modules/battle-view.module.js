@@ -22,6 +22,7 @@ import {
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
   APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
   APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
@@ -212,6 +213,11 @@ export const registerBattleViewModule = defineModule(
       return shotTarget ? { target, ...shotTarget } : null
     }
 
+    function findHealTarget(hex) {
+      const target = findLivingStackOn(hex)
+      return target && shown.healTargetIds?.includes(target.id) ? target : null
+    }
+
     // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
     // already next to the target attacks from where it stands.
     function findAttack(hex, hexElement) {
@@ -304,6 +310,11 @@ export const registerBattleViewModule = defineModule(
     }
 
     function describeStackHex(hex, activeStack) {
+      const healed = findHealTarget(hex)
+      if (healed) {
+        return `Apply first aid to the ${healed.name}`
+      }
+
       const shot = findShot(hex)
       if (shot) {
         return `Shoot ${shot.target.name} (${describeShotsLeft(activeStack)}damage ${describeDamageRange(shot.damage)})`
@@ -475,6 +486,9 @@ export const registerBattleViewModule = defineModule(
     }
 
     function pickStackCursor(hex, stack, activeStack) {
+      if (activeStack.healing > 0) {
+        return findHealTarget(hex) ? 'heal' : 'blocked'
+      }
       if (!areEnemies(stack, activeStack)) {
         return 'query'
       }
@@ -539,7 +553,7 @@ export const registerBattleViewModule = defineModule(
     function findOrderHexes(hex) {
       const target = findLivingStackOn(hex)
       if (target) {
-        const canHit = findShot(hex) || findAttack(hex, hexElementAt(hex))
+        const canHit = findHealTarget(hex) || findShot(hex) || findAttack(hex, hexElementAt(hex))
         return canHit ? target.hexes : []
       }
 
@@ -1208,6 +1222,12 @@ export const registerBattleViewModule = defineModule(
         return
       }
 
+      const healed = findHealTarget(hex)
+      if (healed) {
+        emit(APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED, { targetId: healed.id })
+        return
+      }
+
       if (shootAt(hex)) {
         return
       }
@@ -1348,6 +1368,7 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_UI_ADVENTURE_MAP_COVERED,

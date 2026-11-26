@@ -371,6 +371,25 @@ const BATTLE_SACRIFICE_ROWS = [
   '...........kkk..'
 ]
 
+const BATTLE_HEAL_ROWS = [
+  '................',
+  '.....kkkkkk.....',
+  '.....kWWWWk.....',
+  '.....kWRRWk.....',
+  '.....kWRRWk.....',
+  '.kkkkkWRRWkkkkk.',
+  '.kWWWWWRRWWWWWk.',
+  '.kWRRRRRRRRRRWk.',
+  '.kWRRRRRRRRRRWk.',
+  '.kWWWWWRRWWWWWk.',
+  '.kkkkkWRRWkkkkk.',
+  '.....kWRRWk.....',
+  '.....kWRRWk.....',
+  '.....kWWWWk.....',
+  '.....kkkkkk.....',
+  '................'
+]
+
 const BATTLE_ATTACK_FROM_LEFT_ROWS = [
   '................',
   '................',
@@ -623,6 +642,7 @@ const CURSORS = {
   'battle-spell': BATTLE_SPELL_ROWS,
   'battle-teleport': BATTLE_TELEPORT_ROWS,
   'battle-sacrifice': BATTLE_SACRIFICE_ROWS,
+  'battle-heal': BATTLE_HEAL_ROWS,
   'battle-catapult': BATTLE_CATAPULT_ROWS,
   'battle-shoot': drawShootArrow(),
   'battle-shoot-penalty': drawBrokenShootArrow(),

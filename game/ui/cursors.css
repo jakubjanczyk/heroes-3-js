@@ -192,6 +192,12 @@ button {
     crosshair;
 }
 
+.battlefield[data-cursor="heal"] {
+  cursor:
+    url("../../assets/cursors/battle-heal.png") 16 16,
+    crosshair;
+}
+
 .battlefield[data-cursor="catapult"] {
   cursor:
     url("../../assets/cursors/battle-catapult.png") 24 6,

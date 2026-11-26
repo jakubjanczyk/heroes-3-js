@@ -102,16 +102,16 @@ function shotsOf({ abilities, shots }, shooter) {
   return abilities.includes('unlimitedShots') ? Number.POSITIVE_INFINITY : shots
 }
 
-// A hero with the skill at any level aims the war machine; the level sets its shots and chances.
-function heroControlOf({ controlledBy }, heroSkillLevelOf) {
-  if (!controlledBy) {
-    return null
-  }
-  const level = heroSkillLevelOf(controlledBy.skill)
+// A hero with the skill at any level aims the war machine; the level sets its shots, chances and
+// healing.
+function heroControlOf({ controlledBy, abilities }, heroSkillLevelOf) {
+  const level = controlledBy ? heroSkillLevelOf(controlledBy.skill) : 0
   return {
     aimedByHero: level > 0,
-    shotsPerTurn: controlledBy.shotsPerTurn[level],
-    doubleDamageChance: controlledBy.doubleDamageChance[level]
+    shotsPerTurn:
+      controlledBy?.shotsPerTurn?.[level] ?? (abilities.includes('shootsTwice') ? 2 : 1),
+    doubleDamageChance: controlledBy?.doubleDamageChance?.[level] ?? 0,
+    healing: abilities.includes('heals') ? (controlledBy?.healing?.[level] ?? 0) : 0
   }
 }
 
@@ -132,7 +132,6 @@ function createStack({
 }) {
   const definition = { ...UNKNOWN_CREATURE, ...definitions?.monsters?.[creature] }
   const { abilities } = definition
-  const control = heroControlOf(definition, heroSkillLevelOf)
   const warMachine = abilities.includes('warMachine')
   const shooter = abilities.includes('ranged')
   const undead = abilities.includes('undead')
@@ -159,9 +158,7 @@ function createStack({
     retaliationsUsed: 0,
     defenseBonus: 0,
     shots: shotsOf(definition, shooter),
-    shotsPerTurn: control?.shotsPerTurn ?? (abilities.includes('shootsTwice') ? 2 : 1),
-    aimedByHero: Boolean(control?.aimedByHero),
-    doubleDamageChance: control?.doubleDamageChance ?? 0,
+    ...heroControlOf(definition, heroSkillLevelOf),
     shooter,
     meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
     morale: unaffectedByMorale ? 0 : morale,
@@ -414,9 +411,9 @@ export const isAlive = (stack) => stack.count > 0
 
 const livingStacks = (battle) => battle.stacks.filter(isAlive)
 
-// A war machine that doesn't shoot has no turn of its own.
+// A war machine that neither shoots nor heals has no turn of its own.
 const stacksTakingTurns = (battle) =>
-  livingStacks(battle).filter((stack) => !stack.warMachine || stack.shooter)
+  livingStacks(battle).filter((stack) => !stack.warMachine || stack.shooter || stack.healing > 0)
 
 // A blind stack loses its turns; once it can see again it takes its place by its speed.
 const actingStacks = (battle) => stacksTakingTurns(battle).filter((stack) => !isBlind(stack))
@@ -1302,6 +1299,48 @@ const healTopCreature = (stack, healing) => ({
   ...stack,
   topHealth: Math.min(stack.health, stack.topHealth + healing)
 })
+
+const healthLostOnTop = (stack) => stack.health - stack.topHealth
+
+export function getHealTargets(battle, healer) {
+  if (!healer?.healing) {
+    return []
+  }
+  return livingStacks(battle).filter(
+    (stack) => stack.side === healer.side && !stack.warMachine && healthLostOnTop(stack) > 0
+  )
+}
+
+// Aiming itself, the healer takes the stack whose top creature lost the most, the earlier on a tie.
+export const chooseHealTarget = (battle, healer) =>
+  getHealTargets(battle, healer).reduce(
+    (best, stack) => (!best || healthLostOnTop(stack) > healthLostOnTop(best) ? stack : best),
+    null
+  )
+
+// From 1 to the healer's most, never more than the top creature lost.
+export function planStackHeal(battle, healer, { targetId, random }) {
+  const target = getHealTargets(battle, healer).find(({ id }) => id === targetId)
+  if (!target) {
+    return null
+  }
+  const rolled = 1 + Math.floor(random() * healer.healing)
+  return { targetId, healing: Math.min(rolled, healthLostOnTop(target)) }
+}
+
+export function healStack(battle, { stackId, targetId, healing }) {
+  const healed = {
+    ...battle,
+    stacks: battle.stacks.map((stack) =>
+      stack.id === targetId ? healTopCreature(stack, healing) : stack
+    ),
+    messages: [
+      ...battle.messages,
+      `The ${nameOf(battle, stackId)} heals the ${nameOf(battle, targetId)} removing ${healing} points of damage.`
+    ]
+  }
+  return endTurn(healed, stackId)
+}
 
 function describeCast(battle, { heroName, spellName, targetIds }) {
   if (targetIds.length !== 1) {

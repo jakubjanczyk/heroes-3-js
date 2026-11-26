@@ -143,7 +143,7 @@ describe('creature data', () => {
       undefined
     ],
     ['AMMO_CART', 'NEUTRAL', 1, ['warMachine'], undefined],
-    ['FIRST_AID_TENT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined],
+    ['FIRST_AID_TENT', 'NEUTRAL', 1, ['doubleWide', 'warMachine', 'heals'], undefined],
     ['CATAPULT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined]
   ])('%s is a %s tier %i creature with abilities %o and %s shots', (key, faction, tier, abilities, shots) => {
     const creature = creatures[key]

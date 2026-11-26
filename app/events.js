@@ -48,6 +48,7 @@ export const APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED = 'command.battle.autoComb
 export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove.requested'
 export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
 export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackShoot.requested'
+export const APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED = 'command.battle.stackHeal.requested'
 export const APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED = 'command.battle.catapultAim.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
 export const APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED = 'command.battle.stackDefend.requested'
@@ -105,6 +106,8 @@ export const APP_FACT_BATTLE_ENDED = 'fact.battle.ended'
 export const APP_FACT_BATTLE_STACK_MOVED = 'fact.battle.stack.moved'
 export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_STACK_SHOT = 'fact.battle.stack.shot'
+// A healer's turn: the stack it healed and the health it gave back.
+export const APP_FACT_BATTLE_STACK_HEALED = 'fact.battle.stack.healed'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_BATTLE_STACK_WAITED = 'fact.battle.stack.waited'
 export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
@@ -242,6 +245,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STACK_MOVED,
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_SHOT,
+  APP_FACT_BATTLE_STACK_HEALED,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STACK_DEFENDED,
