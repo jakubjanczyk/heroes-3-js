@@ -1,0 +1,317 @@
+{
+  "kinds": {
+    "WOOD_PILE": "basic",
+    "MERCURY_PILE": "rare",
+    "ORE_PILE": "basic",
+    "SULFUR_PILE": "rare",
+    "CRYSTAL_PILE": "rare",
+    "GEMS_PILE": "rare",
+    "GOLD_PILE": "gold"
+  },
+  "rates": {
+    "gold-basic": [
+      {
+        "give": 2500,
+        "receive": 1
+      },
+      {
+        "give": 1667,
+        "receive": 1
+      },
+      {
+        "give": 1250,
+        "receive": 1
+      },
+      {
+        "give": 1000,
+        "receive": 1
+      },
+      {
+        "give": 833,
+        "receive": 1
+      },
+      {
+        "give": 714,
+        "receive": 1
+      },
+      {
+        "give": 625,
+        "receive": 1
+      },
+      {
+        "give": 556,
+        "receive": 1
+      },
+      {
+        "give": 500,
+        "receive": 1
+      }
+    ],
+    "gold-rare": [
+      {
+        "give": 5000,
+        "receive": 1
+      },
+      {
+        "give": 3333,
+        "receive": 1
+      },
+      {
+        "give": 2500,
+        "receive": 1
+      },
+      {
+        "give": 2000,
+        "receive": 1
+      },
+      {
+        "give": 1667,
+        "receive": 1
+      },
+      {
+        "give": 1429,
+        "receive": 1
+      },
+      {
+        "give": 1250,
+        "receive": 1
+      },
+      {
+        "give": 1111,
+        "receive": 1
+      },
+      {
+        "give": 1000,
+        "receive": 1
+      }
+    ],
+    "basic-gold": [
+      {
+        "give": 1,
+        "receive": 25
+      },
+      {
+        "give": 1,
+        "receive": 37
+      },
+      {
+        "give": 1,
+        "receive": 50
+      },
+      {
+        "give": 1,
+        "receive": 62
+      },
+      {
+        "give": 1,
+        "receive": 75
+      },
+      {
+        "give": 1,
+        "receive": 88
+      },
+      {
+        "give": 1,
+        "receive": 100
+      },
+      {
+        "give": 1,
+        "receive": 112
+      },
+      {
+        "give": 1,
+        "receive": 125
+      }
+    ],
+    "basic-basic": [
+      {
+        "give": 10,
+        "receive": 1
+      },
+      {
+        "give": 7,
+        "receive": 1
+      },
+      {
+        "give": 5,
+        "receive": 1
+      },
+      {
+        "give": 4,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 2,
+        "receive": 1
+      },
+      {
+        "give": 2,
+        "receive": 1
+      }
+    ],
+    "basic-rare": [
+      {
+        "give": 20,
+        "receive": 1
+      },
+      {
+        "give": 13,
+        "receive": 1
+      },
+      {
+        "give": 10,
+        "receive": 1
+      },
+      {
+        "give": 8,
+        "receive": 1
+      },
+      {
+        "give": 7,
+        "receive": 1
+      },
+      {
+        "give": 6,
+        "receive": 1
+      },
+      {
+        "give": 5,
+        "receive": 1
+      },
+      {
+        "give": 4,
+        "receive": 1
+      },
+      {
+        "give": 4,
+        "receive": 1
+      }
+    ],
+    "rare-gold": [
+      {
+        "give": 1,
+        "receive": 50
+      },
+      {
+        "give": 1,
+        "receive": 75
+      },
+      {
+        "give": 1,
+        "receive": 100
+      },
+      {
+        "give": 1,
+        "receive": 125
+      },
+      {
+        "give": 1,
+        "receive": 150
+      },
+      {
+        "give": 1,
+        "receive": 175
+      },
+      {
+        "give": 1,
+        "receive": 200
+      },
+      {
+        "give": 1,
+        "receive": 225
+      },
+      {
+        "give": 1,
+        "receive": 250
+      }
+    ],
+    "rare-basic": [
+      {
+        "give": 5,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 2,
+        "receive": 1
+      },
+      {
+        "give": 2,
+        "receive": 1
+      },
+      {
+        "give": 1,
+        "receive": 1
+      },
+      {
+        "give": 1,
+        "receive": 1
+      },
+      {
+        "give": 1,
+        "receive": 1
+      },
+      {
+        "give": 1,
+        "receive": 1
+      }
+    ],
+    "rare-rare": [
+      {
+        "give": 10,
+        "receive": 1
+      },
+      {
+        "give": 7,
+        "receive": 1
+      },
+      {
+        "give": 5,
+        "receive": 1
+      },
+      {
+        "give": 4,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 3,
+        "receive": 1
+      },
+      {
+        "give": 2,
+        "receive": 1
+      },
+      {
+        "give": 2,
+        "receive": 1
+      }
+    ]
+  }
+}
