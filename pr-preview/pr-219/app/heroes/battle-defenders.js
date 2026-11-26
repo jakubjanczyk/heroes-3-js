@@ -1,6 +1,10 @@
 import { towerWithStructures } from '../../game/heroes/arrow-towers.js'
 import { giveAllArtifacts } from '../../game/heroes/artifact-exchange.js'
-import { BATTLE_DEFENDER_ARTIFACT_GUARDS, hasFullBackpack } from '../../game/heroes/artifacts.js'
+import {
+  BATTLE_DEFENDER_ARTIFACT_GUARDS,
+  hasFullBackpack,
+  withoutWarMachines
+} from '../../game/heroes/artifacts.js'
 import { getArmyAfterBattle, heroBattleSide } from '../../game/heroes/battle.js'
 import { BATTLE_OUTCOME_LOST } from '../../game/heroes/battle-results.js'
 import {
@@ -152,7 +156,7 @@ function captureArtifacts({ emit, state, heroId, definitions, beatenHeroId }) {
   if (!beaten || !winner) {
     return
   }
-  const { given } = giveAllArtifacts(beaten, winner, definitions)
+  const { given } = giveAllArtifacts(withoutWarMachines(beaten, definitions), winner, definitions)
   if (given.length > 0) {
     emit(APP_FACT_HERO_ARTIFACTS_CAPTURED, { heroId, fromHeroId: beatenHeroId, artifacts: given })
   }

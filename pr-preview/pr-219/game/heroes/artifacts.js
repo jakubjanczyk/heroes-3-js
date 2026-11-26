@@ -59,6 +59,13 @@ export function withoutWornIn(artifacts, slotIds) {
   return { ...artifacts, worn }
 }
 
+export function withoutWarMachines(artifacts, definitions) {
+  const slotIds = Object.keys(artifacts.worn).filter((slotId) =>
+    isWarMachine(artifacts.worn[slotId], definitions)
+  )
+  return withoutWornIn(artifacts, slotIds)
+}
+
 export const kindOfSlot = (slotId) => ARTIFACT_SLOTS.find((slot) => slot.id === slotId)?.kind
 
 export const partsOf = (artifactId, definitions) =>
