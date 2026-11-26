@@ -65,7 +65,19 @@ const PLAYER_RED = 'rgb(255, 0, 0)'
 const gameDefinitions = {
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
-  dwellings: readGameData('dwellings.json')
+  dwellings: {
+    ...readGameData('dwellings.json'),
+    BLOCKING_LEFT: { name: 'Left Blocker', creature: 'ARCHER' },
+    BLOCKING_RIGHT: { name: 'Right Blocker', creature: 'ARCHER', footprint: [{ x: 1, y: 0 }] },
+    BLOCKING_LEFT_AND_ABOVE: {
+      name: 'Tall Blocker',
+      creature: 'ARCHER',
+      footprint: [
+        { x: -1, y: -1 },
+        { x: -1, y: 0 }
+      ]
+    }
+  }
 }
 
 // The hero stands right below the dwelling's entrance, so entering it takes one step.
@@ -131,14 +143,12 @@ describe('creature dwellings on the map', () => {
     expectHeroAt(2, 1)
   })
 
-  // A dwelling blocks the tile left of its entrance, the Archers' Tower the one right of it, and the
-  // Guardhouse the one above the left tile too; the rest of its picture can be walked on.
   test.each([
-    { type: 'GRIFFIN_TOWER', x: 1, y: 1 },
-    { type: 'ARCHERS_TOWER', x: 3, y: 1 },
-    { type: 'GUARDHOUSE', x: 1, y: 1 },
-    { type: 'GUARDHOUSE', x: 1, y: 0 }
-  ])('shows no route to the tile the $type blocks at ($x, $y)', async ({ type, x, y }) => {
+    { type: 'BLOCKING_LEFT', x: 1, y: 1 },
+    { type: 'BLOCKING_RIGHT', x: 3, y: 1 },
+    { type: 'BLOCKING_LEFT_AND_ABOVE', x: 1, y: 1 },
+    { type: 'BLOCKING_LEFT_AND_ABOVE', x: 1, y: 0 }
+  ])('shows no route to the tile the $type dwelling blocks at ($x, $y)', async ({ type, x, y }) => {
     await setupMovementBehaviorApp({
       loadGameOptions: aDwellingScenario(aDwelling().withType(type).at(2, 1))
     })
@@ -149,11 +159,11 @@ describe('creature dwellings on the map', () => {
   })
 
   test.each([
-    { type: 'GRIFFIN_TOWER', x: 1, y: 0 },
-    { type: 'GRIFFIN_TOWER', x: 3, y: 1 },
-    { type: 'ARCHERS_TOWER', x: 1, y: 1 },
-    { type: 'GUARDHOUSE', x: 2, y: 0 }
-  ])('the hero walks across the rest of the $type picture to ($x, $y)', async ({ type, x, y }) => {
+    { type: 'BLOCKING_LEFT', x: 1, y: 0 },
+    { type: 'BLOCKING_LEFT', x: 3, y: 1 },
+    { type: 'BLOCKING_RIGHT', x: 1, y: 1 },
+    { type: 'BLOCKING_LEFT_AND_ABOVE', x: 2, y: 0 }
+  ])('the hero walks across the rest of the $type dwelling to ($x, $y)', async ({ type, x, y }) => {
     await setupMovementBehaviorApp({
       loadGameOptions: aDwellingScenario(aDwelling().withType(type).at(2, 1))
     })

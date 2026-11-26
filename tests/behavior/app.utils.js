@@ -19,6 +19,27 @@ export function readGameData(fileName) {
   return JSON.parse(readFileSync(join(import.meta.dirname, '../../game/data', fileName), 'utf8'))
 }
 
+const KNIGHTS_FOR_HIRE = [
+  'ORRIN',
+  'VALESKA',
+  'EDRIC',
+  'SYLVIA',
+  'LORD_HAART',
+  'SORSHA',
+  'CHRISTIAN'
+]
+
+// A tavern pool of seven Knights, in this order, each bringing the Knights' starting army.
+export function readKnightsForHire() {
+  const heroes = readGameData('heroes.json')
+  return Object.fromEntries(
+    KNIGHTS_FOR_HIRE.map((id) => {
+      const { startingArmy: _ownArmy, ...knight } = heroes[id]
+      return [id, knight]
+    })
+  )
+}
+
 // Parsing the page is the slowest part of starting the app in jsdom, so it is parsed once per page.
 let appBodyTemplate = null
 

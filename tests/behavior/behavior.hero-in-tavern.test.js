@@ -14,6 +14,7 @@ import {
 import {
   createMemoryEventLog,
   readGameData,
+  readKnightsForHire,
   setupMovementBehaviorApp,
   waitMs
 } from './app.utils.js'
@@ -49,7 +50,7 @@ import {
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
-  heroes: readGameData('heroes.json'),
+  heroes: readKnightsForHire(),
   secondarySkills: readGameData('secondary-skills.json'),
   spells: readGameData('spells.json'),
   monsters: readGameData('monsters.json'),
@@ -220,6 +221,25 @@ describe('a retreated or surrendered hero in the tavern', () => {
       await hireAgainAndOpenHeroScreen(user)
 
       expect(readHeroScreenArmy()).toEqual(['Pikeman 1', '', '', '', '', '', ''])
+    })
+
+    test('given the hero retreated when hired again then they bring one creature of their own first starting stack', async () => {
+      const scenario = aRetreatScenario()
+      const { definitions } = scenario.build()
+      const christianWithArchersFirst = {
+        ...definitions.heroes.CHRISTIAN,
+        startingArmy: [{ creature: 'ARCHER', min: 4, max: 7 }]
+      }
+      const { user } = await retreatFromBattle(
+        scenario.withDefinitions({
+          ...definitions,
+          heroes: { ...definitions.heroes, CHRISTIAN: christianWithArchersFirst }
+        })
+      )
+
+      await hireAgainAndOpenHeroScreen(user)
+
+      expect(readHeroScreenArmy()).toEqual(['Archer 1', '', '', '', '', '', ''])
     })
 
     test('given the hero retreated when hired the same day then they have the movement points they had left', async () => {

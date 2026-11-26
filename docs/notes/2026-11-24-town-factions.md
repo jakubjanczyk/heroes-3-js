@@ -443,3 +443,93 @@ Checked against the Heroes 3 wiki's raw page source (Rampart: its gallery's town
 
 - Animation (10.3): the engine has an animated detail on Rampart's picture (`extraAnimation`, 327,236), as the Castle's waterfall; not drawn.
 - The Grail's building (7.11), as for the Castle.
+
+## 6.5.6 Rampart's heroes and map dwellings
+
+Rampart's two hero classes, its sixteen heroes, and its seven creature dwellings on the adventure map. One PR: both halves are mostly data.
+
+Checked against the Heroes 3 wiki's raw page source (Ranger, Druid, Hero class, and each hero's page), the game's hero class and hero tables (`HCTRAITS.TXT` and `HOTRAITS.TXT`, an English copy of the original files on GitHub), the reference engine's hero class, hero and dwelling configs, and the game's object table (homm3tools' copy) for the dwellings' footprints.
+
+### The hero classes
+
+| | Ranger | Druid |
+|---|---|---|
+| Kind | Might | Magic |
+| Attack / Defense / Power / Knowledge at the start | 1 / 3 / 1 / 1 | 0 / 2 / 1 / 2 |
+| A level up to 9 (Attack / Defense / Power / Knowledge, %) | 35 / 45 / 10 / 10 | 10 / 20 / 35 / 35 |
+| From level 10 | 30 / 30 / 20 / 20 | 20 / 20 / 30 / 30 |
+
+- Secondary skill weights (Ranger / Druid): Pathfinding 7 / 5, Archery 8 / 5, Logistics 5 / 5, Scouting 7 / 2, Diplomacy 4 / 4, Navigation 3 / 2, Leadership 6 / 2, Wisdom 3 / 8, Mysticism 3 / 6, Luck 6 / 9, Ballistics 4 / 4, Eagle Eye 2 / 7, Necromancy 0 / 0, Estates 2 / 3, Fire Magic 0 / 1, Air Magic 1 / 2, Water Magic 3 / 4, Earth Magic 3 / 4, Scholar 1 / 8, Tactics 5 / 1, Artillery 6 / 1, Learning 4 / 4, Offense 5 / 1, Armorer 8 / 3, Intelligence 2 / 7, Sorcery 2 / 6, Resistance 9 / 1, First Aid 3 / 7. The wiki and the game's table agree on every number (the wiki's Interference is Horn of the Abyss's and is left out).
+- The Druid is a magic class, so Wisdom and the magic schools are offered on level-up as for magic heroes already (every 3 levels).
+- The tavern's odds for each class differ by the town the tavern is in (the game's class table, out of 100). For the Knight, Cleric, Ranger and Druid they are 6 in a Castle and in a Rampart alike, so nothing changes yet; they matter once Tower, Inferno and the rest have heroes.
+
+### The heroes
+
+| Hero | Class | Skills | Spell | Starting army |
+|---|---|---|---|---|
+| Mephala | Ranger | Basic Leadership, Basic Armorer | – | Centaurs 12–24, Dwarves 3–5, Wood Elves 3–6 |
+| Ufretin | Ranger | Basic Luck, Basic Resistance (order: see below) | – | Dwarves 3–5, Dwarves 3–5, Dwarves 3–5 |
+| Jenova | Ranger | Advanced Archery | – | Centaurs, Dwarves, Wood Elves |
+| Ryland | Ranger | Basic Leadership, Basic Diplomacy | – | Centaurs, Dwarves, Wood Elves |
+| Thorgrim | Ranger | Advanced Resistance | – | Centaurs, Dwarves, Wood Elves |
+| Ivor | Ranger | Basic Archery, Basic Offense | – | Centaurs 12–24, Wood Elves 3–6, Wood Elves 3–6 |
+| Clancy | Ranger | Basic Resistance, Basic Pathfinding | – | Centaurs, Dwarves, Wood Elves |
+| Kyrre | Ranger | Basic Logistics, Basic Archery | – | Centaurs, Dwarves, Wood Elves |
+| Coronius | Druid | Basic Wisdom, Basic Scholar | Slayer | Centaurs, Dwarves, Wood Elves |
+| Uland | Druid | Advanced Wisdom, Basic Ballistics | Cure | Centaurs, Dwarves, Wood Elves |
+| Elleshar | Druid | Basic Wisdom, Basic Intelligence | Curse | Centaurs, Dwarves, Wood Elves |
+| Gem | Druid | Basic Wisdom, Basic First Aid (order: see below) | Summon Boat | Centaurs 12–24, First Aid Tent, Wood Elves 3–6 |
+| Malcom | Druid | Basic Wisdom, Basic Eagle Eye | Magic Arrow | Centaurs, Dwarves, Wood Elves |
+| Melodia | Druid | Basic Wisdom, Basic Luck | Fortune | Centaurs, Dwarves, Wood Elves |
+| Alagar | Druid | Basic Wisdom, Basic Sorcery | Ice Bolt | Centaurs, Dwarves, Wood Elves |
+| Aeris | Druid | Basic Wisdom, Basic Scouting | Protection from Air | Centaurs, Dwarves, Wood Elves |
+
+- Skills and spells: each hero's wiki page and the reference engine's hero config agree, except the order of two heroes' skills: the wiki lists Ufretin's Resistance before Luck and Gem's First Aid before Wisdom, the engine the other way round.
+- Starting army: the game's hero table (Centaurs 12–24, Dwarves 3–5, Wood Elves 3–6 unless the table says otherwise), and the wiki's Shadow of Death numbers on each hero's page agree. Horn of the Abyss's (Dwarves 5–7, Wood Elves 2–4) are left out.
+- **The starting army belongs to the hero, not the class.** The game's table gives each hero their own three stacks: Ufretin three of Dwarves, Ivor two of Wood Elves, Gem a First Aid Tent in the second, and among the Knights Valeska three of Archers 4–7 (Orrin's, Tyris's and the rest's are the class's). We kept one army per class (`startingArmy` in `hero-classes.json`); it moves to each hero, the class's staying as the default for a hero without one.
+- Gelu, a Ranger of the campaigns, isn't offered in taverns; left out.
+- Every Druid starts with a spell book holding their spell (the wiki: magic heroes start with one; a hero's `spellBook` and `spells` in `heroes.json`, which the hero's details already read by name). Summon Boat can't be cast until water and boats (7.10); it shows in the book.
+
+### The map dwellings
+
+Growth and price are the creature's; levels 5–7 are guarded by three weeks of their creature, level 1 is free (the rules of 7.4, which read the creature's level and the dwelling's `guards`).
+
+| Dwelling | Creature | Guards | Footprint (bottom row last) |
+|---|---|---|---|
+| Centaur Stables | Centaur | – | `#E` |
+| Dwarf Cottage | Dwarf | – | `E#` |
+| Homestead | Wood Elf | – | `E#` |
+| Enchanted Spring | Pegasus | – | `#E` |
+| Dendroid Arches | Dendroid Guard | 9 | `#E` |
+| Unicorn Glade | Unicorn | 6 | `#E` |
+| Dragon Cliffs | Green Dragon | 3 | `#E` |
+
+- Footprints from the game's object table (homm3tools' copy), decoded as the Castle's were (the Guardhouse came out `#.` over `#E` and the Archers' Tower `E#`, as we have them). The Unicorn Glade has a second, larger picture (`##` over `#E#`) that random maps never place; we take the usual one.
+- Names: the game's object names, as on the wiki's Rampart page and the engine's dwelling config.
+- A footprint other than `#E` is a table in the dwelling's code (`GUARDHOUSE`, `ARCHERS_TOWER`); it moves to `footprint` in `dwellings.json`, as bonus objects have it, so the Dwarf Cottage and Homestead are data.
+
+### Castle's missing heroes (agreed to come in this part)
+
+- Tyris, a Knight: Basic Leadership, Basic Tactics.
+- The Cleric, a magic class: Attack / Defense / Power / Knowledge 1 / 0 / 2 / 2 at the start; a level up to 9 20 / 15 / 30 / 35 %, from level 10 20 / 20 / 30 / 30; skill weights Pathfinding 2, Archery 3, Logistics 4, Scouting 3, Diplomacy 7, Navigation 5, Leadership 2, Wisdom 7, Mysticism 4, Luck 5, Ballistics 4, Eagle Eye 6, Necromancy 0, Estates 3, Fire Magic 2, Air Magic 4, Water Magic 4, Earth Magic 3, Scholar 6, Tactics 2, Artillery 2, Learning 4, Offense 4, Armorer 3, Intelligence 6, Sorcery 5, Resistance 2, First Aid 10 (the wiki and the game's class table agree).
+- The eight Clerics (wiki pages and the engine's hero config agree): Rion (Basic Wisdom, Basic First Aid; Stone Skin), Adela (Basic Wisdom, Basic Diplomacy; Bless), Cuthbert (Basic Wisdom, Basic Estates; Weakness), Adelaide (Advanced Wisdom; Frost Ring), Ingham (Basic Wisdom, Basic Mysticism; Curse), Sanya (Basic Wisdom, Basic Eagle Eye; Dispel), Loynis (Basic Wisdom, Basic Learning; Prayer), Caitlin (Basic Wisdom, Basic Intelligence; Cure).
+- Their armies are the Knights' (Pikemen 10–20, Archers 4–7, Griffins 2–3), except in the game's table Rion's second stack is a First Aid Tent; among the Knights Edric's is Pikemen, Griffins 2–3, Griffins 2–3 and Christian's second stack is a Ballista.
+
+### What we decided
+
+- The Clerics and Tyris come with this part, as data (agreed).
+- Ufretin's and Gem's skills in the wiki's order: Resistance then Luck, First Aid then Wisdom (our pick where the two sources differ).
+- The demo map gets the Centaur Stables, the Dwarf Cottage and the Dendroid Arches near Elfwind; no Rampart hero, as the tavern offers them (agreed).
+- A war machine in a starting army is in the data (`warMachine` in place of `creature`) and left out until war machines (5.11).
+
+### How it is built
+
+- `hero-classes.json` has the Cleric, Ranger and Druid; `heroes.json` the Clerics, Tyris, the Rangers and the Druids, a Druid's or Cleric's spell as `spellBook` and `spells`.
+- A hero's `startingArmy` in `heroes.json` takes the place of the class's. A stack with `warMachine` in place of `creature` keeps its place in the roll (the second stack on 88 or less, the third on 25 or less) and is left out of the army. A hero taking a hired one's place, or back after retreating, brings one creature of the first creature stack of their own starting army.
+- A dwelling's `footprint` in `dwellings.json` (offsets from the entrance, as the bonus objects' are); without one it blocks the tile left of the entrance.
+- The demo map has the Centaur Stables, the Dwarf Cottage and the Dendroid Arches south of Elfwind.
+
+### Left for later (6.5.6)
+
+- Specialties and portraits (4.4), war machines in a starting army (5.11: Gem's First Aid Tent until then is left out, her Wood Elves still coming on the third stack's roll).
+- The tavern's class odds by town, and never offering two heroes of one class at once (the engine's rule, not on the wiki): with the next faction's heroes.

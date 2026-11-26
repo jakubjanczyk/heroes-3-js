@@ -12,8 +12,19 @@ import {
   readPrimarySkills,
   readSelectedHeroInHeroList
 } from './adventure-panels.utils.js'
-import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import {
+  createMemoryEventLog,
+  readGameData,
+  readKnightsForHire,
+  setupMovementBehaviorApp
+} from './app.utils.js'
 import { aHero, aScenario, aTown, aTownDefinition } from './builders.js'
+import {
+  clickHeroInHeroList,
+  clickHeroScreenSpellBook,
+  readHeroScreenSpellBook
+} from './hero-screen.utils.js'
+import { clickSpellBookControl, readSpellBookSpellNames } from './spell-book.utils.js'
 import {
   closeTavern,
   enterTownAt,
@@ -39,7 +50,7 @@ import {
 const gameDefinitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
-  heroes: readGameData('heroes.json'),
+  heroes: readKnightsForHire(),
   monsters: readGameData('monsters.json'),
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
@@ -54,6 +65,13 @@ const LOWEST_ROLLS = () => 0
 const HIGHEST_ROLLS = () => 0.99
 
 const TAVERN = ['TAVERN']
+
+const PIKEMEN = { creature: 'PIKEMAN', min: 10, max: 20 }
+const ARCHERS = { creature: 'ARCHER', min: 4, max: 7 }
+const GRIFFINS = { creature: 'GRIFFIN', min: 2, max: 3 }
+const A_MAGIC_CLASS = { ...gameDefinitions.heroClasses.KNIGHT, name: 'Cleric', kind: 'MAGIC' }
+
+const withHeroes = (heroes) => ({ ...gameDefinitions, heroes })
 
 // Whitemoon's entrance is at (4, 3) and Greywater's at (12, 3); the hero starts away from both, so
 // the player opens the towns from the town list.
@@ -233,7 +251,7 @@ describe('town tavern behavior', () => {
       expect(readHeroList()).toEqual(['Sir Christian 1500', 'Orrin 1500'])
     })
 
-    test('the hired hero comes with their starting army', async () => {
+    test("a hired hero with no starting army of their own brings their class's", async () => {
       const { user } = await startInTavern()
 
       await hireHero(user, 'Orrin')
@@ -247,6 +265,68 @@ describe('town tavern behavior', () => {
         '',
         ''
       ])
+    })
+
+    test("a hired hero brings the starting army of their own, not their class's", async () => {
+      const valeskaWithArchers = {
+        ...gameDefinitions.heroes.VALESKA,
+        startingArmy: [ARCHERS, ARCHERS, ARCHERS]
+      }
+      const { user } = await startInTavern(
+        aTavernScenario().withDefinitions(
+          withHeroes({ ...gameDefinitions.heroes, VALESKA: valeskaWithArchers })
+        )
+      )
+
+      await hireHero(user, 'Valeska')
+
+      expect(readVisitingHeroArmy()).toEqual([
+        'Archers 4',
+        'Archers 4',
+        'Archers 4',
+        '',
+        '',
+        '',
+        ''
+      ])
+    })
+
+    test("a war machine in a hero's starting army is left out, and the stack after it still comes on its roll", async () => {
+      const valeskaWithFirstAidTent = {
+        ...gameDefinitions.heroes.VALESKA,
+        startingArmy: [PIKEMEN, { warMachine: 'FIRST_AID_TENT', min: 1, max: 1 }, GRIFFINS]
+      }
+      const { user } = await startInTavern(
+        aTavernScenario().withDefinitions(
+          withHeroes({ ...gameDefinitions.heroes, VALESKA: valeskaWithFirstAidTent })
+        )
+      )
+
+      await hireHero(user, 'Valeska')
+
+      expect(readVisitingHeroArmy()).toEqual(['Pikemen 10', 'Griffins 2', '', '', '', '', ''])
+    })
+
+    test('a hired hero whose data gives a spell book has it on the hero screen, holding their spell', async () => {
+      const definitions = {
+        ...withHeroes({
+          ORRIN: gameDefinitions.heroes.ORRIN,
+          ADELA: { name: 'Adela', heroClass: 'CLERIC', spellBook: true, spells: ['BLESS'] }
+        }),
+        heroClasses: { ...gameDefinitions.heroClasses, CLERIC: A_MAGIC_CLASS },
+        spells: readGameData('spells.json'),
+        secondarySkills: readGameData('secondary-skills.json')
+      }
+      const { user } = await startInTavern(aTavernScenario().withDefinitions(definitions))
+      await hireHero(user, 'Adela')
+      await leaveTown(user)
+
+      await clickHeroInHeroList(user, 'Adela')
+
+      expect(readHeroScreenSpellBook()).toBe('Spell Book')
+      await clickHeroScreenSpellBook(user)
+      await clickSpellBookControl(user, 'Combat spells')
+      expect(readSpellBookSpellNames()).toEqual(['Bless'])
     })
 
     test("another hero takes the hired hero's place in the tavern", async () => {
