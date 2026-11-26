@@ -795,7 +795,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
   - Castle: 2 towers, +100% creature growth (replaces the Citadel's +50%, doesn't add to it)
 - [ ] **Tavern**: recruit heroes, +1 morale to visiting hero
   - [ ] Rumours: the tavern window shows a rumour of the week, from the game's list or the scenario's own
-- [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count)
+- [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count), with 7.16.1; giving resources to another player with hot-seat (8.2)
 - [ ] **Resource Silo**: provides +1 of a specific resource per day (faction-dependent)
 - [ ] **Blacksmith**: provides ballista (first aid tent/ammo cart) to visiting heroes
 - [ ] **Mage Guild** (levels 1-5): teaches spells to visiting heroes (4.8.2)
@@ -1168,7 +1168,9 @@ A guarded object: beating its guards gives its treasure once, rolled from a few 
 - [ ] The freed hero joins with the level, skills, spells and artifacts the scenario gives them
 
 ### 7.16 Trading and Services
-- [ ] **Trading Post**: trades resources at the rates of a Marketplace (6.2)
+The Marketplace and the Trading Post first, then the services one part each. See `docs/notes/2026-11-26-trading.md`.
+- [ ] 7.16.1 **Marketplace** (6.2): clicking it on the town picture opens the trading window; one resource traded for another in whole lots, at a rate set by how many Marketplaces the player owns
+- [ ] 7.16.2 **Trading Post**: a hero visiting it opens the same window, at the rate of five Marketplaces
 - [ ] **Black Market**: sells a few artifacts, rolled at the start and again each month
 - [ ] **University**: teaches a few secondary skills for gold
 - [ ] **Hill Fort**: upgrades creatures in the hero's army, cheaper the lower their level
@@ -1566,7 +1568,7 @@ What most real maps use and the roadmap had not planned. The data-only objects c
 71. Creature banks (7.13): the guards' battle and the treasure, then each bank as data
 72. Hero specialties (4.4)
 73. War machines and Tactics (5.11), in seven parts: on the hero, on the battlefield, the Ballista, the First Aid Tent, the Ammo Cart, the Blacksmith (6.2), Tactics
-74. Trading and services (7.16): Trading Post with the Marketplace (6.2), Hill Fort, University, Refugee Camp, Black Market, Sanctuary, Altar of Sacrifice
+74. Trading and services (7.16): the Marketplace (6.2), then the Trading Post, then Hill Fort, University, Refugee Camp, Black Market, Sanctuary, Altar of Sacrifice
 75. Quests (7.14): Keymaster's Tent and Border Guard, then Seer's Hut and Quest Guard, then the Quest Log
 76. Prison (7.15)
 77. Map garrisons (7.17) and the Abandoned Mine (7.19)
