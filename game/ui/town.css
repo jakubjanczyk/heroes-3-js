@@ -1331,3 +1331,264 @@
     }
   }
 }
+
+/*
+ * The Marketplace: the kingdom's resources and what is available for trade side by side, each
+ * in rows of three, three and Gold alone; the deal in a red strip under them.
+ */
+.marketplace {
+  display: grid;
+  gap: var(--space-sm);
+  inline-size: min(36rem, calc(100% - 2rem));
+  padding: var(--space-md);
+
+  &:focus {
+    outline: none;
+  }
+
+  & > .window-title {
+    justify-self: center;
+  }
+}
+
+.marketplace__halves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.marketplace__half {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+}
+
+.marketplace__half--give {
+  grid-template-rows: 1fr auto auto;
+
+  &::before {
+    content: "";
+  }
+}
+
+.marketplace__merchant {
+  display: grid;
+  align-content: center;
+  min-block-size: calc(3lh + 2 * var(--space-xs) + 2px);
+  margin: 0;
+  padding: var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  background: rgb(0 0 0 / 0.2);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.marketplace__subtitle {
+  margin: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  background: rgb(0 0 0 / 0.2);
+  color: var(--hud-text);
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+  text-align: center;
+}
+
+.marketplace__resources {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xs);
+
+  & > :last-child {
+    grid-column: 2;
+  }
+}
+
+.marketplace__resource {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
+  border: 2px solid var(--trim-gold-dark);
+  background: #170d06;
+  color: var(--hud-text);
+  font: inherit;
+  cursor: inherit;
+
+  &[aria-pressed="true"] {
+    border-color: #f0d060;
+    box-shadow: 0 0 0 1px #f0d060;
+  }
+}
+
+.marketplace__icon {
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+.marketplace__caption {
+  min-block-size: 1lh;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.marketplace__deal {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #8c1a14, #5e0f0b);
+}
+
+.marketplace__showcase {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+  min-inline-size: 4rem;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  background: #170d06;
+  font-variant-numeric: tabular-nums;
+
+  &[data-resource=""] .resource-icon {
+    visibility: hidden;
+  }
+}
+
+.marketplace__showcase-amount {
+  min-block-size: 1lh;
+  font-size: var(--font-size-sm);
+}
+
+.marketplace__quantity {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+
+  & .count-slider {
+    inline-size: 100%;
+  }
+}
+
+.marketplace__quantity-label {
+  color: var(--hud-text-gold);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+}
+
+.marketplace__buttons {
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
+
+  & > :first-child {
+    grid-column: 2;
+  }
+
+  & > :last-child {
+    justify-self: end;
+  }
+}
+
+.marketplace__max,
+.marketplace__handshake {
+  inline-size: 70%;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(1px 1px 0 black);
+}
+
+@media (width < 36rem) {
+  .marketplace {
+    padding: var(--space-sm);
+  }
+
+  .marketplace__halves {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .marketplace__half--give::before {
+    display: none;
+  }
+
+  .marketplace__icon {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+  }
+}
+
+/* On a short screen each resource has its amount beside it, and the buttons sit beside the
+   deal, so the window fits a landscape phone. */
+@media (max-height: 30rem) {
+  .marketplace {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2xs) var(--space-sm);
+    inline-size: min(40rem, calc(100% - 1rem));
+    padding: var(--space-xs) var(--space-sm);
+
+    & > .window-title,
+    & > .marketplace__halves {
+      grid-column: 1 / -1;
+    }
+
+    & > .window-title {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .marketplace__half {
+    gap: var(--space-2xs);
+    padding: var(--space-2xs);
+  }
+
+  .marketplace__resources {
+    gap: var(--space-2xs);
+  }
+
+  .marketplace__resource,
+  .marketplace__showcase {
+    grid-auto-flow: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 1px var(--space-2xs);
+  }
+
+  .marketplace__icon {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .marketplace__merchant {
+    min-block-size: calc(2lh + 2 * var(--space-2xs) + 2px);
+    padding: var(--space-2xs);
+    font-size: var(--font-size-xs);
+  }
+
+  .marketplace__subtitle {
+    padding: 0;
+    font-size: var(--font-size-xs);
+  }
+
+  .marketplace__deal {
+    gap: var(--space-xs);
+    padding: var(--space-2xs) var(--space-xs);
+  }
+
+  .marketplace__buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+
+    & > .building-window__button {
+      inline-size: 2.25rem;
+    }
+  }
+}
