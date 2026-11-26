@@ -446,7 +446,7 @@ function portalOfGlory(upgraded) {
   ].join('')
 }
 
-export const CASTLE_BUILDING_ART = {
+const BUILDING_ART = {
   VILLAGE_HALL: villageHall,
   TOWN_HALL: townHall,
   CITY_HALL: cityHall,
@@ -487,7 +487,7 @@ export const CASTLE_BUILDING_ART = {
 // Sky, distant mountains, the sea on the right, the cliff on the left and the green in front. It
 // reaches past the 800x374 picture, so a town screen of another shape shows more of the land around
 // the town rather than empty bars.
-export function castleBackgroundArt() {
+function backdrop() {
   return [
     `<defs><linearGradient id="castle-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f6fc4"/><stop offset="0.6" stop-color="#a9c8ee"/></linearGradient><linearGradient id="castle-ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fa548"/><stop offset="1" stop-color="#5a7a32"/></linearGradient></defs>`,
     rect(-800, -600, 2400, 1000, 'url(#castle-sky)'),
@@ -510,7 +510,7 @@ export function castleBackgroundArt() {
 }
 
 // Through the Mage Guild's window: a purple sky over green hills.
-export function castleGuildWindowArt() {
+function guildWindow() {
   return [
     `<defs><linearGradient id="castle-window-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a2bd8"/><stop offset="0.67" stop-color="#c64ae6"/><stop offset="1" stop-color="#e07af0"/></linearGradient></defs>`,
     rect(0, 0, 138, 104, 'url(#castle-window-sky)'),
@@ -518,4 +518,11 @@ export function castleGuildWindowArt() {
     '<ellipse cx="41" cy="198" rx="62" ry="40" fill="#3c6e22"/>',
     '<ellipse cx="110" cy="198" rx="55" ry="35" fill="#5e9a30"/>'
   ].join('')
+}
+
+export const CASTLE_TOWN_ART = {
+  backdropName: 'The Castle by the sea',
+  backdrop,
+  buildings: BUILDING_ART,
+  guildWindow: { name: "View of the Castle's land", art: guildWindow }
 }
