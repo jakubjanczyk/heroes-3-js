@@ -1,7 +1,9 @@
 import {
   ARTIFACT_SLOTS,
   canWear,
+  equippedForGoodAt,
   hasFullBackpack,
+  isWarMachine,
   layoutOf,
   putBackHeldArtifact,
   putHeldArtifact,
@@ -16,11 +18,11 @@ const OTHER_SIDE = { left: 'right', right: 'left' }
 
 const holderOf = (artifacts) => SIDES.find((side) => artifacts[side].held) ?? null
 
-export function takeArtifactFrom(artifacts, side, place) {
+export function takeArtifactFrom(artifacts, side, place, definitions) {
   if (holderOf(artifacts)) {
     return null
   }
-  const taken = takeArtifact(artifacts[side], place)
+  const taken = takeArtifact(artifacts[side], place, definitions)
   return taken && { ...artifacts, [side]: taken }
 }
 
@@ -32,7 +34,7 @@ function putOnOtherHero(holder, receiver, place, definitions) {
       swapped && { holder: { ...holder, held: swapped.swappedOut }, receiver: swapped.artifacts }
     )
   }
-  if (hasFullBackpack(receiver)) {
+  if (hasFullBackpack(receiver) || isWarMachine(holder.held, definitions)) {
     return null
   }
   const backpack = [...receiver.backpack]
@@ -69,7 +71,8 @@ export function scrollBackpackOf(artifacts, side, direction) {
 }
 
 const hasRoomFor = (artifacts, artifactId, definitions) =>
-  !hasFullBackpack(artifacts) || canWear(artifacts, artifactId, definitions)
+  canWear(artifacts, artifactId, definitions) ||
+  (!hasFullBackpack(artifacts) && !isWarMachine(artifactId, definitions))
 
 function keepWorn(kept, slotId, artifactId, layout) {
   const worn = { ...kept.worn, [slotId]: artifactId }
@@ -94,7 +97,9 @@ export function giveAllArtifacts(giver, receiver, definitions) {
 
   for (const { id } of ARTIFACT_SLOTS) {
     const artifactId = giver.worn[id]
-    if (artifactId) {
+    if (equippedForGoodAt(giver, { slot: id }, definitions)) {
+      kept = keepWorn(kept, id, artifactId, null)
+    } else if (artifactId) {
       give(artifactId, (each) => keepWorn(each, id, artifactId, layoutOf(giver, id)))
     }
   }

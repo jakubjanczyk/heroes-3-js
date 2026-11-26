@@ -13,7 +13,11 @@ export const ARTIFACT_SLOTS = Object.freeze([
   { id: 'MISC_2', kind: 'MISC' },
   { id: 'MISC_3', kind: 'MISC' },
   { id: 'MISC_4', kind: 'MISC' },
-  { id: 'MISC_5', kind: 'MISC' }
+  { id: 'MISC_5', kind: 'MISC' },
+  { id: 'BALLISTA', kind: 'BALLISTA' },
+  { id: 'AMMO_CART', kind: 'AMMO_CART' },
+  { id: 'FIRST_AID_TENT', kind: 'FIRST_AID_TENT' },
+  { id: 'CATAPULT', kind: 'CATAPULT' }
 ])
 
 export const BATTLE_DEFENDER_ARTIFACT_GUARDS = 'ARTIFACT_GUARDS'
@@ -28,6 +32,24 @@ export const NO_ARTIFACTS = Object.freeze({ worn: Object.freeze({}), backpack: O
 const definitionOf = (artifactId, definitions) => definitions?.artifacts?.[artifactId]
 
 const kindOf = (artifactId, definitions) => definitionOf(artifactId, definitions)?.slot
+
+export const isWarMachine = (artifactId, definitions) =>
+  Boolean(definitionOf(artifactId, definitions)?.warMachine)
+
+const mustBeEquipped = (artifactId, definitions) =>
+  Boolean(definitionOf(artifactId, definitions)?.mustBeEquipped)
+
+// The worn artifact that can't be taken off that place, such as the Catapult.
+export function equippedForGoodAt(artifacts, place, definitions) {
+  const artifactId = place.slot ? artifacts?.worn?.[place.slot] : null
+  return artifactId && mustBeEquipped(artifactId, definitions) ? artifactId : null
+}
+
+// The held war machine that would be put in the backpack, which can't hold one.
+export function tooLargeForBackpack(artifacts, place, definitions) {
+  const held = place.backpack === undefined ? null : artifacts?.held
+  return held && isWarMachine(held, definitions) ? held : null
+}
 
 export const kindOfSlot = (slotId) => ARTIFACT_SLOTS.find((slot) => slot.id === slotId)?.kind
 
@@ -118,13 +140,13 @@ function wearInFirstFreeSlot(artifacts, artifactId, definitions) {
 export const canWear = (artifacts, artifactId, definitions) =>
   Boolean(wearInFirstFreeSlot(artifacts, artifactId, definitions))
 
+// A war machine whose slot is taken is left behind: the backpack can't hold one.
 export function putOnArtifact(artifacts, artifactId, definitions) {
-  return (
-    wearInFirstFreeSlot(artifacts, artifactId, definitions) ?? {
-      ...artifacts,
-      backpack: [...artifacts.backpack, artifactId]
-    }
-  )
+  const worn = wearInFirstFreeSlot(artifacts, artifactId, definitions)
+  if (worn || isWarMachine(artifactId, definitions)) {
+    return worn ?? artifacts
+  }
+  return { ...artifacts, backpack: [...artifacts.backpack, artifactId] }
 }
 
 // Puts the artifact on that slot, swapping out what is worn there; null when it can't go there.
@@ -136,8 +158,13 @@ export function swapIntoSlot(artifacts, artifactId, slotId, definitions) {
   return wearing && { artifacts: wearing, swappedOut: artifacts.worn[slotId] ?? null }
 }
 
+const artifactsOfEveryHero = (definitions) =>
+  Object.entries(definitions?.artifacts ?? {})
+    .filter(([, artifact]) => artifact.everyHero)
+    .map(([artifactId]) => artifactId)
+
 export function startingArtifacts(artifactIds = [], definitions) {
-  return artifactIds.reduce(
+  return [...artifactsOfEveryHero(definitions), ...artifactIds].reduce(
     (artifacts, artifactId) => putOnArtifact(artifacts, artifactId, definitions),
     NO_ARTIFACTS
   )
@@ -218,8 +245,8 @@ export function artifactsCancelInBattle(artifacts, kind, definitions) {
 }
 
 // A place is a worn slot, `{ slot: 'WEAPON' }`, or a backpack frame, `{ backpack: 0 }`.
-export function takeArtifact(artifacts, place) {
-  if (artifacts.held) {
+export function takeArtifact(artifacts, place, definitions) {
+  if (artifacts.held || equippedForGoodAt(artifacts, place, definitions)) {
     return null
   }
   if (place.slot) {
@@ -242,7 +269,10 @@ function putOnSlot(artifacts, slotId, definitions) {
   return swapped && { ...swapped.artifacts, held: swapped.swappedOut }
 }
 
-function putInBackpack(artifacts, frame) {
+function putInBackpack(artifacts, frame, definitions) {
+  if (isWarMachine(artifacts.held, definitions)) {
+    return null
+  }
   const backpack = [...artifacts.backpack]
   backpack.splice(frame, 0, artifacts.held)
   return { ...artifacts, backpack, held: null }
@@ -254,7 +284,7 @@ export function putHeldArtifact(artifacts, place, definitions) {
   }
   return place.slot
     ? putOnSlot(artifacts, place.slot, definitions)
-    : putInBackpack(artifacts, place.backpack)
+    : putInBackpack(artifacts, place.backpack, definitions)
 }
 
 export function putBackHeldArtifact(artifacts, definitions) {
@@ -280,6 +310,10 @@ export function scrollBackpack(artifacts, direction) {
   }
 }
 
-export function countArtifacts(artifacts) {
-  return Object.keys(artifacts?.worn ?? {}).length + (artifacts?.backpack?.length ?? 0)
+// War machines don't count.
+export function countArtifacts(artifacts, definitions) {
+  const worn = Object.values(artifacts?.worn ?? {}).filter(
+    (artifactId) => !isWarMachine(artifactId, definitions)
+  )
+  return worn.length + (artifacts?.backpack?.length ?? 0)
 }

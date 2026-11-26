@@ -52,7 +52,8 @@ export const registerThievesGuildModule = defineModule(
         thievesGuildReport({
           kingdoms: playerColors(current).map((color) => kingdomOf(current, color)),
           taverns: tavernCountOf(current, player),
-          monsters: definitions.monsters
+          monsters: definitions.monsters,
+          artifacts: definitions.artifacts
         })
       )
     }
