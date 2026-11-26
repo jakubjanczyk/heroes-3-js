@@ -34,6 +34,7 @@ import {
   aCreatureDefinition,
   aHero,
   aMonster,
+  anArtifactDefinition,
   aScenario,
   aTown,
   aWarMachineDefinition
@@ -110,6 +111,7 @@ const BALLISTA = 'BALLISTA'
 const AMMO_CART = 'AMMO_CART'
 const FIRST_AID_TENT = 'FIRST_AID_TENT'
 const ALL_WAR_MACHINES = [BALLISTA, AMMO_CART, FIRST_AID_TENT]
+const CHARM = 'CHARM'
 
 const definitions = {
   hero: readGameData('hero.json'),
@@ -136,6 +138,7 @@ const definitions = {
     TEST_FIRST_AID_TENT: aBattleWarMachine('First Aid Tent', ['doubleWide'])
   },
   artifacts: {
+    [CHARM]: anArtifactDefinition().withName('Charm').withSlot('MISC').build(),
     [BALLISTA]: aWarMachineDefinition()
       .withName('Ballista')
       .withSlot('BALLISTA')
@@ -453,20 +456,19 @@ describe('war machines in battle behavior', () => {
       expect(readHeroScreenWarMachines()).toEqual({ 'Ammo Cart': 'Ammo Cart' })
     })
 
-    test("a hero who beats another hero doesn't get the beaten hero's destroyed war machine, but gets the one that stood", async () => {
+    test('a hero who beats another hero captures their artifacts but none of their war machines', async () => {
       const { user } = await fight(
         aFightWithAHero({
-          hero: aRedHero({ army: [stack('STRIKER', 100)] }),
-          enemy: aBlueHero({ army: [stack('WEAKLING')], warMachines: [BALLISTA, AMMO_CART] })
+          hero: aRedHero({ army: [stack('KILLER', 10)] }),
+          enemy: aBlueHero({ army: [stack('WEAKLING')], warMachines: [BALLISTA, CHARM] })
         })
       )
-      await attackFromTheLeft(user, ENEMY_AMMO_CART)
       await attackStackOf(user, 'Weakling')
 
       await closeBattleResults(user)
       await waitMs(1000)
 
-      expect(readMessagePictures()).toEqual(['Ballista'])
+      expect(readMessagePictures()).toEqual(['Charm'])
     })
 
     test('an enemy hero who beat the hero has lost the war machine the hero destroyed', async () => {
