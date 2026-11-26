@@ -20,6 +20,6 @@ Roadmap 6.3.5: the town screen's picture draws the buildings the town has, and t
 
 ## Not yet
 
-- Clicking the other buildings: their screens don't exist yet, so clicking them does nothing.
+- Clicking the other buildings: their screens don't exist yet, so clicking them does nothing. The Blacksmith opens its war machine's recruit window (5.11.6).
 - Right-click info on a building, and the fade-in of a building just built.
 - Other factions' pictures: only the Castle has drawings and spots; a building without a drawing would show as a plain block.

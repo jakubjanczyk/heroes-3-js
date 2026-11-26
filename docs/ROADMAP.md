@@ -756,7 +756,8 @@ The Ballista, the Ammo Cart, the First Aid Tent and the Catapult, and placing th
 - [x] 5.11.3 **Ballista**: shoots on its turn, after every stack that didn't wait, for 2–3 times the hero's Attack plus one, and aims itself; Artillery lets the player aim it, with a chance of double damage and two shots from Advanced (4.7)
 - [x] 5.11.4 **First Aid Tent**: heals a stack's top creature on its turn after the Ballista's, by 1–25; First Aid aims it and heals up to 50, 75 or 100 (4.7)
 - [x] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
-- [ ] 5.11.6 Bought at the town's Blacksmith (6.2); the War Machine Factory on the map with 7.16, and the war machine specialties with 4.4
+- [x] 5.11.6 Bought at the town's Blacksmith (6.2), in its recruit window: one of the town's war machine, none when the hero has it; a standing war machine adds half its price to the surrender price
+- [ ] The War Machine Factory on the map (7.16), and the war machine specialties (4.4)
 - [ ] 5.11.7 **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
 
 ---
@@ -797,7 +798,7 @@ See `docs/notes/2026-10-21-town-buildings.md`.
   - [ ] Rumours: the tavern window shows a rumour of the week, from the game's list or the scenario's own
 - [ ] **Marketplace**: trade resources (exchange ratios depend on marketplace count)
 - [ ] **Resource Silo**: provides +1 of a specific resource per day (faction-dependent)
-- [ ] **Blacksmith**: provides ballista (first aid tent/ammo cart) to visiting heroes
+- [x] **Blacksmith**: sells the town's war machine to the visiting hero (Castle the Ballista, Rampart the First Aid Tent; 5.11.6)
 - [ ] **Mage Guild** (levels 1-5): teaches spells to visiting heroes (4.8.2)
   - Each level unlocks random spells of that tier
   - Higher tiers require lower tiers built first
@@ -850,7 +851,8 @@ Stages, one PR each, done in this order:
 - [x] Clicking a dwelling opens its recruit window, the fort the Fort window, the hall the Hall
 - [x] Clicking the Tavern opens the tavern window (4.5.4)
 - [x] Clicking the Mage Guild opens its screen (4.8.2.1)
-- [ ] Clicking the other buildings opens their screens as they come: Marketplace and Resource Silo, Blacksmith, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
+- [x] Clicking the Blacksmith opens its war machine's recruit window (5.11.6)
+- [ ] Clicking the other buildings opens their screens as they come: Marketplace and Resource Silo, Shipyard (6.2); the Brotherhood, Lighthouse and Stables show their description
 - [ ] Right-click info on a building (6.1)
 - [ ] A building just built fades in, as in H3
 

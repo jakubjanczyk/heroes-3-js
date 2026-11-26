@@ -1,6 +1,7 @@
 {
   "CASTLE": {
     "name": "Castle",
+    "blacksmith": "BALLISTA",
     "moat": {
       "name": "Moat",
       "from": "CITADEL",
@@ -277,6 +278,7 @@
   },
   "RAMPART": {
     "name": "Rampart",
+    "blacksmith": "FIRST_AID_TENT",
     "moat": {
       "name": "Moat",
       "from": "CITADEL",
