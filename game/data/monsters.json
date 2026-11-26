@@ -733,7 +733,11 @@
     "health": 75,
     "speed": 0,
     "aiValue": 300,
-    "abilities": ["doubleWide", "warMachine"]
+    "abilities": ["doubleWide", "warMachine", "heals"],
+    "controlledBy": {
+      "skill": "FIRST_AID",
+      "healing": [25, 50, 75, 100]
+    }
   },
   "CATAPULT": {
     "name": "Catapult",
