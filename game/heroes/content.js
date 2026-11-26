@@ -3,6 +3,7 @@ import { artifactBehavior } from './entity-behaviors/artifact.js'
 import { bonusObjectBehavior } from './entity-behaviors/bonus-object.js'
 import { dwellingBehavior } from './entity-behaviors/dwelling.js'
 import { heroBehavior } from './entity-behaviors/hero.js'
+import { marketBehavior } from './entity-behaviors/market.js'
 import { mineBehavior } from './entity-behaviors/mine.js'
 import { monsterBehavior } from './entity-behaviors/monster.js'
 import { obstacleBehavior } from './entity-behaviors/obstacle.js'
@@ -36,6 +37,7 @@ export const heroesContent = Object.freeze({
     bonusObjectBehavior,
     dwellingBehavior,
     heroBehavior,
+    marketBehavior,
     mineBehavior,
     monsterBehavior,
     obstacleBehavior,

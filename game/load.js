@@ -151,7 +151,8 @@ export async function loadGame({
     obstacles,
     spells,
     scoreRanks,
-    marketplace
+    marketplace,
+    markets
   ] = await Promise.all([
     fetchJson(fetch, normalizedScenarioUrl),
     fetchJson(fetch, `${normalizedDataBaseUrl}/hero.json`),
@@ -171,7 +172,8 @@ export async function loadGame({
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/obstacles.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/spells.json`),
     fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/score-ranks.json`),
-    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/marketplace.json`)
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/marketplace.json`),
+    fetchJsonOrEmpty(fetch, `${normalizedDataBaseUrl}/markets.json`)
   ])
 
   const map = createMap(scenario.terrain, terrainTypes)
@@ -200,7 +202,8 @@ export async function loadGame({
     obstacles,
     spells,
     scoreRanks,
-    marketplace
+    marketplace,
+    markets
   }
   assertTownBuildings(scenario, definitions)
 
