@@ -67,4 +67,6 @@ Checked against the Heroes 3 wiki's raw page source (War Machine, `Template:Crea
 - **Experience and casualties.** The winner earns no experience for them (already so for every war machine). A destroyed one is listed among its side's casualties in the results window, as the destroyed catapult is (the engine counts them as casualties).
 - **On screen** each has a stand-in picture of its own, as the catapult has, until the sprites (10.1); hovering one shows its name in the status bar and the attack cursor, as for the catapult.
 
+As built: a war machine artifact names its battle creature (`"creature": "BALLISTA"` in `artifacts.json`), and the creatures are in `monsters.json` with the `warMachine` ability; their rows are in `battlefield.js`, the catapult's included. Each has a stand-in picture until the sprites (10.1).
+
 Left for later parts: the Ballista shooting (5.11.3), the tent healing (5.11.4), the cart's shots (5.11.5); paying for standing war machines when surrendering (the engine counts half their price, with their prices, 5.11.6); a battle without war machines at a creature bank (7.13); a retreated hero keeping theirs (4.5.5); the computer counting them in an army's strength (8.4); their right-click popups, with the battle's stack popups.

@@ -682,6 +682,54 @@
     "aiValue": 15,
     "abilities": []
   },
+  "BALLISTA": {
+    "name": "Ballista",
+    "namePlural": "Ballistas",
+    "faction": "NEUTRAL",
+    "tier": 5,
+    "attack": 10,
+    "defense": 10,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "health": 250,
+    "speed": 0,
+    "aiValue": 600,
+    "abilities": ["doubleWide", "warMachine"]
+  },
+  "AMMO_CART": {
+    "name": "Ammo Cart",
+    "namePlural": "Ammo Carts",
+    "faction": "NEUTRAL",
+    "tier": 1,
+    "attack": 0,
+    "defense": 5,
+    "damage": {
+      "min": 0,
+      "max": 0
+    },
+    "health": 100,
+    "speed": 0,
+    "aiValue": 400,
+    "abilities": ["warMachine"]
+  },
+  "FIRST_AID_TENT": {
+    "name": "First Aid Tent",
+    "namePlural": "First Aid Tents",
+    "faction": "NEUTRAL",
+    "tier": 1,
+    "attack": 0,
+    "defense": 0,
+    "damage": {
+      "min": 0,
+      "max": 0
+    },
+    "health": 75,
+    "speed": 0,
+    "aiValue": 300,
+    "abilities": ["doubleWide", "warMachine"]
+  },
   "CATAPULT": {
     "name": "Catapult",
     "namePlural": "Catapults",

@@ -1,5 +1,3 @@
-const SVG = 'http://www.w3.org/2000/svg'
-
 const WALL_LABELS = { standing: 'Wall', damaged: 'Damaged wall', destroyed: 'Destroyed wall' }
 
 function drawbridgeLabel({ open, state }) {
@@ -27,33 +25,6 @@ export function renderMoat(document, name) {
   element.className = 'battlefield__moat'
   element.setAttribute('role', 'img')
   element.setAttribute('aria-label', name)
-  return element
-}
-
-const CATAPULT_SHAPES = [
-  ['path', { class: 'battle-catapult__frame', d: 'M14 50 L86 50 L70 34 L30 34 Z' }],
-  ['path', { class: 'battle-catapult__frame', d: 'M44 34 L52 14 L60 34' }],
-  ['path', { class: 'battle-catapult__arm', d: 'M30 44 L78 8' }],
-  ['circle', { class: 'battle-catapult__cup', cx: '80', cy: '7', r: '6' }],
-  ['circle', { class: 'battle-catapult__wheel', cx: '26', cy: '54', r: '9' }],
-  ['circle', { class: 'battle-catapult__wheel', cx: '74', cy: '54', r: '9' }]
-]
-
-export function renderCatapultPicture(document) {
-  const element = document.createElement('div')
-  element.className = 'battle-catapult'
-  element.setAttribute('aria-hidden', 'true')
-  const picture = document.createElementNS(SVG, 'svg')
-  picture.setAttribute('viewBox', '0 0 100 66')
-  picture.setAttribute('aria-hidden', 'true')
-  for (const [tag, attributes] of CATAPULT_SHAPES) {
-    const shape = document.createElementNS(SVG, tag)
-    for (const [name, value] of Object.entries(attributes)) {
-      shape.setAttribute(name, value)
-    }
-    picture.append(shape)
-  }
-  element.append(picture)
   return element
 }
 

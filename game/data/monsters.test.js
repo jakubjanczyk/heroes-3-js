@@ -40,6 +40,9 @@ describe('creature data', () => {
     ['GOLD_DRAGON', 'Gold Dragon', 'Gold Dragons'],
     ['IMP', 'Imp', 'Imps'],
     ['PEASANT', 'Peasant', 'Peasants'],
+    ['BALLISTA', 'Ballista', 'Ballistas'],
+    ['AMMO_CART', 'Ammo Cart', 'Ammo Carts'],
+    ['FIRST_AID_TENT', 'First Aid Tent', 'First Aid Tents'],
     ['CATAPULT', 'Catapult', 'Catapults']
   ])('%s is called %s, %s for several', (key, name, namePlural) => {
     expect(creatures[key]).toMatchObject({ name, namePlural })
@@ -132,6 +135,9 @@ describe('creature data', () => {
     ['GOLD_DRAGON', 'RAMPART', 7, ['flying', 'doubleWide'], undefined],
     ['IMP', 'INFERNO', 1, [], undefined],
     ['PEASANT', 'NEUTRAL', 1, [], undefined],
+    ['BALLISTA', 'NEUTRAL', 5, ['doubleWide', 'warMachine'], undefined],
+    ['AMMO_CART', 'NEUTRAL', 1, ['warMachine'], undefined],
+    ['FIRST_AID_TENT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined],
     ['CATAPULT', 'NEUTRAL', 1, ['doubleWide', 'warMachine'], undefined]
   ])('%s is a %s tier %i creature with abilities %o and %s shots', (key, faction, tier, abilities, shots) => {
     const creature = creatures[key]
@@ -183,8 +189,19 @@ describe('creature data', () => {
       // Their upgrades come with their towns.
       IMP: null,
       PEASANT: null,
+      BALLISTA: null,
+      AMMO_CART: null,
+      FIRST_AID_TENT: null,
       CATAPULT: null
     })
+  })
+
+  test.each([
+    ['BALLISTA', 10, 10, { min: 2, max: 3 }, 250],
+    ['AMMO_CART', 0, 5, { min: 0, max: 0 }, 100],
+    ['FIRST_AID_TENT', 0, 0, { min: 0, max: 0 }, 75]
+  ])('the %s has attack %i, defense %i, damage %o, health %i and speed 0', (key, attack, defense, damage, health) => {
+    expect(creatures[key]).toMatchObject({ attack, defense, damage, health, speed: 0 })
   })
 
   test('the Catapult has attack 10, defense 10, no damage, health 1000 and speed 0', () => {

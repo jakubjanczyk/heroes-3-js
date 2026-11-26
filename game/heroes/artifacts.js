@@ -51,6 +51,14 @@ export function tooLargeForBackpack(artifacts, place, definitions) {
   return held && isWarMachine(held, definitions) ? held : null
 }
 
+export function withoutWornIn(artifacts, slotIds) {
+  const worn = { ...artifacts.worn }
+  for (const slotId of slotIds) {
+    delete worn[slotId]
+  }
+  return { ...artifacts, worn }
+}
+
 export const kindOfSlot = (slotId) => ARTIFACT_SLOTS.find((slot) => slot.id === slotId)?.kind
 
 export const partsOf = (artifactId, definitions) =>

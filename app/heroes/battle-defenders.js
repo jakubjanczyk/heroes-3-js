@@ -204,7 +204,9 @@ function captureDefendedTown({ emit, state, heroId, started: { defender } }) {
 // it has no surrender refusal.
 const enemyHero = {
   side: ({ started, state, definitions }) => ({
-    ...heroBattleSide(heroById(state.get(), started.defender.heroId), definitions),
+    ...heroBattleSide(heroById(state.get(), started.defender.heroId), definitions, {
+      defendingTown: Boolean(started.defender.townId)
+    }),
     army: enemyHeroArmy(state, started.defender).army
   }),
   hero: ({ started: { defender }, state }) => ({
