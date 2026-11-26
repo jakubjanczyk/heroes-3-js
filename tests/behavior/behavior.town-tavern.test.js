@@ -18,11 +18,12 @@ import {
   readKnightsForHire,
   setupMovementBehaviorApp
 } from './app.utils.js'
-import { aHero, aScenario, aTown, aTownDefinition } from './builders.js'
+import { aHero, aScenario, aTown, aTownDefinition, aWarMachineDefinition } from './builders.js'
 import {
   clickHeroInHeroList,
   clickHeroScreenSpellBook,
-  readHeroScreenSpellBook
+  readHeroScreenSpellBook,
+  readHeroScreenWarMachines
 } from './hero-screen.utils.js'
 import { clickSpellBookControl, readSpellBookSpellNames } from './spell-book.utils.js'
 import {
@@ -55,7 +56,19 @@ const gameDefinitions = {
   resources: readGameData('resources.json'),
   towns: readGameData('towns.json'),
   buildings: readGameData('buildings.json'),
-  tavern: readGameData('tavern.json')
+  tavern: readGameData('tavern.json'),
+  artifacts: {
+    CATAPULT: aWarMachineDefinition()
+      .withName('Catapult')
+      .withSlot('CATAPULT')
+      .givenToEveryHero()
+      .neverMoved()
+      .build(),
+    FIRST_AID_TENT: aWarMachineDefinition()
+      .withName('First Aid Tent')
+      .withSlot('FIRST_AID_TENT')
+      .build()
+  }
 }
 
 // Every roll the lowest: the first heroes of the pool still free (Orrin, then Valeska), the first
@@ -63,6 +76,8 @@ const gameDefinitions = {
 const LOWEST_ROLLS = () => 0
 // Every roll the highest: the last heroes of the pool still free (Christian, then Sorsha).
 const HIGHEST_ROLLS = () => 0.99
+// A starting army roll of 51: the first two stacks come, the third (25 or less) doesn't.
+const ROLL_OF_TWO_STACKS = () => 0.5
 
 const TAVERN = ['TAVERN']
 
@@ -291,20 +306,64 @@ describe('town tavern behavior', () => {
       ])
     })
 
-    test("a war machine in a hero's starting army is left out, and the stack after it still comes on its roll", async () => {
+    describe("with a war machine in the hero's starting army", () => {
       const valeskaWithFirstAidTent = {
         ...gameDefinitions.heroes.VALESKA,
         startingArmy: [PIKEMEN, { warMachine: 'FIRST_AID_TENT', min: 1, max: 1 }, GRIFFINS]
       }
-      const { user } = await startInTavern(
+      const aScenarioWithValeskasTent = () =>
         aTavernScenario().withDefinitions(
           withHeroes({ ...gameDefinitions.heroes, VALESKA: valeskaWithFirstAidTent })
         )
-      )
 
-      await hireHero(user, 'Valeska')
+      async function hireValeskaAndOpenHeroScreen() {
+        const { user } = await startInTavern(aScenarioWithValeskasTent())
+        await hireHero(user, 'Valeska')
+        await leaveTown(user)
+        await clickHeroInHeroList(user, 'Valeska')
+      }
 
-      expect(readVisitingHeroArmy()).toEqual(['Pikemen 10', 'Griffins 2', '', '', '', '', ''])
+      test('a hired hero whose roll brings the war machine has it in its frame', async () => {
+        await hireValeskaAndOpenHeroScreen()
+
+        expect(readHeroScreenWarMachines()).toEqual({
+          'First Aid Tent': 'First Aid Tent',
+          Catapult: 'Catapult'
+        })
+      })
+
+      test('the stack after the war machine comes next to the first in the army', async () => {
+        const { user } = await startInTavern(aScenarioWithValeskasTent())
+
+        await hireHero(user, 'Valeska')
+
+        expect(readVisitingHeroArmy()).toEqual(['Pikemen 10', 'Griffins 2', '', '', '', '', ''])
+      })
+
+      test('a hired hero whose roll stops before the war machine has only the Catapult', async () => {
+        const valeskaWithTentLast = {
+          ...gameDefinitions.heroes.VALESKA,
+          startingArmy: [PIKEMEN, GRIFFINS, { warMachine: 'FIRST_AID_TENT', min: 1, max: 1 }]
+        }
+        const { user } = await startInTavern(
+          aTavernScenario().withDefinitions(withHeroes({ VALESKA: valeskaWithTentLast })),
+          { random: ROLL_OF_TWO_STACKS }
+        )
+        await hireHero(user, 'Valeska')
+        await leaveTown(user)
+
+        await clickHeroInHeroList(user, 'Valeska')
+
+        expect(readHeroScreenWarMachines()).toEqual({ Catapult: 'Catapult' })
+      })
+
+      test("the tavern doesn't count the war machines in the hero's artifacts", async () => {
+        const { user } = await startInTavern(aScenarioWithValeskasTent())
+
+        await selectHeroForHire(user, 'Valeska')
+
+        expect(readHeroForHireDescription()).toBe('Valeska is a level 1 Knight with 0 artifacts.')
+      })
     })
 
     test('a hired hero whose data gives a spell book has it on the hero screen, holding their spell', async () => {

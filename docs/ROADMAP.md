@@ -751,7 +751,7 @@ In eighteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town 
 
 ### 5.11 War Machines & Tactics
 The Ballista, the Ammo Cart, the First Aid Tent and the Catapult, and placing the army before a battle. In parts. See `docs/notes/2026-11-26-war-machines.md`.
-- [ ] 5.11.1 War machines on the hero: every hero's Catapult, a hired hero's war machine from their starting army, a scenario hero's from their artifacts; shown in their four slots on the hero screen and the exchange window; the Catapult can't be moved and none goes to the backpack; the others traded between heroes
+- [x] 5.11.1 War machines on the hero: every hero's Catapult, a hired hero's war machine from their starting army, a scenario hero's from their artifacts; shown in their four slots on the hero screen and the exchange window; the Catapult can't be moved and none goes to the backpack; the others traded between heroes
 - [ ] 5.11.2 On the battlefield: the Ballista, Ammo Cart and First Aid Tent in their places as targets; destroyed ones are lost after the battle
 - [ ] 5.11.3 **Ballista**: shoots at the end of each round; the Artillery skill aims it and adds its bonuses (4.7)
 - [ ] 5.11.4 **First Aid Tent**: heals a stack at the end of each round; the First Aid skill heals more and aims it (4.7)

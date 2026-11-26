@@ -30,13 +30,13 @@ const RANKED_ROWS = [
   {
     name: 'Artifacts',
     taverns: 4,
-    value: (kingdom) =>
-      kingdom.heroes.reduce((total, hero) => total + countArtifacts(hero.artifacts), 0)
+    value: (kingdom, definitions) =>
+      kingdom.heroes.reduce((total, hero) => total + countArtifacts(hero.artifacts, definitions), 0)
   },
   {
     name: 'Kingdom Army Strength',
     taverns: 4,
-    value: (kingdom, monsters) =>
+    value: (kingdom, { monsters }) =>
       kingdom.heroes.reduce((total, hero) => total + armyStrength(hero.army, monsters), 0)
   },
   { name: 'Income', taverns: 5, value: (kingdom) => kingdom.income }
@@ -96,7 +96,7 @@ function playerBoxes(kingdoms, taverns, needed, describe) {
     : null
 }
 
-export function thievesGuildReport({ kingdoms, taverns, monsters }) {
+export function thievesGuildReport({ kingdoms, taverns, monsters, artifacts }) {
   return {
     places: PLACES.slice(0, kingdoms.length),
     rankings: RANKED_ROWS.map(({ name, taverns: needed, value }) => ({
@@ -106,7 +106,7 @@ export function thievesGuildReport({ kingdoms, taverns, monsters }) {
           ? rankPlayers(
               kingdoms.map((kingdom) => ({
                 player: kingdom.player,
-                value: value(kingdom, monsters)
+                value: value(kingdom, { monsters, artifacts })
               }))
             )
           : null

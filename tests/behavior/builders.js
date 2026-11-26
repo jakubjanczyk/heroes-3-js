@@ -238,6 +238,17 @@ export const anArtifactDefinition = () =>
     })
   )
 
+// slot: BALLISTA, AMMO_CART, FIRST_AID_TENT or CATAPULT, each war machine's own.
+export const aWarMachineDefinition = () =>
+  builder({ name: 'War Machine', slot: 'BALLISTA', warMachine: true }, (warMachine) => ({
+    givenToEveryHero() {
+      warMachine.everyHero = true
+    },
+    neverMoved() {
+      warMachine.mustBeEquipped = true
+    }
+  }))
+
 // A creature with a Pikeman's stats, for a test that needs one the game data doesn't have.
 export const aCreatureDefinition = () =>
   builder({

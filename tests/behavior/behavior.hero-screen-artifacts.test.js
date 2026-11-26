@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { screen } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
@@ -17,6 +16,7 @@ import {
   readHeroScreenBackpack,
   readHeroScreenHeldArtifact,
   readHeroScreenHighlightedSlots,
+  readHeroScreenPopup,
   readHeroScreenPrimarySkills,
   readHeroScreenStatusBar
 } from './hero-screen.utils.js'
@@ -74,14 +74,6 @@ async function startOnHeroScreen(scenario, { eventLog } = {}) {
   })
   await clickHeroInHeroList(app.user, HERO)
   return app
-}
-
-function readPopup() {
-  const popup = screen.getByRole('tooltip')
-  return {
-    title: popup.querySelector('h2')?.textContent,
-    lines: [...popup.querySelectorAll('p')].map((line) => line.textContent)
-  }
 }
 
 describe('hero screen artifacts behavior', () => {
@@ -320,7 +312,7 @@ describe('hero screen artifacts behavior', () => {
 
       await holdRightButtonOnHeroScreenArtifactSlot(user, 'Weapon')
 
-      expect(readPopup()).toEqual(DESCRIPTION)
+      expect(readHeroScreenPopup()).toEqual(DESCRIPTION)
     })
 
     test('given an artifact in the backpack when the player holds the right button on it then the popup shows its name and description', async () => {
@@ -328,7 +320,7 @@ describe('hero screen artifacts behavior', () => {
 
       await holdRightButtonOnHeroScreenBackpackFrame(user, 1)
 
-      expect(readPopup()).toEqual(DESCRIPTION)
+      expect(readHeroScreenPopup()).toEqual(DESCRIPTION)
     })
 
     test('given a worn artifact when the mouse is over it then the status bar names it', async () => {

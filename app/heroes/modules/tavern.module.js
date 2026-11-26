@@ -1,4 +1,5 @@
 import { isHero, isTown } from '../../../game/domain/entity-queries.js'
+import { startingArtifacts } from '../../../game/heroes/artifacts.js'
 import { getHeroArmy } from '../../../game/heroes/hero-army.js'
 import { getHeroLuck, getHeroMorale } from '../../../game/heroes/morale-and-luck.js'
 import { getHeroPrimarySkills } from '../../../game/heroes/primary-skills.js'
@@ -109,7 +110,11 @@ export const registerTavernModule = defineModule(
     function heroAsHired(hero) {
       const returning = hero.heroId ? heroById(state.get(), hero.heroId) : null
       if (!returning) {
-        return { ...hero, secondarySkills: startingSecondarySkills(hero, definitions) }
+        return {
+          ...hero,
+          secondarySkills: startingSecondarySkills(hero, definitions),
+          artifacts: startingArtifacts(hero.warMachines, definitions)
+        }
       }
       return { ...returning, army: hero.army, ...refilledSpellPoints(hero, returning) }
     }
@@ -125,7 +130,7 @@ export const registerTavernModule = defineModule(
       return {
         slot,
         name: hero.name,
-        description: describeHeroForHire(hero, definitions.heroClasses),
+        description: describeHeroForHire(hero, definitions),
         skills: getHeroPrimarySkills({ entity: hero, definitions }),
         morale: getHeroMorale({ entity: hero, definitions }),
         luck: getHeroLuck({ entity: hero, definitions }),
@@ -208,6 +213,7 @@ export const registerTavernModule = defineModule(
             name: hero.name,
             heroClass: hero.heroClass,
             army: hero.army,
+            ...(hero.warMachines ? { warMachines: hero.warMachines } : {}),
             ...movementPointsLeft(hero),
             ...(hero.heroId ? refilledSpellPoints(hero, heroById(current, hero.heroId)) : {})
           }

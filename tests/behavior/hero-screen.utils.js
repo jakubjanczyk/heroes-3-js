@@ -225,3 +225,39 @@ export function readHeroScreenSpellBook() {
 export async function clickHeroScreenSpellBook(user) {
   await user.click(getHeroScreenSpellBookFrame())
 }
+
+// The war machines in their frames, as { '<frame>': '<war machine>' }, e.g. { Catapult: 'Catapult' }.
+export function readHeroScreenWarMachines() {
+  return Object.fromEntries(
+    readArtifactsIn('War machines').map(([frame, artifact]) => [
+      frame.getAttribute('aria-label'),
+      artifact
+    ])
+  )
+}
+
+function getHeroScreenWarMachineFrame(frame) {
+  const list = within(getHeroScreen()).getByRole('list', { name: 'War machines' })
+  return within(list).getByRole('listitem', { name: frame })
+}
+
+// A frame by the war machine it is for, e.g. 'Ballista' or 'First Aid Tent'.
+export async function clickHeroScreenWarMachineFrame(user, frame) {
+  await user.click(getHeroScreenWarMachineFrame(frame))
+}
+
+export async function hoverHeroScreenWarMachineFrame(user, frame) {
+  await user.hover(getHeroScreenWarMachineFrame(frame))
+}
+
+export async function holdRightButtonOnHeroScreenWarMachineFrame(user, frame) {
+  await user.pointer({ keys: '[MouseRight>]', target: getHeroScreenWarMachineFrame(frame) })
+}
+
+export function readHeroScreenPopup() {
+  const popup = screen.getByRole('tooltip')
+  return {
+    title: popup.querySelector('h2')?.textContent,
+    lines: [...popup.querySelectorAll('p')].map((line) => line.textContent)
+  }
+}
