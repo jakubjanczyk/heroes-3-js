@@ -551,3 +551,95 @@ Growth and price are the creature's; levels 5–7 are guarded by three weeks of 
 
 - Specialties and portraits (4.4), war machines in a starting army (5.11: Gem's First Aid Tent until then is left out, her Wood Elves still coming on the third stack's roll).
 - The tavern's class odds by town, and never offering two heroes of one class at once (the engine's rule, not on the wiki): with the next faction's heroes.
+
+## 6.5.7 Tower's creatures
+
+The first of Tower's three parts. Like Rampart's creatures, too large for one PR with every ability, so in four:
+
+- **6.5.7a The creatures**: the fourteen creatures, with the abilities the battle already reads (flying, shooting, shots, double-wide, no melee penalty) and four small rules that are new: the Giants' and Titans' immunity to mind spells, Giants and Titans as kings for Slayer, the Nagas' attacks that get no retaliation, and the Magi's shots that the walls don't halve.
+- **6.5.7b Golems and Gargoyles**: the Golems' spell damage reduction, and what being non-living means (below).
+- **6.5.7c Magic channeler**: the Magi lower their own hero's spell costs by 2.
+- **6.5.7d The Master Genies' spells**: a random helpful spell on a stack of their side, three times a battle.
+
+Hate (Genies and Efreet, Titans and Black Dragons, and the Angels and Devils already in the data) does nothing until a hated creature exists: it comes with Inferno's creatures, the first faction to have one, and Dungeon's Black Dragons add the Titans' to it.
+
+Until its part, a creature fights without that ability. The demo map gets a few stacks of Tower's creatures as map monsters, as it got Rampart's. Recruiting them comes with Tower's town and its map dwellings.
+
+### The creatures (6.5.7a)
+
+Checked against the Heroes 3 wiki's raw page source (each creature's `Template:Creature/<name>`, the creature pages and `Translation_Data/CRTRAITS.TXT` for names, plurals and ability texts) and the reference engine's Tower creature data (levels, upgrades, double-wide, shots and abilities). The engine's data holds no stats, so attack, defense, damage, health, speed, growth, cost and AI value are checked against the wiki only, as the Castle's and Rampart's were. Where the wiki gives a Horn of the Abyss value beside the original's, the original's is used (the Nagas' AI value: 2016, not 1814).
+
+| Creature | Tier | Att | Def | Damage | HP | Speed | Growth | Cost | AI value | Abilities |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Gremlin | 1 | 3 | 3 | 1–2 | 4 | 4 | 16 | 30 | 44 | |
+| Master Gremlin | 1 | 4 | 4 | 1–2 | 4 | 5 | 16 | 40 | 66 | shoots, 8 shots |
+| Stone Gargoyle | 2 | 6 | 6 | 2–3 | 16 | 6 | 9 | 130 | 165 | flies, non-living (6.5.7b) |
+| Obsidian Gargoyle | 2 | 7 | 7 | 2–3 | 16 | 9 | 9 | 160 | 201 | flies, non-living (6.5.7b) |
+| Stone Golem | 3 | 7 | 10 | 4–5 | 30 | 3 | 6 | 150 | 260 | non-living, spell damage −50% (6.5.7b) |
+| Iron Golem | 3 | 9 | 10 | 4–5 | 35 | 5 | 6 | 200 | 412 | non-living, spell damage −75% (6.5.7b) |
+| Mage | 4 | 11 | 8 | 7–9 | 25 | 5 | 4 | 350 | 570 | shoots, 24 shots, no melee penalty, no wall penalty, hero's spells cost 2 less (6.5.7c) |
+| Arch Mage | 4 | 12 | 9 | 7–9 | 30 | 7 | 4 | 450 | 680 | as the Mage |
+| Genie | 5 | 12 | 12 | 13–16 | 40 | 7 | 3 | 550 | 884 | flies, hates Efreet (later) |
+| Master Genie | 5 | 12 | 12 | 13–16 | 40 | 11 | 3 | 600 | 942 | flies, hates Efreet (later), casts helpful spells (6.5.7d) |
+| Naga | 6 | 16 | 13 | 20–20 | 110 | 5 | 2 | 1100 | 2016 | double-wide, no enemy retaliation |
+| Naga Queen | 6 | 16 | 13 | 30–30 | 110 | 7 | 2 | 1600 | 2840 | double-wide, no enemy retaliation |
+| Giant | 7 | 19 | 16 | 40–60 | 150 | 7 | 1 | 2000 + 1 gem | 3718 | immune to mind spells, king of the third group |
+| Titan | 7 | 24 | 24 | 40–60 | 300 | 11 | 1 | 5000 + 2 gems | 7500 | shoots, 24 shots, no melee penalty, immune to mind spells, king of the third group, hates Black Dragons (later) |
+
+- Each basic creature gets `upgradesTo` its upgrade.
+- The Sculptor's Wings' +4 Gargoyles a week comes with Tower's town.
+
+### Immunity to mind spells (Giants and Titans, 6.5.7a)
+
+- Giants and Titans can't be the target of mind spells (Berserk, Blind, Forgetfulness, Frenzy, Hypnotize, Mirth, Sorrow), either side's, helpful ones too (wiki Mind spell page and the creature texts "Mind spell immunity"; the engine's creature data). That is how the undead and an artifact's immunity to mind spells work now, so a Giant is treated as a Skeleton is: the cursor is blocked over it, a click cancels the spell, and Expert's all-stacks Mirth or Sorrow leaves it out.
+- The Unicorns' blinding attack is a mind spell: it doesn't blind a Giant or a Titan (the blinding attack already checks the target's immunities, 6.5.4e).
+
+### Kings of the third group (Giants and Titans, 6.5.7a)
+
+- Slayer's +8 Attack reaches them only at Expert (wiki Slayer page: Expert "also affects Giants"; the engine's creature data `KING_3`). Slayer already reaches the third group at Expert.
+
+### No enemy retaliation (Nagas, 6.5.7a)
+
+- A stack the Nagas or Naga Queens attack doesn't strike back (wiki "No enemy retaliation", both creature texts; the engine's `BLOCKS_RETALIATION`, which skips the defender's retaliation when the attacker has it). Its retaliation isn't used up: it can still strike back at the next stack that attacks it this round (the engine never counts a retaliation that didn't happen).
+- The Nagas themselves strike back as any stack does.
+- A Fire Shield on the stack they attack still burns them: the burn isn't a retaliation (the wiki's Fire Shield page; it comes with any melee hit now).
+
+### No wall penalty (Magi, 6.5.7a)
+
+- In a siege, a Mage's or Arch Mage's shot at a stack behind the walls does full damage (wiki Obstacle penalty page, both creature templates "No barrier penalty"; the engine's `NO_WALL_PENALTY` on both). The RoE manual names only the Arch Magi; the creature data of both sources gives it to both, so both have it.
+- A shot from far away is still halved by the distance penalty (both sources: the wall penalty is the only one they lose).
+
+### How it is built (6.5.7a)
+
+- The creatures are entries in `monsters.json`, with the abilities the battle already reads (`flying`, `doubleWide`, `ranged`, `noMeleePenalty`, `shots`); an ability that comes in a later part is added to the data with that part.
+- `immuneToMindSpells` in a creature's abilities makes its stacks immune to mind spells, as the undead and the artifact's immunity are.
+- The Giants' and Titans' `king: 3`.
+- `noRetaliation` in the attacker's abilities: the attacked stack doesn't strike back.
+- `noWallPenalty` in a shooter's abilities: its shots aren't halved by the walls.
+- The demo map has Master Gremlins, Stone Gargoyles, Stone Golems, Magi, Nagas and Giants east of the first hero, beyond Rampart's.
+
+### Non-living (Golems and Gargoyles, 6.5.7b, planned)
+
+Checked against the wiki's Non-living, Undead vs Unliving, Spell damage reduction, Sacrifice, Resurrection, Death Ripple and Fire Shield pages and the engine's creature data (`NON_LIVING` on the Golems, `GARGOYLE` on the Gargoyles, `SPELL_DAMAGE_REDUCTION` 50 and 75).
+
+- Golems take 50% (Stone) or 75% (Iron) less damage from spells: every damage spell, Armageddon and Death Ripple included, and a Fire Shield's burn (wiki); the Tower's land mines too, once siege land mines exist.
+- Golems have neither good nor bad morale and are immune to mind spells. Gargoyles have morale and mind spells work on them (wiki).
+- Neither can be sacrificed, nor raised by Sacrifice (wiki Sacrifice page: "non-undead, non-bloodless"). Resurrection, Animate Dead and the Archangels' resurrection don't raise them either, once those exist.
+- Death Ripple hits them (wiki: only the undead are immune), the Golems for less.
+
+### Magic channeler (Magi, 6.5.7c, planned)
+
+- A hero whose army had Magi or Arch Magi at the start of the battle pays 2 spell points less for each spell until the battle ends, even after they die (wiki; the engine counts dead stacks). 2 in all, however many stacks. Not on the adventure map.
+- Never below 0 (the engine). With the enemy's Pegasi, the two cancel out (wiki).
+
+### The Master Genies' spells (6.5.7d, planned)
+
+- Instead of acting, a stack of Master Genies casts a random helpful spell on a stack of its side, three times a battle, at Advanced with Spell Power 6; the number of Genies doesn't matter (wiki Spellcaster and Genie pages).
+- Only a spell the target isn't immune to and that would do something (no Slayer without kings to fight, no Cure on an unhurt stack). The spell list and how the player picks the target are checked when the part is next.
+
+### Left for later (6.5.7a)
+
+- Golems, Gargoyles, the Magi's lower spell costs and the Master Genies' spells: 6.5.7b to 6.5.7d.
+- Hate: with Inferno's creatures (the Efreet), and the Titans' with Dungeon's Black Dragons.
+- Growth bonuses, recruiting: Tower's town and its map dwellings.
+- The player's Giants resisting a computer hero's mind spells: computer heroes don't cast yet (5.8 later).

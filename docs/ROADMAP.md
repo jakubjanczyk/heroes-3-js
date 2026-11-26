@@ -891,6 +891,12 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
   - [x] 6.5.5a Rampart's town and its buildings: its dwellings, Hall, Mage Guild to level 5 with its spell odds, moat and arrow towers, the Miners' Guild and Dendroid Saplings, the Fountain of Fortune's luck for defenders; the Mystic Pond's rare resources and the Treasury's 10% interest each week
   - [x] 6.5.5b Rampart's town picture: its backdrop, its buildings' art, the village houses that come with the hall and the view from its Mage Guild's window
 - [x] 6.5.6 Rampart's heroes and hero classes (Rangers and Druids, each hero's own starting army and the Druids' spells), and its seven creature dwellings on the map (footprints moved to the dwellings' data)
+- [ ] 6.5.7 Tower's creatures, in four parts:
+  - [ ] 6.5.7a The fourteen creatures, the Giants' and Titans' immunity to mind spells, Giants and Titans as kings for Slayer, the Nagas' attacks that get no retaliation, and the Magi's shots that the walls don't halve
+  - [ ] 6.5.7b Golems and Gargoyles: the Golems' spell damage reduction; non-living (the Golems' neutral morale and immunity to mind spells, neither raised nor sacrificed by Sacrifice)
+  - [ ] 6.5.7c The Magi's magic channeler: their hero's spells cost 2 less
+  - [ ] 6.5.7d The Master Genies' spells: a random helpful spell on a stack of their side, three times a battle
+- [ ] Hate (Genies and Efreet, Angels and Devils, Titans and Black Dragons), with Inferno's creatures
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
 - [ ] Minimum viable: **Castle** faction fully implemented
