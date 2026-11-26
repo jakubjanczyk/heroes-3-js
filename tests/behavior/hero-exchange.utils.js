@@ -193,3 +193,21 @@ export function readHeroExchangeHighlightedSlots(heroName) {
     .filter((slot) => slot.dataset.highlighted === 'true')
     .map((slot) => slot.getAttribute('aria-label'))
 }
+
+function getWarMachineFrames(heroName) {
+  return within(getHeroSide(heroName)).getByRole('list', { name: `${heroName}'s war machines` })
+}
+
+// The war machines in their frames, as { '<frame>': '<war machine>' }, e.g. { Catapult: 'Catapult' }.
+export function readHeroExchangeWarMachines(heroName) {
+  return Object.fromEntries(
+    readArtifactFrames(getWarMachineFrames(heroName))
+      .filter(([, artifact]) => artifact)
+      .map(([frame, artifact]) => [frame.getAttribute('aria-label'), artifact])
+  )
+}
+
+// A frame by the war machine it is for, e.g. 'Ballista' or 'First Aid Tent'.
+export async function clickHeroExchangeWarMachineFrame(user, heroName, frame) {
+  await user.click(within(getWarMachineFrames(heroName)).getByRole('listitem', { name: frame }))
+}

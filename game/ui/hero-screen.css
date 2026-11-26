@@ -326,6 +326,7 @@
 }
 
 .hero-screen__artifacts,
+.hero-screen__war-machines,
 .hero-screen__backpack {
   --x: 0;
   --y: 0;
@@ -336,6 +337,7 @@
 }
 
 .hero-screen__artifacts,
+.hero-screen__war-machines,
 .hero-screen__backpack-slots {
   list-style: none;
   margin: 0;

@@ -7,10 +7,13 @@ import {
   takeArtifactFrom
 } from '../../../game/heroes/artifact-exchange.js'
 import {
+  equippedForGoodAt,
+  isWarMachine,
   putBackHeldArtifact,
   putHeldArtifact,
   scrollBackpack,
-  takeArtifact
+  takeArtifact,
+  tooLargeForBackpack
 } from '../../../game/heroes/artifacts.js'
 import {
   assembleCombination,
@@ -48,6 +51,9 @@ import { noticesWithPictures } from '../presentation/notice-windows.js'
 const SIDES = ['left', 'right']
 const CAPTURED_MESSAGE = 'You have captured an enemy artifact!'
 const COMBINATION_SUBJECT = 'hero.artifactCombination'
+const MUST_BE_EQUIPPED = (name) => `The ${name} must be equipped.`
+const TOO_LARGE_FOR_BACKPACK = (name) =>
+  `Alas, your backpack cannot hold something as large as a ${name}.`
 
 const QUESTIONS = Object.freeze({
   assemble: (name) =>
@@ -137,9 +143,54 @@ export const registerHeroArtifactsModule = defineModule(
       return [...combinations].filter(Boolean)
     }
 
+    const nameOf = (artifactId) => definitions?.artifacts?.[artifactId]?.name ?? artifactId
+
+    function refusedToTake(artifacts, place) {
+      const artifactId = equippedForGoodAt(artifacts, place, definitions)
+      if (artifactId) {
+        const name = nameOf(artifactId)
+        emit(APP_UI_NOTICE_OPENED, {
+          title: null,
+          message: MUST_BE_EQUIPPED(name),
+          rewards: [{ label: name, caption: [name], isArtifact: true }]
+        })
+      }
+      return Boolean(artifactId)
+    }
+
+    function refusedToPut(artifacts, place) {
+      const artifactId = tooLargeForBackpack(artifacts, place, definitions)
+      if (artifactId) {
+        emit(APP_UI_NOTICE_OPENED, {
+          title: null,
+          message: TOO_LARGE_FOR_BACKPACK(nameOf(artifactId))
+        })
+      }
+      return Boolean(artifactId)
+    }
+
+    const exchangedArtifacts = (heroIds, side) => heroById(state.get(), heroIds?.[side])?.artifacts
+
+    const heldInExchange = (heroIds) =>
+      SIDES.map((side) => exchangedArtifacts(heroIds, side)).find((artifacts) => artifacts?.held)
+
+    // Alone on the hero screen, a war machine has no other place to go, so it isn't picked up.
+    function takeFromSelectedHero(place) {
+      const artifacts = heroById(state.get(), selectedHeroId())?.artifacts
+      if (refusedToTake(artifacts, place)) {
+        return
+      }
+      if (!isWarMachine(artifacts?.worn?.[place.slot], definitions)) {
+        rearrange((each) => takeArtifact(each, place, definitions))
+      }
+    }
+
     function putOnSelectedHero(place) {
       const heroId = selectedHeroId()
       const held = heroById(state.get(), heroId)?.artifacts?.held
+      if (refusedToPut(heroById(state.get(), heroId)?.artifacts, place)) {
+        return
+      }
       const isPut = rearrange((artifacts) => putHeldArtifact(artifacts, place, definitions), heroId)
       if (isPut && place.slot) {
         offerToAssemble(heroId, held)
@@ -196,8 +247,7 @@ export const registerHeroArtifactsModule = defineModule(
         },
         {
           type: APP_COMMAND_HERO_ARTIFACT_TAKE_REQUESTED,
-          handler: ({ detail: { place } }) =>
-            rearrange((artifacts) => takeArtifact(artifacts, place))
+          handler: ({ detail: { place } }) => takeFromSelectedHero(place)
         },
         {
           type: APP_COMMAND_HERO_ARTIFACT_PUT_REQUESTED,
@@ -240,15 +290,21 @@ export const registerHeroArtifactsModule = defineModule(
         },
         {
           type: APP_COMMAND_HEROES_ARTIFACT_TAKE_REQUESTED,
-          handler: ({ detail: { heroIds, side, place } }) =>
-            exchange(heroIds, (artifacts) => takeArtifactFrom(artifacts, side, place))
+          handler: ({ detail: { heroIds, side, place } }) => {
+            if (!refusedToTake(exchangedArtifacts(heroIds, side), place)) {
+              exchange(heroIds, (artifacts) =>
+                takeArtifactFrom(artifacts, side, place, definitions)
+              )
+            }
+          }
         },
         {
           type: APP_COMMAND_HEROES_ARTIFACT_PUT_REQUESTED,
           handler: ({ detail: { heroIds, side, place } }) => {
-            const held = SIDES.map((each) => heroById(state.get(), heroIds?.[each]))
-              .map((hero) => hero?.artifacts?.held)
-              .find(Boolean)
+            const held = heldInExchange(heroIds)?.held
+            if (refusedToPut(heldInExchange(heroIds), place)) {
+              return
+            }
             const isPut = exchange(heroIds, (artifacts) =>
               putHeldArtifactOn(artifacts, side, place, definitions)
             )

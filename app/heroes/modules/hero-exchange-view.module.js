@@ -140,6 +140,9 @@ export const registerHeroExchangeViewModule = defineModule(
         .querySelector('.hero-exchange__artifacts')
         .setAttribute('aria-label', `${hero.name}'s artifacts`)
       element
+        .querySelector('.hero-exchange__war-machines')
+        .setAttribute('aria-label', `${hero.name}'s war machines`)
+      element
         .querySelector('.hero-exchange__backpack-slots')
         .setAttribute('aria-label', `${hero.name}'s backpack`)
     }

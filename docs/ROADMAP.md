@@ -750,14 +750,14 @@ In eighteen parts. See `docs/notes/2026-11-21-siege-combat.md`. Entering a town 
 - [x] 5.10.12 Controlling the towers: the player's hero defending with Artillery aims each arrow tower on a turn of its own as the round starts, clicking any stack of the attacker's side; on that turn the hero can cast first, Wait brings it back first in the wait phase, Defend passes it, Auto combat lets it aim itself
 
 ### 5.11 War Machines & Tactics
-The Ballista, the Ammo Cart and the First Aid Tent, and placing the army before a battle. Rules checked with the `game-sources` skill when planned; split into parts then.
-- [ ] War machines in their own slots on the hero screen, beside the army; shown on the battlefield in their places
-- [ ] **Ballista**: shoots on its turn; the Artillery skill aims it and adds its bonuses (4.7)
-- [ ] **First Aid Tent**: heals a stack on its turn; the First Aid skill heals more and aims it (4.7)
-- [ ] **Ammo Cart**: the hero's shooters never run out of shots while it stands
-- [ ] War machines can be attacked and destroyed; a destroyed one is lost after the battle
-- [ ] Bought at the town's Blacksmith (6.2) and the War Machine Factory on the map (7.16); some heroes start with one, and the matching specialties (4.4)
-- [ ] **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
+The Ballista, the Ammo Cart, the First Aid Tent and the Catapult, and placing the army before a battle. In parts. See `docs/notes/2026-11-26-war-machines.md`.
+- [x] 5.11.1 War machines on the hero: every hero's Catapult, a hired hero's war machine from their starting army, a scenario hero's from their artifacts; shown in their four slots on the hero screen and the exchange window; the Catapult can't be moved and none goes to the backpack; the others traded between heroes
+- [ ] 5.11.2 On the battlefield: the Ballista, Ammo Cart and First Aid Tent in their places as targets; destroyed ones are lost after the battle
+- [ ] 5.11.3 **Ballista**: shoots at the end of each round; the Artillery skill aims it and adds its bonuses (4.7)
+- [ ] 5.11.4 **First Aid Tent**: heals a stack at the end of each round; the First Aid skill heals more and aims it (4.7)
+- [ ] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
+- [ ] 5.11.6 Bought at the town's Blacksmith (6.2); the War Machine Factory on the map with 7.16, and the war machine specialties with 4.4
+- [ ] 5.11.7 **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
 
 ---
 
@@ -1565,7 +1565,7 @@ What most real maps use and the roadmap had not planned. The data-only objects c
 70. Pickups (7.12) and signs (7.20)
 71. Creature banks (7.13): the guards' battle and the treasure, then each bank as data
 72. Hero specialties (4.4)
-73. War machines and Tactics (5.11), with the Blacksmith (6.2)
+73. War machines and Tactics (5.11), in seven parts: on the hero, on the battlefield, the Ballista, the First Aid Tent, the Ammo Cart, the Blacksmith (6.2), Tactics
 74. Trading and services (7.16): Trading Post with the Marketplace (6.2), Hill Fort, University, Refugee Camp, Black Market, Sanctuary, Altar of Sacrifice
 75. Quests (7.14): Keymaster's Tent and Border Guard, then Seer's Hut and Quest Guard, then the Quest Log
 76. Prison (7.15)

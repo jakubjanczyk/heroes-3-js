@@ -26,18 +26,23 @@ function pick(items, random) {
   return items[Math.floor(random() * items.length)]
 }
 
-// A war machine keeps its stack's place in the roll but isn't brought until there are war machines.
+// A war machine takes a stack's place in the roll and goes to its own slot, not the army.
 const isCreatureStack = (stack) => Boolean(stack.creature)
 
-function rollStartingArmy(startingArmy = [], random) {
+function rollStartingKit(startingArmy = [], random) {
   const roll = 1 + Math.floor(random() * 100)
-  return startingArmy
-    .filter((_stack, index) => roll <= (STARTING_STACK_CHANCES[index] ?? 0))
-    .filter(isCreatureStack)
-    .map(({ creature, min, max }) => ({
+  const brought = startingArmy.filter(
+    (_stack, index) => roll <= (STARTING_STACK_CHANCES[index] ?? 0)
+  )
+  return {
+    army: brought.filter(isCreatureStack).map(({ creature, min, max }) => ({
       creature,
       count: min + Math.floor(random() * (max - min + 1))
-    }))
+    })),
+    warMachines: brought
+      .filter((stack) => !isCreatureStack(stack))
+      .map(({ warMachine }) => warMachine)
+  }
 }
 
 // A hero who takes a hired one's place brings a single creature of their first starting stack.
@@ -68,12 +73,16 @@ function rollHeroForHire({ pool, heroClasses, takenNames, isReplacement, random 
   const hero = pick(candidates, random)
   const { name, heroClass, heroId } = hero
   const startingArmy = startingArmyOf(hero, heroClasses)
+  const { army, warMachines } = isReplacement
+    ? { army: rollReplacementArmy(startingArmy), warMachines: [] }
+    : rollStartingKit(startingArmy, random)
   return {
     ...(heroId ? { heroId } : {}),
     name,
     heroClass,
     role: isReplacement ? TAVERN_ROLE_REPLACEMENT : TAVERN_ROLE_WEEK_START,
-    army: isReplacement ? rollReplacementArmy(startingArmy) : rollStartingArmy(startingArmy, random)
+    army,
+    ...(warMachines.length > 0 ? { warMachines } : {})
   }
 }
 
@@ -188,9 +197,9 @@ export function offerWithReturningHero(heroes, hero, roll) {
   return offered.map((offeredHero, index) => (index === slot ? hero : offeredHero))
 }
 
-export function describeHeroForHire({ name, heroClass, level = 1, artifacts }, heroClasses) {
-  const className = heroClasses?.[heroClass]?.name ?? heroClass
-  return `${name} is a level ${level} ${className} with ${countArtifacts(artifacts)} artifacts.`
+export function describeHeroForHire({ name, heroClass, level = 1, artifacts }, definitions) {
+  const className = definitions?.heroClasses?.[heroClass]?.name ?? heroClass
+  return `${name} is a level ${level} ${className} with ${countArtifacts(artifacts, definitions)} artifacts.`
 }
 
 function canAfford(resources, cost) {
