@@ -1,0 +1,1071 @@
+/*
+ * The battle screen, laid over the whole adventure screen: the battlefield with its 15 by
+ * 11 hexes and an unmarked edge column past each side, the heroes in the top corners and the combat bar with the status bar along the bottom.
+ * Nothing is taken from the game: the ground takes the colour of the terrain the battle is on.
+ */
+.game-shell {
+  position: relative;
+}
+
+.battle-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 3px;
+  padding: var(--frame-width);
+  background: linear-gradient(180deg, var(--frame-mid), var(--frame-dark));
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow:
+    inset 0 0 0 1px var(--trim-gold),
+    inset 0 0 0 3px var(--frame-dark);
+}
+
+.battle-screen__field {
+  position: relative;
+  min-block-size: 0;
+  overflow: hidden;
+  container-type: size;
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow: inset 0 0 0 1px black;
+
+  /* Pointy-top hexes: as tall as 2/√3 of their width, rows overlapping by a quarter. Under the
+     sky, the 11 rows (8.5 hexes tall) and a strip of half a hex below them for the lower arrow
+     tower: 9 hexes in 85% of the height. */
+  --hex-width: min(calc(100cqw / 17.5), calc(85cqh / 9 / 1.1547));
+  --hex-height: calc(var(--hex-width) * 1.1547);
+}
+
+.battle-screen__ground {
+  position: absolute;
+  inset: 0;
+}
+
+/* Sky and a far treeline over the ground, as on the game's battlefield backdrops. */
+.battle-screen__sky {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 15%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3Cpath d='M4 30L10 6L16 30ZM19 30L27 0L35 30ZM38 30L43 12L48 30ZM49 30L55 4L61 30Z' fill='rgb(38,78,58)'/%3E%3C/svg%3E")
+    0 100% / auto 70% repeat-x,
+    linear-gradient(180deg, oklch(0.82 0.05 230), oklch(0.9 0.03 200) 70%, transparent);
+}
+
+.battle-hero {
+  position: absolute;
+  inset-block-start: 2%;
+  inline-size: calc(var(--hex-width) * 1.2);
+  block-size: calc(var(--hex-height) * 1.6);
+  border-radius: 40% 40% 12% 12%;
+  background: linear-gradient(180deg, oklch(0.9 0.01 250), oklch(0.6 0.03 250));
+  border: 2px solid oklch(0.95 0.01 250);
+  box-shadow: 0 0.2rem 0.6rem black;
+
+  /* The hero's banner, in the player's colour. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block-start: -10%;
+    inset-inline-end: -14%;
+    inline-size: 40%;
+    block-size: 30%;
+    background: var(--battle-hero-banner, var(--interface-color));
+    clip-path: polygon(0 0, 100% 20%, 0 45%);
+  }
+}
+
+.battle-hero--attacker {
+  inset-inline-start: 1%;
+}
+
+.battle-hero--defender {
+  inset-inline-end: 1%;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &::after {
+    inset-inline: -14% auto;
+    clip-path: polygon(100% 0, 0 20%, 100% 45%);
+  }
+}
+
+.battlefield {
+  /* Taps on hexes do not flash the browser's tap highlight. */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  position: absolute;
+  /* Below the sky, and in the middle of the field when it is taller than the hexes and the strip
+     under them need. */
+  inset-block-start: max(15cqh, calc(50cqh - var(--hex-height) * 4.5));
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  inline-size: calc(var(--hex-width) * (17 + 0.5));
+}
+
+.battlefield__row {
+  display: flex;
+  margin-block-start: calc(var(--hex-height) * -0.25);
+
+  &:first-child {
+    margin-block-start: 0;
+  }
+
+  /* As in the game, the top row and every second one under it sit half a hex to the right. */
+  &:nth-child(odd) {
+    padding-inline-start: calc(var(--hex-width) / 2);
+  }
+}
+
+.battlefield__hex {
+  position: relative;
+  flex: none;
+  inline-size: var(--hex-width);
+  block-size: var(--hex-height);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.12)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+
+.battlefield__hex--reachable {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.38)' stroke='rgba(214,224,110,0.6)' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+
+/* Under the mouse: the hex the stack would move to, or the enemy it would attack or shoot. */
+.battlefield__hex--highlighted {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,29 99,86.5 50,114.5 1,86.5 1,29' fill='rgba(0,0,0,0.5)' stroke='rgba(255,236,120,0.95)' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+
+.battlefield__hex--edge {
+  background: none;
+}
+
+/* The walls of a siege: stone on their hexes, with the drawbridge's wooden planks raised in the
+ * gateway, or lowered flat while a stack holds it open. */
+.battlefield__wall {
+  position: absolute;
+  inset: 4% 6%;
+  pointer-events: none;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 30%, rgba(40, 34, 28, 0.55) 30% 34%),
+    linear-gradient(160deg, #b9b2a3, #8a8274 55%, #5f594f);
+  box-shadow: inset 0 0 0 2px rgba(30, 26, 22, 0.6);
+}
+
+.battlefield__wall--drawbridge {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 22%, rgba(40, 22, 8, 0.7) 22% 26%),
+    linear-gradient(180deg, #9a6a3a, #6b4521);
+}
+
+.battlefield__wall--open {
+  inset: 22% 6%;
+  opacity: 0.75;
+  clip-path: none;
+}
+
+/* Cracks across the stone once the catapult has hit it, and a heap of rubble once it is down. */
+.battlefield__wall--damaged {
+  background:
+    linear-gradient(118deg, transparent 0 44%, rgba(20, 16, 12, 0.85) 44% 48%, transparent 48%),
+    linear-gradient(64deg, transparent 0 56%, rgba(20, 16, 12, 0.75) 56% 59%, transparent 59%),
+    linear-gradient(150deg, transparent 0 30%, rgba(20, 16, 12, 0.6) 30% 33%, transparent 33%),
+    repeating-linear-gradient(0deg, transparent 0 30%, rgba(40, 34, 28, 0.55) 30% 34%),
+    linear-gradient(160deg, #a49d8f, #7a7366 55%, #554f46);
+}
+
+.battlefield__wall--destroyed {
+  inset: 48% 4% 4%;
+  clip-path: none;
+  border-radius: 40% 40% 12% 12%;
+  background:
+    radial-gradient(circle at 20% 60%, #8a8274 0 14%, transparent 15%),
+    radial-gradient(circle at 48% 40%, #9c9486 0 17%, transparent 18%),
+    radial-gradient(circle at 76% 62%, #7d766a 0 15%, transparent 16%),
+    radial-gradient(circle at 36% 78%, #6c665b 0 12%, transparent 13%),
+    radial-gradient(circle at 64% 82%, #8f887b 0 13%, transparent 14%),
+    linear-gradient(180deg, rgba(70, 62, 52, 0.4), rgba(50, 44, 36, 0.85));
+  box-shadow: none;
+}
+
+.battlefield__wall--drawbridge.battlefield__wall--damaged {
+  background:
+    linear-gradient(120deg, transparent 0 46%, rgba(25, 12, 4, 0.9) 46% 50%, transparent 50%),
+    repeating-linear-gradient(90deg, transparent 0 22%, rgba(40, 22, 8, 0.7) 22% 26%),
+    linear-gradient(180deg, #8a5c30, #5c3a1b);
+}
+
+.battlefield__wall--drawbridge.battlefield__wall--destroyed {
+  inset: 40% 2% 10%;
+  opacity: 0.85;
+  border-radius: 0;
+  background:
+    linear-gradient(28deg, transparent 0 20%, #6b4521 20% 34%, transparent 34%),
+    linear-gradient(-18deg, transparent 0 48%, #7d5229 48% 62%, transparent 62%),
+    linear-gradient(8deg, transparent 0 70%, #5c3a1b 70% 84%, transparent 84%);
+}
+
+/* The moat in front of a Citadel's or a Castle's walls: water under whatever stands in it. */
+.battlefield__moat {
+  position: absolute;
+  inset: 2% 4%;
+  pointer-events: none;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background:
+    repeating-linear-gradient(170deg, transparent 0 18%, rgba(190, 220, 255, 0.25) 18% 22%),
+    linear-gradient(180deg, #3d78b8, #23507f);
+  opacity: 0.85;
+}
+
+/* A war machine is drawn as itself rather than as a creature's box. */
+.battle-stack--war-machine .battle-stack__creature {
+  inset-inline: 0;
+  inset-block: -20% 0;
+  block-size: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.battle-stack--war-machine.battle-stack--spell-target .battle-stack__creature {
+  box-shadow: 0 0 6px 3px rgba(255, 140, 40, 0.9);
+}
+
+/* A destroyed war machine lies broken on the ground, its arm gone; stacks walk over it. */
+.battle-stack--war-machine.battle-stack--dead .battle-stack__creature {
+  inset-block: 10% 0;
+  block-size: auto;
+  filter: grayscale(1) brightness(0.45);
+  transform: rotate(-10deg);
+}
+
+.battle-stack--dead .battle-war-machine__arm,
+.battle-stack--dead .battle-war-machine__string,
+.battle-stack--dead .battle-war-machine__bolt,
+.battle-stack--dead .battle-war-machine__iron,
+.battle-stack--dead .battle-war-machine__cross {
+  display: none;
+}
+
+.battle-catapult,
+.battle-war-machine {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+
+  & svg {
+    inline-size: 90%;
+    overflow: visible;
+    filter: drop-shadow(0 2px 2px rgb(0 0 0 / 60%));
+  }
+}
+
+/* The defender's war machines face left, towards the attacker. */
+.battle-stack--defender .battle-war-machine svg {
+  transform: scaleX(-1);
+}
+
+.battle-war-machine__wood {
+  fill: none;
+  stroke: #6b4521;
+  stroke-width: 6px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.battle-war-machine__arm {
+  fill: none;
+  stroke: #8a5c30;
+  stroke-width: 6px;
+  stroke-linecap: round;
+}
+
+.battle-war-machine__string {
+  fill: none;
+  stroke: #e8dcc0;
+  stroke-width: 2px;
+}
+
+.battle-war-machine__bolt {
+  stroke: #9aa3ad;
+  stroke-width: 4px;
+  stroke-linecap: round;
+}
+
+.battle-war-machine__iron {
+  fill: #3b3b40;
+  stroke: #1d1d20;
+  stroke-width: 2px;
+}
+
+.battle-war-machine__crate {
+  fill: #8a5c30;
+  stroke: #4a2f15;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.battle-war-machine__canvas {
+  fill: #e9e1c8;
+  stroke: #8f8466;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.battle-war-machine__doorway {
+  fill: #4a3a24;
+}
+
+.battle-war-machine__cross {
+  stroke: #c8202a;
+  stroke-width: 5px;
+}
+
+.battle-war-machine__wheel {
+  fill: #3e2a16;
+  stroke: #a07a4a;
+  stroke-width: 3px;
+}
+
+/* The stone goes across the battlefield at an even pace while it rises and falls, landing on the
+ * wall it hits. */
+.battle-catapult-stone {
+  position: absolute;
+  z-index: 4;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+  animation: catapult-stone-across var(--stone-flight-ms, 0.7s) linear forwards;
+}
+
+.battle-catapult-stone__stone {
+  position: absolute;
+  inset-block-start: -12px;
+  inset-inline-start: -12px;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 45% 55% 50% 40%;
+  background: radial-gradient(circle at 35% 30%, #c9c2b3, #7d766a 60%, #4f4a42);
+  box-shadow: 0 3px 4px rgb(0 0 0 / 55%);
+  animation: catapult-stone-arc var(--stone-flight-ms, 0.7s) forwards;
+}
+
+@keyframes catapult-stone-across {
+  to {
+    translate: var(--stone-across) 0;
+  }
+}
+
+@keyframes catapult-stone-arc {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+
+  45% {
+    translate: 0 calc(var(--stone-down) * 0.45 - 140px);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+  }
+
+  to {
+    translate: 0 var(--stone-down);
+    rotate: 540deg;
+  }
+}
+
+/* An arrow tower stands over its hex without taking it: stacks still walk beneath it. */
+.battlefield__tower {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 8%;
+  inset-block: -70% 10%;
+  pointer-events: none;
+  border-radius: 6% 6% 0 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 18%, rgba(40, 34, 28, 0.5) 18% 21%),
+    linear-gradient(90deg, #6f685c, #b3ab9b 45%, #7d766a);
+  box-shadow:
+    inset 0 0 0 2px rgba(30, 26, 22, 0.7),
+    0 4px 6px rgb(0 0 0 / 45%);
+}
+
+/* The upper tower stands past the wall's top end; the lower one at its bottom end, over the
+   last row and half a hex below it. */
+.battlefield__tower--above {
+  inset-block: -150% 60%;
+}
+
+.battlefield__tower--below {
+  inset-block: -40% -50%;
+}
+
+/* The tower whose turn the player plays, outlined as the active stack is. */
+.battlefield__tower--active {
+  outline: 3px solid oklch(0.92 0.17 98);
+  outline-offset: 2px;
+  filter: drop-shadow(0 0 6px oklch(0.92 0.17 98 / 0.8));
+  animation: battle-stack-active 1s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battlefield__tower--active {
+    animation: none;
+  }
+}
+
+/* The catapult is aimed at a tower by its picture. */
+.battlefield--aiming-catapult .battlefield__tower:not(.battlefield__tower--destroyed) {
+  pointer-events: auto;
+}
+
+/* A ruin: its top broken off, the stone left lower and darker. */
+.battlefield__tower--destroyed {
+  clip-path: polygon(
+    0 38%,
+    18% 30%,
+    30% 44%,
+    48% 26%,
+    62% 40%,
+    80% 32%,
+    100% 42%,
+    100% 100%,
+    0 100%
+  );
+  background:
+    radial-gradient(circle at 30% 50%, #5e584d 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 60%, #57514a 0 9%, transparent 10%),
+    repeating-linear-gradient(0deg, transparent 0 18%, rgba(30, 26, 22, 0.55) 18% 21%),
+    linear-gradient(90deg, #4f4a42, #7a7366 45%, #554f46);
+}
+
+.battlefield__tower-battlements {
+  position: absolute;
+  inset-inline: -8%;
+  inset-block-start: -14%;
+  block-size: 18%;
+  background: repeating-linear-gradient(90deg, #9c9485 0 20%, transparent 20% 30%);
+}
+
+.battle-tower-arrow {
+  position: absolute;
+  z-index: 4;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+  animation: tower-arrow-flight var(--arrow-flight-ms, 0.7s) linear forwards;
+}
+
+.battle-tower-arrow__arrow {
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-start: -14px;
+  inline-size: 28px;
+  block-size: 4px;
+  rotate: var(--arrow-angle, 0rad);
+  background: linear-gradient(90deg, #e8e0c8 0 18%, #6b4521 18% 82%, #2b2b2b 82%);
+  clip-path: polygon(0 0, 82% 0, 82% -100%, 100% 50%, 82% 200%, 82% 100%, 0 100%);
+}
+
+@keyframes tower-arrow-flight {
+  to {
+    translate: var(--arrow-across) var(--arrow-down);
+  }
+}
+
+/* Where the stone landed: a puff of dust; a wall that falls throws its stones down. */
+.battle-effect.battle-wall-hit {
+  inset-block-end: -20%;
+  inline-size: 96px;
+  block-size: 96px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  animation-name: wall-hit;
+}
+
+.battle-wall-hit__dust {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(245 238 220 / 100%) 0 18%,
+    rgb(200 188 165 / 90%) 38%,
+    rgb(150 138 118 / 55%) 58%,
+    transparent 72%
+  );
+  animation: wall-hit-dust var(--battle-effect-ms, 1s) ease-out forwards;
+}
+
+.battle-wall-hit--none .battle-wall-hit__dust {
+  inset: 18%;
+  opacity: 0.7;
+}
+
+.battle-wall-hit--damaged .battle-wall-hit__dust {
+  box-shadow: 0 0 0 3px rgb(255 210 120 / 45%);
+}
+
+.battle-wall-hit__rubble {
+  position: absolute;
+  inset-block-start: 40%;
+  inset-inline-start: calc(15% + var(--rubble-piece) * 12%);
+  inline-size: 13px;
+  block-size: 11px;
+  border-radius: 30%;
+  background: #8a8274;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 60%);
+  animation: wall-hit-rubble var(--battle-effect-ms, 1s) ease-in forwards;
+  animation-delay: calc(var(--rubble-piece) * 40ms);
+}
+
+@keyframes wall-hit {
+  from,
+  80% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes wall-hit-dust {
+  from {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+
+  45% {
+    transform: scale(1.2);
+    opacity: 0.95;
+  }
+
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes wall-hit-rubble {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+
+  to {
+    translate: calc((var(--rubble-piece) - 2.5) * 6px) 46px;
+    rotate: 200deg;
+  }
+}
+
+/* A creature stands on its hex, taller than it, with its count in a purple box at its feet. The
+ * mouse points at hexes, not at the pictures reaching over them. */
+.battle-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* A double-wide creature also covers the hex behind it: on the left for the attacker. */
+.battle-stack--clone .battle-stack__creature {
+  filter: sepia(1) hue-rotate(170deg) saturate(2.5) brightness(1.1);
+  opacity: 0.8;
+}
+
+.battle-stack--double-wide.battle-stack--attacker {
+  inset-inline-start: -100%;
+}
+
+.battle-stack--double-wide.battle-stack--defender {
+  inset-inline-end: -100%;
+}
+
+.battle-stack__back-half {
+  position: absolute;
+  inset: 0;
+}
+
+.battle-stack__creature {
+  position: absolute;
+  inset-inline: 15%;
+  inset-block-end: 20%;
+  block-size: 130%;
+}
+
+.battle-stack--active .battle-stack__creature {
+  outline: 2px solid oklch(0.92 0.17 98);
+  outline-offset: 1px;
+  animation: battle-stack-active 1s ease-in-out infinite alternate;
+}
+
+/* A stack the spell being aimed would hit. */
+.battle-stack--spell-target .battle-stack__creature {
+  box-shadow: 0 0 6px 3px rgba(255, 140, 40, 0.9);
+}
+
+@keyframes battle-stack-active {
+  from {
+    outline-color: oklch(0.92 0.17 98);
+  }
+
+  to {
+    outline-color: oklch(0.7 0.12 80 / 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-stack--active .battle-stack__creature {
+    animation: none;
+  }
+}
+
+.battle-stack__count {
+  position: absolute;
+  inset-block-end: 4%;
+  min-inline-size: 70%;
+  padding-inline: 2px;
+  background: #5a2aa8;
+  border: 1px solid #c9a6ff;
+  color: white;
+  font-size: clamp(0.5rem, calc(var(--hex-width) * 0.3), 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Our own colours for a stack under helpful or harmful spells. */
+.battle-stack__count--helped {
+  background: #1f7a2e;
+  border-color: #8fe39d;
+}
+
+.battle-stack__count--harmed {
+  background: #a12323;
+  border-color: #ff9c9c;
+}
+
+.battle-stack--dead {
+  z-index: 0;
+}
+
+/* A corpse lies flat and dark on its hexes, under any stack standing on it. */
+.battle-stack--dead .battle-stack__creature {
+  inset-block-end: 25%;
+  block-size: 35%;
+  filter: grayscale(1) brightness(0.45);
+}
+
+.battle-stack--dead .battle-stack__count {
+  display: none;
+}
+
+.battle-stack--attacker .battle-stack__count {
+  inset-inline-start: 65%;
+}
+
+.battle-stack--defender .battle-stack__count {
+  inset-inline-end: 65%;
+}
+
+.battle-stack--double-wide.battle-stack--attacker .battle-stack__count {
+  inset-inline-start: 82%;
+}
+
+.battle-stack--double-wide.battle-stack--defender .battle-stack__count {
+  inset-inline-end: 82%;
+}
+
+.battle-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(1.75rem, 3rem)) minmax(0, 1fr) auto repeat(
+      3,
+      minmax(1.75rem, 3rem)
+    );
+  gap: 3px;
+  block-size: 2.5rem;
+}
+
+.battle-button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--trim-gold-dark);
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--interface-color) 18%, #29324a),
+    color-mix(in oklab, var(--interface-color) 14%, #0d1220)
+  );
+  box-shadow:
+    inset 1px 1px 0 var(--trim-gold-light),
+    inset -1px -1px 0 var(--trim-gold-dark),
+    0 0 0 1px black;
+  color: var(--trim-gold);
+
+  & .battle-button__icon {
+    block-size: min(1.5rem, 70%);
+    inline-size: auto;
+    aspect-ratio: 1;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 1px 0 black);
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--trim-gold-light);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow:
+      inset -1px -1px 0 var(--trim-gold-light),
+      inset 1px 1px 0 var(--trim-gold-dark),
+      0 0 0 1px black;
+  }
+
+  &:disabled {
+    color: color-mix(in oklab, var(--trim-gold) 50%, #6a6a6a);
+    filter: grayscale(0.6);
+  }
+}
+
+.battle-bar__log {
+  min-inline-size: 0;
+  padding: 2px var(--space-xs);
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a1d26, #0b0d12);
+  border: 2px solid var(--trim-gold-dark);
+  box-shadow: inset 0 0 0 1px black;
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.battle-bar__message {
+  margin: 0;
+}
+
+.battle-bar__scroll {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  inline-size: 1.25rem;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.battle-bar__tactics {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 3px;
+  block-size: 100%;
+  min-block-size: 0;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.battle-bar__arrow {
+  border: 1px solid var(--trim-gold-dark);
+  background: linear-gradient(180deg, #29324a, #0d1220);
+
+  &::before {
+    content: "";
+    display: block;
+    block-size: 100%;
+    background: var(--trim-gold);
+    clip-path: polygon(50% 25%, 80% 75%, 20% 75%);
+  }
+}
+
+.battle-bar__arrow--down::before {
+  rotate: 180deg;
+}
+
+.battle-screen__status-bar {
+  block-size: 1.5rem;
+  padding-inline: var(--space-sm);
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a1d26, #0b0d12);
+  border: 2px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+  line-height: 1.25rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* A window over the battle, for the retreat question and the battle results. */
+.battle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-md);
+  overflow: auto;
+}
+
+.battle-overlay__window {
+  inline-size: min(26rem, 100%);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+}
+
+.battle-overlay__actions {
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.battle-overlay__cancel {
+  inline-size: 1.3rem;
+  fill: none;
+  stroke: var(--trim-gold);
+  stroke-width: 2.6;
+  filter: drop-shadow(1px 1px 0 black);
+}
+
+.battle-question__text {
+  margin: 0;
+}
+
+/* The battle stays in view behind its results, darkened. */
+.battle-results {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.battle-results__sides {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.battle-results__side {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2xs);
+
+  & p {
+    margin: 0;
+  }
+}
+
+.battle-results__side--defender {
+  justify-items: end;
+}
+
+.battle-results__outcome {
+  padding: 1px var(--space-xs);
+  border: 1px solid var(--trim-gold-dark);
+  font-size: var(--font-size-sm);
+}
+
+.battle-results__message {
+  margin-top: var(--space-md);
+  padding: var(--space-sm);
+  border: 1px solid var(--trim-gold-dark);
+
+  & p {
+    margin: 0;
+  }
+
+  & p + p {
+    margin-top: var(--space-sm);
+  }
+}
+
+.battle-results__title {
+  margin: var(--space-md) 0 0;
+  font-size: var(--font-size-md);
+  color: var(--hud-text-gold);
+}
+
+.battle-results__heading {
+  margin: var(--space-sm) 0 var(--space-2xs);
+  font-size: var(--font-size-md);
+}
+
+.battle-results__creatures,
+.battle-results__none {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  min-block-size: 3rem;
+  margin: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--trim-gold-dark);
+  list-style: none;
+  align-items: center;
+}
+
+.battle-results__creature {
+  display: grid;
+  justify-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.battle-results__picture {
+  position: relative;
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+.battle-results__name-caption {
+  margin-top: var(--space-2xs);
+}
+
+/* Over the stack whose morale or luck took effect, rising and fading out. */
+.battle-effect {
+  position: absolute;
+  inset-block-end: 60%;
+  inset-inline-start: 50%;
+  z-index: 2;
+  box-sizing: border-box;
+  inline-size: 40px;
+  block-size: 40px;
+  padding: 6px;
+  border: 2px solid currentcolor;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 75%);
+  translate: -50% 0;
+  pointer-events: none;
+  box-shadow: 0 2px 4px black;
+  animation: battle-effect var(--battle-effect-ms, 1s) ease-out forwards;
+}
+
+@keyframes battle-effect {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.7);
+  }
+
+  15%,
+  70% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+/* A stand-in for the spell's own animation: a burst of light over the stack it hit. */
+.battle-spell-bolt {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: spell-bolt var(--battle-effect-ms, 1s) ease-out forwards;
+}
+
+.battle-spell-bolt__glow {
+  stroke: rgb(100 140 255 / 55%);
+  stroke-width: 10px;
+}
+
+.battle-spell-bolt__core {
+  stroke: rgb(255 255 255 / 95%);
+  stroke-width: 3px;
+}
+
+@keyframes spell-bolt {
+  from,
+  40% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.battle-effect.spell-hit {
+  inset-block-end: 20%;
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 0;
+  border: none;
+  background: radial-gradient(
+    circle,
+    rgb(255 255 255 / 95%) 0 18%,
+    rgb(140 200 255 / 85%) 35%,
+    rgb(60 120 255 / 40%) 58%,
+    transparent 72%
+  );
+  box-shadow: none;
+  animation-name: spell-hit;
+}
+
+/* A shield ring where the spell would have burst. */
+.battle-effect.spell-resisted {
+  inset-block-end: 20%;
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 0;
+  border: 3px solid rgb(255 215 120 / 90%);
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 45%, rgb(255 200 90 / 45%) 70%, transparent 74%);
+  box-shadow: 0 0 12px rgb(255 200 90 / 80%);
+  animation-name: spell-hit;
+}
+
+@keyframes spell-hit {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  20% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  60% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-effect {
+    animation: none;
+  }
+}
