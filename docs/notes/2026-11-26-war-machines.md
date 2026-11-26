@@ -121,4 +121,6 @@ Checked against the Heroes 3 wiki's raw page source (War Machine, Shots, `Templa
 - **It takes no turn**, as built in 5.11.2.
 - **Saved**: nothing new; the shots left follow from the saved shots and whether the cart stood at each one.
 
+As built: the cart's entry in `monsters.json` has the `suppliesShots` ability; a shot by a stack whose starting side has a standing stack with it uses no shots, and a stack that shoots twice shoots both.
+
 Left for later: a creature bank battle, where the cart doesn't stand on the battlefield but still gives unlimited shots (the wiki and the engine; 7.13); the shots left in the creature's info window (with the battle's stack popups).

@@ -755,7 +755,7 @@ The Ballista, the Ammo Cart, the First Aid Tent and the Catapult, and placing th
 - [x] 5.11.2 On the battlefield: the Ballista, Ammo Cart and First Aid Tent in their places as targets; destroyed ones are lost after the battle; a hero defending a town has no Ballista
 - [x] 5.11.3 **Ballista**: shoots on its turn, after every stack that didn't wait, for 2–3 times the hero's Attack plus one, and aims itself; Artillery lets the player aim it, with a chance of double damage and two shots from Advanced (4.7)
 - [x] 5.11.4 **First Aid Tent**: heals a stack's top creature on its turn after the Ballista's, by 1–25; First Aid aims it and heals up to 50, 75 or 100 (4.7)
-- [ ] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
+- [x] 5.11.5 **Ammo Cart**: the hero's shooters never run out of shots while it stands
 - [ ] 5.11.6 Bought at the town's Blacksmith (6.2); the War Machine Factory on the map with 7.16, and the war machine specialties with 4.4
 - [ ] 5.11.7 **Tactics**: a hero with Tactics places their stacks before the battle starts, in a band as deep as the skill's level, the higher level cancelling the other side's (4.7)
 
