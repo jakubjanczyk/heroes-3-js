@@ -346,7 +346,7 @@ describe('war machines in battle behavior', () => {
   })
 
   describe('the battle', () => {
-    test('the war machines take no turn: the first creature acts first, every round', async () => {
+    test('war machines that do not shoot take no turn: the first creature acts first, every round', async () => {
       const { user } = await fight(
         aFightWithAMonster({
           hero: aRedHero({ army: [stack('RUNNER')], warMachines: ALL_WAR_MACHINES })

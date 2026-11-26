@@ -10,6 +10,7 @@ import {
 } from './battle.js'
 import { getMovementRange } from './battle-stats.js'
 import { getHexDistance } from './battlefield.js'
+import { chooseSelfAimedTarget } from './self-aimed-shots.js'
 
 // A first, simple combat AI: shoot the nearest enemy stack when the stack can, else go for the
 // nearest one and attack it, or get as close as this turn allows. The earlier army slot wins ties.
@@ -37,6 +38,20 @@ function planFlightToward(battle, stack, goal) {
   return nearest ? [nearest] : null
 }
 
+function chooseWarMachineTarget(battle, stack) {
+  const targets = getShotTargets(battle, stack).map(({ stackId, damage }) => ({
+    stack: battle.stacks.find(({ id }) => id === stackId),
+    damage
+  }))
+  return { stackId: chooseSelfAimedTarget(battle, targets).id }
+}
+
+function findShotTarget(battle, stack) {
+  return stack.warMachine
+    ? chooseWarMachineTarget(battle, stack)
+    : findNearestShotTarget(battle, stack)
+}
+
 function findNearestShotTarget(battle, stack) {
   const distanceTo = ({ stackId }) => {
     const target = battle.stacks.find(({ id }) => id === stackId)
@@ -51,7 +66,7 @@ function findNearestShotTarget(battle, stack) {
 // strikes, `{ path }` for a move, or null when the stack can do nothing and its turn passes.
 export function planComputerTurn(battle, stack, rolls) {
   if (canShoot(battle, stack)) {
-    const { stackId: targetId } = findNearestShotTarget(battle, stack)
+    const { stackId: targetId } = findShotTarget(battle, stack)
     return { shot: { targetId, ...planStackShot(battle, stack, { targetId, ...rolls }) } }
   }
 

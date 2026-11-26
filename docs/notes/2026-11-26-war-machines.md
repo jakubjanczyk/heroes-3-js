@@ -86,4 +86,6 @@ Checked against the Heroes 3 wiki's raw page source (War Machine, `Template:Crea
 - **No log line for the double damage**: neither source shows one; the damage line is the usual "The Ballista does 40 damage."
 - **Saved**: the Ballista's shot is saved as any stack's shot, its strikes with the damage rolled, so a reload rolls nothing again.
 
+As built: the Ballista's entry in `monsters.json` says it all: `ranged`, `unlimitedShots` and `damageTimesHeroAttack` among its abilities, and `controlledBy` with the skill and, by level (none, Basic, Advanced, Expert), its shots a turn and its chance of double damage. A war machine that shoots takes turns as a stack; one that doesn't (the Ammo Cart and the tent, for now) still has none. The towers and the Ballista aiming themselves share one target choice (`game/heroes/self-aimed-shots.js`).
+
 Left for later: Archery adding to its damage (with Archery's effects, 4.7; the wiki: Archery increases the Ballista's base damage); the Ballista specialty (4.4); the computer weighing whether to give its own Artillery Ballista other targets (8.4); its right-click popup, with the battle's stack popups.

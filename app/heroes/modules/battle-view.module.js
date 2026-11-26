@@ -50,6 +50,14 @@ import { renderWarMachinePicture } from '../presentation/war-machines.js'
 
 const describeDamageRange = ({ min, max }) => (min === max ? `${min}` : `${min}-${max}`)
 
+// A shooter that never runs out leaves its shots out.
+function describeShotsLeft({ shots }) {
+  if (!Number.isFinite(shots)) {
+    return ''
+  }
+  return shots === 1 ? '1 shot left, ' : `${shots} shots left, `
+}
+
 const HEX_SIDES = ['top-left', 'top-right', 'right', 'bottom-right', 'bottom-left', 'left']
 
 const NO_MOAT = Object.freeze({ name: '', hexes: [] })
@@ -298,8 +306,7 @@ export const registerBattleViewModule = defineModule(
     function describeStackHex(hex, activeStack) {
       const shot = findShot(hex)
       if (shot) {
-        const shotsLeft = activeStack.shots === 1 ? '1 shot' : `${activeStack.shots} shots`
-        return `Shoot ${shot.target.name} (${shotsLeft} left, damage ${describeDamageRange(shot.damage)})`
+        return `Shoot ${shot.target.name} (${describeShotsLeft(activeStack)}damage ${describeDamageRange(shot.damage)})`
       }
 
       const attack = findAttack(hex, hexElementAt(hex))
