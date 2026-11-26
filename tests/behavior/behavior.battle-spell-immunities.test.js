@@ -339,4 +339,60 @@ describe('battle spell immunities behavior', () => {
       expect(readSpellBookSpellPoints()).toBe('20')
     })
   })
+
+  describe('creatures immune to mind spells', () => {
+    const MIND_IMMUNE_CREATURES = {
+      COLOSSUS: aCreatureDefinition()
+        .withName('Colossus')
+        .withNamePlural('Colossi')
+        .withAbilities(['immuneToMindSpells'])
+        .build()
+    }
+
+    const aColossusCaster = (options = {}) =>
+      aCaster({ knowledge: 4, spells: ['BLESS', 'SORROW', ...CONTROL_SPELLS], ...options })
+
+    const aFightWithColossi = ({ hero = aColossusCaster(), monster = 'COLOSSUS' } = {}) =>
+      aFight({ hero, monster, creatures: MIND_IMMUNE_CREATURES })
+
+    test("given Frenzy is picked when the mouse is over the hero's creatures immune to mind spells then the status bar asks for a target and the cursor is blocked", async () => {
+      const hero = aColossusCaster({ army: [stack('COLOSSUS', 10)] })
+      const { user } = await startBattleWithStyles(aFightWithColossi({ hero, monster: 'PIKEMAN' }))
+      await pickSpell(user, 'Frenzy')
+
+      await hoverBattleHex(user, OWN_HEX.row, OWN_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+      expect(getCursorOver(getBattleHex(OWN_HEX.row, OWN_HEX.column))).toBe('battle-blocked')
+    })
+
+    test('given Blind is picked when enemy creatures immune to mind spells are clicked then the spell is cancelled and no spell points are spent', async () => {
+      const { user } = await startBattle(aFightWithColossi())
+      await pickSpell(user, 'Blind')
+
+      await clickBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+      const statusBar = getBattleStatusBarText()
+
+      expect(statusBar).toBe('Spell cancelled')
+      expect(await readBattleSpellPoints(user)).toBe('40')
+    })
+
+    test('given an Expert Earth hero against creatures immune to mind spells when Sorrow is picked then the book says the spell will affect no one', async () => {
+      const hero = aColossusCaster({ secondarySkills: [{ skill: 'EARTH_MAGIC', level: 'EXPERT' }] })
+      const { user } = await startBattle(aFightWithColossi({ hero }))
+
+      await pickSpell(user, 'Sorrow')
+
+      expect(readSpellBookMessage()).toEqual(['', 'That spell will affect no one!'])
+    })
+
+    test('given the hero casts Bless on their creatures immune to mind spells then their count box turns green', async () => {
+      const hero = aColossusCaster({ army: [stack('COLOSSUS', 10)] })
+      const { user } = await startBattleWithStyles(aFightWithColossi({ hero, monster: 'PIKEMAN' }))
+
+      await castSpellAt(user, 'Bless', OWN_HEX)
+
+      expect(readStackCountColour(OWN_HEX.row, OWN_HEX.column)).toBe('green')
+    })
+  })
 })

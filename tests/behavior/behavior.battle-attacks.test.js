@@ -3,7 +3,12 @@ import { screen, within } from '@testing-library/dom'
 import { describe, expect, test } from 'vitest'
 
 import { expectMonsterNotPresent } from './adventure-map.utils.js'
-import { createMemoryEventLog, readGameData, setupMovementBehaviorApp } from './app.utils.js'
+import {
+  createMemoryEventLog,
+  readGameData,
+  setupMovementBehaviorApp,
+  waitMs
+} from './app.utils.js'
 import {
   attackBattleHexFrom,
   getBattleStatusBarText,
@@ -20,7 +25,7 @@ import {
   waitForBattleToEnd,
   winBattle
 } from './battle.utils.js'
-import { aHero, aMonster, aScenario } from './builders.js'
+import { aCreatureDefinition, aHero, aMonster, aScenario } from './builders.js'
 
 const monsters = readGameData('monsters.json')
 
@@ -315,6 +320,66 @@ describe('battle attack behavior', () => {
 
       // 100 damage, +20% for 20 Attack against 16 Defense, against 100 health each.
       expect(readCombatMessages()[1]).toBe('The Angels do 120 damage. One Champion perishes.')
+    })
+  })
+
+  describe('attacks that get no retaliation', () => {
+    const aFastFlier = (name) =>
+      aCreatureDefinition()
+        .withName(name)
+        .withNamePlural(`${name}s`)
+        .withSpeed(20)
+        .withAttack(10)
+        .withDefense(10)
+        .withAbilities(['flying'])
+
+    const CREATURES = {
+      LANCER: aFastFlier('Lancer').withAbilities(['flying', 'noRetaliation']).build(),
+      RAIDER: aFastFlier('Raider').build()
+    }
+
+    const aFightWithLancers = (army) =>
+      aFight({ army }).withDefinitions({ monsters: { ...monsters, ...CREATURES } })
+
+    const THE_PIKEMEN = { row: 6, column: 15 }
+
+    const attackThePikemenFrom = (user, side) =>
+      attackBattleHexFrom(user, THE_PIKEMEN.row, THE_PIKEMEN.column, side)
+
+    const pikemenHits = () =>
+      readCombatMessages().filter((message) => message.startsWith('The Pikemen do'))
+
+    test("given a stack whose attacks get no retaliation attacks the Pikemen then the Pikemen don't strike back", async () => {
+      const { user } = await startBattle(
+        aFightWithLancers([stack('LANCER', 10), stack('RAIDER', 10)])
+      )
+
+      await attackThePikemenFrom(user, 'left')
+
+      expect(pikemenHits()).toEqual([])
+      expect(readBattleStacks()).toContainEqual(stackAt('Lancers 10', 6, 14))
+    })
+
+    test('given it attacked the Pikemen when another stack attacks them in the same round then the Pikemen strike back at that one', async () => {
+      const { user } = await startBattle(
+        aFightWithLancers([stack('LANCER', 10), stack('RAIDER', 10)])
+      )
+      await attackThePikemenFrom(user, 'left')
+
+      await attackThePikemenFrom(user, 'top-left')
+
+      expect(readCombatMessages()[2]).toBe('The Pikemen do 40 damage. 4 Raiders perish.')
+    })
+
+    test('given the Pikemen attack the stack whose attacks get no retaliation then it strikes back', async () => {
+      const { user } = await startBattle(aFightWithLancers([stack('LANCER', 10)]))
+
+      await moveActiveStackTo(user, 6, 14)
+      await waitMs(1000)
+
+      expect(
+        readCombatMessages().filter((message) => message.startsWith('The Lancers do'))
+      ).toHaveLength(1)
     })
   })
 
