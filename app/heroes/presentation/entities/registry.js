@@ -2,6 +2,7 @@ import * as artifact from './artifact.js'
 import * as bonusObject from './bonus-object.js'
 import * as dwelling from './dwelling.js'
 import * as hero from './hero.js'
+import * as market from './market.js'
 import * as mine from './mine.js'
 import * as monster from './monster.js'
 import * as obstacle from './obstacle.js'
@@ -15,6 +16,7 @@ const presentationByKind = Object.freeze({
   BONUS_OBJECT: bonusObject,
   DWELLING: dwelling,
   HERO: hero,
+  MARKET: market,
   MINE: mine,
   MONSTER: monster,
   OBSTACLE: obstacle,

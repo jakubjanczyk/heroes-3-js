@@ -3,6 +3,8 @@ import {
   APP_COMMAND_MARKETPLACE_OPEN_REQUESTED,
   APP_COMMAND_MARKETPLACE_TRADE_REQUESTED,
   APP_FACT_TOWN_LEFT,
+  APP_UI_ADVENTURE_MAP_COVERED,
+  APP_UI_ADVENTURE_MAP_UNCOVERED,
   APP_UI_MARKETPLACE_UPDATED,
   APP_UI_TOWN_UPDATED
 } from '../../events.js'
@@ -29,7 +31,8 @@ export const registerMarketplaceViewModule = defineModule(
     const document = env.document
     const gameShell = document?.querySelector('.game-shell')
     let townId = null
-    let isOpenRequested = false
+    let marketId = null
+    let coversAdventureMap = false
     let marketWindow = null
     let market = null
     let given = null
@@ -130,6 +133,11 @@ export const registerMarketplaceViewModule = defineModule(
       marketWindow?.remove()
       marketWindow = null
       market = null
+      marketId = null
+      if (coversAdventureMap) {
+        coversAdventureMap = false
+        emit(APP_UI_ADVENTURE_MAP_UNCOVERED, {})
+      }
     }
 
     function clearPicks() {
@@ -138,21 +146,30 @@ export const registerMarketplaceViewModule = defineModule(
       part('.count-slider__range').value = '0'
     }
 
-    function open(update) {
-      if (!marketWindow && !isOpenRequested) {
-        return
+    function mount() {
+      given = null
+      received = null
+      hasTraded = false
+      marketWindow = document
+        .getElementById('marketplace-template')
+        .content.firstElementChild.cloneNode(true)
+      const townScreen = gameShell.querySelector('.town-screen')
+      ;(townScreen ?? gameShell).append(marketWindow)
+      part('.marketplace').focus()
+      if (!townScreen) {
+        coversAdventureMap = true
+        emit(APP_UI_ADVENTURE_MAP_COVERED, {})
       }
-      isOpenRequested = false
+    }
+
+    function open(update) {
+      if (marketWindow && update.entityId !== marketId) {
+        close()
+      }
       market = update
+      marketId = update.entityId
       if (!marketWindow) {
-        given = null
-        received = null
-        hasTraded = false
-        marketWindow = document
-          .getElementById('marketplace-template')
-          .content.firstElementChild.cloneNode(true)
-        gameShell.querySelector('.town-screen')?.append(marketWindow)
-        part('.marketplace').focus()
+        mount()
       }
       if (update.traded) {
         hasTraded = true
@@ -177,7 +194,7 @@ export const registerMarketplaceViewModule = defineModule(
       max: () => setLots(part('.count-slider__range').max),
       trade: () =>
         emit(APP_COMMAND_MARKETPLACE_TRADE_REQUESTED, {
-          townId,
+          entityId: marketId,
           given,
           received,
           lots: Number(part('.count-slider__range').value)
@@ -188,7 +205,6 @@ export const registerMarketplaceViewModule = defineModule(
     function onClick(event) {
       const { target } = event
       if (target.closest('[data-town-action="marketplace"]')) {
-        isOpenRequested = true
         emit(APP_COMMAND_MARKETPLACE_OPEN_REQUESTED, { entityId: townId })
         return
       }
@@ -250,6 +266,11 @@ export const registerMarketplaceViewModule = defineModule(
     id: 'marketplace-view',
     phase: 'view',
     consumes: [APP_UI_TOWN_UPDATED, APP_UI_MARKETPLACE_UPDATED, APP_FACT_TOWN_LEFT],
-    produces: [APP_COMMAND_MARKETPLACE_OPEN_REQUESTED, APP_COMMAND_MARKETPLACE_TRADE_REQUESTED]
+    produces: [
+      APP_COMMAND_MARKETPLACE_OPEN_REQUESTED,
+      APP_COMMAND_MARKETPLACE_TRADE_REQUESTED,
+      APP_UI_ADVENTURE_MAP_COVERED,
+      APP_UI_ADVENTURE_MAP_UNCOVERED
+    ]
   }
 )

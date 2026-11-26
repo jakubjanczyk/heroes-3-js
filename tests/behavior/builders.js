@@ -197,6 +197,10 @@ export const aBonusObject = () =>
     placeable
   )
 
+// TRADING_POST; the tile is its entrance, the right of its two tiles.
+export const aMarket = () =>
+  builder({ id: 'market-1', kind: 'MARKET', type: 'TRADING_POST', tile: { x: 1, y: 0 } }, placeable)
+
 // The tile is the bottom-right corner of the obstacle's picture; its type is a key of the
 // scenario's own `obstacles` definitions.
 export const anObstacle = () =>
