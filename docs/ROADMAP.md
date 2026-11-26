@@ -595,7 +595,7 @@ See `docs/notes/2026-10-20-battle-attacks.md` and `docs/notes/2026-10-20-ranged-
 - [x] Ranged: half damage at a target more than 10 hexes away (distance penalty)
 - [x] Status bar over a target: "Shoot Pikemen (12 shots left, damage 21-31)"; the cursor is an arrow, broken when the distance penalty applies
 - [ ] Ranged: blocked by castle walls in line of fire (in H3 only walls block a shot: siege, 5.10)
-- [ ] Shots left shown in the creature's info window (needs the window) and the Ammo Cart
+- [ ] Shots left shown in the creature's info window (needs the window); the Ammo Cart is 5.11.5
 - [ ] Attack animation: brief visual for attack, damage number shown
 - [x] A stack at 0 units stays on its hex as a corpse: it gets no turn, and other stacks can stand on it
 - [ ] Death animation
