@@ -156,16 +156,22 @@ function createStack({
     topHealth: definition.health,
     strikes: abilities.includes('strikesTwice') ? 2 : 1,
     retaliationsPerRound: warMachine ? 0 : getRetaliationsPerRound(abilities),
+    blocksRetaliation: abilities.includes('noRetaliation'),
     retaliationsUsed: 0,
     defenseBonus: 0,
     shots: shotsOf(definition, shooter),
     ...heroControlOf(definition, heroSkillLevelOf),
     shooter,
     meleePenalty: shooter && !abilities.includes('noMeleePenalty'),
+    noWallPenalty: abilities.includes('noWallPenalty'),
     morale: unaffectedByMorale ? 0 : morale,
     unaffectedByMorale,
     undead,
-    ...spellTraitsOf(definition, { immunities, magicResistance, mindless: undead || warMachine }),
+    ...spellTraitsOf(definition, {
+      immunities,
+      magicResistance,
+      mindless: undead || warMachine || abilities.includes('immuneToMindSpells')
+    }),
     king: definition.king ?? null,
     binds: Boolean(definition.binds),
     breath: Boolean(definition.breath),
@@ -1026,7 +1032,7 @@ function hasDistancePenalty(stack, target) {
 // Either penalty halves the shot, and both together halve it only once.
 const hasShotPenalty = (battle, stack, target) =>
   hasDistancePenalty(stack, target) ||
-  (battle.walls && isShotThroughTheWalls(battle.walls, stack, target))
+  (battle.walls && !stack.noWallPenalty && isShotThroughTheWalls(battle.walls, stack, target))
 
 export function getShotTargets(battle, stack) {
   if (!canShoot(battle, stack)) {
