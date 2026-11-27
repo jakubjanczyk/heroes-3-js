@@ -351,7 +351,7 @@ describe('battle protective spells behavior', () => {
       })
 
     // As fast as the Swordsmen, each Brute does 10 and has 100 health.
-    const aBrute = ({ attack = 20, health = 100, abilities = [] } = {}) =>
+    const aBrute = ({ attack = 20, health = 100, abilities = [], spellDamageReduction } = {}) =>
       aCreatureDefinition()
         .withName('Brute')
         .withNamePlural('Brutes')
@@ -360,6 +360,7 @@ describe('battle protective spells behavior', () => {
         .withHealth(health)
         .withSpeed(5)
         .withAbilities(abilities)
+        .withSpellDamageReduction(spellDamageReduction)
         .build()
 
     const aFightWithBrutes = ({ hero = aFireShieldCaster(), count = 10, ...brute } = {}) =>
@@ -423,6 +424,15 @@ describe('battle protective spells behavior', () => {
         'The Brutes do 120 damage. 3 Swordsmen perish.',
         'The Fire Shield does 24 damage.'
       ])
+    })
+
+    // 20% of 120 is 24, and the Brutes take half the damage of spells: 12.
+    test('given the Brutes take half the damage of spells when they attack the Swordsmen with Fire Shield then the Fire Shield does half its damage back', async () => {
+      const { user } = await startBattle(aFightWithBrutes({ spellDamageReduction: 50 }))
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(fireShieldLines()).toEqual(['The Fire Shield does 12 damage.'])
     })
 
     // 25% of 120 is 30, 30% is 36; the hero has 30 spell points.

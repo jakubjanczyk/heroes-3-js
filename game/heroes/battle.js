@@ -86,7 +86,8 @@ const spellTraitsOf = (definition, { immunities, magicResistance, mindless }) =>
   spellLevelImmunity: Math.max(immunities.spellLevel, definition.spellLevelImmunity ?? 0),
   magicResistance: Math.min(100, magicResistance + (definition.magicResistance ?? 0)),
   magicResistanceAura: definition.magicResistanceAura ?? 0,
-  magicDamper: definition.magicDamper ?? 0
+  magicDamper: definition.magicDamper ?? 0,
+  spellDamageReduction: definition.spellDamageReduction ?? 0
 })
 
 // The Ballista's 2-3 is multiplied by the hero's Attack plus one.
@@ -135,7 +136,7 @@ function createStack({
   const warMachine = abilities.includes('warMachine')
   const shooter = abilities.includes('ranged')
   const undead = abilities.includes('undead')
-  const unaffectedByMorale = undead || warMachine
+  const unaffectedByMorale = undead || warMachine || abilities.includes('neutralMorale')
   return {
     id,
     side,
@@ -167,6 +168,7 @@ function createStack({
     morale: unaffectedByMorale ? 0 : morale,
     unaffectedByMorale,
     undead,
+    nonLiving: abilities.includes('nonLiving'),
     ...spellTraitsOf(definition, {
       immunities,
       magicResistance,

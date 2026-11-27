@@ -45,6 +45,13 @@ const CREATURES = {
     health: 6,
     speed: 6,
     abilities: ['undead']
+  }),
+  GOLEM: creature({
+    name: 'Golem',
+    plural: 'Golems',
+    health: 10,
+    speed: 7,
+    abilities: ['nonLiving']
   })
 }
 
@@ -240,6 +247,21 @@ describe('battle sacrifice behavior', () => {
       expect(getBattleStatusBarText()).toBe('Choose an army to sacrifice')
     })
 
+    test('given the Brutes were picked to rise when the player points at the non-living Golems then it says to choose an army', async () => {
+      const hero = aSacrificer({
+        army: [stack('BRUTE', 3), stack('SWORDSMAN', 10), stack('GOLEM', 4)]
+      })
+      const { user } = await startBattleWithStyles(aSacrificeFight(hero))
+      await fireballOwnStackAt(user, TOP)
+      await pickSpell(user, 'Sacrifice')
+      await clickBattleHex(user, TOP.row, TOP.column)
+
+      await hoverBattleHex(user, BOTTOM.row, BOTTOM.column)
+
+      expect(getBattleStatusBarText()).toBe('Choose an army to sacrifice')
+      expect(cursorOver(BOTTOM)).toBe('battle-blocked')
+    })
+
     // Fireball on round 1, Clone on round 2: 15 + 24 + 25 spell points, so Knowledge 7.
     test('given the Swordsmen have a clone when the Brutes were picked to rise then the clone cannot be sacrificed', async () => {
       const hero = aSacrificer({ knowledge: 7, spells: ['CLONE'] })
@@ -300,6 +322,19 @@ describe('battle sacrifice behavior', () => {
         aSacrificeFight(aSacrificer({ army: [stack('BRUTE', 5)] }))
       )
       await fireballOwnStackAt(user, MIDDLE)
+
+      await pickSpell(user, 'Sacrifice')
+
+      expect(readSpellBookMessage()).toEqual(['', 'That spell will affect no one!'])
+    })
+
+    // Fireball's 35 kills all 3 Golems of 10 health.
+    test('given the dead Golems are the only stack lost when Sacrifice is picked then it will affect no one', async () => {
+      const hero = aSacrificer({
+        army: [stack('GOLEM', 3), stack('SWORDSMAN', 10), stack('SQUIRE', 2)]
+      })
+      const { user } = await startBattle(aSacrificeFight(hero))
+      await fireballOwnStackAt(user, TOP)
 
       await pickSpell(user, 'Sacrifice')
 

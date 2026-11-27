@@ -81,7 +81,7 @@ import {
 import {
   fightsFor,
   getSpellBalance,
-  getSpellDamageTakenPercent,
+  getSpellDamageTaken,
   isBerserk
 } from '../../../game/heroes/battle-stats.js'
 import { getHexDistance, isOnBattlefield, isSameHex } from '../../../game/heroes/battlefield.js'
@@ -229,8 +229,7 @@ function damageHits({ battle, hero, spell, definitions, targetIds }) {
   const factor = spell.chain?.factor ?? 1
   return targetIds.map((stackId, place) => {
     const stack = battle.stacks.find(({ id }) => id === stackId)
-    const percent = getSpellDamageTakenPercent(stack, spell.schools ?? [])
-    const lessened = Math.floor((damage * percent) / 100)
+    const lessened = getSpellDamageTaken(stack, damage, spell.schools ?? [])
     return { stackId, damage: Math.floor(lessened * factor ** place) }
   })
 }

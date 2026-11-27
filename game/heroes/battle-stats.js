@@ -85,11 +85,17 @@ export const getDamageTakenPercent = (stack, { melee = false } = {}) =>
   100 + spellEffect(stack, melee ? 'meleeDamageTakenPercent' : 'rangedDamageTakenPercent')
 
 // Only the first of the spell's schools the stack is protected from counts.
-export function getSpellDamageTakenPercent(stack, schools) {
+function getSpellDamageTakenPercent(stack, schools) {
   const protection = schools
     .map((school) => `${school.toLowerCase()}SpellDamageTakenPercent`)
     .find((key) => hasSpellEffect(stack, key))
   return 100 + (protection ? spellEffect(stack, protection) : 0)
+}
+
+// The stack's own reduction comes after a school's protection, each rounded down.
+export function getSpellDamageTaken(stack, damage, schools) {
+  const protectedDamage = Math.floor((damage * getSpellDamageTakenPercent(stack, schools)) / 100)
+  return Math.floor((protectedDamage * (100 - (stack.spellDamageReduction ?? 0))) / 100)
 }
 
 // Each creature's damage: Bless makes it the maximum and Curse the minimum, each shifted by its

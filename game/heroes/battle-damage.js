@@ -6,7 +6,7 @@ import {
   getRetaliationDamagePercent,
   getRetaliationsLeft,
   getShotDamagePercent,
-  getSpellDamageTakenPercent,
+  getSpellDamageTaken,
   getStackAttack,
   getStackDefense,
   getStackLuck
@@ -133,7 +133,7 @@ function fireShieldDamage({ shielded, striker, damageWithoutDefences }) {
     (Math.min(healthOf(shielded), damageWithoutDefences) * getFireShieldPercent(shielded)) / 100
   )
   const raised = Math.floor((reflected * (100 + getFireShieldSorceryPercent(shielded))) / 100)
-  return Math.floor((raised * getSpellDamageTakenPercent(striker, FIRE_SHIELD_SCHOOLS)) / 100)
+  return getSpellDamageTaken(striker, raised, FIRE_SHIELD_SCHOOLS)
 }
 
 // The wounded top creature takes the damage first; what is left over wounds the next one.

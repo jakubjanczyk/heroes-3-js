@@ -618,14 +618,36 @@ Checked against the Heroes 3 wiki's raw page source (each creature's `Template:C
 - `noWallPenalty` in a shooter's abilities: its shots aren't halved by the walls.
 - The demo map has Master Gremlins, Stone Gargoyles, Stone Golems, Magi, Nagas and Giants east of the first hero, beyond Rampart's.
 
-### Non-living (Golems and Gargoyles, 6.5.7b, planned)
+### Non-living (Golems and Gargoyles, 6.5.7b)
 
-Checked against the wiki's Non-living, Undead vs Unliving, Spell damage reduction, Sacrifice, Resurrection, Death Ripple and Fire Shield pages and the engine's creature data (`NON_LIVING` on the Golems, `GARGOYLE` on the Gargoyles, `SPELL_DAMAGE_REDUCTION` 50 and 75).
+Checked against the wiki's Non-living, Undead vs Unliving, Spell damage reduction, Sacrifice, Resurrection, Death Ripple and Fire Shield pages and the engine's creature data (`NON_LIVING` on the Golems, `GARGOYLE` on the Gargoyles, `SPELL_DAMAGE_REDUCTION` 50 and 75) and spell data (Sacrifice's and Resurrection's targets leave out `NON_LIVING` and `GARGOYLE`; the mind spells leave out `NON_LIVING`; neutral morale is for `NON_LIVING`, war machines and the undead, not `GARGOYLE`; Death Ripple leaves out only the undead and war machines; Cure leaves out no one).
 
-- Golems take 50% (Stone) or 75% (Iron) less damage from spells: every damage spell, Armageddon and Death Ripple included, and a Fire Shield's burn (wiki); the Tower's land mines too, once siege land mines exist.
-- Golems have neither good nor bad morale and are immune to mind spells. Gargoyles have morale and mind spells work on them (wiki).
-- Neither can be sacrificed, nor raised by Sacrifice (wiki Sacrifice page: "non-undead, non-bloodless"). Resurrection, Animate Dead and the Archangels' resurrection don't raise them either, once those exist.
-- Death Ripple hits them (wiki: only the undead are immune), the Golems for less.
+- Golems take 50% (Stone) or 75% (Iron) less damage from spells: every damage spell, Armageddon, Death Ripple, Chain Lightning's jump and the Titan's Lightning Bolt included, and a Fire Shield's burn when a Golem strikes a shielded stack (wiki; the engine applies it to every spell, none being marked as non-magical, and its Fire Shield test has a Golem taking less burn). The Tower's land mines too, once siege land mines exist.
+- Rounding: the damage after a Protection from Fire, Water, Air or Earth is taken first, rounded down, then the Golems' reduction, rounded down again (the engine; the wiki doesn't say). A Stone Golem hit for 25 takes 12; under Expert Protection from Fire (50% less) a Fireball of 60 is 30, then 15.
+- Golems have neither good nor bad morale and are immune to mind spells. Gargoyles have morale and mind spells work on them (wiki; the engine).
+- Neither can be sacrificed, nor raised by Sacrifice (wiki Sacrifice page: "non-undead, non-bloodless"; the engine). Resurrection, Animate Dead and the Archangels' resurrection don't raise them either, once those exist.
+- Death Ripple, Bless and Curse work on both (only the undead are immune), the Golems taking less Death Ripple damage.
+- Cure and the First Aid Tent heal both, as they heal the undead now (the engine; 5.11 decided the tent heals every creature).
+- Golems don't count as undead: no "Undead in army" morale penalty.
+
+### What we decided (6.5.7b)
+
+- The rounding order and the Golems taking less Fire Shield burn follow the engine (decided with the user).
+- The Golems' and Gargoyles' own abilities are data a later faction reuses: the elementals are non-living with neutral morale and immune to mind spells, as the Golems are.
+
+### How it is built (6.5.7b)
+
+- `nonLiving` in a creature's abilities (all four): its stacks can't be sacrificed or raised by Sacrifice. Sacrifice's `notOnUndead` becomes `livingOnly`, which leaves out undead and non-living stacks; Bless, Curse and Death Ripple keep `notOnUndead`.
+- `neutralMorale` in a creature's abilities (both Golems): its stacks' morale is 0, as the undead's and the war machines' is now.
+- The Golems also get `immuneToMindSpells`, which the Giants already have.
+- A creature's `spellDamageReduction` in `monsters.json` (50 for the Stone Golem, 75 for the Iron Golem) is copied onto its stacks, and every spell's damage to the stack and a Fire Shield's burn on it is lowered by it, after a school protection.
+- The creature popup shows no abilities yet, so it doesn't list them (as with the Dragons' immunity).
+
+### Left for later (6.5.7b)
+
+- Resurrection, Animate Dead and the Archangels' resurrection leaving them out: when those come (5.8 later, Castle's Archangels).
+- The Tower's land mines and the Golems taking less from them: Tower's town.
+- The Orb of Vulnerability cancelling the Golems' reduction (7.8, with the artifact).
 
 ### Magic channeler (Magi, 6.5.7c, planned)
 
@@ -639,7 +661,7 @@ Checked against the wiki's Non-living, Undead vs Unliving, Spell damage reductio
 
 ### Left for later (6.5.7a)
 
-- Golems, Gargoyles, the Magi's lower spell costs and the Master Genies' spells: 6.5.7b to 6.5.7d.
+- The Magi's lower spell costs and the Master Genies' spells: 6.5.7c and 6.5.7d (Golems and Gargoyles came in 6.5.7b).
 - Hate: with Inferno's creatures (the Efreet), and the Titans' with Dungeon's Black Dragons.
 - Growth bonuses, recruiting: Tower's town and its map dwellings.
 - The player's Giants resisting a computer hero's mind spells: computer heroes don't cast yet (5.8 later).
