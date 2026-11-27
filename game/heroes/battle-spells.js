@@ -4,12 +4,14 @@ import { fightsFor, getSpellLevelImmunity, isBerserk, isHypnotized } from './bat
 // three says whose stacks it goes on and whether it hits all of them at Expert.
 export const castRuleOf = (spell) => spell?.lasting ?? spell?.removesSpells ?? spell?.heals
 
+const highestOf = (stacks, trait) => Math.max(0, ...stacks.map((stack) => stack[trait] ?? 0))
+
 // Dead stacks count too, and a hypnotized one for the side it came with.
-export const magicDamperAgainst = (stacks, casterSide) =>
-  Math.max(
-    0,
-    ...stacks.filter(({ side }) => side !== casterSide).map(({ magicDamper }) => magicDamper ?? 0)
-  )
+export function battleSpellCostChange(stacks, casterSide) {
+  const ownStacks = stacks.filter(({ side }) => side === casterSide)
+  const enemyStacks = stacks.filter(({ side }) => side !== casterSide)
+  return highestOf(enemyStacks, 'magicDamper') - highestOf(ownStacks, 'magicChanneler')
+}
 
 export const canCastInBattle = (spell) =>
   Boolean(
