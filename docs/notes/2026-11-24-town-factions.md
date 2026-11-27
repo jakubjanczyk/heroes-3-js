@@ -649,10 +649,27 @@ Checked against the wiki's Non-living, Undead vs Unliving, Spell damage reductio
 - The Tower's land mines and the Golems taking less from them: Tower's town.
 - The Orb of Vulnerability cancelling the Golems' reduction (7.8, with the artifact).
 
-### Magic channeler (Magi, 6.5.7c, planned)
+### Magic channeler (Magi, 6.5.7c)
 
-- A hero whose army had Magi or Arch Magi at the start of the battle pays 2 spell points less for each spell until the battle ends, even after they die (wiki; the engine counts dead stacks). 2 in all, however many stacks. Not on the adventure map.
-- Never below 0 (the engine). With the enemy's Pegasi, the two cancel out (wiki).
+Checked against the wiki's raw page source (Mage and Arch Mage, both creature templates "Hero's spells cost 2 spell points less in combat", Pegasus and Silver Pegasus, Spell Point) and the engine's Tower creature data (`CHANGES_SPELL_COST_FOR_ALLY` 2 on both) and its battle code (the spell's cost in battle).
+
+- A hero whose army had Magi or Arch Magi at the start of the battle pays 2 spell points less for each spell until the battle ends, even after they die (wiki: "Even if all the Mages die during the battle, the spells will cost 2 less points until the end of combat"; the engine counts dead stacks).
+- 2 in all, however many stacks or creatures (wiki: "does not depend on number stacks in army or number of troops in stack"; the engine takes the highest).
+- Only the Magi's own hero: the enemy hero pays the normal cost (both sources). A hypnotized Mage still lowers the costs of the side it came with (the engine compares the stack's owner, which Hypnotize doesn't change; the wiki doesn't say), as with the Pegasi.
+- It adds up with the school skills' lower costs (wiki: "cumulative with other cost reductions, like from Basic X Magic"), and the enemy's Pegasi cancel it out (wiki: "-2 and +2 adjustments equal 0"; the engine adds both).
+- Never below 0 (the engine: the cost is at least 0; the wiki doesn't say; agreed with the user).
+- Not on the adventure map (wiki: "Mages cannot reduce the hero's mana cost when casting adventure map spells"; the engine changes the cost only in battle).
+
+### How it is built (6.5.7c)
+
+- A creature's `magicChanneler` in `monsters.json` (2 for both Magi) is copied onto its battle stacks, as `magicDamper` is.
+- The battle's change to a spell's cost becomes one function of the stacks and the caster's side: the highest `magicDamper` of the other side minus the highest `magicChanneler` of the caster's own, both by `side` and dead stacks included. It takes `magicDamperAgainst`'s place where the battle checks, saves and shows the cost, so the book, "That spell costs …" and a reload need nothing new.
+- `spellCost` keeps the cost at 0 or more.
+- The demo map's Valeska (hero-2) gets 6 Magi, so the lower costs can be seen in a battle there.
+
+### Left for later (6.5.7c)
+
+- A computer hero's Magi lowering its costs: computer heroes don't cast yet (5.8 later).
 
 ### The Master Genies' spells (6.5.7d, planned)
 
