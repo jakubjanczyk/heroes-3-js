@@ -17,14 +17,16 @@ import { healthOf, worthOfLoss } from './battle-worth.js'
 import { getHexDistance } from './battlefield.js'
 import { chooseSelfAimedTarget } from './self-aimed-shots.js'
 
-// An attack is weighed with every roll in the middle of the damage, no luck and nothing left to
-// chance (an ability cast on a hit, a Resistance roll).
-const WEIGHING_ROLLS = {
-  random: () => 0.5,
-  luckRandom: () => 1,
-  abilityRandom: () => 1,
-  resistanceRandom: () => 1
-}
+// An attack is weighed as the average of its outcome with every damage roll at its lowest and at
+// its highest, with no luck and nothing left to chance (an ability cast on a hit, a Resistance
+// roll).
+const NOTHING_BY_CHANCE = { luckRandom: () => 1, abilityRandom: () => 1, resistanceRandom: () => 1 }
+const WEIGHING_ROLLS = [
+  { random: () => 0, ...NOTHING_BY_CHANCE },
+  { random: () => 0.999999, ...NOTHING_BY_CHANCE }
+]
+
+const averageOf = (values) => values.reduce((sum, value) => sum + value, 0) / values.length
 
 function worthLostBy(battle, before, after) {
   const now = after.stacks.find(({ id }) => id === before.id)
@@ -54,12 +56,22 @@ const mostWorth = (candidates) =>
   candidates.reduce((best, candidate) => (isWorthMore(candidate, best) ? candidate : best), null)
 
 function weighAttack(battle, stack, { targetId, fromHex, distance }) {
-  const attack = planStackAttack(battle, stack, { targetId, fromHex, ...WEIGHING_ROLLS })
-  if (!attack) {
+  const attacks = WEIGHING_ROLLS.map((rolls) =>
+    planStackAttack(battle, stack, { targetId, fromHex, ...rolls })
+  )
+  if (!attacks[0]) {
     return null
   }
-  const after = resolveAttack(battle, { stackId: stack.id, targetId, ...attack })
-  return { targetId, fromHex, distance, worth: worthOfOutcome(battle, stack, after) }
+  const worth = averageOf(
+    attacks.map((attack) =>
+      worthOfOutcome(
+        battle,
+        stack,
+        resolveAttack(battle, { stackId: stack.id, targetId, ...attack })
+      )
+    )
+  )
+  return { targetId, fromHex, distance, worth }
 }
 
 function findAttackWorthMost(battle, stack) {
@@ -123,13 +135,13 @@ function findNearestShotTarget(battle, stack) {
 }
 
 function weighShot(battle, stack, { stackId: targetId }) {
-  const shot = planStackShot(battle, stack, { targetId, ...WEIGHING_ROLLS })
-  const after = resolveShot(battle, { stackId: stack.id, ...shot })
-  return {
-    stackId: targetId,
-    distance: shotDistance(battle, stack, { stackId: targetId }),
-    worth: worthOfOutcome(battle, stack, after)
-  }
+  const worth = averageOf(
+    WEIGHING_ROLLS.map((rolls) => {
+      const shot = planStackShot(battle, stack, { targetId, ...rolls })
+      return worthOfOutcome(battle, stack, resolveShot(battle, { stackId: stack.id, ...shot }))
+    })
+  )
+  return { stackId: targetId, distance: shotDistance(battle, stack, { stackId: targetId }), worth }
 }
 
 const findShotWorthMost = (battle, stack) =>

@@ -38,8 +38,13 @@ const FLYER = aSturdyCreature('Flyer')
   .withAiValue(1)
   .withAbilities(['flying'])
   .build()
+const DECOY = aSturdyCreature('Decoy')
+  .withSpeed(20)
+  .withAiValue(5000)
+  .withAbilities(['flying'])
+  .build()
 const SLUG = aSturdyCreature('Slug').withSpeed(1).withAiValue(1).build()
-const BRUTE = aSturdyCreature('Brute').withSpeed(1).withAiValue(1000).build()
+const BRUTE = aSturdyCreature('Brute').withSpeed(1).withAiValue(3000).build()
 const RAIDER = aSturdyCreature('Raider').withSpeed(20).withAiValue(1000).build()
 
 // One hit kills one, so a Frail dies to the first blow struck at it.
@@ -65,6 +70,7 @@ const definitions = {
     ...readGameData('monsters.json'),
     RUNNER,
     FLYER,
+    DECOY,
     SLUG,
     BRUTE,
     RAIDER,
@@ -363,12 +369,13 @@ describe('siege walls behavior', () => {
     })
 
     describe('a dead stack on it', () => {
-      // The player's Flyer waits next to the drawbridge's outer hex. Blue's Frail comes out onto
-      // that hex to attack it and dies to the Flyer's retaliation; blue's Slug stays behind.
+      // The player's Decoy waits next to the drawbridge's outer hex. Blue's Frail comes out onto
+      // that hex to attack it, worth more to it than the Catapult, and dies to the Decoy's
+      // retaliation; blue's Slug stays behind.
       async function killFrailOnTheDrawbridge(options) {
         const app = await attackTown(
           anAttackScenario({
-            army: [stack('FLYER'), stack('RUNNER')],
+            army: [stack('DECOY'), stack('RUNNER')],
             town: aBlueTown({ garrison: [stack('FRAIL'), stack('SLUG')] })
           }),
           options

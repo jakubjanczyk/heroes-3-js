@@ -401,6 +401,8 @@ describe('battle attack behavior', () => {
       await attackBattleHexFrom(user, monster.row, monster.column, 'bottom-left')
     }
 
+    // The Royal Griffins take no retaliation; the one they lose is to the Pikemen's own attack on
+    // their turn, which goes for them rather than the Angels.
     test('given the defender already struck back this round then the next attacker gets no retaliation', async () => {
       const { user } = await startBattle(
         aFight({ army: [stack('ANGEL', 2), stack('ROYAL_GRIFFIN', 10)] })
@@ -408,7 +410,7 @@ describe('battle attack behavior', () => {
 
       await bothStacksAttackInOneRound(user)
 
-      expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 10', 7, 10))
+      expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 9', 7, 10))
     })
 
     test('given a new round starts then the defender strikes back again', async () => {
@@ -435,7 +437,7 @@ describe('battle attack behavior', () => {
       await bothStacksAttackInOneRound(user, { row: 6, column: 9 })
 
       // 43 Griffins deal 125 (-2.5%) on the second retaliation: 5 Royal Griffins die.
-      expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 5', 7, 8))
+      expect(readCombatMessages()[3]).toBe('The Griffins do 125 damage. 5 Royal Griffins perish.')
     })
 
     test('given Royal Griffins defend then they strike back after every attack', async () => {
@@ -455,7 +457,9 @@ describe('battle attack behavior', () => {
       await attackBattleHexFrom(user, 6, 6, 'bottom-left')
 
       // 43 Royal Griffins deal 129 on the third retaliation: 5 of 10 die.
-      expect(readBattleStacks()).toContainEqual(stackAt('Royal Griffins 5', 7, 5))
+      expect(readCombatMessages()[5]).toBe(
+        'The Royal Griffins do 129 damage. 5 Royal Griffins perish.'
+      )
     })
 
     test('given Crusaders attack then they strike, take the retaliation and strike again', async () => {
@@ -546,9 +550,9 @@ describe('battle attack behavior', () => {
       await attackPikemenFrom(reloaded.user, 'bottom-left')
 
       // 36 damage on a top Pikeman with 5 health left kills 4, with no retaliation. The 29 left
-      // attack the Angels, whose retaliation kills 17.
+      // attack the Royal Griffins and kill one, and their retaliation kills 3.
       expect(readBattleStacks()).toEqual(
-        expect.arrayContaining([stackAt('Pikemen 12', 6, 11), stackAt('Royal Griffins 10', 7, 10)])
+        expect.arrayContaining([stackAt('Pikemen 26', 6, 11), stackAt('Royal Griffins 9', 7, 10)])
       )
     })
 
