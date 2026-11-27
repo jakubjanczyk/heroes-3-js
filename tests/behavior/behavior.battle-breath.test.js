@@ -5,6 +5,7 @@ import { createMemoryEventLog, waitMs } from './app.utils.js'
 import {
   attackBattleHexFrom,
   castSpellAt,
+  clickBattleButton,
   moveActiveStackTo,
   readBattleStacks,
   readCombatMessages,
@@ -52,6 +53,13 @@ const CREATURES = {
     .withHealth(100)
     .withSpeed(10)
     .build(),
+  FRIEND: aCreatureDefinition()
+    .withName('Friend')
+    .withNamePlural('Friends')
+    .withAiValue(100)
+    .withSpeed(21)
+    .withAbilities(['flying'])
+    .build(),
   BULK: aCreatureDefinition()
     .withName('Bulk')
     .withNamePlural('Bulks')
@@ -75,6 +83,12 @@ const A_RUNNER_BREATHERS_AND_A_WAITER = [
   stack('WAITER', 1)
 ]
 
+const A_FRIEND_BREATHERS_AND_A_WAITER = [
+  stack('FRIEND', 10),
+  stack('BREATHER', 3),
+  stack('WAITER', 1)
+]
+
 const SEVEN_STACKS_OF_TEN = { count: 70, stacks: 7 }
 
 const TARGET = { row: 6, column: 15 }
@@ -92,6 +106,22 @@ async function moveTheRunnerTo(user, { row, column }) {
   await moveActiveStackTo(user, row, column)
   await waitMs(1000)
 }
+
+async function playTheBreathersByAutoCombat(user) {
+  await clickBattleButton(user, 'Auto combat')
+  await waitMs(300)
+}
+
+// The Breathers and the Waiter defend; the Pikemen walk four hexes left, to row 6, column 11.
+async function letThePikemenWalkUp(user) {
+  await moveTheRunnerTo(user, { row: 3, column: 2 })
+  await clickBattleButton(user, 'Defend')
+  await waitMs(300)
+  await clickBattleButton(user, 'Defend')
+  await waitMs(1500)
+}
+
+const BEHIND_THE_WALKED_UP_PIKEMEN = { row: 6, column: 12 }
 
 const THREE_DIE_OF_TEN = 7
 const WITHOUT_SPELLS = 'purple'
@@ -255,5 +285,25 @@ describe('battle breath behavior', () => {
 
     expect(stackOn(TARGET)).toBe(`Pikemen ${THREE_DIE_OF_TEN}`)
     expect(stackOn(BEYOND_THE_TARGET_FROM_BOTTOM_LEFT)).toBe(`Pikemen ${THREE_DIE_OF_TEN}`)
+  })
+
+  test("given Auto combat when the Breathers' turn comes then they attack from where their breath also hits a second stack", async () => {
+    const { user } = await startBattle(
+      aBreathFight({ army: BREATHERS_AND_A_WAITER, ...SEVEN_STACKS_OF_TEN })
+    )
+
+    await playTheBreathersByAutoCombat(user)
+
+    expect(readCombatMessages()[0]).toBe('The Breathers do 60 damage. 6 creatures perish.')
+  })
+
+  test('given the nearest hex would breathe on their own stack when Auto combat plays the Breathers then they attack from where it does not', async () => {
+    const { user } = await startBattle(aBreathFight({ army: A_FRIEND_BREATHERS_AND_A_WAITER }))
+    await letThePikemenWalkUp(user)
+    await moveTheRunnerTo(user, BEHIND_THE_WALKED_UP_PIKEMEN)
+
+    await playTheBreathersByAutoCombat(user)
+
+    expect(readCombatMessages()[0]).toBe('The Breathers do 30 damage. 3 Pikemen perish.')
   })
 })

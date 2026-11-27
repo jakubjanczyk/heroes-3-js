@@ -59,6 +59,17 @@ async function loseTheAngelToSwordsmen(user) {
   await waitForBattleToEnd()
 }
 
+// 30 Swordsmen (speed 5) can reach both: the Angel loses far more than the Silver Pegasus would,
+// even with the Angel striking back.
+const anAngelAndAPegasusAgainstSwordsmen = () =>
+  aFight({ army: [stack('ANGEL', 1), stack('SILVER_PEGASUS', 1)], monsterCount: 30 })
+
+const ANGEL_IN_REACH = { row: 1, column: 12 }
+
+async function movePegasusNextToTheSwordsmen(user) {
+  await moveActiveStackTo(user, 7, 12)
+}
+
 describe('battle combat AI behavior', () => {
   describe("the monster's turn", () => {
     test('given a hero stack within the monster reach when its turn comes then it moves next to the stack and attacks it', async () => {
@@ -157,7 +168,7 @@ describe('battle combat AI behavior', () => {
 
     // The Swordsman (speed 5) walks to column 6, 9 hexes from the Archers: 10 Archers do 20, -15%
     // for 6 Attack against 12 Defense.
-    test('given the monster is a shooter with shots and no hero stack next to it then it shoots the nearest hero stack instead of moving', async () => {
+    test('given the monster is a shooter with shots and no hero stack next to it then it shoots the hero stack instead of moving', async () => {
       const { user } = await startBattle(
         aFight({ army: [stack('SWORDSMAN', 1)], monsterType: 'ARCHER' })
       )
@@ -203,6 +214,82 @@ describe('battle combat AI behavior', () => {
 
       expect(readActiveStack()).toEqual(stackAt('Angel 1', 6, 2))
       expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 10', 6, 11))
+    })
+  })
+
+  describe('choosing a target', () => {
+    test('given two hero stacks in reach then the monster attacks the one whose losses are worth more, not the nearer one', async () => {
+      const { user } = await startBattle(anAngelAndAPegasusAgainstSwordsmen())
+      await moveActiveStackTo(user, ANGEL_IN_REACH.row, ANGEL_IN_REACH.column)
+
+      await movePegasusNextToTheSwordsmen(user)
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Swordsmen 28', 2, 13))
+    })
+
+    test('given the stack worth more is out of reach this turn then the monster attacks the one it can reach', async () => {
+      const { user } = await startBattle(anAngelAndAPegasusAgainstSwordsmen())
+      await moveActiveStackTo(user, 3, 3)
+
+      await movePegasusNextToTheSwordsmen(user)
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Swordsmen 30', 7, 13))
+    })
+
+    test('given attacking one hero stack would cost the monster more to its retaliation then it attacks the other one', async () => {
+      const { user } = await startBattle(
+        aFight({
+          army: [stack('ANGEL', 1), stack('OBSIDIAN_GARGOYLE', 1)],
+          monsterType: 'HALBERDIER',
+          monsterCount: 5
+        })
+      )
+      await moveActiveStackTo(user, 6, 12)
+
+      await moveActiveStackTo(user, 8, 10)
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Halberdiers 5', 8, 11))
+    })
+
+    test('given one hero stack has already retaliated this round then the monster attacks it rather than one that would strike back', async () => {
+      const { user } = await startBattle(
+        aFight({
+          army: [stack('ANGEL', 1), stack('ANGEL', 1)],
+          monsterType: 'PIKEMAN',
+          monsterCount: 20,
+          monsterStacks: 2
+        })
+      )
+      await moveActiveStackTo(user, 6, 12)
+
+      await moveActiveStackTo(user, 9, 12)
+
+      expect(readBattleStacks()).toEqual(
+        expect.arrayContaining([stackAt('Pikemen 2', 6, 13), stackAt('Pikemen 10', 7, 12)])
+      )
+    })
+
+    test('given two hero stacks worth the same in reach then the monster attacks the nearer one', async () => {
+      const { user } = await startBattle(
+        aFight({ army: [stack('ANGEL', 1), stack('ANGEL', 1)], monsterType: 'PIKEMAN' })
+      )
+      await moveActiveStackTo(user, 2, 13)
+
+      await moveActiveStackTo(user, 6, 12)
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Pikemen 2', 6, 13))
+    })
+
+    test('given a monster shooter and two hero stacks then it shoots the one whose losses are worth more, not the nearest', async () => {
+      const { user } = await startBattle(
+        aFight({ army: [stack('ANGEL', 1), stack('IMP', 1)], monsterType: 'ARCHER' })
+      )
+      await moveActiveStackTo(user, 3, 2)
+
+      await moveActiveStackTo(user, 9, 6)
+
+      expect(readBattleStacks()).toContainEqual(stackAt('Imp 1', 9, 6))
+      expect(readCombatMessages()[0]).toBe('The Archers do 6 damage.')
     })
   })
 

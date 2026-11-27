@@ -36,6 +36,7 @@ const aSteadyCreature = (name, plural = `${name}s`) =>
     .withSpeed(5)
 
 const PATIENT = aSteadyCreature('Patient').withHealth(200).build()
+const WARD = aSteadyCreature('Ward').withHealth(200).withAiValue(1000).build()
 const SQUIRE = aSteadyCreature('Squire').withHealth(200).build()
 const PAGE = aSteadyCreature('Page').withHealth(200).build()
 const SMALL_PATIENT = aSteadyCreature('Small Patient').withHealth(100).withSpeed(15).build()
@@ -80,6 +81,7 @@ const definitions = {
   monsters: {
     ...readGameData('monsters.json'),
     PATIENT,
+    WARD,
     SQUIRE,
     PAGE,
     SMALL_PATIENT,
@@ -183,7 +185,9 @@ describe('the First Aid Tent in battle behavior', () => {
 
     test("the tent's turn comes after the Ballista's and before the stacks that waited", async () => {
       const { user } = await fight(
-        aFightWithSnipers({ hero: aRedHero({ warMachines: [BALLISTA, TENT] }) })
+        aFightWithSnipers({
+          hero: aRedHero({ army: [stack('WARD')], warMachines: [BALLISTA, TENT] })
+        })
       )
 
       await waitTurn(user)
@@ -192,7 +196,7 @@ describe('the First Aid Tent in battle behavior', () => {
         .filter((line) => line.startsWith('The Ballista') || line.startsWith('The First Aid Tent'))
         .map((line) => (line.startsWith('The Ballista') ? 'Ballista' : 'First Aid Tent'))
       expect(order).toEqual(['Ballista', 'First Aid Tent'])
-      expect(readActiveStack()).toEqual({ stack: 'Patient 1', ...OWN_STACK })
+      expect(readActiveStack()).toEqual({ stack: 'Ward 1', ...OWN_STACK })
     })
 
     test('it heals only the top creature: a killed creature stays dead', async () => {

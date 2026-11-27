@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest'
 
-import { createMemoryEventLog } from './app.utils.js'
+import { createMemoryEventLog, readGameData } from './app.utils.js'
 import {
   castSpellAt,
   getBattleStatusBarText,
@@ -46,6 +46,13 @@ const readOwnStacks = () =>
 async function castCureAndTakeTheNextVolley(user) {
   await castSpellAt(user, 'Cure', OWN_HEX)
   await playOnToNextRound(user)
+}
+
+const monsters = readGameData('monsters.json')
+
+const WORTHLESS_TO_THE_ARCHERS = {
+  SWORDSMAN: { ...monsters.SWORDSMAN, aiValue: 0 },
+  PIKEMAN: { ...monsters.PIKEMAN, aiValue: 0 }
 }
 
 describe('battle Cure behavior', () => {
@@ -114,10 +121,19 @@ describe('battle Cure behavior', () => {
     // Each of two stacks of 30 Archers shoots one of the hero's stacks: 22 damage leaves the top
     // Swordsman 13 of 35, and 28 kill 2 Pikemen and leave the top one 2 of 10. Expert Cure with
     // Power 2 heals 40, so both top creatures are whole, and the same volley again leaves 10
-    // Swordsmen and 26 Pikemen, where unhealed it would leave 9 and 25.
+    // Swordsmen and 26 Pikemen, where unhealed it would leave 9 and 25. Worth nothing to the
+    // Archers, the hero's stacks are each shot by the Archers nearest to them.
     test("given two of the hero's stacks are hurt when an Expert Water hero picks Cure then the next volley leaves more of both", async () => {
       const hero = aHealer({ expert: true, army: [stack('SWORDSMAN', 10), stack('PIKEMAN', 30)] })
-      const { user } = await startBattle(aFight({ hero, monster: 'ARCHER', count: 60, stacks: 2 }))
+      const { user } = await startBattle(
+        aFight({
+          hero,
+          monster: 'ARCHER',
+          count: 60,
+          stacks: 2,
+          creatures: WORTHLESS_TO_THE_ARCHERS
+        })
+      )
       await playOnToNextRoundWithBothStacks(user)
 
       await pickSpell(user, 'Cure')

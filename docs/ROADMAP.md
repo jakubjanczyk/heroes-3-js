@@ -618,12 +618,14 @@ See `docs/notes/2026-10-20-wait-defend-auto-combat.md` and `docs/notes/2026-10-2
 See `docs/notes/2026-10-20-combat-ai.md`.
 - [x] Enemy stacks act on their own, simply: go for the nearest stack (fewest hexes to a side of it; the earlier army slot on a tie) and attack it, or get as close as the turn allows. A shooter that can shoot shoots the nearest enemy stack instead
 - [x] Auto combat uses the same AI for the player's stacks
-- [ ] Smarter combat AI (later):
-  - [ ] Pick the target by threat and value (damage it can deal, creatures it can kill, retaliation it would take), not only by distance
-  - [ ] Shooters stay back rather than stand still, and go for enemy shooters
-  - [ ] Use Wait and Defend (5.7), e.g. wait for the enemy to come into reach rather than walk into a first strike
-  - [ ] Protect its own shooters and weak stacks; keep stacks together
-  - [ ] Cast spells when a hero leads the army (5.8)
+- [ ] Smarter combat AI, in seven parts. See `docs/notes/2026-11-27-smarter-combat-ai.md`.
+  - [x] 5.7b.1 Targets by worth: a stack shoots or attacks the stack in reach whose losses are worth the most, less what it loses to the retaliation; with none in reach it walks toward the nearest
+  - [ ] 5.7b.2 Wait and Defend: wait, or stay back, rather than walk into an enemy's first strike; defend with nothing better to do
+  - [ ] 5.7b.3 Positioning: shooters step away from an enemy next to them, walkers go for the enemy's shooters and block them, stacks guard their own shooters
+  - [ ] 5.7b.4 A computer hero casts damage spells
+  - [ ] 5.7b.5 A computer hero casts its other spells, helpful and harmful
+  - [ ] 5.7b.6 A computer hero retreats and surrenders, and accepts or refuses the player's surrender
+  - [ ] 5.7b.7 Computer heroes learning spells in a Mage Guild, and weighing the Mage Guild, the School of Magic and spell points
 
 ### 5.8 Combat Spells
 Parts 3 to 7 of hero magic (4.8).
@@ -1545,7 +1547,7 @@ First: the game state store, steps 1 to 4 of `docs/notes/2026-10-25-game-state-s
 46. Victory conditions (8.5), in six parts: defeat all enemies, seven days without a town, the scenario's victory condition, its loss condition, the end in numbers, Scenario Info
 47. Siege combat (5.10)
 48. Town factions (6.5)
-49. Smarter combat AI (5.7b)
+49. Smarter combat AI (5.7b), in seven parts: targets by worth, Wait and Defend, positioning, the computer hero's damage spells, its other spells, retreat and surrender, Mage Guild spells
 
 ### Phase 7 - "Polish & Reusability"
 50. Engine public API (9.3)

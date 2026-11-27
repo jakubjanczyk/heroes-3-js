@@ -1,9 +1,8 @@
 import { canShoot, getApproaches } from './battle.js'
 import { takeDamage } from './battle-damage.js'
 import { getMovementRange, isBlind } from './battle-stats.js'
+import { healthOf, worthOfLoss } from './battle-worth.js'
 import { isInsideTheWalls } from './siege-walls.js'
-
-const healthOf = (stack) => Math.max(0, (stack.count - 1) * stack.health + stack.topHealth)
 
 const canStrikeOnItsTurn = (battle, stack) =>
   canShoot(battle, stack) ||
@@ -11,14 +10,11 @@ const canStrikeOnItsTurn = (battle, stack) =>
 
 const killedBy = (stack, damage) => stack.count - takeDamage(stack, damage).count
 
-// The worth lost: the damage, at most all its health, at the worth of a health point, and the
-// creatures killed at theirs.
-function worthLost(battle, target, { min, max }) {
-  const aiValue = battle.definitions?.monsters?.[target.creature]?.aiValue ?? 0
-  const damage = Math.min(healthOf(target), (min + max) / 2)
-  const killed = (killedBy(target, min) + killedBy(target, max)) / 2
-  return (damage * aiValue) / target.health + killed * aiValue
-}
+const worthLost = (battle, target, { min, max }) =>
+  worthOfLoss(battle, target, {
+    damage: Math.min(healthOf(target), (min + max) / 2),
+    killed: (killedBy(target, min) + killedBy(target, max)) / 2
+  })
 
 // Each rule in turn: the first that tells two stacks apart settles it.
 const PREFERENCES = [

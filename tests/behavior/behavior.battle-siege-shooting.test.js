@@ -50,13 +50,14 @@ const aTarget = (name) =>
     .withAiValue(1)
 const SLUG = aTarget('Slug').withSpeed(1).build()
 const RUNNER = aTarget('Runner').withSpeed(20).build()
+const SCOUT = aTarget('Scout').withSpeed(20).withAiValue(1000).build()
 
 const definitions = {
   hero: readGameData('hero.json'),
   heroClasses: readGameData('hero-classes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   resources: readGameData('resources.json'),
-  monsters: { ...readGameData('monsters.json'), SHOOTER, HAWK, WIZARD, SLUG, RUNNER },
+  monsters: { ...readGameData('monsters.json'), SHOOTER, HAWK, WIZARD, SLUG, RUNNER, SCOUT },
   spells: readGameData('spells.json'),
   heroes: readGameData('heroes.json'),
   towns: readGameData('towns.json'),
@@ -360,10 +361,11 @@ describe('siege shooting behavior', () => {
   })
 
   describe("the defender's shots out of the town", () => {
-    // The player's Runner walks to column 6; blue's Shooter, inside, shoots it from 9 hexes.
+    // The player's Scout walks to column 6; blue's Shooter, inside, shoots it from 9 hexes rather
+    // than the Catapult.
     test("blue's shooter behind the walls shoots the player's stack outside at full damage", async () => {
       const { user } = await attackTown(
-        anAttackScenario({ army: [stack('RUNNER')], garrison: [stack('SHOOTER')] })
+        anAttackScenario({ army: [stack('SCOUT')], garrison: [stack('SHOOTER')] })
       )
 
       await moveAndWait(user, SHOOTER_CLOSE_TO_THE_WALLS)
