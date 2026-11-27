@@ -44,6 +44,11 @@ const CREATURES = {
     .withName('Golem')
     .withNamePlural('Golems')
     .withSpellLevelImmunity(3)
+    .build(),
+  COLOSSUS: aCreatureDefinition()
+    .withName('Colossus')
+    .withNamePlural('Colossi')
+    .withAbilities(['immuneToMindSpells'])
     .build()
 }
 
@@ -142,7 +147,12 @@ describe('battle blinding attack behavior', () => {
 
   test.each([
     { monster: 'SKELETON', immunity: 'immune to mind spells', name: 'Skeletons' },
-    { monster: 'GOLEM', immunity: 'immune to spells of levels 1-3', name: 'Golems' }
+    { monster: 'GOLEM', immunity: 'immune to spells of levels 1-3', name: 'Golems' },
+    {
+      monster: 'COLOSSUS',
+      immunity: 'of creatures that are immune to mind spells',
+      name: 'Colossi'
+    }
   ])('given the Blinders hit a stack $immunity then it does not go blind', async ({
     monster,
     name

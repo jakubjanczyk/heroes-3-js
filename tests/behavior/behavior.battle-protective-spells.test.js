@@ -414,6 +414,17 @@ describe('battle protective spells behavior', () => {
       ])
     })
 
+    test("given the Brutes' attacks get no retaliation when they attack the Swordsmen with Fire Shield then the Fire Shield still does its damage back", async () => {
+      const { user } = await startBattle(aFightWithBrutes({ abilities: ['noRetaliation'] }))
+
+      await castThenTakeTheBrutesAttack(user)
+
+      expect(messagesAfter(CAST_ON_SWORDSMEN).slice(0, 2)).toEqual([
+        'The Brutes do 120 damage. 3 Swordsmen perish.',
+        'The Fire Shield does 24 damage.'
+      ])
+    })
+
     // 25% of 120 is 30, 30% is 36; the hero has 30 spell points.
     test.each([
       { skill: 'Advanced', level: 'ADVANCED', share: '25%', damage: 30, spellPoints: '18' },

@@ -37,6 +37,7 @@ const aShooter = (name) =>
     .withShots(10)
 const SHOOTER = aShooter('Shooter').withSpeed(10).withAbilities(['ranged']).build()
 const HAWK = aShooter('Hawk').withSpeed(20).withAbilities(['ranged', 'flying']).build()
+const WIZARD = aShooter('Wizard').withSpeed(10).withAbilities(['ranged', 'noWallPenalty']).build()
 
 const aTarget = (name) =>
   aCreatureDefinition()
@@ -55,7 +56,7 @@ const definitions = {
   heroClasses: readGameData('hero-classes.json'),
   secondarySkills: readGameData('secondary-skills.json'),
   resources: readGameData('resources.json'),
-  monsters: { ...readGameData('monsters.json'), SHOOTER, HAWK, SLUG, RUNNER },
+  monsters: { ...readGameData('monsters.json'), SHOOTER, HAWK, WIZARD, SLUG, RUNNER },
   spells: readGameData('spells.json'),
   heroes: readGameData('heroes.json'),
   towns: readGameData('towns.json'),
@@ -143,9 +144,9 @@ async function moveAndWait(user, { row, column }) {
 // 9 hexes or less from the Shooter.
 const SHOOTER_CLOSE_TO_THE_WALLS = { row: 6, column: 6 }
 
-async function shooterCloseToTheWalls(options) {
+async function shooterCloseToTheWalls(options, shooter = 'SHOOTER') {
   const app = await attackTown(
-    anAttackScenario({ army: [stack('SHOOTER')], garrison: [stack('SLUG')] }),
+    anAttackScenario({ army: [stack(shooter)], garrison: [stack('SLUG')] }),
     options
   )
   await moveAndWait(app.user, SHOOTER_CLOSE_TO_THE_WALLS)
@@ -265,6 +266,40 @@ describe('siege shooting behavior', () => {
       await hoverBattleHex(user, slug.row, slug.column)
 
       expect(getBattleStatusBarText()).toBe('Shoot Slug (10 shots left, damage 5)')
+    })
+  })
+
+  describe("the shots of a shooter the walls don't halve", () => {
+    const wizardCloseToTheWalls = () => shooterCloseToTheWalls(undefined, 'WIZARD')
+
+    test('a shot by a shooter with no wall penalty from outside the walls at a stack behind them does full damage', async () => {
+      const { user } = await wizardCloseToTheWalls()
+      const slug = positionOf('Slug')
+
+      await shootAt(user, slug.row, slug.column)
+
+      expect(lastCombatMessage()).toBe('The Wizard does 10 damage.')
+    })
+
+    test("the mouse over a stack behind the walls shows that shooter's full damage and no broken arrow", async () => {
+      const { user } = await wizardCloseToTheWalls()
+      const slug = positionOf('Slug')
+
+      await hoverBattleHex(user, slug.row, slug.column)
+
+      expect(getBattleStatusBarText()).toBe('Shoot Slug (10 shots left, damage 10)')
+      expect(getCursorOver(getBattleHex(slug.row, slug.column))).toBe('battle-shoot')
+    })
+
+    // 14 hexes away: halved for the distance.
+    test('a shot from far away by that shooter at a stack behind the walls is halved by the distance', async () => {
+      const { user } = await attackTown(
+        anAttackScenario({ army: [stack('WIZARD')], garrison: [stack('SLUG')] })
+      )
+
+      await shootAt(user, 6, 15)
+
+      expect(lastCombatMessage()).toBe('The Wizard does 5 damage.')
     })
   })
 

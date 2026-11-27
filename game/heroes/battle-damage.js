@@ -209,6 +209,7 @@ export function strikeSequence({
   // A blind stack strikes back weaker, or not at all, blinded by the hit itself too.
   const retaliationPercent = getRetaliationDamagePercent(first.struck)
   const retaliates =
+    !attacker.blocksRetaliation &&
     first.striker.count > 0 &&
     first.struck.count > 0 &&
     getRetaliationsLeft(first.struck) > 0 &&
