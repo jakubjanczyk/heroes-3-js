@@ -1,0 +1,7 @@
+{
+  "TRADING_POST": {
+    "name": "Trading Post",
+    "footprint": [{ "x": -1, "y": 0 }],
+    "marketplaces": 5
+  }
+}
