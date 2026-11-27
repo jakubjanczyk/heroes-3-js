@@ -1,0 +1,589 @@
+{
+  "ORRIN": {
+    "name": "Orrin",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARCHERY",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "VALESKA": {
+    "name": "Valeska",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARCHERY",
+        "level": "BASIC"
+      }
+    ],
+    "startingArmy": [
+      {
+        "creature": "ARCHER",
+        "min": 4,
+        "max": 7
+      },
+      {
+        "creature": "ARCHER",
+        "min": 4,
+        "max": 7
+      },
+      {
+        "creature": "ARCHER",
+        "min": 4,
+        "max": 7
+      }
+    ]
+  },
+  "EDRIC": {
+    "name": "Edric",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARMORER",
+        "level": "BASIC"
+      }
+    ],
+    "startingArmy": [
+      {
+        "creature": "PIKEMAN",
+        "min": 10,
+        "max": 20
+      },
+      {
+        "creature": "GRIFFIN",
+        "min": 2,
+        "max": 3
+      },
+      {
+        "creature": "GRIFFIN",
+        "min": 2,
+        "max": 3
+      }
+    ]
+  },
+  "SYLVIA": {
+    "name": "Sylvia",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "NAVIGATION",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "LORD_HAART": {
+    "name": "Lord Haart",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ESTATES",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "SORSHA": {
+    "name": "Sorsha",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "OFFENSE",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "CHRISTIAN": {
+    "name": "Christian",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARTILLERY",
+        "level": "BASIC"
+      }
+    ],
+    "startingArmy": [
+      {
+        "creature": "PIKEMAN",
+        "min": 10,
+        "max": 20
+      },
+      {
+        "warMachine": "BALLISTA",
+        "min": 1,
+        "max": 1
+      },
+      {
+        "creature": "GRIFFIN",
+        "min": 2,
+        "max": 3
+      }
+    ]
+  },
+  "TYRIS": {
+    "name": "Tyris",
+    "heroClass": "KNIGHT",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "TACTICS",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "RION": {
+    "name": "Rion",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "FIRST_AID",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["STONE_SKIN"],
+    "startingArmy": [
+      {
+        "creature": "PIKEMAN",
+        "min": 10,
+        "max": 20
+      },
+      {
+        "warMachine": "FIRST_AID_TENT",
+        "min": 1,
+        "max": 1
+      },
+      {
+        "creature": "GRIFFIN",
+        "min": 2,
+        "max": 3
+      }
+    ]
+  },
+  "ADELA": {
+    "name": "Adela",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "DIPLOMACY",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["BLESS"]
+  },
+  "CUTHBERT": {
+    "name": "Cuthbert",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ESTATES",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["WEAKNESS"]
+  },
+  "ADELAIDE": {
+    "name": "Adelaide",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "ADVANCED"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["FROST_RING"]
+  },
+  "INGHAM": {
+    "name": "Ingham",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "MYSTICISM",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["CURSE"]
+  },
+  "SANYA": {
+    "name": "Sanya",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "EAGLE_EYE",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["DISPEL"]
+  },
+  "LOYNIS": {
+    "name": "Loynis",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "LEARNING",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["PRAYER"]
+  },
+  "CAITLIN": {
+    "name": "Caitlin",
+    "heroClass": "CLERIC",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "INTELLIGENCE",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["CURE"]
+  },
+  "MEPHALA": {
+    "name": "Mephala",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARMORER",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "UFRETIN": {
+    "name": "Ufretin",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "RESISTANCE",
+        "level": "BASIC"
+      },
+      {
+        "skill": "LUCK",
+        "level": "BASIC"
+      }
+    ],
+    "startingArmy": [
+      {
+        "creature": "DWARF",
+        "min": 3,
+        "max": 5
+      },
+      {
+        "creature": "DWARF",
+        "min": 3,
+        "max": 5
+      },
+      {
+        "creature": "DWARF",
+        "min": 3,
+        "max": 5
+      }
+    ]
+  },
+  "JENOVA": {
+    "name": "Jenova",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "ARCHERY",
+        "level": "ADVANCED"
+      }
+    ]
+  },
+  "RYLAND": {
+    "name": "Ryland",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "LEADERSHIP",
+        "level": "BASIC"
+      },
+      {
+        "skill": "DIPLOMACY",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "THORGRIM": {
+    "name": "Thorgrim",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "RESISTANCE",
+        "level": "ADVANCED"
+      }
+    ]
+  },
+  "IVOR": {
+    "name": "Ivor",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "ARCHERY",
+        "level": "BASIC"
+      },
+      {
+        "skill": "OFFENSE",
+        "level": "BASIC"
+      }
+    ],
+    "startingArmy": [
+      {
+        "creature": "CENTAUR",
+        "min": 12,
+        "max": 24
+      },
+      {
+        "creature": "WOOD_ELF",
+        "min": 3,
+        "max": 6
+      },
+      {
+        "creature": "WOOD_ELF",
+        "min": 3,
+        "max": 6
+      }
+    ]
+  },
+  "CLANCY": {
+    "name": "Clancy",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "RESISTANCE",
+        "level": "BASIC"
+      },
+      {
+        "skill": "PATHFINDING",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "KYRRE": {
+    "name": "Kyrre",
+    "heroClass": "RANGER",
+    "secondarySkills": [
+      {
+        "skill": "LOGISTICS",
+        "level": "BASIC"
+      },
+      {
+        "skill": "ARCHERY",
+        "level": "BASIC"
+      }
+    ]
+  },
+  "CORONIUS": {
+    "name": "Coronius",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "SCHOLAR",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["SLAYER"]
+  },
+  "ULAND": {
+    "name": "Uland",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "ADVANCED"
+      },
+      {
+        "skill": "BALLISTICS",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["CURE"]
+  },
+  "ELLESHAR": {
+    "name": "Elleshar",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "INTELLIGENCE",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["CURSE"]
+  },
+  "GEM": {
+    "name": "Gem",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "FIRST_AID",
+        "level": "BASIC"
+      },
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["SUMMON_BOAT"],
+    "startingArmy": [
+      {
+        "creature": "CENTAUR",
+        "min": 12,
+        "max": 24
+      },
+      {
+        "warMachine": "FIRST_AID_TENT",
+        "min": 1,
+        "max": 1
+      },
+      {
+        "creature": "WOOD_ELF",
+        "min": 3,
+        "max": 6
+      }
+    ]
+  },
+  "MALCOM": {
+    "name": "Malcom",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "EAGLE_EYE",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["MAGIC_ARROW"]
+  },
+  "MELODIA": {
+    "name": "Melodia",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "LUCK",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["FORTUNE"]
+  },
+  "ALAGAR": {
+    "name": "Alagar",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "SORCERY",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["ICE_BOLT"]
+  },
+  "AERIS": {
+    "name": "Aeris",
+    "heroClass": "DRUID",
+    "secondarySkills": [
+      {
+        "skill": "WISDOM",
+        "level": "BASIC"
+      },
+      {
+        "skill": "SCOUTING",
+        "level": "BASIC"
+      }
+    ],
+    "spellBook": true,
+    "spells": ["PROTECTION_FROM_AIR"]
+  }
+}
