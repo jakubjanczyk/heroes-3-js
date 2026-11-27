@@ -83,6 +83,21 @@ describe('battle Berserk and Hypnotize behavior', () => {
       expect(readBattleStacks()).toContainEqual({ stack: 'Pikemen 23', row: 6, column: 11 })
     })
 
+    test('given the berserk Pikemen have an Archangel of the hero in reach too when their turn comes then they still attack the nearer Pikemen', async () => {
+      const { user } = await startBattle(
+        aFight({
+          hero: aMindCaster({ army: [stack('ARCHANGEL', 1)] }),
+          count: 75,
+          stacks: 3
+        })
+      )
+      await castSpellAt(user, 'Berserk', TOP)
+
+      await moveActiveStackTo(user, 1, 12)
+
+      expect(readCombatMessages()[1]).toBe('The Pikemen do 24 damage. 2 Pikemen perish.')
+    })
+
     // Unberserked, they would walk four hexes left, to column 11, towards the Swordsmen.
     test('given the berserk Pikemen cannot reach anyone this turn when their turn comes then they walk as far towards the nearest stack as they can', async () => {
       const { user } = await startBattle(aFight({ hero: aMindCaster(), count: 50, stacks: 2 }))

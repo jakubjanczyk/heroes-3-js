@@ -619,7 +619,7 @@ See `docs/notes/2026-10-20-combat-ai.md`.
 - [x] Enemy stacks act on their own, simply: go for the nearest stack (fewest hexes to a side of it; the earlier army slot on a tie) and attack it, or get as close as the turn allows. A shooter that can shoot shoots the nearest enemy stack instead
 - [x] Auto combat uses the same AI for the player's stacks
 - [ ] Smarter combat AI, in seven parts. See `docs/notes/2026-11-27-smarter-combat-ai.md`.
-  - [ ] 5.7b.1 Targets by worth: a stack shoots or attacks the stack in reach whose losses are worth the most, less what it loses to the retaliation; with none in reach it walks toward the nearest
+  - [x] 5.7b.1 Targets by worth: a stack shoots or attacks the stack in reach whose losses are worth the most, less what it loses to the retaliation; with none in reach it walks toward the nearest
   - [ ] 5.7b.2 Wait and Defend: wait, or stay back, rather than walk into an enemy's first strike; defend with nothing better to do
   - [ ] 5.7b.3 Positioning: shooters step away from an enemy next to them, walkers go for the enemy's shooters and block them, stacks guard their own shooters
   - [ ] 5.7b.4 A computer hero casts damage spells

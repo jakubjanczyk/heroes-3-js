@@ -11,6 +11,7 @@ import {
   waitMs
 } from './app.utils.js'
 import {
+  attackBattleHexFrom,
   clickBattleButton,
   getBattleButton,
   LOWEST_ROLLS,
@@ -30,19 +31,22 @@ const stack = (creature, count) => ({ creature, count })
 const stackAt = (name, row, column) => ({ stack: name, row, column })
 
 // Every damage roll lands on the lowest damage.
-// The monster is one stack on row 6, column 15.
-const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 10 }) =>
+// The monster is one stack on row 6, column 15 unless a test splits it.
+const aFight = ({ army, monsterType = 'PIKEMAN', monsterCount = 10, monsterStacks = 1 }) =>
   aScenario()
     .withSize(3)
     .withEntities(
       aHero().withArmy(army),
-      aMonster().withType(monsterType).withCount(monsterCount).withStacks(1).at(1, 0)
+      aMonster().withType(monsterType).withCount(monsterCount).withStacks(monsterStacks).at(1, 0)
     )
     .withDefinitions({ monsters })
 
 // The Angel starts on row 6, column 1, out of the Pikemen's reach: it flies up to them, takes
 // their attack and kills 8 of them striking back.
 const anAngelAgainstPikemen = () => aFight({ army: [stack('ANGEL', 1)] })
+
+const ARCHANGEL_KILLS_ELEVEN = 'The Archangel does 112 damage. 11 Pikemen perish.'
+const THE_78_TOP_PIKEMEN_ATTACK_ON_THEIR_TURN = 'The Pikemen do 27 damage.'
 
 async function playAutoCombat(user) {
   await clickBattleButton(user, 'Auto combat')
@@ -156,5 +160,25 @@ describe('battle Auto combat behavior', () => {
     await clickBattleButton(user, 'Auto combat')
 
     expect(getBattleButton('Cast spell').disabled).toBe(true)
+  })
+
+  test("given the hero's first Archangel made the top Pikemen strike back when Auto combat plays the second then it attacks them too, not the nearer Pikemen", async () => {
+    const { user } = await startBattle(
+      aFight({
+        army: [stack('ARCHANGEL', 1), stack('ARCHANGEL', 1)],
+        monsterCount: 200,
+        monsterStacks: 2
+      })
+    )
+    await attackBattleHexFrom(user, 3, 15, 'left')
+    await waitMs(1000)
+
+    await clickBattleButton(user, 'Auto combat')
+    await waitMs(200)
+
+    expect(readCombatMessages().slice(2, 4)).toEqual([
+      ARCHANGEL_KILLS_ELEVEN,
+      THE_78_TOP_PIKEMEN_ATTACK_ON_THEIR_TURN
+    ])
   })
 })

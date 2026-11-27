@@ -25,6 +25,7 @@ The original game's combat AI is not documented: the wiki has no page on it, and
 - **None in reach.** The stack walks or flies toward the nearest enemy stack, as today.
 - **Unchanged.** A berserk stack still attacks the nearest stack (the spell's rule). War machines keep their own aim (the Ballista, the arrow towers, the First Aid Tent, the Catapult).
 - The plan stays a pure function of the battle state and the rolls passed in, so a reload replays it as now.
+- Built in `game/heroes/battle-ai.js`: each attack is planned and resolved on a copy of the battle, and the stacks' losses compared. The worth of a loss is in `game/heroes/battle-worth.js`, shared with the arrow towers' aim.
 
 ## Left for later
 

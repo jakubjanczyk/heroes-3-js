@@ -8,14 +8,70 @@ import {
   getWayThisTurn,
   planStackAttack,
   planStackHeal,
-  planStackShot
+  planStackShot,
+  resolveAttack,
+  resolveShot
 } from './battle.js'
-import { getMovementRange } from './battle-stats.js'
+import { areEnemies, getMovementRange, isBerserk } from './battle-stats.js'
+import { healthOf, worthOfLoss } from './battle-worth.js'
 import { getHexDistance } from './battlefield.js'
 import { chooseSelfAimedTarget } from './self-aimed-shots.js'
 
-// A first, simple combat AI: shoot the nearest enemy stack when the stack can, else go for the
-// nearest one and attack it, or get as close as this turn allows. The earlier army slot wins ties.
+// An attack is weighed with every roll in the middle of the damage, no luck and nothing left to
+// chance (an ability cast on a hit, a Resistance roll).
+const WEIGHING_ROLLS = {
+  random: () => 0.5,
+  luckRandom: () => 1,
+  abilityRandom: () => 1,
+  resistanceRandom: () => 1
+}
+
+function worthLostBy(battle, before, after) {
+  const now = after.stacks.find(({ id }) => id === before.id)
+  const left = now ?? { ...before, count: 0, topHealth: 0 }
+  return worthOfLoss(battle, before, {
+    damage: healthOf(before) - healthOf(left),
+    killed: before.count - left.count
+  })
+}
+
+// What the other side loses, less what the stack's own side loses.
+function worthOfOutcome(battle, stack, after) {
+  return battle.stacks
+    .filter(({ count }) => count > 0)
+    .reduce((worth, other) => {
+      const lost = worthLostBy(battle, other, after)
+      return areEnemies(other, stack) ? worth + lost : worth - lost
+    }, 0)
+}
+
+const isWorthMore = (candidate, best) =>
+  !best ||
+  candidate.worth > best.worth ||
+  (candidate.worth === best.worth && candidate.distance < best.distance)
+
+const mostWorth = (candidates) =>
+  candidates.reduce((best, candidate) => (isWorthMore(candidate, best) ? candidate : best), null)
+
+function weighAttack(battle, stack, { targetId, fromHex, distance }) {
+  const attack = planStackAttack(battle, stack, { targetId, fromHex, ...WEIGHING_ROLLS })
+  if (!attack) {
+    return null
+  }
+  const after = resolveAttack(battle, { stackId: stack.id, targetId, ...attack })
+  return { targetId, fromHex, distance, worth: worthOfOutcome(battle, stack, after) }
+}
+
+function findAttackWorthMost(battle, stack) {
+  const range = getMovementRange(stack)
+  return mostWorth(
+    getApproaches(battle, stack)
+      .filter(({ distance }) => distance <= range)
+      .map((approach) => weighAttack(battle, stack, approach))
+      .filter(Boolean)
+  )
+}
+
 function findNearestApproach(battle, stack) {
   const approaches = getApproaches(battle, stack)
   if (approaches.length === 0) {
@@ -49,20 +105,35 @@ function chooseWarMachineTarget(battle, stack) {
 }
 
 function findShotTarget(battle, stack) {
-  return stack.warMachine
-    ? chooseWarMachineTarget(battle, stack)
-    : findNearestShotTarget(battle, stack)
+  if (stack.warMachine) {
+    return chooseWarMachineTarget(battle, stack)
+  }
+  return isBerserk(stack) ? findNearestShotTarget(battle, stack) : findShotWorthMost(battle, stack)
+}
+
+const shotDistance = (battle, stack, { stackId }) => {
+  const target = battle.stacks.find(({ id }) => id === stackId)
+  return Math.min(...getStackHexes(target).map((hex) => getHexDistance(stack.hex, hex)))
 }
 
 function findNearestShotTarget(battle, stack) {
-  const distanceTo = ({ stackId }) => {
-    const target = battle.stacks.find(({ id }) => id === stackId)
-    return Math.min(...getStackHexes(target).map((hex) => getHexDistance(stack.hex, hex)))
-  }
   return getShotTargets(battle, stack).reduce((best, target) =>
-    distanceTo(target) < distanceTo(best) ? target : best
+    shotDistance(battle, stack, target) < shotDistance(battle, stack, best) ? target : best
   )
 }
+
+function weighShot(battle, stack, { stackId: targetId }) {
+  const shot = planStackShot(battle, stack, { targetId, ...WEIGHING_ROLLS })
+  const after = resolveShot(battle, { stackId: stack.id, ...shot })
+  return {
+    stackId: targetId,
+    distance: shotDistance(battle, stack, { stackId: targetId }),
+    worth: worthOfOutcome(battle, stack, after)
+  }
+}
+
+const findShotWorthMost = (battle, stack) =>
+  mostWorth(getShotTargets(battle, stack).map((target) => weighShot(battle, stack, target)))
 
 function planHeal(battle, stack, { random }) {
   const target = chooseHealTarget(battle, stack)
@@ -81,6 +152,23 @@ export function planComputerTurn(battle, stack, rolls) {
     return { shot: { targetId, ...planStackShot(battle, stack, { targetId, ...rolls }) } }
   }
 
+  const attack = isBerserk(stack) ? null : planAttackWorthMost(battle, stack, rolls)
+  return attack ?? planNearestAttackOrMove(battle, stack, rolls)
+}
+
+function planAttackWorthMost(battle, stack, rolls) {
+  const best = findAttackWorthMost(battle, stack)
+  if (!best) {
+    return null
+  }
+  const { targetId, fromHex } = best
+  const attack = planStackAttack(battle, stack, { targetId, fromHex, ...rolls })
+  return attack ? { attack: { targetId, ...attack } } : null
+}
+
+// A berserk stack attacks the nearest stack; any other stack with nobody in reach goes toward
+// the nearest enemy.
+function planNearestAttackOrMove(battle, stack, rolls) {
   const approach = findNearestApproach(battle, stack)
   if (!approach) {
     return null
