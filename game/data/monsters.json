@@ -703,7 +703,7 @@
       "GOLD_PILE": 130
     },
     "aiValue": 165,
-    "abilities": ["flying"]
+    "abilities": ["flying", "nonLiving"]
   },
   "OBSIDIAN_GARGOYLE": {
     "name": "Obsidian Gargoyle",
@@ -723,7 +723,7 @@
       "GOLD_PILE": 160
     },
     "aiValue": 201,
-    "abilities": ["flying"]
+    "abilities": ["flying", "nonLiving"]
   },
   "STONE_GOLEM": {
     "name": "Stone Golem",
@@ -744,7 +744,8 @@
       "GOLD_PILE": 150
     },
     "aiValue": 260,
-    "abilities": []
+    "spellDamageReduction": 50,
+    "abilities": ["nonLiving", "neutralMorale", "immuneToMindSpells"]
   },
   "IRON_GOLEM": {
     "name": "Iron Golem",
@@ -764,7 +765,8 @@
       "GOLD_PILE": 200
     },
     "aiValue": 412,
-    "abilities": []
+    "spellDamageReduction": 75,
+    "abilities": ["nonLiving", "neutralMorale", "immuneToMindSpells"]
   },
   "MAGE": {
     "name": "Mage",
