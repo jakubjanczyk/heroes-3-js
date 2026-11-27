@@ -698,8 +698,10 @@ Checked against the wiki's raw page source (Genie and Master Genie, Spellcaster,
 
 - The Master Genie's `casts` in `monsters.json` (`{ "times": 3, "skillLevel": 2, "power": 6, "spells": [...] }`), copied onto its battle stacks; the Ogre Magi and the elementals reuse it with one spell each.
 - A refactor first: the lasting spells' effects and rounds and Cure's healing are worked out from a skill level and a Power, which the hero's cast takes from the hero and the stack's from its `casts`.
+- A spell's `usefulWhen` in `spells.json` names the check beyond its targets: `targetWalks` (Bloodlust), `enemyWalks` (Shield, Fire Shield), `enemyShoots` (Air Shield), `enemyHasHero` (Anti-Magic, Magic Mirror, the Protections) and `enemyKingReached` (Slayer, by its `kingsReached` at the caster's level). Immunities, Precision's shooters and Cure's hurt stacks come from the spell's targets, as for the hero.
 - One function lists the spells a stack can give a target (the checks above), used by the view's cursor, the cast and the computer.
-- A saved fact for the cast (the stack, target, spell, its effects and rounds or healing); the casts left are counted from the facts, so a reload keeps them.
+- A saved fact, `fact.battle.stack.cast` (the stack, target, spell, and its effects and rounds or its healing, as rolled); each stack's casts left are counted down as the facts replay, so a reload keeps them.
+- The demo map's Valeska (hero-2) gets 4 Master Genies.
 
 ### Left for later (6.5.7d)
 

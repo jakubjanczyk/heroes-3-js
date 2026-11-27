@@ -49,6 +49,7 @@ export const APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED = 'command.battle.stackMove
 export const APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED = 'command.battle.stackAttack.requested'
 export const APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED = 'command.battle.stackShoot.requested'
 export const APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED = 'command.battle.stackHeal.requested'
+export const APP_COMMAND_BATTLE_STACK_CAST_REQUESTED = 'command.battle.stackCast.requested'
 export const APP_COMMAND_BATTLE_CATAPULT_AIM_REQUESTED = 'command.battle.catapultAim.requested'
 export const APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED = 'command.battle.stackWait.requested'
 // In the tactics phase: the player picks one of their stacks to place, or the next one.
@@ -117,6 +118,8 @@ export const APP_FACT_BATTLE_STACK_ATTACKED = 'fact.battle.stack.attacked'
 export const APP_FACT_BATTLE_STACK_SHOT = 'fact.battle.stack.shot'
 // A healer's turn: the stack it healed and the health it gave back.
 export const APP_FACT_BATTLE_STACK_HEALED = 'fact.battle.stack.healed'
+// A spellcasting stack's turn: the stack it cast on, the spell rolled and what it does.
+export const APP_FACT_BATTLE_STACK_CAST = 'fact.battle.stack.cast'
 export const APP_FACT_BATTLE_TURN_ENDED = 'fact.battle.turn.ended'
 export const APP_FACT_BATTLE_STACK_WAITED = 'fact.battle.stack.waited'
 export const APP_FACT_BATTLE_STACK_DEFENDED = 'fact.battle.stack.defended'
@@ -262,6 +265,7 @@ const APP_PERSISTED_FACT_TYPES = new Set([
   APP_FACT_BATTLE_STACK_ATTACKED,
   APP_FACT_BATTLE_STACK_SHOT,
   APP_FACT_BATTLE_STACK_HEALED,
+  APP_FACT_BATTLE_STACK_CAST,
   APP_FACT_BATTLE_TURN_ENDED,
   APP_FACT_BATTLE_STACK_WAITED,
   APP_FACT_BATTLE_STACK_DEFENDED,

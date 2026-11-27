@@ -852,6 +852,34 @@
       "GOLD_PILE": 600
     },
     "aiValue": 942,
+    "casts": {
+      "times": 3,
+      "skillLevel": 2,
+      "power": 6,
+      "spells": [
+        "AIR_SHIELD",
+        "ANTI_MAGIC",
+        "BLESS",
+        "BLOODLUST",
+        "COUNTERSTRIKE",
+        "CURE",
+        "FIRE_SHIELD",
+        "FORTUNE",
+        "FRENZY",
+        "HASTE",
+        "MAGIC_MIRROR",
+        "MIRTH",
+        "PRAYER",
+        "PRECISION",
+        "PROTECTION_FROM_AIR",
+        "PROTECTION_FROM_EARTH",
+        "PROTECTION_FROM_FIRE",
+        "PROTECTION_FROM_WATER",
+        "SHIELD",
+        "SLAYER",
+        "STONE_SKIN"
+      ]
+    },
     "abilities": ["flying"]
   },
   "NAGA": {

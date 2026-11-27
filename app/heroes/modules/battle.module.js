@@ -7,6 +7,7 @@ import {
   canHeroAimCatapult,
   canHeroAimTowers,
   canTeleportTo,
+  castByStack,
   castDamageSpell,
   castHealingSpell,
   castLastingSpell,
@@ -73,6 +74,7 @@ import {
   describeBattleResults
 } from '../../../game/heroes/battle-results.js'
 import { canBeSacrificed, sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
+import { getCastTargets, planStackCast } from '../../../game/heroes/battle-spellcasters.js'
 import {
   battleSpellCostChange,
   canCastInBattle,
@@ -136,6 +138,7 @@ import {
   APP_COMMAND_BATTLE_RETREAT_REQUESTED,
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
@@ -152,6 +155,7 @@ import {
   APP_FACT_BATTLE_FINISHED,
   APP_FACT_BATTLE_SPELL_CAST,
   APP_FACT_BATTLE_STACK_ATTACKED,
+  APP_FACT_BATTLE_STACK_CAST,
   APP_FACT_BATTLE_STACK_DEFENDED,
   APP_FACT_BATTLE_STACK_FROZE,
   APP_FACT_BATTLE_STACK_HEALED,
@@ -426,6 +430,7 @@ export const registerBattleModule = defineModule(
         attackTargets: [],
         shotTargets: [],
         healTargetIds: [],
+        castTargetIds: [],
         catapultTargets: [],
         messages: shown.messages,
         effects: [],
@@ -445,6 +450,7 @@ export const registerBattleModule = defineModule(
       attackTargets: [],
       shotTargets: [],
       healTargetIds: [],
+      castTargetIds: [],
       catapultTargets: []
     }
 
@@ -484,6 +490,7 @@ export const registerBattleModule = defineModule(
         attackTargets: getAttackTargets(battle, activeStack),
         shotTargets: getShotTargets(battle, activeStack),
         healTargetIds: getHealTargets(battle, activeStack).map(({ id }) => id),
+        castTargetIds: getCastTargets(battle, activeStack).map(({ id }) => id),
         catapultTargets: []
       }
     }
@@ -669,6 +676,16 @@ export const registerBattleModule = defineModule(
           path: [],
           fact: APP_FACT_BATTLE_STACK_HEALED,
           detail: { stackId: stack.id, ...plan.heal }
+        })
+        return
+      }
+
+      if (plan?.cast) {
+        void walkThenShow({
+          stack,
+          path: [],
+          fact: APP_FACT_BATTLE_STACK_CAST,
+          detail: { stackId: stack.id, ...plan.cast }
         })
         return
       }
@@ -1066,6 +1083,30 @@ export const registerBattleModule = defineModule(
       }
     }
 
+    function castWithActiveStack({ targetId }) {
+      const stack = getActiveStack(battle)
+      const cast = stack && planStackCast(battle, stack, { targetId, random })
+      if (cast) {
+        void walkThenShow({
+          stack,
+          path: [],
+          fact: APP_FACT_BATTLE_STACK_CAST,
+          detail: { stackId: stack.id, ...cast }
+        })
+      }
+    }
+
+    function stackCastOn(current, { spellId, effects, rounds, healing, ...cast }) {
+      const spell = definitions.spells?.[spellId]
+      return castByStack(current, {
+        ...cast,
+        spellName: spell?.name ?? spellId,
+        castMessage: spell?.lasting?.castMessage,
+        healing,
+        lasting: spell?.lasting ? { spellId, effects, rounds, ...lastingRule(spell) } : null
+      })
+    }
+
     function chooseAreaTargets(targeting, hex) {
       if (!hex || !isOnBattlefield(hex)) {
         return null
@@ -1410,6 +1451,17 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_FACT_BATTLE_STACK_CAST,
+          handler: (event) => {
+            if (!battle) {
+              return
+            }
+
+            battle = stackCastOn(battle, event.detail)
+            showBattle()
+          }
+        },
+        {
           type: APP_FACT_BATTLE_SPELL_CAST,
           handler: (event) => {
             if (!battle) {
@@ -1607,6 +1659,14 @@ export const registerBattleModule = defineModule(
           }
         },
         {
+          type: APP_COMMAND_BATTLE_STACK_CAST_REQUESTED,
+          handler: (event) => {
+            if (isPlayersTurn()) {
+              castWithActiveStack(event.detail)
+            }
+          }
+        },
+        {
           type: APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
           handler: (event) => {
             if (isLeadingHerosTurn() && !isTacticsPhase(battle)) {
@@ -1710,6 +1770,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_STACK_SHOT,
       APP_FACT_BATTLE_STACK_HEALED,
+      APP_FACT_BATTLE_STACK_CAST,
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
@@ -1728,6 +1789,7 @@ export const registerBattleModule = defineModule(
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_AUTO_COMBAT_REQUESTED,
@@ -1744,6 +1806,7 @@ export const registerBattleModule = defineModule(
       APP_FACT_BATTLE_STACK_ATTACKED,
       APP_FACT_BATTLE_STACK_SHOT,
       APP_FACT_BATTLE_STACK_HEALED,
+      APP_FACT_BATTLE_STACK_CAST,
       APP_FACT_BATTLE_TURN_ENDED,
       APP_FACT_BATTLE_STACK_WAITED,
       APP_FACT_BATTLE_STACK_DEFENDED,
