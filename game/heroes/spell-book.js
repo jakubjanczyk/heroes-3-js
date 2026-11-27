@@ -80,10 +80,11 @@ export function spellDamage({ hero, spell, definitions }) {
   )
 }
 
-export function spellHealing({ hero, spell, definitions }) {
-  const { base, perPower } = spell.heals
-  return base[spellSkillLevel(hero, spell)] + perPower * powerOf(hero, definitions)
-}
+export const healingAt = (spell, { skillLevel, power }) =>
+  spell.heals.base[skillLevel] + spell.heals.perPower * power
+
+export const spellHealing = ({ hero, spell, definitions }) =>
+  healingAt(spell, { skillLevel: spellSkillLevel(hero, spell), power: powerOf(hero, definitions) })
 
 // Each effect's value at the hero's skill level, for as many rounds as the hero's Power, or no
 // rounds for a spell that lasts until the battle ends. One that ends on the stack's turn in the
@@ -102,16 +103,22 @@ export function sacrificeHealing({ hero, spell, definitions, sacrificed }) {
 
 export const cloneRounds = (hero, definitions) => powerOf(hero, definitions)
 
-export function spellLasting({ hero, spell, definitions }) {
-  const level = spellSkillLevel(hero, spell)
+export function lastingAt(spell, { skillLevel, power, sorceryPercent = 0 }) {
   const effects = Object.fromEntries(
-    Object.entries(spell.lasting.effects).map(([key, values]) => [key, values[level]])
+    Object.entries(spell.lasting.effects).map(([key, values]) => [key, values[skillLevel]])
   )
   if (spell.lasting.raisedBySorcery) {
-    effects.sorceryPercent = sorceryPercentOf(hero)
+    effects.sorceryPercent = sorceryPercent
   }
-  return { effects, rounds: lastingRounds(spell.lasting, powerOf(hero, definitions)) }
+  return { effects, rounds: lastingRounds(spell.lasting, power) }
 }
+
+export const spellLasting = ({ hero, spell, definitions }) =>
+  lastingAt(spell, {
+    skillLevel: spellSkillLevel(hero, spell),
+    power: powerOf(hero, definitions),
+    sorceryPercent: sorceryPercentOf(hero)
+  })
 
 function healthLimit({ hero, spell, definitions }) {
   const limit = spell.lasting?.healthLimit

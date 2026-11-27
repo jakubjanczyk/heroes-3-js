@@ -179,6 +179,8 @@ function createStack({
     binds: Boolean(definition.binds),
     breath: Boolean(definition.breath),
     spellAfterAttack: definition.spellAfterAttack ?? null,
+    casts: definition.casts ?? null,
+    castsLeft: definition.casts?.times ?? 0,
     luck,
     cancelledInBattle,
     spells: [],
@@ -231,6 +233,7 @@ const cancelledKinds = (sides, definitions) =>
 export function heroBattleSide(hero, definitions, { defendingTown = false } = {}) {
   const skills = getHeroPrimarySkills({ entity: hero, definitions })
   return {
+    hero: Boolean(hero),
     army: hero?.army ?? [],
     warMachines: heroWarMachines(hero?.artifacts, definitions).filter(
       ({ slot }) => !defendingTown || slot !== 'BALLISTA'
@@ -316,6 +319,7 @@ export function createBattle({
     : []
   const battle = {
     stacks: [...stacksOf('attacker'), ...catapult, ...stacksOf('defender')],
+    heroSides: Object.keys(sides).filter((side) => sides[side].hero),
     tactics: null,
     actedStackIds: [],
     sidesCastThisRound: [],
@@ -1432,6 +1436,36 @@ export function healStack(battle, { stackId, targetId, healing }) {
     effects: [...battle.effects, { stackId: targetId, kind: 'firstAid' }]
   }
   return endTurn(healed, stackId)
+}
+
+const describeStackCast = ({ name, count }, spellName) =>
+  `The ${name} ${count === 1 ? 'casts' : 'cast'} ${spellName}`
+
+// A stack's own spell: a lasting one or a healing one, on one stack of its side.
+export function castByStack(
+  battle,
+  { stackId, targetId, spellName, castMessage, healing, lasting }
+) {
+  const caster = battle.stacks.find(({ id }) => id === stackId)
+  const target = battle.stacks.find(({ id }) => id === targetId)
+  const change = (stack) =>
+    lasting ? putSpellOn(stack, lasting) : healTopCreature(stack, healing ?? 0)
+  const cast = {
+    ...battle,
+    stacks: battle.stacks.map((stack) => {
+      if (stack.id === targetId) {
+        return change(stack)
+      }
+      return stack.id === stackId ? { ...stack, castsLeft: stack.castsLeft - 1 } : stack
+    }),
+    effects: [...battle.effects, { stackId: targetId, kind: 'spellHit', spellName }],
+    messages: [
+      ...battle.messages,
+      describeStackCast(caster, spellName),
+      ...(castMessage ? [castMessage.replace('%s', target.name)] : [])
+    ]
+  }
+  return endTurn(cast, stackId)
 }
 
 function describeCast(battle, { heroName, spellName, targetIds }) {

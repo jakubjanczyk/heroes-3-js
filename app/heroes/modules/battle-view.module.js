@@ -21,6 +21,7 @@ import {
   APP_COMMAND_BATTLE_RETREAT_REQUESTED,
   APP_COMMAND_BATTLE_SPELL_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
+  APP_COMMAND_BATTLE_STACK_CAST_REQUESTED,
   APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
   APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
   APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
@@ -227,6 +228,11 @@ export const registerBattleViewModule = defineModule(
       return target && shown.healTargetIds?.includes(target.id) ? target : null
     }
 
+    function findCastTarget(hex) {
+      const target = findLivingStackOn(hex)
+      return target && shown.castTargetIds?.includes(target.id) ? target : null
+    }
+
     // Attacks from the side nearest the mouse. A finger cannot aim before it taps, so a stack
     // already next to the target attacks from where it stands.
     function findAttack(hex, hexElement) {
@@ -322,6 +328,11 @@ export const registerBattleViewModule = defineModule(
       const healed = findHealTarget(hex)
       if (healed) {
         return `Apply first aid to the ${healed.name}`
+      }
+
+      const castOn = findCastTarget(hex)
+      if (castOn) {
+        return `Cast a spell on ${castOn.name}`
       }
 
       const shot = findShot(hex)
@@ -499,9 +510,12 @@ export const registerBattleViewModule = defineModule(
         return findHealTarget(hex) ? 'heal' : 'blocked'
       }
       if (!areEnemies(stack, activeStack)) {
-        return 'query'
+        return findCastTarget(hex) ? 'spell' : 'query'
       }
+      return pickEnemyCursor(hex)
+    }
 
+    function pickEnemyCursor(hex) {
       const shot = findShot(hex)
       if (shot) {
         return shot.penalty ? 'shoot-penalty' : 'shoot'
@@ -562,7 +576,11 @@ export const registerBattleViewModule = defineModule(
     function findOrderHexes(hex) {
       const target = findLivingStackOn(hex)
       if (target) {
-        const canHit = findHealTarget(hex) || findShot(hex) || findAttack(hex, hexElementAt(hex))
+        const canHit =
+          findHealTarget(hex) ||
+          findCastTarget(hex) ||
+          findShot(hex) ||
+          findAttack(hex, hexElementAt(hex))
         return canHit ? target.hexes : []
       }
 
@@ -1261,6 +1279,12 @@ export const registerBattleViewModule = defineModule(
         return
       }
 
+      const castOn = findCastTarget(hex)
+      if (castOn) {
+        emit(APP_COMMAND_BATTLE_STACK_CAST_REQUESTED, { targetId: castOn.id })
+        return
+      }
+
       if (shootAt(hex)) {
         return
       }
@@ -1404,6 +1428,7 @@ export const registerBattleViewModule = defineModule(
       APP_COMMAND_BATTLE_STACK_ATTACK_REQUESTED,
       APP_COMMAND_BATTLE_STACK_DEFEND_REQUESTED,
       APP_COMMAND_BATTLE_STACK_MOVE_REQUESTED,
+      APP_COMMAND_BATTLE_STACK_CAST_REQUESTED,
       APP_COMMAND_BATTLE_STACK_HEAL_REQUESTED,
       APP_COMMAND_BATTLE_STACK_SHOOT_REQUESTED,
       APP_COMMAND_BATTLE_STACK_WAIT_REQUESTED,
