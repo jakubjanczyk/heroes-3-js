@@ -893,7 +893,7 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
 - [x] 6.5.6 Rampart's heroes and hero classes (Rangers and Druids, each hero's own starting army and the Druids' spells), and its seven creature dwellings on the map (footprints moved to the dwellings' data)
 - [ ] 6.5.7 Tower's creatures, in four parts:
   - [x] 6.5.7a The fourteen creatures, the Giants' and Titans' immunity to mind spells, Giants and Titans as kings for Slayer, the Nagas' attacks that get no retaliation, and the Magi's shots that the walls don't halve
-  - [ ] 6.5.7b Golems and Gargoyles: the Golems' spell damage reduction; non-living (the Golems' neutral morale and immunity to mind spells, neither raised nor sacrificed by Sacrifice)
+  - [x] 6.5.7b Golems and Gargoyles: the Golems' spell damage reduction; non-living (the Golems' neutral morale and immunity to mind spells, neither raised nor sacrificed by Sacrifice)
   - [ ] 6.5.7c The Magi's magic channeler: their hero's spells cost 2 less
   - [ ] 6.5.7d The Master Genies' spells: a random helpful spell on a stack of their side, three times a battle
 - [ ] Hate (Genies and Efreet, Angels and Devils, Titans and Black Dragons), with Inferno's creatures

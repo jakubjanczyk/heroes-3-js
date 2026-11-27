@@ -325,7 +325,7 @@ const teleportDefinitions = {
     .withLevel(5)
     .withSchools(['FIRE'])
     .withCosts([25, 20, 20, 20])
-    .withNotOnUndead(true)
+    .withLivingOnly(true)
     .withSacrifices({ healthPerCreature: [3, 3, 6, 10] })
     .describedAs('Sacrifice description.')
     .build()

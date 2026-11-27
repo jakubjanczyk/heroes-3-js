@@ -661,7 +661,7 @@ Checked against the wiki's Non-living, Undead vs Unliving, Spell damage reductio
 
 ### Left for later (6.5.7a)
 
-- Golems, Gargoyles, the Magi's lower spell costs and the Master Genies' spells: 6.5.7b to 6.5.7d.
+- The Magi's lower spell costs and the Master Genies' spells: 6.5.7c and 6.5.7d (Golems and Gargoyles came in 6.5.7b).
 - Hate: with Inferno's creatures (the Efreet), and the Titans' with Dungeon's Black Dragons.
 - Growth bonuses, recruiting: Tower's town and its map dwellings.
 - The player's Giants resisting a computer hero's mind spells: computer heroes don't cast yet (5.8 later).
