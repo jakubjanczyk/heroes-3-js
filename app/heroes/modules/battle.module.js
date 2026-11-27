@@ -74,9 +74,9 @@ import {
 } from '../../../game/heroes/battle-results.js'
 import { canBeSacrificed, sacrificeTargetIds } from '../../../game/heroes/battle-sacrifice.js'
 import {
+  battleSpellCostChange,
   canCastInBattle,
-  isHelpful,
-  magicDamperAgainst
+  isHelpful
 } from '../../../game/heroes/battle-spells.js'
 import {
   fightsFor,
@@ -531,7 +531,7 @@ export const registerBattleModule = defineModule(
           playerSide === 'attacker' ? battleDefenderOf(started).surrenderRefusal : null,
         surrender: canLeadHero ? surrenderOffer() : null,
         casterHeroId: playerHeroId() ?? null,
-        extraSpellCost: magicDamperAgainst(battle.stacks, playerSide),
+        extraSpellCost: battleSpellCostChange(battle.stacks, playerSide),
         tactics: isShownTactics(),
         canCastSpell:
           canLeadHero &&
@@ -1152,7 +1152,7 @@ export const registerBattleModule = defineModule(
     }
 
     const heroSpellCost = (hero, spell) =>
-      spellCost(hero, spell, magicDamperAgainst(battle.stacks, playerSide))
+      spellCost(hero, spell, battleSpellCostChange(battle.stacks, playerSide))
 
     function canHeroCast(hero, spell, spellId) {
       return (

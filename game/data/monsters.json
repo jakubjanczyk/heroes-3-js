@@ -788,7 +788,8 @@
     },
     "aiValue": 570,
     "shots": 24,
-    "abilities": ["ranged", "noMeleePenalty", "noWallPenalty"]
+    "abilities": ["ranged", "noMeleePenalty", "noWallPenalty"],
+    "magicChanneler": 2
   },
   "ARCH_MAGE": {
     "name": "Arch Mage",
@@ -809,7 +810,8 @@
     },
     "aiValue": 680,
     "shots": 24,
-    "abilities": ["ranged", "noMeleePenalty", "noWallPenalty"]
+    "abilities": ["ranged", "noMeleePenalty", "noWallPenalty"],
+    "magicChanneler": 2
   },
   "GENIE": {
     "name": "Genie",

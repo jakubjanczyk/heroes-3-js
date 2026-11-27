@@ -58,8 +58,9 @@ export const castsOnAllStacks = (hero, spell) =>
   Boolean(spell?.earthquake) ||
   (Boolean(castRuleOf(spell)?.allAtExpert) && spellSkillLevel(hero, spell) === SKILL_LEVELS.EXPERT)
 
-export function spellCost(hero, spell, extraCost = 0) {
-  return (spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0) + extraCost
+export function spellCost(hero, spell, costChange = 0) {
+  const cost = spell.costs?.[spellSkillLevel(hero, spell)] ?? spell.costs?.[0] ?? 0
+  return Math.max(0, cost + costChange)
 }
 
 const powerOf = (hero, definitions) =>

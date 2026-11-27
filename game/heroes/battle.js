@@ -87,6 +87,7 @@ const spellTraitsOf = (definition, { immunities, magicResistance, mindless }) =>
   magicResistance: Math.min(100, magicResistance + (definition.magicResistance ?? 0)),
   magicResistanceAura: definition.magicResistanceAura ?? 0,
   magicDamper: definition.magicDamper ?? 0,
+  magicChanneler: definition.magicChanneler ?? 0,
   spellDamageReduction: definition.spellDamageReduction ?? 0
 })
 
