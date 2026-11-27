@@ -12,8 +12,9 @@ import {
   resolveAttack,
   resolveShot
 } from './battle.js'
+import { getCastTargets, planStackCast } from './battle-spellcasters.js'
 import { areEnemies, getMovementRange, isBerserk } from './battle-stats.js'
-import { healthOf, worthOfLoss } from './battle-worth.js'
+import { healthOf, worthOf, worthOfLoss } from './battle-worth.js'
 import { getHexDistance } from './battlefield.js'
 import { chooseSelfAimedTarget } from './self-aimed-shots.js'
 
@@ -155,9 +156,23 @@ function planHeal(battle, stack, { random }) {
 // `{ shot }` with the target and the shots, `{ attack }` with the target, the way there and the
 // strikes, `{ heal }` with the target and the health, `{ path }` for a move, or null when the
 // stack can do nothing and its turn passes.
+// A spellcaster casts while it can, on the stack of its side worth the most.
+function planCast(battle, stack, { random }) {
+  const target = getCastTargets(battle, stack).reduce(
+    (best, other) => (!best || worthOf(battle, other) > worthOf(battle, best) ? other : best),
+    null
+  )
+  const cast = target && planStackCast(battle, stack, { targetId: target.id, random })
+  return cast ? { cast } : null
+}
+
 export function planComputerTurn(battle, stack, rolls) {
   if (stack.healing > 0) {
     return planHeal(battle, stack, rolls)
+  }
+  const cast = isBerserk(stack) ? null : planCast(battle, stack, rolls)
+  if (cast) {
+    return cast
   }
   if (canShoot(battle, stack)) {
     const { stackId: targetId } = findShotTarget(battle, stack)

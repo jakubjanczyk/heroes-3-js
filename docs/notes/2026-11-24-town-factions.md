@@ -671,14 +671,47 @@ Checked against the wiki's raw page source (Mage and Arch Mage, both creature te
 
 - A computer hero's Magi lowering its costs: computer heroes don't cast yet (5.8 later).
 
-### The Master Genies' spells (6.5.7d, planned)
+### The Master Genies' spells (6.5.7d)
 
-- Instead of acting, a stack of Master Genies casts a random helpful spell on a stack of its side, three times a battle, at Advanced with Spell Power 6; the number of Genies doesn't matter (wiki Spellcaster and Genie pages).
-- Only a spell the target isn't immune to and that would do something (no Slayer without kings to fight, no Cure on an unhurt stack). The spell list and how the player picks the target are checked when the part is next.
+Checked against the wiki's raw page source (Genie and Master Genie, Spellcaster, and the pages of each spell, which list the Master Genies among their casters), the RoE manual's text quoted there, `GENRLTXT.TXT` for the texts, and the engine's Tower creature data (`RANDOM_SPELLCASTER` 2, `CASTS` 3, `CREATURE_ENCHANT_POWER` 6) and its battle code (the random spell action, the list of spells it rolls from and its checks).
+
+- Instead of acting, a stack of Master Genies casts a spell on another stack of its side, three times a battle; then it fights as a Genie (wiki; the engine). Casting takes its turn, as an attack does.
+- The spell is rolled, each one usable on the target equally likely; the player picks only the target (wiki: "Spells cast by Master Genie are random"; the engine rolls one of the usable spells).
+- Cast at Advanced in its school, with Spell Power 6, so a spell lasts 6 rounds; the number of Genies doesn't matter (wiki; the engine). Advanced never casts on all stacks, so every spell goes on the one target. The hero's skills, Power, Sorcery and artifacts play no part (Fire Shield's burn is 20%).
+- It isn't the hero's cast: the hero can still cast that round, and it costs no spell points.
+- The spells: Air Shield, Anti-Magic, Bless, Bloodlust, Counterstrike, Cure, Fire Shield, Fortune, Haste, Magic Mirror, Mirth, Prayer, Precision, Protection from Air, Fire, Water and Earth, Shield, Slayer and Stone Skin (both sources), and Frenzy (the wiki's Genie and Frenzy pages; the engine's list leaves it out; we follow the wiki, agreed with the user). Magic Mirror waits for enemy heroes casting (8.1), as the hero's does.
+- A spell is left out when (the engine's checks; the wiki's caveats name the immunities, Slayer and Cure, and its players' notes Air Shield, Bloodlust, Anti-Magic and Magic Mirror):
+  - the target is immune to it (Dragons to levels 1-3, Giants to mind spells, a stack under Anti-Magic) or the spell's own rule turns it away (Precision on a stack that doesn't shoot);
+  - it is already on the target;
+  - Cure on a stack whose top creature has lost no health;
+  - Bloodlust on a shooter;
+  - Shield and Fire Shield when every enemy stack shoots;
+  - Air Shield when no enemy stack shoots;
+  - Anti-Magic and the four Protections when the enemy side has no hero;
+  - Slayer when the enemy has no king its Advanced reaches (the first and second groups). The engine checks for any king; we decided on the ones it reaches, as the wiki says it won't cast a spell with no effect (agreed with the user).
+- Not on itself, nor on a stack with no spell left to give: those get the usual cursor (the engine refuses both; the wiki says "an allied troop"; agreed with the user).
+- Hovering a stack it can cast on shows the spell cursor and "Cast a spell on Pikemen" (`core.genrltxt.301`, the plural name as the game gives it). Hovering an enemy still attacks it and an empty hex still moves there.
+- The log: "The Master Genies cast Bless" (`core.genrltxt.566`), "The Master Genie casts Bless" for one (`core.genrltxt.565`), then the spell's own line as for the hero's cast where it has one.
+- A computer's Master Genies cast while they can, on the stack of theirs worth the most (AI value times count) that has a spell left to give; otherwise they fight. Our decision: the engine's battle AI weighs every possible action, which comes with the smarter AI's later parts (5.7b).
+
+### How it is built (6.5.7d)
+
+- The Master Genie's `casts` in `monsters.json` (`{ "times": 3, "skillLevel": 2, "power": 6, "spells": [...] }`), copied onto its battle stacks; the Ogre Magi and the elementals reuse it with one spell each.
+- A refactor first: the lasting spells' effects and rounds and Cure's healing are worked out from a skill level and a Power, which the hero's cast takes from the hero and the stack's from its `casts`.
+- A spell's `usefulWhen` in `spells.json` names the check beyond its targets: `targetWalks` (Bloodlust), `enemyWalks` (Shield, Fire Shield), `enemyShoots` (Air Shield), `enemyHasHero` (Anti-Magic, Magic Mirror, the Protections) and `enemyKingReached` (Slayer, by its `kingsReached` at the caster's level). Immunities, Precision's shooters and Cure's hurt stacks come from the spell's targets, as for the hero.
+- One function lists the spells a stack can give a target (the checks above), used by the view's cursor, the cast and the computer.
+- A saved fact, `fact.battle.stack.cast` (the stack, target, spell, and its effects and rounds or its healing, as rolled); each stack's casts left are counted down as the facts replay, so a reload keeps them.
+- The demo map's Valeska (hero-2) gets 4 Master Genies.
+
+### Left for later (6.5.7d)
+
+- Magic Mirror among the spells, with enemy heroes casting (8.1).
+- Cure also leaving out a stack with no harmful spell, once Cure removes them (8.1).
+- The Ogre Magi's Bloodlust and the elementals' Protections, with their creatures (Stronghold, Conflux).
+- A computer hero's Master Genies choosing by what helps most: the smarter AI (5.7b).
 
 ### Left for later (6.5.7a)
 
-- The Master Genies' spells: 6.5.7d (Golems and Gargoyles came in 6.5.7b, the Magi's lower spell costs in 6.5.7c).
 - Hate: with Inferno's creatures (the Efreet), and the Titans' with Dungeon's Black Dragons.
 - Growth bonuses, recruiting: Tower's town and its map dwellings.
 - The player's Giants resisting a computer hero's mind spells: computer heroes don't cast yet (5.8 later).

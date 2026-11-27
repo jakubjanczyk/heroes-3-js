@@ -739,6 +739,7 @@
   },
   "SHIELD": {
     "name": "Shield",
+    "usefulWhen": "enemyWalks",
     "level": 1,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -770,6 +771,7 @@
   },
   "AIR_SHIELD": {
     "name": "Air Shield",
+    "usefulWhen": "enemyShoots",
     "level": 3,
     "schools": ["AIR"],
     "kind": "combat",
@@ -801,6 +803,7 @@
   },
   "FIRE_SHIELD": {
     "name": "Fire Shield",
+    "usefulWhen": "enemyWalks",
     "level": 4,
     "schools": ["FIRE"],
     "kind": "combat",
@@ -832,6 +835,7 @@
   },
   "PROTECTION_FROM_AIR": {
     "name": "Protection from Air",
+    "usefulWhen": "enemyHasHero",
     "level": 2,
     "schools": ["AIR"],
     "kind": "combat",
@@ -863,6 +867,7 @@
   },
   "PROTECTION_FROM_FIRE": {
     "name": "Protection from Fire",
+    "usefulWhen": "enemyHasHero",
     "level": 1,
     "schools": ["FIRE"],
     "kind": "combat",
@@ -894,6 +899,7 @@
   },
   "PROTECTION_FROM_WATER": {
     "name": "Prot. from Water",
+    "usefulWhen": "enemyHasHero",
     "level": 1,
     "schools": ["WATER"],
     "kind": "combat",
@@ -925,6 +931,7 @@
   },
   "PROTECTION_FROM_EARTH": {
     "name": "Prot. from Earth",
+    "usefulWhen": "enemyHasHero",
     "level": 3,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -956,6 +963,7 @@
   },
   "ANTI_MAGIC": {
     "name": "Anti-Magic",
+    "usefulWhen": "enemyHasHero",
     "level": 3,
     "schools": ["EARTH"],
     "kind": "combat",
@@ -1019,6 +1027,7 @@
   },
   "MAGIC_MIRROR": {
     "name": "Magic Mirror",
+    "usefulWhen": "enemyHasHero",
     "level": 5,
     "schools": ["AIR"],
     "kind": "combat",
@@ -1220,6 +1229,7 @@
   },
   "BLOODLUST": {
     "name": "Bloodlust",
+    "usefulWhen": "targetWalks",
     "notOnWarMachines": true,
     "level": 1,
     "schools": ["FIRE"],
@@ -1575,6 +1585,7 @@
   },
   "SLAYER": {
     "name": "Slayer",
+    "usefulWhen": "enemyKingReached",
     "level": 4,
     "schools": ["FIRE"],
     "kind": "combat",
