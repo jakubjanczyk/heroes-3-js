@@ -61,11 +61,14 @@ export const startBattleWithStyles = (scenario, options) =>
   startBattle(scenario, { ...options, withStyles: true })
 
 // Opens the app again on the same saved session, as a page reload does.
-export async function reloadBattle(scenario, { random = LOWEST_ROLLS, eventLog } = {}) {
+export async function reloadBattle(
+  scenario,
+  { random = LOWEST_ROLLS, eventLog, appConfig = {} } = {}
+) {
   const app = await setupMovementBehaviorApp({
     loadGameOptions: scenario.build(),
     eventLog,
-    appConfig: battleAppConfig({ random, appConfig: {} })
+    appConfig: battleAppConfig({ random, appConfig })
   })
   return app
 }

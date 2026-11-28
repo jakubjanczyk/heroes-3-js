@@ -1,4 +1,10 @@
-import { fightsFor, getSpellLevelImmunity, isBerserk, isHypnotized } from './battle-stats.js'
+import {
+  fightsFor,
+  getSpellLevelImmunity,
+  isBerserk,
+  isHypnotized,
+  isImmuneToSchools
+} from './battle-stats.js'
 
 // A combat spell does damage, lasts on stacks, removes their spells or heals them; each of the last
 // three says whose stacks it goes on and whether it hits all of them at Expert.
@@ -72,6 +78,7 @@ export const spellTargeting = (spell, skillLevel, { healthBelow = null } = {}) =
   sacrifices: Boolean(spell?.sacrifices),
   highestTierCloned: spell?.clones?.highestTier[skillLevel] ?? null,
   spellLevel: spell?.level ?? 0,
+  schools: spell?.schools ?? [],
   ignoresSpellLevelImmunity: Boolean(spell?.ignoresSpellLevelImmunity)
 })
 
@@ -88,6 +95,7 @@ export const isImmuneTo = (targeting, target) =>
   (targeting.livingOnly && (target.undead || target.nonLiving)) ||
   (targeting.notOnWarMachines && target.warMachine) ||
   (targeting.mind && target.mindSpellImmune) ||
+  isImmuneToSchools(target, targeting.schools) ||
   (!targeting.ignoresSpellLevelImmunity && targeting.spellLevel <= getSpellLevelImmunity(target))
 
 export function isSpellTarget(targeting, target, casterSide) {

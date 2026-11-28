@@ -67,6 +67,11 @@ const SPELLS = {
   })
     .withUsefulWhen('enemyKingReached')
     .build(),
+  PROTECTION_FROM_FIRE: aHelpfulSpell({
+    name: 'Protection from Fire',
+    schools: ['FIRE'],
+    effects: { fireSpellDamageTakenPercent: [-30, -30, -50, -50] }
+  }).build(),
   CURE: aSpellDefinition()
     .withName('Cure')
     .withSchools(['WATER'])
@@ -109,6 +114,7 @@ const CREATURES = {
     .withHealth(10000)
     .build(),
   WARDEN: aFighter('Warden').withSpeed(5).withSpellLevelImmunity(3).build(),
+  SALAMANDER: aFighter('Salamander').withSpeed(5).withSpellSchoolImmunity(['FIRE']).build(),
   QUEEN: aFighter('Queen').withSpeed(1).withHealth(10000).withKing(2).build(),
   GIANT: aFighter('Giant').withSpeed(1).withHealth(10000).withKing(3).build(),
   PAWN: aFighter('Pawn').withSpeed(5).withAiValue(10).build(),
@@ -363,6 +369,16 @@ describe('battle Master Genies behavior', () => {
       await castOn(user, 'Wardens')
 
       expect(genieLines()).toEqual(['The Genies cast Counterstrike'])
+    })
+
+    test('given a stack immune to Fire spells then the Genies cast a spell of another school on it', async () => {
+      const genie = aGenie({ spells: ['PROTECTION_FROM_FIRE', 'HASTE'] })
+      const hero = aGenieMaster({ army: [stack('GENIE', 2), stack('SALAMANDER', 10)] })
+      const { user } = await fight(aGenieFight({ genie, hero }))
+
+      await castOn(user, 'Salamanders')
+
+      expect(genieLines()).toEqual(['The Genies cast Haste'])
     })
 
     test.each([

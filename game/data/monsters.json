@@ -270,7 +270,8 @@
     },
     "aiValue": 5019,
     "king": 2,
-    "abilities": ["flying", "raisesMorale", "hatesDevils"]
+    "hates": ["DEVIL", "ARCH_DEVIL"],
+    "abilities": ["flying", "raisesMorale"]
   },
   "ARCHANGEL": {
     "name": "Archangel",
@@ -292,7 +293,8 @@
     },
     "aiValue": 8776,
     "king": 2,
-    "abilities": ["flying", "doubleWide", "raisesMorale", "hatesDevils", "resurrects"]
+    "hates": ["DEVIL", "ARCH_DEVIL"],
+    "abilities": ["flying", "doubleWide", "raisesMorale", "resurrects"]
   },
   "SKELETON": {
     "name": "Skeleton",
@@ -832,6 +834,7 @@
       "GOLD_PILE": 550
     },
     "aiValue": 884,
+    "hates": ["EFREETI", "EFREET_SULTAN"],
     "abilities": ["flying"]
   },
   "MASTER_GENIE": {
@@ -880,6 +883,7 @@
         "STONE_SKIN"
       ]
     },
+    "hates": ["EFREETI", "EFREET_SULTAN"],
     "abilities": ["flying"]
   },
   "NAGA": {
@@ -974,6 +978,7 @@
     "namePlural": "Imps",
     "faction": "INFERNO",
     "tier": 1,
+    "upgradesTo": "FAMILIAR",
     "attack": 2,
     "defense": 3,
     "damage": {
@@ -988,6 +993,286 @@
     },
     "aiValue": 50,
     "abilities": []
+  },
+  "FAMILIAR": {
+    "name": "Familiar",
+    "namePlural": "Familiars",
+    "faction": "INFERNO",
+    "tier": 1,
+    "attack": 4,
+    "defense": 4,
+    "damage": {
+      "min": 1,
+      "max": 2
+    },
+    "health": 4,
+    "speed": 7,
+    "growth": 15,
+    "cost": {
+      "GOLD_PILE": 60
+    },
+    "aiValue": 60,
+    "abilities": []
+  },
+  "GOG": {
+    "name": "Gog",
+    "namePlural": "Gogs",
+    "faction": "INFERNO",
+    "tier": 2,
+    "upgradesTo": "MAGOG",
+    "attack": 6,
+    "defense": 4,
+    "damage": {
+      "min": 2,
+      "max": 4
+    },
+    "health": 13,
+    "speed": 4,
+    "growth": 8,
+    "cost": {
+      "GOLD_PILE": 125
+    },
+    "aiValue": 159,
+    "shots": 12,
+    "abilities": ["ranged"]
+  },
+  "MAGOG": {
+    "name": "Magog",
+    "namePlural": "Magogs",
+    "faction": "INFERNO",
+    "tier": 2,
+    "attack": 7,
+    "defense": 4,
+    "damage": {
+      "min": 2,
+      "max": 4
+    },
+    "health": 13,
+    "speed": 6,
+    "growth": 8,
+    "cost": {
+      "GOLD_PILE": 175
+    },
+    "aiValue": 240,
+    "shots": 24,
+    "abilities": ["ranged"]
+  },
+  "HELL_HOUND": {
+    "name": "Hell Hound",
+    "namePlural": "Hell Hounds",
+    "faction": "INFERNO",
+    "tier": 3,
+    "upgradesTo": "CERBERUS",
+    "attack": 10,
+    "defense": 6,
+    "damage": {
+      "min": 2,
+      "max": 7
+    },
+    "health": 25,
+    "speed": 7,
+    "growth": 5,
+    "cost": {
+      "GOLD_PILE": 200
+    },
+    "aiValue": 357,
+    "abilities": ["doubleWide"]
+  },
+  "CERBERUS": {
+    "name": "Cerberus",
+    "namePlural": "Cerberi",
+    "faction": "INFERNO",
+    "tier": 3,
+    "attack": 10,
+    "defense": 8,
+    "damage": {
+      "min": 2,
+      "max": 7
+    },
+    "health": 25,
+    "speed": 8,
+    "growth": 5,
+    "cost": {
+      "GOLD_PILE": 250
+    },
+    "aiValue": 392,
+    "abilities": ["doubleWide", "noRetaliation"]
+  },
+  "DEMON": {
+    "name": "Demon",
+    "namePlural": "Demons",
+    "faction": "INFERNO",
+    "tier": 4,
+    "upgradesTo": "HORNED_DEMON",
+    "attack": 10,
+    "defense": 10,
+    "damage": {
+      "min": 7,
+      "max": 9
+    },
+    "health": 35,
+    "speed": 5,
+    "growth": 4,
+    "cost": {
+      "GOLD_PILE": 250
+    },
+    "aiValue": 445,
+    "abilities": []
+  },
+  "HORNED_DEMON": {
+    "name": "Horned Demon",
+    "namePlural": "Horned Demons",
+    "faction": "INFERNO",
+    "tier": 4,
+    "attack": 10,
+    "defense": 10,
+    "damage": {
+      "min": 7,
+      "max": 9
+    },
+    "health": 40,
+    "speed": 6,
+    "growth": 4,
+    "cost": {
+      "GOLD_PILE": 270
+    },
+    "aiValue": 480,
+    "abilities": []
+  },
+  "PIT_FIEND": {
+    "name": "Pit Fiend",
+    "namePlural": "Pit Fiends",
+    "faction": "INFERNO",
+    "tier": 5,
+    "upgradesTo": "PIT_LORD",
+    "attack": 13,
+    "defense": 13,
+    "damage": {
+      "min": 13,
+      "max": 17
+    },
+    "health": 45,
+    "speed": 6,
+    "growth": 3,
+    "cost": {
+      "GOLD_PILE": 500
+    },
+    "aiValue": 765,
+    "abilities": []
+  },
+  "PIT_LORD": {
+    "name": "Pit Lord",
+    "namePlural": "Pit Lords",
+    "faction": "INFERNO",
+    "tier": 5,
+    "attack": 13,
+    "defense": 13,
+    "damage": {
+      "min": 13,
+      "max": 17
+    },
+    "health": 45,
+    "speed": 7,
+    "growth": 3,
+    "cost": {
+      "GOLD_PILE": 700
+    },
+    "aiValue": 1224,
+    "abilities": []
+  },
+  "EFREETI": {
+    "name": "Efreeti",
+    "namePlural": "Efreet",
+    "faction": "INFERNO",
+    "tier": 6,
+    "upgradesTo": "EFREET_SULTAN",
+    "attack": 16,
+    "defense": 12,
+    "damage": {
+      "min": 16,
+      "max": 24
+    },
+    "health": 90,
+    "speed": 9,
+    "growth": 2,
+    "cost": {
+      "GOLD_PILE": 900
+    },
+    "aiValue": 1670,
+    "spellSchoolImmunity": ["FIRE"],
+    "hates": ["GENIE", "MASTER_GENIE"],
+    "abilities": ["flying"]
+  },
+  "EFREET_SULTAN": {
+    "name": "Efreet Sultan",
+    "namePlural": "Efreet Sultans",
+    "faction": "INFERNO",
+    "tier": 6,
+    "attack": 16,
+    "defense": 14,
+    "damage": {
+      "min": 16,
+      "max": 24
+    },
+    "health": 90,
+    "speed": 13,
+    "growth": 2,
+    "cost": {
+      "GOLD_PILE": 1100
+    },
+    "aiValue": 1848,
+    "spellSchoolImmunity": ["FIRE"],
+    "hates": ["GENIE", "MASTER_GENIE"],
+    "abilities": ["flying"]
+  },
+  "DEVIL": {
+    "name": "Devil",
+    "namePlural": "Devils",
+    "faction": "INFERNO",
+    "tier": 7,
+    "upgradesTo": "ARCH_DEVIL",
+    "attack": 19,
+    "defense": 21,
+    "damage": {
+      "min": 30,
+      "max": 40
+    },
+    "health": 160,
+    "speed": 11,
+    "growth": 1,
+    "cost": {
+      "GOLD_PILE": 2700,
+      "MERCURY_PILE": 1
+    },
+    "aiValue": 5101,
+    "king": 2,
+    "enemyLuck": -1,
+    "hates": ["ANGEL", "ARCHANGEL"],
+    "abilities": ["flying", "noRetaliation"]
+  },
+  "ARCH_DEVIL": {
+    "name": "Arch Devil",
+    "namePlural": "Arch Devils",
+    "faction": "INFERNO",
+    "tier": 7,
+    "attack": 26,
+    "defense": 28,
+    "damage": {
+      "min": 30,
+      "max": 40
+    },
+    "health": 200,
+    "speed": 17,
+    "growth": 1,
+    "cost": {
+      "GOLD_PILE": 4500,
+      "MERCURY_PILE": 2
+    },
+    "aiValue": 7115,
+    "king": 2,
+    "enemyLuck": -1,
+    "hates": ["ANGEL", "ARCHANGEL"],
+    "abilities": ["flying", "noRetaliation"]
   },
   "PEASANT": {
     "name": "Peasant",

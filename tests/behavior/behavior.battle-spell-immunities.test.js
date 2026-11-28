@@ -340,6 +340,95 @@ describe('battle spell immunities behavior', () => {
     })
   })
 
+  describe('creatures immune to Fire spells', () => {
+    const FIRE_IMMUNE_CREATURES = {
+      SALAMANDER: aCreatureDefinition()
+        .withName('Salamander')
+        .withNamePlural('Salamanders')
+        .withHealth(10)
+        .withSpellSchoolImmunity(['FIRE'])
+        .build()
+    }
+
+    const aSalamanderCaster = (options = {}) =>
+      aCaster({
+        knowledge: 4,
+        spells: ['BLOODLUST', 'CURSE', 'MAGIC_ARROW', ...DAMAGE_SPELLS],
+        ...options
+      })
+
+    const aFightWithSalamanders = ({ hero = aSalamanderCaster(), monster = 'SALAMANDER' } = {}) =>
+      aFight({ hero, monster, count: 50, creatures: FIRE_IMMUNE_CREATURES })
+
+    const enemyStack = (name) => readBattleStacks().find(({ stack }) => stack.startsWith(name))
+
+    const readOwnStacks = () => readBattleStacks().filter(({ column }) => column === 1)
+
+    const stackAt = (name, row, column) => ({ stack: name, row, column })
+
+    test('given Magic Arrow, of all four schools, is picked when the mouse is over enemy creatures immune to Fire spells then the status bar asks for a target and the cursor is blocked', async () => {
+      const { user } = await startBattleWithStyles(aFightWithSalamanders())
+      await pickSpell(user, 'Magic Arrow')
+
+      await hoverBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Select Spell Target')
+      expect(getCursorOver(getBattleHex(ENEMY_HEX.row, ENEMY_HEX.column))).toBe('battle-blocked')
+    })
+
+    test('given Curse is picked when enemy creatures immune to Fire spells are clicked then the spell is cancelled and no spell points are spent', async () => {
+      const { user } = await startBattle(aFightWithSalamanders())
+      await pickSpell(user, 'Curse')
+
+      await clickBattleHex(user, ENEMY_HEX.row, ENEMY_HEX.column)
+      const statusBar = getBattleStatusBarText()
+
+      expect(statusBar).toBe('Spell cancelled')
+      expect(await readBattleSpellPoints(user)).toBe('40')
+    })
+
+    test("given Bloodlust is picked when the hero's own creatures immune to Fire spells are clicked then the spell is cancelled", async () => {
+      const hero = aSalamanderCaster({ army: [stack('SALAMANDER', 10)] })
+      const { user } = await startBattle(aFightWithSalamanders({ hero, monster: 'PIKEMAN' }))
+      await pickSpell(user, 'Bloodlust')
+
+      await clickBattleHex(user, OWN_HEX.row, OWN_HEX.column)
+
+      expect(getBattleStatusBarText()).toBe('Spell cancelled')
+    })
+
+    test('given Armageddon is cast then creatures immune to Fire spells take none of its damage', async () => {
+      const { user } = await startBattle(aFightWithSalamanders())
+
+      await pickSpell(user, 'Armageddon')
+
+      expect(enemyStack('Salamanders').stack).toBe('Salamanders 50')
+    })
+
+    // Fireball does 15 + 2 × 10 = 35: 3 of the 10-health Pikemen perish.
+    test('given a Fireball hits creatures immune to Fire spells beside Pikemen then only the Pikemen take its damage', async () => {
+      const army = [stack('PIKEMAN', 10), stack('SALAMANDER', 10), stack('PIKEMAN', 10)]
+      const hero = aSalamanderCaster({ army: [...army, stack('PIKEMAN', 10)] })
+      const { user } = await startBattle(aFightWithSalamanders({ hero, monster: 'PIKEMAN' }))
+
+      await castSpellAt(user, 'Fireball', { row: 6, column: 1 })
+
+      expect(readOwnStacks().slice(1, 3)).toEqual([
+        stackAt('Salamanders 10', 5, 1),
+        stackAt('Pikemen 7', 7, 1)
+      ])
+    })
+
+    // Chain Lightning does 25 + 2 × 40 = 105: 10 of the 10-health Salamanders perish.
+    test('given Chain Lightning, an Air spell, is cast on creatures immune to Fire spells then they take its damage', async () => {
+      const { user } = await startBattle(aFightWithSalamanders())
+
+      await castSpellAt(user, 'Chain Lightning', ENEMY_HEX)
+
+      expect(enemyStack('Salamanders').stack).toBe('Salamanders 40')
+    })
+  })
+
   describe('creatures immune to mind spells', () => {
     const MIND_IMMUNE_CREATURES = {
       COLOSSUS: aCreatureDefinition()

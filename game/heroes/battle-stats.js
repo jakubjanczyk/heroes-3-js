@@ -92,8 +92,15 @@ function getSpellDamageTakenPercent(stack, schools) {
   return 100 + (protection ? spellEffect(stack, protection) : 0)
 }
 
+// Immune to one of a spell's schools is immune to the spell: Magic Arrow is of all four.
+export const isImmuneToSchools = (stack, schools = []) =>
+  schools.some((school) => stack.spellSchoolImmunity?.includes(school))
+
 // The stack's own reduction comes after a school's protection, each rounded down.
 export function getSpellDamageTaken(stack, damage, schools) {
+  if (isImmuneToSchools(stack, schools)) {
+    return 0
+  }
   const protectedDamage = Math.floor((damage * getSpellDamageTakenPercent(stack, schools)) / 100)
   return Math.floor((protectedDamage * (100 - (stack.spellDamageReduction ?? 0))) / 100)
 }
