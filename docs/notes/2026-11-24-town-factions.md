@@ -715,3 +715,99 @@ Checked against the wiki's raw page source (Genie and Master Genie, Spellcaster,
 - Hate: with Inferno's creatures (the Efreet), and the Titans' with Dungeon's Black Dragons.
 - Growth bonuses, recruiting: Tower's town and its map dwellings.
 - The player's Giants resisting a computer hero's mind spells: computer heroes don't cast yet (5.8 later).
+
+## 6.5.8 Inferno's creatures
+
+The first of Inferno's three parts. Like Rampart's and Tower's, too large for one PR with every ability, so in five:
+
+- **6.5.8a The creatures**: the fourteen creatures, with the abilities the battle already reads (flying, shooting, shots, double-wide, no enemy retaliation), and four small rules that are new: Hate, the Efreet's immunity to Fire spells, the Devils lowering the enemy's luck, and the Devils as kings for Slayer.
+- **6.5.8b The Efreet Sultans' Fire Shield**: a Fire Shield of their own, as the spell's at Basic.
+- **6.5.8c The Cerberi's three-headed attack**.
+- **6.5.8d The Magogs' fireball attack**.
+- **6.5.8e The Pit Lords' demon summoning**.
+
+The Familiars' magic channel (20% of the spell points the enemy hero spends go to their own hero) waits for computer heroes casting (5.8 later): until then no hero casts against the player's Familiars, and what a computer hero's Familiars would gain can't be used.
+
+Until its part, a creature fights without that ability. The demo map gets a few stacks of Inferno's creatures as map monsters, as it got Rampart's and Tower's. Recruiting them comes with Inferno's town and its map dwellings.
+
+### The creatures (6.5.8a)
+
+Checked against the Heroes 3 wiki's raw page source (each creature's `Template:Creature/<name>` and the creature pages) and the reference engine's Inferno creature data (levels, upgrades, double-wide, shots and abilities). The engine's data holds no stats, so attack, defense, damage, health, speed, growth, cost and AI value are checked against the wiki only, as the other factions' were. Where the wiki gives a Horn of the Abyss value beside the original's, the original's is used (the Efreet Sultans' AI value: 1848, not 2343; the Arch Devils' luck: −1, not −2).
+
+| Creature | Tier | Att | Def | Damage | HP | Speed | Growth | Cost | AI value | Abilities |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Imp | 1 | 2 | 3 | 1–2 | 4 | 5 | 15 | 50 | 50 | |
+| Familiar | 1 | 4 | 4 | 1–2 | 4 | 7 | 15 | 60 | 60 | magic channel (later) |
+| Gog | 2 | 6 | 4 | 2–4 | 13 | 4 | 8 | 125 | 159 | shoots, 12 shots |
+| Magog | 2 | 7 | 4 | 2–4 | 13 | 6 | 8 | 175 | 240 | shoots, 24 shots, fireball attack (6.5.8d) |
+| Hell Hound | 3 | 10 | 6 | 2–7 | 25 | 7 | 5 | 200 | 357 | double-wide |
+| Cerberus | 3 | 10 | 8 | 2–7 | 25 | 8 | 5 | 250 | 392 | double-wide, no enemy retaliation, three-headed attack (6.5.8c) |
+| Demon | 4 | 10 | 10 | 7–9 | 35 | 5 | 4 | 250 | 445 | |
+| Horned Demon | 4 | 10 | 10 | 7–9 | 40 | 6 | 4 | 270 | 480 | |
+| Pit Fiend | 5 | 13 | 13 | 13–17 | 45 | 6 | 3 | 500 | 765 | |
+| Pit Lord | 5 | 13 | 13 | 13–17 | 45 | 7 | 3 | 700 | 1224 | summons Demons (6.5.8e) |
+| Efreeti (plural Efreet) | 6 | 16 | 12 | 16–24 | 90 | 9 | 2 | 900 | 1670 | flies, immune to Fire spells, hates Genies |
+| Efreet Sultan | 6 | 16 | 14 | 16–24 | 90 | 13 | 2 | 1100 | 1848 | as the Efreeti, Fire Shield (6.5.8b) |
+| Devil | 7 | 19 | 21 | 30–40 | 160 | 11 | 1 | 2700 + 1 mercury | 5101 | teleports, no enemy retaliation, enemy luck −1, hates Angels, king of the second group |
+| Arch Devil | 7 | 26 | 28 | 30–40 | 200 | 17 | 1 | 4500 + 2 mercury | 7115 | as the Devil |
+
+- Each basic creature gets `upgradesTo` its upgrade.
+- The Devils teleport: anywhere within their speed, over stacks, obstacles, the moat and the walls. It is flying under another picture: the wiki's Flying page says teleporting gives "the same mechanical benefit" and puts it with flying, and the engine's teleporting is its flying with only the animation changed. So they are `flying`, with the fly cursor and "Fly Devils here" (`core.genrltxt.295`; the game's texts have only "Move" and "Fly" for a stack's move, "Teleport Here" being the spell's). Vanishing and appearing in place of the flight waits for animations (10.3).
+- The Birthing Pool's +8 Imps and the Cages' +3 Hell Hounds a week come with Inferno's town.
+
+### Hate (6.5.8a)
+
+Checked against the wiki's Hate and Damage pages and the engine's creature data (`HATE` 50 on each creature, naming each hated creature).
+
+- Genies and Master Genies hate Efreet and Efreet Sultans, and the other way round; Angels and Archangels hate Devils and Arch Devils, and the other way round (both sources). Titans and Black Dragons wait for Dungeon's Black Dragons.
+- A creature hitting one it hates does 50% more base damage: +50% added to the bonuses beside the Attack bonus, as a lucky strike's +100% is, not under the Attack bonus's cap (wiki Damage page: I5 = 0.50 for hate, added with the other I's).
+- Every hit: an attack, a strike back, a shot, a second strike; the hovering estimate ("Attack Devils (damage …)") includes it (the engine's estimate uses the same damage).
+- Only creatures' hits: spells, a Fire Shield's burn and the arrow towers don't hate.
+- It does nothing else: hated creatures still fight in one army, Master Genies still cast on Efreet (wiki Hate page).
+
+### Immunity to Fire spells (Efreet, 6.5.8a)
+
+Checked against the wiki's Efreeti and Efreet Sultan page and its Spell immunity table ("Fire spells"; "Fire spell immunity also makes the unit immune to Magic Arrow"; the Fire Shield ability doesn't reach the Fire-immune), and the engine's creature data (`SPELL_SCHOOL_IMMUNITY` fire) and spell targeting (a stack immune to any one of a spell's schools is immune to the spell, helpful spells too).
+
+- Efreet and Efreet Sultans can't be the target of any spell of the Fire school, either side's, helpful ones too: Bloodlust, Curse, Protection from Fire, Fire Shield, Misfortune, Blind, Berserk, Frenzy, Slayer, Sacrifice, Fireball, Inferno and Armageddon (Fire Wall and Land Mines too, once they exist). Nor of Magic Arrow, which is of all four schools.
+- Area spells leave them out; Armageddon does them no damage.
+- A Fire Shield's burn doesn't hurt them when they strike a shielded stack.
+- The Master Genies' spells leave out the Fire spells on them (Bloodlust, Fire Shield, Protection from Fire, Slayer, Frenzy), as the Genies' list already leaves out what a target is immune to.
+- The cursor and the click work as for the other immunities: blocked over them, a click cancels the spell and spends nothing.
+- The Magogs' fireball attack isn't a spell and hurts them (wiki fan opinion; settled in 6.5.8d).
+
+### The Devils' luck (6.5.8a)
+
+Checked against the wiki's Devil and Arch Devil and Luck pages ("reduce enemy Luck by one when they appear on the battlefield"; −1 for both outside Horn of the Abyss) and the engine's creature data (`LUCK` −1 on the opposite side, battle-wide, one bonus however many Devil stacks).
+
+- An army facing Devils or Arch Devils has its luck lowered by 1 for the whole battle: −1 in all, however many stacks.
+- Luck below 0 still does nothing, so it takes away good luck only: a hero with +1 luck never strikes lucky against Devils, +2 is +1.
+- It counts with no hero too, for map monsters' Devils against the player; the Devils' own side is unchanged.
+- Counted when the battle starts, as the side's luck is now, so it lasts after the Devils die (the engine keeps a dead stack's bonuses; the wiki says only "when they appear").
+- Hourglass of the Evil Hour already cancels the side's good luck; with it, Devils change nothing.
+
+### Kings of the second group (Devils, 6.5.8a)
+
+- Devils and Arch Devils are kings of the second group, with the Angels: Slayer's Attack reaches them from Advanced (wiki Slayer page: Advanced "also affects Angels and Devils"; the engine's `KING_2`).
+
+### What we decided (6.5.8a)
+
+- Agreed with the user: the Efreet are immune to every Fire spell, Fire Shield on the Efreet Sultans included (the engine and the wiki's Spell immunity table; the wiki's Efreet page says Fire Shield can be cast on them).
+- Agreed with the user: the Devils' −1 luck lasts the whole battle, after they die too.
+- The Devils' teleport is drawn as a flight until animations (10.3).
+
+### How it is built (6.5.8a)
+
+- The creatures are entries in `monsters.json`, with the abilities the battle already reads (`flying`, `doubleWide`, `ranged`, `noRetaliation`, `shots`) and `king: 2` on the Devils.
+- A creature's `hates` (`["EFREETI", "EFREET_SULTAN"]` on both Genies, and so on) is copied onto its stacks; a hit on a stack of a hated creature adds 500 thousandths to the bonus beside the Attack bonus, as the lucky strike does. The Angels' `hatesDevils` ability becomes `hates`.
+- A creature's `spellSchoolImmunity` (`["FIRE"]` on both Efreet) makes its stacks immune to any spell with one of those schools, in the one immunity check every spell, area and Fire Shield burn goes through.
+- A creature's `enemyLuck` (−1 on both Devils) lowers the other side's luck as the battle starts, the lowest one counting.
+- The demo map has Imps, Gogs, Hell Hounds, Demons, Pit Fiends, Efreet and Devils east of the first hero, beyond Tower's.
+
+### Left for later (6.5.8a)
+
+- The Efreet Sultans' Fire Shield, the Cerberi's heads, the Magogs' fireball and the Pit Lords' summoning: 6.5.8b to 6.5.8e.
+- The Familiars' magic channel: with computer heroes casting (5.8 later).
+- Hate between Titans and Black Dragons: Dungeon's creatures.
+- The creature popup shows no abilities yet, so it lists none of these.
+- Growth bonuses, recruiting: Inferno's town and its map dwellings.

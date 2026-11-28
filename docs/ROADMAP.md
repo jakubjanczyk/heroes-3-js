@@ -898,7 +898,13 @@ In parts. See `docs/notes/2026-11-24-town-factions.md`.
   - [x] 6.5.7b Golems and Gargoyles: the Golems' spell damage reduction; non-living (the Golems' neutral morale and immunity to mind spells, neither raised nor sacrificed by Sacrifice)
   - [x] 6.5.7c The Magi's magic channeler: their hero's spells cost 2 less
   - [x] 6.5.7d The Master Genies' spells: a random helpful spell on a stack of their side, three times a battle
-- [ ] Hate (Genies and Efreet, Angels and Devils, Titans and Black Dragons), with Inferno's creatures
+- [ ] 6.5.8 Inferno's creatures, in five parts:
+  - [ ] 6.5.8a The fourteen creatures; Hate (Genies and Efreet, Angels and Devils); the Efreet's immunity to Fire spells; the Devils lowering the enemy's luck by 1; Devils as kings of the second group for Slayer
+  - [ ] 6.5.8b The Efreet Sultans' own Fire Shield
+  - [ ] 6.5.8c The Cerberi's three-headed attack
+  - [ ] 6.5.8d The Magogs' fireball attack
+  - [ ] 6.5.8e The Pit Lords' demon summoning
+- [ ] The Titans' and Black Dragons' Hate, with Dungeon's creatures
 - [ ] Then each faction in three parts (its creatures; its town, special buildings, Mage Guild and walls; its heroes and map dwellings), in the order Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux
 - [ ] Each faction has unique buildings, creatures, and town view
 - [ ] Minimum viable: **Castle** faction fully implemented
