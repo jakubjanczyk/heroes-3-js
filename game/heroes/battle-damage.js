@@ -20,8 +20,9 @@ const DEFENSE_REDUCTION_CAP = 700
 const MOST_ROLLS = 10
 // A lucky strike adds +100% next to the attack bonus, not under its cap.
 const LUCKY_BONUS = 1000
-// So does the Ballista's double damage.
+// So do the Ballista's double damage and a hit on a creature the attacker hates.
 const DOUBLED_BONUS = 1000
+const HATE_BONUS = 500
 const LUCK_CHANCE_IN = 24
 const NO_LUCK = () => 1
 // A shot at a target more than 10 hexes away, and a shooter's melee attack, do half damage.
@@ -45,7 +46,8 @@ function applyAttackAndDefense(
   const bonus =
     Math.min(Math.max(advantage, 0) * ATTACK_BONUS_PER_POINT, ATTACK_BONUS_CAP) +
     (lucky ? LUCKY_BONUS : 0) +
-    (doubled ? DOUBLED_BONUS : 0)
+    (doubled ? DOUBLED_BONUS : 0) +
+    (attacker.hates?.includes(defender.creature) ? HATE_BONUS : 0)
   const reduction = withoutDefences
     ? 0
     : Math.min(Math.max(-advantage, 0) * DEFENSE_REDUCTION_PER_POINT, DEFENSE_REDUCTION_CAP)

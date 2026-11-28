@@ -13,7 +13,7 @@ import {
   shootAt,
   startBattle
 } from './battle.utils.js'
-import { aHero, aMonster, aScenario } from './builders.js'
+import { aCreatureDefinition, aHero, aMonster, aScenario } from './builders.js'
 
 const definitions = {
   monsters: readGameData('monsters.json'),
@@ -387,6 +387,127 @@ describe('battle morale and luck behavior', () => {
       await attackSkeletonsFromTheLeft(user)
 
       expect(readCombatMessages()[0]).toBe('The Archangel does 115 damage. 19 Skeletons perish.')
+    })
+  })
+
+  describe("the enemy's Devils", () => {
+    // Fiends lower the luck of the army they fight by 1, as Devils do; each has 10 health.
+    const aFiend = (name = 'Fiend') =>
+      aCreatureDefinition()
+        .withName(name)
+        .withNamePlural(`${name}s`)
+        .withHealth(10)
+        .withEnemyLuck(-1)
+    const FIENDS = {
+      FIEND: aFiend().build(),
+      IMP_LORD: aFiend('Imp Lord').build(),
+      FLYING_FIEND: aFiend('Flying Fiend').withSpeed(20).withAbilities(['flying']).build()
+    }
+    const withFiends = { ...definitions, monsters: { ...definitions.monsters, ...FIENDS } }
+
+    // The Archangel kills the one Fiend or Imp Lord it attacks and none strike back.
+    const anArchangelAgainst = ({ skills, enemyArmy }) =>
+      aScenario()
+        .withSize(3)
+        .withEntities(
+          aHero()
+            .withArmy([stack('ARCHANGEL', 1)])
+            .withSecondarySkills(skills),
+          aHero().withId('hero-2').ownedBy('blue').withArmy(enemyArmy).at(1, 0)
+        )
+        .withDefinitions(withFiends)
+
+    // Just under 1 in 24: lucky at luck +1 and above.
+    const UNDER_ONE_IN_24 = () => 0.04
+
+    const archangelLuckLines = () =>
+      readCombatMessages().filter((line) => line === GOOD_LUCK('Archangel'))
+
+    const attackFrom = (user, row) => attackBattleHexFrom(user, row, 15, 'left')
+
+    test('given a hero with +1 luck against Devils when the roll is just under 1 in 24 then the strike is not lucky', async () => {
+      const scenario = anArchangelAgainst({
+        skills: [basic('LUCK')],
+        enemyArmy: [stack('FIEND', 1), stack('ARCHER', 50)]
+      })
+      const { user } = await startBattle(scenario, { appConfig: { luckRandom: UNDER_ONE_IN_24 } })
+
+      await attackFrom(user, 3)
+
+      expect(archangelLuckLines()).toEqual([])
+    })
+
+    test('given a hero with +2 luck against Devils when the roll is just under 1 in 24 then the strike is lucky', async () => {
+      const scenario = anArchangelAgainst({
+        skills: [advanced('LUCK')],
+        enemyArmy: [stack('FIEND', 1), stack('ARCHER', 50)]
+      })
+      const { user } = await startBattle(scenario, { appConfig: { luckRandom: UNDER_ONE_IN_24 } })
+
+      await attackFrom(user, 3)
+
+      expect(archangelLuckLines()).toEqual([GOOD_LUCK('Archangel')])
+    })
+
+    test('given a hero with +2 luck against two kinds of Devils when the roll is just under 1 in 24 then the strike is still lucky', async () => {
+      const scenario = anArchangelAgainst({
+        skills: [advanced('LUCK')],
+        enemyArmy: [stack('FIEND', 1), stack('IMP_LORD', 1)]
+      })
+      const { user } = await startBattle(scenario, { appConfig: { luckRandom: UNDER_ONE_IN_24 } })
+
+      await attackFrom(user, 3)
+
+      expect(archangelLuckLines()).toEqual([GOOD_LUCK('Archangel')])
+    })
+
+    // The Archangel kills the Fiend, the Archers shoot, and next round it attacks the Archers.
+    test('given the Devils have died when the hero with +1 luck attacks again then the strike is still not lucky', async () => {
+      const scenario = anArchangelAgainst({
+        skills: [basic('LUCK')],
+        enemyArmy: [stack('FIEND', 1), stack('ARCHER', 50)]
+      })
+      const { user } = await startBattle(scenario, { appConfig: { luckRandom: UNDER_ONE_IN_24 } })
+      await attackFrom(user, 3)
+      await waitMs(1000)
+
+      await attackFrom(user, 9)
+
+      expect(archangelLuckLines()).toEqual([])
+    })
+
+    test("given the hero's own Devils when they strike with +1 luck and a roll just under 1 in 24 then the strike is lucky", async () => {
+      const scenario = aScenario()
+        .withSize(3)
+        .withEntities(
+          aHero()
+            .withArmy([stack('FLYING_FIEND', 1)])
+            .withSecondarySkills([basic('LUCK')]),
+          aMonster().withType('SKELETON').withCount(100).withStacks(1).at(1, 0)
+        )
+        .withDefinitions(withFiends)
+      const { user } = await startBattle(scenario, { appConfig: { luckRandom: UNDER_ONE_IN_24 } })
+
+      await attackSkeletonsFromTheLeft(user)
+
+      expect(readCombatMessages()[0]).toBe(GOOD_LUCK('Flying Fiend'))
+    })
+
+    test('given a hero with +1 luck against Devils when the page reloads then the strike is still not lucky', async () => {
+      const eventLog = createMemoryEventLog()
+      const scenario = anArchangelAgainst({
+        skills: [basic('LUCK')],
+        enemyArmy: [stack('FIEND', 1), stack('ARCHER', 50)]
+      })
+      await startBattle(scenario, { eventLog })
+      const { user } = await reloadBattle(scenario, {
+        eventLog,
+        appConfig: { luckRandom: UNDER_ONE_IN_24 }
+      })
+
+      await attackFrom(user, 3)
+
+      expect(archangelLuckLines()).toEqual([])
     })
   })
 

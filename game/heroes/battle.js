@@ -88,7 +88,8 @@ const spellTraitsOf = (definition, { immunities, magicResistance, mindless }) =>
   magicResistanceAura: definition.magicResistanceAura ?? 0,
   magicDamper: definition.magicDamper ?? 0,
   magicChanneler: definition.magicChanneler ?? 0,
-  spellDamageReduction: definition.spellDamageReduction ?? 0
+  spellDamageReduction: definition.spellDamageReduction ?? 0,
+  spellSchoolImmunity: definition.spellSchoolImmunity ?? []
 })
 
 // The Ballista's 2-3 is multiplied by the hero's Attack plus one.
@@ -178,6 +179,7 @@ function createStack({
     king: definition.king ?? null,
     binds: Boolean(definition.binds),
     breath: Boolean(definition.breath),
+    hates: definition.hates ?? [],
     spellAfterAttack: definition.spellAfterAttack ?? null,
     casts: definition.casts ?? null,
     castsLeft: definition.casts?.times ?? 0,
@@ -258,6 +260,17 @@ function catapultShootingOf(attacker, definitions) {
   }
 }
 
+const OPPOSING_SIDE = { attacker: 'defender', defender: 'attacker' }
+
+// Devils lower the luck of the army they fight by 1 however many stacks there are: the lowest counts.
+const enemyLuckOf = (army, definitions) =>
+  Math.min(
+    0,
+    ...army.flatMap((stack) =>
+      stack ? [definitions?.monsters?.[stack.creature]?.enemyLuck ?? 0] : []
+    )
+  )
+
 // A side without a hero has its creatures' morale alone, and no luck. The defenders of a town also
 // have what its buildings give them (`defenderBonuses`), with a hero or without.
 export function createBattle({
@@ -292,7 +305,8 @@ export function createBattle({
       ),
       luck: inBattle(
         'luck',
-        getHeroLuck({ entity, definitions, townModifiers: townModifiersOf(side, 'luck') }).value
+        getHeroLuck({ entity, definitions, townModifiers: townModifiersOf(side, 'luck') }).value +
+          enemyLuckOf(sides[OPPOSING_SIDE[side]].army, definitions)
       ),
       cancelledInBattle,
       immunities: artifactBattleImmunities(entity.artifacts, definitions),
